@@ -37,17 +37,10 @@ jobs:
         env:
           NUXT_APP_BASE_URL: /EG-Maps/
 
-      - name: Restructure output for GitHub Pages
-        run: |
-          mkdir -p .output/public/EG-Maps
-          cd .output/public && find . -maxdepth 1 -not -name '.' -not -name 'EG-Maps' -exec mv {} EG-Maps/ \;
-
       - name: Verify output
         run: |
           echo "Output directory contents:"
           ls -la .output/public
-          echo "EG-Maps directory contents:"
-          ls -la .output/public/EG-Maps
           echo "Build complete"
 
       - uses: actions/upload-pages-artifact@v3

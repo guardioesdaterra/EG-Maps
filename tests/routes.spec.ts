@@ -18,7 +18,7 @@ test.describe('Earth Guardians - All Routes and Features', () => {
       await expect(page.getByRole('heading', { name: 'Project Grants' })).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Endangered Species' })).toBeVisible();
 
-      const svgIcons = page.locator('svg.lucide');
+      const svgIcons = page.locator('iconify-icon');
       await expect(svgIcons.first()).toBeVisible();
       const iconCount = await svgIcons.count();
       expect(iconCount).toBeGreaterThan(0);
@@ -56,7 +56,7 @@ test.describe('Earth Guardians - All Routes and Features', () => {
       await expect(page.getByRole('heading', { name: 'Project Grants' }).first()).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Endangered Species' }).first()).toBeVisible();
 
-      const svgIcons = page.locator('svg.lucide');
+      const svgIcons = page.locator('iconify-icon');
       await expect(svgIcons.first()).toBeVisible();
 
       await expect(page.getByText('Feedback', { exact: true })).toBeVisible();
@@ -93,7 +93,7 @@ test.describe('Earth Guardians - All Routes and Features', () => {
 
       await expect(page.locator('nav').first()).toBeVisible();
 
-      const svgIcons = page.locator('svg.lucide');
+      const svgIcons = page.locator('iconify-icon');
       const iconCount = await svgIcons.count();
       expect(iconCount).toBeGreaterThan(0);
     });
@@ -125,7 +125,7 @@ test.describe('Earth Guardians - All Routes and Features', () => {
 
       await expect(page.locator('nav').first()).toBeVisible();
 
-      const svgIcons = page.locator('svg.lucide');
+      const svgIcons = page.locator('iconify-icon');
       const iconCount = await svgIcons.count();
       expect(iconCount).toBeGreaterThan(0);
     });

@@ -8,8 +8,6 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingSpinner } from '@/components/LoadingSpinner'
-
 // This route is kept for backwards compatibility
 // Users visiting /globe will be redirected to /project-grants/3d
 useHead({ title: 'Redirecting... | Earth Guardians' })

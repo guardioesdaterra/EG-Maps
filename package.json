@@ -1,0 +1,32 @@
+{
+  "name": "centralized-maps",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.12.0",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "iconify-icon": "^3.0.2",
+    "clsx": "^2.1.1",
+    "maplibre-gl": "^5.24.0",
+    "nuxt": "^3.21.6",
+    "tailwind-merge": "^3.6.0",
+    "vue": "^3.5.34",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "@playwright/test": "^1.60.0",
+    "@types/geojson": "^7946.0.16",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^6.0.3"
+  }
+}

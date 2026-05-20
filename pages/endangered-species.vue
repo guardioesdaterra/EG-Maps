@@ -15,7 +15,6 @@
 
 <script setup lang="ts">
 import speciesData from '~/public/data/species.json'
-import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 // This page now acts as a simple loading state
 // The actual content is loaded from /endangered-species/index.vue

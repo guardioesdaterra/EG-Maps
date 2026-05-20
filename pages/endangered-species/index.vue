@@ -15,7 +15,6 @@
 
 <script setup lang="ts">
 import speciesData from '~/public/data/species.json'
-import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 useHead({
   title: 'Endangered Species Map (2D) | Earth Guardians',

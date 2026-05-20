@@ -22,7 +22,6 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 useHead({
   title: 'Project Grants Map (2D) | Earth Guardians',

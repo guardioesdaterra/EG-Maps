@@ -121,6 +121,15 @@ const MAP_STYLE = MAPTILER_API_KEY
   ? `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_API_KEY}`
   : 'https://demotiles.maplibre.org/style.json'
 
+const tileCache = new Map<string, Response>()
+
+function transformRequest(url: string, resourceType?: string) {
+  if (resourceType === 'Tile' && tileCache.has(url)) {
+    return { url }
+  }
+  return { url }
+}
+
 interface Props {
   projects?: ProjectData[]
   species?: Species[]
@@ -147,7 +156,6 @@ const hasError = ref(false)
 
 let map: maplibregl.Map | null = null
 let markers: maplibregl.Marker[] = []
-let connectionSources: string[] = []
 
 // Overlay image loading
 const gridOverlayLoaded = ref(true)
@@ -166,40 +174,40 @@ function createProjectMarkerElement(project: ProjectData): HTMLElement {
   el.style.justifyContent = 'center'
   el.style.alignItems = 'center'
   el.style.cursor = 'pointer'
-  el.style.transition = 'all 0.3s ease'
+  el.style.transition = 'all 0.2s ease'
+  el.style.willChange = 'transform'
 
   const innerWrapper = document.createElement('div')
   innerWrapper.style.width = '100%'
   innerWrapper.style.height = '100%'
   innerWrapper.style.borderRadius = '50%'
-  innerWrapper.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
+  innerWrapper.style.backgroundColor = 'rgba(0, 0, 0, 0.8)'
   innerWrapper.style.border = `2px solid ${color}`
-  innerWrapper.style.boxShadow = `0 0 ${beneficiaryFactor * 15}px ${color}, 0 0 ${beneficiaryFactor * 3}px #fff`
+  innerWrapper.style.boxShadow = `0 0 ${beneficiaryFactor * 12}px ${color}`
   innerWrapper.style.display = 'flex'
   innerWrapper.style.justifyContent = 'center'
   innerWrapper.style.alignItems = 'center'
   innerWrapper.style.position = 'relative'
-  innerWrapper.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease'
+  innerWrapper.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease'
+  innerWrapper.style.willChange = 'transform'
   el.appendChild(innerWrapper)
 
   const centerDot = document.createElement('div')
-  centerDot.style.width = `${markerSize * 0.5}px`
-  centerDot.style.height = `${markerSize * 0.5}px`
+  centerDot.style.width = `${markerSize * 0.45}px`
+  centerDot.style.height = `${markerSize * 0.45}px`
   centerDot.style.backgroundColor = color
   centerDot.style.borderRadius = '50%'
-  centerDot.style.boxShadow = `0 0 ${beneficiaryFactor * 3}px ${color}`
+  centerDot.style.boxShadow = `0 0 ${beneficiaryFactor * 2}px ${color}`
   innerWrapper.appendChild(centerDot)
 
   el.addEventListener('mouseenter', () => {
-    innerWrapper.style.transform = 'scale(1.2)'
-    innerWrapper.style.boxShadow = `0 0 ${beneficiaryFactor * 30}px ${color}, 0 0 ${beneficiaryFactor * 6}px #fff`
-    el.style.zIndex = '10'
+    innerWrapper.style.transform = 'scale(1.25)'
+    innerWrapper.style.boxShadow = `0 0 ${beneficiaryFactor * 25}px ${color}, 0 0 ${beneficiaryFactor * 5}px #fff`
   })
 
   el.addEventListener('mouseleave', () => {
     innerWrapper.style.transform = 'scale(1)'
-    innerWrapper.style.boxShadow = `0 0 ${beneficiaryFactor * 15}px ${color}, 0 0 ${beneficiaryFactor * 3}px #fff`
-    el.style.zIndex = '1'
+    innerWrapper.style.boxShadow = `0 0 ${beneficiaryFactor * 12}px ${color}`
   })
 
   return el
@@ -207,19 +215,20 @@ function createProjectMarkerElement(project: ProjectData): HTMLElement {
 
 function createSpeciesMarkerElement(species: Species): HTMLElement {
   const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64030'
-  const markerSize = 14
+  const markerSize = 12
 
   const el = document.createElement('div')
   el.style.width = `${markerSize}px`
   el.style.height = `${markerSize}px`
   el.style.borderRadius = '50%'
   el.style.backgroundColor = color
-  el.style.border = '2px solid rgba(255,255,255,0.85)'
-  el.style.boxShadow = '0 1px 4px rgba(0,0,0,0.3)'
+  el.style.border = '2px solid rgba(255,255,255,0.9)'
+  el.style.boxShadow = `0 0 6px ${color}40`
   el.style.cursor = 'pointer'
-  el.style.transition = 'transform 0.2s ease'
+  el.style.transition = 'transform 0.15s ease'
+  el.style.willChange = 'transform'
 
-  el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.3)' })
+  el.addEventListener('mouseenter', () => { el.style.transform = 'scale(1.4)' })
   el.addEventListener('mouseleave', () => { el.style.transform = 'scale(1)' })
 
   return el
@@ -253,6 +262,8 @@ function rebuildMarkers() {
     })
   } else if (activeDataset.value === 'endangered-species' && props.species) {
     props.species.forEach((species) => {
+      if (!isValidCoordinate(species.lat, species.lng)) return
+
       const el = createSpeciesMarkerElement(species)
 
       const popup = new maplibregl.Popup({
@@ -276,18 +287,15 @@ function addConnections() {
   if (!map) return
 
   // Clear existing
-  connectionSources.forEach(id => {
-    if (map?.getLayer(id)) map.removeLayer(id)
-    if (map?.getSource(id)) map.removeSource(id)
-  })
-  connectionSources = []
+  if (map.getLayer('connections-layer')) map.removeLayer('connections-layer')
+  if (map.getSource('connections-source')) map.removeSource('connections-source')
 
   // Only add connections for project-grants dataset
   if (activeDataset.value !== 'project-grants') return
 
   const maxConnectionsPerProject = isMobile.value ? 2 : 3
   const projectsToProcess = isMobile.value ? projectsData.value.slice(0, Math.min(15, projectsData.value.length)) : projectsData.value
-  const connections: Array<{ from: [number, number]; to: [number, number]; direct: number; indirect: number }> = []
+  const features: any[] = []
 
   // Use a seeded approach for deterministic connections
   projectsToProcess.forEach((project, idx) => {
@@ -299,47 +307,48 @@ function addConnections() {
       const targetIndex = (idx + i + 1) % availableTargets.length
       const target = availableTargets[targetIndex]
       if (target) {
-        connections.push({
-          from: [project.longitude, project.latitude],
-          to: [target.longitude, target.latitude],
-          direct: project.direct_beneficiaries,
-          indirect: project.indirect_beneficiaries
+        const controlPoint = generateCurvedPath(
+          [project.longitude, project.latitude],
+          [target.longitude, target.latitude]
+        )
+        const color = getProjectColorByBeneficiaries(project.direct_beneficiaries, project.indirect_beneficiaries)
+        features.push({
+          type: 'Feature',
+          properties: { color },
+          geometry: {
+            type: 'LineString',
+            coordinates: [
+              [project.longitude, project.latitude],
+              controlPoint,
+              [target.longitude, target.latitude]
+            ]
+          }
         })
       }
     }
   })
 
-  connections.slice(0, 80).forEach((conn, index) => {
-    const connectionId = `connection-${index}`
-    const controlPoint = generateCurvedPath(conn.from, conn.to)
-    const color = getProjectColorByBeneficiaries(conn.direct, conn.indirect)
+  if (features.length === 0) return
 
-    map!.addSource(connectionId, {
-      type: 'geojson',
-      data: {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates: [conn.from, controlPoint, conn.to]
-        }
-      }
-    })
+  map.addSource('connections-source', {
+    type: 'geojson',
+    data: {
+      type: 'FeatureCollection',
+      features
+    }
+  })
 
-    map!.addLayer({
-      id: connectionId,
-      type: 'line',
-      source: connectionId,
-      layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: {
-        'line-color': color,
-        'line-width': 2.5,
-        'line-opacity': 0.2,
-        'line-dasharray': [0.5, 2]
-      }
-    })
-
-    connectionSources.push(connectionId)
+  map.addLayer({
+    id: 'connections-layer',
+    type: 'line',
+    source: 'connections-source',
+    layout: { 'line-join': 'round', 'line-cap': 'round' },
+    paint: {
+      'line-color': ['get', 'color'],
+      'line-width': 2,
+      'line-opacity': 0.2,
+      'line-dasharray': [0.5, 2]
+    }
   })
 }
 
@@ -417,6 +426,10 @@ function initMap() {
       zoom: isMobile.value ? 1.8 : 3,
       center: [0, 0],
       attributionControl: false,
+      fadeDuration: 100,
+      maxTileCacheSize: 200,
+      maxTileCacheZoomLevels: 5,
+      transformRequest,
     })
 
     map.addControl(

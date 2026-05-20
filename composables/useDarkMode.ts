@@ -30,13 +30,15 @@ export function useDarkMode() {
     applyDarkClass(value)
   }
 
-  // Initialize from localStorage on client
+  // Initialize from localStorage on mount to avoid hydration mismatch
   if (process.client) {
-    const saved = localStorage.getItem('darkMode')
-    if (saved !== null) {
-      isDark.value = saved === 'true'
-      applyDarkClass(isDark.value)
-    }
+    onMounted(() => {
+      const saved = localStorage.getItem('darkMode')
+      if (saved !== null) {
+        isDark.value = saved === 'true'
+        applyDarkClass(isDark.value)
+      }
+    })
   }
 
   // Watch for changes and persist

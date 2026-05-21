@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <GlobeView :species="speciesData" :default-dataset="'endangered-species'" />
+    <GlobeView :species="speciesList" :default-dataset="'endangered-species'" />
     <template #fallback>
       <div class="flex h-screen w-full items-center justify-center bg-black text-white">
         <LoadingSpinner
@@ -22,4 +22,6 @@ useHead({
     { name: 'description', content: 'Interactive 3D globe of critically endangered species around the world' },
   ],
 })
+
+const speciesList = speciesData
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-screen relative overflow-hidden bg-black">
+  <div class="w-full h-screen relative overflow-hidden bg-black" role="main" aria-label="3D Globe Visualization">
     <!-- Star field background -->
     <div class="star-field" aria-hidden="true"></div>
 
@@ -7,7 +7,7 @@
     <div class="absolute inset-0 pointer-events-none z-10 bg-black/40"></div>
 
     <!-- Subtle radial glow behind globe -->
-    <div class="absolute inset-0 pointer-events-none z-10 bg-gradient-radial from-cyan-900/10 via-transparent to-transparent"></div>
+    <div class="absolute inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/10 via-transparent to-transparent"></div>
 
     <!-- Vignette -->
     <div class="absolute inset-0 pointer-events-none z-20" style="box-shadow: inset 0 0 200px 40px rgba(0,0,0,0.9)"></div>
@@ -25,10 +25,22 @@
 
     <!-- White Banner -->
     <div v-if="isMobile" class="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none px-2" :style="{ zIndex: 'var(--z-map-banner)' }">
-      <img src="/white-banner.png" alt="Earth Guardians" class="h-auto w-auto max-h-[12vh] max-w-[240px] object-contain" />
+      <img src="/white-banner.png" alt="Earth Guardians" class="h-auto w-auto max-h-[10vh] max-w-[200px] object-contain" loading="lazy" />
     </div>
     <div v-else class="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" :style="{ zIndex: 'var(--z-map-banner)' }">
-      <img src="/white-banner.png" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[180px] -rotate-90 origin-center" />
+      <img src="/white-banner.png" alt="Earth Guardians" class="h-auto w-auto max-h-[12vh] max-w-[150px] -rotate-90 origin-center" loading="lazy" />
+    </div>
+
+    <!-- Dataset indicator -->
+    <div class="absolute top-4 left-1/2 -translate-x-1/2 z-[600]">
+      <div class="panel-cyber rounded-lg px-4 py-2">
+        <div class="flex items-center gap-2">
+          <div :class="`w-2 h-2 rounded-full ${activeDataset === 'project-grants' ? 'bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.6)]' : 'bg-green-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]'}`" />
+          <span class="text-xs font-medium text-[var(--text-primary)]">
+            {{ activeDataset === 'project-grants' ? 'Project Grants' : 'Endangered Species' }}
+          </span>
+        </div>
+      </div>
     </div>
 
     <!-- Controls - 2D/3D toggle -->
@@ -38,12 +50,14 @@
           <NuxtLink
             :to="datasetBaseRoute"
             class="px-3 py-1.5 rounded-md text-sm font-medium transition-all bg-black/50 text-cyan-400 hover:bg-cyan-950/30"
+            aria-label="Switch to 2D Map view"
           >
             2D Map
           </NuxtLink>
           <button
             class="px-3 py-1.5 rounded-md text-sm font-medium bg-gradient-to-r from-cyan-600 to-purple-600 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)]"
             disabled
+            aria-current="page"
           >
             3D Globe
           </button>
@@ -56,13 +70,26 @@
       <GlobalStats :projects="projectsData" />
     </div>
 
+    <!-- Species legend (for endangered species) -->
+    <div v-if="activeDataset === 'endangered-species'" class="absolute left-4 bottom-20 sm:bottom-4 z-[600]">
+      <div class="panel-cyber rounded-lg p-3">
+        <h3 class="text-xs font-bold text-[var(--text-primary)] mb-2">Taxonomic Groups</h3>
+        <div class="grid grid-cols-2 gap-1.5">
+          <div v-for="(color, group) in GROUP_COLORS" :key="group" class="flex items-center gap-1.5">
+            <div class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: color }" />
+            <span class="text-[10px] text-[var(--text-secondary)]">{{ group }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Error state -->
-    <div v-if="hasError" class="w-full h-screen bg-black flex flex-col items-center justify-center text-white">
+    <div v-if="hasError" class="absolute inset-0 bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center text-white z-[2000]">
       <div class="h-16 w-16 rounded-full bg-gradient-to-r from-red-500 to-orange-600 animate-pulse mb-6"></div>
       <h2 class="text-xl font-bold mb-2">Unable to Load Visualization</h2>
-      <p class="text-gray-300 mb-4">The component could not be loaded.</p>
-      <div class="flex space-x-4">
-        <button @click="() => { hasError = false; initMap() }" class="px-4 py-2 bg-black bg-opacity-70 rounded border border-purple-500/50 text-purple-400 hover:bg-purple-900/30 transition-colors">
+      <p class="text-gray-400 mb-4 text-center px-4">The component could not be loaded. Please check your connection and try again.</p>
+      <div class="flex gap-4">
+        <button @click="() => { hasError = false; initMap() }" class="px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg text-white font-medium hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(6,182,212,0.3)]">
           Try Again
         </button>
       </div>
@@ -76,9 +103,9 @@ import maplibregl from 'maplibre-gl'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
-import type { Species } from '@/composables/useSpeciesData'
-import { isValidCoordinate, generateCurvedPath, calculateDistance, GROUP_COLORS, escapeHtml } from '@/lib/map-utils'
+import { isValidCoordinate, generateCurvedPath, calculateDistance, GROUP_COLORS, buildProjectPopupHTML, buildSpeciesPopupHTML } from '@/lib/map-utils'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
+import type { Species } from '@/lib/map-utils'
 
 interface Props {
   projects?: ProjectData[]
@@ -195,61 +222,6 @@ async function initMap() {
     console.error('Failed to load maplibre-gl:', err)
     hasError.value = true
   }
-}
-
-function buildProjectPopupHTML(project: ProjectData): string {
-  const color = getProjectColorByBeneficiaries(project.direct_beneficiaries, project.indirect_beneficiaries)
-  return `
-    <div class="cyber-popup-content" data-type="project">
-      <div style="border-bottom: 1px solid rgba(6,182,212,0.3); padding-bottom: 8px; margin-bottom: 12px;">
-        <h3 style="font-weight: bold; font-size: 1.125rem; background: linear-gradient(to right, #22d3ee, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;">
-          ${escapeHtml(project.project_title)}
-        </h3>
-        <span style="display: inline-block; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; color: white; background-color: ${color}; padding: 2px 8px; border-radius: 9999px;">
-          PROJECT GRANTEE
-        </span>
-      </div>
-      <div style="margin-top: 12px; font-size: 0.875rem; color: #d1d5db;">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-          <span>&#x1F4CD;</span><span>${escapeHtml(project.country_province || 'Unknown location')}</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-          <span>&#x1F465;</span><span>Direct Beneficiaries: ${project.direct_beneficiaries.toLocaleString()}</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span>&#x1F465;</span><span>Indirect Beneficiaries: ${project.indirect_beneficiaries.toLocaleString()}</span>
-        </div>
-      </div>
-    </div>
-  `
-}
-
-function buildSpeciesPopupHTML(species: Species): string {
-  const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64032'
-  return `
-    <div class="cyber-popup-content cyber-popup-species" data-type="species">
-      <div style="border-bottom: 1px solid rgba(6,182,212,0.3); padding-bottom: 8px; margin-bottom: 12px;">
-        <h3 style="font-weight: bold; font-size: 1.125rem; background: linear-gradient(to right, #22d3ee, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px;">
-          ${escapeHtml(species.commonName)}
-        </h3>
-        <p style="font-style: italic; font-size: 0.875rem; color: #a3a3a3; margin-bottom: 4px;">${escapeHtml(species.scientificName)}</p>
-        <span style="display: inline-block; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; color: white; background-color: ${color}; padding: 2px 8px; border-radius: 9999px;">
-          ${escapeHtml(species.category)}
-        </span>
-        <span style="display: inline-block; margin-left: 6px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; color: ${color}; padding: 2px 8px; border-radius: 9999px; border: 1px solid ${color};">
-          ${escapeHtml(species.taxonomicGroup)}
-        </span>
-      </div>
-      <div style="margin-top: 12px; font-size: 0.875rem; color: #d1d5db;">
-        <p style="margin-bottom: 8px;"><strong style="color: #22d3ee;">Region:</strong> ${escapeHtml(species.region)}</p>
-        <p style="margin-bottom: 8px;"><strong style="color: #22d3ee;">Ecosystem:</strong> ${escapeHtml(species.ecosystem)}</p>
-        <p style="margin-bottom: 8px;"><strong style="color: #22d3ee;">Threats:</strong> ${species.threatTypes.map(escapeHtml).join(', ')}</p>
-        <p style="margin-bottom: 8px;"><strong style="color: #ef4444;">Why endangered:</strong> ${escapeHtml(species.endangerment)}</p>
-        <p style="margin-bottom: 8px;"><strong style="color: #10b981;">Ecosystem needs:</strong> ${escapeHtml(species.ecosystemNeeds)}</p>
-        <p><strong style="color: #f59e0b;">How to help:</strong> ${escapeHtml(species.actions)}</p>
-      </div>
-    </div>
-  `
 }
 
 function createProjectMarkerElement(project: ProjectData): HTMLElement {

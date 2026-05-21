@@ -122,6 +122,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  { path: '/', label: 'Home', icon: 'lucide:home', variant: 'cyan' },
   { path: '/info', label: 'Info & Feedback', icon: 'lucide:info', variant: 'cyan' },
   { path: '/project-grants', label: 'Project Grants', icon: 'lucide:hand-heart', variant: 'purple' },
   { path: '/endangered-species', label: 'Endangered Species', icon: 'lucide:bird', variant: 'green' },
@@ -132,6 +133,7 @@ const { isDark, toggle: toggleDarkMode } = useDarkMode()
 
 const isActive = (path: string) => {
   if (path === '/') return route.path === '/'
+  if (path === '/info') return route.path === '/info'
   return route.path.startsWith(path)
 }
 

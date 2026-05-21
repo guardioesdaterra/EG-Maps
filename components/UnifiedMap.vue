@@ -1,57 +1,30 @@
 <template>
-  <div class="w-full h-screen relative overflow-hidden bg-black">
+  <div class="w-full h-screen relative overflow-hidden bg-black" role="main" aria-label="Interactive Map Visualization">
     <!-- Background effects -->
-    <div class="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-cyan-900/20 pointer-events-none" :style="{ zIndex: 'var(--z-map-effects)' }" />
-    <div v-if="!isMobile" class="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-purple-900/20 pointer-events-none" :style="{ zIndex: 'var(--z-map-effects)' }" />
-    <div class="absolute inset-0 pointer-events-none" :style="{ zIndex: 'var(--z-map-overlays)', boxShadow: 'inset 0 0 150px 20px rgba(0,0,0,0.7)' }" />
+    <div class="absolute inset-0 bg-gradient-to-b from-cyan-950/20 via-purple-950/10 to-emerald-950/20 pointer-events-none" :style="{ zIndex: 'var(--z-map-effects)' }" />
+    <div v-if="!isMobile" class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/10 via-transparent to-transparent pointer-events-none" :style="{ zIndex: 'var(--z-map-effects)' }" />
+    <div class="absolute inset-0 pointer-events-none" :style="{ zIndex: 'var(--z-map-overlays)', boxShadow: 'inset 0 0 200px 50px rgba(0,0,0,0.8)' }" />
 
     <!-- Hex grid overlay -->
-    <canvas v-if="showHexGrid" ref="hexCanvasRef" class="absolute inset-0 w-full h-full pointer-events-none opacity-20" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
-
-    <!-- Grid overlay -->
-    <img
-      v-if="gridOverlayLoaded"
-      src="/grid-overlay.png"
-      alt="Grid Overlay"
-      class="absolute inset-0 pointer-events-none w-full h-full object-cover opacity-5"
-      :style="{ zIndex: 'calc(var(--z-map-hex-grid) + 1)' }"
-    />
-
-    <!-- Noise overlay -->
-    <img
-      v-if="noiseLoaded"
-      src="/noise.png"
-      alt="Noise Texture"
-      class="absolute inset-0 pointer-events-none opacity-[0.02] animate-noise-bg"
-      :style="{ zIndex: 'calc(var(--z-map-effects) + 1)', width: '512px', height: '512px', backgroundRepeat: 'repeat' }"
-    />
-
-    <!-- Scanline overlay -->
-    <img
-      v-if="scanlineLoaded"
-      src="/scanline.gif"
-      alt="Scanline Effect"
-      class="absolute inset-0 pointer-events-none opacity-[0.015]"
-      :style="{ zIndex: 'calc(var(--z-map-effects) + 2)', width: '512px', height: '512px', backgroundRepeat: 'repeat' }"
-    />
+    <canvas v-if="showHexGrid" ref="hexCanvasRef" class="absolute inset-0 w-full h-full pointer-events-none opacity-15" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
 
     <!-- Animated background elements -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none" :style="{ zIndex: 'var(--z-map-effects)' }">
       <div :class="`absolute top-0 left-0 w-full h-full ${isMobile ? 'opacity-5' : 'opacity-10'}`">
-        <div class="absolute top-0 left-0 w-1/3 h-1/3 bg-cyan-500/20 blur-3xl animate-pulse-slow" />
+        <div class="absolute top-0 left-1/4 w-1/3 h-1/3 bg-cyan-500/20 blur-3xl animate-pulse-slow" />
         <template v-if="!isMobile">
-          <div class="absolute bottom-0 right-0 w-1/3 h-1/3 bg-purple-500/20 blur-3xl animate-pulse-slow-delay" />
-          <div class="absolute top-1/2 right-1/4 w-1/4 h-1/4 bg-pink-500/20 blur-3xl animate-pulse-slow-delay-2" />
+          <div class="absolute bottom-0 right-1/4 w-1/3 h-1/3 bg-purple-500/20 blur-3xl animate-pulse-slow-delay" />
+          <div class="absolute top-1/2 left-1/2 w-1/4 h-1/4 bg-emerald-500/15 blur-3xl animate-pulse-slow-delay-2" />
         </template>
       </div>
     </div>
 
     <!-- Earth Guardians Banner -->
     <div v-if="isMobile" class="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none px-2" :style="{ zIndex: 'var(--z-map-banner)' }">
-      <img src="/white-banner.png" alt="Earth Guardians" class="h-auto w-auto max-h-[12vh] max-w-[240px] object-contain" />
+      <img src="/white-banner.png" alt="Earth Guardians" class="h-auto w-auto max-h-[10vh] max-w-[200px] object-contain" loading="lazy" />
     </div>
     <div v-else class="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" :style="{ zIndex: 'var(--z-map-banner)' }">
-      <img src="/white-banner.png" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[180px] -rotate-90 origin-center" />
+      <img src="/white-banner.png" alt="Earth Guardians" class="h-auto w-auto max-h-[12vh] max-w-[150px] -rotate-90 origin-center" loading="lazy" />
     </div>
 
     <!-- Map Container -->
@@ -63,12 +36,14 @@
         <div class="flex items-center gap-2">
           <button
             class="px-3 py-1.5 rounded-md text-sm font-medium transition-all bg-gradient-to-r from-cyan-600 to-purple-600 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+            aria-current="page"
           >
             2D Map
           </button>
           <NuxtLink
             :to="`${datasetBaseRoute}/3d`"
             class="px-3 py-1.5 rounded-md text-sm font-medium transition-all bg-black/50 text-cyan-400 hover:bg-cyan-950/30"
+            aria-label="Switch to 3D Globe view"
           >
             3D Globe
           </NuxtLink>
@@ -76,9 +51,34 @@
       </div>
     </div>
 
-    <!-- Global Stats (for project grants only - UnifiedMap is always 2D) -->
+    <!-- Dataset indicator -->
+    <div class="absolute top-4 left-1/2 -translate-x-1/2" :style="{ zIndex: 'var(--z-map-ui-controls)' }">
+      <div class="panel-cyber rounded-lg px-4 py-2">
+        <div class="flex items-center gap-2">
+          <div :class="`w-2 h-2 rounded-full ${activeDataset === 'project-grants' ? 'bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.6)]' : 'bg-green-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]'}`" />
+          <span class="text-xs font-medium text-[var(--text-primary)]">
+            {{ activeDataset === 'project-grants' ? 'Project Grants' : 'Endangered Species' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global Stats (for project grants only) -->
     <div v-if="activeDataset === 'project-grants'" class="absolute right-0 bottom-0 w-full max-w-xl px-4 sm:px-0" :style="{ zIndex: 'var(--z-map-global-stats)' }">
       <GlobalStats :projects="projectsData" />
+    </div>
+
+    <!-- Species legend (for endangered species) -->
+    <div v-if="activeDataset === 'endangered-species'" class="absolute left-4 bottom-20 sm:bottom-4" :style="{ zIndex: 'var(--z-map-global-stats)' }">
+      <div class="panel-cyber rounded-lg p-3">
+        <h3 class="text-xs font-bold text-[var(--text-primary)] mb-2">Taxonomic Groups</h3>
+        <div class="grid grid-cols-2 gap-1.5">
+          <div v-for="(color, group) in GROUP_COLORS" :key="group" class="flex items-center gap-1.5">
+            <div class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: color }" />
+            <span class="text-[10px] text-[var(--text-secondary)]">{{ group }}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Map Controls -->
@@ -94,11 +94,11 @@
     />
 
     <!-- Error state -->
-    <div v-if="hasError" class="absolute inset-0 bg-black flex flex-col items-center justify-center text-white" :style="{ zIndex: 'var(--z-map-error-overlay)' }">
-      <div class="h-16 w-16 rounded-full bg-gradient-to-r from-red-500 to-orange-600 animate-pulse mb-6"></div>
+    <div v-if="hasError" class="absolute inset-0 bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center text-white" :style="{ zIndex: 'var(--z-map-error-overlay)' }">
+      <div class="h-16 w-16 rounded-full bg-gradient-to-r from-red-500 to-orange-600 animate-pulse mb-6" />
       <h2 class="text-xl font-bold mb-2">Unable to Load Map</h2>
-      <p class="text-gray-300 mb-4">The map could not be initialized.</p>
-      <button @click="() => { hasError = false; initMap() }" class="px-4 py-2 bg-black bg-opacity-70 rounded border border-purple-500/50 text-purple-400 hover:bg-purple-900/30 transition-colors">
+      <p class="text-gray-400 mb-4 text-center px-4">The map could not be initialized. Please check your connection and try again.</p>
+      <button @click="() => { hasError = false; initMap() }" class="px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-lg text-white font-medium hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(6,182,212,0.3)]">
         Try Again
       </button>
     </div>
@@ -153,14 +153,6 @@ const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
 const showHexGrid = ref(true)
 const activeDataset = ref<'project-grants' | 'endangered-species'>(props.defaultDataset)
 const hasError = ref(false)
-
-let map: maplibregl.Map | null = null
-let markers: maplibregl.Marker[] = []
-
-// Overlay image loading
-const gridOverlayLoaded = ref(true)
-const noiseLoaded = ref(true)
-const scanlineLoaded = ref(true)
 
 function createProjectMarkerElement(project: ProjectData): HTMLElement {
   const beneficiaryFactor = Math.min(Math.max(project.indirect_beneficiaries / 10000, 0.5), 5)

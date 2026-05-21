@@ -26,11 +26,17 @@ export default defineNuxtConfig({
       title: 'Earth Guardians - Interactive Data Visualization',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=5' },
         { name: 'description', content: 'Interactive maps for endangered species and project grants data visualization' },
+        { name: 'theme-color', content: '#0a0a0a' },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'Earth Guardians' },
       ],
       link: [
         { rel: 'icon', type: 'image/png', href: '/eg-logo.png' },
+        { rel: 'manifest', href: '/manifest.json' },
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
       ],
     },
   },
@@ -42,7 +48,7 @@ export default defineNuxtConfig({
     },
   },
 
-  // CSS - only MapLibre (no Leaflet)
+  // CSS - only MapLibre
   css: ['~/assets/css/main.css', 'maplibre-gl/dist/maplibre-gl.css'],
 
   // Build settings
@@ -58,6 +64,7 @@ export default defineNuxtConfig({
       crawlLinks: true,
       routes: ['/', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d'],
     },
+    compressPublicAssets: true,
   },
 
   // Vite config for MapLibre

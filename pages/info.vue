@@ -1,16 +1,17 @@
 <template>
-  <div class="min-h-screen bg-[var(--bg-secondary)] py-12 px-4">
+  <div class="min-h-screen bg-[var(--bg-secondary)] py-12 px-4 relative">
     <!-- Background effects -->
-    <div class="fixed inset-0 bg-gradient-to-b from-purple-900/10 to-cyan-900/10 pointer-events-none" />
+    <div class="fixed inset-0 bg-gradient-to-b from-cyan-950/20 via-purple-950/10 to-emerald-950/20 pointer-events-none" />
+    <div class="fixed inset-0 pointer-events-none" style="box-shadow: inset 0 0 200px 50px rgba(0,0,0,0.6)" />
 
     <div class="max-w-4xl mx-auto relative z-10">
       <!-- Header -->
       <div class="text-center mb-12">
-        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 mb-4 shadow-lg shadow-cyan-500/30">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 mb-4 shadow-lg shadow-cyan-500/30 animate-float">
           <Icon name="lucide:info" class="h-10 w-10 text-white" />
         </div>
-        <h1 class="text-4xl font-bold mb-2">
-          <span class="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+        <h1 class="text-4xl sm:text-5xl font-bold mb-2">
+          <span class="bg-gradient-to-r from-cyan-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
             Earth Guardians
           </span>
         </h1>
@@ -22,9 +23,9 @@
       <!-- Info Cards -->
       <div class="grid gap-6 mb-12">
         <!-- About Project Grants -->
-        <div class="panel-cyber rounded-xl p-6">
+        <div class="panel-cyber rounded-xl p-6 hover:border-cyan-500/30 transition-colors">
           <div class="flex items-start gap-4">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-cyan-500/20">
               <Icon name="lucide:hand-heart" class="h-6 w-6 text-white" />
             </div>
             <div>
@@ -57,9 +58,9 @@
         </div>
 
         <!-- About Endangered Species -->
-        <div class="panel-cyber rounded-xl p-6">
+        <div class="panel-cyber rounded-xl p-6 hover:border-green-500/30 transition-colors">
           <div class="flex items-start gap-4">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-green-500/20">
               <Icon name="lucide:bird" class="h-6 w-6 text-white" />
             </div>
             <div>
@@ -93,7 +94,7 @@
       </div>
 
       <!-- Feedback Form -->
-      <div class="panel-cyber rounded-xl p-6">
+      <div class="panel-cyber rounded-xl p-6 mb-8">
         <div class="flex items-center gap-3 mb-6">
           <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
             <Icon name="lucide:message-square" class="h-5 w-5 text-white" />
@@ -103,24 +104,26 @@
 
         <form @submit.prevent="submitFeedback" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+            <label for="feedback-name" class="block text-sm font-medium text-[var(--text-secondary)] mb-2">
               Your Name (optional)
             </label>
             <input
+              id="feedback-name"
               v-model="feedback.name"
               type="text"
               placeholder="Enter your name"
-              class="w-full px-4 py-2 rounded-lg bg-black/50 border border-[var(--border-color)] text-[var(--text-primary)] placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition-colors"
+              class="w-full px-4 py-2 rounded-lg bg-black/50 border border-[var(--border-color)] text-[var(--text-primary)] placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition-colors"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+            <label for="feedback-type" class="block text-sm font-medium text-[var(--text-secondary)] mb-2">
               Feedback Type
             </label>
             <select
+              id="feedback-type"
               v-model="feedback.type"
-              class="w-full px-4 py-2 rounded-lg bg-black/50 border border-[var(--border-color)] text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 transition-colors"
+              class="w-full px-4 py-2 rounded-lg bg-black/50 border border-[var(--border-color)] text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition-colors"
             >
               <option value="bug">Bug Report</option>
               <option value="feature">Feature Request</option>
@@ -130,15 +133,16 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+            <label for="feedback-message" class="block text-sm font-medium text-[var(--text-secondary)] mb-2">
               Your Feedback
             </label>
             <textarea
+              id="feedback-message"
               v-model="feedback.message"
               rows="5"
               maxlength="2000"
               placeholder="Share your thoughts, report a bug, or suggest a feature..."
-              class="w-full px-4 py-2 rounded-lg bg-black/50 border border-[var(--border-color)] text-[var(--text-primary)] placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition-colors resize-none"
+              class="w-full px-4 py-2 rounded-lg bg-black/50 border border-[var(--border-color)] text-[var(--text-primary)] placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition-colors resize-none"
               required
             />
             <p class="mt-1 text-xs text-[var(--text-secondary)] text-right">
@@ -148,7 +152,7 @@
 
           <button
             type="submit"
-            class="w-full px-6 py-3 rounded-lg font-medium bg-gradient-to-r from-cyan-600 to-purple-600 text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+            class="w-full px-6 py-3 rounded-lg font-medium bg-gradient-to-r from-cyan-600 to-purple-600 text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(6,182,212,0.3)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
           >
             Submit Feedback
           </button>
@@ -164,7 +168,7 @@
       </div>
 
       <!-- Join CTA -->
-      <div class="mt-8 panel-cyber rounded-xl p-6 text-center">
+      <div class="panel-cyber rounded-xl p-6 text-center">
         <h3 class="text-xl font-bold text-[var(--text-primary)] mb-2">Want to Make a Difference?</h3>
         <p class="text-[var(--text-secondary)] mb-4">
           Join Earth Guardians and become part of the movement protecting our planet.
@@ -191,7 +195,9 @@ import { allProjectsData } from '@/lib/project-data'
 useHead({
   title: 'Info & Feedback | Earth Guardians',
   meta: [
-    { name: 'description', content: 'Learn about Earth Guardians data visualization and submit feedback' },
+    { name: 'description', content: 'Learn about Earth Guardians data visualization platforms and submit feedback' },
+    { property: 'og:title', content: 'Info & Feedback | Earth Guardians' },
+    { property: 'og:description', content: 'Learn about Earth Guardians data visualization platforms and submit feedback' },
   ],
 })
 
@@ -212,14 +218,11 @@ const feedback = ref({
 const feedbackSubmitted = ref(false)
 
 function submitFeedback() {
-  // Trim inputs
   feedback.value.name = feedback.value.name.trim()
   feedback.value.message = feedback.value.message.trim()
 
-  // Validate message is not empty after trim
   if (!feedback.value.message) return
 
-  // In a real app, this would send to an API
   console.log('Feedback submitted:', feedback.value)
   feedbackSubmitted.value = true
   setTimeout(() => {

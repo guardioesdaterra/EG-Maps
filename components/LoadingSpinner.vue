@@ -10,13 +10,14 @@
 import { computed } from 'vue'
 
 interface Props {
-  icon: string
+  icon?: string
   message?: string
   size?: 'sm' | 'md' | 'lg' | 'xl'
   inline?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  icon: 'svg-spinners:eclipse',
   size: 'md',
   inline: false,
 })
@@ -29,24 +30,24 @@ const sizeClasses: Record<string, string> = {
 }
 
 const wrapperClass = computed(() => {
-  const base = props.inline
+  return props.inline
     ? 'flex items-center gap-3'
     : 'flex flex-col items-center justify-center'
-  return base
 })
 
 const iconClass = computed(() => {
+  const spinningIcons = ['svg-spinners:eclipse', 'svg-spinners:wind-toy', 'svg-spinners:blocks-shuffle-2', 'svg-spinners:3-dots-move']
   return {
     'text-cyan-400': true,
     [sizeClasses[props.size]]: true,
-    'animate-[spin_1.2s_linear_infinite]': props.icon === 'svg-spinners:eclipse',
+    'animate-[spin_1.2s_linear_infinite]': spinningIcons.includes(props.icon),
   }
 })
 
 const messageClass = computed(() => {
-  if (props.size === 'sm') return 'text-xs'
-  if (props.size === 'md') return 'text-sm'
-  if (props.size === 'lg') return 'text-base'
-  return 'text-lg'
+  if (props.size === 'sm') return 'text-xs text-gray-400'
+  if (props.size === 'md') return 'text-sm text-gray-400'
+  if (props.size === 'lg') return 'text-base text-gray-300'
+  return 'text-lg text-gray-300'
 })
 </script>

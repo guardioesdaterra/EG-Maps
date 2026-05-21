@@ -138,7 +138,7 @@ import { ref, watch, nextTick, computed, onMounted, onUnmounted } from 'vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
-import type { Species } from '@/composables/useSpeciesData'
+import type { Species } from '@/lib/map-utils'
 
 interface Props {
   isGlobeView?: boolean

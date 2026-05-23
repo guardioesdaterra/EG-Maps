@@ -28,7 +28,17 @@
     "view3d": "Globo 3D",
     "projectGrants": "Subvenciones",
     "species": "Especies en peligro",
-    "footer": "Impulsando la acción ambiental liderada por jóvenes en todo el mundo"
+    "footer": "Impulsando la acción ambiental liderada por jóvenes en todo el mundo",
+    "databasesTitle": "Bases de datos de especies en peligro (Libros Rojos)",
+    "databasesDesc": "Explore las listas rojas oficiales que documentan especies amenazadas en todo el mundo. Contribuya con datos para mantener estos registros críticos actualizados.",
+    "iucnTitle": "Lista Roja de la UICN de Especies Amenazadas",
+    "iucnDesc": "El inventario más completo del mundo sobre el estado de conservación de las especies biológicas, mantenido por la Unión Internacional para la Conservación de la Naturaleza.",
+    "iucnScope": "Global",
+    "icmbioTitle": "ICMBio / IBAMA — Livro Vermelho (Libro Rojo Brasileño)",
+    "icmbioDesc": "El registro oficial brasileño de especies en peligro, mantenido por ICMBio e IBAMA. Documenta el estado de conservación de la rica biodiversidad del país.",
+    "icmbioScope": "Brasil",
+    "submitData": "Enviar Datos",
+    "submitDataSubject": "Contribución de datos para la base del Libro Rojo"
   },
   "mapControls": {
     "search": "Buscar",
@@ -169,7 +179,7 @@
     "feedbackPlaceholder": "Comparte tus ideas, reporta un error o sugiere una función...",
     "submitFeedback": "Enviar comentario",
     "feedbackSubmitted": "¡Gracias! Tu comentario fue enviado.",
-    "mains": "Mains",
+    "mains": "Principales",
     "mainsDesc": "Esta plataforma interactiva es una creación de los siguientes miembros de RCC:",
     "rccLoukaLabel": "RCC Europa",
     "rccLouka": "RCC Louka — Europa",

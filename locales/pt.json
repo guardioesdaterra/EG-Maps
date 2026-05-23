@@ -31,7 +31,7 @@
     "footer": "Fortalecendo a ação ambiental liderada por jovens no mundo todo",
     "databasesTitle": "Bases de Dados de Espécies Ameaçadas (Livros Vermelhos)",
     "databasesDesc": "Explore as listas vermelhas oficiais que documentam espécies ameaçadas em todo o mundo. Contribua com dados para manter esses registros críticos atualizados.",
-    "iucnTitle": "IUCN Red List of Threatened Species",
+    "iucnTitle": "Lista Vermelha da IUCN de Espécies Ameaçadas",
     "iucnDesc": "O inventário mais abrangente do mundo sobre o estado de conservação global de espécies biológicas, mantido pela União Internacional para a Conservação da Natureza.",
     "iucnScope": "Global",
     "icmbioTitle": "ICMBio / IBAMA — Livro Vermelho (Lista Vermelha Brasileira)",
@@ -101,7 +101,7 @@
     "close": "Fechar"
   },
   "stats": {
-    "title": "Impacto das subvenções 2024",
+    "title": "Impacto das Subvenções",
     "projectGrantees": "Projetos contemplados",
     "countries": "Países",
     "directBeneficiaries": "Beneficiários diretos",
@@ -179,7 +179,7 @@
     "feedbackPlaceholder": "Compartilhe ideias, relate um bug ou sugira uma funcionalidade...",
     "submitFeedback": "Enviar feedback",
     "feedbackSubmitted": "Obrigado! Seu feedback foi enviado.",
-    "mains": "Mains",
+    "mains": "Principais",
     "mainsDesc": "Esta plataforma interativa é uma criação dos seguintes membros RCC:",
     "rccLoukaLabel": "RCC Europa",
     "rccLouka": "RCC Louka — Europa",

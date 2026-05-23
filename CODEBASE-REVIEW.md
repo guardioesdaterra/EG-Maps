@@ -7,6 +7,34 @@
 
 ---
 
+## Changes Made (2026-05-23)
+
+### Fixed Issues
+
+1. **Color typo fixed** (`lib/colors.ts`, `lib/map-utils.ts`, `composables/useMapMarkers.ts`)
+   - Mammal color was `#B64030` in some places and `#B64032` in others
+   - Now uses shared `COLOR_MAMMAL` constant from `lib/colors.ts`
+
+2. **Hardcoded year removed** (`locales/*.json`)
+   - Stats title had "2024" hardcoded in all locale files
+   - Changed to generic "Project Grants Impact" / "Impacto de Subvenções" etc.
+
+3. **Missing translations added** (`locales/es.json`, `locales/pt.json`, `locales/fr.json`)
+   - Added missing `home.databasesTitle`, `home.databasesDesc`, `home.iucnTitle`, `home.iucnDesc`, `home.iucnScope`, `home.icmbioTitle`, `home.icmbioDesc`, `home.icmbioScope`, `home.submitData`, `home.submitDataSubject`
+
+4. **Translation typos fixed**
+   - "Mains" → "Principales" (Spanish), "Principais" (Portuguese), "Principaux" (French)
+
+5. **i18n composable simplified** (`composables/useI18n.ts`)
+   - Removed confusing try-catch pattern with onMounted
+   - Simplified locale initialization logic
+
+6. **ProjectFilterPanel improved** (`components/ProjectFilterPanel.vue`)
+   - Added close button for mobile users
+   - Added `close` emit for parent to handle
+
+---
+
 ## Table of Contents
 
 1. [Architecture & Organization](#1-architecture--organization)

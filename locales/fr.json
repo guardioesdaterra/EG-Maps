@@ -28,7 +28,17 @@
     "view3d": "Globe 3D",
     "projectGrants": "Subventions",
     "species": "Espèces menacées",
-    "footer": "Renforcer l'action environnementale menée par les jeunes dans le monde"
+    "footer": "Renforcer l'action environnementale menée par les jeunes dans le monde",
+    "databasesTitle": "Bases de données sur les espèces menacées (Livres Rouges)",
+    "databasesDesc": "Explorez les listes rouges officielles qui documentent les espèces menacées dans le monde. Contribuez avec des données pour maintenir ces registres critiques à jour.",
+    "iucnTitle": "Liste Rouge de l'UICN des Espèces Menacées",
+    "iucnDesc": "L'inventaire le plus complet au monde sur l'état de conservation mondial des espèces biologiques, maintenu par l'Union Internationale pour la Conservation de la Nature.",
+    "iucnScope": "Mondial",
+    "icmbioTitle": "ICMBio / IBAMA — Livro Vermelho (Livre Rouge Brésilien)",
+    "icmbioDesc": "Le registre officiel brésilien des espèces menacées, maintenu par ICMBio et IBAMA. Documente l'état de conservation de la riche biodiversité du pays.",
+    "icmbioScope": "Brésil",
+    "submitData": "Soumettre des données",
+    "submitDataSubject": "Contribution de données pour la base du Livre Rouge"
   },
   "mapControls": {
     "search": "Rechercher",
@@ -91,7 +101,7 @@
     "close": "Fermer"
   },
   "stats": {
-    "title": "Impact des subventions 2024",
+    "title": "Impact des Subventions",
     "projectGrantees": "Projets subventionnés",
     "countries": "Pays",
     "directBeneficiaries": "Bénéficiaires directs",
@@ -169,7 +179,7 @@
     "feedbackPlaceholder": "Partagez vos idées, signalez un bug ou suggérez une fonctionnalité...",
     "submitFeedback": "Envoyer le retour",
     "feedbackSubmitted": "Merci ! Votre retour a été envoyé.",
-    "mains": "Mains",
+    "mains": "Principaux",
     "mainsDesc": "Cette plateforme interactive est une création des membres RCC suivants :",
     "rccLoukaLabel": "RCC Europa",
     "rccLouka": "RCC Louka — Europa",

@@ -1,10 +1,10 @@
-import { getProjectColorByBeneficiaries } from './colors'
+import { getProjectColorByBeneficiaries, COLOR_MAMMAL } from './colors'
 import type { ProjectData, Species } from './types'
 
 export type { Species }
 
 export const GROUP_COLORS: Record<string, string> = {
-  Mammal: '#B64032',
+  Mammal: COLOR_MAMMAL,
   Bird: '#D97706',
   Amphibian: '#5A8F3C',
   Reptile: '#7C3AED',

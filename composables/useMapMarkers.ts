@@ -113,7 +113,7 @@ export function createProjectMarkerElement(project: ProjectData, baseURL?: strin
 }
 
 export function createSpeciesMarkerElement(species: Species, baseURL?: string): HTMLElement {
-  const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64030'
+  const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64032'
   return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
     color,
     size: species.imageUrl ? 26 : 20,

@@ -14,16 +14,27 @@
           {{ activeFilterCount }}
         </span>
       </div>
-      <UiButton
-        v-if="hasActiveFilters"
-        variant="ghost"
-        size="sm"
-        class="h-6 px-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20 rounded text-xs gap-1"
-        @click="resetFilters"
-      >
-        <iconify-icon icon="lucide:x" class="h-3 w-3" />
-        <span>{{ t('filter.reset') }}</span>
-      </UiButton>
+      <div class="flex items-center gap-1">
+        <UiButton
+          v-if="hasActiveFilters"
+          variant="ghost"
+          size="sm"
+          class="h-6 px-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20 rounded text-xs gap-1"
+          @click="resetFilters"
+        >
+          <iconify-icon icon="lucide:x" class="h-3 w-3" />
+          <span>{{ t('filter.reset') }}</span>
+        </UiButton>
+        <UiButton
+          variant="ghost"
+          size="icon"
+          class="h-6 w-6 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--search-result-hover-bg)] rounded"
+          @click="closePanel"
+          :title="t('filter.close')"
+        >
+          <iconify-icon icon="lucide:x" class="h-4 w-4" />
+        </UiButton>
+      </div>
     </div>
 
     <div :class="isMobile ? 'max-h-[calc(100svh-13rem)] overflow-y-auto pr-1' : ''">
@@ -119,10 +130,15 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'filter-change': [filteredProjects: ProjectData[]]
+  'close': []
 }>()
 
 const isMobile = useMediaQuery('(max-width: 768px)')
 const { t } = useI18n()
+
+function closePanel() {
+  emit('close')
+}
 
 // Filter state
 const filters = reactive({

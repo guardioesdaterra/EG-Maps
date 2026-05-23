@@ -194,12 +194,16 @@ test.describe('Dark mode toggle', () => {
 
     const toggleBtn = page.getByRole('button', { name: /switch|altern|mudar|light|dark|tema/i })
     await expect(toggleBtn).toBeVisible()
+
+    const isDarkInitially = await page.locator('html').evaluate(el => el.classList.contains('dark'))
     await toggleBtn.click()
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(300)
+    const isDarkAfter = await page.locator('html').evaluate(el => el.classList.contains('dark'))
+    expect(isDarkAfter).toBe(!isDarkInitially)
 
     await loadPage(page, '/info')
-    const persisted = await html.evaluate(el => el.classList.contains('dark'))
-    expect(persisted).toBe(!initialDark)
+    const isDarkPersisted = await page.locator('html').evaluate(el => el.classList.contains('dark'))
+    expect(isDarkPersisted).toBe(!isDarkInitially)
   })
 })
 

@@ -12,7 +12,7 @@
     "lint": "pnpm exec eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare && node scripts/patch-eslint-flat-config.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

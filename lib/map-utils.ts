@@ -93,8 +93,9 @@ export function buildProjectPopupHTML(project: ProjectData, translations?: Popup
 
 export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPopupTranslations, baseURL?: string): string {
   const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64032'
-  const endangermentColor = species.endangerment.toLowerCase().includes('critical') ? '#dc2626' : 
-                            species.endangerment.toLowerCase().includes('endangered') ? '#ea580c' : '#d97706'
+  const endangerment = species.endangerment ?? 'Unknown'
+  const endangermentColor = endangerment.toLowerCase().includes('critical') ? '#dc2626' : 
+                            endangerment.toLowerCase().includes('endangered') ? '#ea580c' : '#d97706'
   const t = translations || {
     scientificName: 'Scientific Name',
     threatTypes: 'Threat Types',
@@ -159,7 +160,7 @@ export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPo
         </div>
       </div>
       <div class="species-body">
-        <p class="species-description" style="word-wrap: break-word; white-space: normal;">${escapeHtml(species.description)}</p>
+        <p class="species-description" style="word-wrap: break-word; white-space: normal;">${escapeHtml(species.description ?? '')}</p>
         <div class="species-details">
           <div class="species-detail-row">
             <div class="species-detail-icon">
@@ -194,7 +195,7 @@ export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPo
             </div>
             <div class="species-detail-content">
               <span class="species-detail-label">${t.habitat}</span>
-              <span class="species-detail-value endangerment-value" style="color: ${endangermentColor};">${escapeHtml(species.endangerment)}</span>
+              <span class="species-detail-value endangerment-value" style="color: ${endangermentColor};">${escapeHtml(species.endangerment ?? 'Unknown')}</span>
             </div>
           </div>
         </div>

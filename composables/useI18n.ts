@@ -41,7 +41,7 @@ function getTranslation(locale: Locale, key: string, fallbackToKey = true): stri
   }
 
   // Return key as last resort (or undefined for debugging)
-  return fallbackToKey ? key : undefined
+  return fallbackToKey ? key : (undefined as unknown as string)
 }
 
 function detectLocale(): Locale {

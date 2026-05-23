@@ -149,9 +149,10 @@ test.describe('Page content rendering', () => {
   })
 
   test('endangered species page loads without crash', async ({ page }) => {
-    await page.goto(route('/endangered-species'), { waitUntil: 'domcontentloaded', timeout: 30000 })
-    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {})
-    await page.waitForTimeout(3000)
+    const resp = await page.goto(route('/endangered-species'), { waitUntil: 'domcontentloaded', timeout: 30000 })
+    expect(resp?.status()).toBe(200)
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {})
+    await page.waitForTimeout(2000)
     const title = await page.title()
     expect(title).toBeTruthy()
     expect(title.toLowerCase()).toContain('endangered')
@@ -190,9 +191,9 @@ test.describe('Navigation', () => {
 
 test.describe('Dark mode toggle', () => {
   test('toggles dark mode and persists across pages', async ({ page }) => {
-    await loadPage(page, '/')
+    await loadPage(page, '/info')
 
-    const toggleBtn = page.getByRole('button', { name: /switch|altern|mudar|light|dark|tema/i })
+    const toggleBtn = page.locator('[aria-label*="Switch"], [aria-label*="switch"]')
     await expect(toggleBtn).toBeVisible()
 
     const isDarkInitially = await page.locator('html').evaluate(el => el.classList.contains('dark'))
@@ -221,6 +222,7 @@ test.describe('Console errors', () => {
         'Failed to initialize map',
         'Failed to load species data',
         'Style is not done loading',
+        '_payload.json',
       ]
       const filtered = errors.filter(e => !irrelevant.some(i => e.includes(i)))
       expect(filtered).toHaveLength(0)

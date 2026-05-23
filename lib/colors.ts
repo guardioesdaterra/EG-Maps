@@ -5,7 +5,7 @@ const COLOR_GREEN = "#22c55e";
 const COLOR_YELLOW = "#eab308";
 const COLOR_RED = "#ef4444";
 const COLOR_DEFAULT = "#a855f7";
-const COLOR_MAMMAL = "#B64032";
+export const COLOR_MAMMAL = "#B64032";
 
 export const getProjectColorByBeneficiaries = (
   directBeneficiaries: number,

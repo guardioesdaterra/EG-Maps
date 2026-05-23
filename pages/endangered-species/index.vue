@@ -25,6 +25,7 @@
 
 <script setup lang="ts">
 const { t } = useI18n()
+const baseURL = useRuntimeConfig().app.baseURL
 
 useHead({
   title: 'Endangered Species Map (2D) | Earth Guardians',
@@ -32,7 +33,7 @@ useHead({
     { name: 'description', content: 'Interactive 2D map of critically endangered species around the world' },
   ],
   link: [
-    { rel: 'preload', as: 'fetch', href: '/data/species/icmbio-brazil.json', crossorigin: 'anonymous' },
+    { rel: 'preload', as: 'fetch', href: `${baseURL}data/species/icmbio-brazil.json`, crossorigin: 'anonymous' },
   ],
 })
 

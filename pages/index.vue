@@ -122,7 +122,7 @@ const taxonomicGroupCount = ref(0)
 
 onMounted(async () => {
   try {
-    const res = await fetch('/data/species/index.json')
+    const res = await fetch(`${baseURL}data/species/index.json`)
     if (res.ok) {
       const index = await res.json()
       const datasets = index.datasets ?? []

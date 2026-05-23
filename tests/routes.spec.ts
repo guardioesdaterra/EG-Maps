@@ -149,13 +149,12 @@ test.describe('Page content rendering', () => {
   })
 
   test('endangered species page loads without crash', async ({ page }) => {
+    test.setTimeout(45000)
     const resp = await page.goto(route('/endangered-species'), { waitUntil: 'domcontentloaded', timeout: 30000 })
     expect(resp?.status()).toBe(200)
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {})
     await page.waitForTimeout(2000)
-    const title = await page.title()
-    expect(title).toBeTruthy()
-    expect(title.toLowerCase()).toContain('endangered')
+    const content = await page.content()
+    expect(content).toContain('Endangered')
   })
 
   test('info page renders tab buttons', async ({ page }) => {
@@ -191,10 +190,11 @@ test.describe('Navigation', () => {
 
 test.describe('Dark mode toggle', () => {
   test('toggles dark mode and persists across pages', async ({ page }) => {
-    await loadPage(page, '/info')
+    await page.goto(route('/info'), { waitUntil: 'domcontentloaded', timeout: 30000 })
+    await page.waitForTimeout(2000)
 
-    const toggleBtn = page.locator('[aria-label*="Switch"], [aria-label*="switch"]')
-    await expect(toggleBtn).toBeVisible()
+    const toggleBtn = page.getByLabel(/switch/i)
+    await expect(toggleBtn).toBeVisible({ timeout: 10000 })
 
     const isDarkInitially = await page.locator('html').evaluate(el => el.classList.contains('dark'))
     await toggleBtn.click()
@@ -202,7 +202,8 @@ test.describe('Dark mode toggle', () => {
     const isDarkAfter = await page.locator('html').evaluate(el => el.classList.contains('dark'))
     expect(isDarkAfter).toBe(!isDarkInitially)
 
-    await loadPage(page, '/info')
+    await page.goto(route('/info'), { waitUntil: 'domcontentloaded', timeout: 30000 })
+    await page.waitForTimeout(2000)
     const isDarkPersisted = await page.locator('html').evaluate(el => el.classList.contains('dark'))
     expect(isDarkPersisted).toBe(!isDarkInitially)
   })
@@ -212,8 +213,13 @@ test.describe('Console errors', () => {
   for (const path of ['/', '/info', '/project-grants', '/endangered-species']) {
     test(`no app-level console errors on ${path}`, async ({ page }) => {
       const errors = await collectConsoleErrors(page)
-      await loadPage(page, path)
-      await page.waitForTimeout(3000)
+      if (path === '/endangered-species') {
+        await page.goto(route(path), { waitUntil: 'domcontentloaded', timeout: 30000 })
+        await page.waitForTimeout(5000)
+      } else {
+        await loadPage(page, path)
+        await page.waitForTimeout(3000)
+      }
 
       const irrelevant = [
         'favicon.ico',

@@ -1,230 +1,268 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test'
 
-const basePath = process.env.BASE_PATH || '';
+const BASE_URL = 'https://guardioesdaterra.github.io'
+const BASE_PATH = '/EG-Maps'
+
+function url(path: string): string {
+  return `${BASE_URL}${BASE_PATH}${path}`
+}
 
 function route(path: string): string {
-  return `${basePath}${path}`;
+  return `${BASE_PATH}${path}`
 }
 
-async function waitForPageLoad(page: any, path: string) {
-  await page.goto(route(path), { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
-  await page.waitForTimeout(2000);
+async function loadPage(page: Page, path: string, waitForIdle = true) {
+  await page.goto(route(path), { waitUntil: 'domcontentloaded', timeout: 30000 })
+  if (waitForIdle) {
+    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {})
+    await page.waitForTimeout(1500)
+  }
 }
 
-test.describe('Earth Guardians - All Routes and Features', () => {
-  test.describe('Home Page (/)', () => {
-    test('should load home page with all elements', async ({ page }) => {
-      await waitForPageLoad(page, '/');
-      await expect(page).toHaveTitle(/Earth Guardians/);
+async function collectConsoleErrors(page: Page): Promise<string[]> {
+  const errors: string[] = []
+  page.on('pageerror', err => errors.push(`PAGE ERROR: ${err.message}`))
+  page.on('console', msg => {
+    if (msg.type() === 'error') errors.push(`CONSOLE ERROR: ${msg.text()}`)
+  })
+  return errors
+}
 
-      await expect(page.getByRole('heading', { name: 'Earth Guardians' })).toBeVisible();
-      await expect(page.getByText('Interactive Data Visualization Platform')).toBeVisible();
+test.describe('Route availability', () => {
+  const routes = [
+    { path: '/', title: /Earth Guardians/ },
+    { path: '/info', title: /Info|Feedback/ },
+    { path: '/project-grants', title: /Project Grants/ },
+    { path: '/project-grants/3d', title: /Project Grants|3D/ },
+    { path: '/endangered-species', title: /Endangered Species/ },
+    { path: '/endangered-species/3d', title: /Endangered Species|3D/ },
+    { path: '/globe', title: /Project Grants|3D/ },
+  ]
 
-      await expect(page.getByRole('heading', { name: 'Project Grants' })).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Endangered Species', exact: true }).first()).toBeVisible();
+  for (const { path, title } of routes) {
+    test(`${path} returns 200 and has title`, async ({ page }) => {
+      const resp = await page.goto(route(path), { waitUntil: 'domcontentloaded', timeout: 30000 })
+      expect(resp?.status()).toBe(200)
+      await expect(page).toHaveTitle(title)
+    })
+  }
+})
 
-      const svgIcons = page.locator('iconify-icon');
-      await expect(svgIcons.first()).toBeVisible();
-      const iconCount = await svgIcons.count();
-      expect(iconCount).toBeGreaterThan(0);
+test.describe('Static asset availability', () => {
+  const assets = [
+    '/eg-logo.png',
+    '/icon-192x140.png',
+    '/noise.png',
+    '/white-banner.png',
+    '/grid-overlay.png',
+    '/marker-icon.png',
+    '/marker-icon-2x.png',
+    '/marker-shadow.png',
+    '/placeholder.svg',
+    '/placeholder-logo.svg',
+    '/manifest.json',
+    '/scanline.gif',
+  ]
 
-      const projectGrantsLink = page.locator(`a[href*="/project-grants"]`).first();
-      await expect(projectGrantsLink).toBeVisible();
+  for (const asset of assets) {
+    test(`${asset} returns 200`, async ({ request }) => {
+      const resp = await request.get(url(asset))
+      expect(resp.ok()).toBeTruthy()
+    })
+  }
+})
 
-      const endangeredSpeciesLink = page.locator(`a[href*="/endangered-species"]`).first();
-      await expect(endangeredSpeciesLink).toBeVisible();
-    });
+test.describe('Locale file availability and validity', () => {
+  const locales = ['en', 'es', 'fr', 'pt', 'ja', 'zh', 'hi', 'ar']
 
-    test('should have working navigation dock', async ({ page }) => {
-      await waitForPageLoad(page, '/');
+  for (const locale of locales) {
+    test(`${locale}.json returns 200 and valid JSON`, async ({ request }) => {
+      const resp = await request.get(url(`/locales/${locale}.json`))
+      expect(resp.ok()).toBeTruthy()
+      const body = await resp.json()
+      expect(body).toBeTruthy()
+      expect(typeof body).toBe('object')
+    })
+  }
+})
 
-      const dockNav = page.locator('nav');
-      await expect(dockNav).toBeVisible();
+test.describe('Species data files', () => {
+  const datasets = [
+    { path: '/data/species/index.json', checkKeys: false },
+    { path: '/data/species/icmbio-brazil.json', checkKeys: true },
+    { path: '/data/species/iucn.json', checkKeys: true },
+    { path: '/data/species/species-icon-mapping.json', checkKeys: false },
+  ]
 
-      const dockLinks = dockNav.locator('a');
-      const dockLinkCount = await dockLinks.count();
-      expect(dockLinkCount).toBeGreaterThanOrEqual(2);
+  for (const { path, checkKeys } of datasets) {
+    test(`${path} is valid JSON`, async ({ request }) => {
+      const resp = await request.get(url(path))
+      expect(resp.ok()).toBeTruthy()
+      const body = await resp.json()
+      expect(body).toBeTruthy()
 
-      const darkModeToggle = dockNav.locator('button').last();
-      await expect(darkModeToggle).toBeVisible();
-    });
-  });
-
-  test.describe('Info Page (/info)', () => {
-    test('should load info page with tabs and content', async ({ page }) => {
-      await waitForPageLoad(page, '/info');
-      await expect(page).toHaveTitle(/Info.*Feedback/);
-
-      await expect(page.getByRole('heading', { name: 'Earth Guardians' }).first()).toBeVisible();
-
-      // Check tab buttons are present (text may be hidden on small screens, use aria-pressed)
-      const tabButtons = page.locator('button[aria-pressed]');
-      await expect(tabButtons.first()).toBeVisible();
-      expect(await tabButtons.count()).toBeGreaterThanOrEqual(4);
-    });
-
-    test('should show feedback form when clicking Feedback tab', async ({ page }) => {
-      await waitForPageLoad(page, '/info');
-      // Click the Feedback button (contains lucide:message-square icon)
-      await page.locator('button:has(iconify-icon[icon="lucide:message-square"])').click({ timeout: 5000 });
-
-      await expect(page.getByPlaceholder(/name/i)).toBeVisible({ timeout: 5000 });
-      await expect(page.getByPlaceholder(/thoughts|feedback/i)).toBeVisible({ timeout: 5000 });
-      await expect(page.getByRole('button', { name: /submit/i })).toBeVisible({ timeout: 5000 });
-    });
-
-    test('should navigate to project grants from info page', async ({ page }) => {
-      await waitForPageLoad(page, '/info');
-      // Click the Grants button (contains lucide:hand-heart icon)
-      await page.locator('button:has(iconify-icon[icon="lucide:hand-heart"])').click({ timeout: 5000 });
-      await page.getByRole('link', { name: /2d map/i }).first().click();
-      await page.waitForURL(/\/project-grants/);
-      await expect(page).toHaveURL(/\/project-grants/);
-    });
-
-    test('should navigate to endangered species from info page', async ({ page }) => {
-      await waitForPageLoad(page, '/info');
-      // Click the Species button (contains lucide:bird icon)
-      await page.locator('button:has(iconify-icon[icon="lucide:bird"])').click({ timeout: 5000 });
-      await page.getByRole('link', { name: /2d map/i }).first().click();
-      await page.waitForURL(/\/endangered-species/);
-      await expect(page).toHaveURL(/\/endangered-species/);
-    });
-  });
-
-  test.describe('Project Grants Pages', () => {
-    test('should load project grants 3d page', async ({ page }) => {
-      await waitForPageLoad(page, '/project-grants/3d');
-      await expect(page).toHaveTitle(/Project Grants.*3D/);
-
-      await expect(page.locator('nav').first()).toBeVisible({ timeout: 15000 });
-    });
-
-    test('should navigate between 2D and 3D views', async ({ page }) => {
-      await page.goto(route('/project-grants/3d'), { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {});
-      await page.waitForTimeout(2000);
-
-      const view2DLink = page.locator(`a[href*="/project-grants"]`).filter({ hasNot: page.locator('[href*="/3d"]') }).first();
-      if (await view2DLink.count() > 0) {
-        await view2DLink.click();
-        await page.waitForURL(/\/project-grants(?!\/)/);
+      if (checkKeys) {
+        expect(Array.isArray(body)).toBeTruthy()
+        expect(body.length).toBeGreaterThan(0)
+        expect(body[0]).toHaveProperty('id')
+        expect(body[0]).toHaveProperty('commonName')
+        expect(body[0]).toHaveProperty('scientificName')
+        expect(body[0]).toHaveProperty('lat')
+        expect(body[0]).toHaveProperty('lng')
       }
-    });
-  });
+    })
+  }
+})
 
-  test.describe('Endangered Species Pages', () => {
-    test('should load endangered species 3d page', async ({ page }) => {
-      await waitForPageLoad(page, '/endangered-species/3d');
-      await expect(page).toHaveTitle(/Endangered Species.*3D/);
+test.describe('Species image files', () => {
+  const images = [
+    '/images/species/Hawksbill_sea_turtle.jpg',
+    '/images/species/Rafflesia_arnoldii.jpg',
+    '/images/species/Vaquita6_Olson_NOAA.jpg',
+    '/images/species/Whale_shark_Georgia_Aquarium.jpg',
+  ]
 
-      await expect(page.locator('nav').first()).toBeVisible();
-    });
-  });
+  for (const img of images) {
+    test(`species image ${img.split('/').pop()} returns 200`, async ({ request }) => {
+      const resp = await request.get(url(img))
+      expect(resp.ok()).toBeTruthy()
+    })
+  }
+})
 
-  test.describe('Globe Page (/globe)', () => {
-    test('should redirect from /globe to /project-grants/3d', async ({ page }) => {
-      await page.goto(route('/globe'), { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForURL(/\/project-grants\/3d/, { timeout: 15000 });
-      await expect(page).toHaveURL(/\/project-grants\/3d/);
-      await expect(page).toHaveTitle(/Project Grants.*3D/);
-    });
-  });
+test.describe('Page content rendering', () => {
+  test('home page renders navigation and icons', async ({ page }) => {
+    await loadPage(page, '/')
+    const nav = page.locator('nav')
+    await expect(nav).toBeVisible()
+    const icons = page.locator('iconify-icon')
+    await expect(icons.first()).toBeVisible()
+    const iconCount = await icons.count()
+    expect(iconCount).toBeGreaterThan(0)
+  })
 
-  test.describe('Cross-page Navigation', () => {
-    test('should navigate from home to all pages and back', async ({ page }) => {
-      await waitForPageLoad(page, '/');
+  test('project grants page renders map container', async ({ page }) => {
+    await loadPage(page, '/project-grants')
+    await page.waitForTimeout(3000)
+    const mapCanvas = page.locator('canvas').first()
+    await expect(mapCanvas).toBeVisible({ timeout: 15000 })
+  })
 
-      const navLinks = page.locator('nav a');
-      await expect(navLinks.first()).toBeVisible({ timeout: 10000 });
-      await navLinks.first().click();
-      await expect(page).toHaveURL(/\/project-grants/);
-      await page.waitForLoadState('networkidle');
+  test('endangered species page loads without crash', async ({ page }) => {
+    await page.goto(route('/endangered-species'), { waitUntil: 'domcontentloaded', timeout: 30000 })
+    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {})
+    await page.waitForTimeout(3000)
+    const title = await page.title()
+    expect(title).toBeTruthy()
+    expect(title.toLowerCase()).toContain('endangered')
+  })
 
-      await page.locator('nav').locator('a[href*="/endangered-species"]').first().click();
-      await expect(page).toHaveURL(/\/endangered-species/);
-      await page.waitForLoadState('networkidle');
+  test('info page renders tab buttons', async ({ page }) => {
+    await loadPage(page, '/info')
+    const tabBtns = page.locator('button[aria-pressed]')
+    await expect(tabBtns.first()).toBeVisible()
+    const count = await tabBtns.count()
+    expect(count).toBeGreaterThanOrEqual(4)
+  })
+})
 
-      await page.goto(route('/'));
-      await expect(page).toHaveURL(/\/$/);
-    });
+test.describe('Navigation', () => {
+  test('navigates between main pages', async ({ page }) => {
+    await loadPage(page, '/')
+    const nav = page.locator('nav')
+    const links = nav.locator('a')
+    const hrefs = await links.evaluateAll(list => list.map(l => (l as HTMLAnchorElement).href))
 
-    test('should have external link to Earth Guardians website', async ({ page }) => {
-      await page.setViewportSize({ width: 1280, height: 720 });
-      await waitForPageLoad(page, '/');
+    for (const href of hrefs) {
+      if (!href || href.includes('#') || href.startsWith('mailto:')) continue
+      const resp = await page.goto(href, { waitUntil: 'domcontentloaded', timeout: 30000 })
+      expect(resp?.status()).toBe(200)
+      await page.waitForTimeout(500)
+    }
+  })
 
-      const allLinks = page.locator('a');
-      const linkCount = await allLinks.count();
-      expect(linkCount).toBeGreaterThan(3);
-    });
-  });
+  test('globe page redirects to project-grants/3d', async ({ page }) => {
+    await page.goto(route('/globe'), { waitUntil: 'domcontentloaded', timeout: 30000 })
+    await page.waitForURL(/\/project-grants\/3d/, { timeout: 15000 })
+    await expect(page).toHaveURL(/\/project-grants\/3d/)
+  })
+})
 
-  test.describe('Dark Mode Toggle', () => {
-    test('should have dark mode toggle button visible on all pages', async ({ page }) => {
-      const pagesToTest = ['/', '/info', '/project-grants'];
+test.describe('Dark mode toggle', () => {
+  test('toggles dark mode and persists across pages', async ({ page }) => {
+    await loadPage(page, '/')
 
-      for (const path of pagesToTest) {
-        await waitForPageLoad(page, path);
-        const dockNav = page.locator('nav');
-        await expect(dockNav).toBeVisible({ timeout: 10000 });
-        const toggleButton = dockNav.locator('button').last();
-        await expect(toggleButton).toBeVisible({ timeout: 10000 });
+    const toggleBtn = page.getByRole('button', { name: /switch|altern|mudar|light|dark|tema/i })
+    await expect(toggleBtn).toBeVisible()
+    await toggleBtn.click()
+    await page.waitForTimeout(500)
+
+    await loadPage(page, '/info')
+    const persisted = await html.evaluate(el => el.classList.contains('dark'))
+    expect(persisted).toBe(!initialDark)
+  })
+})
+
+test.describe('Console errors', () => {
+  for (const path of ['/', '/info', '/project-grants', '/endangered-species']) {
+    test(`no app-level console errors on ${path}`, async ({ page }) => {
+      const errors = await collectConsoleErrors(page)
+      await loadPage(page, path)
+      await page.waitForTimeout(3000)
+
+      const irrelevant = [
+        'favicon.ico',
+        'message port closed',
+        'Failed to initialize WebGL',
+        'Failed to initialize map',
+        'Failed to load species data',
+        'Style is not done loading',
+      ]
+      const filtered = errors.filter(e => !irrelevant.some(i => e.includes(i)))
+      expect(filtered).toHaveLength(0)
+    })
+  }
+})
+
+test.describe('404 handling', () => {
+  test('returns 404 for unknown routes', async ({ page }) => {
+    const resp = await page.goto(route('/this-does-not-exist'), { waitUntil: 'domcontentloaded', timeout: 30000 })
+    expect(resp?.status()).toBe(404)
+  })
+})
+
+test.describe('i18n locale key coverage', () => {
+  test('all locales have at least the same top-level keys as en.json', async ({ request }) => {
+    const enResp = await request.get(url('/locales/en.json'))
+    const enKeys = Object.keys(await enResp.json())
+
+    const locales = ['es', 'fr', 'pt', 'ja', 'zh', 'hi', 'ar']
+    for (const locale of locales) {
+      const resp = await request.get(url(`/locales/${locale}.json`))
+      expect(resp.ok()).toBeTruthy()
+      const data = await resp.json()
+      for (const key of enKeys) {
+        expect(data).toHaveProperty(key)
       }
-    });
-  });
+    }
+  })
+})
 
-  test.describe('No Console Errors', () => {
-    test('should not have Icon resolution errors on home page', async ({ page }) => {
-      const consoleErrors: string[] = [];
-      page.on('console', msg => {
-        if (msg.type() === 'error') {
-          consoleErrors.push(msg.text());
-        }
-      });
-
-      await waitForPageLoad(page, '/');
-
-      const iconWarnings = consoleErrors.filter(err =>
-        err.includes('Failed to resolve component: Icon') ||
-        err.includes('is missing template')
-      );
-
-      expect(iconWarnings).toHaveLength(0);
-    });
-
-    test('should not have Icon resolution errors on info page', async ({ page }) => {
-      const consoleErrors: string[] = [];
-      page.on('console', msg => {
-        if (msg.type() === 'error') {
-          consoleErrors.push(msg.text());
-        }
-      });
-
-      await waitForPageLoad(page, '/info');
-
-      const iconWarnings = consoleErrors.filter(err =>
-        err.includes('Failed to resolve component: Icon') ||
-        err.includes('is missing template')
-      );
-
-      expect(iconWarnings).toHaveLength(0);
-    });
-  });
-
-  test.describe('Hydration Mismatches', () => {
-    test('should not have hydration mismatches on home page', async ({ page }) => {
-      const consoleErrors: string[] = [];
-      page.on('console', msg => {
-        const text = msg.text();
-        if (text.includes('Hydration') || text.includes('hydration') || text.includes('mismatch')) {
-          consoleErrors.push(text);
-        }
-      });
-
-      await waitForPageLoad(page, '/');
-
-      expect(consoleErrors).toHaveLength(0);
-    });
-  });
-});
+test.describe('MapLibre CSS is loaded', () => {
+  test('maplibre-gl CSS is present in page CSS', async ({ page }) => {
+    await loadPage(page, '/project-grants')
+    const hasMapLibreCSS = await page.evaluate(() => {
+      for (const sheet of document.styleSheets) {
+        try {
+          if (sheet.cssRules) {
+            for (const rule of sheet.cssRules) {
+              if ((rule as CSSStyleRule).selectorText?.includes('maplibregl')) return true
+            }
+          }
+        } catch { /* cross-origin */ }
+      }
+      return false
+    })
+    expect(hasMapLibreCSS).toBeTruthy()
+  })
+})

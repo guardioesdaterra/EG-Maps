@@ -100,6 +100,7 @@ export function useSpeciesData(dataset?: DatasetParam) {
       data.value = results
     } catch (e) {
       error.value = e as Error
+      // eslint-disable-next-line no-console
       console.error('Failed to load species data:', e)
     } finally {
       loading.value = false
@@ -111,8 +112,6 @@ export function useSpeciesData(dataset?: DatasetParam) {
       preloadJSON(baseURL, ds)
     }
     load()
-  } else {
-    loading.value = false
   }
 
   return { data, loading, error, reload: load }

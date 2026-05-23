@@ -1,27 +1,23 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const baseURL = process.env.NUXT_APP_BASE_URL || '/'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   devtools: { enabled: true },
 
-  modules: ['@nuxtjs/tailwindcss'],
+  modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint'],
 
   plugins: ['~/plugins/iconify-icon.client.ts'],
 
-  // SSG configuration - static site generation
+  // SSG with prerendered HTML for all routes - enables proper GitHub Pages indexing and refresh
   ssr: true,
   routeRules: {
-    '/': { prerender: true },
-    '/info': { prerender: true },
-    '/project-grants': { prerender: true },
-    '/project-grants/3d': { prerender: true },
-    '/endangered-species': { prerender: true },
-    '/endangered-species/3d': { prerender: true },
-    '/globe': { prerender: true },
+    '/**': { prerender: true },
   },
 
   // App configuration
   app: {
-    baseURL: process.env.NUXT_APP_BASE_URL || '/',
+    baseURL,
     head: {
       title: 'Earth Guardians - Interactive Data Visualization',
       meta: [
@@ -32,9 +28,24 @@ export default defineNuxtConfig({
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Earth Guardians' },
       ],
+      // Inline script to prevent flash of wrong theme - runs before page renders
+      script: [
+        {
+          innerHTML: `(function() {
+            try {
+              var saved = localStorage.getItem('darkMode');
+              if (saved === 'true' || saved === null) {
+                document.documentElement.classList.add('dark');
+              }
+            } catch (e) {}
+          })();`,
+          type: 'text/javascript',
+          tagPosition: 'head',
+        },
+      ],
       link: [
-        { rel: 'icon', type: 'image/png', href: '/eg-logo.png' },
-        { rel: 'manifest', href: '/manifest.json' },
+        { rel: 'icon', type: 'image/png', href: `${baseURL}eg-logo.png` },
+        { rel: 'manifest', href: `${baseURL}manifest.json` },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
       ],
@@ -44,7 +55,7 @@ export default defineNuxtConfig({
   // Runtime config for API keys
   runtimeConfig: {
     public: {
-      maptilerApiKey: process.env.NUXT_PUBLIC_MAPTILER_API_KEY || '',
+      maptilerApiKey: process.env.NUXT_PUBLIC_MAPTILER_API_KEY || process.env.MAPTILER_API_KEY || '',
     },
   },
 
@@ -54,7 +65,8 @@ export default defineNuxtConfig({
   // Build settings
   typescript: {
     strict: true,
-    typeCheck: false,
+    typeCheck: true,
+    shim: false,
   },
 
   // Nitro (static output)
@@ -62,15 +74,37 @@ export default defineNuxtConfig({
     preset: 'static',
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d'],
+      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d'],
+      ignore: ['/EG-Maps/manifest.json'],
     },
     compressPublicAssets: true,
   },
 
-  // Vite config for MapLibre
+  // WSL fix: disable vite-node IPC, enforce ws HMR
+  experimental: {
+    viteEnvironmentApi: true,
+    appManifest: false,
+  },
+
+  // Vite config for MapLibre + WSL HMR
   vite: {
     optimizeDeps: {
       include: ['maplibre-gl'],
+    },
+    server: {
+      hmr: {
+        protocol: 'ws',
+        host: 'localhost',
+      },
+      watch: {
+        ignored: ['**/node_modules/**', '**/.git/**', '**/*[*]*/**'],
+      },
+    },
+  },
+
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag === 'iconify-icon',
     },
   },
 });

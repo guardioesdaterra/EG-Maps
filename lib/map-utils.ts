@@ -1,33 +1,10 @@
-import { getProjectColorByBeneficiaries } from './colors'
-import type { ProjectData } from './types'
+import { getProjectColorByBeneficiaries, COLOR_MAMMAL } from './colors'
+import type { ProjectData, Species } from './types'
 
-export interface Species {
-  id: string
-  commonName: string
-  scientificName: string
-  category: string
-  taxonomicGroup: string
-  region: string
-  ecosystem: string
-  lat: number
-  lng: number
-  imageUrl: string
-  imageCredit: string
-  description: string
-  endangerment: string
-  ecosystemNeeds: string
-  actions: string
-  threatTypes: string[]
-  iucnUrl: string
-  range: {
-    type: string
-    coordinates: number[][][]
-  }
-  content: Record<string, Record<string, string>>
-}
+export type { Species }
 
 export const GROUP_COLORS: Record<string, string> = {
-  Mammal: '#B64032',
+  Mammal: COLOR_MAMMAL,
   Bird: '#D97706',
   Amphibian: '#5A8F3C',
   Reptile: '#7C3AED',
@@ -36,57 +13,194 @@ export const GROUP_COLORS: Record<string, string> = {
   Invertebrate: '#DB2777'
 }
 
-export function buildProjectPopupHTML(project: ProjectData): string {
+export interface PopupTranslations {
+  projectGrantee: string
+  directBeneficiaries: string
+  indirectBeneficiaries: string
+  location: string
+  status: string
+  unknownLocation: string
+}
+
+export interface SpeciesPopupTranslations {
+  scientificName: string
+  threatTypes: string
+  population: string
+  habitat: string
+  region: string
+  ecosystem: string
+  groupLabels?: Record<string, string>
+}
+
+export function buildProjectPopupHTML(project: ProjectData, translations?: PopupTranslations): string {
   const color = getProjectColorByBeneficiaries(project.direct_beneficiaries, project.indirect_beneficiaries)
+  const t = translations || {
+    projectGrantee: 'Project Grantee',
+    directBeneficiaries: 'Direct Beneficiaries',
+    indirectBeneficiaries: 'Indirect Beneficiaries',
+    location: 'Location',
+    status: 'Status',
+    unknownLocation: 'Unknown location'
+  }
   return `
-    <div class="cyber-popup-content" data-type="project">
-      <div style="border-bottom: 1px solid rgba(6,182,212,0.3); padding-bottom: 8px; margin-bottom: 12px;">
-        <h3 style="font-weight: bold; font-size: 1.125rem; background: linear-gradient(to right, #22d3ee, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;">
-          ${escapeHtml(project.project_title)}
-        </h3>
-        <span style="display: inline-block; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; color: white; background-color: ${color}; padding: 2px 8px; border-radius: 9999px;">
-          PROJECT GRANTEE
-        </span>
+    <div class="project-popup-wrapper" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere; overflow: hidden;">
+      <div class="project-popup-header">
+        <div class="project-corner-accent top-left"></div>
+        <div class="project-corner-accent top-right"></div>
+        <div class="project-header-content">
+          <div class="project-status-bar">
+            <span class="project-badge">${t.projectGrantee}</span>
+            <span class="project-indicator" style="background: ${color}"></span>
+          </div>
+          <h3 class="project-title" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere;">${escapeHtml(project.project_title)}</h3>
+        </div>
+        <div class="project-header-line"></div>
       </div>
-      <div style="margin-top: 12px; font-size: 0.875rem; color: #d1d5db;">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-          <span>&#x1F4CD;</span><span>${escapeHtml(project.country_province || 'Unknown location')}</span>
+      <div class="project-popup-body">
+        <div class="project-stat-row">
+          <div class="project-stat-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="project-stat-content">
+            <span class="project-stat-label">${t.location}</span>
+            <span class="project-stat-value" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere;">${escapeHtml(project.country_province || t.unknownLocation)}</span>
+          </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-          <span>&#x1F465;</span><span>Direct Beneficiaries: ${project.direct_beneficiaries.toLocaleString()}</span>
+        <div class="project-divider"></div>
+        <div class="project-metrics">
+          <div class="project-metric">
+            <div class="project-metric-header">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>${t.directBeneficiaries}</span>
+            </div>
+            <span class="project-metric-value direct">${project.direct_beneficiaries.toLocaleString()}</span>
+          </div>
+          <div class="project-metric">
+            <div class="project-metric-header">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span>${t.indirectBeneficiaries}</span>
+            </div>
+            <span class="project-metric-value indirect">${project.indirect_beneficiaries.toLocaleString()}</span>
+          </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span>&#x1F465;</span><span>Indirect Beneficiaries: ${project.indirect_beneficiaries.toLocaleString()}</span>
-        </div>
+      </div>
+      <div class="project-popup-footer">
+        <div class="project-footer-glow" style="background: ${color}"></div>
       </div>
     </div>
   `
 }
 
-export function buildSpeciesPopupHTML(species: Species): string {
+export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPopupTranslations, baseURL?: string): string {
   const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64032'
-  return `
-    <div class="cyber-popup-content cyber-popup-species" data-type="species">
-      <div style="border-bottom: 1px solid rgba(6,182,212,0.3); padding-bottom: 8px; margin-bottom: 12px;">
-        <h3 style="font-weight: bold; font-size: 1.125rem; background: linear-gradient(to right, #22d3ee, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px;">
-          ${escapeHtml(species.commonName)}
-        </h3>
-        <p style="font-style: italic; font-size: 0.875rem; color: #a3a3a3; margin-bottom: 4px;">${escapeHtml(species.scientificName)}</p>
-        <span style="display: inline-block; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; color: white; background-color: ${color}; padding: 2px 8px; border-radius: 9999px;">
-          ${escapeHtml(species.category)}
-        </span>
-        <span style="display: inline-block; margin-left: 6px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; color: ${color}; padding: 2px 8px; border-radius: 9999px; border: 1px solid ${color};">
-          ${escapeHtml(species.taxonomicGroup)}
-        </span>
+  const endangermentColor = species.endangerment.toLowerCase().includes('critical') ? '#dc2626' : 
+                            species.endangerment.toLowerCase().includes('endangered') ? '#ea580c' : '#d97706'
+  const t = translations || {
+    scientificName: 'Scientific Name',
+    threatTypes: 'Threat Types',
+    population: 'Population',
+    habitat: 'Habitat',
+    region: 'Region',
+    ecosystem: 'Ecosystem'
+  }
+  const groupLabel = t.groupLabels?.[species.taxonomicGroup] ?? species.taxonomicGroup
+  
+  let imageHTML = ''
+  if (species.imageUrl) {
+    let thumbUrl = species.imageUrl
+    const isLocal = !species.imageUrl.startsWith('http://') && !species.imageUrl.startsWith('https://')
+    if (isLocal) {
+      const filename = species.imageUrl.replace(/^\//, '')
+      const basename = filename.split('/').pop() || filename
+      const name = basename.replace(/\.[^.]+$/, '')
+      const prefix = baseURL && baseURL !== '/' ? baseURL : '/'
+      thumbUrl = `${prefix}images/species/thumb/${name}_full.webp`
+    } else if (species.imageUrl.includes('commons.wikimedia.org/wiki/Special:FilePath/')) {
+      const filename = species.imageUrl.split('/Special:FilePath/')[1]
+      if (filename) {
+        thumbUrl = `https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(filename)}?width=560`
+      }
+    } else if (species.imageUrl.includes('upload.wikimedia.org')) {
+      const separator = species.imageUrl.includes('?') ? '&' : '?'
+      thumbUrl = `${species.imageUrl}${separator}width=560`
+    }
+    
+    imageHTML = `
+      <div class="species-image-frame" style="border-color: ${color}55;">
+        <img src="${escapeHtml(thumbUrl)}" alt="${escapeHtml(species.commonName)}" class="species-image" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentElement.style.display='none'" />
       </div>
-      <div style="margin-top: 12px; font-size: 0.875rem; color: #d1d5db;">
-        <p style="margin-bottom: 8px; line-height: 1.5; max-height: 120px; overflow-y: auto;">${escapeHtml(species.description)}</p>
-        <p style="margin-bottom: 8px;"><strong style="color: #22d3ee;">Region:</strong> ${escapeHtml(species.region)}</p>
-        <p style="margin-bottom: 8px;"><strong style="color: #22d3ee;">Ecosystem:</strong> ${escapeHtml(species.ecosystem)}</p>
-        <p style="margin-bottom: 8px;"><strong style="color: #22d3ee;">Threats:</strong> ${species.threatTypes.map(escapeHtml).join(', ')}</p>
-        <p style="margin-bottom: 8px;"><strong style="color: #ef4444;">Why endangered:</strong> ${escapeHtml(species.endangerment)}</p>
-        <p style="margin-bottom: 8px;"><strong style="color: #10b981;">Ecosystem needs:</strong> ${escapeHtml(species.ecosystemNeeds)}</p>
-        <p><strong style="color: #f59e0b;">How to help:</strong> ${escapeHtml(species.actions)}</p>
+    `
+  }
+
+  return `
+    <div class="species-popup-wrapper" style="word-wrap: break-word; white-space: normal; overflow: hidden;">
+      ${imageHTML}
+      <div class="species-header" style="border-bottom-color: ${color}40;">
+        <div class="species-header-bg" style="background: ${color}08;"></div>
+        <div class="species-ornament top">
+          <svg width="60" height="12" viewBox="0 0 60 12">
+            <path d="M0 6 L15 6 L20 2 L25 10 L30 4 L35 8 L40 6 L60 6" stroke="${color}" fill="none" stroke-width="1" opacity="0.6"/>
+          </svg>
+        </div>
+        <div class="species-badges">
+          <span class="species-category-badge" style="background: ${color};">${escapeHtml(species.category)}</span>
+          <span class="species-group-badge" style="border-color: ${color}; color: ${color};">${escapeHtml(groupLabel)}</span>
+        </div>
+        <h3 class="species-common-name" style="word-wrap: break-word; white-space: normal;">${escapeHtml(species.commonName)}</h3>
+        <p class="species-scientific-name" style="word-wrap: break-word; white-space: normal;">${escapeHtml(species.scientificName)}</p>
+        <div class="species-ornament bottom">
+          <svg width="40" height="8" viewBox="0 0 40 8">
+            <circle cx="4" cy="4" r="2" fill="${color}" opacity="0.8"/>
+            <circle cx="12" cy="4" r="1.5" fill="${color}" opacity="0.5"/>
+            <circle cx="20" cy="4" r="2" fill="${color}" opacity="0.8"/>
+            <circle cx="28" cy="4" r="1.5" fill="${color}" opacity="0.5"/>
+            <circle cx="36" cy="4" r="2" fill="${color}" opacity="0.8"/>
+          </svg>
+        </div>
+      </div>
+      <div class="species-body">
+        <p class="species-description" style="word-wrap: break-word; white-space: normal;">${escapeHtml(species.description)}</p>
+        <div class="species-details">
+          <div class="species-detail-row">
+            <div class="species-detail-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="species-detail-content">
+              <span class="species-detail-label">${t.threatTypes}</span>
+              <span class="species-detail-value">${species.threatTypes.map(t => `<span class="species-threat-tag">${escapeHtml(t)}</span>`).join('')}</span>
+            </div>
+          </div>
+          <div class="species-detail-row">
+            <div class="species-detail-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div class="species-detail-content">
+              <span class="species-detail-label">${t.region}</span>
+              <span class="species-detail-value" style="word-wrap: break-word; white-space: normal;">${escapeHtml(species.region)}</span>
+            </div>
+          </div>
+          <div class="species-detail-row">
+            <div class="species-detail-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div class="species-detail-content">
+              <span class="species-detail-label">${t.ecosystem}</span>
+              <span class="species-detail-value" style="word-wrap: break-word; white-space: normal;">${escapeHtml(species.ecosystem)}</span>
+            </div>
+          </div>
+          <div class="species-detail-row endangerment">
+            <div class="species-detail-icon" style="color: ${endangermentColor};">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="species-detail-content">
+              <span class="species-detail-label">${t.habitat}</span>
+              <span class="species-detail-value endangerment-value" style="color: ${endangermentColor};">${escapeHtml(species.endangerment)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="species-footer">
+        <div class="species-footer-line" style="background: rgba(128, 128, 128, 0.3);"></div>
       </div>
     </div>
   `

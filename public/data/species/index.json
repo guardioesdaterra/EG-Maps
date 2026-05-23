@@ -1,0 +1,38 @@
+{
+  "datasets": [
+    {
+      "id": "iucn",
+      "name": "IUCN Red List",
+      "source": "IUCN - International Union for Conservation of Nature",
+      "url": "https://www.iucnredlist.org/",
+      "speciesCount": 200,
+      "taxonomicGroups": {
+        "Amphibian": 25,
+        "Bird": 31,
+        "Fish": 22,
+        "Invertebrate": 27,
+        "Mammal": 47,
+        "Plant": 25,
+        "Reptile": 23
+      },
+      "description": "Globally threatened species from the IUCN Red List of Threatened Species"
+    },
+    {
+      "id": "icmbio-brazil",
+      "name": "ICMBio Brazilian Red List",
+      "source": "ICMBio - Chico Mendes Institute for Biodiversity Conservation",
+      "url": "https://www.gov.br/icmbio/pt-br/assuntos/biodiversidade",
+      "speciesCount": 4615,
+      "taxonomicGroups": {
+        "Amphibian": 77,
+        "Bird": 279,
+        "Fish": 457,
+        "Invertebrate": 397,
+        "Mammal": 113,
+        "Plant": 3212,
+        "Reptile": 80
+      },
+      "description": "Threatened species of Brazil from the official Brazilian Red List (2021)"
+    }
+  ]
+}

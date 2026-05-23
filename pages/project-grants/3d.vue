@@ -5,7 +5,7 @@
       <div class="flex h-screen w-full items-center justify-center bg-black text-white">
         <LoadingSpinner
           icon="svg-spinners:wind-toy"
-          :message="'Loading Project Grants Globe...'"
+          :message="t('loading.projectGrantsGlobe')"
           :inline="true"
         />
       </div>
@@ -14,6 +14,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
 
 useHead({
   title: 'Project Grants Globe (3D) | Earth Guardians',

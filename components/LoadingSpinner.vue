@@ -38,7 +38,7 @@ const wrapperClass = computed(() => {
 const iconClass = computed(() => {
   const spinningIcons = ['svg-spinners:eclipse', 'svg-spinners:wind-toy', 'svg-spinners:blocks-shuffle-2', 'svg-spinners:3-dots-move']
   return {
-    'text-cyan-400': true,
+    'text-white/70': true,
     [sizeClasses[props.size]]: true,
     'animate-[spin_1.2s_linear_infinite]': spinningIcons.includes(props.icon),
   }

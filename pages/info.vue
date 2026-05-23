@@ -1,196 +1,211 @@
 <template>
-  <div class="min-h-screen bg-[var(--bg-secondary)] py-12 px-4 relative">
-    <!-- Background effects -->
-    <div class="fixed inset-0 bg-gradient-to-b from-cyan-950/20 via-purple-950/10 to-emerald-950/20 pointer-events-none" />
-    <div class="fixed inset-0 pointer-events-none" style="box-shadow: inset 0 0 200px 50px rgba(0,0,0,0.6)" />
-
-    <div class="max-w-4xl mx-auto relative z-10">
-      <!-- Header -->
-      <div class="text-center mb-12">
-        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 mb-4 shadow-lg shadow-cyan-500/30 animate-float">
-          <Icon name="lucide:info" class="h-10 w-10 text-white" />
+  <main class="flex min-h-[100svh] items-center justify-center bg-black px-[clamp(0.5rem,3vw,1.5rem)] py-[max(4.75rem,8vh)] pb-[max(7rem,env(safe-area-inset-bottom))] text-white">
+    <section class="w-[min(96vw,64rem)] max-h-[calc(100svh-9rem)] overflow-hidden rounded-lg border-2 border-white bg-white text-black shadow-[0_0_0_1px_#000]">
+      <header class="border-b-2 border-black p-[clamp(0.875rem,3vw,1.5rem)]">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div class="min-w-0 flex-1">
+            <p class="text-[10px] xs:text-xs font-black uppercase tracking-[0.24em] xs:tracking-[0.26em] text-black/55">Earth Guardians</p>
+            <h1 class="mt-1.5 xs:mt-2 text-[clamp(1.5rem,5vw,2.5rem)] font-black leading-tight tracking-normal">{{ t('home.title') }}</h1>
+            <p class="mt-1.5 xs:mt-2 max-w-[min(100%,44rem)] text-xs xs:text-sm leading-6 text-black/65">{{ t('home.subtitle') }}</p>
+          </div>
+          <NuxtLink
+            to="/"
+            class="inline-flex h-10 xs:h-11 shrink-0 items-center justify-center gap-1.5 xs:gap-2 rounded-md border-2 border-black px-3 xs:px-4 text-xs xs:text-sm font-black transition-colors hover:bg-black hover:text-white"
+          >
+            <Icon name="lucide:arrow-left" class="h-4 w-4" />
+            <span class="hidden xs:inline">Home</span>
+          </NuxtLink>
         </div>
-        <h1 class="text-4xl sm:text-5xl font-bold mb-2">
-          <span class="bg-gradient-to-r from-cyan-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
-            Earth Guardians
-          </span>
-        </h1>
-        <p class="text-lg text-[var(--text-secondary)]">
-          Interactive Data Visualization Platform
-        </p>
+      </header>
+
+      <div class="grid grid-cols-2 border-b-2 border-black sm:grid-cols-4">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          type="button"
+          class="flex min-w-0 items-center justify-center gap-1.5 xs:gap-2 border-b border-r border-black px-2 xs:px-3 py-2.5 xs:py-3 text-[11px] xs:text-sm font-black transition-colors even:border-r-0 sm:border-b-0 sm:border-r sm:last:border-r-0"
+          :class="activeTab === tab.id ? 'bg-black text-white' : 'bg-white text-black hover:bg-black/5'"
+          :aria-pressed="activeTab === tab.id"
+          @click="activeTab = tab.id"
+        >
+          <Icon :name="tab.icon" class="h-4 w-4" />
+          <span class="hidden xs:inline">{{ tab.label }}</span>
+        </button>
       </div>
 
-      <!-- Info Cards -->
-      <div class="grid gap-6 mb-12">
-        <!-- About Project Grants -->
-        <div class="panel-cyber rounded-xl p-6 hover:border-cyan-500/30 transition-colors">
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-cyan-500/20">
-              <Icon name="lucide:hand-heart" class="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h2 class="text-xl font-bold text-[var(--text-primary)] mb-2">Project Grants</h2>
-              <p class="text-[var(--text-secondary)] mb-4">
-                Explore Earth Guardians' global grant initiatives supporting communities worldwide.
-                The visualization shows {{ projectCount }} active projects with comprehensive beneficiary statistics.
-              </p>
-              <div class="flex flex-wrap gap-3">
-                <span class="px-3 py-1 rounded-full text-xs bg-cyan-950/30 text-cyan-400 border border-cyan-900/50">
-                  {{ projectCount }} Projects
-                </span>
-                <span class="px-3 py-1 rounded-full text-xs bg-purple-950/30 text-purple-400 border border-purple-900/50">
-                  {{ totalDirectBeneficiaries }} Direct Beneficiaries
-                </span>
-                <span class="px-3 py-1 rounded-full text-xs bg-pink-950/30 text-pink-400 border border-pink-900/50">
-                  {{ totalIndirectBeneficiaries }} Indirect Beneficiaries
-                </span>
-              </div>
-              <div class="mt-4 flex gap-2">
-                <NuxtLink to="/project-grants" class="px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-cyan-600 to-purple-600 text-white hover:opacity-90 transition-opacity">
-                  View 2D Map
-                </NuxtLink>
-                <NuxtLink to="/project-grants/3d" class="px-4 py-2 rounded-lg text-sm font-medium bg-black/50 text-cyan-400 border border-cyan-900/50 hover:bg-cyan-950/30 transition-colors">
-                  View 3D Globe
-                </NuxtLink>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- About Endangered Species -->
-        <div class="panel-cyber rounded-xl p-6 hover:border-green-500/30 transition-colors">
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-green-500/20">
-              <Icon name="lucide:bird" class="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h2 class="text-xl font-bold text-[var(--text-primary)] mb-2">Endangered Species</h2>
-              <p class="text-[var(--text-secondary)] mb-4">
-                Discover critically endangered species and their habitats around the world.
-                The database contains {{ speciesCount }} species across {{ taxonomicGroupCount }} taxonomic groups with comprehensive metadata.
-              </p>
-              <div class="flex flex-wrap gap-3">
-                <span class="px-3 py-1 rounded-full text-xs bg-green-950/30 text-green-400 border border-green-900/50">
-                  {{ speciesCount }} Species
-                </span>
-                <span class="px-3 py-1 rounded-full text-xs bg-emerald-950/30 text-emerald-400 border border-emerald-900/50">
-                  {{ taxonomicGroupCount }} Taxonomic Groups
-                </span>
-                <span class="px-3 py-1 rounded-full text-xs bg-teal-950/30 text-teal-400 border border-teal-900/50">
-                  Global Coverage
-                </span>
-              </div>
-              <div class="mt-4 flex gap-2">
-                <NuxtLink to="/endangered-species" class="px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:opacity-90 transition-opacity">
-                  View 2D Map
-                </NuxtLink>
-                <NuxtLink to="/endangered-species/3d" class="px-4 py-2 rounded-lg text-sm font-medium bg-black/50 text-green-400 border border-green-900/50 hover:bg-green-950/30 transition-colors">
-                  View 3D Globe
-                </NuxtLink>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Feedback Form -->
-      <div class="panel-cyber rounded-xl p-6 mb-8">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-            <Icon name="lucide:message-square" class="h-5 w-5 text-white" />
-          </div>
-          <h2 class="text-xl font-bold text-[var(--text-primary)]">Feedback</h2>
-        </div>
-
-        <form @submit.prevent="submitFeedback" class="space-y-4">
+      <div class="max-h-[min(65vh,42rem)] xs:max-h-[min(68vh,42rem)] overflow-y-auto p-[clamp(0.875rem,3vw,1.5rem)]">
+        <section v-if="activeTab === 'overview'" class="grid gap-4 xs:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.8fr)]">
           <div>
-            <label for="feedback-name" class="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Your Name (optional)
-            </label>
-            <input
-              id="feedback-name"
-              v-model="feedback.name"
-              type="text"
-              placeholder="Enter your name"
-              class="w-full px-4 py-2 rounded-lg bg-black/50 border border-[var(--border-color)] text-[var(--text-primary)] placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition-colors"
-            />
-          </div>
-
-          <div>
-            <label for="feedback-type" class="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Feedback Type
-            </label>
-            <select
-              id="feedback-type"
-              v-model="feedback.type"
-              class="w-full px-4 py-2 rounded-lg bg-black/50 border border-[var(--border-color)] text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition-colors"
-            >
-              <option value="bug">Bug Report</option>
-              <option value="feature">Feature Request</option>
-              <option value="improvement">Improvement Suggestion</option>
-              <option value="general">General Feedback</option>
-            </select>
-          </div>
-
-          <div>
-            <label for="feedback-message" class="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-              Your Feedback
-            </label>
-            <textarea
-              id="feedback-message"
-              v-model="feedback.message"
-              rows="5"
-              maxlength="2000"
-              placeholder="Share your thoughts, report a bug, or suggest a feature..."
-              class="w-full px-4 py-2 rounded-lg bg-black/50 border border-[var(--border-color)] text-[var(--text-primary)] placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition-colors resize-none"
-              required
-            />
-            <p class="mt-1 text-xs text-[var(--text-secondary)] text-right">
-              {{ feedback.message.length }}/2000
+            <h2 class="text-[clamp(1.25rem,4vw,1.75rem)] font-black leading-tight">{{ t('info.projectGrants') }} + {{ t('info.endangeredSpecies') }}</h2>
+            <p class="mt-2 xs:mt-3 text-xs xs:text-sm leading-7 text-black/70">
+              The app brings Earth Guardians project grant locations and endangered species records into the same map language: searchable points, 2D views, globe views, shared connection lines, and animated particles.
             </p>
           </div>
-
-          <button
-            type="submit"
-            class="w-full px-6 py-3 rounded-lg font-medium bg-gradient-to-r from-cyan-600 to-purple-600 text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(6,182,212,0.3)] focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-          >
-            Submit Feedback
-          </button>
-        </form>
-
-        <!-- Success message -->
-        <div v-if="feedbackSubmitted" class="mt-4 p-4 rounded-lg bg-green-950/30 border border-green-900/50 text-green-400">
-          <div class="flex items-center gap-2">
-            <Icon name="lucide:check-circle" class="h-5 w-5" />
-            <span>Thank you! Your feedback has been submitted.</span>
+          <div class="grid min-w-0 grid-cols-2 border-2 border-black text-center">
+            <div class="border-b border-r border-black p-3 xs:p-4">
+              <p class="text-[clamp(1.35rem,5vw,2rem)] font-black leading-none">{{ projectCount }}</p>
+              <p class="mt-1 text-[10px] xs:text-[11px] font-black uppercase tracking-[0.16em] xs:tracking-[0.18em] text-black/55">{{ t('info.projects') }}</p>
+            </div>
+            <div class="border-b border-black p-3 xs:p-4">
+              <p class="text-[clamp(1.35rem,5vw,2rem)] font-black leading-none">{{ speciesCount }}</p>
+              <p class="mt-1 text-[10px] xs:text-[11px] font-black uppercase tracking-[0.16em] xs:tracking-[0.18em] text-black/55">{{ t('info.speciesLabel') }}</p>
+            </div>
+            <div class="border-r border-black p-3 xs:p-4">
+              <p class="text-[clamp(1.35rem,5vw,2rem)] font-black leading-none">{{ taxonomicGroupCount }}</p>
+              <p class="mt-1 text-[10px] xs:text-[11px] font-black uppercase tracking-[0.16em] xs:tracking-[0.18em] text-black/55">{{ t('info.taxonomicGroups') }}</p>
+            </div>
+            <div class="p-3 xs:p-4">
+              <p class="text-[clamp(1.35rem,5vw,2rem)] font-black leading-none">{{ compactBeneficiaries }}</p>
+              <p class="mt-1 text-[10px] xs:text-[11px] font-black uppercase tracking-[0.16em] xs:tracking-[0.18em] text-black/55">{{ t('home.beneficiariesCount') }}</p>
+            </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <!-- Join CTA -->
-      <div class="panel-cyber rounded-xl p-6 text-center">
-        <h3 class="text-xl font-bold text-[var(--text-primary)] mb-2">Want to Make a Difference?</h3>
-        <p class="text-[var(--text-secondary)] mb-4">
-          Join Earth Guardians and become part of the movement protecting our planet.
-        </p>
-        <a
-          href="https://www.earthguardians.org/crews"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-medium bg-gradient-to-r from-orange-500 to-red-600 text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(249,115,22,0.3)]"
-        >
-          <Icon name="lucide:users" class="h-5 w-5" />
-          Join Earth Guardians
-        </a>
+        <section v-else-if="activeTab === 'grants'" class="grid gap-4 xs:gap-5 lg:grid-cols-[minmax(0,1fr)_auto]">
+          <div>
+            <h2 class="text-[clamp(1.25rem,4vw,1.75rem)] font-black leading-tight">{{ t('info.projectGrants') }}</h2>
+            <p class="mt-2 xs:mt-3 text-xs xs:text-sm leading-7 text-black/70">
+              {{ t('info.projectGrantsDesc', { count: projectCount }) }}
+            </p>
+            <dl class="mt-4 xs:mt-5 grid gap-2.5 xs:gap-3 sm:grid-cols-2">
+              <div class="min-w-0 rounded-md border-2 border-black p-3 xs:p-4">
+                <dt class="text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] xs:tracking-[0.18em] text-black/55">{{ t('info.directBeneficiaries') }}</dt>
+                <dd class="mt-1.5 xs:mt-2 break-words text-[clamp(1.15rem,5vw,1.5rem)] font-black">{{ totalDirectBeneficiaries }}</dd>
+              </div>
+              <div class="min-w-0 rounded-md border-2 border-black p-3 xs:p-4">
+                <dt class="text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] xs:tracking-[0.18em] text-black/55">{{ t('info.indirectBeneficiaries') }}</dt>
+                <dd class="mt-1.5 xs:mt-2 break-words text-[clamp(1.15rem,5vw,1.5rem)] font-black">{{ totalIndirectBeneficiaries }}</dd>
+              </div>
+            </dl>
+          </div>
+          <div class="flex w-full flex-col gap-2 xs:gap-3 sm:min-w-44 lg:w-auto">
+            <NuxtLink to="/project-grants" class="inline-flex items-center justify-center gap-1.5 xs:gap-2 rounded-md bg-black px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black text-white">
+              <Icon name="lucide:map" class="h-4 w-4" />
+              {{ t('info.view2dMap') }}
+            </NuxtLink>
+            <NuxtLink to="/project-grants/3d" class="inline-flex items-center justify-center gap-1.5 xs:gap-2 rounded-md border-2 border-black px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black text-black hover:bg-black hover:text-white">
+              <Icon name="lucide:globe" class="h-4 w-4" />
+              {{ t('info.view3dGlobe') }}
+            </NuxtLink>
+          </div>
+        </section>
+
+        <section v-else-if="activeTab === 'species'" class="grid gap-4 xs:gap-5 lg:grid-cols-[minmax(0,1fr)_auto]">
+          <div>
+            <h2 class="text-[clamp(1.25rem,4vw,1.75rem)] font-black leading-tight">{{ t('info.endangeredSpecies') }}</h2>
+            <p class="mt-2 xs:mt-3 text-xs xs:text-sm leading-7 text-black/70">
+              {{ t('info.endangeredSpeciesDesc', { speciesCount, groupCount: taxonomicGroupCount }) }}
+            </p>
+            <div class="mt-4 xs:mt-5 flex flex-wrap gap-1.5 xs:gap-2">
+              <span
+                v-for="group in taxonomicGroups"
+                :key="group"
+                class="rounded-md border-2 border-black px-2 xs:px-3 py-1.5 xs:py-2 text-[10px] xs:text-xs font-black"
+              >
+                {{ group }}
+              </span>
+            </div>
+          </div>
+          <div class="flex w-full flex-col gap-2 xs:gap-3 sm:min-w-44 lg:w-auto">
+            <NuxtLink to="/endangered-species" class="inline-flex items-center justify-center gap-1.5 xs:gap-2 rounded-md bg-black px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black text-white">
+              <Icon name="lucide:map" class="h-4 w-4" />
+              {{ t('info.view2dMap') }}
+            </NuxtLink>
+            <NuxtLink to="/endangered-species/3d" class="inline-flex items-center justify-center gap-1.5 xs:gap-2 rounded-md border-2 border-black px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black text-black hover:bg-black hover:text-white">
+              <Icon name="lucide:globe" class="h-4 w-4" />
+              {{ t('info.view3dGlobe') }}
+            </NuxtLink>
+          </div>
+        </section>
+
+        <section v-else-if="activeTab === 'mains'" class="grid gap-4 xs:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.8fr)]">
+          <div>
+            <h2 class="text-[clamp(1.25rem,4vw,1.75rem)] font-black leading-tight">{{ t('info.mains') }}</h2>
+            <p class="mt-2 xs:mt-3 text-xs xs:text-sm leading-7 text-black/70">{{ t('info.mainsDesc') }}</p>
+            <dl class="mt-4 xs:mt-5 grid gap-2.5 xs:gap-3 sm:grid-cols-2">
+              <div class="min-w-0 rounded-md border-2 border-black p-3 xs:p-4">
+                <dt class="text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] xs:tracking-[0.18em] text-black/55">{{ t('info.rccLoukaLabel') }}</dt>
+                <dd class="mt-1.5 xs:mt-2 break-words font-black">{{ t('info.rccLouka') }}</dd>
+              </div>
+              <div class="min-w-0 rounded-md border-2 border-black p-3 xs:p-4">
+                <dt class="text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] xs:tracking-[0.18em] text-black/55">{{ t('info.rccTupaLeviLabel') }}</dt>
+                <dd class="mt-1.5 xs:mt-2 break-words font-black">{{ t('info.rccTupaLevi') }}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        <section v-else class="grid gap-4 xs:gap-5 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)]">
+          <div>
+            <h2 class="text-[clamp(1.25rem,4vw,1.75rem)] font-black leading-tight">{{ t('info.feedback') }}</h2>
+            <p class="mt-2 xs:mt-3 text-xs xs:text-sm leading-7 text-black/70">
+              Share corrections, missing data, or interaction ideas for the maps.
+            </p>
+            <a
+              href="https://www.earthguardians.org/crews"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-4 xs:mt-5 inline-flex items-center gap-1.5 xs:gap-2 rounded-md border-2 border-black px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black transition-colors hover:bg-black hover:text-white"
+            >
+              <Icon name="lucide:users" class="h-4 w-4" />
+              {{ t('info.joinUs') }}
+            </a>
+          </div>
+
+          <form class="space-y-2.5 xs:space-y-3" @submit.prevent="submitFeedback">
+            <label class="block">
+              <span class="mb-1 block text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] xs:tracking-[0.18em] text-black/55">{{ t('info.feedbackName') }}</span>
+              <input
+                v-model="feedback.name"
+                type="text"
+                :placeholder="t('info.feedbackNamePlaceholder')"
+                class="w-full rounded-md border-2 border-black px-2.5 xs:px-3 py-1.5 xs:py-2 text-xs xs:text-sm text-black placeholder-black/40 focus:outline-none focus:ring-4 focus:ring-black/15"
+              />
+            </label>
+            <label class="block">
+              <span class="mb-1 block text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] xs:tracking-[0.18em] text-black/55">{{ t('info.feedbackType') }}</span>
+              <select
+                v-model="feedback.type"
+                class="w-full rounded-md border-2 border-black bg-white px-2.5 xs:px-3 py-1.5 xs:py-2 text-xs xs:text-sm text-black focus:outline-none focus:ring-4 focus:ring-black/15"
+              >
+                <option value="bug">{{ t('info.bugReport') }}</option>
+                <option value="feature">{{ t('info.featureRequest') }}</option>
+                <option value="improvement">{{ t('info.improvementSuggestion') }}</option>
+                <option value="general">{{ t('info.generalFeedback') }}</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="mb-1 block text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] xs:tracking-[0.18em] text-black/55">{{ t('info.yourFeedback') }}</span>
+              <textarea
+                v-model="feedback.message"
+                maxlength="2000"
+                :placeholder="t('info.feedbackPlaceholder')"
+                class="min-h-[clamp(6rem,18vh,11rem)] w-full resize-none rounded-md border-2 border-black px-2.5 xs:px-3 py-1.5 xs:py-2 text-xs xs:text-sm text-black placeholder-black/40 focus:outline-none focus:ring-4 focus:ring-black/15"
+                required
+              />
+            </label>
+            <div class="flex items-center justify-between gap-2 xs:gap-3">
+              <p class="text-[10px] xs:text-xs font-bold text-black/55">{{ feedback.message.length }}/2000</p>
+              <button type="submit" class="rounded-md bg-black px-4 xs:px-5 py-2 xs:py-2.5 xs:py-3 text-xs xs:text-sm font-black text-white">
+                {{ t('info.submitFeedback') }}
+              </button>
+            </div>
+            <p v-if="feedbackSubmitted" class="rounded-md border-2 border-black p-2.5 xs:p-3 text-xs xs:text-sm font-black">
+              {{ t('info.feedbackSubmitted') }}
+            </p>
+          </form>
+        </section>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import speciesData from '~/public/data/species.json'
+import { computed, ref, onMounted } from 'vue'
 import { allProjectsData } from '@/lib/project-data'
+import { formatCompact } from '@/lib/utils'
+
+const { t } = useI18n()
 
 useHead({
   title: 'Info & Feedback | Earth Guardians',
@@ -201,13 +216,48 @@ useHead({
   ],
 })
 
-const speciesList = speciesData as Array<{ taxonomicGroup: string }>
-const speciesCount = computed(() => speciesList.length)
-const taxonomicGroupCount = computed(() => new Set(speciesList.map(s => s.taxonomicGroup)).size)
+type InfoTab = 'overview' | 'grants' | 'species' | 'mains' | 'feedback'
+
+const activeTab = ref<InfoTab>('overview')
+const tabs: Array<{ id: InfoTab; label: string; icon: string }> = [
+  { id: 'overview', label: 'Overview', icon: 'lucide:layout-dashboard' },
+  { id: 'grants', label: 'Grants', icon: 'lucide:hand-heart' },
+  { id: 'species', label: 'Species', icon: 'lucide:bird' },
+  { id: 'mains', label: 'Mains', icon: 'lucide:crown' },
+  { id: 'feedback', label: 'Feedback', icon: 'lucide:message-square' },
+]
+
+const speciesCount = ref(0)
+const taxonomicGroups = ref<string[]>([])
+const taxonomicGroupCount = ref(0)
+
+onMounted(async () => {
+  try {
+    const res = await fetch('/data/species/index.json')
+    if (res.ok) {
+      const index = await res.json()
+      const datasets = index.datasets ?? []
+      let total = 0
+      const allGroups = new Set<string>()
+      for (const ds of datasets) {
+        total += ds.speciesCount ?? 0
+        for (const grp of Object.keys(ds.taxonomicGroups ?? {})) {
+          allGroups.add(grp)
+        }
+      }
+      speciesCount.value = total
+      taxonomicGroups.value = [...allGroups].sort()
+      taxonomicGroupCount.value = allGroups.size
+    }
+  } catch {}
+})
 
 const projectCount = computed(() => allProjectsData.length)
-const totalDirectBeneficiaries = computed(() => allProjectsData.reduce((sum, p) => sum + p.direct_beneficiaries, 0).toLocaleString())
-const totalIndirectBeneficiaries = computed(() => allProjectsData.reduce((sum, p) => sum + p.indirect_beneficiaries, 0).toLocaleString())
+const directBeneficiaryCount = computed(() => allProjectsData.reduce((sum, p) => sum + p.direct_beneficiaries, 0))
+const indirectBeneficiaryCount = computed(() => allProjectsData.reduce((sum, p) => sum + p.indirect_beneficiaries, 0))
+const totalDirectBeneficiaries = computed(() => directBeneficiaryCount.value.toLocaleString())
+const totalIndirectBeneficiaries = computed(() => indirectBeneficiaryCount.value.toLocaleString())
+const compactBeneficiaries = computed(() => formatCompact(directBeneficiaryCount.value + indirectBeneficiaryCount.value))
 
 const feedback = ref({
   name: '',
@@ -223,7 +273,16 @@ function submitFeedback() {
 
   if (!feedback.value.message) return
 
-  console.log('Feedback submitted:', feedback.value)
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = JSON.parse(localStorage.getItem('eg-maps-feedback') || '[]')
+      saved.unshift({ ...feedback.value, submittedAt: new Date().toISOString() })
+      localStorage.setItem('eg-maps-feedback', JSON.stringify(saved.slice(0, 20)))
+    } catch {
+      localStorage.setItem('eg-maps-feedback', JSON.stringify([{ ...feedback.value, submittedAt: new Date().toISOString() }]))
+    }
+  }
+
   feedbackSubmitted.value = true
   setTimeout(() => {
     feedbackSubmitted.value = false

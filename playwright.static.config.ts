@@ -20,10 +20,11 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'pnpm preview',
+    command: 'npx http-server .output/public -p 3000 -s --cors',
     url: process.env.BASE_URL || 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',
     stderr: 'pipe',
+    timeout: 60000,
   },
 });

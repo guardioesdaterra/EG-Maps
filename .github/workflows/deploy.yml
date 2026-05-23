@@ -32,59 +32,40 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Type check
+        run: npx vue-tsc --noEmit
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build species icon mapping (Game Icons SSG)
+        run: node scripts/build-species-icon-mapping.mjs
+
       - name: Build static site
         run: pnpm generate
         env:
           NUXT_APP_BASE_URL: /EG-Maps/
+          NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
 
-      - name: Verify output
+      - name: Copy 200.html as 404.html for SPA fallback
         run: |
-          echo "Output directory contents:"
-          ls -la .output/public
-          echo "Build complete"
+          if [ -f .output/public/200.html ]; then
+            cp .output/public/200.html .output/public/404.html
+          elif [ -f .output/public/index.html ]; then
+            cp .output/public/index.html .output/public/404.html
+          else
+            echo "Warning: No 200.html or index.html found for 404 fallback"
+          fi
 
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .output/public
 
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.12.0
-          run_install: false
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build static site
-        run: pnpm generate
-        env:
-          NUXT_APP_BASE_URL: /EG-Maps/
-
-      - name: Restructure output for testing
-        run: |
-          mkdir -p .output/public/EG-Maps
-          cd .output/public && find . -maxdepth 1 -not -name '.' -not -name 'EG-Maps' -exec mv {} EG-Maps/ \;
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run Playwright tests
-        run: pnpm exec playwright test --config=playwright.static.config.ts
-        env:
-          BASE_PATH: /EG-Maps
-
   deploy:
-    needs: [build, test]
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages

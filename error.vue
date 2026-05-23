@@ -1,41 +1,41 @@
 <template>
   <div class="min-h-screen bg-[var(--bg-secondary)] flex flex-col items-center justify-center relative overflow-hidden">
     <!-- Background effects -->
-    <div class="absolute inset-0 bg-gradient-to-b from-red-950/20 via-purple-950/10 to-cyan-950/20 pointer-events-none" />
+    <div class="absolute inset-0 bg-black/10 dark:bg-white/5 pointer-events-none" />
     <div class="absolute inset-0 pointer-events-none" style="box-shadow: inset 0 0 200px 50px rgba(0,0,0,0.8)" />
 
     <!-- Main content -->
     <div class="relative z-10 flex flex-col items-center px-4 text-center">
       <!-- Error icon -->
       <div class="mb-8 animate-float">
-        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 flex items-center justify-center">
-          <Icon name="lucide:alert-triangle" class="h-12 w-12 text-red-400" />
+        <div class="w-24 h-24 rounded-full bg-[var(--bg-tertiary)] border-2 border-[var(--text-primary)]/20 flex items-center justify-center">
+          <Icon name="lucide:alert-triangle" class="h-12 w-12 text-[var(--text-secondary)]" />
         </div>
       </div>
 
       <!-- Error code -->
-      <h1 class="text-6xl sm:text-8xl font-bold mb-4 bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
-        {{ error.statusCode }}
+      <h1 class="text-6xl sm:text-8xl font-bold mb-4 text-[var(--text-primary)]">
+        {{ error?.statusCode || 'Error' }}
       </h1>
 
       <!-- Error message -->
       <p class="text-xl text-[var(--text-secondary)] mb-8 max-w-md">
-        {{ error.statusCode === 404 ? 'Page not found' : 'Something went wrong' }}
+        {{ error?.statusCode === 404 ? t('error.pageNotFound') : t('error.somethingWrong') }}
       </p>
 
       <!-- Action buttons -->
       <div class="flex flex-col sm:flex-row gap-4">
         <NuxtLink
           to="/"
-          class="px-6 py-3 rounded-lg font-medium bg-gradient-to-r from-cyan-600 to-purple-600 text-white hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+          class="px-6 py-3 rounded-lg font-medium bg-[var(--text-primary)] text-[var(--bg-primary)] hover:opacity-80 transition-opacity"
         >
-          Go Home
+          {{ t('error.goHome') }}
         </NuxtLink>
         <button
           @click="handleError"
-          class="px-6 py-3 rounded-lg font-medium bg-black/50 text-[var(--text-primary)] border border-[var(--border-color)] hover:bg-[var(--bg-tertiary)] transition-colors"
+          class="px-6 py-3 rounded-lg font-medium border-2 border-[var(--text-primary)] text-[var(--text-primary)] bg-transparent hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-colors"
         >
-          Try Again
+          {{ t('error.tryAgain') }}
         </button>
       </div>
     </div>
@@ -44,9 +44,10 @@
 
 <script setup lang="ts">
 const error = useError()
+const { t } = useI18n()
 
 useHead({
-  title: `${error.value?.statusCode || 'Error'} | Earth Guardians`,
+  title: computed(() => `${error.value?.statusCode || 'Error'} | Earth Guardians`),
   meta: [
     { name: 'description', content: 'Earth Guardians - Page not found' },
   ],

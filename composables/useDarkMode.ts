@@ -1,17 +1,11 @@
 export function useDarkMode() {
-  // Check system preference as default
-  const getSystemPreference = (): boolean => {
-    if (process.client) {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches
-    }
-    return false
-  }
+  // Use a ref to track initialization - default to false to avoid hydration mismatch
+  const isDark = useState<boolean>('darkMode', () => true)
+  const isInitialized = useState<boolean>('darkModeInitialized', () => false)
 
-  const isDark = useState<boolean>('darkMode', () => getSystemPreference())
-
-  // Apply dark class to html element
+  // Apply dark class to html element - only runs on client
   function applyDarkClass(value: boolean) {
-    if (process.client) {
+    if (import.meta.client) {
       if (value) {
         document.documentElement.classList.add('dark')
       } else {
@@ -30,20 +24,28 @@ export function useDarkMode() {
     applyDarkClass(value)
   }
 
-  // Initialize from localStorage on mount to avoid hydration mismatch
-  if (process.client) {
-    onMounted(() => {
+  // Initialize from localStorage - runs immediately on client to prevent flash
+  if (import.meta.client) {
+    // Check localStorage synchronously before first render to prevent flash
+    const getInitialDarkMode = (): boolean => {
       const saved = localStorage.getItem('darkMode')
       if (saved !== null) {
-        isDark.value = saved === 'true'
-        applyDarkClass(isDark.value)
+        return saved === 'true'
       }
-    })
+      // Fall back to system preference if no saved value
+      return window.matchMedia('(prefers-color-scheme: dark)').matches
+    }
+
+    // Set initial value immediately (client-only)
+    const initialValue = getInitialDarkMode()
+    isDark.value = initialValue
+    isInitialized.value = true
+    applyDarkClass(initialValue)
   }
 
   // Watch for changes and persist
   watch(isDark, (value) => {
-    if (process.client) {
+    if (import.meta.client) {
       localStorage.setItem('darkMode', String(value))
       applyDarkClass(value)
     }
@@ -51,6 +53,7 @@ export function useDarkMode() {
 
   return {
     isDark,
+    isInitialized,
     toggle: toggleDarkMode,
     set: setDarkMode
   }

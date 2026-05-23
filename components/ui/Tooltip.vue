@@ -49,7 +49,7 @@ const triggerEl = ref<HTMLElement | null>(null)
 
 const tooltipClasses = computed(() => {
   return cn(
-    'z-[9999] overflow-hidden rounded-md bg-black/90 border border-cyan-900/50 px-3 py-1.5 text-xs text-white shadow-md',
+    'z-[9999] overflow-hidden rounded-md bg-black/90 border border-white/20 px-3 py-1.5 text-xs text-white shadow-md',
     props.class
   )
 })

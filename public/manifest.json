@@ -2,14 +2,14 @@
   "name": "Earth Guardians - Interactive Data Visualization",
   "short_name": "Earth Guardians",
   "description": "Explore endangered species and project grants data through interactive 2D maps and 3D globe visualizations",
-  "start_url": "/",
+  "start_url": "/EG-Maps/",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
   "orientation": "any",
   "icons": [
     {
-      "src": "/eg-logo.png",
+      "src": "/EG-Maps/eg-logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

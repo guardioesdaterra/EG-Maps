@@ -543,7 +543,7 @@ function createUnifiedMarkerElement(metrics: ReturnType<typeof getUnifiedMarkerM
   inner.style.borderRadius = blobRadius
   inner.style.backgroundColor = 'rgba(0, 0, 0, 0.82)'
   inner.style.border = '2px solid rgba(255, 255, 255, 0.86)'
-  inner.style.boxShadow = `0 0 ${Math.max(8, metrics.visualSize * 0.5)}px ${metrics.color}, 0 0 1.5px #fff`,
+  inner.style.boxShadow = `0 0 ${Math.max(8, metrics.visualSize * 0.5)}px ${metrics.color}, 0 0 1.5px #fff`
   inner.style.display = 'flex'
   inner.style.justifyContent = 'center'
   inner.style.alignItems = 'center'

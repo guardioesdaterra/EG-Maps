@@ -137,7 +137,9 @@ onMounted(async () => {
       speciesCount.value = total
       taxonomicGroupCount.value = allGroups.size
     }
-  } catch {}
+  } catch {
+    // Species data might not be available
+  }
 })
 
 const projectStats = computed(() => {

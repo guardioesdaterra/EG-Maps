@@ -10,7 +10,8 @@ describe('cn', () => {
   })
 
   it('handles conditional classes', () => {
-    expect(cn('base', false && 'hidden', 'visible')).toBe('base visible')
+    const cond = false
+    expect(cn('base', cond && 'hidden', 'visible')).toBe('base visible')
   })
 
   it('handles empty input', () => {

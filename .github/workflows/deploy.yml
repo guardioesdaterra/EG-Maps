@@ -50,6 +50,13 @@ jobs:
           NUXT_APP_BASE_URL: /EG-Maps/
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
 
+      - name: Copy species data for static hosting
+        run: |
+          mkdir -p .output/public/data/species
+          cp -r public/data/species/* .output/public/data/species/ || true
+          mkdir -p .output/public/data
+          cp -r public/data/* .output/public/data/ || true
+
       - name: Copy 200.html as 404.html for SPA fallback
         run: |
           if [ -f .output/public/200.html ]; then

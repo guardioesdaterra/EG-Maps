@@ -149,12 +149,10 @@ test.describe('Page content rendering', () => {
   })
 
   test('endangered species page loads without crash', async ({ page }) => {
-    test.setTimeout(45000)
     const resp = await page.goto(route('/endangered-species'), { waitUntil: 'domcontentloaded', timeout: 30000 })
     expect(resp?.status()).toBe(200)
-    await page.waitForTimeout(2000)
-    const content = await page.content()
-    expect(content).toContain('Endangered')
+    const html = await page.evaluate(() => document.documentElement.innerHTML.substring(0, 10000))
+    expect(html).toContain('Endangered')
   })
 
   test('info page renders tab buttons', async ({ page }) => {
@@ -192,7 +190,7 @@ test.describe('Dark mode toggle', () => {
   test('toggles dark mode and persists across pages', async ({ page }) => {
     await page.goto(route('/info'), { waitUntil: 'domcontentloaded', timeout: 30000 })
     await page.waitForTimeout(2000)
-    const toggleBtn = page.locator('header button').first()
+    const toggleBtn = page.getByRole('button', { name: /mode/i })
     await expect(toggleBtn).toBeVisible({ timeout: 5000 })
 
     const isDarkInitially = await page.locator('html').evaluate(el => el.classList.contains('dark'))

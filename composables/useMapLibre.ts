@@ -103,6 +103,7 @@ export function useMapLibre(
         maxTileCacheSize: 200,
         maxTileCacheZoomLevels: 5,
         transformRequest,
+        canvasContextAttributes: { powerPreference: 'default' },
       } as maplibregl.MapOptions & { antialias?: boolean })
 
       m.addControl(new maplibregl.AttributionControl({

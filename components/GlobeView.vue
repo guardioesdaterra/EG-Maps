@@ -383,6 +383,7 @@ async function initMap() {
       maxTileCacheSize: 200,
       maxTileCacheZoomLevels: 5,
       transformRequest,
+      canvasContextAttributes: { powerPreference: 'default' },
     } as maplibregl.MapOptions & { antialias?: boolean })
 
     map.addControl(

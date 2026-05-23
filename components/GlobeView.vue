@@ -129,8 +129,8 @@
           <Icon name="lucide:alert-triangle" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-7 w-7 xs:h-8 xs:w-8 text-[var(--text-primary)]" />
         </div>
         <h2 class="text-lg xs:text-xl font-bold mb-1.5 xs:mb-2">{{ t('globe.unableToLoad') }}</h2>
-        <p class="text-gray-400 mb-4 text-center px-4 xs:px-4 max-w-xs xs:max-w-md text-sm xs:text-base">{{ t('globe.connectionError') }}</p>
-        <button @click="() => { hasError = false; initMap() }" class="px-5 xs:px-6 py-2 xs:py-2.5 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg font-medium hover:opacity-80 transition-all duration-300 flex items-center gap-2 text-sm xs:text-base">
+        <p class="text-gray-400 mb-4 text-center px-4 xs:px-4 max-w-xs xs:max-w-md text-sm xs:text-base">{{ errorMessage || t('globe.connectionError') }}</p>
+        <button v-if="!noWebglSupport" @click="() => { hasError = false; initMap() }" class="px-5 xs:px-6 py-2 xs:py-2.5 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg font-medium hover:opacity-80 transition-all duration-300 flex items-center gap-2 text-sm xs:text-base">
           <Icon name="lucide:refresh-cw" class="h-4 w-4" />
           {{ t('globe.tryAgain') }}
         </button>
@@ -170,8 +170,6 @@ import {
 } from '@/lib/map-effects'
 import {
   getMarkerImageUrl,
-  setupLazyMarkerImage,
-  cleanupLazyMarkerImage,
   preloadSpeciesImages,
   clearImageCache,
   getMarkerPlaceholder,
@@ -219,14 +217,14 @@ const props = withDefaults(defineProps<Props>(), {
 const projectsData = computed(() => props.projects || allProjectsData)
 const speciesData = computed(() => props.species || [])
 
-const datasetBaseRoute = computed(() => {
-  return activeDataset.value === 'project-grants' ? '/project-grants' : '/endangered-species'
-})
+
 
 const isMobile = useMediaQuery('(max-width: 768px)')
 const containerRef = ref<HTMLDivElement | null>(null)
 const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
 const hasError = ref(false)
+const errorMessage = ref('')
+const noWebglSupport = ref(false)
 const isLoading = ref(true)
 const activeDataset = ref<'project-grants' | 'endangered-species'>(props.defaultDataset)
 const isHexGridVisible = ref(props.showHexGrid)
@@ -344,9 +342,33 @@ function stopAutoRotate() {
   }
 }
 
+function checkWebGLSupport(): boolean {
+  try {
+    const c = document.createElement('canvas')
+    const gl = c.getContext('webgl2') || c.getContext('webgl')
+    if (gl) {
+      const ext = gl.getExtension('WEBGL_lose_context')
+      if (ext) ext.loseContext()
+      return true
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
 async function initMap() {
   if (typeof window === 'undefined' || !containerRef.value) return
 
+  if (!checkWebGLSupport()) {
+    isLoading.value = false
+    hasError.value = true
+    noWebglSupport.value = true
+    errorMessage.value = 'WebGL is not supported in this browser. The globe requires a GPU-accelerated browser. Try enabling hardware acceleration or using a different browser.'
+    return
+  }
+
+  noWebglSupport.value = false
   isLoading.value = true
 
   try {
@@ -372,8 +394,9 @@ async function initMap() {
     map.on('style.load', () => {
       if (map) {
         try {
-          map.setProjection({ type: 'globe' } as any)
+          map.setProjection({ type: 'globe' })
         } catch (e) {
+          // eslint-disable-next-line no-console
           console.error('Error setting globe projection:', e)
         }
       }
@@ -485,16 +508,22 @@ async function initMap() {
     let usedFallback = false
 
     map.on('error', (err) => {
+      // eslint-disable-next-line no-console
       console.error('MapLibre error:', err)
       errorCount++
       if (!usedFallback && errorCount >= 2 && MAP_STYLE.includes('maptiler.com')) {
         usedFallback = true
+        // eslint-disable-next-line no-console
         console.warn('MapTiler style failed, falling back to demotiles style')
         map!.setStyle('https://demotiles.maplibre.org/style.json')
         return
       }
       isLoading.value = false
       hasError.value = true
+      const errObj = err as { error?: { status?: number; message?: string } }
+      if (errObj?.error?.status === 403) {
+        errorMessage.value = 'MapTiler API key is invalid or restricted. Please update your API key in the .env file.'
+      }
     })
 
     // Timeout fallback for loading
@@ -504,9 +533,14 @@ async function initMap() {
       }
     }, 10000)
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error('Failed to load maplibre-gl:', err)
     isLoading.value = false
     hasError.value = true
+    const msg = String(err)
+    if (msg.includes('WebGL') || msg.includes('webgl') || msg.includes('context')) {
+      errorMessage.value = 'WebGL is not supported in this browser. The globe requires a GPU-accelerated browser. Try enabling hardware acceleration or using a different browser.'
+    }
   }
 }
 
@@ -683,7 +717,7 @@ function startMarkerVisibilityCheck() {
   // RAF-based updates handle this during interaction
 }
 
-function createClusterMarkerElement(count: number, items: { lat: number; lng: number; type: string }[]) {
+function createClusterMarkerElement(count: number, _items: { lat: number; lng: number; type: string }[]) {
   const uid = ++clusterIdCounter
   const size = Math.max(42, 28 + count * 5)
   const blobRadius = getBlobBorderRadius(size, count * 7 + size)

@@ -146,8 +146,8 @@
           <div class="w-16 h-16 rounded-full bg-[var(--text-primary)]/10 animate-pulse" />
           <iconify-icon icon="lucide:alert-triangle" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-[var(--text-primary)]" />
         </div>
-        <p class="text-gray-400 mb-4 text-center px-4 max-w-md">{{ t('globe.connectionError') }}</p>
-        <button @click="() => { hasError = false; initMap() }" class="px-6 py-2.5 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg font-medium hover:opacity-80 transition-all duration-300 flex items-center gap-2">
+        <p class="text-gray-400 mb-4 text-center px-4 max-w-md">{{ errorMessage || t('globe.connectionError') }}</p>
+        <button v-if="!noWebglSupport" @click="() => { hasError = false; initMap() }" class="px-6 py-2.5 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg font-medium hover:opacity-80 transition-all duration-300 flex items-center gap-2">
           <iconify-icon icon="lucide:refresh-cw" class="h-4 w-4" />
           {{ t('globe.tryAgain') }}
         </button>
@@ -187,8 +187,6 @@ import {
 } from '@/lib/map-effects'
 import {
   getMarkerImageUrl,
-  setupLazyMarkerImage,
-  cleanupLazyMarkerImage,
   preloadSpeciesImages,
   clearImageCache,
   getMarkerPlaceholder,
@@ -241,15 +239,12 @@ const filteredSpeciesList = ref<Species[] | null>(null)
 const visibleProjects = computed(() => filteredProjectsList.value ?? projectsData.value)
 const visibleSpecies = computed(() => filteredSpeciesList.value ?? speciesData.value)
 
-// Base route for dataset navigation (without /3d suffix)
-const datasetBaseRoute = computed(() => {
-  return activeDataset.value === 'project-grants' ? '/project-grants' : '/endangered-species'
-})
+
 
 const isMobile = useMediaQuery('(max-width: 768px)')
 const mapContainerRef = ref<HTMLDivElement | null>(null)
 const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
-const speciesFilterPanelRef = ref<{ toggleTaxonomicGroup: (group: string) => void } | null>(null)
+const speciesFilterPanelRef = ref<{ toggleTaxonomicGroup: (_group: string) => void } | null>(null)
 const selectedSpeciesGroups = ref<string[]>([])
 const showHexGrid = ref(true)
 const showConnections = ref(true)
@@ -257,6 +252,8 @@ const taxonomicGroupsCollapsed = ref(true)
 const showFilterPanel = ref(false)
 const activeDataset = ref<'project-grants' | 'endangered-species'>(props.defaultDataset)
 const hasError = ref(false)
+const errorMessage = ref('')
+const noWebglSupport = ref(false)
 const isLoading = ref(true)
 const showSpeciesOverlay = ref(false)
 const speciesOverlayHTML = ref('')
@@ -354,28 +351,9 @@ function handleSpeciesGroupSelection(groups: string[]) {
   selectedSpeciesGroups.value = groups
 }
 
-function createPopup(maxWidth: string) {
-  const popup = new maplibregl.Popup({
-    closeButton: true,
-    closeOnClick: true,
-    focusAfterOpen: false,
-    maxWidth: 'none', // We'll handle sizing dynamically
-    offset: 14,
-    className: 'cyberpunk-popup'
-  })
-
-  popup.on('open', () => {
-    requestAnimationFrame(() => {
-      keepPopupFullyVisible(popup)
-      fitPopupToScreen(popup)
-    })
-  })
-
-  return popup
-}
-
 // Dynamically adjust popup size and position to show fully on screen
-function fitPopupToScreen(popup: maplibregl.Popup) {
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+function _fitPopupToScreen(popup: maplibregl.Popup) {
   const popupEl = popup.getElement()
   if (!popupEl) return
 
@@ -431,7 +409,8 @@ function fitPopupToScreen(popup: maplibregl.Popup) {
   })
 }
 
-function keepPopupFullyVisible(popup: maplibregl.Popup) {
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+function _keepPopupFullyVisible(popup: maplibregl.Popup) {
   if (!map) return
 
   const popupEl = popup.getElement()
@@ -613,7 +592,7 @@ function createSpeciesMarkerElement(species: Species): HTMLElement {
 
 let clusterIdCounter = 0
 
-function createClusterMarkerElement(count: number, items: { lat: number; lng: number; type: string }[]) {
+function createClusterMarkerElement(count: number, _items: { lat: number; lng: number; type: string }[]) {
   const uid = ++clusterIdCounter
   const size = Math.max(42, 28 + count * 5)
   const blobRadius = getBlobBorderRadius(size, count * 7 + size)
@@ -979,8 +958,31 @@ function debouncedSetupHexGrid() {
   }, 150)
 }
 
+function checkWebGLSupport(): boolean {
+  try {
+    const c = document.createElement('canvas')
+    const gl = c.getContext('webgl2') || c.getContext('webgl')
+    if (gl) {
+      const ext = gl.getExtension('WEBGL_lose_context')
+      if (ext) ext.loseContext()
+      return true
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
 function initMap() {
   if (!mapContainerRef.value) return
+
+  if (!checkWebGLSupport()) {
+    isLoading.value = false
+    hasError.value = true
+    noWebglSupport.value = true
+    errorMessage.value = 'WebGL is not supported in this browser. The map requires a GPU-accelerated browser. Try enabling hardware acceleration or using a different browser.'
+    return
+  }
 
   // Clean up existing map if retry
   if (map) {
@@ -990,6 +992,7 @@ function initMap() {
     map = null
   }
 
+  noWebglSupport.value = false
   isLoading.value = true
 
   try {
@@ -1096,10 +1099,12 @@ function initMap() {
     let usedFallback = false
 
     map.on('error', (err) => {
+      // eslint-disable-next-line no-console
       console.error('MapLibre error:', err)
       errorCount++
       if (!usedFallback && errorCount >= 2 && MAP_STYLE.includes('maptiler.com')) {
         usedFallback = true
+        // eslint-disable-next-line no-console
         console.warn('MapTiler style failed, falling back to demotiles style')
         map!.setStyle('https://demotiles.maplibre.org/style.json')
         return
@@ -1107,6 +1112,10 @@ function initMap() {
       if (!map?.loaded()) {
         isLoading.value = false
         hasError.value = true
+        const errObj = err as { error?: { status?: number; message?: string } }
+        if (errObj?.error?.status === 403) {
+          errorMessage.value = 'MapTiler API key is invalid or restricted. Please update your API key in the .env file.'
+        }
       }
     })
 
@@ -1119,9 +1128,14 @@ function initMap() {
 
     window.addEventListener('resize', debouncedSetupHexGrid)
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error('Failed to initialize map:', err)
     isLoading.value = false
     hasError.value = true
+    const msg = String(err)
+    if (msg.includes('WebGL') || msg.includes('webgl') || msg.includes('context')) {
+      errorMessage.value = 'WebGL is not supported in this browser. The map requires a GPU-accelerated browser. Try enabling hardware acceleration or using a different browser.'
+    }
   }
 }
 
@@ -1165,6 +1179,7 @@ onUnmounted(() => {
   markers = []
   clusterer.destroy()
   clearImageCache()
+  window.removeEventListener('resize', debouncedSetupHexGrid)
   if (map) {
     map.remove()
     map = null

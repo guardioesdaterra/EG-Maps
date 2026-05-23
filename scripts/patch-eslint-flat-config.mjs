@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Patch eslint-flat-config-utils to add Object.groupBy polyfill
  * This is needed for Node.js versions that don't support Object.groupBy natively

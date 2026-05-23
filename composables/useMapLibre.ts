@@ -39,7 +39,7 @@ export function useMapLibre(
     isGlobe?: boolean
     isMobile?: boolean
     mapStyle?: string
-    onLoad?: (map: MapLibreMap) => void
+    onLoad?: (_map: MapLibreMap) => void
   } = {}
 ) {
   const map = ref<MapLibreMap | null>(null)
@@ -60,8 +60,30 @@ export function useMapLibre(
     }
   })
 
+  function checkWebGLSupport() {
+    try {
+      const c = document.createElement('canvas')
+      const gl = c.getContext('webgl2') || c.getContext('webgl')
+      if (gl) {
+        const ext = gl.getExtension('WEBGL_lose_context')
+        if (ext) ext.loseContext()
+        return true
+      }
+      return false
+    } catch {
+      return false
+    }
+  }
+
   async function initMap() {
     if (!containerRef.value) return
+
+    if (!checkWebGLSupport()) {
+      isLoading.value = false
+      hasError.value = true
+      return
+    }
+
     isLoading.value = true
     hasError.value = false
     errorCount = 0
@@ -93,7 +115,10 @@ export function useMapLibre(
 
       if (options.isGlobe) {
         m.on('style.load', () => {
-          try { m.setProjection({ type: 'globe' } as any) } catch (e) { console.error('Error setting globe projection:', e) }
+          try { m.setProjection({ type: 'globe' }) } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error('Error setting globe projection:', e)
+          }
         })
       }
 
@@ -103,11 +128,13 @@ export function useMapLibre(
         options.onLoad?.(m)
       })
 
-      m.on('error', (err: any) => {
+      m.on('error', (err: unknown) => {
+        // eslint-disable-next-line no-console
         console.error('MapLibre error:', err)
         errorCount++
         if (!usedFallback && errorCount >= 2 && style.includes('maptiler.com')) {
           usedFallback = true
+          // eslint-disable-next-line no-console
           console.warn('MapTiler style failed, falling back to demotiles style')
           m.setStyle('https://demotiles.maplibre.org/style.json')
           return
@@ -121,6 +148,7 @@ export function useMapLibre(
       loadTimeout = setTimeout(() => { if (isLoading.value) isLoading.value = false }, 10000)
       map.value = m
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to initialize map:', err)
       isLoading.value = false
       hasError.value = true

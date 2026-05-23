@@ -27,15 +27,16 @@
     "species": "絶滅危惧種",
     "footer": "世界中の若者が主導する環境行動を強化",
     "databasesTitle": "絶滅危惧種データベース（レッドブック）",
-    "databasesDesc": "世界中の脅威にさらされた種を記録する公式红色リストを探索します。これらの重要な記録を最新の状態に保つためのデータを提供してください。",
+    "databasesDesc": "世界中の脅威にさらされた種を記録する公式レッドリストを探索します。これらの重要な記録を最新の状態に保つためのデータを提供してください。",
+    "databasesDescSuggest": "世界中の脅威にさらされた種を記録する公式レッドリストを探索します。追加すべきデータセットをご存知ですか？お知らせください。",
     "iucnTitle": "IUCN絶滅危惧種红色リスト",
     "iucnDesc": "国際自然保護連合により維持される、生物種々のグローバル保全状況に関する世界で最も包括的な目録。",
     "iucnScope": "グローバル",
     "icmbioTitle": "ICMBio / IBAMA — ブラジルレッドブック",
     "icmbioDesc": "ICMBioとIBAMAにより維持される、ブラジルの絶滅危惧種の公式レジストリ。この国の豊かな生物多様性の保全状況を記録しています。",
     "icmbioScope": "ブラジル",
-    "submitData": "データを送信",
-    "submitDataSubject": "レッドブックデータベースへのデータ提供"
+    "suggestDataset": "データセットを提案",
+    "suggestDatasetSubject": "EG-Mapsへの新しいデータセットを提案"
   },
   "mapControls": {
     "search": "検索",

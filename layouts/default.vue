@@ -313,7 +313,7 @@ const isActive = (path: string) => {
   return route.path.startsWith(path)
 }
 
-function getActiveStyle(variant: string = 'cyan') {
+function getActiveStyle(_variant: string = 'cyan') {
   if (isLightTheme.value) {
     return 'bg-black text-white shadow-none'
   }
@@ -321,7 +321,7 @@ function getActiveStyle(variant: string = 'cyan') {
   return 'bg-white text-black shadow-none'
 }
 
-function getActiveIndicatorClass(variant: string = 'cyan') {
+function getActiveIndicatorClass(_variant: string = 'cyan') {
   if (isLightTheme.value) {
     return 'bg-black'
   }

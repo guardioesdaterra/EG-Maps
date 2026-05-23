@@ -31,14 +31,15 @@
     "footer": "Empowering youth-led environmental action worldwide",
     "databasesTitle": "Endangered Species Databases (Red Books)",
     "databasesDesc": "Explore the official red lists that document threatened species worldwide. Contribute data to help keep these critical records up to date.",
+    "databasesDescSuggest": "Explore the official red lists that document threatened species worldwide. Know a dataset we should add? Suggest it to us.",
     "iucnTitle": "IUCN Red List of Threatened Species",
     "iucnDesc": "The world's most comprehensive inventory of the global conservation status of biological species, maintained by the International Union for Conservation of Nature.",
     "iucnScope": "Global",
     "icmbioTitle": "ICMBio / IBAMA \u2014 Livro Vermelho (Brazilian Red Book)",
     "icmbioDesc": "The official Brazilian registry of endangered species, maintained by ICMBio and IBAMA. Documents the conservation status of the country's rich biodiversity.",
     "icmbioScope": "Brazil",
-    "submitData": "Submit Data",
-    "submitDataSubject": "Data contribution for Red Book database"
+    "suggestDataset": "Suggest Dataset",
+    "suggestDatasetSubject": "Suggest a new dataset for EG-Maps"
   },
   "mapControls": {
     "search": "Search",

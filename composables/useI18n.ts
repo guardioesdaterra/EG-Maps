@@ -80,13 +80,6 @@ async function loadLocale(locale: Locale, baseURL?: string): Promise<Translation
   return data
 }
 
-// Legacy lookup function for compatibility
-function lookup(locale: Locale, key: string): string | undefined {
-  const translations = translationCache.get(locale)
-  if (!translations) return undefined
-  return deepGet(translations, key.split('.'))
-}
-
 function interpolate(template: string, args: unknown[]): string {
   let result = template
 

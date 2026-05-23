@@ -31,14 +31,15 @@
     "footer": "Impulsando la acción ambiental liderada por jóvenes en todo el mundo",
     "databasesTitle": "Bases de datos de especies en peligro (Libros Rojos)",
     "databasesDesc": "Explore las listas rojas oficiales que documentan especies amenazadas en todo el mundo. Contribuya con datos para mantener estos registros críticos actualizados.",
+    "databasesDescSuggest": "Explore las listas rojas oficiales que documentan especies amenazadas en todo el mundo. ¿Conoce un dataset que deberíamos agregar? Sugiéralo.",
     "iucnTitle": "Lista Roja de la UICN de Especies Amenazadas",
     "iucnDesc": "El inventario más completo del mundo sobre el estado de conservación de las especies biológicas, mantenido por la Unión Internacional para la Conservación de la Naturaleza.",
     "iucnScope": "Global",
     "icmbioTitle": "ICMBio / IBAMA — Livro Vermelho (Libro Rojo Brasileño)",
     "icmbioDesc": "El registro oficial brasileño de especies en peligro, mantenido por ICMBio e IBAMA. Documenta el estado de conservación de la rica biodiversidad del país.",
     "icmbioScope": "Brasil",
-    "submitData": "Enviar Datos",
-    "submitDataSubject": "Contribución de datos para la base del Libro Rojo"
+    "suggestDataset": "Sugerir Dataset",
+    "suggestDatasetSubject": "Sugerir un nuevo dataset para EG-Maps"
   },
   "mapControls": {
     "search": "Buscar",

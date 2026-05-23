@@ -28,14 +28,15 @@
     "footer": "赋能全球青年主导的环境行动",
     "databasesTitle": "濒危物种数据库（红皮书）",
     "databasesDesc": "探索记录全球受威胁物种的官方红色名录。贡献数据以帮助保持这些关键记录的更新。",
+    "databasesDescSuggest": "探索记录全球受威胁物种的官方红色名录。知道我们应该添加的数据集？推荐给我们。",
     "iucnTitle": "IUCN濒危物种红色名录",
     "iucnDesc": "由国际自然保护联盟维护的全球生物物种保护状况的最全面清单。",
     "iucnScope": "全球",
     "icmbioTitle": "ICMBio / IBAMA — 巴西红皮书",
     "icmbioDesc": "由ICMBio和IBAMA维护的巴西濒危物种官方登记处。记录该国丰富生物多样性的保护状况。",
     "icmbioScope": "巴西",
-    "submitData": "提交数据",
-    "submitDataSubject": "为红皮书数据库贡献数据"
+    "suggestDataset": "推荐数据集",
+    "suggestDatasetSubject": "为EG-Maps推荐新的数据集"
   },
   "mapControls": {
     "search": "搜索",

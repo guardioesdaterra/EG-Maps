@@ -6,7 +6,7 @@
           {{ t('home.databasesTitle') }}
         </h2>
         <p class="mt-2 xs:mt-3 max-w-[min(100%,40rem)] text-xs xs:text-sm leading-6 text-black/65">
-          {{ t('home.databasesDesc') }}
+          {{ t('home.databasesDescSuggest') }}
         </p>
       </header>
 
@@ -30,11 +30,11 @@
 
           <div class="mt-4 xs:mt-6 flex flex-wrap items-center gap-2 xs:gap-3">
             <a
-              :href="`mailto:crews@earthguardians.org?subject=${encodeURIComponent(t('home.submitDataSubject'))}%20-%20${encodeURIComponent(db.title)}`"
+              :href="`mailto:crews@earthguardians.org?subject=${encodeURIComponent(t('home.suggestDatasetSubject'))}%20-%20${encodeURIComponent(db.title)}`"
               class="inline-flex items-center gap-1.5 xs:gap-2 rounded-md border-2 border-black bg-black px-3 xs:px-4 xs:px-5 py-2 xs:py-2.5 text-xs xs:text-sm font-black text-white transition-colors hover:bg-white hover:text-black focus:outline-none focus:ring-4 focus:ring-black/20"
             >
               <Icon name="lucide:mail" class="h-3.5 w-3.5 xs:h-4 xs:w-4" />
-              {{ t('home.submitData') }}
+              {{ t('home.suggestDataset') }}
             </a>
             <a
               :href="db.link"

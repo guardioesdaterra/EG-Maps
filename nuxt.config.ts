@@ -80,9 +80,7 @@ export default defineNuxtConfig({
     compressPublicAssets: true,
   },
 
-  // WSL fix: disable vite-node IPC, enforce ws HMR
   experimental: {
-    viteEnvironmentApi: true,
     appManifest: false,
   },
 

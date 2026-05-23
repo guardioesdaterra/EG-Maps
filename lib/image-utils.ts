@@ -211,62 +211,6 @@ export function preloadSpeciesImages(imageUrls: string[], markerOnly = false, ba
   }
 }
 
-export function setupLazyMarkerImage(
-  element: HTMLElement,
-  originalImageUrl: string,
-  color: string,
-  mapElement?: HTMLElement,
-  baseURL?: string
-): void {
-  if (!originalImageUrl || !element) return
-
-  const thumbUrl = getMarkerImageUrl(originalImageUrl, baseURL)
-  if (!thumbUrl) return
-
-  const loadAndApply = async () => {
-    const cached = imageCache.get(thumbUrl)
-    let imageUrl: string | null = null
-
-    if (cached && isCacheValid(cached)) {
-      imageUrl = cached.error ? null : cached.url
-    } else {
-      imageUrl = await preloadImage(thumbUrl)
-    }
-
-    if (imageUrl && element.isConnected) {
-      element.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.18)), url("${imageUrl}")`
-      element.style.backgroundSize = 'cover'
-      element.style.backgroundPosition = 'center'
-    }
-  }
-
-  if (mapElement && typeof IntersectionObserver !== 'undefined') {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            loadAndApply()
-            observer.disconnect()
-          }
-        })
-      },
-      { root: mapElement, rootMargin: '200px' }
-    )
-    observer.observe(element)
-    ;(element as any)._imageObserver = observer
-  } else {
-    loadAndApply()
-  }
-}
-
-export function cleanupLazyMarkerImage(element: HTMLElement): void {
-  const observer = (element as any)._imageObserver as IntersectionObserver | undefined
-  if (observer) {
-    observer.disconnect()
-    delete (element as any)._imageObserver
-  }
-}
-
 export function clearImageCache(): void {
   imageCache.clear()
   loadingPromises.clear()

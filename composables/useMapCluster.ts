@@ -39,10 +39,8 @@ interface GeoJsonProperties {
 
 export function useMapCluster() {
   let index: Supercluster<GeoJsonProperties, GeoJsonProperties> | null = null
-  let items: ClusterItem[] = []
 
   function load(data: ClusterItem[]) {
-    items = data
     const features: PointFeature<GeoJsonProperties>[] = data.map((item) => ({
       type: 'Feature',
       geometry: {
@@ -133,7 +131,6 @@ export function useMapCluster() {
 
   function destroy() {
     index = null
-    items = []
   }
 
   return { load, getClusters, getClusterExpansionZoom, destroy }

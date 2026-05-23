@@ -123,8 +123,6 @@ export function createSpeciesMarkerElement(species: Species, baseURL?: string): 
   }), baseURL)
 }
 
-const MARKER_REF_PREFIX = 'eg-marker-'
-
 export function useMapMarkers(
   map: Ref<MapLibreMap | null>,
   baseURL?: string
@@ -137,8 +135,8 @@ export function useMapMarkers(
     projects: ProjectData[],
     species: Species[],
     isMobile: boolean,
-    onProjectClick?: (project: ProjectData) => void,
-    onSpeciesClick?: (species: Species) => void,
+    _onProjectClick?: (_project: ProjectData) => void,
+    _onSpeciesClick?: (_species: Species) => void,
   ) {
     if (!map.value) return
     clearMarkers()
@@ -148,7 +146,7 @@ export function useMapMarkers(
         if (!isValidCoordinate(project.latitude, project.longitude)) return
         const el = createProjectMarkerElement(project, baseURL)
         el.style.cursor = 'pointer'
-        el.addEventListener('click', () => onProjectClick?.(project))
+        el.addEventListener('click', () => _onProjectClick?.(project))
         const marker: maplibregl.Marker = new maplibregl.Marker({ element: el, anchor: 'center' })
         marker.setLngLat([project.longitude, project.latitude])
         marker.addTo(map.value!)
@@ -164,7 +162,7 @@ export function useMapMarkers(
         el.setAttribute('role', 'button')
         el.setAttribute('tabindex', '0')
         el.setAttribute('aria-label', `${sp.commonName} - ${sp.taxonomicGroup}`)
-        el.addEventListener('click', () => onSpeciesClick?.(sp))
+        el.addEventListener('click', () => _onSpeciesClick?.(sp))
         const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
         marker.setLngLat([sp.lng, sp.lat])
         marker.addTo(map.value!)

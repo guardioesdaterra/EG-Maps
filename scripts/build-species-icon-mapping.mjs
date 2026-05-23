@@ -1,12 +1,11 @@
 
+/* eslint-disable no-console */
 /**
- * SSG Build-Time Script: Species Icon Mapping Generator
+ * Build per-species icon mappings using the multi-algorithm
+ * matching system from lib/game-icons-map.
  *
- * Reads species JSON files, runs multi-algorithm matching to find
- * the best Game Icons icon per species.
- * Outputs: public/data/species/species-icon-mapping.json
- *
- * Run: node scripts/build-species-icon-mapping.mjs
+ * Usage:
+ *   node scripts/build-species-icon-mapping.mjs [species-dir] [output-dir]
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs'

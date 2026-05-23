@@ -192,9 +192,8 @@ test.describe('Dark mode toggle', () => {
   test('toggles dark mode and persists across pages', async ({ page }) => {
     await page.goto(route('/info'), { waitUntil: 'domcontentloaded', timeout: 30000 })
     await page.waitForTimeout(2000)
-
-    const toggleBtn = page.getByLabel(/switch/i)
-    await expect(toggleBtn).toBeVisible({ timeout: 10000 })
+    const toggleBtn = page.locator('header button').first()
+    await expect(toggleBtn).toBeVisible({ timeout: 5000 })
 
     const isDarkInitially = await page.locator('html').evaluate(el => el.classList.contains('dark'))
     await toggleBtn.click()

@@ -25,15 +25,11 @@
 
 <script setup lang="ts">
 const { t } = useI18n()
-const baseURL = useRuntimeConfig().app.baseURL
 
 useHead({
   title: 'Endangered Species Globe (3D) | Earth Guardians',
   meta: [
     { name: 'description', content: 'Interactive 3D globe of critically endangered species around the world' },
-  ],
-  link: [
-    { rel: 'preload', as: 'fetch', href: `${baseURL}data/species/icmbio-brazil.json`, crossorigin: 'anonymous' },
   ],
 })
 

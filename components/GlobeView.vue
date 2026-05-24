@@ -347,8 +347,7 @@ function checkWebGLSupport(): boolean {
     const c = document.createElement('canvas')
     const gl = c.getContext('webgl2') || c.getContext('webgl')
     if (gl) {
-      const ext = gl.getExtension('WEBGL_lose_context')
-      if (ext) ext.loseContext()
+      gl.getExtension('WEBGL_lose_context')
       return true
     }
     return false
@@ -383,7 +382,6 @@ async function initMap() {
       maxTileCacheSize: 200,
       maxTileCacheZoomLevels: 5,
       transformRequest,
-      canvasContextAttributes: { powerPreference: 'default' },
     } as maplibregl.MapOptions & { antialias?: boolean })
 
     map.addControl(
@@ -519,11 +517,13 @@ async function initMap() {
         map!.setStyle('https://demotiles.maplibre.org/style.json')
         return
       }
-      isLoading.value = false
-      hasError.value = true
-      const errObj = err as { error?: { status?: number; message?: string } }
-      if (errObj?.error?.status === 403) {
-        errorMessage.value = 'MapTiler API key is invalid or restricted. Please update your API key in the .env file.'
+      if (!map?.loaded()) {
+        isLoading.value = false
+        hasError.value = true
+        const errObj = err as { error?: { status?: number; message?: string } }
+        if (errObj?.error?.status === 403) {
+          errorMessage.value = 'MapTiler API key is invalid or restricted. Please update your API key in the .env file.'
+        }
       }
     })
 
@@ -539,7 +539,7 @@ async function initMap() {
     isLoading.value = false
     hasError.value = true
     const msg = String(err)
-    if (msg.includes('WebGL') || msg.includes('webgl') || msg.includes('context')) {
+    if (msg.includes('Failed to initialize WebGL')) {
       errorMessage.value = 'WebGL is not supported in this browser. The globe requires a GPU-accelerated browser. Try enabling hardware acceleration or using a different browser.'
     }
   }

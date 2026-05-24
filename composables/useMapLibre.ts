@@ -65,8 +65,7 @@ export function useMapLibre(
       const c = document.createElement('canvas')
       const gl = c.getContext('webgl2') || c.getContext('webgl')
       if (gl) {
-        const ext = gl.getExtension('WEBGL_lose_context')
-        if (ext) ext.loseContext()
+        gl.getExtension('WEBGL_lose_context')
         return true
       }
       return false
@@ -103,7 +102,6 @@ export function useMapLibre(
         maxTileCacheSize: 200,
         maxTileCacheZoomLevels: 5,
         transformRequest,
-        canvasContextAttributes: { powerPreference: 'default' },
       } as maplibregl.MapOptions & { antialias?: boolean })
 
       m.addControl(new maplibregl.AttributionControl({

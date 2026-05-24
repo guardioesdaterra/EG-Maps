@@ -1,0 +1,30 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "openhands": {
+      "name": "OpenHands",
+      "api": "https://llm-proxy.app.all-hands.dev",
+      "options": {
+        "apiKey": "sk-oh-f87lsrS8HoqjXpTyUoqhagwqaiIC1DiV",
+        "baseURL": "https://llm-proxy.app.all-hands.dev"
+      },
+      "models": {
+        "minimax-m2.7": {
+          "id": "openhands/minimax-m2.7",
+          "name": "MiniMax M2.7",
+          "tool_call": true,
+          "limit": {
+            "context": 128000,
+            "output": 4096
+          },
+          "cost": {
+            "input": 0,
+            "output": 0
+          }
+        }
+      }
+    }
+  },
+  "model": "openhands/minimax-m2.7",
+  "small_model": "openhands/minimax-m2.7"
+}

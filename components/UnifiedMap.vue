@@ -78,11 +78,6 @@
     <!-- Map Container -->
     <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" />
 
-    <!-- Global Stats (for project grants only) - Mobile optimized -->
-    <div v-if="activeDataset === 'project-grants'" class="absolute right-0 bottom-24 xs:bottom-28 sm:bottom-4 w-full max-w-[calc(100vw-1rem)] xs:max-w-xl px-2 xs:px-3 sm:px-4 lg:px-0" :style="{ zIndex: 'var(--z-map-global-stats)' }">
-      <GlobalStats :projects="visibleProjects" @close="() => {}" />
-    </div>
-
     <!-- Project filter panel -->
     <ProjectFilterPanel
       v-if="activeDataset === 'project-grants' && showFilterPanel"
@@ -100,27 +95,14 @@
       @close="showFilterPanel = false"
     />
 
-    <!-- Species legend (for endangered species) - Mobile optimized -->
-    <div v-if="activeDataset === 'endangered-species'" class="absolute right-[max(0.5rem,env(safe-area-inset-right))] sm:right-4 top-[clamp(16rem,40vh,22rem)] xs:top-[clamp(18rem,42vh,24rem)]" :style="{ zIndex: 'var(--z-map-global-stats)' }">
-      <div class="taxonomic-group-bubble">
-        <button @click="taxonomicGroupsCollapsed = !taxonomicGroupsCollapsed" class="flex items-center gap-1.5 w-full text-left mb-1.5 xs:mb-2">
-          <iconify-icon :icon="taxonomicGroupsCollapsed ? 'lucide:chevron-right' : 'lucide:chevron-down'" class="h-3.5 w-3.5 xs:h-4 xs:w-4 text-[var(--text-secondary)] transition-transform" />
-          <span class="text-[10px] xs:text-xs font-bold text-[var(--text-primary)]">{{ t('globe.taxonomicGroups') }}</span>
-        </button>
-        <div v-if="!taxonomicGroupsCollapsed" class="grid grid-cols-2 gap-1 xs:gap-1.5 animate-fade-in">
-          <button
-            v-for="(color, group) in GROUP_COLORS"
-            :key="group"
-            class="flex items-center gap-1 xs:gap-1.5 group cursor-pointer rounded px-0.5 xs:px-1 py-0.5 text-left transition-colors hover:bg-cyan-500/10"
-            :class="selectedSpeciesGroups.includes(group) ? 'bg-cyan-500/15' : ''"
-            @click="toggleLegendGroup(group)"
-          >
-            <div class="w-2 h-2 xs:w-2.5 xs:h-2.5 rounded-full transition-transform duration-200 group-hover:scale-125" :style="{ backgroundColor: color }" />
-            <span class="text-[9px] xs:text-[10px] text-[var(--text-secondary)] group-hover:text-cyan-400 transition-colors">{{ taxonomicGroupLabel(group) }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Data Bubble: species groups or project stats -->
+    <DataBubble
+      :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'"
+      :selected-groups="selectedSpeciesGroups"
+      :projects="visibleProjects"
+      position-top="clamp(16rem, 40vh, 22rem)"
+      @toggle-group="toggleLegendGroup"
+    />
 
     <!-- Map Controls -->
     <MapControls
@@ -193,7 +175,7 @@ import {
   getProjectPlaceholder,
 } from '@/lib/image-utils'
 import { useMapCluster } from '@/composables/useMapCluster'
-import type { ClusterPoint } from '@/composables/useMapCluster'
+import { MAX_CLUSTER_SIZE, type ClusterPoint, type ClusterItem } from '@/composables/useMapCluster'
 
 const { t, locale } = useI18n()
 
@@ -248,7 +230,6 @@ const speciesFilterPanelRef = ref<{ toggleTaxonomicGroup: (_group: string) => vo
 const selectedSpeciesGroups = ref<string[]>([])
 const showHexGrid = ref(true)
 const showConnections = ref(true)
-const taxonomicGroupsCollapsed = ref(true)
 const showFilterPanel = ref(false)
 const activeDataset = ref<'project-grants' | 'endangered-species'>(props.defaultDataset)
 const hasError = ref(false)
@@ -463,23 +444,6 @@ function toggleConnections() {
   showConnections.value = !showConnections.value
 }
 
-function hashString(str: string): number {
-  let h = 0
-  for (let i = 0; i < str.length; i++) {
-    h = ((h << 5) - h) + str.charCodeAt(i)
-    h |= 0
-  }
-  return Math.abs(h)
-}
-
-function getBlobBorderRadius(size: number, seed: number): string {
-  const a = 44 + Math.sin(seed * 1.7 + size * 0.1) * 14
-  const b = 56 + Math.cos(seed * 2.3 + size * 0.15) * 14
-  const c = 48 + Math.sin(seed * 3.7 + size * 0.2) * 14
-  const d = 52 + Math.cos(seed * 5.1 + size * 0.25) * 14
-  return `${a}% ${b}% ${c}% ${d}% / ${b}% ${c}% ${d}% ${a}%`
-}
-
 function getUnifiedMarkerMetrics(options: {
   color: string
   size: number
@@ -504,6 +468,7 @@ function getUnifiedMarkerMetrics(options: {
 
 function createUnifiedMarkerElement(metrics: ReturnType<typeof getUnifiedMarkerMetrics>) {
   const el = document.createElement('div')
+  el.className = 'globe-marker-item'
   el.style.width = `${metrics.hitSize}px`
   el.style.height = `${metrics.hitSize}px`
   el.style.display = 'flex'
@@ -512,39 +477,38 @@ function createUnifiedMarkerElement(metrics: ReturnType<typeof getUnifiedMarkerM
   el.style.cursor = 'pointer'
   el.style.pointerEvents = 'auto'
   el.style.zIndex = '10'
-  el.style.willChange = 'transform'
-
-  const blobRadius = getBlobBorderRadius(metrics.visualSize, hashString(metrics.group ?? metrics.color))
 
   const inner = document.createElement('div')
   inner.style.width = `${metrics.visualSize}px`
   inner.style.height = `${metrics.visualSize}px`
-  inner.style.borderRadius = blobRadius
-  inner.style.backgroundColor = 'rgba(0, 0, 0, 0.82)'
-  inner.style.border = '2px solid rgba(255, 255, 255, 0.86)'
-  inner.style.boxShadow = `0 0 ${Math.max(8, metrics.visualSize * 0.5)}px ${metrics.color}, 0 0 1.5px #fff`
+  inner.style.borderRadius = '50%'
+  inner.style.background = `radial-gradient(circle at 30% 25%, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.88) 85%)`
+  inner.style.backdropFilter = 'blur(4px)'
+  inner.style.border = `1.5px solid ${metrics.color}`
+  inner.style.boxShadow = `0 0 ${Math.max(6, metrics.visualSize * 0.35)}px ${metrics.color}, 0 0 1px rgba(255,255,255,0.5), inset 0 0 12px rgba(0,0,0,0.3)`
   inner.style.display = 'flex'
   inner.style.justifyContent = 'center'
   inner.style.alignItems = 'center'
   inner.style.position = 'relative'
   inner.style.overflow = 'hidden'
-  inner.style.transition = 'transform 160ms ease, box-shadow 160ms ease, width 160ms ease, height 160ms ease'
+  inner.style.transition = 'transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 180ms ease'
   inner.style.transformOrigin = 'center center'
   inner.style.transform = 'scale(1)'
+  inner.classList.add('marker-glow-breathe')
 
   if (metrics.originalImageUrl) {
     const thumbUrl = getMarkerImageUrl(metrics.originalImageUrl, baseURL)
     if (thumbUrl) {
-      inner.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.18)), url("${thumbUrl}")`
+      inner.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.25)), url("${thumbUrl}")`
       inner.style.backgroundSize = 'cover'
       inner.style.backgroundPosition = 'center'
     }
   } else if (metrics.imageUrl) {
-    inner.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.18)), url("${metrics.imageUrl}")`
+    inner.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.25)), url("${metrics.imageUrl}")`
     inner.style.backgroundSize = 'cover'
     inner.style.backgroundPosition = 'center'
   } else {
-    inner.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.18)), url("${getMarkerPlaceholder(metrics.group)}")`
+    inner.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.25)), url("${getMarkerPlaceholder(metrics.group)}")`
     inner.style.backgroundSize = 'cover'
     inner.style.backgroundPosition = 'center'
   }
@@ -552,14 +516,14 @@ function createUnifiedMarkerElement(metrics: ReturnType<typeof getUnifiedMarkerM
   el.appendChild(inner)
 
   el.addEventListener('mouseenter', () => {
-    inner.style.transform = 'scale(1.28)'
-    inner.style.boxShadow = `0 0 ${Math.max(16, metrics.visualSize * 0.9)}px ${metrics.color}, 0 0 4px #fff`
+    inner.style.transform = 'scale(1.25)'
+    inner.style.boxShadow = `0 0 ${Math.max(14, metrics.visualSize * 0.8)}px ${metrics.color}, 0 0 3px rgba(255,255,255,0.8), inset 0 0 16px rgba(0,0,0,0.2)`
     el.style.zIndex = '100'
   })
 
   el.addEventListener('mouseleave', () => {
     inner.style.transform = 'scale(1)'
-    inner.style.boxShadow = `0 0 ${Math.max(8, metrics.visualSize * 0.5)}px ${metrics.color}, 0 0 1.5px #fff`
+    inner.style.boxShadow = `0 0 ${Math.max(6, metrics.visualSize * 0.35)}px ${metrics.color}, 0 0 1px rgba(255,255,255,0.5), inset 0 0 12px rgba(0,0,0,0.3)`
     el.style.zIndex = '10'
   })
 
@@ -590,92 +554,272 @@ function createSpeciesMarkerElement(species: Species): HTMLElement {
   }))
 }
 
-let clusterIdCounter = 0
+function parseColor(hex: string): [number, number, number] {
+  const c = hex.replace('#', '')
+  return [parseInt(c.substring(0, 2), 16), parseInt(c.substring(2, 4), 16), parseInt(c.substring(4, 6), 16)]
+}
 
-function createClusterMarkerElement(count: number, _items: { lat: number; lng: number; type: string }[]) {
-  const uid = ++clusterIdCounter
-  const size = Math.max(42, 28 + count * 5)
-  const blobRadius = getBlobBorderRadius(size, count * 7 + size)
+function formatColor(r: number, g: number, b: number): string {
+  return `#${[r, g, b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('')}`
+}
+
+function blendColors(colors: string[]): string {
+  if (!colors.length) return '#6366f1'
+  const unique = [...new Set(colors)]
+  if (unique.length === 1) return unique[0]
+  const parsed = unique.map(c => parseColor(c))
+  const total = parsed.reduce((s, c) => [s[0] + c[0], s[1] + c[1], s[2] + c[2]], [0, 0, 0])
+  const r = Math.round(total[0] / parsed.length)
+  const g = Math.round(total[1] / parsed.length)
+  const b = Math.round(total[2] / parsed.length)
+  return formatColor(r, g, b)
+}
+
+function createClusterMarkerElement(
+  count: number,
+  items: ClusterItem[],
+  sourceProjects?: ProjectData[],
+  sourceSpecies?: Species[]
+) {
+  const dataset = activeDataset.value
+
+  function resolveMini(item: ClusterItem): { url: string; color: string } {
+    if (dataset === 'endangered-species' && sourceSpecies?.length) {
+      const sp = sourceSpecies[item.index]
+      if (sp) {
+        const color = GROUP_COLORS[sp.taxonomicGroup] ?? '#B64030'
+        if (sp.imageUrl) {
+          const thumbUrl = getMarkerImageUrl(sp.imageUrl, baseURL)
+          if (thumbUrl) return { url: thumbUrl, color }
+        }
+        return { url: getMarkerPlaceholder(sp.taxonomicGroup), color }
+      }
+    }
+    if (dataset === 'project-grants' && sourceProjects?.length) {
+      const pr = sourceProjects[item.index]
+      if (pr) {
+        const color = getProjectColorByBeneficiaries(pr.direct_beneficiaries, pr.indirect_beneficiaries)
+        const placeholder = getProjectPlaceholder(pr.project_title)
+        return { url: getMarkerPlaceholder(placeholder), color }
+      }
+    }
+    return { url: getMarkerPlaceholder(), color: '#6366f1' }
+  }
+
+  const resolved = items.map(i => resolveMini(i))
+  const colors = resolved.map(r => r.color)
+  const dominant = blendColors(colors)
+  const [dr, dg, db] = parseColor(dominant)
 
   const outer = document.createElement('div')
-  outer.style.width = `${size + 18}px`
-  outer.style.height = `${size + 18}px`
-  outer.style.display = 'flex'
-  outer.style.justifyContent = 'center'
-  outer.style.alignItems = 'center'
+  outer.className = 'globe-marker-item'
   outer.style.cursor = 'pointer'
   outer.style.pointerEvents = 'auto'
   outer.style.zIndex = '20'
   outer.style.position = 'relative'
+  outer.title = `${count} items`
 
-  const blob = document.createElement('div')
-  blob.style.width = `${size}px`
-  blob.style.height = `${size}px`
-  blob.style.borderRadius = blobRadius
-  blob.style.background = `radial-gradient(circle at 35% 30%, rgba(6, 182, 212, 0.25), rgba(0, 0, 0, 0.92) 70%)`
-  blob.style.border = '2px solid rgba(6, 182, 212, 0.7)'
-  blob.style.boxShadow = `0 0 ${Math.max(10, size * 0.35)}px rgba(6, 182, 212, 0.35), 0 0 ${Math.max(4, size * 0.15)}px rgba(255, 255, 255, 0.3), inset 0 0 30px rgba(6, 182, 212, 0.08)`
-  blob.style.display = 'flex'
-  blob.style.flexDirection = 'column'
-  blob.style.justifyContent = 'center'
-  blob.style.alignItems = 'center'
-  blob.style.position = 'relative'
-  blob.style.overflow = 'hidden'
-  blob.style.transition = 'transform 200ms ease, box-shadow 200ms ease'
-  blob.style.transformOrigin = 'center center'
-  blob.style.transform = 'scale(1)'
-  blob.style.animation = `clusterPulse ${2.5 + (count % 3) * 0.5}s ease-in-out infinite`
+  if (items.length <= MAX_CLUSTER_SIZE) {
+    const miniSize = items.length <= 3 ? 24 : 20
+    const containerSize = items.length <= 2 ? 48 : items.length <= 4 ? 58 : 66
+    const orbitRadius = items.length <= 2 ? 10 : items.length <= 4 ? 14 : 17
 
-  const shine = document.createElement('div')
-  shine.style.position = 'absolute'
-  shine.style.top = '8%'
-  shine.style.left = '12%'
-  shine.style.width = '35%'
-  shine.style.height = '25%'
-  shine.style.borderRadius = '50%'
-  shine.style.background = 'radial-gradient(ellipse, rgba(255,255,255,0.18), transparent)'
-  shine.style.pointerEvents = 'none'
-  blob.appendChild(shine)
+    outer.style.width = `${containerSize}px`
+    outer.style.height = `${containerSize}px`
+    outer.style.display = 'flex'
+    outer.style.justifyContent = 'center'
+    outer.style.alignItems = 'center'
 
-  const countEl = document.createElement('span')
-  countEl.textContent = `${count}`
-  countEl.style.color = '#fff'
-  countEl.style.fontSize = `${Math.max(13, 16 - count)}px`
-  countEl.style.fontWeight = '800'
-  countEl.style.lineHeight = '1'
-  countEl.style.textShadow = '0 0 8px rgba(6, 182, 212, 0.9), 0 0 20px rgba(6, 182, 212, 0.4)'
-  countEl.style.position = 'relative'
-  countEl.style.zIndex = '1'
-  blob.appendChild(countEl)
+    const clusterInner = document.createElement('div')
+    clusterInner.style.position = 'relative'
+    clusterInner.style.width = `${containerSize}px`
+    clusterInner.style.height = `${containerSize}px`
+    clusterInner.style.display = 'flex'
+    clusterInner.style.justifyContent = 'center'
+    clusterInner.style.alignItems = 'center'
 
-  const styleId = `cluster-pulse-${uid}`
-  if (!document.getElementById(styleId)) {
-    const style = document.createElement('style')
-    style.id = styleId
-    style.textContent = `
-      @keyframes clusterPulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.06); }
-      }
-    `
-    document.head.appendChild(style)
+    const ringOuterR = (containerSize + 6) / 2
+    const ringInnerR = ringOuterR - 1.5
+    const rainbowRing = document.createElement('div')
+    rainbowRing.className = 'cluster-rainbow-ring'
+    rainbowRing.style.position = 'absolute'
+    rainbowRing.style.inset = '-3px'
+    rainbowRing.style.borderRadius = '50%'
+    rainbowRing.style.background = 'conic-gradient(from var(--a, 0deg), #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #9b59b6, #ff6b6b)'
+    rainbowRing.style.mask = `radial-gradient(farthest-side, transparent ${ringInnerR}px, #000 ${ringOuterR}px)`
+    rainbowRing.style.webkitMask = `radial-gradient(farthest-side, transparent ${ringInnerR}px, #000 ${ringOuterR}px)`
+    rainbowRing.style.pointerEvents = 'none'
+    clusterInner.appendChild(rainbowRing)
+
+    const bgBlob = document.createElement('div')
+    bgBlob.style.position = 'absolute'
+    bgBlob.style.inset = '-2px'
+    bgBlob.style.borderRadius = '50%'
+    bgBlob.style.background = `radial-gradient(circle at 30% 25%, rgba(${dr},${dg},${db},0.18), rgba(0,0,0,0.9) 75%)`
+    bgBlob.style.backdropFilter = 'blur(8px)'
+    bgBlob.style.boxShadow = `0 0 12px rgba(${dr},${dg},${db},0.25), inset 0 0 20px rgba(${dr},${dg},${db},0.04)`
+    bgBlob.style.transition = 'transform 200ms ease, box-shadow 200ms ease'
+    bgBlob.style.transformOrigin = 'center center'
+    clusterInner.appendChild(bgBlob)
+
+    const angleStep = (Math.PI * 2) / items.length
+    items.forEach((_item, i) => {
+      const { url, color: itemColor } = resolved[i]
+      const angle = angleStep * i - Math.PI / 2
+      const x = Math.cos(angle) * orbitRadius
+      const y = Math.sin(angle) * orbitRadius
+
+      const mini = document.createElement('div')
+      mini.className = 'cluster-mini-hover'
+      mini.style.position = 'absolute'
+      mini.style.width = `${miniSize}px`
+      mini.style.height = `${miniSize}px`
+      mini.style.borderRadius = '50%'
+      mini.style.background = `url("${url}") center/cover`
+      mini.style.border = '1.5px solid rgba(255,255,255,0.85)'
+      mini.style.boxShadow = `0 0 7px ${itemColor}, 0 0 1.5px #fff`
+      mini.style.top = `calc(50% + ${y}px - ${miniSize / 2}px)`
+      mini.style.left = `calc(50% + ${x}px - ${miniSize / 2}px)`
+      mini.style.pointerEvents = 'none'
+      clusterInner.appendChild(mini)
+    })
+
+    const countBadge = document.createElement('div')
+    countBadge.textContent = `${count}`
+    countBadge.style.position = 'absolute'
+    countBadge.style.bottom = '-4px'
+    countBadge.style.right = '-4px'
+    countBadge.style.background = dominant
+    countBadge.style.color = '#fff'
+    countBadge.style.fontSize = '8px'
+    countBadge.style.fontWeight = '800'
+    countBadge.style.lineHeight = '1'
+    countBadge.style.padding = '2px 5px'
+    countBadge.style.borderRadius = '8px'
+    countBadge.style.border = '1.5px solid rgba(0,0,0,0.5)'
+    countBadge.style.boxShadow = `0 0 8px ${dominant}`
+    countBadge.style.zIndex = '5'
+    clusterInner.appendChild(countBadge)
+
+    outer.appendChild(clusterInner)
+
+    outer.addEventListener('mouseenter', () => {
+      bgBlob.style.transform = 'scale(1.12)'
+      bgBlob.style.boxShadow = `0 0 22px rgba(${dr},${dg},${db},0.45), inset 0 0 30px rgba(${dr},${dg},${db},0.08)`
+      rainbowRing.style.opacity = '0.85'
+      outer.style.zIndex = '100'
+    })
+    outer.addEventListener('mouseleave', () => {
+      bgBlob.style.transform = 'scale(1)'
+      bgBlob.style.boxShadow = `0 0 12px rgba(${dr},${dg},${db},0.25), inset 0 0 20px rgba(${dr},${dg},${db},0.04)`
+      rainbowRing.style.opacity = '1'
+      outer.style.zIndex = '20'
+    })
+  } else {
+    const miniSize = 14
+    const cols = 4
+    const rows = Math.ceil(Math.min(count, 12) / cols)
+    const gap = 2
+    const pad = 5
+    const gridW = cols * (miniSize + gap) - gap + pad * 2
+    const gridH = rows * (miniSize + gap) - gap + pad * 2
+
+    outer.style.width = `${gridW}px`
+    outer.style.height = `${gridH}px`
+    outer.style.display = 'flex'
+    outer.style.justifyContent = 'center'
+    outer.style.alignItems = 'center'
+
+    const grid = document.createElement('div')
+    grid.style.position = 'relative'
+    grid.style.display = 'flex'
+    grid.style.flexWrap = 'wrap'
+    grid.style.alignContent = 'center'
+    grid.style.justifyContent = 'center'
+    grid.style.gap = `${gap}px`
+    grid.style.width = '100%'
+    grid.style.height = '100%'
+    grid.style.padding = `${pad}px`
+    grid.style.borderRadius = '14px'
+    grid.style.background = `radial-gradient(circle at 30% 25%, rgba(${dr},${dg},${db},0.12), rgba(0,0,0,0.92) 75%)`
+    grid.style.backdropFilter = 'blur(8px)'
+    grid.style.boxShadow = `0 0 12px rgba(${dr},${dg},${db},0.18), inset 0 0 16px rgba(${dr},${dg},${db},0.03)`
+    grid.style.transition = 'transform 200ms ease, box-shadow 200ms ease'
+    grid.style.transformOrigin = 'center center'
+
+    const rainbowBorder = document.createElement('div')
+    rainbowBorder.className = 'cluster-rainbow-border'
+    rainbowBorder.style.position = 'absolute'
+    rainbowBorder.style.inset = '-2px'
+    rainbowBorder.style.borderRadius = '15px'
+    rainbowBorder.style.background = 'conic-gradient(from var(--a, 0deg), #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #9b59b6, #ff6b6b)'
+    const gridOuterR = Math.min(gridW, gridH) / 2 + 2
+    const gridInnerR = gridOuterR - 1.5
+    rainbowBorder.style.mask = `radial-gradient(farthest-side, transparent ${gridInnerR}px, #000 ${gridOuterR}px)`
+    rainbowBorder.style.webkitMask = `radial-gradient(farthest-side, transparent ${gridInnerR}px, #000 ${gridOuterR}px)`
+    rainbowBorder.style.pointerEvents = 'none'
+    rainbowBorder.style.zIndex = '0'
+
+    const gridInner = document.createElement('div')
+    gridInner.style.position = 'relative'
+    gridInner.style.display = 'flex'
+    gridInner.style.flexWrap = 'wrap'
+    gridInner.style.alignContent = 'center'
+    gridInner.style.justifyContent = 'center'
+    gridInner.style.gap = `${gap}px`
+    gridInner.style.width = '100%'
+    gridInner.style.height = '100%'
+    gridInner.style.zIndex = '1'
+
+    const maxShow = cols * rows - 1
+    resolved.slice(0, maxShow).forEach(({ url, color: itemColor }) => {
+      const mini = document.createElement('div')
+      mini.className = 'cluster-mini-hover'
+      mini.style.width = `${miniSize}px`
+      mini.style.height = `${miniSize}px`
+      mini.style.borderRadius = '50%'
+      mini.style.background = `url("${url}") center/cover`
+      mini.style.border = '1px solid rgba(255,255,255,0.75)'
+      mini.style.boxShadow = `0 0 4px ${itemColor}`
+      mini.style.flexShrink = '0'
+      gridInner.appendChild(mini)
+    })
+
+    if (count > maxShow) {
+      const more = document.createElement('div')
+      more.className = 'cluster-mini-hover'
+      more.textContent = `+${count - maxShow}`
+      more.style.width = `${miniSize}px`
+      more.style.height = `${miniSize}px`
+      more.style.borderRadius = '50%'
+      more.style.background = `rgba(${dr},${dg},${db},0.55)`
+      more.style.backdropFilter = 'blur(4px)'
+      more.style.border = `1.5px solid ${dominant}`
+      more.style.color = '#fff'
+      more.style.fontSize = '7px'
+      more.style.fontWeight = '800'
+      more.style.display = 'flex'
+      more.style.alignItems = 'center'
+      more.style.justifyContent = 'center'
+      more.style.flexShrink = '0'
+      gridInner.appendChild(more)
+    }
+
+    grid.appendChild(rainbowBorder)
+    grid.appendChild(gridInner)
+    outer.appendChild(grid)
+
+    outer.addEventListener('mouseenter', () => {
+      grid.style.transform = 'scale(1.1)'
+      grid.style.boxShadow = `0 0 22px rgba(${dr},${dg},${db},0.4), inset 0 0 28px rgba(${dr},${dg},${db},0.06)`
+      outer.style.zIndex = '100'
+    })
+    outer.addEventListener('mouseleave', () => {
+      grid.style.transform = 'scale(1)'
+      grid.style.boxShadow = `0 0 12px rgba(${dr},${dg},${db},0.18), inset 0 0 16px rgba(${dr},${dg},${db},0.03)`
+      outer.style.zIndex = '20'
+    })
   }
-
-  outer.appendChild(blob)
-
-  outer.addEventListener('mouseenter', () => {
-    blob.style.animation = 'none'
-    blob.style.transform = 'scale(1.18)'
-    blob.style.boxShadow = `0 0 ${Math.max(18, size * 0.6)}px rgba(6, 182, 212, 0.6), 0 0 6px rgba(255, 255, 255, 0.5), inset 0 0 40px rgba(6, 182, 212, 0.12)`
-    outer.style.zIndex = '100'
-  })
-
-  outer.addEventListener('mouseleave', () => {
-    blob.style.animation = `clusterPulse ${2.5 + (count % 3) * 0.5}s ease-in-out infinite`
-    blob.style.transform = 'scale(1)'
-    blob.style.boxShadow = `0 0 ${Math.max(10, size * 0.35)}px rgba(6, 182, 212, 0.35), 0 0 ${Math.max(4, size * 0.15)}px rgba(255, 255, 255, 0.3), inset 0 0 30px rgba(6, 182, 212, 0.08)`
-    outer.style.zIndex = '20'
-  })
 
   return outer
 }
@@ -713,13 +857,17 @@ function rebuildMarkers() {
 
     clusters.forEach((cp: ClusterPoint) => {
       if (cp.type === 'cluster') {
-        const el = createClusterMarkerElement(cp.count, cp.items)
+        const el = createClusterMarkerElement(cp.count, cp.items, validProjects)
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
         el.setAttribute('aria-label', `Cluster of ${cp.count} projects`)
         el.addEventListener('click', () => {
           if (map) {
-            const zoom = clusterer.getClusterExpansionZoom(cp.clusterId)
+            const items = cp.items
+            const lats = items.map(i => i.lat)
+            const lngs = items.map(i => i.lng)
+            const span = Math.max(Math.max(...lats) - Math.min(...lats), Math.max(...lngs) - Math.min(...lngs))
+            const zoom = Math.max(4, Math.min(12, 14 - Math.log2(Math.max(span, 0.1))))
             map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 400 })
           }
         })
@@ -772,13 +920,17 @@ function rebuildMarkers() {
 
     clusters.forEach((cp: ClusterPoint) => {
       if (cp.type === 'cluster') {
-        const el = createClusterMarkerElement(cp.count, cp.items)
+        const el = createClusterMarkerElement(cp.count, cp.items, undefined, speciesToRender)
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
         el.setAttribute('aria-label', `Cluster of ${cp.count} species`)
         el.addEventListener('click', () => {
           if (map) {
-            const zoom = clusterer.getClusterExpansionZoom(cp.clusterId)
+            const items = cp.items
+            const lats = items.map(i => i.lat)
+            const lngs = items.map(i => i.lng)
+            const span = Math.max(Math.max(...lats) - Math.min(...lats), Math.max(...lngs) - Math.min(...lngs))
+            const zoom = Math.max(4, Math.min(12, 14 - Math.log2(Math.max(span, 0.1))))
             map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 400 })
           }
         })
@@ -958,30 +1110,8 @@ function debouncedSetupHexGrid() {
   }, 150)
 }
 
-function checkWebGLSupport(): boolean {
-  try {
-    const c = document.createElement('canvas')
-    const gl = c.getContext('webgl2') || c.getContext('webgl')
-    if (gl) {
-      gl.getExtension('WEBGL_lose_context')
-      return true
-    }
-    return false
-  } catch {
-    return false
-  }
-}
-
 function initMap() {
   if (!mapContainerRef.value) return
-
-  if (!checkWebGLSupport()) {
-    isLoading.value = false
-    hasError.value = true
-    noWebglSupport.value = true
-    errorMessage.value = 'WebGL is not supported in this browser. The map requires a GPU-accelerated browser. Try enabling hardware acceleration or using a different browser.'
-    return
-  }
 
   // Clean up existing map if retry
   if (map) {
@@ -1131,10 +1261,6 @@ function initMap() {
     console.error('Failed to initialize map:', err)
     isLoading.value = false
     hasError.value = true
-    const msg = String(err)
-    if (msg.includes('Failed to initialize WebGL')) {
-      errorMessage.value = 'WebGL is not supported in this browser. The map requires a GPU-accelerated browser. Try enabling hardware acceleration or using a different browser.'
-    }
   }
 }
 

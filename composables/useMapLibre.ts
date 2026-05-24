@@ -1,5 +1,6 @@
 import { ref, onMounted, onUnmounted, type Ref } from 'vue'
 import type { Map as MapLibreMap } from 'maplibre-gl'
+import { useOfflineTiles } from './useOfflineTiles'
 
 export function getMapStyle(apiKey?: string): string {
   if (apiKey) return `https://api.maptiler.com/maps/satellite/style.json?key=${apiKey}`
@@ -9,14 +10,7 @@ export function getMapStyle(apiKey?: string): string {
 const tileCache = new Map<string, Response>()
 const MAX_TILE_CACHE = 500
 
-export function transformRequest(url: string, _resourceType?: string) {
-  if (tileCache.has(url)) {
-    return { url, headers: {}, method: 'GET' as const, type: 'image' as const, credentials: 'same-origin' as const, collectResourceTiming: false }
-  }
-  return { url }
-}
-
-function trimTileCache() {
+export function trimTileCache() {
   if (tileCache.size > MAX_TILE_CACHE) {
     const keys = [...tileCache.keys()]
     const toDelete = keys.slice(0, tileCache.size - MAX_TILE_CACHE)
@@ -50,7 +44,21 @@ export function useMapLibre(
   let usedFallback = false
   let loadTimeout: ReturnType<typeof setTimeout> | null = null
 
-  onMounted(() => { isMounted = true })
+  const apiKey = (typeof useRuntimeConfig !== 'undefined')
+    ? useRuntimeConfig().public.maptilerApiKey
+    : ''
+
+  const offlineTiles = useOfflineTiles(apiKey, containerRef)
+  let offlineInitialized = false
+
+  onMounted(() => {
+    isMounted = true
+    if (!offlineInitialized) {
+      offlineTiles.init().then(() => { offlineInitialized = true })
+      offlineInitialized = true
+    }
+  })
+
   onUnmounted(() => {
     isMounted = false
     if (loadTimeout) clearTimeout(loadTimeout)
@@ -60,28 +68,34 @@ export function useMapLibre(
     }
   })
 
-  function checkWebGLSupport() {
-    try {
-      const c = document.createElement('canvas')
-      const gl = c.getContext('webgl2') || c.getContext('webgl')
-      if (gl) {
-        gl.getExtension('WEBGL_lose_context')
-        return true
+  function createTransformRequest() {
+    return (url: string, resourceType?: string) => {
+      if (tileCache.has(url)) {
+        return {
+          url,
+          headers: {},
+          method: 'GET' as const,
+          type: 'image' as const,
+          credentials: 'same-origin' as const,
+          collectResourceTiming: false,
+        }
       }
-      return false
-    } catch {
-      return false
+
+      if (resourceType === 'Tile' && !navigator.onLine) {
+        const match = url.match(/\/satellite\/(\d+)\/(\d+)\/(\d+)\./)
+        if (match) {
+          const [, z, x, y] = match
+          const localUrl = `/tiles/${z}/${x}/${y}.jpg`
+          return { url: localUrl }
+        }
+      }
+
+      return { url }
     }
   }
 
   async function initMap() {
     if (!containerRef.value) return
-
-    if (!checkWebGLSupport()) {
-      isLoading.value = false
-      hasError.value = true
-      return
-    }
 
     isLoading.value = true
     hasError.value = false
@@ -91,6 +105,7 @@ export function useMapLibre(
     try {
       const maplibregl = await import('maplibre-gl')
       const style = options.mapStyle || getMapStyle()
+      const tr = createTransformRequest()
       const m = new maplibregl.Map({
         container: containerRef.value,
         style,
@@ -101,7 +116,7 @@ export function useMapLibre(
         fadeDuration: 100,
         maxTileCacheSize: 200,
         maxTileCacheZoomLevels: 5,
-        transformRequest,
+        transformRequest: tr,
       } as maplibregl.MapOptions & { antialias?: boolean })
 
       m.addControl(new maplibregl.AttributionControl({
@@ -125,6 +140,52 @@ export function useMapLibre(
         if (!isMounted) return
         isLoading.value = false
         options.onLoad?.(m)
+      })
+
+      m.on('idle', () => {
+        if (!isMounted || !navigator.onLine) return
+        const canvas = m.getCanvas()
+        if (canvas) {
+          const sources = m.getStyle().sources
+          for (const id of Object.keys(sources)) {
+            const source = sources[id]
+            if (source.type === 'raster') {
+              const tiles = (source as { tiles?: string[] }).tiles
+              if (tiles && tiles.length > 0) {
+                const tileUrl = tiles[0]
+                if (tileUrl.includes('maptiler.com/tiles/satellite/')) {
+                  const z = Math.floor(m.getZoom())
+                  const center = m.getCenter()
+                  const x = Math.floor((center.lng + 180) / 360 * Math.pow(2, z))
+                  const y = Math.floor((1 - Math.log(Math.tan(center.lat * Math.PI / 180) + 1 / Math.cos(center.lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, z))
+
+                  const minX = Math.max(0, x - 4)
+                  const maxX = Math.min(Math.pow(2, z) - 1, x + 4)
+                  const minY = Math.max(0, y - 4)
+                  const maxY = Math.min(Math.pow(2, z) - 1, y + 4)
+
+                  for (let cx = minX; cx <= maxX; cx++) {
+                    for (let cy = minY; cy <= maxY; cy++) {
+                      offlineTiles.hasTile(z, cx, cy).then(found => {
+                        if (!found) {
+                          const url = `https://api.maptiler.com/tiles/satellite/${z}/${cx}/${cy}.jpg?key=${apiKey}`
+                          fetch(url).then(resp => {
+                            if (resp.ok) {
+                              resp.arrayBuffer().then(buf => {
+                                offlineTiles.setTile(z, cx, cy, buf, 'image/jpeg')
+                              })
+                            }
+                          }).catch(() => {})
+                        }
+                      })
+                    }
+                  }
+                  break
+                }
+              }
+            }
+          }
+        }
       })
 
       m.on('error', (err: unknown) => {
@@ -159,5 +220,12 @@ export function useMapLibre(
     initMap()
   }
 
-  return { map, isLoading, hasError, initMap, retry }
+  return {
+    map,
+    isLoading,
+    hasError,
+    initMap,
+    retry,
+    offlineTiles,
+  }
 }

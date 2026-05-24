@@ -33,5 +33,5 @@ useHead({
   ],
 })
 
-const { data: speciesList, loading, error } = useSpeciesData()
+const { data: speciesList, loading, error } = useSpeciesData(['icmbio-brazil', 'iucn'])
 </script>

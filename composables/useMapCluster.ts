@@ -26,7 +26,7 @@ export interface PointResult {
 
 export type ClusterPoint = ClusterResult | PointResult
 
-const MAX_CLUSTER_SIZE = 7
+export const MAX_CLUSTER_SIZE = 5
 
 interface GeoJsonProperties {
   cluster?: boolean
@@ -54,8 +54,8 @@ export function useMapCluster() {
     }))
 
     index = new Supercluster<GeoJsonProperties, GeoJsonProperties>({
-      radius: 50,
-      maxZoom: 16,
+      radius: 40,
+      maxZoom: 14,
       minZoom: 0,
       extent: 512,
       nodeSize: 64,
@@ -74,15 +74,17 @@ export function useMapCluster() {
     for (const feature of rawClusters) {
       if (feature.properties.cluster) {
         const count = feature.properties.point_count ?? 0
+        const clusterId = feature.properties.cluster_id!
+
+        const leaves = index.getLeaves(clusterId, Infinity)
 
         if (count <= MAX_CLUSTER_SIZE) {
-          const leaves = index.getLeaves(feature.properties.cluster_id!, Infinity)
           result.push({
             type: 'cluster',
             lng: feature.geometry.coordinates[0],
             lat: feature.geometry.coordinates[1],
             count,
-            clusterId: feature.properties.cluster_id!,
+            clusterId,
             items: leaves.map(l => ({
               lng: l.geometry.coordinates[0],
               lat: l.geometry.coordinates[1],
@@ -91,24 +93,32 @@ export function useMapCluster() {
             })),
           })
         } else {
-          const leaves = index.getLeaves(feature.properties.cluster_id!, Infinity)
           const groups = splitIntoGroups(leaves, MAX_CLUSTER_SIZE)
           for (const group of groups) {
-            const lng = group.reduce((s, l) => s + l.geometry.coordinates[0], 0) / group.length
-            const lat = group.reduce((s, l) => s + l.geometry.coordinates[1], 0) / group.length
-            result.push({
-              type: 'cluster',
-              lng,
-              lat,
-              count: group.length,
-              clusterId: feature.properties.cluster_id!,
-              items: group.map(l => ({
-                lng: l.geometry.coordinates[0],
-                lat: l.geometry.coordinates[1],
-                type: l.properties.type ?? 'species',
-                index: l.properties.sourceIndex ?? 0,
-              })),
-            })
+            if (group.length === 1) {
+              result.push({
+                type: 'point',
+                lng: group[0].geometry.coordinates[0],
+                lat: group[0].geometry.coordinates[1],
+                sourceIndex: group[0].properties.sourceIndex ?? 0,
+              })
+            } else {
+              const lng = group.reduce((s, l) => s + l.geometry.coordinates[0], 0) / group.length
+              const lat = group.reduce((s, l) => s + l.geometry.coordinates[1], 0) / group.length
+              result.push({
+                type: 'cluster',
+                lng,
+                lat,
+                count: group.length,
+                clusterId,
+                items: group.map(l => ({
+                  lng: l.geometry.coordinates[0],
+                  lat: l.geometry.coordinates[1],
+                  type: l.properties.type ?? 'species',
+                  index: l.properties.sourceIndex ?? 0,
+                })),
+              })
+            }
           }
         }
       } else {
@@ -136,10 +146,33 @@ export function useMapCluster() {
   return { load, getClusters, getClusterExpansionZoom, destroy }
 }
 
-function splitIntoGroups<T>(arr: T[], maxSize: number): T[][] {
-  const groups: T[][] = []
-  for (let i = 0; i < arr.length; i += maxSize) {
-    groups.push(arr.slice(i, i + maxSize))
+function splitIntoGroups(arr: PointFeature<GeoJsonProperties>[], maxSize: number): PointFeature<GeoJsonProperties>[][] {
+  if (arr.length <= maxSize) return [[...arr]]
+
+  const groups: PointFeature<GeoJsonProperties>[][] = []
+  const remaining = [...arr]
+
+  while (remaining.length > 0) {
+    const group: PointFeature<GeoJsonProperties>[] = [remaining.shift()!]
+    const centerLng = group[0].geometry.coordinates[0]
+    const centerLat = group[0].geometry.coordinates[1]
+
+    while (group.length < maxSize && remaining.length > 0) {
+      let closestIdx = 0
+      let closestDist = Infinity
+      for (let i = 0; i < remaining.length; i++) {
+        const dx = remaining[i].geometry.coordinates[0] - centerLng
+        const dy = remaining[i].geometry.coordinates[1] - centerLat
+        const dist = dx * dx + dy * dy
+        if (dist < closestDist) {
+          closestDist = dist
+          closestIdx = i
+        }
+      }
+      group.push(remaining.splice(closestIdx, 1)[0])
+    }
+    groups.push(group)
   }
+
   return groups
 }

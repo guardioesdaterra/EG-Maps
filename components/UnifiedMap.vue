@@ -862,7 +862,7 @@ function setupGeoJSONMarkers() {
       },
       (clusterId, coords) => {
         if (map) {
-          const expansionZoom = map.getClusterExpansionZoom(SOURCE_ID, clusterId)
+          const expansionZoom = geoJSONMarkers.getClusterExpansionZoom(SOURCE_ID, clusterId)
           map.flyTo({
             center: coords,
             zoom: Math.min(expansionZoom, 14),
@@ -890,7 +890,7 @@ function setupGeoJSONMarkers() {
       },
       (clusterId, coords) => {
         if (map) {
-          const expansionZoom = map.getClusterExpansionZoom(SOURCE_ID, clusterId)
+          const expansionZoom = geoJSONMarkers.getClusterExpansionZoom(SOURCE_ID, clusterId)
           map.flyTo({
             center: coords,
             zoom: Math.min(expansionZoom, 14),

@@ -862,11 +862,12 @@ function setupGeoJSONMarkers() {
       },
       (clusterId, coords) => {
         if (map) {
-          const expansionZoom = geoJSONMarkers.getClusterExpansionZoom(SOURCE_ID, clusterId)
-          map.flyTo({
-            center: coords,
-            zoom: Math.min(expansionZoom, 14),
-            duration: 500
+          geoJSONMarkers.getClusterExpansionZoom(SOURCE_ID, clusterId).then((expansionZoom: number) => {
+            map!.flyTo({
+              center: coords,
+              zoom: Math.min(expansionZoom, 14),
+              duration: 500
+            })
           })
         }
       }
@@ -890,11 +891,12 @@ function setupGeoJSONMarkers() {
       },
       (clusterId, coords) => {
         if (map) {
-          const expansionZoom = geoJSONMarkers.getClusterExpansionZoom(SOURCE_ID, clusterId)
-          map.flyTo({
-            center: coords,
-            zoom: Math.min(expansionZoom, 14),
-            duration: 500
+          geoJSONMarkers.getClusterExpansionZoom(SOURCE_ID, clusterId).then((expansionZoom: number) => {
+            map!.flyTo({
+              center: coords,
+              zoom: Math.min(expansionZoom, 14),
+              duration: 500
+            })
           })
         }
       }

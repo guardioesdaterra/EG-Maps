@@ -5,7 +5,8 @@
  * which can handle 10,000+ points smoothly compared to the 100-200 limit of DOM markers.
  */
 
-import type { Map as MapLibreMap, GeoJSONSource, MapMouseEvent } from 'maplibre-gl'
+import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl'
+import type { MapLayerMouseEvent } from 'maplibre-gl'
 import type { ProjectData, Species } from '@/lib/types'
 import { GROUP_COLORS } from '@/lib/map-utils'
 
@@ -199,11 +200,11 @@ export function useGeoJSONMarkers() {
     })
   }
 
-  function getClusterExpansionZoom(sourceId: string, clusterId: number): number {
+  async function getClusterExpansionZoom(sourceId: string, clusterId: number): Promise<number> {
     if (!map) return 10
     const source = map.getSource(sourceId) as GeoJSONSource
     if (!source || typeof source.getClusterExpansionZoom !== 'function') return 10
-    return source.getClusterExpansionZoom(clusterId)
+    return await source.getClusterExpansionZoom(clusterId)
   }
 
   function setupEventHandlers(
@@ -215,7 +216,7 @@ export function useGeoJSONMarkers() {
     if (!map) return
 
     // Click handler for clusters
-    map.on('click', `${sourceId}-clusters`, (e: MapMouseEvent) => {
+    map.on('click', `${sourceId}-clusters`, async (e: MapLayerMouseEvent) => {
       if (!map || !e.features?.[0]) return
 
       const feature = e.features[0]
@@ -223,7 +224,7 @@ export function useGeoJSONMarkers() {
       const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number]
 
       if (clusterId !== undefined) {
-        const expansionZoom = getClusterExpansionZoom(sourceId, clusterId)
+        const expansionZoom = await getClusterExpansionZoom(sourceId, clusterId)
         
         map.easeTo({
           center: coords,
@@ -236,7 +237,7 @@ export function useGeoJSONMarkers() {
     })
 
     // Click handler for individual points
-    map.on('click', `${sourceId}-points`, (e: MapMouseEvent) => {
+    map.on('click', `${sourceId}-points`, (e: MapLayerMouseEvent) => {
       if (!e.features?.[0]) return
 
       const feature = e.features[0]
@@ -268,14 +269,6 @@ export function useGeoJSONMarkers() {
     if (source) {
       source.setData(data)
     }
-  }
-
-  function setFilter(sourceId: string, filter: (string | string[] | object)[]) {
-    if (!map) return
-
-    // Update the points layer filter to exclude clustered points
-    // and apply the custom filter
-    map.setFilter(`${sourceId}-points`, ['all', ['!', ['has', 'point_count']], ...filter] as (string | string[] | object)[])
   }
 
   function removeLayersAndSource() {
@@ -315,7 +308,6 @@ export function useGeoJSONMarkers() {
     getClusterExpansionZoom,
     setupEventHandlers,
     updateData,
-    setFilter,
     removeLayersAndSource,
     cleanup,
   }

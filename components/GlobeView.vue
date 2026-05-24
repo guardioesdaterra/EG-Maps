@@ -163,6 +163,11 @@ import {
 } from '@/lib/image-utils'
 import { useMapCluster } from '@/composables/useMapCluster'
 import { MAX_CLUSTER_SIZE, type ClusterPoint, type ClusterItem } from '@/composables/useMapCluster'
+import {
+  useGeoJSONMarkers,
+  speciesToGeoJSON,
+  projectsToGeoJSON,
+} from '@/composables/useGeoJSONMarkers'
 
 const { t, locale } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
@@ -234,6 +239,7 @@ let rotationAnimationId: number | null = null
 let isUserInteracting = false
 let interactionTimeout: ReturnType<typeof setTimeout> | null = null
 const clusterer = useMapCluster()
+const geoJSONMarkers = useGeoJSONMarkers()
 let lastClusterZoom = -1
 let lastBboxCenter: { lng: number; lat: number } | null = null
 function openSpeciesOverlay(species: Species) {
@@ -921,10 +927,90 @@ function createClusterMarkerElement(
   return outer
 }
 
+let useNativeGeoJSON = true
+const SOURCE_ID = 'globe-species-markers'
+
+function setupGeoJSONMarkers() {
+  if (!map || !useNativeGeoJSON) return
+
+  // Clean up old DOM markers
+  markers.forEach(m => m.remove())
+  markers = []
+  clusterer.destroy()
+
+  geoJSONMarkers.init(map)
+
+  if (activeDataset.value === 'project-grants') {
+    const validProjects = projectsData.value.filter(p => isValidCoordinate(p.latitude, p.longitude))
+    const geojson = projectsToGeoJSON(validProjects)
+    geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
+    geoJSONMarkers.addClusterLayers(SOURCE_ID, 'project-grants')
+    
+    geoJSONMarkers.setupEventHandlers(
+      SOURCE_ID,
+      'project-grants',
+      (props, coords) => {
+        const project = validProjects.find(p => 
+          Math.abs(p.longitude - coords[0]) < 0.001 && 
+          Math.abs(p.latitude - coords[1]) < 0.001
+        )
+        if (project) openProjectOverlay(project)
+      },
+      (clusterId, coords) => {
+        if (map) {
+          const expansionZoom = map.getClusterExpansionZoom(SOURCE_ID, clusterId)
+          map.flyTo({
+            center: coords,
+            zoom: Math.min(expansionZoom, 14),
+            duration: 500
+          })
+        }
+      }
+    )
+  } else if (speciesData.value.length) {
+    const validSpecies = speciesData.value.filter(s => isValidCoordinate(s.lat, s.lng))
+    const geojson = speciesToGeoJSON(validSpecies)
+    geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
+    geoJSONMarkers.addClusterLayers(SOURCE_ID, 'endangered-species')
+    
+    geoJSONMarkers.setupEventHandlers(
+      SOURCE_ID,
+      'endangered-species',
+      (props, coords) => {
+        const species = validSpecies.find(s => 
+          Math.abs(s.lng - coords[0]) < 0.001 && 
+          Math.abs(s.lat - coords[1]) < 0.001
+        )
+        if (species) openSpeciesOverlay(species)
+      },
+      (clusterId, coords) => {
+        if (map) {
+          const expansionZoom = map.getClusterExpansionZoom(SOURCE_ID, clusterId)
+          map.flyTo({
+            center: coords,
+            zoom: Math.min(expansionZoom, 14),
+            duration: 500
+          })
+        }
+      }
+    )
+  }
+
+  lastClusterZoom = Math.floor(map.getZoom())
+  const center = map.getCenter()
+  lastBboxCenter = { lng: center.lng, lat: center.lat }
+}
+
 function rebuildMarkers() {
   if (!map) return
 
   const currentZoom = map.getZoom()
+
+  // Use native GeoJSON for large datasets (endangered species with 4000+ points)
+  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesData.value.length > 500) {
+    setupGeoJSONMarkers()
+    return
+  }
 
   markers.forEach(m => m.remove())
   markers = []
@@ -1251,6 +1337,9 @@ onUnmounted(() => {
   if (hexGridDebounceTimer) clearTimeout(hexGridDebounceTimer)
   markers.forEach(m => m.remove())
   clusterer.destroy()
+  if (useNativeGeoJSON) {
+    geoJSONMarkers.cleanup()
+  }
   clearImageCache()
   if (map) {
     map.remove()

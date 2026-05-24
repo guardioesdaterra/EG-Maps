@@ -134,6 +134,24 @@ const label = t('nav.home') // Returns translated string
 - ~40% of code is identical between them (markers, connections, hex grid, popups)
 - A `useMapLibre` composable should eventually extract shared MapLibre lifecycle
 
+### High-Performance Marker Rendering for Large Datasets
+For datasets with 500+ points (e.g., 4000+ endangered species), the app uses MapLibre's native GeoJSON clustering:
+
+1. **New composable**: `composables/useGeoJSONMarkers.ts`
+   - GPU-accelerated vector rendering instead of DOM markers
+   - Handles 10,000+ points smoothly
+   - Native MapLibre clustering (no Supercluster overhead)
+
+2. **How it works**:
+   - Data is converted to GeoJSON FeatureCollection
+   - Added as a `geojson` source with `cluster: true`
+   - Circle and symbol layers render clusters and points
+   - Click handlers find original data by coordinate matching
+
+3. **Automatic fallback**:
+   - If `visibleSpecies.value.length <= 500`, uses DOM markers (existing Supercluster approach)
+   - Can be disabled by setting `useNativeGeoJSON = false`
+
 ### MapLibre Initialization
 ```typescript
 import maplibregl from 'maplibre-gl'

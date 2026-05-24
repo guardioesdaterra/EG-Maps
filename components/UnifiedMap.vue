@@ -176,6 +176,11 @@ import {
 } from '@/lib/image-utils'
 import { useMapCluster } from '@/composables/useMapCluster'
 import { MAX_CLUSTER_SIZE, type ClusterPoint, type ClusterItem } from '@/composables/useMapCluster'
+import {
+  useGeoJSONMarkers,
+  speciesToGeoJSON,
+  projectsToGeoJSON,
+} from '@/composables/useGeoJSONMarkers'
 
 const { t, locale } = useI18n()
 
@@ -248,6 +253,7 @@ let pendingClusterRebuild = false
 let connectionFeatures: MapConnectionFeature[] = []
 let particleSystem: MapParticleSystem | null = null
 const clusterer = useMapCluster()
+const geoJSONMarkers = useGeoJSONMarkers()
 let lastClusterZoom = -1
 let lastBboxCenter: { lng: number; lat: number } | null = null
 
@@ -824,11 +830,96 @@ function createClusterMarkerElement(
   return outer
 }
 
+let useNativeGeoJSON = true
+const SOURCE_ID = 'species-markers'
+
+function setupGeoJSONMarkers() {
+  if (!map || !useNativeGeoJSON) return
+
+  // Clean up old DOM markers
+  markers.forEach(m => m.remove())
+  markers = []
+  clusterer.destroy()
+
+  geoJSONMarkers.init(map)
+
+  if (activeDataset.value === 'project-grants') {
+    const validProjects = visibleProjects.value.filter(p => isValidCoordinate(p.latitude, p.longitude))
+    const geojson = projectsToGeoJSON(validProjects)
+    geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
+    geoJSONMarkers.addClusterLayers(SOURCE_ID, 'project-grants')
+    
+    geoJSONMarkers.setupEventHandlers(
+      SOURCE_ID,
+      'project-grants',
+      (props, coords) => {
+        // Find the project by coordinates
+        const project = validProjects.find(p => 
+          Math.abs(p.longitude - coords[0]) < 0.001 && 
+          Math.abs(p.latitude - coords[1]) < 0.001
+        )
+        if (project) openProjectOverlay(project)
+      },
+      (clusterId, coords) => {
+        if (map) {
+          const expansionZoom = map.getClusterExpansionZoom(SOURCE_ID, clusterId)
+          map.flyTo({
+            center: coords,
+            zoom: Math.min(expansionZoom, 14),
+            duration: 500
+          })
+        }
+      }
+    )
+  } else {
+    const validSpecies = visibleSpecies.value.filter(s => isValidCoordinate(s.lat, s.lng))
+    const geojson = speciesToGeoJSON(validSpecies)
+    geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
+    geoJSONMarkers.addClusterLayers(SOURCE_ID, 'endangered-species')
+    
+    geoJSONMarkers.setupEventHandlers(
+      SOURCE_ID,
+      'endangered-species',
+      (props, coords) => {
+        // Find species by coordinates
+        const species = validSpecies.find(s => 
+          Math.abs(s.lng - coords[0]) < 0.001 && 
+          Math.abs(s.lat - coords[1]) < 0.001
+        )
+        if (species) openSpeciesOverlay(species)
+      },
+      (clusterId, coords) => {
+        if (map) {
+          const expansionZoom = map.getClusterExpansionZoom(SOURCE_ID, clusterId)
+          map.flyTo({
+            center: coords,
+            zoom: Math.min(expansionZoom, 14),
+            duration: 500
+          })
+        }
+      }
+    )
+  }
+
+  // Update last cluster zoom
+  lastClusterZoom = Math.floor(map.getZoom())
+  const center = map.getCenter()
+  lastBboxCenter = { lng: center.lng, lat: center.lat }
+}
+
+// Fallback rebuildMarkers using DOM markers (for smaller datasets or when GeoJSON isn't available)
 function rebuildMarkers() {
   if (!map) return
 
   const currentZoom = map.getZoom()
 
+  // Use native GeoJSON for large datasets (endangered species with 4000+ points)
+  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && visibleSpecies.value.length > 500) {
+    setupGeoJSONMarkers()
+    return
+  }
+
+  // For smaller datasets or project grants, use DOM markers
   markers.forEach(m => m.remove())
   markers = []
   clusterer.destroy()
@@ -1117,6 +1208,9 @@ function initMap() {
   if (map) {
     markers.forEach(m => m.remove())
     markers = []
+    if (useNativeGeoJSON) {
+      geoJSONMarkers.cleanup()
+    }
     map.remove()
     map = null
   }
@@ -1159,7 +1253,8 @@ function initMap() {
     })
 
     map.on('move', () => {
-      if (!pendingVisibilityUpdate) {
+      // Only run visibility update for DOM markers
+      if (!useNativeGeoJSON && !pendingVisibilityUpdate) {
         pendingVisibilityUpdate = true
         requestAnimationFrame(() => {
           updateMarkerVisibility()
@@ -1303,6 +1398,9 @@ onUnmounted(() => {
   markers.forEach(m => m.remove())
   markers = []
   clusterer.destroy()
+  if (useNativeGeoJSON) {
+    geoJSONMarkers.cleanup()
+  }
   clearImageCache()
   window.removeEventListener('resize', debouncedSetupHexGrid)
   if (map) {

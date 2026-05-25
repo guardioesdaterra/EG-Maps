@@ -165,8 +165,9 @@ import { useMapCluster } from '@/composables/useMapCluster'
 import { MAX_CLUSTER_SIZE, type ClusterPoint, type ClusterItem } from '@/composables/useMapCluster'
 import {
   useGeoJSONMarkers,
-  speciesToGeoJSON,
+  speciesIndexToGeoJSON,
   projectsToGeoJSON,
+  type SpeciesIndexItem,
 } from '@/composables/useGeoJSONMarkers'
 
 const { t, locale } = useI18n()
@@ -196,6 +197,7 @@ function getTaxonomicGroupLabels() {
 interface Props {
   projects?: ProjectData[]
   species?: Species[]
+  speciesIndex?: SpeciesIndexItem[]  // Lightweight index for markers
   showHexGrid?: boolean
   defaultDataset?: 'project-grants' | 'endangered-species'
 }
@@ -207,6 +209,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const projectsData = computed(() => props.projects || allProjectsData)
 const speciesData = computed(() => props.species || [])
+const speciesIndexData = computed(() => props.speciesIndex || [])
 
 
 
@@ -968,20 +971,73 @@ function setupGeoJSONMarkers() {
         }
       }
     )
-  } else if (speciesData.value.length) {
-    const validSpecies = speciesData.value.filter(s => isValidCoordinate(s.lat, s.lng))
-    const geojson = speciesToGeoJSON(validSpecies)
+  } else if (speciesIndexData.value.length) {
+    // Use lightweight index for map markers
+    const geojson = speciesIndexToGeoJSON(speciesIndexData.value)
     geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
     geoJSONMarkers.addClusterLayers(SOURCE_ID, 'endangered-species')
     
     geoJSONMarkers.setupEventHandlers(
       SOURCE_ID,
       'endangered-species',
-      (props, coords) => {
-        const species = validSpecies.find(s => 
-          Math.abs(s.lng - coords[0]) < 0.001 && 
-          Math.abs(s.lat - coords[1]) < 0.001
-        )
+      async (props, coords) => {
+        const speciesId = props.id as string
+        const fullSpecies = await geoJSONMarkers.loadFullSpeciesData(speciesId, baseURL)
+        if (fullSpecies) {
+          openSpeciesOverlay(fullSpecies)
+        } else {
+          // Fallback: create minimal species from index
+          const indexItem = speciesIndexData.value.find(s => s.id === speciesId)
+          if (indexItem) {
+            const minimalSpecies = {
+              ...indexItem,
+              region: '',
+              ecosystem: '',
+              imageCredit: '',
+              threatTypes: indexItem.threatTypes || [],
+              content: {},
+            } as Species
+            openSpeciesOverlay(minimalSpecies)
+          }
+        }
+      },
+      (clusterId, coords) => {
+        if (map) {
+          geoJSONMarkers.getClusterExpansionZoom(SOURCE_ID, clusterId).then((expansionZoom: number) => {
+            map!.flyTo({
+              center: coords,
+              zoom: Math.min(expansionZoom, 14),
+              duration: 500
+            })
+          })
+        }
+      }
+    )
+  } else if (speciesData.value.length) {
+    // Fallback to full species data if index not available
+    const validSpecies = speciesData.value.filter(s => isValidCoordinate(s.lat, s.lng))
+    const geojson = speciesIndexToGeoJSON(validSpecies.map(s => ({
+      id: s.id,
+      commonName: s.commonName,
+      scientificName: s.scientificName,
+      taxonomicGroup: s.taxonomicGroup,
+      category: s.category,
+      lat: s.lat,
+      lng: s.lng,
+      imageUrl: s.imageUrl || null,
+      description: '',
+      endangerment: '',
+      threatTypes: s.threatTypes || [],
+    })))
+    geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
+    geoJSONMarkers.addClusterLayers(SOURCE_ID, 'endangered-species')
+    
+    geoJSONMarkers.setupEventHandlers(
+      SOURCE_ID,
+      'endangered-species',
+      async (props, coords) => {
+        const speciesId = props.id as string
+        const species = speciesData.value.find(s => s.id === speciesId)
         if (species) openSpeciesOverlay(species)
       },
       (clusterId, coords) => {

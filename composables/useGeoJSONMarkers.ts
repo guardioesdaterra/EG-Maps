@@ -7,26 +7,30 @@
 
 import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl'
 import type { MapLayerMouseEvent } from 'maplibre-gl'
-import type { ProjectData, Species } from '@/lib/types'
+import type { Species } from '@/lib/types'
 import { GROUP_COLORS } from '@/lib/map-utils'
 
-export interface GeoJSONMarkerOptions {
-  map: MapLibreMap
-  sourceId: string
-  clusterLayerId: string
-  clusterCountLayerId: string
-  pointLayerId: string
+export interface SpeciesIndexItem {
+  id: string
+  commonName: string
+  scientificName: string
+  taxonomicGroup: string
+  category: string
+  lat: number
+  lng: number
+  imageUrl: string | null
+  description: string
+  endangerment: string
+  threatTypes: string[]
 }
 
 const GROUP_COLORS_HEX: Record<string, string> = GROUP_COLORS
 
-// Convert species data to GeoJSON FeatureCollection
-export function speciesToGeoJSON(species: Species[], filterFn?: (s: Species) => boolean): GeoJSON.FeatureCollection {
-  const filtered = filterFn ? species.filter(filterFn) : species
-  
+// Lightweight index for markers - only 3.2MB vs 35MB full data
+export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.FeatureCollection {
   return {
     type: 'FeatureCollection',
-    features: filtered
+    features: species
       .filter(s => s.lat != null && s.lng != null && isFinite(s.lat) && isFinite(s.lng))
       .map(s => ({
         type: 'Feature' as const,
@@ -48,7 +52,7 @@ export function speciesToGeoJSON(species: Species[], filterFn?: (s: Species) => 
 }
 
 // Convert project data to GeoJSON FeatureCollection
-export function projectsToGeoJSON(projects: ProjectData[]): GeoJSON.FeatureCollection {
+export function projectsToGeoJSON(projects: { latitude: number; longitude: number; project_title: string; country_province: string; direct_beneficiaries: number; indirect_beneficiaries: number }[]): GeoJSON.FeatureCollection {
   return {
     type: 'FeatureCollection',
     features: projects
@@ -77,17 +81,19 @@ export function projectsToGeoJSON(projects: ProjectData[]): GeoJSON.FeatureColle
 }
 
 function getProjectColor(totalBeneficiaries: number): string {
-  if (totalBeneficiaries >= 50000) return '#06b6d4' // cyan-500
-  if (totalBeneficiaries >= 25000) return '#22c55e' // green-500
-  if (totalBeneficiaries >= 10000) return '#eab308' // yellow-500
-  if (totalBeneficiaries >= 5000) return '#f97316'  // orange-500
-  return '#ef4444' // red-500
+  if (totalBeneficiaries >= 50000) return '#06b6d4'
+  if (totalBeneficiaries >= 25000) return '#22c55e'
+  if (totalBeneficiaries >= 10000) return '#eab308'
+  if (totalBeneficiaries >= 5000) return '#f97316'
+  return '#ef4444'
 }
 
 export function useGeoJSONMarkers() {
   let map: MapLibreMap | null = null
   let currentSourceId: string | null = null
-  let currentDataset: 'project-grants' | 'endangered-species' | null = null
+  
+  // Cache for full species data loaded on demand
+  const speciesCache = new Map<string, Species>()
 
   function init(mapInstance: MapLibreMap) {
     map = mapInstance
@@ -96,12 +102,10 @@ export function useGeoJSONMarkers() {
   function addGeoJSONSource(sourceId: string, data: GeoJSON.FeatureCollection, clustering: boolean = true) {
     if (!map) return
 
-    // Remove existing source and layers if switching datasets
     if (currentSourceId && currentSourceId !== sourceId) {
       removeLayersAndSource()
     }
 
-    // Remove existing source if it exists
     if (map.getSource(sourceId)) {
       map.removeLayer(`${sourceId}-clusters`)
       map.removeLayer(`${sourceId}-cluster-count`)
@@ -111,19 +115,17 @@ export function useGeoJSONMarkers() {
 
     currentSourceId = sourceId
 
-    // Add the GeoJSON source with clustering configuration
     map.addSource(sourceId, {
       type: 'geojson',
       data,
       cluster: clustering,
-      clusterMaxZoom: 14,  // Cluster until zoom level 14
-      clusterRadius: 50,   // Cluster points within 50 pixels
+      clusterMaxZoom: 14,
+      clusterRadius: 50,
     })
   }
 
   function addClusterLayers(sourceId: string, dataset: 'project-grants' | 'endangered-species') {
     if (!map) return
-    currentDataset = dataset
 
     // Cluster circles layer
     map.addLayer({
@@ -132,39 +134,17 @@ export function useGeoJSONMarkers() {
       source: sourceId,
       filter: ['has', 'point_count'],
       paint: {
-        // Color by cluster size - use dataset-appropriate colors
         'circle-color': dataset === 'endangered-species'
-          ? [
-              'step',
-              ['get', 'point_count'],
-              '#06b6d4',   // < 10: cyan
-              10, '#3b82f6', // 10-50: blue
-              50, '#8b5cf6', // 50-100: purple
-              100, '#ec4899' // 100+: pink
-            ]
-          : [
-              'step',
-              ['get', 'point_count'],
-              '#06b6d4',   // < 10: cyan
-              10, '#22c55e', // 10-50: green
-              50, '#eab308', // 50-100: yellow
-              100, '#ef4444' // 100+: red
-            ],
-        'circle-radius': [
-          'step',
-          ['get', 'point_count'],
-          18,   // < 10 points
-          10, 24,  // 10-50 points
-          50, 30,  // 50-100 points
-          100, 38  // 100+ points
-        ],
+          ? ['step', ['get', 'point_count'], '#06b6d4', 10, '#3b82f6', 50, '#8b5cf6', 100, '#ec4899']
+          : ['step', ['get', 'point_count'], '#06b6d4', 10, '#22c55e', 50, '#eab308', 100, '#ef4444'],
+        'circle-radius': ['step', ['get', 'point_count'], 18, 10, 24, 50, 30, 100, 38],
         'circle-stroke-width': 2,
         'circle-stroke-color': 'rgba(255, 255, 255, 0.8)',
         'circle-opacity': 0.9,
       }
     })
 
-    // Cluster count label layer
+    // Cluster count label
     map.addLayer({
       id: `${sourceId}-cluster-count`,
       type: 'symbol',
@@ -175,12 +155,10 @@ export function useGeoJSONMarkers() {
         'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
         'text-size': 12,
       },
-      paint: {
-        'text-color': '#ffffff',
-      }
+      paint: { 'text-color': '#ffffff' }
     })
 
-    // Individual points layer
+    // Individual points
     map.addLayer({
       id: `${sourceId}-points`,
       type: 'circle',
@@ -188,11 +166,7 @@ export function useGeoJSONMarkers() {
       filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-color': ['get', 'color'],
-        'circle-radius': [
-          'case',
-          ['get', 'hasImage'], 8,  // Species with images
-          6                       // Species without images / projects
-        ],
+        'circle-radius': ['case', ['get', 'hasImage'], 8, 6],
         'circle-stroke-width': 1.5,
         'circle-stroke-color': 'rgba(255, 255, 255, 0.9)',
         'circle-opacity': 0.95,
@@ -207,6 +181,30 @@ export function useGeoJSONMarkers() {
     return await source.getClusterExpansionZoom(clusterId)
   }
 
+  // Load full species data on demand (only when user clicks)
+  async function loadFullSpeciesData(speciesId: string, baseURL: string): Promise<Species | null> {
+    if (speciesCache.has(speciesId)) {
+      return speciesCache.get(speciesId)!
+    }
+
+    try {
+      // Try loading from full dataset first
+      const res = await fetch(`${baseURL}data/species/icmbio-brazil.json`)
+      if (res.ok) {
+        const allSpecies: Species[] = await res.json()
+        const species = allSpecies.find(s => s.id === speciesId)
+        if (species) {
+          speciesCache.set(speciesId, species)
+          return species
+        }
+      }
+    } catch {
+      // Silently fail
+    }
+
+    return null
+  }
+
   function setupEventHandlers(
     sourceId: string,
     dataset: 'project-grants' | 'endangered-species',
@@ -215,7 +213,6 @@ export function useGeoJSONMarkers() {
   ) {
     if (!map) return
 
-    // Click handler for clusters
     map.on('click', `${sourceId}-clusters`, async (e: MapLayerMouseEvent) => {
       if (!map || !e.features?.[0]) return
 
@@ -236,7 +233,6 @@ export function useGeoJSONMarkers() {
       }
     })
 
-    // Click handler for individual points
     map.on('click', `${sourceId}-points`, (e: MapLayerMouseEvent) => {
       if (!e.features?.[0]) return
 
@@ -264,7 +260,6 @@ export function useGeoJSONMarkers() {
 
   function updateData(sourceId: string, data: GeoJSON.FeatureCollection) {
     if (!map) return
-
     const source = map.getSource(sourceId) as GeoJSONSource
     if (source) {
       source.setData(data)
@@ -274,7 +269,6 @@ export function useGeoJSONMarkers() {
   function removeLayersAndSource() {
     if (!map || !currentSourceId) return
 
-    // Remove layers first
     const layersToRemove = [
       `${currentSourceId}-clusters`,
       `${currentSourceId}-cluster-count`,
@@ -287,17 +281,16 @@ export function useGeoJSONMarkers() {
       }
     }
 
-    // Remove source
     if (map.getSource(currentSourceId)) {
       map.removeSource(currentSourceId)
     }
 
     currentSourceId = null
-    currentDataset = null
   }
 
   function cleanup() {
     removeLayersAndSource()
+    speciesCache.clear()
     map = null
   }
 
@@ -308,15 +301,15 @@ export function useGeoJSONMarkers() {
     getClusterExpansionZoom,
     setupEventHandlers,
     updateData,
+    loadFullSpeciesData,
     removeLayersAndSource,
     cleanup,
   }
 }
 
-// Utility: Convert hex color to RGB for MapLibre expressions
 export function hexToRgb(hex: string): [number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   return result
     ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
-    : [182, 64, 50] // Default red
+    : [182, 64, 50]
 }

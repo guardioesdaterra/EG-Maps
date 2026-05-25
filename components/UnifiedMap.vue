@@ -178,8 +178,9 @@ import { useMapCluster } from '@/composables/useMapCluster'
 import { MAX_CLUSTER_SIZE, type ClusterPoint, type ClusterItem } from '@/composables/useMapCluster'
 import {
   useGeoJSONMarkers,
-  speciesToGeoJSON,
+  speciesIndexToGeoJSON,
   projectsToGeoJSON,
+  type SpeciesIndexItem,
 } from '@/composables/useGeoJSONMarkers'
 
 const { t, locale } = useI18n()
@@ -213,6 +214,7 @@ function transformRequest(url: string, resourceType?: string) {
 interface Props {
   projects?: ProjectData[]
   species?: Species[]
+  speciesIndex?: SpeciesIndexItem[]  // Lightweight index for markers
   defaultDataset?: 'project-grants' | 'endangered-species'
 }
 
@@ -221,6 +223,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const projectsData = computed(() => props.projects || allProjectsData)
 const speciesData = computed(() => props.species || [])
+const speciesIndexData = computed(() => props.speciesIndex || [])
 const filteredProjectsList = ref<ProjectData[] | null>(null)
 const filteredSpeciesList = ref<Species[] | null>(null)
 const visibleProjects = computed(() => filteredProjectsList.value ?? projectsData.value)
@@ -425,6 +428,28 @@ function _keepPopupFullyVisible(popup: maplibregl.Popup) {
   fit()
   window.setTimeout(fit, 260)
 }
+
+// Filter species index by selected groups
+function applySpeciesFilters(speciesIndex: SpeciesIndexItem[]): SpeciesIndexItem[] {
+  // If no groups selected, return all
+  if (selectedSpeciesGroups.value.length === 0) {
+    return speciesIndex
+  }
+  
+  // Filter by selected taxonomic groups
+  return speciesIndex.filter(s => 
+    selectedSpeciesGroups.value.includes(s.taxonomicGroup)
+  )
+}
+
+// Update filter panel when species index changes
+watch(speciesIndexData, (newIndex) => {
+  if (newIndex.length > 0 && speciesFilterPanelRef.value) {
+    // Update filter panel with available groups from index
+    const groups = [...new Set(newIndex.map(s => s.taxonomicGroup))].sort()
+    // The filter panel will be updated via its internal logic
+  }
+}, { immediate: true })
 
 function handleFilterChange(filtered: Species[]) {
   filteredSpeciesList.value = filtered
@@ -833,7 +858,7 @@ function createClusterMarkerElement(
 let useNativeGeoJSON = true
 const SOURCE_ID = 'species-markers'
 
-function setupGeoJSONMarkers() {
+async function setupGeoJSONMarkers() {
   if (!map || !useNativeGeoJSON) return
 
   // Clean up old DOM markers
@@ -873,21 +898,57 @@ function setupGeoJSONMarkers() {
       }
     )
   } else {
-    const validSpecies = visibleSpecies.value.filter(s => isValidCoordinate(s.lat, s.lng))
-    const geojson = speciesToGeoJSON(validSpecies)
+    // Use lightweight index if provided, otherwise load it
+    let speciesIndex: SpeciesIndexItem[]
+    
+    if (speciesIndexData.value.length > 0) {
+      // Use passed prop
+      speciesIndex = speciesIndexData.value
+    } else {
+      // Fetch lightweight index (3.2MB vs 35MB)
+      try {
+        const indexRes = await fetch(`${baseURL}data/species/icmbio-brazil-index.json`)
+        if (!indexRes.ok) {
+          console.error('Failed to load species index')
+          return
+        }
+        speciesIndex = await indexRes.json()
+      } catch (e) {
+        console.error('Failed to load species index:', e)
+        return
+      }
+    }
+    
+    // Apply any active filters to the index
+    const filteredIndex = applySpeciesFilters(speciesIndex)
+    const geojson = speciesIndexToGeoJSON(filteredIndex)
     geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
     geoJSONMarkers.addClusterLayers(SOURCE_ID, 'endangered-species')
     
     geoJSONMarkers.setupEventHandlers(
       SOURCE_ID,
       'endangered-species',
-      (props, coords) => {
-        // Find species by coordinates
-        const species = validSpecies.find(s => 
-          Math.abs(s.lng - coords[0]) < 0.001 && 
-          Math.abs(s.lat - coords[1]) < 0.001
-        )
-        if (species) openSpeciesOverlay(species)
+      async (props, coords) => {
+        const speciesId = props.id as string
+        const fullSpecies = await geoJSONMarkers.loadFullSpeciesData(speciesId, baseURL)
+        if (fullSpecies) {
+          openSpeciesOverlay(fullSpecies)
+        } else {
+          // Fallback: find from index and use basic info
+          const indexItem = speciesIndex.find(s => s.id === speciesId)
+          if (indexItem) {
+            // Create minimal species object from index
+            const minimalSpecies = {
+              ...indexItem,
+              region: '',
+              ecosystem: '',
+              imageCredit: '',
+              threatTypes: indexItem.threatTypes || [],
+              content: {},
+            } as Species
+            openSpeciesOverlay(minimalSpecies)
+          }
+        }
       },
       (clusterId, coords) => {
         if (map) {

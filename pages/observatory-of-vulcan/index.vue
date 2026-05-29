@@ -130,8 +130,6 @@ const polygonsData = ref<GeoJSON.FeatureCollection | undefined>(undefined)
 const searchTerm = ref('')
 const flyToTarget = ref<{ lng: number; lat: number; zoom?: number } | null>(null)
 let allFeatures: Record<string, any>[] = []
-let filterTimer: ReturnType<typeof setTimeout> | null = null
-
 const catEntries = Object.entries(RARE_EARTH_CATEGORIES) as [string, { label: string; color: string }][]
 const categories = catEntries.map(([key, val]) => ({
   key,

@@ -5,8 +5,7 @@
  * which can handle 10,000+ points smoothly compared to the 100-200 limit of DOM markers.
  */
 
-import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl'
-import type { MapLayerMouseEvent } from 'maplibre-gl'
+import type { Map as MapLibreMap, GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl'
 import type { Species } from '@/lib/types'
 import { GROUP_COLORS } from '@/lib/map-utils'
 

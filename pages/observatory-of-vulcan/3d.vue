@@ -38,7 +38,7 @@ onMounted(async () => {
     }))
 
     let polyG = null
-    try { const r = await fetch(`${baseURL}data/rare-earth/polygons.geojson`); if (r.ok) polyG = await r.json() } catch {}
+    try { const r = await fetch(`${baseURL}data/rare-earth/polygons.geojson`); if (r.ok) polyG = await r.json() } catch { /* empty */ }
 
     if (mapContainer.value) {
       map = new maplibregl.Map({

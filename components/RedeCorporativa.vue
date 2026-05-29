@@ -135,9 +135,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ENTERPRISES, CORPORATE_CONNECTIONS, type EnterpriseHQ, type CorporateConnection } from '@/lib/enterprise-data'
+import { ENTERPRISES, CORPORATE_CONNECTIONS, type EnterpriseHQ } from '@/lib/enterprise-data'
 
-const props = defineProps<{ visible: boolean }>()
+defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ close: []; flyToEnterprise: [_name: string] }>()
 const close = () => emit('close')
 

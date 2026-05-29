@@ -1047,7 +1047,7 @@ function setupGeoJSONMarkers() {
     geoJSONMarkers.setupEventHandlers(
       SOURCE_ID,
       'endangered-species',
-      async (props, coords) => {
+      async (props, _coords) => {
         const speciesId = props.id as string
         const fullSpecies = await geoJSONMarkers.loadFullSpeciesData(speciesId, baseURL)
         if (fullSpecies) {
@@ -1102,7 +1102,7 @@ function setupGeoJSONMarkers() {
     geoJSONMarkers.setupEventHandlers(
       SOURCE_ID,
       'endangered-species',
-      async (props, coords) => {
+      async (props, _coords) => {
         const speciesId = props.id as string
         const species = speciesData.value.find(s => s.id === speciesId)
         if (species) openSpeciesOverlay(species)

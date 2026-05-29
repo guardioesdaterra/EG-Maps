@@ -1184,6 +1184,7 @@ function setupRareEarthLayers() {
       new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
         .setLngLat(e.lngLat)
         .setHTML(html)
+        .setMaxWidth('none')
         .addTo(map!)
     })
     map!.on('mouseenter', layerId, () => { if (map) map.getCanvas().style.cursor = 'pointer' })
@@ -1262,6 +1263,7 @@ function setupRareEarthLayers() {
       new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
         .setLngLat(e.lngLat)
         .setHTML(html)
+        .setMaxWidth('none')
         .addTo(map!)
     })
   }
@@ -1380,10 +1382,11 @@ function addRareEarthConflictSites() {
     if (!e.features?.length) return
     const p = e.features[0].properties
     const dangerColor = (p.danger ?? 5) >= 9 ? '#e74c3c' : (p.danger ?? 5) >= 7 ? '#f39c12' : '#27ae60'
-    new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
-      .setLngLat(e.lngLat)
-      .setHTML(`<div style="padding:8px 12px;min-width:160px"><h3 style="margin:0 0 2px;font-size:12px;font-weight:700;color:#e0e0e0">${escapeHtml(p.name)}</h3><div style="font-size:10px;color:#888">${escapeHtml(p.tag || '')}</div><div style="margin-top:4px;display:flex;align-items:center;gap:4px"><span style="font-size:8px;color:rgba(255,255,255,0.35);text-transform:uppercase">Danger</span><span style="font-size:10px;font-weight:700;color:${dangerColor}">${p.danger?.toFixed(1) || '—'}</span></div></div>`)
-      .addTo(map!)
+      new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+        .setLngLat(e.lngLat)
+        .setHTML(html || '<div class="ree-popup-wrapper" style="padding:12px;color:#888;font-size:11px">No data</div>')
+        .setMaxWidth('none')
+        .addTo(map!)
   })
   map!.on('mouseenter', 'ree-site-label', () => { if (map) map.getCanvas().style.cursor = 'pointer' })
   map!.on('mouseleave', 'ree-site-label', () => { if (map) map.getCanvas().style.cursor = '' })

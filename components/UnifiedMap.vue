@@ -933,7 +933,7 @@ function createClusterMarkerElement(
   return outer
 }
 
-let useNativeGeoJSON = true
+const useNativeGeoJSON = true
 const SOURCE_ID = 'species-markers'
 
 async function setupGeoJSONMarkers() {
@@ -1067,12 +1067,12 @@ function setupRareEarthLayers() {
     'ree-geo-fill', 'ree-geo-aquifer', 'ree-geo-conflict', 'ree-geo-line', 'ree-geo-label',
     'ree-site-glow', 'ree-site-label', 'ree-network-lines',
   ]
-  allLayerIds.forEach(id => { try { map!.removeLayer(id) } catch {} })
-  try { map!.removeSource('ree-points') } catch {}
-  try { map!.removeSource('ree-polys') } catch {}
-  try { map!.removeSource('ree-geo') } catch {}
-  try { map!.removeSource('ree-sites') } catch {}
-  try { map!.removeSource('ree-network') } catch {}
+  allLayerIds.forEach(id => { try { map!.removeLayer(id) } catch { /* empty */ } })
+  try { map!.removeSource('ree-points') } catch { /* empty */ }
+  try { map!.removeSource('ree-polys') } catch { /* empty */ }
+  try { map!.removeSource('ree-geo') } catch { /* empty */ }
+  try { map!.removeSource('ree-sites') } catch { /* empty */ }
+  try { map!.removeSource('ree-network') } catch { /* empty */ }
 
   const catColors: Record<string, string> = {
     direct_ree: '#e74c3c', carbonatite_associated: '#f39c12', pegmatite_associated: '#27ae60',
@@ -1413,8 +1413,8 @@ function addRareEarthNetworkLines() {
     }
   })
   if (!lineFeatures.length) return
-  try { map!.removeSource('ree-network') } catch {}
-  try { map!.removeLayer('ree-network-lines') } catch {}
+  try { map!.removeSource('ree-network') } catch { /* empty */ }
+  try { map!.removeLayer('ree-network-lines') } catch { /* empty */ }
   map!.addSource('ree-network', { type: 'geojson', data: { type: 'FeatureCollection', features: lineFeatures } })
   map!.addLayer({
     id: 'ree-network-lines', type: 'line', source: 'ree-network',
@@ -1435,25 +1435,25 @@ function syncRareEarthLayerVisibility() {
   catIds.forEach(cat => {
     const show = vis[cat] !== false
     ;[`ree-pt-${cat}-glow`, `ree-pt-${cat}`].forEach(id => {
-      try { map!.setLayoutProperty(id, 'visibility', show ? 'visible' : 'none') } catch {}
+      try { map!.setLayoutProperty(id, 'visibility', show ? 'visible' : 'none') } catch { /* empty */ }
     })
   })
   // Polygon layers
   const polyLayers = ['ree-poly-fill','ree-poly-glow','ree-poly-line','ree-poly-label']
   const showPolys = vis['polygons'] !== false
-  polyLayers.forEach(id => { try { map!.setLayoutProperty(id, 'visibility', showPolys ? 'visible' : 'none') } catch {} })
+  polyLayers.forEach(id => { try { map!.setLayoutProperty(id, 'visibility', showPolys ? 'visible' : 'none') } catch { /* empty */ } })
   // Geo layers (basins, aquifers, conflict zones)
   const geoFillLayers = ['ree-geo-fill','ree-geo-aquifer','ree-geo-conflict']
   const geoLineLayers = ['ree-geo-line','ree-geo-label']
   const showWater = vis['water'] !== false
-  geoFillLayers.forEach(id => { try { map!.setLayoutProperty(id, 'visibility', showWater ? 'visible' : 'none') } catch {} })
-  geoLineLayers.forEach(id => { try { map!.setLayoutProperty(id, 'visibility', showWater ? 'visible' : 'none') } catch {} })
+  geoFillLayers.forEach(id => { try { map!.setLayoutProperty(id, 'visibility', showWater ? 'visible' : 'none') } catch { /* empty */ } })
+  geoLineLayers.forEach(id => { try { map!.setLayoutProperty(id, 'visibility', showWater ? 'visible' : 'none') } catch { /* empty */ } })
   // Conflict site markers
   const siteLayers = ['ree-site-glow','ree-site-label']
   const showSites = vis['sites'] !== false
-  siteLayers.forEach(id => { try { map!.setLayoutProperty(id, 'visibility', showSites ? 'visible' : 'none') } catch {} })
+  siteLayers.forEach(id => { try { map!.setLayoutProperty(id, 'visibility', showSites ? 'visible' : 'none') } catch { /* empty */ } })
   // Network lines
-  try { map!.setLayoutProperty('ree-network-lines', 'visibility', vis['network'] !== false ? 'visible' : 'none') } catch {}
+  try { map!.setLayoutProperty('ree-network-lines', 'visibility', vis['network'] !== false ? 'visible' : 'none') } catch { /* empty */ }
 }
 
 // Watcher for layer visibility changes from parent
@@ -1471,7 +1471,7 @@ watch(() => props.rareEarthPoints, (newVal) => {
       if (src) src.setData(newVal as any)
       // Rebuild network lines when data changes
       addRareEarthNetworkLines()
-    } catch {}
+    } catch { /* empty */ }
   }
 })
 

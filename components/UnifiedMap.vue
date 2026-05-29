@@ -170,7 +170,7 @@ import {
   type MapConnectionFeature,
   type MapParticleSystem,
 } from '@/lib/map-effects'
-import type { MapLayerMouseEvent, GeoJSONSource } from 'maplibre-gl'
+import type { MapLayerMouseEvent, GeoJSONSource, DataDrivenPropertyValueSpecification } from 'maplibre-gl'
 import type { Point } from 'geojson'
 import {
   getMarkerImageUrl,
@@ -1180,21 +1180,21 @@ function setupRareEarthLayers() {
   })
 
   // ── Cluster click ──
-  map!.on('click', 'ree-clusters', (e: MapLayerMouseEvent) => {
+  map!.on('click', 'ree-clusters', async (e: MapLayerMouseEvent) => {
     const fs = map!.queryRenderedFeatures(e.point, { layers: ['ree-clusters'] })
     if (!fs.length) return
-    const cid = fs[0].properties.cluster_id
+    const cid = Number(fs[0].properties.cluster_id)
     const src = map!.getSource('ree-points') as GeoJSONSource
-    src?.getClusterExpansionZoom(cid, (_err: unknown, z: number) => {
-      map!.flyTo({ center: (fs[0].geometry as Point).coordinates, zoom: Math.min(z, 14), duration: 800 })
-    })
+    const z = await src?.getClusterExpansionZoom(cid)
+    const coords = (fs[0].geometry as Point).coordinates as [number, number]
+    map!.flyTo({ center: coords, zoom: Math.min(z ?? 14, 14), duration: 800 })
   })
   map!.on('mouseenter', 'ree-clusters', () => { if (map) map.getCanvas().style.cursor = 'pointer' })
   map!.on('mouseleave', 'ree-clusters', () => { if (map) map.getCanvas().style.cursor = '' })
 
   // ── Polygon layers ──
   if (polys) {
-    const polyColorMatch = ['match', ['get', 'category'],
+    const polyColorMatch: DataDrivenPropertyValueSpecification<string> = ['match', ['get', 'category'],
       'direct_ree', '#e74c3c', 'carbonatite_associated', '#f39c12',
       'pegmatite_associated', '#27ae60', 'heavy_mineral_associated', '#2980b9',
       'phosphate_associated', '#8e44ad', 'strategic_associated', '#e91e63', '#999']

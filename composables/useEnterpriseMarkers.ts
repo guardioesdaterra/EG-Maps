@@ -26,7 +26,7 @@ function safeRemoveSource(map: MapLibreMap, id: string) {
 }
 
 function canAddSource(map: MapLibreMap, id: string): boolean {
-  return map.isStyleLoaded() && !map.getSource(id)
+  return !!(map.isStyleLoaded() && !map.getSource(id))
 }
 
 export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (e: EnterpriseHQ) => void) {

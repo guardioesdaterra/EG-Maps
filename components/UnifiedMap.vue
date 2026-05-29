@@ -1101,7 +1101,7 @@ function setupRareEarthLayers() {
   }
 
   // ── Cluster layers (glow + core + count) ──
-  const clusterRadiusStep = ['step', ['get', 'point_count'], 5, 5, 10, 20, 16, 50, 22, 100, 36]
+  const clusterRadiusStep: any = ['step', ['get', 'point_count'], 5, 5, 10, 20, 16, 50, 22, 100, 36]
   const dominantCatColor: any = ['case',
     ['all', ['>', ['get', 'dr'], 0], ['>=', ['get', 'dr'], ['get', 'ca']], ['>=', ['get', 'dr'], ['get', 'pg']], ['>=', ['get', 'dr'], ['get', 'hm']], ['>=', ['get', 'dr'], ['get', 'ph']], ['>=', ['get', 'dr'], ['get', 'st']]], '#e74c3c',
     ['all', ['>', ['get', 'ca'], 0], ['>=', ['get', 'ca'], ['get', 'dr']], ['>=', ['get', 'ca'], ['get', 'pg']], ['>=', ['get', 'ca'], ['get', 'hm']], ['>=', ['get', 'ca'], ['get', 'ph']], ['>=', ['get', 'ca'], ['get', 'st']]], '#f39c12',
@@ -1146,7 +1146,7 @@ function setupRareEarthLayers() {
   // ── Category point layers (each: glow halo + core dot) ──
   const pointRadius = ['interpolate', ['linear'], ['zoom'], 4, 2.5, 8, 4, 12, 6, 16, 8]
   categories.forEach(cat => {
-    const filter = ['all', ['!', ['has', 'point_count']], ['==', ['get', 'c'], cat]]
+    const filter: any = ['all', ['!', ['has', 'point_count']], ['==', ['get', 'c'], cat]]
     const color = catColors[cat]
 
     map!.addLayer({
@@ -1193,8 +1193,9 @@ function setupRareEarthLayers() {
     const fs = map!.queryRenderedFeatures(e.point, { layers: ['ree-clusters'] })
     if (!fs.length) return
     const cid = fs[0].properties.cluster_id
-    map!.getSource('ree-points')?.getClusterExpansionZoom(cid, (_err: any, z: number) => {
-      map!.flyTo({ center: fs[0].geometry.coordinates, zoom: Math.min(z, 14), duration: 800 })
+    const src = map!.getSource('ree-points') as any
+    src?.getClusterExpansionZoom(cid, (_err: any, z: number) => {
+      map!.flyTo({ center: (fs[0].geometry as any).coordinates, zoom: Math.min(z, 14), duration: 800 })
     })
   })
   map!.on('mouseenter', 'ree-clusters', () => { if (map) map.getCanvas().style.cursor = 'pointer' })
@@ -1202,7 +1203,7 @@ function setupRareEarthLayers() {
 
   // ── Polygon layers ──
   if (polys) {
-    const polyColorMatch = ['match', ['get', 'category'],
+    const polyColorMatch: any = ['match', ['get', 'category'],
       'direct_ree', '#e74c3c', 'carbonatite_associated', '#f39c12',
       'pegmatite_associated', '#27ae60', 'heavy_mineral_associated', '#2980b9',
       'phosphate_associated', '#8e44ad', 'strategic_associated', '#e91e63', '#999']

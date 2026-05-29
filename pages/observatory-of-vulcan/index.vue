@@ -437,10 +437,10 @@ onMounted(async () => {
     allFeatures = pointsGJ.features.map((f: any) => ({
       p: f.properties.processo, n: f.properties.nome, s: f.properties.subs,
       c: f.properties.category, f: f.properties.fase, u: f.properties.uf,
-      a: f.properties.area_ha, ds: f.properties.danger_score,
-      net: f.properties.network_id,
-      y: f.properties.ano,
-      lo: f.geometry.coordinates[0], la: f.geometry.coordinates[1],
+      a: f.properties.area_ha ?? 0, ds: f.properties.danger_score ?? 0,
+      net: f.properties.network_id ?? '',
+      y: f.properties.ano ?? 0,
+      lo: f.geometry.coordinates[0] ?? 0, la: f.geometry.coordinates[1] ?? 0,
     }))
     pointsData.value = pointsGJ
     if (polysRes && polysRes.ok) {

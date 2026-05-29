@@ -1381,12 +1381,21 @@ function addRareEarthConflictSites() {
   map!.on('click', 'ree-site-label', (e: any) => {
     if (!e.features?.length) return
     const p = e.features[0].properties
-    const dangerColor = (p.danger ?? 5) >= 9 ? '#e74c3c' : (p.danger ?? 5) >= 7 ? '#f39c12' : '#27ae60'
-      new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
-        .setLngLat(e.lngLat)
-        .setHTML(html || '<div class="ree-popup-wrapper" style="padding:12px;color:#888;font-size:11px">No data</div>')
-        .setMaxWidth('none')
-        .addTo(map!)
+    const dangerScore = p.danger ?? 5
+    const dangerColor = dangerScore >= 9 ? '#e74c3c' : dangerScore >= 7 ? '#f39c12' : '#27ae60'
+    const siteHtml = `<div class="ree-popup-wrapper" style="padding:14px;min-width:200px;position:relative">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${dangerColor};color:#fff">${dangerScore.toFixed(1)} Danger</span>
+        <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(192,57,43,0.2);color:#c0392b">CONFLICT ZONE</span>
+      </div>
+      <h3 style="margin:0;font-size:13px;font-weight:700;color:#e8e8e8">${escapeHtml(p.name || 'Unknown')}</h3>
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px">${escapeHtml(p.tag || '')}</div>
+    </div>`
+    new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+      .setLngLat(e.lngLat)
+      .setHTML(siteHtml)
+      .setMaxWidth('none')
+      .addTo(map!)
   })
   map!.on('mouseenter', 'ree-site-label', () => { if (map) map.getCanvas().style.cursor = 'pointer' })
   map!.on('mouseleave', 'ree-site-label', () => { if (map) map.getCanvas().style.cursor = '' })
@@ -1417,8 +1426,8 @@ function addRareEarthNetworkLines() {
     }
   })
   if (!lineFeatures.length) return
-  try { map!.removeSource('ree-network') } catch { /* empty */ }
-  try { map!.removeLayer('ree-network-lines') } catch { /* empty */ }
+  if (map!.getLayer('ree-network-lines')) map!.removeLayer('ree-network-lines')
+  if (map!.getSource('ree-network')) map!.removeSource('ree-network')
   map!.addSource('ree-network', { type: 'geojson', data: { type: 'FeatureCollection', features: lineFeatures } })
   map!.addLayer({
     id: 'ree-network-lines', type: 'line', source: 'ree-network',

@@ -1144,7 +1144,7 @@ function setupRareEarthLayers() {
   })
 
   // ── Category point layers (each: glow halo + core dot) ──
-  const pointRadius = ['interpolate', ['linear'], ['zoom'], 4, 2.5, 8, 4, 12, 6, 16, 8]
+  const pointRadius: any = ['interpolate', ['linear'], ['zoom'], 4, 2.5, 8, 4, 12, 6, 16, 8]
   categories.forEach(cat => {
     const filter: any = ['all', ['!', ['has', 'point_count']], ['==', ['get', 'c'], cat]]
     const color = catColors[cat]

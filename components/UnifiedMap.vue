@@ -1366,7 +1366,7 @@ function addRareEarthConflictSites() {
     },
   })
   // Click on site marker opens popup with info
-  map!.on('click', 'ree-site-label', (e: any) => {
+  map!.on('click', 'ree-site-label', (e: MapLayerMouseEvent) => {
     if (!e.features?.length) return
     const p = e.features[0].properties
     const dangerScore = p.danger ?? 5
@@ -1469,7 +1469,7 @@ watch(() => props.rareEarthPoints, (newVal) => {
   if (activeDataset.value === 'observatory-of-vulcan' && newVal && map && map.isStyleLoaded()) {
     try {
       const src = map.getSource('ree-points') as maplibregl.GeoJSONSource
-      if (src) src.setData(newVal as any)
+      if (src) src.setData(newVal)
       // Rebuild network lines when data changes
       addRareEarthNetworkLines()
     } catch { /* empty */ }

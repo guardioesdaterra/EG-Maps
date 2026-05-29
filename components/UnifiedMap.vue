@@ -170,10 +170,11 @@ import {
   type MapConnectionFeature,
   type MapParticleSystem,
 } from '@/lib/map-effects'
+import type { MapLayerMouseEvent, GeoJSONSource } from 'maplibre-gl'
+import type { Point } from 'geojson'
 import {
   getMarkerImageUrl,
   preloadSpeciesImages,
-  clearImageCache,
   getMarkerPlaceholder,
   getProjectPlaceholder,
 } from '@/lib/image-utils'
@@ -972,6 +973,7 @@ async function setupGeoJSONMarkers() {
       try {
         const indexRes = await fetch(`${baseURL}data/species/icmbio-brazil-index.json`)
         if (!indexRes.ok) {
+          // eslint-disable-next-line no-console
           console.error('Failed to load species index')
           return
         }
@@ -1163,7 +1165,7 @@ function setupRareEarthLayers() {
   // ── Interactive event handlers (register once per category layer) ──
   categories.forEach(cat => {
     const layerId = `ree-pt-${cat}`
-    map!.on('click', layerId, (e: any) => {
+    map!.on('click', layerId, (e: MapLayerMouseEvent) => {
       if (!e.features?.length) return
       const p = e.features[0].properties
       const html = buildRareEarthPopupHTML(p)
@@ -1178,13 +1180,13 @@ function setupRareEarthLayers() {
   })
 
   // ── Cluster click ──
-  map!.on('click', 'ree-clusters', (e: any) => {
+  map!.on('click', 'ree-clusters', (e: MapLayerMouseEvent) => {
     const fs = map!.queryRenderedFeatures(e.point, { layers: ['ree-clusters'] })
     if (!fs.length) return
     const cid = fs[0].properties.cluster_id
-    const src = map!.getSource('ree-points') as any
-    src?.getClusterExpansionZoom(cid, (_err: any, z: number) => {
-      map!.flyTo({ center: (fs[0].geometry as any).coordinates, zoom: Math.min(z, 14), duration: 800 })
+    const src = map!.getSource('ree-points') as GeoJSONSource
+    src?.getClusterExpansionZoom(cid, (_err: unknown, z: number) => {
+      map!.flyTo({ center: (fs[0].geometry as Point).coordinates, zoom: Math.min(z, 14), duration: 800 })
     })
   })
   map!.on('mouseenter', 'ree-clusters', () => { if (map) map.getCanvas().style.cursor = 'pointer' })
@@ -1192,7 +1194,7 @@ function setupRareEarthLayers() {
 
   // ── Polygon layers ──
   if (polys) {
-    const polyColorMatch: any = ['match', ['get', 'category'],
+    const polyColorMatch = ['match', ['get', 'category'],
       'direct_ree', '#e74c3c', 'carbonatite_associated', '#f39c12',
       'pegmatite_associated', '#27ae60', 'heavy_mineral_associated', '#2980b9',
       'phosphate_associated', '#8e44ad', 'strategic_associated', '#e91e63', '#999']
@@ -1236,7 +1238,7 @@ function setupRareEarthLayers() {
       },
     })
     // Polygon click popup
-    map!.on('click', 'ree-poly-fill', (e: any) => {
+    map!.on('click', 'ree-poly-fill', (e: MapLayerMouseEvent) => {
       if (!e.features?.length) return
       const p = e.features[0].properties
       const html = buildRareEarthPopupHTML({

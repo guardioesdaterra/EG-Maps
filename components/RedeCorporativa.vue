@@ -83,6 +83,71 @@ function layoutGraph(cw: number, ch: number): LayoutNode[] {
   return nodes
 }
 
+let resizeTimer: ReturnType<typeof setTimeout> | null = null
+let cachedNodes: LayoutNode[] = []
+
+function getNodeAt(mx: number, my: number): LayoutNode | null {
+  for (const n of cachedNodes) {
+    const r = Math.min(12 + n.connections * 2, 32)
+    const dx = mx - n.x
+    const dy = my - n.y
+    if (dx * dx + dy * dy <= r * r) return n
+  }
+  return null
+}
+
+function hitTestEdge(mx: number, my: number): typeof CORPORATE_CONNECTIONS[0] | null {
+  const nodeMap = new Map(cachedNodes.map(n => [n.ent.name, n]))
+  for (const conn of CORPORATE_CONNECTIONS) {
+    const from = nodeMap.get(conn.from)
+    const to = nodeMap.get(conn.to)
+    if (!from || !to) continue
+    const cpx = (from.x + to.x) / 2
+    const cpy = (from.y + to.y) / 2 - 15
+    const steps = 20
+    for (let i = 0; i < steps; i++) {
+      const t = i / steps
+      const bx = (1 - t) * (1 - t) * from.x + 2 * (1 - t) * t * cpx + t * t * to.x
+      const by = (1 - t) * (1 - t) * from.y + 2 * (1 - t) * t * cpy + t * t * to.y
+      const dx = mx - bx
+      const dy = my - by
+      if (dx * dx + dy * dy <= 100) return conn
+    }
+  }
+  return null
+}
+
+function onCanvasClick(e: MouseEvent) {
+  const canvas = canvasRef.value
+  if (!canvas) return
+  const rect = canvas.getBoundingClientRect()
+  const mx = e.clientX - rect.left
+  const my = e.clientY - rect.top
+  const node = getNodeAt(mx, my)
+  focusedEnterprise.value = node ? node.ent : null
+}
+
+function onCanvasMove(e: MouseEvent) {
+  const canvas = canvasRef.value
+  if (!canvas) return
+  const rect = canvas.getBoundingClientRect()
+  const mx = e.clientX - rect.left
+  const my = e.clientY - rect.top
+  const node = getNodeAt(mx, my)
+  const edge = node ? null : hitTestEdge(mx, my)
+  canvas.style.cursor = node || edge ? 'pointer' : 'default'
+  if (edge) {
+    hoveredEdge.value = { from: edge.from, to: edge.to, type: edge.type, label: edge.label }
+    tooltipPos.value = { left: e.clientX + 'px', top: e.clientY + 'px' }
+  } else {
+    hoveredEdge.value = null
+  }
+}
+
+function onCanvasLeave() {
+  hoveredEdge.value = null
+}
+
 function drawGraph() {
   const canvas = canvasRef.value
   if (!canvas) return
@@ -99,8 +164,8 @@ function drawGraph() {
 
   ctx.clearRect(0, 0, w, h)
 
-  const nodes = layoutGraph(w, h)
-  const nodeMap = new Map(nodes.map(n => [n.ent.name, n]))
+  cachedNodes = layoutGraph(w, h)
+  const nodeMap = new Map(cachedNodes.map(n => [n.ent.name, n]))
 
   // Draw edges
   CORPORATE_CONNECTIONS.forEach(conn => {
@@ -122,8 +187,20 @@ function drawGraph() {
     ctx.setLineDash([])
   })
 
+  // Highlight focused node
+  cachedNodes.forEach(n => {
+    if (focusedEnterprise.value && n.ent.name === focusedEnterprise.value.name) {
+      const r = Math.min(12 + n.connections * 2, 32)
+      ctx.beginPath()
+      ctx.arc(n.x, n.y, r + 4, 0, Math.PI * 2)
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)'
+      ctx.lineWidth = 2
+      ctx.stroke()
+    }
+  })
+
   // Draw nodes
-  nodes.forEach(n => {
+  cachedNodes.forEach(n => {
     const r = Math.min(12 + n.connections * 2, 32)
     const grad = ctx.createRadialGradient(n.x - r * 0.3, n.y - r * 0.3, 0, n.x, n.y, r)
     grad.addColorStop(0, lightenColor(n.ent.color, 30))
@@ -154,7 +231,6 @@ function lightenColor(hex: string, percent: number): string {
   return `rgb(${r},${g},${b})`
 }
 
-let resizeTimer: ReturnType<typeof setTimeout> | null = null
 function onResize() {
   if (resizeTimer) clearTimeout(resizeTimer)
   resizeTimer = setTimeout(drawGraph, 150)
@@ -166,10 +242,22 @@ watch(() => props.visible, (v) => {
 
 onMounted(() => {
   window.addEventListener('resize', onResize)
+  const canvas = canvasRef.value
+  if (canvas) {
+    canvas.addEventListener('click', onCanvasClick)
+    canvas.addEventListener('mousemove', onCanvasMove)
+    canvas.addEventListener('mouseleave', onCanvasLeave)
+  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', onResize)
+  const canvas = canvasRef.value
+  if (canvas) {
+    canvas.removeEventListener('click', onCanvasClick)
+    canvas.removeEventListener('mousemove', onCanvasMove)
+    canvas.removeEventListener('mouseleave', onCanvasLeave)
+  }
 })
 </script>
 
@@ -203,7 +291,7 @@ onUnmounted(() => {
 }
 .rede-close:hover { color: #fff; }
 .rede-canvas-wrap {
-  flex: 1; position: relative; min-height: 400px;
+  flex: 1; position: relative; min-height: clamp(280px, 50vh, 400px);
   margin: 0; overflow: hidden;
 }
 .rede-canvas {

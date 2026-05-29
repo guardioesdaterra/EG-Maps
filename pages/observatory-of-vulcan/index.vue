@@ -266,7 +266,8 @@ function onEnterpriseClick(enterprise: EnterpriseHQ) {
 }
 
 function flyToEnterprise(name: string) {
-  // This is handled by the RedeCorporativa panel
+  const ent = ENTERPRISES.find(e => e.name === name)
+  if (ent) flyToTarget.value = { lng: ent.lng, lat: ent.lat, zoom: 6 }
 }
 
 function onMapInit(map: maplibregl.Map) {

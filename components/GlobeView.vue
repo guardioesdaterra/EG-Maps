@@ -295,21 +295,7 @@ const MAP_STYLE = MAPTILER_API_KEY
   ? `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_API_KEY}`
   : 'https://demotiles.maplibre.org/style.json'
 
-const tileCache = new Map<string, Response>()
-
-function transformRequest(url: string, resourceType?: string) {
-  if (resourceType === 'Tile' && tileCache.has(url)) {
-    const cached = tileCache.get(url)!
-    return {
-      url,
-      headers: {} as Record<string, string>,
-      method: 'GET' as const,
-      type: 'image' as const,
-      credentials: 'same-origin' as const,
-      collectResourceTiming: false,
-      _cachedResponse: cached,
-    } as maplibregl.RequestParameters
-  }
+function transformRequest(url: string, _resourceType?: string) {
   return { url }
 }
 
@@ -381,51 +367,31 @@ async function initMap() {
       startAutoRotate()
     })
 
-    map.on('mousedown', () => {
+    function pauseAutoRotate() {
       isUserInteracting = true
       stopAutoRotate()
       if (interactionTimeout) clearTimeout(interactionTimeout)
-    })
+    }
 
-    map.on('dragstart', () => {
-      isUserInteracting = true
-      stopAutoRotate()
-      if (interactionTimeout) clearTimeout(interactionTimeout)
-    })
-
-    map.on('dragend', () => {
+    function resumeAutoRotate() {
       isUserInteracting = false
       if (interactionTimeout) clearTimeout(interactionTimeout)
       interactionTimeout = setTimeout(() => {
-        if (!isUserInteracting) startAutoRotate()
-      }, 3000)
-    })
-
-    map.on('scroll', () => {
-      isUserInteracting = true
-      stopAutoRotate()
-      if (interactionTimeout) clearTimeout(interactionTimeout)
-      interactionTimeout = setTimeout(() => {
         isUserInteracting = false
         startAutoRotate()
       }, 3000)
-    })
+    }
 
-    map.on('touchstart', () => {
-      isUserInteracting = true
-      stopAutoRotate()
-      if (interactionTimeout) clearTimeout(interactionTimeout)
-    })
-
+    map.on('dragstart', pauseAutoRotate)
+    map.on('dragend', resumeAutoRotate)
     map.on('wheel', () => {
-      isUserInteracting = true
-      stopAutoRotate()
-      if (interactionTimeout) clearTimeout(interactionTimeout)
+      pauseAutoRotate()
       interactionTimeout = setTimeout(() => {
         isUserInteracting = false
         startAutoRotate()
       }, 3000)
     })
+    map.on('touchstart', pauseAutoRotate)
 
     function shouldRebuildClusters(): boolean {
       if (!map) return false

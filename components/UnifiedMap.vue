@@ -195,22 +195,7 @@ const MAP_STYLE = MAPTILER_API_KEY
   ? `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_API_KEY}`
   : 'https://demotiles.maplibre.org/style.json'
 
-// Tile caching for performance - actually stores and returns cached responses
-const tileCache = new Map<string, Response>()
-
-function transformRequest(url: string, resourceType?: string) {
-  if (resourceType === 'Tile' && tileCache.has(url)) {
-    const cached = tileCache.get(url)!
-    return {
-      url,
-      headers: {} as Record<string, string>,
-      method: 'GET' as const,
-      type: 'image' as const,
-      credentials: 'same-origin' as const,
-      collectResourceTiming: false,
-      _cachedResponse: cached,
-    } as maplibregl.RequestParameters
-  }
+function transformRequest(url: string, _resourceType?: string) {
   return { url }
 }
 
@@ -263,6 +248,7 @@ const projectOverlayHTML = ref('')
 
 let map: maplibregl.Map | null = null
 let markers: maplibregl.Marker[] = []
+let isMounted = true
 let pendingVisibilityUpdate = false
 let pendingClusterRebuild = false
 let connectionFeatures: MapConnectionFeature[] = []
@@ -1868,6 +1854,7 @@ function initMap() {
     }
 
     map.on('load', () => {
+      if (!isMounted) return
       isLoading.value = false
       if (map) emit('mapInit', map)
       if (activeDataset.value === 'observatory-of-vulcan') {
@@ -2021,6 +2008,7 @@ watch([showSpeciesOverlay, showProjectOverlay], ([speciesOpen, projectOpen]) => 
 })
 
 onUnmounted(() => {
+  isMounted = false
   if (hexGridDebounceTimer) clearTimeout(hexGridDebounceTimer)
   cleanupParticles()
   markers.forEach(m => m.remove())
@@ -2029,7 +2017,6 @@ onUnmounted(() => {
   if (useNativeGeoJSON) {
     geoJSONMarkers.cleanup()
   }
-  clearImageCache()
   window.removeEventListener('resize', debouncedSetupHexGrid)
   if (map) {
     map.remove()

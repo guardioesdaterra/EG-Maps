@@ -14,6 +14,7 @@
         :rare-earth-polygons="polygonsData"
         :layer-visibility="layerVis"
         :fly-to-target="flyToTarget"
+        @map-init="onMapInit"
       >
         <template #overlays>
           <!-- Stats panel top-left -->
@@ -42,25 +43,53 @@
             <span class="text-[9px] font-bold text-zinc-300">{{ totalCount }} total</span>
           </div>
 
-          <!-- Tab navigation -->
-          <div class="absolute top-20 right-3 z-[500] flex flex-wrap gap-1 justify-end max-w-[420px]">
-            <button v-for="t in tabs" :key="t.key" @click="activeTab = t.key"
-              :class="['px-2.5 py-1.5 text-[10px] font-bold rounded-lg border transition-all',
-                activeTab === t.key
-                  ? 'bg-red-600 text-white border-red-600 shadow-md'
-                  : 'bg-black/60 text-zinc-400 border-zinc-700 hover:bg-black/80 hover:text-zinc-200'
-              ]">
-              {{ t.label }}
+          <!-- Action Buttons Row -->
+          <div class="absolute top-20 left-3 z-[500] flex flex-wrap gap-1.5 max-w-[320px]">
+            <button @click="showTimeline = true"
+              class="px-2.5 py-1.5 text-[9px] font-bold rounded-lg border transition-all flex items-center gap-1.5"
+              style="background:rgba(231,76,60,0.15);border-color:rgba(231,76,60,0.3);color:#e74c3c">
+              <span>📖</span> Geopolitical Timeline
+            </button>
+            <button @click="showRedeCorporativa = true"
+              class="px-2.5 py-1.5 text-[9px] font-bold rounded-lg border transition-all flex items-center gap-1.5"
+              style="background:rgba(52,152,219,0.15);border-color:rgba(52,152,219,0.3);color:#5dade2">
+              <span>🔗</span> Rede Corporativa
+            </button>
+            <button @click="showDownload = true"
+              class="px-2.5 py-1.5 text-[9px] font-bold rounded-lg border transition-all flex items-center gap-1.5"
+              style="background:rgba(39,174,96,0.15);border-color:rgba(39,174,96,0.3);color:#27ae60">
+              <span>⬇️</span> Download Data
+            </button>
+            <button @click="toggleEnterpriseLayer"
+              class="px-2.5 py-1.5 text-[9px] font-bold rounded-lg border transition-all flex items-center gap-1.5"
+              :style="enterpriseLayerVisible
+                ? 'background:rgba(155,89,182,0.2);border-color:rgba(155,89,182,0.4);color:#af7ac5'
+                : 'background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);color:#666'">
+              <span>🏢</span> Enterprise HQs
             </button>
           </div>
 
-          <!-- Side panel -->
-          <div v-if="activeTab"
-            class="absolute top-[5.5rem] right-3 z-[500] w-[340px] max-h-[calc(100vh-7rem)] overflow-y-auto bg-black/85 backdrop-blur border border-zinc-800 rounded-xl shadow-xl">
-            <div class="sticky top-0 bg-black/90 z-10 px-3 py-2 border-b border-zinc-800 rounded-t-xl">
-              <h3 class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">{{ activeTabLabel }}</h3>
+          <!-- Tab navigation -->
+          <div class="absolute" style="top: clamp(5.5rem, 14vh, 8rem); right: 0.75rem; z-index: 500;">
+            <div class="flex flex-wrap gap-1 justify-end max-w-[420px]">
+              <button v-for="t in tabs" :key="t.key" @click="activeTab = t.key"
+                :class="['px-2.5 py-1.5 text-[10px] font-bold rounded-lg border transition-all',
+                  activeTab === t.key
+                    ? 'bg-red-600 text-white border-red-600 shadow-md'
+                    : 'bg-black/60 text-zinc-400 border-zinc-700 hover:bg-black/80 hover:text-zinc-200'
+                ]">
+                {{ t.label }}
+              </button>
             </div>
-            <div class="p-2 text-[11px] text-zinc-400" v-html="panelContent" />
+
+            <!-- Side panel (with higher z-index, positioned below tabs) -->
+            <div v-if="activeTab"
+              class="mt-1 w-[340px] max-h-[calc(100vh-12rem)] overflow-y-auto bg-black/85 backdrop-blur border border-zinc-800 rounded-xl shadow-xl">
+              <div class="sticky top-0 bg-black/90 z-10 px-3 py-2 border-b border-zinc-800 rounded-t-xl">
+                <h3 class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">{{ activeTabLabel }}</h3>
+              </div>
+              <div class="p-2 text-[11px] text-zinc-400" v-html="panelContent" />
+            </div>
           </div>
 
           <!-- Layer toggles -->
@@ -85,6 +114,16 @@
               </div>
               <span class="text-[10px] text-zinc-400 font-medium">{{ e.label }}</span>
             </div>
+            <hr class="border-zinc-800 my-1.5" />
+            <div class="flex items-center gap-2 py-1 cursor-pointer select-none"
+              @click="toggleLayer('enterprise_hq')">
+              <div :class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
+                layerVis['enterprise_hq'] !== false ? '' : 'opacity-30']"
+                style="border-color:#9b59b6;color:#9b59b6">
+                <div v-if="layerVis['enterprise_hq'] !== false" class="w-1.5 h-1.5 rounded-sm" style="background:#9b59b6" />
+              </div>
+              <span class="text-[10px] text-zinc-400 font-medium">Enterprise HQs</span>
+            </div>
           </div>
 
           <!-- Search -->
@@ -102,6 +141,16 @@
           </div>
         </template>
       </UnifiedMap>
+
+      <!-- Timeline Modal -->
+      <GeoPoliticalTimeline :visible="showTimeline" @close="showTimeline = false" />
+
+      <!-- Rede Corporativa Panel -->
+      <RedeCorporativa :visible="showRedeCorporativa" @close="showRedeCorporativa = false" @fly-to-enterprise="flyToEnterprise" />
+
+      <!-- Download Panel -->
+      <DataDownloadPanel :visible="showDownload" @close="showDownload = false" />
+
       <template #fallback>
         <div class="flex h-screen w-full items-center justify-center bg-zinc-950 text-white">
           <LoadingSpinner :message="t('loading.observatoryOfVulcan')" :inline="true" />
@@ -113,7 +162,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import type maplibregl from 'maplibre-gl'
 import { RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
+import type { EnterpriseHQ } from '@/lib/enterprise-data'
+import { setupEnterpriseLayer, cleanupEnterpriseLayer } from '@/composables/useEnterpriseMarkers'
 declare global { interface Window { __flyToDanger?: (_name: string) => void; __flyToCoord?: (_lng: number, _lat: number) => void } }
 
 const { t } = useI18n()
@@ -130,6 +182,14 @@ const polygonsData = ref<GeoJSON.FeatureCollection | undefined>(undefined)
 const searchTerm = ref('')
 const flyToTarget = ref<{ lng: number; lat: number; zoom?: number } | null>(null)
 let allFeatures: Record<string, any>[] = []
+let mapRef: maplibregl.Map | null = null
+
+// Popups
+const showTimeline = ref(false)
+const showRedeCorporativa = ref(false)
+const showDownload = ref(false)
+const enterpriseLayerVisible = ref(false)
+
 const catEntries = Object.entries(RARE_EARTH_CATEGORIES) as [string, { label: string; color: string }][]
 const categories = catEntries.map(([key, val]) => ({
   key,
@@ -146,11 +206,8 @@ const extraLayers = [
 
 const layerVis = ref<Record<string, boolean>>({})
 categories.forEach(c => { layerVis.value[c.key] = true })
-// Extra layer toggles
-layerVis.value['polygons'] = true
-layerVis.value['water'] = true
-layerVis.value['sites'] = true
-layerVis.value['network'] = true
+extraLayers.forEach(e => { layerVis.value[e.key] = true })
+layerVis.value['enterprise_hq'] = false
 
 const tabs = [
   { key: 'danger', label: 'Danger' },
@@ -187,6 +244,32 @@ const totalCount = computed(() => allFeatures.length)
 
 function toggleLayer(key: string) {
   layerVis.value[key] = !layerVis.value[key]
+  if (key === 'enterprise_hq') {
+    enterpriseLayerVisible.value = layerVis.value[key]
+    if (mapRef) {
+      if (enterpriseLayerVisible.value) {
+        setupEnterpriseLayer(mapRef, onEnterpriseClick)
+      } else {
+        cleanupEnterpriseLayer(mapRef)
+      }
+    }
+  }
+}
+
+function toggleEnterpriseLayer() {
+  toggleLayer('enterprise_hq')
+}
+
+function onEnterpriseClick(enterprise: EnterpriseHQ) {
+  flyToTarget.value = { lng: enterprise.lng, lat: enterprise.lat, zoom: 6 }
+}
+
+function flyToEnterprise(name: string) {
+  // This is handled by the RedeCorporativa panel
+}
+
+function onMapInit(map: maplibregl.Map) {
+  mapRef = map
 }
 
 function zoomToPoint(d: any) {
@@ -196,7 +279,6 @@ function zoomToPoint(d: any) {
 }
 
 function zoomToDanger(item: typeof dangerData[0]) {
-  // Find first matching feature
   const match = allFeatures.find(d => d.net === item.network_id || d.n?.toLowerCase() === item.name.toLowerCase().split('/')[0].trim().toLowerCase())
   if (match) zoomToPoint(match)
 }
@@ -336,7 +418,6 @@ const dangerData = [
 ]
 
 onMounted(async () => {
-  // Expose fly-to for panel onclick handlers
   window.__flyToDanger = (encodedName: string) => {
     const name = decodeURIComponent(encodedName)
     const item = dangerData.find(d => d.name === name)

@@ -227,6 +227,8 @@ interface Props {
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null  // Parent can trigger fly-to
 }
 
+const emit = defineEmits<{ mapInit: [map: maplibregl.Map] }>()
+
 const props = withDefaults(defineProps<Props>(), {
   defaultDataset: 'project-grants',
 })
@@ -1868,6 +1870,7 @@ function initMap() {
 
     map.on('load', () => {
       isLoading.value = false
+      emit('mapInit', map)
       if (activeDataset.value === 'observatory-of-vulcan') {
         setupRareEarthLayers()
       } else {

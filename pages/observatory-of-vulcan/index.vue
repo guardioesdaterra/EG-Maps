@@ -166,6 +166,7 @@ import type maplibregl from 'maplibre-gl'
 import { RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
 import type { EnterpriseHQ } from '@/lib/enterprise-data'
 import { setupEnterpriseLayer, cleanupEnterpriseLayer } from '@/composables/useEnterpriseMarkers'
+import { ENTERPRISES } from '@/lib/enterprise-data'
 declare global { interface Window { __flyToDanger?: (_name: string) => void; __flyToCoord?: (_lng: number, _lat: number) => void } }
 
 const { t } = useI18n()
@@ -280,7 +281,9 @@ function zoomToPoint(d: any) {
 
 function zoomToDanger(item: typeof dangerData[0]) {
   const match = allFeatures.find(d => d.net === item.network_id || d.n?.toLowerCase() === item.name.toLowerCase().split('/')[0].trim().toLowerCase())
-  if (match) zoomToPoint(match)
+  if (match) { zoomToPoint(match); return }
+  const ent = ENTERPRISES.find(e => item.name.includes(e.name.toUpperCase().split(' ')[0]) || e.name.toUpperCase().includes(item.name.split('/')[0].trim()))
+  if (ent) { flyToTarget.value = { lng: ent.lng, lat: ent.lat, zoom: 7 }; return }
 }
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null

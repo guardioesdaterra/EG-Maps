@@ -1,7 +1,7 @@
 export interface EnterpriseHQ {
   name: string
-  ticker?: string
-  logoUrl?: string
+  ticker: string | null
+  logoUrl: string | null
   country: string
   city: string
   lat: number
@@ -10,7 +10,7 @@ export interface EnterpriseHQ {
   sector: string
   link: string
   subsidiaries: string[]
-  shareholders: { name: string; stake: string }[]
+  shareholders: (string | { name: string; stake: string })[]
   holdings: string[]
   color: string
 }

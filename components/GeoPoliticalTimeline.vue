@@ -114,8 +114,8 @@
           <h2 class="section-title">Historical Timeline: The Road to Crisis</h2>
           <div class="timeline-container">
             <TimelineEvent
-              v-for="event in timeline" :key="event.year + event.title"
-              :event="event"
+              v-for="evt in timeline" :key="evt.year + evt.title"
+              :event="evt"
             />
           </div>
         </div>
@@ -188,48 +188,38 @@
 </template>
 
 <script setup lang="ts">
-import { GEOPOLITICAL_TIMELINE, MINING_PHASE_TIMELINE, type TimelineEvent, type PhaseTimeline } from '@/lib/observatory-timeline'
+import { h } from 'vue'
+import { GEOPOLITICAL_TIMELINE, MINING_PHASE_TIMELINE, type TimelineEvent } from '@/lib/observatory-timeline'
 
-const props = defineProps<{ visible: boolean }>()
+defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 
 function close() { emit('close') }
 
 const timeline = GEOPOLITICAL_TIMELINE
 const phases = MINING_PHASE_TIMELINE
-</script>
 
-<script lang="ts">
-// Separate component for timeline events (avoids issues with recursion)
-import { h, defineComponent, type PropType } from 'vue'
-
-const TimelineEvent = defineComponent({
-  props: {
-    event: { type: Object as PropType<TimelineEvent>, required: true },
-  },
-  setup(props) {
-    const e = props.event
-    const sigColors: Record<string, string> = { critical: '#e74c3c', high: '#f39c12', medium: '#3498db', low: '#7f8c8d' }
-    const sigColor = sigColors[e.significance] || '#666'
-
-    return () => h('div', { class: 'timeline-item' }, [
-      h('div', { class: 'timeline-marker', style: { borderColor: e.color } }, [
-        h('div', { class: 'timeline-dot', style: { background: e.color } }),
+const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
+  const e = event
+  const sigColors: Record<string, string> = { critical: '#e74c3c', high: '#f39c12', medium: '#3498db', low: '#7f8c8d' }
+  const sigColor = sigColors[e.significance] || '#666'
+  return h('div', { class: 'timeline-item' }, [
+    h('div', { class: 'timeline-marker', style: { borderColor: e.color } }, [
+      h('div', { class: 'timeline-dot', style: { background: e.color } }),
+    ]),
+    h('div', { class: 'timeline-content' }, [
+      h('div', { class: 'timeline-year' }, [
+        h('span', { style: { color: e.color } }, `${e.icon} ${e.year}`),
+        h('span', {
+          class: 'timeline-significance',
+          style: { background: sigColor, color: '#fff' },
+        }, e.significance.toUpperCase()),
       ]),
-      h('div', { class: 'timeline-content' }, [
-        h('div', { class: 'timeline-year' }, [
-          h('span', { style: { color: e.color } }, `${e.icon} ${e.year}`),
-          h('span', {
-            class: 'timeline-significance',
-            style: { background: sigColor, color: '#fff' },
-          }, e.significance.toUpperCase()),
-        ]),
-        h('h3', { class: 'timeline-title' }, e.title),
-        h('p', { class: 'timeline-desc' }, e.description),
-      ]),
-    ])
-  },
-})
+      h('h3', { class: 'timeline-title' }, e.title),
+      h('p', { class: 'timeline-desc' }, e.description),
+    ]),
+  ])
+}
 </script>
 
 <style scoped>

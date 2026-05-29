@@ -74,15 +74,13 @@ export default defineNuxtConfig({
     preset: 'static',
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d'],
+      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/observatory-of-vulcan', '/observatory-of-vulcan/3d'],
       ignore: ['/EG-Maps/manifest.json'],
     },
     compressPublicAssets: true,
   },
 
-  // WSL fix: disable vite-node IPC, enforce ws HMR
   experimental: {
-    viteEnvironmentApi: true,
     appManifest: false,
   },
 

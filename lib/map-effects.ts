@@ -190,6 +190,8 @@ export function syncMapConnectionLayers(map: MapLibreMap, features: MapConnectio
 
   if (features.length === 0) return
 
+  if (!map.isStyleLoaded()) return
+
   map.addSource(CONNECTION_SOURCE_ID, {
     type: 'geojson',
     data: {

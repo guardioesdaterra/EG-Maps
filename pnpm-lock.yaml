@@ -60,6 +60,9 @@ importers:
       autoprefixer:
         specifier: ^10.5.0
         version: 10.5.0(postcss@8.5.15)
+      eslint:
+        specifier: ^10.4.0
+        version: 10.4.0(jiti@2.7.0)
       happy-dom:
         specifier: ^20.9.0
         version: 20.9.0

@@ -31,14 +31,15 @@
     "footer": "Renforcer l'action environnementale menée par les jeunes dans le monde",
     "databasesTitle": "Bases de données sur les espèces menacées (Livres Rouges)",
     "databasesDesc": "Explorez les listes rouges officielles qui documentent les espèces menacées dans le monde. Contribuez avec des données pour maintenir ces registres critiques à jour.",
+    "databasesDescSuggest": "Explorez les listes rouges officielles qui documentent les espèces menacées dans le monde. Vous connaissez un dataset à ajouter ? Suggérez-le nous.",
     "iucnTitle": "Liste Rouge de l'UICN des Espèces Menacées",
     "iucnDesc": "L'inventaire le plus complet au monde sur l'état de conservation mondial des espèces biologiques, maintenu par l'Union Internationale pour la Conservation de la Nature.",
     "iucnScope": "Mondial",
     "icmbioTitle": "ICMBio / IBAMA — Livro Vermelho (Livre Rouge Brésilien)",
     "icmbioDesc": "Le registre officiel brésilien des espèces menacées, maintenu par ICMBio et IBAMA. Documente l'état de conservation de la riche biodiversité du pays.",
     "icmbioScope": "Brésil",
-    "submitData": "Soumettre des données",
-    "submitDataSubject": "Contribution de données pour la base du Livre Rouge"
+    "suggestDataset": "Suggérer un dataset",
+    "suggestDatasetSubject": "Suggérer un nouveau dataset pour EG-Maps"
   },
   "mapControls": {
     "search": "Rechercher",

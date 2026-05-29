@@ -47,4 +47,6 @@ function handleInput(event: Event) {
     emit('update:modelValue', target.value)
   }
 }
+
+defineExpose({ inputRef })
 </script>

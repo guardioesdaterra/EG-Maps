@@ -31,14 +31,15 @@
     "footer": "Fortalecendo a ação ambiental liderada por jovens no mundo todo",
     "databasesTitle": "Bases de Dados de Espécies Ameaçadas (Livros Vermelhos)",
     "databasesDesc": "Explore as listas vermelhas oficiais que documentam espécies ameaçadas em todo o mundo. Contribua com dados para manter esses registros críticos atualizados.",
+    "databasesDescSuggest": "Explore as listas vermelhas oficiais que documentam espécies ameaçadas em todo o mundo. Conhece um dataset que devemos adicionar? Sugira-o.",
     "iucnTitle": "Lista Vermelha da IUCN de Espécies Ameaçadas",
     "iucnDesc": "O inventário mais abrangente do mundo sobre o estado de conservação global de espécies biológicas, mantido pela União Internacional para a Conservação da Natureza.",
     "iucnScope": "Global",
     "icmbioTitle": "ICMBio / IBAMA — Livro Vermelho (Lista Vermelha Brasileira)",
     "icmbioDesc": "O registro oficial brasileiro de espécies ameaçadas de extinção, mantido pelo ICMBio e IBAMA. Documenta o estado de conservação da rica biodiversidade do país.",
     "icmbioScope": "Brasil",
-    "submitData": "Enviar Dados",
-    "submitDataSubject": "Contribuição de dados para o Livro Vermelho"
+    "suggestDataset": "Sugerir Dataset",
+    "suggestDatasetSubject": "Sugerir um novo dataset para EG-Maps"
   },
   "mapControls": {
     "search": "Buscar",

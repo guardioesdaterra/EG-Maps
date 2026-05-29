@@ -216,7 +216,7 @@ import { useI18n } from '@/composables/useI18n'
 import type { Species } from '@/lib/map-utils'
 
 interface Props {
-  species: Species[]
+  species?: Species[]
 }
 
 const props = withDefaults(defineProps<Props>(), {

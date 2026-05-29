@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import type { ProjectData, Species } from '@/lib/types'
 import { buildProjectPopupHTML, buildSpeciesPopupHTML, GROUP_COLORS } from '@/lib/map-utils'
 import { useI18n } from '@/composables/useI18n'

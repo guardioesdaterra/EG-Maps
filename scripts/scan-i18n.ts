@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * i18n Scanner Script
  * Scans all Vue and TS files for hardcoded text strings that should use i18n keys
@@ -8,19 +9,7 @@
 import fs from 'fs'
 import path from 'path'
 
-const ROOT_DIR = path.join(process.cwd(), 'src')
 
-// Patterns to detect hardcoded text (exclude i18n t() calls and code)
-const HARDCODED_PATTERNS = [
-  // Template literals and text in quotes (simplified detection)
-  /\{[^}]*\{?\s*['"][^'"{}]+['"]/g,  // Complex template expressions
-  /[^t]\(['"](?![a-z_]+\.[a-z_])[A-Z][^'"]{3,80}['"]\)/g,  // Regular function calls with text
-  /text=['"](?![{t(])[A-Z][^'"]{3,80}['"]/g,  // text= attributes
-  /placeholder=['"](?![{t(])[A-Z][^'"]{3,80}['"]/g,  // placeholders
-  /title=['"](?![{t(])[A-Z][^'"]{3,80}['"]/g,  // title attributes
-  /aria-label=['"](?![{t(])[A-Z][^'"]{3,80}['"]/g,  // aria-label
-  /class=['"][^'"]*\b(?!t\()[A-Z][a-z]+(?:\s+[^"]*)?\b['"]/g,  // CSS classes starting with uppercase
-]
 
 // Files to ignore
 const IGNORE_PATTERNS = [
@@ -48,7 +37,6 @@ function scanFile(filePath: string): HardcodedText[] {
   // Check for hardcoded strings in template
   const templateMatch = content.match(/<template>([\s\S]*?)<\/template>/)
   if (templateMatch) {
-    const template = templateMatch[1]
     lines.forEach((line, index) => {
       // Skip if already using t() function
       if (line.includes('t(') && !line.match(/t\(['"][a-z_]+\.[a-z_]+['"]/)) {

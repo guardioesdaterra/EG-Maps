@@ -121,7 +121,7 @@ import { useI18n } from '@/composables/useI18n'
 import type { ProjectData } from '@/lib/types'
 
 interface Props {
-  projects: ProjectData[]
+  projects?: ProjectData[]
 }
 
 const props = withDefaults(defineProps<Props>(), {

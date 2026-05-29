@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terras Raras Brasil — Invasão do Capital & Impacto Socioambiental</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#fafafa;color:#1a1a2e;overflow:hidden;height:100vh}
+#map{position:absolute;top:0;left:0;right:0;bottom:0}
+
+.header{position:absolute;top:8px;left:8px;z-index:10;background:rgba(255,255,255,0.97);border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:12px 16px;max-width:380px;box-shadow:0 2px 12px rgba(0,0,0,0.08)}
+.header h1{font-size:16px;font-weight:800;color:#c0392b;margin-bottom:2px}
+.header .subtitle{font-size:10px;color:#666;line-height:1.4}
+.header .tag{display:inline-block;font-size:8px;padding:1px 5px;border-radius:3px;font-weight:700;margin-right:3px}
+.tag-mil{background:#e74c3c;color:#fff}
+.tag-env{background:#27ae60;color:#fff}
+.tag-ill{background:#8e44ad;color:#fff}
+.tag-for{background:#2980b9;color:#fff}
+
+.tab-nav{position:absolute;top:8px;right:8px;z-index:10;display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;max-width:420px}
+.tab-btn{background:rgba(255,255,255,0.97);border:1px solid rgba(0,0,0,0.08);border-radius:7px;padding:5px 9px;font-size:10px;cursor:pointer;color:#555;font-weight:600;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.tab-btn:hover{background:#fff}
+.tab-btn.active{background:#c0392b;color:#fff;border-color:#c0392b}
+
+.panel{position:absolute;top:36px;right:8px;z-index:10;width:350px;max-height:calc(100vh - 50px);overflow-y:auto;background:rgba(255,255,255,0.97);border:1px solid rgba(0,0,0,0.08);border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.08);display:none}
+.panel.visible{display:block}
+.panel-hdr{padding:10px 14px;border-bottom:1px solid rgba(0,0,0,0.06);position:sticky;top:0;background:rgba(255,255,255,0.98);z-index:2;border-radius:12px 12px 0 0}
+.panel-hdr h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#888}
+.panel-body{padding:6px 10px}
+
+.item{padding:8px;border-bottom:1px solid rgba(0,0,0,0.04);cursor:pointer;transition:background .15s;border-radius:5px}
+.item:hover{background:rgba(192,57,43,0.04)}
+.item-name{font-size:11px;font-weight:600;color:#1a1a2e;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.item-bar{height:3px;border-radius:2px;background:#eee;margin:3px 0;overflow:hidden}
+.item-bar-fill{height:100%;border-radius:2px}
+.item-meta{font-size:9px;color:#888;display:flex;gap:6px;flex-wrap:wrap}
+.item-desc{font-size:9px;color:#666;margin-top:2px;line-height:1.35}
+.item-badge{display:inline-block;font-size:7.5px;padding:1px 4px;border-radius:2px;font-weight:700}
+
+.controls{position:absolute;bottom:24px;left:8px;z-index:10;background:rgba(255,255,255,0.97);border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:10px 12px;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.controls h3{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:6px}
+.lt{display:flex;align-items:center;gap:5px;padding:3px 0;cursor:pointer;font-size:10px;user-select:none}
+.tb{width:12px;height:12px;border-radius:2px;border:2px solid;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tb.checked::after{content:'';width:6px;height:6px;border-radius:1px;background:currentColor}
+
+.search-wrap{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:10}
+.search-box{background:rgba(255,255,255,0.97);border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:6px 12px;color:#1a1a2e;font-size:12px;width:240px;outline:none;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.search-box::placeholder{color:#aaa}
+.search-box:focus{border-color:rgba(192,57,43,0.4)}
+
+.maplibregl-popup-content{background:rgba(255,255,255,0.98)!important;border:1px solid rgba(0,0,0,0.1)!important;border-radius:10px!important;padding:10px 12px!important;color:#1a1a2e!important;font-family:'Segoe UI',system-ui,sans-serif!important;min-width:240px;max-width:320px;box-shadow:0 6px 24px rgba(0,0,0,0.12)!important}
+.maplibregl-popup-tip{border-top-color:rgba(255,255,255,0.98)!important}
+.pp-title{font-size:11px;font-weight:700;color:#c0392b;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid rgba(0,0,0,0.06)}
+.pp-row{display:flex;justify-content:space-between;font-size:10px;padding:1.5px 0}
+.pp-row .pk{color:#888}
+.pp-row .pv{color:#333;font-weight:500;text-align:right;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-section{margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,0,0,0.06);font-size:9px;line-height:1.35;color:#555}
+.pp-badge{display:inline-block;font-size:8px;padding:1px 5px;border-radius:3px;font-weight:700;margin:2px 1px}
+
+.water-legend{position:absolute;bottom:24px;right:8px;z-index:10;background:rgba(255,255,255,0.97);border:1px solid rgba(0,0,0,0.08);border-radius:10px;padding:8px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.water-legend h3{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:4px}
+.wli{display:flex;align-items:center;gap:5px;font-size:9px;color:#666;padding:1px 0}
+.wline{width:16px;height:2px;border-radius:1px}
+
+.stats{position:absolute;top:76px;left:8px;z-index:10;background:rgba(255,255,255,0.97);border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:10px 12px;min-width:180px;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.stats h3{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#999;margin-bottom:6px}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:2px 0;font-size:10px}
+.sr .label{display:flex;align-items:center;gap:4px}
+.sr .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sr .count{font-weight:700;font-variant-numeric:tabular-nums;color:#333}
+
+.loading-overlay{position:absolute;top:0;left:0;right:0;bottom:0;z-index:100;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s}
+.loading-overlay.hidden{opacity:0;pointer-events:none}
+.loading-spinner{width:40px;height:40px;border:3px solid rgba(192,57,43,0.15);border-top-color:#c0392b;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{margin-top:12px;font-size:12px;color:#888}
+.loading-progress{margin-top:4px;font-size:10px;color:#aaa}
+
+.alert-banner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;background:rgba(192,57,43,0.08);border:2px solid rgba(192,57,43,0.15);border-radius:16px;padding:20px;max-width:400px;display:none;pointer-events:auto}
+.alert-banner.visible{display:block}
+.alert-banner h2{font-size:14px;color:#c0392b;margin-bottom:6px}
+.alert-banner p{font-size:10px;color:#555;line-height:1.5}
+
+@media(max-width:900px){.panel{width:260px}.header{max-width:260px}.search-wrap{display:none}.stats{min-width:140px}}
+@media(max-width:600px){.panel{width:calc(100vw - 16px);right:8px}.stats{display:none}.water-legend{display:none}}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Investigação profunda em andamento...</div>
+  <div class="loading-progress" id="loadingProgress"></div>
+</div>
+
+<div id="map"></div>
+
+<div class="header">
+  <h1>Terras Raras Brasil — Invasão do Capital</h1>
+  <div class="subtitle">
+    <span class="tag tag-mil">MILITAR</span><span class="tag tag-env">AMBIENTE</span><span class="tag tag-ill">ILEGAL</span><span class="tag tag-for">ESTRANGEIRO</span><br>
+    20.700 processos minerários. Análise: impacto socioambiental, rede corporativa, interesses militares EUA, 
+    irregularidades legais, risco hídrico, especulação fundiária, comunidades ameaçadas.
+  </div>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="danger">Perigo</button>
+  <button class="tab-btn" data-tab="military">Militar</button>
+  <button class="tab-btn" data-tab="illegal">Ilegal</button>
+  <button class="tab-btn" data-tab="env">Ambiente</button>
+  <button class="tab-btn" data-tab="network">Rede</button>
+  <button class="tab-btn" data-tab="timeline">Timeline</button>
+</div>
+
+<div class="panel visible" id="panelDanger"><div class="panel-hdr"><h3>Índice de Perigo Socioambiental</h3></div><div class="panel-body" id="dangerList"></div></div>
+<div class="panel" id="panelMilitary"><div class="panel-hdr"><h3>Interesse Militar dos EUA — Cadeia de Suprimento</h3></div><div class="panel-body" id="militaryList"></div></div>
+<div class="panel" id="panelIllegal"><div class="panel-hdr"><h3>Irregularidades & Especulação</h3></div><div class="panel-body" id="illegalList"></div></div>
+<div class="panel" id="panelEnv"><div class="panel-hdr"><h3>Riscos Ambientais & Hídricos</h3></div><div class="panel-body" id="envList"></div></div>
+<div class="panel" id="panelNetwork"><div class="panel-hdr"><h3>Rede Corporativa — Socios Compartilhados</h3></div><div class="panel-body" id="networkList"></div></div>
+<div class="panel" id="panelTimeline"><div class="panel-hdr"><h3>Timeline — Invasão Acelerada</h3></div><div class="panel-body" id="timelineList"></div></div>
+
+<div class="stats" id="statsPanel"><h3>Estatísticas</h3><div id="statsContent"></div></div>
+
+<div class="controls" id="controls">
+  <h3>Categorias</h3>
+  <div id="layerToggles"></div>
+  <div style="margin-top:6px;border-top:1px solid rgba(0,0,0,0.05);padding-top:6px">
+    <h3 style="margin-bottom:4px">Camadas</h3>
+    <div class="lt" id="tPoly"><div class="tb checked" style="border-color:#c0392b;color:#c0392b" id="polyCk"></div><span>Polígonos</span></div>
+    <div class="lt" id="tWater"><div class="tb checked" style="border-color:#3498db;color:#3498db" id="waterCk"></div><span>Hidrografia</span></div>
+    <div class="lt" id="tMil"><div class="tb checked" style="border-color:#e74c3c;color:#e74c3c" id="milCk"></div><span>Zonas militar-estratégicas</span></div>
+  </div>
+</div>
+
+<div class="search-wrap"><input type="text" class="search-box" id="searchBox" placeholder="Buscar empresa, substância, UF..."></div>
+
+<div class="water-legend">
+  <h3>Hidrografia</h3>
+  <div class="wli"><div class="wline" style="background:#3498db"></div>Bacias hidrográficas</div>
+  <div class="wli"><div class="wline" style="background:#9b59b6"></div>Aquíferos subterrâneos</div>
+  <div class="wli"><div class="wline" style="background:#e74c3c;border:1px dashed #c0392b"></div>Bacias ameaçadas</div>
+</div>
+
+<script>
+const CATS={
+  direct_ree:{label:'Terras Raras Diretas',color:'#e74c3c'},
+  carbonatite_associated:{label:'Carbonatito/Alcalino',color:'#f39c12'},
+  pegmatite_associated:{label:'Pegmatito',color:'#27ae60'},
+  heavy_mineral_associated:{label:'Minerais Pesados',color:'#2980b9'},
+  phosphate_associated:{label:'Fosfato',color:'#8e44ad'},
+  strategic_associated:{label:'Estratégicos',color:'#e91e63'}
+};
+
+// Military-critical REE: Nd (magnets/missiles), Dy (high-temp magnets), Y (radar/lasers), Sm (missile magnets), Eu (nuclear/displays), Tb (sonar)
+const MIL_REE={
+  F35:'417 kg REE/avião | F-35 Joint Strike Fighter',
+  VIRGINIA_SUB:'4,175 kg REE/submarino | Virginia-class nuclear submarine',
+  BURKE_DEST:'2,358 kg REE/destróier | Arleigh Burke destroyer',
+  WEAPONS:'Mísseis AGM-88 HARM, night vision, laser targeting, electronic warfare, drones, radar AESA',
+  DOD_MP:'Pentágono comprou $400M em equity da MP Materials + $120M+ Lynas + $12B estoque estratégico',
+  DFC_SERRA:'DFC (governo EUA) emprestou $565M → Serra Verde. USA Rare Earth comprou por $2.8B.',
+  STATE_ACLARA:'State Dept EUA aportou $5M → Aclara Carina GO',
+  EFA_VIRIDIS:'Export Finance Australia: $50M Viridis + $50M Meteoric',
+  UCORE:'Ucore MOU: Caldeira MREC → óxido nos EUA (cadeia militar)',
+  CHINA_BAN:'China baniu exportação de 12/17 elementos REE para EUA (out/2025). 78% das armas EUA dependem de REE chinês.'
+};
+
+// Environmental risks per region
+const ENV_RISKS=[
+  {region:'Poços de Caldas / Caldas MG',risks:['Racionamento de água em 2024','Viridis planeja usar TODOS os 4 reservatórios da cidade','Disputa: empresa diz 3 nascentes, críticos dizem 98','20.000+ toneladas de rejeito radioativo da INB no local','MPF buscou suspender licenciamento — COPAM aprovou mesmo assim','Método IAC usa sulfato de amônio → acidificação do solo e contaminação de lençol freático'],companies:['Viridis','Meteoric','Axel REE'],danger:9.5},
+  {region:'Araxá MG',risks:['36+ anos de contaminação por bário (>5mg/L) no lençol freático','Rejeito radioativo usado em construção civil','CBMM: "impacto silencioso" — cidade inteira dependente da mineradora','Contaminação de águas do Barreiro','Consórcio chinês detém 15% — sem transparência sobre riscos'],companies:['CBMM','St George Mining','Mars GMN'],danger:8.5},
+  {region:'Jequié BA',risks:['Corredor de carbonatitos com argilas IAC-REE','Múltiplas empresas ASX com requerimentos sobrepostos','437 empresas com padrões de especulação fundiária','Comunidades tradicionais e quilombolas sem consulta prévia'],companies:['Palmares/Magnum','Mars GMN','Foxfire','EDEM'],danger:7.5},
+  {region:'Minaçu GO (Serra Verde)',risks:['Multa de R$12.5M recomendada por impacto em córregos','Desmatamento do Cerrado em nascentes','60 anos de mineração de amianto → dependência de mineração','DFC/EUA investiu $565M — pressão para operar a qualquer custo','Única mina REE em produção fora da Ásia — sem parâmetro de segurança'],companies:['Serra Verde / USA Rare Earth'],danger:9},
+  {region:'Piracanjuba GO (Aclara)',risks:['Projeto Carina: $600M em área do Aquífero Bambuí','Método "Circular Mineral Harvesting" não comprovado em escala','Gálio como subproduto — sem regulação específica no Brasil','State Dept EUA financiou — pressão geopolítica sobre licenciamento'],companies:['Aclara Resources'],danger:7},
+  {region:'Aquífero Bambuí (MG/GO)',risks:['Principais projetos REE sobre o aquífero','Contaminação já detectada em pontos de monitoramento','Mineração IAC usa lixiviação com sulfato de amônio → risco direto ao lençol','ISR (In-Situ Recovery) testado por Axel REE → contaminação comprovada em China'],companies:['Axel REE','Aclara','Várias'],danger:9},
+  {region:'Aquífero Urucuia (BA/MG)',risks:['Região semiárida — água é recurso crítico','Mineração de fosfato + REE sobre o aquífero','Dusolo e Elysium com 200+ requerimentos na área'],companies:['Dusolo','Elysium','Pedra Cinza'],danger:7.5},
+  {region:'Kalunga do Mimoso TO',risks:['ANM autorizou pesquisa REE dentro de quilombo SEM consulta','Justiça Federal suspendeu requerimentos','40+ territórios quilombolas ameaçados na Amazônia Legal','98% das áreas quilombolas sob ameaça no Brasil'],companies:['Brasmet Exploration'],danger:8}
+];
+
+// Illegal/irregular patterns
+const ILLEGAL_PATTERNS=[
+  {type:'SPECULATION',title:'Especulação Fundiária',desc:'437 empresas com padrões de especulação: 100% dos requerimentos após 2020, apenas REQUERIMENTO DE PESQUISA (nunca autorizados), dezenas de processos com 1-2 substâncias.',examples:['GR8: R$20K capital, 137 requerimentos, 204.625 ha','Nazca Gold: 129 requerimentos, sem dados corporativos','Einstein Ventures: 111 requerimentos, apenas FOSFATO','Pedra Cinza: 322 requerimentos, 531.844 ha, 100% recente']},
+  {type:'REGULATORY_CAPTURE',title:'Captura Regulatória — Operação Rejeito',desc:'Set/2025: Diretor da ANM preso + 21 outros. Esquema bilionário de manipulação de licenças. 1/3 dos diretores da ANM eram egressos do setor mineral. ANM com apenas 30% do quadro preenchido.',examples:['Diretor Caio Mário Seabra preso','Guias de Utilização emitidas sem fiscalização','Ex-chefe da PF e ex-deputado envolvidos','Esquema de corrupção ativa/passiva + lavagem de dinheiro']},
+  {type:'SECRECY',title:'Sigilo de Informações Minerárias',desc:'ANM permite sigilo sobre dados de processos minerários. 88 requerimentos sob sigilo (105.139 ha). Operação Rejeito evidenciou que sigilo permitiu corrupção.',examples:['19 requerimentos da Nacional de Grafite sob sigilo','4 requerimentos da Mosaic sob sigilo','ANM abriu consulta para revisar regras em 2025','JOTA: "ANM foi obrigada a acabar com sigilo, não o fez proativamente"']},
+  {type:'COMMUNITY_EXCLUSION',title:'Exclusão de Comunidades',desc:'Comunidades tradicionais, quilombolas e indígenas excluídas das decisões. ANM autorizou pesquisa dentro de quilombo Kalunga SEM conhecimento da comunidade.',examples:['Quilombo Kalunga do Mimoso: Justiça Federal suspendeu','40+ territórios quilombolas ameaçados','Acordo Brasil-China exclui salvaguardas comunitárias','PL 2780 aprovado sem salvaguardas para comunidades']},
+  {type:'FOREIGN_CONTROL',title:'Controle Estrangeiro de Minerais Estratégicos',desc:'2.142 requerimentos (10.3%) controlados por empresas australianas, americanas, canadenses e europeias. Subsidiárias integralmente estrangeiras operam sem contrapartida doméstica.',examples:['Australiano: 1.146 requerimentos, 1.73M ha','EUA: 475 requerimentos, 644K ha','Canadá: 190 requerimentos, 386K ha','Zero processamento doméstico — minério exportado bruto']},
+  {type:'WATER_RISK',title:'Risco Hídrico Sistêmico',desc:'Mineração REE consome 400-500L/tonelada. Poços de Caldas já sofre racionamento. ISR (In-Situ Recovery) testado por Axel REE contamina lençol freático. 16% das minas de minerais críticos em áreas de estresse hídrico.',examples:['Poços de Caldas: racionamento em 2024, Viridis usará 4 reservatórios','ISR: contaminação comprovada na China pelo mesmo método','Aquífero Bambuí: mineração IAC sobre o aquífero','Rio São Francisco: contaminação por Zn, Cd, Cr em Três Marias']},
+  {type:'NUCLEAR_PROXIMITY',title:'Proximidade Nuclear',desc:'Projeto Caldeira da Meteoric fica ao lado da Unidade de Descompressão (UDC) das Indústrias Nucleares do Brasil (INB). 20.000+ toneladas de rejeito radioativo no local. MPF contestou ausência de avaliação de risco radioativo.',examples:['Meteoric Caldeira: adjacente à UDC-INB','INB Poços de Caldas: 20K+ ton rejeito radioativo','Monazita contém tório e urânio','Risco de exposição: 0.13-1.00 man·mSv/tonelada']}
+];
+
+let map,allF=[],layerVis={},polyVis=true,waterVis=true,milVis=true;
+
+async function init(){
+  const pr=document.getElementById('loadingProgress');
+  try{
+    pr.textContent='Carregando dados...';
+    const r=await fetch('sigmine/rare_earth_v2.json');
+    if(!r.ok)throw new Error('Dados não encontrados');
+    const raw=await r.json();
+    allF=raw.map(d=>({p:d[0],n:d[1],s:d[2],c:d[3],f:d[4],u:d[5],a:d[6],y:d[7],lo:d[8],la:d[9],ds:d[10],net:d[11]}));
+    pr.textContent=`${allF.length} registros carregados...`;
+    let polyG=null;
+    try{const pr2=await fetch('sigmine/polygons_light.geojson');if(pr2.ok)polyG=await pr2.json();}catch(e){}
+    pr.textContent='Inicializando mapa...';
+    initMap(allF,polyG);
+    buildStats();buildToggles();buildDanger();buildMilitary();buildIllegal();buildEnv();buildNetwork();buildTimeline();setupSearch();setupTabs();
+    setTimeout(()=>document.getElementById('loading').classList.add('hidden'),300);
+  }catch(e){pr.textContent='Erro: '+e.message;console.error(e)}
+}
+
+function initMap(data,polyG){
+  map=new maplibregl.Map({container:'map',style:{version:8,sources:{'carto-light':{type:'raster',tiles:['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png','https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png','https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png'],tileSize:256,attribution:'&copy; CARTO &copy; OSM'}},layers:[{id:'carto',type:'raster',source:'carto-light',minzoom:0,maxzoom:19}],glyphs:'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf'},center:[-48,-15],zoom:4.2,maxZoom:16,minZoom:2.5});
+  map.addControl(new maplibregl.NavigationControl({showCompass:true}),'bottom-right');
+  map.on('load',()=>{
+    const feats=data.map((d,i)=>({type:'Feature',id:i,properties:{...d,id:i},geometry:{type:'Point',coordinates:[d.lo,d.la]}}));
+    const gj={type:'FeatureCollection',features:feats};
+    map.addSource('mines',{type:'geojson',data:gj,cluster:true,clusterMaxZoom:11,clusterRadius:45,clusterProperties:{dr:['+',["case",["==",["get","c"],"direct_ree"],1,0]],ca:['+',["case",["==",["get","c"],"carbonatite_associated"],1,0]],pg:['+',["case",["==",["get","c"],"pegmatite_associated"],1,0]],hm:['+',["case",["==",["get","c"],"heavy_mineral_associated"],1,0]],ph:['+',["case",["==",["get","c"],"phosphate_associated"],1,0]],st:['+',["case",["==",["get","c"],"strategic_associated"],1,0]],md:['max',["get","ds"]]}});
+    if(polyG)map.addSource('polygons',{type:'geojson',data:polyG});
+    addWaterAndMilitary();
+    if(polyG){
+      map.addLayer({id:'pf',type:'fill',source:'polygons',paint:{'fill-color':['match',['get','category'],'direct_ree','#e74c3c','carbonatite_associated','#f39c12','pegmatite_associated','#27ae60','heavy_mineral_associated','#2980b9','phosphate_associated','#8e44ad','strategic_associated','#e91e63','#999'],'fill-opacity':0.1}});
+      map.addLayer({id:'pl',type:'line',source:'polygons',paint:{'line-color':['match',['get','category'],'direct_ree','#e74c3c','carbonatite_associated','#f39c12','pegmatite_associated','#27ae60','heavy_mineral_associated','#2980b9','phosphate_associated','#8e44ad','strategic_associated','#e91e63','#999'],'line-width':1,'line-opacity':0.4}});
+    }
+    map.addLayer({id:'clusters',type:'circle',source:'mines',filter:['has','point_count'],paint:{'circle-color':['case',['>',['get','dr'],['get','ca']],['case',['>',['get','dr'],['get','pg']],'#e74c3c','#27ae60'],['case',['>',['get','ca'],['get','hm']],'#f39c12','#2980b9']],'circle-radius':['step',['get','point_count'],5,5,10,20,16,50,22,30,100,36],'circle-opacity':0.5,'circle-stroke-width':1,'circle-stroke-color':'rgba(0,0,0,0.06)'}});
+    map.addLayer({id:'cc',type:'symbol',source:'mines',filter:['has','point_count'],layout:{'text-field':'{point_count_abbreviated}','text-font':['Open Sans Regular'],'text-size':['step',['get','point_count'],9,5,11,20,13]},paint:{'text-color':'#333','text-halo-color':'rgba(255,255,255,0.8)','text-halo-width':1}});
+    Object.keys(CATS).forEach(k=>{
+      const c=CATS[k];layerVis[k]=true;
+      map.addLayer({id:`u-${k}`,type:'circle',source:'mines',filter:['all',['!',['has','point_count']],['==',['get','c'],k]],paint:{'circle-color':c.color,'circle-radius':['interpolate',['linear'],['zoom'],4,2,8,3.5,12,5.5,16,7],'circle-opacity':0.8,'circle-stroke-width':0.5,'circle-stroke-color':'rgba(255,255,255,0.4)'}});
+      map.on('click',`u-${k}`,e=>{if(e.features.length){const p=e.features[0].properties,ci=CATS[p.c]||{},co=e.features[0].geometry.coordinates.slice(),dbg=p.ds>=8?'#e74c3c':p.ds>=6?'#f39c12':'#27ae60';
+      const milFlag=isMilitaryInterest(p)?`<div class="pp-section" style="color:#c0392b;font-weight:700">INTERESSE MILITAR EUA — Cadeia de suprimento de defesa</div>`:'';
+      const envFlag=isHighEnvRisk(p)?`<div class="pp-section" style="color:#27ae60;font-weight:700">ALTO RISCO AMBIENTAL — Região com conflito hídrico</div>`:'';
+      const illFlag=isSuspicious(p)?`<div class="pp-section" style="color:#8e44ad;font-weight:700">PADRÃO SUSPEITO — Possível especulação fundiária</div>`:'';
+      new maplibregl.Popup({offset:10,closeButton:true}).setLngLat(co).setHTML(`<div class="pp-title">${p.s}</div><div class="pp-row"><span class="pk">Empresa</span><span class="pv" title="${p.n}">${p.n}</span></div><div class="pp-row"><span class="pk">Processo</span><span class="pv">${p.p}</span></div><div class="pp-row"><span class="pk">Fase</span><span class="pv">${p.f}</span></div><div class="pp-row"><span class="pk">UF</span><span class="pv">${p.u}</span></div><div class="pp-row"><span class="pk">Área (ha)</span><span class="pv">${Number(p.a).toLocaleString('pt-BR')}</span></div>${p.net?`<div class="pp-row"><span class="pk">Rede</span><span class="pv" style="color:#2980b9;font-weight:700">${p.net}</span></div>`:''}<div class="pp-section" style="color:${ci.color}">${ci.label||p.c}</div><div style="margin-top:3px"><span class="pp-badge" style="background:${dbg};color:#fff">Perigo ${Number(p.ds).toFixed(1)}/10</span></div>${milFlag}${envFlag}${illFlag}`).addTo(map)}});
+      map.on('mouseenter',`u-${k}`,()=>map.getCanvas().style.cursor='pointer');
+      map.on('mouseleave',`u-${k}`,()=>map.getCanvas().style.cursor='');
+    });
+    map.on('click','clusters',e=>{const fs=map.queryRenderedFeatures(e.point,{layers:['clusters']});const cid=fs[0].properties.cluster_id;map.getSource('mines').getClusterExpansionZoom(cid,(err,z)=>{if(err)return;map.easeTo({center:fs[0].geometry.coordinates,zoom:z})})});
+    map.on('mouseenter','clusters',()=>map.getCanvas().style.cursor='pointer');
+    map.on('mouseleave','clusters',()=>map.getCanvas().style.cursor='');
+    // Geo cluster markers
+    [{lat:-21.55,lon:-46.57,t:'Poços de Caldas — CONFLITO'},{lat:-19.59,lon:-46.94,t:'Araxá — CBMM + REE'},{lat:-13.85,lon:-40.48,t:'Jequié — Corredor especulação'},{lat:-14.25,lon:-49.10,t:'Goiás — Serra Verde + Aclara'}].forEach(gc=>{
+      const el=document.createElement('div');el.style.cssText='background:#c0392b;color:#fff;padding:3px 7px;border-radius:5px;font-size:9px;font-weight:700;white-space:nowrap;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.2)';
+      el.textContent=gc.t;el.addEventListener('click',()=>map.flyTo({center:[gc.lon,gc.lat],zoom:9,duration:1500}));
+      new maplibregl.Marker({element:el}).setLngLat([gc.lon,gc.lat]).addTo(map);
+    });
+  });
+}
+
+function isMilitaryInterest(p){return p.net&&['viridis','meteoric','aclara','serra_verde','axel','mars_gmn'].includes(p.net)}
+function isHighEnvRisk(p){return p.u&&['MG'].includes(p.u)&&p.c==='direct_ree'||(p.lo>-47&&p.lo<-45&&p.la>-22&&p.la<-21)}
+function isSuspicious(p){return p.ds>=5&&p.y>=2020&&p.f.includes('REQUERIMENTO')}
+
+function addWaterAndMilitary(){
+  const wb={type:'FeatureCollection',features:[
+    {type:'Feature',properties:{name:'Bacia São Francisco',type:'basin'},geometry:{type:'Polygon',coordinates:[[[-47,-12],[-44,-12],[-42,-13],[-40,-14],[-39,-15.5],[-39.5,-17],[-40,-18.5],[-42,-19.5],[-44,-20],[-46,-20.5],[-48,-19],[-49,-17],[-48.5,-15],[-47.5,-13.5],[-47,-12]]]}},
+    {type:'Feature',properties:{name:'Bacia Paranaíba',type:'basin'},geometry:{type:'Polygon',coordinates:[[[-49,-17],[-47.5,-17.5],[-46.5,-18.5],[-46,-19.5],[-47,-20.5],[-48.5,-20.5],[-50,-20],[-51.5,-19],[-51,-17.5],[-50,-17],[-49,-17]]]}},
+    {type:'Feature',properties:{name:'Bacia Jequitinhonha',type:'basin'},geometry:{type:'Polygon',coordinates:[[[-42,-15.5],[-40.5,-15.5],[-39.5,-16],[-39.5,-17.5],[-40.5,-18],[-42,-17.5],[-43,-16.5],[-42,-15.5]]]}},
+    {type:'Feature',properties:{name:'Bacia Rio Doce',type:'basin'},geometry:{type:'Polygon',coordinates:[[[-43,-17.5],[-41.5,-17.5],[-40.5,-18.5],[-39.5,-19.5],[-40,-21],[-41.5,-21.5],[-43,-20.5],[-43.5,-19],[-43,-17.5]]]}},
+    {type:'Feature',properties:{name:'Aquífero Bambuí',type:'aquifer'},geometry:{type:'Polygon',coordinates:[[[-49,-15],[-47,-15],[-45,-16],[-44,-18],[-44.5,-20],[-46,-21],[-48.5,-21],[-50,-20],[-51,-18],[-50.5,-16],[-49,-15]]]}},
+    {type:'Feature',properties:{name:'Aquífero Urucuia',type:'aquifer'},geometry:{type:'Polygon',coordinates:[[[-46,-13],[-43.5,-13],[-42,-14.5],[-42.5,-16.5],[-44,-17.5],[-46,-17.5],[-47,-16],[-46,-13]]]}},
+    {type:'Feature',properties:{name:'Zona de Conflito — Poços de Caldas',type:'conflict'},geometry:{type:'Polygon',coordinates:[[[-47.2,-21.2],[-46,-21.2],[-45.8,-21.8],[-46.2,-22.2],[-47.2,-22.2],[-47.5,-21.8],[-47.2,-21.2]]]}},
+    {type:'Feature',properties:{name:'Zona Nuclear — INB Caldas',type:'nuclear'},geometry:{type:'Polygon',coordinates:[[[-47,-21.4],[-46.3,-21.4],[-46.1,-21.9],[-46.5,-22.1],[-47,-22],[-47.2,-21.7],[-47,-21.4]]]}}
+  ]};
+  map.addSource('wb',{type:'geojson',data:wb});
+  map.addLayer({id:'bf',type:'fill',source:'wb',filter:['==',['get','type'],'basin'],paint:{'fill-color':'#3498db','fill-opacity':0.05}});
+  map.addLayer({id:'af',type:'fill',source:'wb',filter:['==',['get','type'],'aquifer'],paint:{'fill-color':'#9b59b6','fill-opacity':0.07}});
+  map.addLayer({id:'cf',type:'fill',source:'wb',filter:['in',['get','type'],['literal',['conflict','nuclear']]],paint:{'fill-color':'#e74c3c','fill-opacity':0.08}});
+  map.addLayer({id:'wl',type:'line',source:'wb',paint:{'line-color':['match',['get','type'],'basin','#3498db','aquifer','#9b59b6','conflict','#e74c3c','nuclear','#c0392b','#3498db'],'line-width':['match',['get','type'],'conflict',2,'nuclear',2,1],'line-opacity':0.4,'line-dasharray':['match',['get','type'],'conflict',['literal',[2,2]],'nuclear',['literal',[1,1]],['literal',[3,2]]]}});
+  map.addLayer({id:'wlb',type:'symbol',source:'wb',layout:{'text-field':['get','name'],'text-font':['Open Sans Regular'],'text-size':9,'text-allow-overlap':true},paint:{'text-color':['match',['get','type'],'basin','#2980b9','aquifer','#8e44ad','conflict','#c0392b','nuclear','#c0392b','#2980b9'],'text-halo-color':'rgba(255,255,255,0.9)','text-halo-width':1.5}});
+}
+
+function buildStats(){
+  const c={};Object.keys(CATS).forEach(k=>c[k]=0);allF.forEach(d=>{if(c[d.c]!==undefined)c[d.c]++});
+  let h='';Object.entries(CATS).forEach(([k,v])=>{h+=`<div class="sr"><span class="label"><span class="dot" style="background:${v.color}"></span>${v.label}</span><span class="count">${c[k].toLocaleString('pt-BR')}</span></div>`});
+  h+=`<div style="height:1px;background:rgba(0,0,0,0.05);margin:4px 0"></div><div class="sr" style="font-weight:700"><span class="label">Total</span><span class="count">${allF.length.toLocaleString('pt-BR')}</span></div>`;
+  document.getElementById('statsContent').innerHTML=h;
+}
+
+function buildToggles(){
+  const c=document.getElementById('layerToggles');let h='';
+  Object.entries(CATS).forEach(([k,v])=>{h+=`<div class="lt" data-c="${k}"><div class="tb checked" style="border-color:${v.color};color:${v.color}" id="tg-${k}"></div><span style="font-size:10px">${v.label}</span></div>`});
+  c.innerHTML=h;
+  c.querySelectorAll('.lt').forEach(t=>{t.addEventListener('click',()=>{const k=t.dataset.c;layerVis[k]=!layerVis[k];const b=document.getElementById(`tg-${k}`);if(layerVis[k]){b.classList.add('checked');map.setLayoutProperty(`u-${k}`,'visibility','visible')}else{b.classList.remove('checked');map.setLayoutProperty(`u-${k}`,'visibility','none')}updateFilter()})});
+  document.getElementById('tPoly').addEventListener('click',()=>{polyVis=!polyVis;document.getElementById('polyCk').classList.toggle('checked');try{map.setLayoutProperty('pf','visibility',polyVis?'visible':'none');map.setLayoutProperty('pl','visibility',polyVis?'visible':'none')}catch(e){}});
+  document.getElementById('tWater').addEventListener('click',()=>{waterVis=!waterVis;document.getElementById('waterCk').classList.toggle('checked');['bf','af','cf','wl','wlb'].forEach(l=>{try{map.setLayoutProperty(l,'visibility',waterVis?'visible':'none')}catch(e){}})});
+  document.getElementById('tMil').addEventListener('click',()=>{milVis=!milVis;document.getElementById('milCk').classList.toggle('checked');['cf'].forEach(l=>{try{map.setLayoutProperty(l,'visibility',milVis?'visible':'none')}catch(e){}})});
+}
+
+function buildDanger(){document.getElementById('dangerList').innerHTML=DANGER_DATA.map(d=>`<div class="item" onclick="zoomTo('${d.network_id}','${d.name.replace(/'/g,"\\'")}')"><div class="item-name"><span style="color:${d.danger_score>=8?'#e74c3c':d.danger_score>=6?'#f39c12':'#27ae60'};font-weight:800;font-size:10px">${d.danger_score.toFixed(1)}</span>${d.name}${d.network_id?`<span class="item-badge" style="background:#e8f4f8;color:#2980b9">${d.network_id}</span>`:''}</div><div class="item-bar"><div class="item-bar-fill" style="width:${d.danger_score*10}%;background:${d.danger_score>=8?'#e74c3c':d.danger_score>=6?'#f39c12':'#27ae60'}"></div></div><div class="item-meta"><span>${d.n_claims} proc.</span><span>${d.total_area_ha.toLocaleString('pt-BR')} ha</span><span>UFs: ${d.ufs.join(', ')}</span>${d.has_uranium?'<span style="color:#c0392b;font-weight:700">☢ U</span>':''}${d.has_direct_ree?'<span style="color:#e74c3c;font-weight:700">⛏ REE</span>':''}</div><div class="item-desc">${d.substances.join(' · ')}</div></div>`).join('')}
+
+function buildMilitary(){const h=`<div class="item" style="border-left:3px solid #e74c3c"><div class="item-name" style="color:#c0392b;font-size:12px">O verdadeiro interesse: CADEIA MILITAR</div><div class="item-desc">A narrativa de "Transição Energética" é fachada. O objetivo principal é suprir a cadeia militar dos EUA: F-35 (417 kg REE/unidade), submarinos nucleares (4.175 kg), mísseis, radar, drones.</div></div>`+Object.entries(MIL_REE).map(([k,v])=>`<div class="item"><div class="item-name"><span class="item-badge" style="background:#e74c3c;color:#fff">EUA MIL</span>${k.replace(/_/g,' ')}</div><div class="item-desc">${v}</div></div>`).join('');document.getElementById('militaryList').innerHTML=h}
+
+function buildIllegal(){document.getElementById('illegalList').innerHTML=ILLEGAL_PATTERNS.map(p=>`<div class="item" style="border-left:3px solid #8e44ad"><div class="item-name" style="color:#8e44ad">${p.title}</div><div class="item-desc" style="margin-top:3px">${p.desc}</div>${p.examples.map(e=>`<div class="item-desc" style="margin-top:2px;padding-left:8px;border-left:2px solid #ddd">• ${e}</div>`).join('')}</div>`).join('')}
+
+function buildEnv(){document.getElementById('envList').innerHTML=ENV_RISKS.sort((a,b)=>b.danger-a.danger).map(e=>`<div class="item" style="border-left:3px solid ${e.danger>=9?'#e74c3c':e.danger>=7?'#f39c12':'#27ae60'}" onclick="map.flyTo({center:[${e.region.includes('Poços')?-46.57:e.region.includes('Araxá')?-46.94:e.region.includes('Jequié')?-40.48:e.region.includes('Minaçu')?-48.1:e.region.includes('Piracanjuba')?-49.1:e.region.includes('Bambuí')?-47:-44},${e.region.includes('Poços')?-21.55:e.region.includes('Araxá')?-19.59:e.region.includes('Jequié')?-13.85:e.region.includes('Minaçu')?-14.25:e.region.includes('Piracanjuba')?-16.7:e.region.includes('Bambuí')?-17.5:-14}],zoom:8,duration:1500})"><div class="item-name"><span style="color:${e.danger>=9?'#e74c3c':'#f39c12'};font-weight:800">${e.danger.toFixed(1)}</span>${e.region}</div><div class="item-meta">${e.companies.map(c=>`<span class="item-badge" style="background:#e8f4f8;color:#2980b9">${c}</span>`).join(' ')}</div>${e.risks.map(r=>`<div class="item-desc">⚠ ${r}</div>`).join('')}</div>`).join('')}
+
+function buildNetwork(){const h=`<div style="font-size:10px;color:#555;line-height:1.5;padding:4px"><strong style="color:#c0392b">Hub central: Foxfire Metals</strong> — Dr. Paul Woolrich conecta Foxfire → Axel REE (ASX:AXL) → Si6 Metals (ASX:SI6) → Spark Energy (CSE:SPRK). 570+ requerimentos via rede de empresas interligadas.</div><div style="font-size:10px;color:#555;line-height:1.5;padding:4px;border-top:1px solid rgba(0,0,0,0.06);margin-top:4px"><strong style="color:#2980b9">Invasão Australiana:</strong> 9 empresas ASX explorando REE no Brasil. Viridis + Meteoric = Poços de Caldas. MPF buscou suspender AMBAS.</div><div style="font-size:10px;color:#555;line-height:1.5;padding:4px;border-top:1px solid rgba(0,0,0,0.06);margin-top:4px"><strong style="color:#e74c3c">Interesse Militar EUA:</strong> DFC $565M → Serra Verde. State Dept $5M → Aclara. Export Finance Australia $100M → Viridis/Meteoric. Ucore MOU → óxido militar nos EUA.</div><div style="font-size:10px;color:#555;line-height:1.5;padding:4px;border-top:1px solid rgba(0,0,0,0.06);margin-top:4px"><strong style="color:#8e44ad">CBMM China:</strong> Consórcio Baosteel/CITIC/Anshan detém 15% (US$1.95B). REE nos rejeitos de nióbio — sem regulação específica.</div>`;document.getElementById('networkList').innerHTML=h}
+
+function buildTimeline(){const yc={"2000":53,"2005":60,"2010":551,"2015":510,"2017":566,"2018":662,"2019":648,"2020":682,"2021":860,"2022":1505,"2023":4213,"2024":2795,"2025":1370,"2026":581};const ev={"2010":"China bane exportação REE ao Japão — sinal de alerta","2017":"EO 13817 — EUA declara REE 'mineral crítico'","2019":"China ameaça banir REE aos EUA; Pentágono inicia investimentos","2021":"Superciclo de preços REE; corrida no Brasil começa","2022":"Rush do lítio; empresas ASX invadem Brasil (+75% YoY)","2023":"VIRAL: 4.213 requerimentos — 4.9x o nível de 2020. DFC financia Serra Verde","2024":"MPF vs licenciamento; Operação Rejeito prende diretor ANM; PL 2780","2025":"China bane 7 elementos REE; DFC $565M; State Dept financia Aclara"};let h='',cum=0;Object.entries(yc).forEach(([y,c])=>{cum+=c;const e=ev[y]||'';const pct=Math.min(100,c/42.13);h+=`<div style="display:flex;gap:6px;align-items:flex-start;padding:3px 0;font-size:9px;${e?'font-weight:700;color:#c0392b':''}"><span style="width:32px;flex-shrink:0;color:#888">${y}</span><div style="flex:1"><div style="height:6px;background:#eee;border-radius:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${c>2000?'#c0392b':c>800?'#f39c12':'#27ae60'};border-radius:3px"></div></div><div style="font-size:8px;color:#666;margin-top:1px">${c.toLocaleString('pt-BR')} requerimentos (acum. ${cum.toLocaleString('pt-BR')})</div>${e?`<div style="font-size:8px;color:#c0392b;margin-top:1px">← ${e}</div>`:''}</div></div>`});document.getElementById('timelineList').innerHTML=h}
+
+function setupSearch(){const b=document.getElementById('searchBox');let t;b.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(updateFilter,250)})}
+function updateFilter(){const term=document.getElementById('searchBox').value.toLowerCase().trim();const vc=Object.entries(layerVis).filter(([_,v])=>v).map(([k])=>k);const f=allF.filter(d=>{if(!vc.includes(d.c))return false;if(term)return`${d.n} ${d.s} ${d.u} ${d.p} ${d.f} ${d.net}`.toLowerCase().includes(term);return true});const feats=f.map((d,i)=>({type:'Feature',id:i,properties:{...d,id:i},geometry:{type:'Point',coordinates:[d.lo,d.la]}}));map.getSource('mines').setData({type:'FeatureCollection',features:feats})}
+function setupTabs(){document.querySelectorAll('.tab-btn').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');const t=b.dataset.tab;['danger','military','illegal','env','network','timeline'].forEach(p=>{document.getElementById('panel'+p.charAt(0).toUpperCase()+p.slice(1)).classList.toggle('visible',p===t)})})})}
+function zoomTo(netId,name){const m=allF.find(d=>d.net===netId||d.n===name);if(m)map.flyTo({center:[m.lo,m.la],zoom:10,duration:1500})}
+
+const DANGER_DATA=[{"name":"VALE S.A.","danger_score":10,"n_claims":160,"total_area_ha":473978.0,"ufs":["BA","ES","GO","MG","PA","PB","PI","RJ","RN","SP"],"substances":["BERÍLIO","CROMITA","FOSFATO","ILMENITA","MINÉRIO DE LÍTIO","MINÉRIO DE NÍQUEL"],"has_uranium":false,"has_direct_ree":true,"n_categories":5,"network_id":"vale"},{"name":"FOXFIRE METALS LTDA","danger_score":10,"n_claims":365,"total_area_ha":590978.0,"ufs":["BA","GO","MG"],"substances":["GRAFITA","MINÉRIO DE LÍTIO","MINÉRIO DE NÍQUEL","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":"foxfire"},{"name":"BORBOREMA RECURSOS MINERAIS LTDA","danger_score":9.7,"n_claims":246,"total_area_ha":401939.0,"ufs":["BA","MG","SP"],"substances":["MINÉRIO DE NÍQUEL","MINÉRIO DE TITÂNIO","MONAZITA","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":"borborema"},{"name":"RTB GEOLOGIA E MINERACAO LTDA.","danger_score":9.3,"n_claims":146,"total_area_ha":222084.0,"ufs":["BA","GO","MG","PB","PI","PR","RJ","RN","RS","SC","SP"],"substances":["FONÓLITO","FOSFATO","ILMENITA","MINÉRIO DE COBALTO","MINÉRIO DE LÍTIO","MINÉRIO DE NIÓBIO"],"has_uranium":false,"has_direct_ree":true,"n_categories":6,"network_id":"rtb"},{"name":"COMPANHIA BAIANA DE PESQUISA MINERAL CBPM","danger_score":8.9,"n_claims":174,"total_area_ha":208826.0,"ufs":["BA","PI"],"substances":["FOSFATO","GRAFITA","ILMENITA","MINÉRIO DE NÍQUEL","MINÉRIO DE TITÂNIO","MINÉRIO DE VANÁDIO"],"has_uranium":false,"has_direct_ree":true,"n_categories":5,"network_id":"cbpm"},{"name":"ALPHA MINERALS BRAZIL PARTICIPACOES LTDA.","danger_score":8.9,"n_claims":187,"total_area_ha":268678.0,"ufs":["AL","BA","CE","GO","MG","PE","SP","TO"],"substances":["MINÉRIO DE LÍTIO","MINÉRIO DE NÍQUEL","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":"alpha"},{"name":"MARS GMN BRAZIL LTDA","danger_score":8.9,"n_claims":110,"total_area_ha":202374.0,"ufs":["BA","CE","MG","PB","RN"],"substances":["MINÉRIO DE LÍTIO","MINÉRIO DE NIÓBIO","MINÉRIO DE NÍQUEL","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":4,"network_id":"mars_gmn"},{"name":"MOSAIC FERTILIZANTES P&K LTDA.","danger_score":8.6,"n_claims":109,"total_area_ha":128688.0,"ufs":["BA","GO","MG","MT","PB","RN","SC","SP","TO"],"substances":["APATITA","FOSFATO","MINÉRIO DE CÉRIO","MINÉRIO DE NIÓBIO","MINÉRIO DE NÍQUEL","MINÉRIO DE TITÂNIO"],"has_uranium":false,"has_direct_ree":true,"n_categories":5,"network_id":"mosaic"},{"name":"MINERACAO APOLLO LTDA","danger_score":8.6,"n_claims":77,"total_area_ha":187646.0,"ufs":["BA","CE","GO","MG","PI","TO"],"substances":["FOSFATO","MINÉRIO DE BERÍLIO","MINÉRIO DE NÍQUEL","MINÉRIO DE TITÂNIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":5,"network_id":""},{"name":"PONTICOR BRASIL HOLDING LTDA","danger_score":8.5,"n_claims":93,"total_area_ha":145437.0,"ufs":["BA","CE","GO","MG","PA","PB","PE","RN"],"substances":["GRAFITA","MINÉRIO DE COBALTO","MINÉRIO DE LÍTIO","MINÉRIO DE NIÓBIO","MINÉRIO DE NÍQUEL","MINÉRIO DE TUNGSTÊNIO"],"has_uranium":false,"has_direct_ree":true,"n_categories":4,"network_id":"ponticor"},{"name":"GUIDONI BRASIL S/A","danger_score":8.3,"n_claims":78,"total_area_ha":123863.0,"ufs":["BA","ES","GO","MG","MS"],"substances":["FOSFATO","GRAFITA","MINÉRIO DE LÍTIO","MINÉRIO DE NÍQUEL","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":4,"network_id":""},{"name":"RCO MINERACAO LTDA","danger_score":8.2,"n_claims":79,"total_area_ha":111961.0,"ufs":["BA","GO","MG","PB","PE","RN","SP"],"substances":["BERILO","FOSFATO","MINÉRIO DE LÍTIO","MINÉRIO DE NIÓBIO","MINÉRIO DE NÍQUEL","MINÉRIO DE TITÂNIO"],"has_uranium":false,"has_direct_ree":true,"n_categories":6,"network_id":""},{"name":"I.R.S Minerals Extração de Minerais EIRELI","danger_score":8.1,"n_claims":76,"total_area_ha":101913.0,"ufs":["GO","MG","PR","RJ","SP"],"substances":["MINÉRIO DE LÍTIO","MINÉRIO DE NIÓBIO","MINÉRIO DE NÍQUEL","MINÉRIO DE TITÂNIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":5,"network_id":""},{"name":"3D MINERALS LTDA","danger_score":8.1,"n_claims":44,"total_area_ha":148768.0,"ufs":["BA","GO","MG","MT","PA","RR"],"substances":["FOSFATO","MINÉRIO DE CROMO","MINÉRIO DE LÍTIO","MINÉRIO DE NIÓBIO","MINÉRIO DE NÍQUEL","MINÉRIO DE TITÂNIO"],"has_uranium":false,"has_direct_ree":true,"n_categories":6,"network_id":""},{"name":"IRMAOS MARTINS SERVICOS E COMERCIO LTDA","danger_score":7.6,"n_claims":44,"total_area_ha":52794.0,"ufs":["BA","GO","MG","RJ","SP"],"substances":["MINÉRIO DE LÍTIO","MINÉRIO DE NÍQUEL","MINÉRIO DE TITÂNIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":4,"network_id":""},{"name":"Mineradora Serra Geral Ltda","danger_score":7.5,"n_claims":33,"total_area_ha":86113.0,"ufs":["GO","MG","MS","TO"],"substances":["FOSFATO","ILMENITA","MINÉRIO DE BERÍLIO","MINÉRIO DE LÍTIO","MINÉRIO DE NIÓBIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":5,"network_id":""},{"name":"QUANTUM LITIO BRASIL LTDA","danger_score":7.4,"n_claims":91,"total_area_ha":172321.0,"ufs":["BA","MG","PE","RN"],"substances":["MINÉRIO DE LÍTIO","MINÉRIO DE NIÓBIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":"quantum"},{"name":"FLEXA MINERACAO LTDA.","danger_score":7.4,"n_claims":89,"total_area_ha":121829.0,"ufs":["BA","CE","GO","MG","RJ"],"substances":["FOSFATO","MINÉRIO DE LÍTIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":""},{"name":"GESTAO DE ATIVOS BRASIL ADMINISTRADORA DE BENS LTDA","danger_score":7.4,"n_claims":25,"total_area_ha":38097.0,"ufs":["BA","MG","PB","PI","RN","RS","TO"],"substances":["FOSFATO","MINÉRIO DE BERÍLIO","MINÉRIO DE LÍTIO","MINÉRIO DE NIÓBIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":4,"network_id":""},{"name":"ARGILA MINERACAO LTDA","danger_score":7.3,"n_claims":30,"total_area_ha":46327.0,"ufs":["BA","ES","MG","RN"],"substances":["FOSFATO","MINÉRIO DE CROMO","MINÉRIO DE LÍTIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":4,"network_id":""},{"name":"INDUSTRIAS NUCLEARES DO BRASIL S.A - INB","danger_score":7.1,"n_claims":7,"total_area_ha":18003.0,"ufs":["BA","CE","ES","MG","RJ"],"substances":["FOSFATO","ILMENITA","MINÉRIO DE URÂNIO"],"has_uranium":true,"has_direct_ree":false,"n_categories":3,"network_id":""},{"name":"RIO DO MOURA PESQUISA E EXTRACAO MINERAL LTDA","danger_score":7.1,"n_claims":6,"total_area_ha":5776.0,"ufs":["BA","CE","GO","MG","RJ","SC"],"substances":["GRAFITA","ILMENITA","MINÉRIO DE LÍTIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":4,"network_id":""},{"name":"BRASMET EXPLORATION PARTICIPACOES LTDA","danger_score":7.1,"n_claims":84,"total_area_ha":124107.0,"ufs":["BA","CE","GO","TO"],"substances":["FOSFATO","MINÉRIO DE LÍTIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":""},{"name":"ENOVA BRASIL LTDA","danger_score":7.0,"n_claims":40,"total_area_ha":58446.0,"ufs":["MG","SP"],"substances":["APATITA","FOSFATO","MINÉRIO DE LÍTIO","MINÉRIO DE TITÂNIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":4,"network_id":""},{"name":"TALISMAN DO BRASIL MINERACAO LTDA","danger_score":7.0,"n_claims":120,"total_area_ha":198998.0,"ufs":["BA","CE","GO","MG","PE","RN"],"substances":["MINÉRIO DE LÍTIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":2,"network_id":"talisman"},{"name":"MINERACAO PARANAI LTDA","danger_score":7.0,"n_claims":67,"total_area_ha":126205.0,"ufs":["BA","MG","PB","RS"],"substances":["ILMENITA","MINÉRIO DE LÍTIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":""},{"name":"BEMISA PARTICIPACOES S.A.","danger_score":6.9,"n_claims":20,"total_area_ha":28123.0,"ufs":["BA","GO","MG"],"substances":["FOSFATO","MINÉRIO DE BERÍLIO","MINÉRIO DE NÍQUEL","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":4,"network_id":""},{"name":"Neiman Pará Minerais e Metais Ltda","danger_score":6.9,"n_claims":19,"total_area_ha":31708.0,"ufs":["BA","PB","RN"],"substances":["MINÉRIO DE NÍQUEL","MINÉRIO DE RUBÍDIO","MINÉRIO DE TÂNTALO","RUTILO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":5,"network_id":""},{"name":"BW CONSULTORIA EM EMPREENDEDORISMO LTDA","danger_score":6.9,"n_claims":52,"total_area_ha":98500.0,"ufs":["AM","CE","GO","PB","RN"],"substances":["MINÉRIO DE LÍTIO","MINÉRIO DE NÍQUEL","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":""},{"name":"GR8 ENERGETIC AND MAGNETIC MINERALS LTDA","danger_score":6.8,"n_claims":137,"total_area_ha":204625.0,"ufs":["AL","PE","RN"],"substances":["MINÉRIO DE TITÂNIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":2,"network_id":"gr8"},{"name":"CANOPUS GEOLOGIA E PROJETOS LTDA","danger_score":6.7,"n_claims":67,"total_area_ha":98370.0,"ufs":["BA","CE","MG"],"substances":["FOSFATO","MINÉRIO DE LÍTIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":""},{"name":"RIO TINTO DESENVOLVIMENTOS MINERAIS LTDA","danger_score":6.6,"n_claims":253,"total_area_ha":378053.0,"ufs":["BA","MG","SP"],"substances":["MINÉRIO DE LÍTIO","MINÉRIO DE NÍQUEL","MINÉRIO DE TITÂNIO"],"has_uranium":false,"has_direct_ree":false,"n_categories":3,"network_id":"rio_tinto"},{"name":"NAZCA GOLD MINERACAO - LTDA","danger_score":6.6,"n_claims":129,"total_area_ha":219925.0,"ufs":["BA","MG"],"substances":["MINÉRIO DE NIÓBIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":2,"network_id":"nazca"},{"name":"PEDRA CINZA MINERACAO LTDA.","danger_score":6.4,"n_claims":322,"total_area_ha":531844.0,"ufs":["BA","MG"],"substances":["FOSFATO","MINÉRIO DE LÍTIO"],"has_uranium":false,"has_direct_ree":false,"n_categories":2,"network_id":"pedra_cinza"},{"name":"TREZOR PARTICIPACOES LTDA","danger_score":6.4,"n_claims":28,"total_area_ha":76454.0,"ufs":["GO","MG","RN","TO"],"substances":["FOSFATO","MINÉRIO DE TÂNTALO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":""},{"name":"ATLAS RECURSOS MINERAIS LTDA.","danger_score":6.2,"n_claims":23,"total_area_ha":36276.0,"ufs":["BA","GO","MG","TO"],"substances":["MINÉRIO DE NÍQUEL","MINÉRIO DE TITÂNIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":""},{"name":"MINERADORA CONCRELUZ LTDA","danger_score":6.2,"n_claims":24,"total_area_ha":41102.0,"ufs":["GO","MS","MT","PR"],"substances":["FOSFATO","MINÉRIO DE TITÂNIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":""},{"name":"GEOPETRA GEOLOGIA E CONSULTORIA MINERAL LTDA","danger_score":6.2,"n_claims":28,"total_area_ha":35841.0,"ufs":["BA","CE","MG","TO"],"substances":["GRAFITA","MINÉRIO DE TITÂNIO","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":""},{"name":"AMASON RESOURCE GROUP DO BRASIL LTDA","danger_score":6.1,"n_claims":45,"total_area_ha":63298.0,"ufs":["PB","RN"],"substances":["MINÉRIO DE TITÂNIO","MINÉRIO DE TUNGSTÊNIO","MONAZITA","SCHEELITA","ZIRCÃO"],"has_uranium":false,"has_direct_ree":true,"n_categories":3,"network_id":""},{"name":"ACLARA RESOURCES MINERACAO LTDA.","danger_score":6.0,"n_claims":41,"total_area_ha":135772.0,"ufs":["BA","GO","PR","RO","RS"],"substances":["ILMENITA","TERRAS RARAS"],"has_uranium":false,"has_direct_ree":true,"n_categories":2,"network_id":"aclara"}];
+init();
+</script>
+</body>
+</html>

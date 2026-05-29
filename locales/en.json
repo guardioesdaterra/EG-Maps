@@ -4,6 +4,7 @@
     "info": "Info & Feedback",
     "projectGrants": "Project Grants",
     "endangeredSpecies": "Endangered Species",
+    "observatoryOfVulcan": "Observatory of Vulcan",
     "crews": "Crews",
     "joinEarthGuardians": "Join Earth Guardians",
     "switchToLight": "Switch to Light Mode",
@@ -20,6 +21,8 @@
     "projectGrantsDesc": "Explore global grant initiatives and their impact on communities worldwide.",
     "speciesTitle": "Endangered Species",
     "speciesDesc": "Discover critically endangered species and their habitats around the world.",
+    "observatoryTitle": "Observatory of Vulcan",
+    "observatoryDesc": "Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.",
     "projectsCount": "Projects",
     "beneficiariesCount": "Beneficiaries",
     "speciesCount": "Species",
@@ -31,14 +34,15 @@
     "footer": "Empowering youth-led environmental action worldwide",
     "databasesTitle": "Endangered Species Databases (Red Books)",
     "databasesDesc": "Explore the official red lists that document threatened species worldwide. Contribute data to help keep these critical records up to date.",
+    "databasesDescSuggest": "Explore the official red lists that document threatened species worldwide. Know a dataset we should add? Suggest it to us.",
     "iucnTitle": "IUCN Red List of Threatened Species",
     "iucnDesc": "The world's most comprehensive inventory of the global conservation status of biological species, maintained by the International Union for Conservation of Nature.",
     "iucnScope": "Global",
     "icmbioTitle": "ICMBio / IBAMA \u2014 Livro Vermelho (Brazilian Red Book)",
     "icmbioDesc": "The official Brazilian registry of endangered species, maintained by ICMBio and IBAMA. Documents the conservation status of the country's rich biodiversity.",
     "icmbioScope": "Brazil",
-    "submitData": "Submit Data",
-    "submitDataSubject": "Data contribution for Red Book database"
+    "suggestDataset": "Suggest Dataset",
+    "suggestDatasetSubject": "Suggest a new dataset for EG-Maps"
   },
   "mapControls": {
     "search": "Search",
@@ -202,6 +206,8 @@
     "projectGrantsGlobe": "Loading Project Grants Globe",
     "endangeredSpeciesMap": "Loading Endangered Species Map",
     "endangeredSpeciesGlobe": "Loading Endangered Species Globe",
+    "observatoryOfVulcan": "Loading Observatory of Vulcan",
+    "observatoryOfVulcanGlobe": "Loading Observatory of Vulcan Globe",
     "initializingVisualization": "Initializing interactive visualization..."
   },
   "error": {

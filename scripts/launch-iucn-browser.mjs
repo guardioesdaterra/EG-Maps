@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { chromium } from 'playwright'
 import { spawn } from 'child_process'
 import { mkdirSync, writeFileSync } from 'fs'
@@ -199,7 +200,7 @@ async function main() {
   console.log('Download dir:', DOWNLOAD_DIR)
   console.log('')
   
-  var x11vnc = spawn('x11vnc', [
+  spawn('x11vnc', [
     '-display', DISPLAY,
     '-rfbport', '5900',
     '-localhost',

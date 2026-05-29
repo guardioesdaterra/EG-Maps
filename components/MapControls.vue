@@ -292,7 +292,7 @@ const showSearch = ref(false)
 const showAllItems = ref(false)
 const searchQuery = ref('')
 const searchResults = ref<Array<ProjectData | Species>>([])
-const searchInputRef = ref<any>(null)
+const searchInputRef = ref<{ inputRef?: HTMLInputElement } | null>(null)
 const selectedIndex = ref(-1)
 const selectedResultEl = ref<Element | null>(null)
 const resultsContainerRef = ref<HTMLElement | null>(null)
@@ -307,6 +307,7 @@ onMounted(() => {
         recentSearches.value = JSON.parse(saved)
       }
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error('Error loading recent searches:', e)
     }
     window.addEventListener('keydown', handleKeyboardShortcut)
@@ -320,6 +321,7 @@ function saveRecentSearch(query: string) {
     recentSearches.value = [query, ...filtered].slice(0, 5)
     localStorage.setItem('eg-maps-recent-searches', JSON.stringify(recentSearches.value))
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.error('Error saving recent search:', e)
   }
 }
@@ -332,10 +334,8 @@ function applyRecentSearch(query: string) {
 function clearSearch() {
   searchQuery.value = ''
   selectedIndex.value = -1
-  const input = searchInputRef.value?.$el || searchInputRef.value
-  if (input && typeof input.focus === 'function') {
-    input.focus()
-  }
+  const input = searchInputRef.value?.inputRef
+  input?.focus()
 }
 
 function toggleSearch() {
@@ -466,10 +466,8 @@ watch([searchQuery, showAllItems, () => props.dataset], () => {
 watch(showSearch, async (val) => {
   if (val) {
     await nextTick()
-    const input = searchInputRef.value?.$el || searchInputRef.value
-    if (input && typeof input.focus === 'function') {
-      input.focus()
-    }
+    const input = searchInputRef.value?.inputRef
+    input?.focus()
   }
 })
 
@@ -506,10 +504,12 @@ function toggleFullscreen() {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen()
       .then(() => { fullscreen.value = true })
+      // eslint-disable-next-line no-console
       .catch((err) => { console.error(`Error attempting to enable fullscreen: ${err.message}`) })
   } else {
     document.exitFullscreen()
       .then(() => { fullscreen.value = false })
+      // eslint-disable-next-line no-console
       .catch((err) => { console.error(`Error attempting to exit fullscreen: ${err.message}`) })
   }
 }

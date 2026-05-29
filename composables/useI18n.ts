@@ -41,7 +41,7 @@ function getTranslation(locale: Locale, key: string, fallbackToKey = true): stri
   }
 
   // Return key as last resort (or undefined for debugging)
-  return fallbackToKey ? key : undefined
+  return fallbackToKey ? key : (undefined as unknown as string)
 }
 
 function detectLocale(): Locale {
@@ -78,13 +78,6 @@ async function loadLocale(locale: Locale, baseURL?: string): Promise<Translation
   const data = await response.json()
   translationCache.set(locale, data)
   return data
-}
-
-// Legacy lookup function for compatibility
-function lookup(locale: Locale, key: string): string | undefined {
-  const translations = translationCache.get(locale)
-  if (!translations) return undefined
-  return deepGet(translations, key.split('.'))
 }
 
 function interpolate(template: string, args: unknown[]): string {

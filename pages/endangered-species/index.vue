@@ -10,7 +10,8 @@
     <p class="text-red-400">{{ t('globe.connectionError') }}</p>
   </div>
   <ClientOnly v-else>
-    <UnifiedMap :species="speciesList" :default-dataset="'endangered-species'" />
+    <!-- Use lightweight species index for fast map loading -->
+    <UnifiedMap :species-index="speciesIndex" :default-dataset="'endangered-species'" />
     <template #fallback>
       <div class="flex h-screen w-full items-center justify-center bg-black text-white">
         <LoadingSpinner
@@ -31,10 +32,9 @@ useHead({
   meta: [
     { name: 'description', content: 'Interactive 2D map of critically endangered species around the world' },
   ],
-  link: [
-    { rel: 'preload', as: 'fetch', href: '/data/species/icmbio-brazil.json', crossorigin: 'anonymous' },
-  ],
 })
 
-const { data: speciesList, loading, error } = useSpeciesData()
+// Use lightweight index for fast loading (3.2MB vs 35MB)
+// Full details are loaded on demand when user clicks a marker
+const { data: speciesIndex, loading, error } = useSpeciesIndex(['icmbio-brazil', 'iucn'])
 </script>

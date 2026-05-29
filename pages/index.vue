@@ -179,5 +179,17 @@ const datasets = computed(() => [
       `${taxonomicGroupCount.value} ${t('home.groupsCount')}`,
     ],
   },
+  {
+    path: '/observatory-of-vulcan',
+    icon: 'lucide:microscope',
+    label: 'Vulcan',
+    title: t('home.observatoryTitle'),
+    description: t('home.observatoryDesc'),
+    ariaLabel: 'View Observatory of Vulcan data visualization',
+    stats: [
+      '20K+ mining processes',
+      '6 categories',
+    ],
+  },
 ])
 </script>

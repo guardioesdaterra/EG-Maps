@@ -69,7 +69,7 @@
     </header>
 
     <!-- Map-focused Dock Navigation -->
-    <nav class="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] xs:bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
+    <nav v-if="showDock" class="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] xs:bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
       <div :class="dockShellClass">
         <div class="flex items-end gap-1" ref="dockRef">
           <template v-for="(item, index) in navItems" :key="item.path || item.external">
@@ -199,6 +199,24 @@ const route = useRoute()
 // i18n
 const { t, locale, availableLocales, localeNames, setLocale } = useI18n()
 
+// #no-dock hash support — hides the dock navigation bar
+const showDock = ref(true)
+
+function updateDockFromHash() {
+  showDock.value = !window.location.hash.includes('no-dock')
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+  updateDockFromHash()
+  window.addEventListener('hashchange', updateDockFromHash)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('hashchange', updateDockFromHash)
+})
+
 interface NavItem {
   path: string
   labelKey: string
@@ -210,6 +228,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { path: '/project-grants', labelKey: 'nav.projectGrants', icon: 'lucide:hand-heart', variant: 'purple' },
   { path: '/endangered-species', labelKey: 'nav.endangeredSpecies', icon: 'lucide:bird', variant: 'green' },
+  { path: '/observatory-of-vulcan', labelKey: 'nav.observatoryOfVulcan', icon: 'lucide:microscope', variant: 'orange' },
 ]
 
 const headerItems: NavItem[] = [
@@ -220,7 +239,7 @@ const headerItems: NavItem[] = [
 const { isDark, toggle: toggleDarkMode } = useDarkMode()
 
 const isMapRoute = computed(() =>
-  route.path.startsWith('/project-grants') || route.path.startsWith('/endangered-species')
+  route.path.startsWith('/project-grants') || route.path.startsWith('/endangered-species') || route.path.startsWith('/observatory-of-vulcan')
 )
 const is3DRoute = computed(() => route.path.endsWith('/3d'))
 const showUnifiedHeader = computed(() => isMapRoute.value || route.path === '/info')
@@ -299,13 +318,7 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
 
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
 
 const isActive = (path: string) => {
   if (path === '/') return route.path === '/'

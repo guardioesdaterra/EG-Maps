@@ -4,6 +4,7 @@
     "info": "Info & Feedback",
     "projectGrants": "Project Grants",
     "endangeredSpecies": "Endangered Species",
+    "observatoryOfVulcan": "Observatory of Vulcan",
     "crews": "Crews",
     "joinEarthGuardians": "Join Earth Guardians",
     "switchToLight": "Switch to Light Mode",
@@ -20,6 +21,8 @@
     "projectGrantsDesc": "Explore global grant initiatives and their impact on communities worldwide.",
     "speciesTitle": "Endangered Species",
     "speciesDesc": "Discover critically endangered species and their habitats around the world.",
+    "observatoryTitle": "Observatory of Vulcan",
+    "observatoryDesc": "Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.",
     "projectsCount": "Projects",
     "beneficiariesCount": "Beneficiaries",
     "speciesCount": "Species",
@@ -203,6 +206,8 @@
     "projectGrantsGlobe": "Loading Project Grants Globe",
     "endangeredSpeciesMap": "Loading Endangered Species Map",
     "endangeredSpeciesGlobe": "Loading Endangered Species Globe",
+    "observatoryOfVulcan": "Loading Observatory of Vulcan",
+    "observatoryOfVulcanGlobe": "Loading Observatory of Vulcan Globe",
     "initializingVisualization": "Initializing interactive visualization..."
   },
   "error": {

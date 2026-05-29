@@ -244,6 +244,149 @@ export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
 }
 
+// ── Rare Earth popup constants ──
+export const RARE_EARTH_CATEGORIES: Record<string, { label: string; color: string }> = {
+  direct_ree: { label: 'Terras Raras Diretas', color: '#e74c3c' },
+  carbonatite_associated: { label: 'Carbonatito/Alcalino', color: '#f39c12' },
+  pegmatite_associated: { label: 'Pegmatito', color: '#27ae60' },
+  heavy_mineral_associated: { label: 'Minerais Pesados', color: '#2980b9' },
+  phosphate_associated: { label: 'Fosfato', color: '#8e44ad' },
+  strategic_associated: { label: 'Estratégicos', color: '#e91e63' },
+}
+
+export function getCategoryColor(cat: string): string {
+  return RARE_EARTH_CATEGORIES[cat]?.color ?? '#666'
+}
+
+export function isMilitaryInterest(ufs: string | string[]): boolean {
+  const list = Array.isArray(ufs) ? ufs : [ufs]
+  return list.some(u => ['AM','AP','PA','RR','RO','MT'].includes(u))
+}
+
+export function isHighEnvRisk(props: Record<string, any>): boolean {
+  return (props.s && String(props.s).includes('FOSFATO')) || (props.ds ?? 5) >= 8
+}
+
+export function isSuspicious(props: Record<string, any>): boolean {
+  return (props.ds ?? 5) >= 5 && (props.y ?? 0) >= 2020 && (props.f && String(props.f).includes('REQUERIMENTO'))
+}
+
+export function buildRareEarthPopupHTML(props: Record<string, any>): string {
+  const cat = RARE_EARTH_CATEGORIES[props.c] ?? { label: props.c || 'Unknown', color: '#666' }
+  const dangerColor = (props.ds ?? 5) >= 8 ? '#e74c3c' : (props.ds ?? 5) >= 6 ? '#f39c12' : '#27ae60'
+  const areaHa = Number(props.a ?? 0)
+  const area = areaHa >= 10000 ? `${(areaHa / 1000).toFixed(0)}K ha` : `${areaHa.toLocaleString()} ha`
+
+  const milFlag = props.mil !== false && isMilitaryInterest(props.u || '')
+  const envFlag = props.env !== false && isHighEnvRisk(props)
+  const susFlag = props.sus !== false && isSuspicious(props)
+
+  const flagsHTML = [milFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(231,76,60,0.2);color:#e74c3c">MIL</span>' : '',
+    envFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(39,174,96,0.2);color:#27ae60">ENV</span>' : '',
+    susFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(142,68,173,0.2);color:#8e44ad">SUS</span>' : '',
+  ].filter(Boolean).join('')
+
+  return `
+    <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;min-width:250px;position:relative">
+      <!-- Corner accents -->
+      <div style="position:absolute;top:8px;left:8px;width:10px;height:10px;border-top:2px solid ${cat.color}60;border-left:2px solid ${cat.color}60;pointer-events:none;z-index:1" />
+      <div style="position:absolute;top:8px;right:8px;width:10px;height:10px;border-top:2px solid ${cat.color}60;border-right:2px solid ${cat.color}60;pointer-events:none;z-index:1" />
+
+      <!-- Header -->
+      <div style="padding:14px 14px 10px;position:relative">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${cat.color};color:#fff;letter-spacing:0.06em;text-transform:uppercase">${escapeHtml(cat.label)}</span>
+          <span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${dangerColor};color:#fff">${(props.ds ?? 5).toFixed(1)} Danger</span>
+          ${props.net ? `<span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(41,128,185,0.2);color:#5dade2;letter-spacing:0.03em">${escapeHtml(props.net)}</span>` : ''}
+          ${flagsHTML}
+        </div>
+        <h3 style="margin:0;font-size:13px;font-weight:700;color:#e8e8e8;line-height:1.35;letter-spacing:0.01em;word-wrap:break-word">${escapeHtml(props.n || 'Unknown')}</h3>
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;font-style:italic">${escapeHtml(props.s || '—')}</div>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:1px;background:linear-gradient(90deg,transparent,${cat.color}30,transparent);margin:0 12px" />
+
+      <!-- Body -->
+      <div style="padding:10px 14px 12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 14px">
+          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Process</div><div style="font-size:10.5px;color:#ccc;font-weight:500;word-wrap:break-word">${escapeHtml(props.p || '—')}</div></div>
+          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Phase</div><div style="font-size:10.5px;color:#ccc;font-weight:500">${escapeHtml(props.f || '—')}</div></div>
+          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">UF</div><div style="font-size:10.5px;color:#ccc;font-weight:500">${escapeHtml(props.u || '—')}</div></div>
+          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Area</div><div style="font-size:10.5px;color:#ccc;font-weight:500">${area}</div></div>
+        </div>
+        <div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Danger Level</span>
+            <div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden">
+              <div style="height:100%;width:${Math.min(100, (props.ds ?? 5) * 10)}%;background:${dangerColor};border-radius:2px;box-shadow:0 0 4px ${dangerColor}"></div>
+            </div>
+            <span style="font-size:10px;font-weight:700;color:${dangerColor};min-width:24px;text-align:right">${(props.ds ?? 5).toFixed(1)}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer glow bar -->
+      <div style="height:2px;background:linear-gradient(90deg,transparent 0%,${cat.color} 50%,transparent 100%);opacity:0.5;box-shadow:0 0 6px ${cat.color}40" />
+    </div>`
+}
+
+interface BlobPoint {
+  x: number
+  y: number
+}
+
+export function computeClusterBlobPath(centers: BlobPoint[], miniRadius: number, padding: number): string {
+  if (centers.length === 0) return ''
+  const R = miniRadius + padding
+
+  // Single circle
+  if (centers.length === 1) {
+    const c = centers[0]
+    return `M${c.x - R},${c.y}A${R},${R},0,1,1,${c.x + R},${c.y}A${R},${R},0,1,1,${c.x - R},${c.y}Z`
+  }
+
+  // Centroid for sorting
+  const cx = centers.reduce((s, c) => s + c.x, 0) / centers.length
+  const cy = centers.reduce((s, c) => s + c.y, 0) / centers.length
+
+  // Sort by angle around centroid = convex hull order
+  const sorted = [...centers].sort((a, b) => Math.atan2(a.y - cy, a.x - cx) - Math.atan2(b.y - cy, b.x - cx))
+
+  // 2 points → pill/oval
+  if (sorted.length === 2) {
+    const p0 = sorted[0], p1 = sorted[1]
+    const dx = p1.x - p0.x, dy = p1.y - p0.y
+    const d = Math.sqrt(dx * dx + dy * dy) || 1
+    const nx = -dy / d * R, ny = dx / d * R
+    return `M${p0.x + nx},${p0.y + ny}A${R},${R},0,0,1,${p0.x - nx},${p0.y - ny}L${p1.x - nx},${p1.y - ny}A${R},${R},0,0,1,${p1.x + nx},${p1.y + ny}Z`
+  }
+
+  // 3+ points → expand outward from centroid, smooth Catmull-Rom curve
+  const expanded = sorted.map(p => {
+    const dx = p.x - cx, dy = p.y - cy
+    const d = Math.sqrt(dx * dx + dy * dy) || 1
+    return { x: p.x + (dx / d) * R, y: p.y + (dy / d) * R }
+  })
+
+  const tension = 0.35
+  const n = expanded.length
+  let path = ''
+  for (let i = 0; i < n; i++) {
+    const p = expanded[i]
+    const p1 = expanded[(i + 1) % n]
+    const p_1 = expanded[(i - 1 + n) % n]
+    const cp1x = p.x + (p1.x - p_1.x) * tension
+    const cp1y = p.y + (p1.y - p_1.y) * tension
+    const cp2x = p1.x - (p.x - p_1.x) * tension
+    const cp2y = p1.y - (p.y - p_1.y) * tension
+    if (i === 0) path += `M${p.x},${p.y}`
+    path += `C${cp1x},${cp1y} ${cp2x},${cp2y} ${p1.x},${p1.y}`
+  }
+  path += 'Z'
+  return path
+}
+
 export function escapeHtml(text: string): string {
   const div = document.createElement('div')
   div.appendChild(document.createTextNode(text))

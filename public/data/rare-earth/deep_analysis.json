@@ -1,0 +1,244 @@
+{
+  "suspicious_speculators_count": 437,
+  "top_suspicious": [
+    {
+      "name": "ELYSIUM MINERACAO MARINHA S/A",
+      "score": 6,
+      "flags": [
+        "RECENT_RUSH",
+        "CARPET_BOMBING",
+        "HIGH_VOLUME",
+        "LARGE_AREA_FEW_SUBS"
+      ],
+      "claims": 104,
+      "area_ha": 187832,
+      "subs": [
+        "FOSFATO"
+      ],
+      "recent_pct": 100
+    },
+    {
+      "name": "PEDRA CINZA MINERACAO LTDA.",
+      "score": 6,
+      "flags": [
+        "RECENT_RUSH",
+        "CARPET_BOMBING",
+        "HIGH_VOLUME",
+        "LARGE_AREA_FEW_SUBS"
+      ],
+      "claims": 322,
+      "area_ha": 531844,
+      "subs": [
+        "FOSFATO",
+        "MINÉRIO DE LÍTIO"
+      ],
+      "recent_pct": 100
+    },
+    {
+      "name": "TALISMAN DO BRASIL MINERACAO LTDA",
+      "score": 6,
+      "flags": [
+        "RECENT_RUSH",
+        "CARPET_BOMBING",
+        "HIGH_VOLUME",
+        "LARGE_AREA_FEW_SUBS"
+      ],
+      "claims": 120,
+      "area_ha": 198998,
+      "subs": [
+        "MINÉRIO DE LÍTIO",
+        "TERRAS RARAS"
+      ],
+      "recent_pct": 100
+    },
+    {
+      "name": "NAZCA GOLD MINERACAO - LTDA",
+      "score": 6,
+      "flags": [
+        "RECENT_RUSH",
+        "CARPET_BOMBING",
+        "HIGH_VOLUME",
+        "LARGE_AREA_FEW_SUBS"
+      ],
+      "claims": 129,
+      "area_ha": 219925,
+      "subs": [
+        "MINÉRIO DE NIÓBIO",
+        "TERRAS RARAS"
+      ],
+      "recent_pct": 100
+    },
+    {
+      "name": "PALMARES ESTUDOS GEOLOGICOS LTDA",
+      "score": 6,
+      "flags": [
+        "RECENT_RUSH",
+        "CARPET_BOMBING",
+        "HIGH_VOLUME",
+        "LARGE_AREA_FEW_SUBS"
+      ],
+      "claims": 105,
+      "area_ha": 159045,
+      "subs": [
+        "TERRAS RARAS"
+      ],
+      "recent_pct": 100
+    },
+    {
+      "name": "EINSTEIN VENTURES CONSULTORIA",
+      "score": 6,
+      "flags": [
+        "RECENT_RUSH",
+        "CARPET_BOMBING",
+        "HIGH_VOLUME",
+        "LARGE_AREA_FEW_SUBS"
+      ],
+      "claims": 111,
+      "area_ha": 191850,
+      "subs": [
+        "FOSFATO"
+      ],
+      "recent_pct": 100
+    },
+    {
+      "name": "GR8 ENERGETIC AND MAGNETIC MINERALS",
+      "score": 6,
+      "flags": [
+        "RECENT_RUSH",
+        "CARPET_BOMBING",
+        "HIGH_VOLUME",
+        "LARGE_AREA_FEW_SUBS"
+      ],
+      "claims": 137,
+      "area_ha": 204625,
+      "subs": [
+        "MINÉRIO DE TITÂNIO",
+        "TERRAS RARAS"
+      ],
+      "recent_pct": 100
+    },
+    {
+      "name": "AXEL REE LTDA",
+      "score": 5,
+      "flags": [
+        "RECENT_RUSH",
+        "CARPET_BOMBING",
+        "LARGE_AREA_FEW_SUBS"
+      ],
+      "claims": 64,
+      "area_ha": 108153,
+      "subs": [
+        "MINÉRIO DE LÍTIO",
+        "TERRAS RARAS"
+      ],
+      "recent_pct": 100
+    },
+    {
+      "name": "M4E LITHIUM LTDA",
+      "score": 5,
+      "flags": [
+        "RECENT_RUSH",
+        "CARPET_BOMBING",
+        "LARGE_AREA_FEW_SUBS"
+      ],
+      "claims": 84,
+      "area_ha": 107952,
+      "subs": [
+        "MINÉRIO DE LÍTIO"
+      ],
+      "recent_pct": 100
+    },
+    {
+      "name": "SMART LITHIUM RESOURCES LTDA",
+      "score": 5,
+      "flags": [
+        "RECENT_RUSH",
+        "CARPET_BOMBING",
+        "LARGE_AREA_FEW_SUBS"
+      ],
+      "claims": 94,
+      "area_ha": 131864,
+      "subs": [
+        "MINÉRIO DE LÍTIO"
+      ],
+      "recent_pct": 99
+    }
+  ],
+  "foreign_claims": {
+    "AUSTRALIAN": {
+      "total_claims": 1146,
+      "total_area_ha": 1730428,
+      "pct": 5.5
+    },
+    "US": {
+      "total_claims": 475,
+      "total_area_ha": 644399,
+      "pct": 2.3
+    },
+    "UK/EUROPEAN": {
+      "total_claims": 331,
+      "total_area_ha": 674086,
+      "pct": 1.6
+    },
+    "CANADIAN": {
+      "total_claims": 190,
+      "total_area_ha": 386257,
+      "pct": 0.9
+    },
+    "CHINESE": {
+      "total_claims": 0,
+      "total_area_ha": 0,
+      "pct": 0.0
+    }
+  },
+  "year_counts": {
+    "2000": 53,
+    "2001": 53,
+    "2002": 60,
+    "2003": 98,
+    "2004": 101,
+    "2005": 60,
+    "2006": 79,
+    "2007": 241,
+    "2008": 463,
+    "2009": 292,
+    "2010": 551,
+    "2011": 659,
+    "2012": 780,
+    "2013": 750,
+    "2014": 472,
+    "2015": 510,
+    "2016": 659,
+    "2017": 566,
+    "2018": 662,
+    "2019": 648,
+    "2020": 682,
+    "2021": 860,
+    "2022": 1505,
+    "2023": 4213,
+    "2024": 2795,
+    "2025": 1370,
+    "2026": 581
+  },
+  "key_events": {
+    "2010": "China bans REE exports to Japan",
+    "2017": "EO 13817 - US Critical Minerals Strategy",
+    "2019": "China hints REE ban to US; DOD investments begin",
+    "2021": "REE price supercycle; Brazil rush begins",
+    "2022": "Lithium rush; ASX companies flood Brazil (+75% YoY)",
+    "2023": "VIRAL: 4,213 claims filed — 4.9x the 2020 level; DFC Serra Verde",
+    "2024": "MPF vs licensing; Operation Rejeito arrests ANM director; PL 2780",
+    "2025": "China 7-element export ban; DFC $565M; Aclara US State Dept funding"
+  },
+  "sigilo_stats": {
+    "total": 88,
+    "pct": 0.4,
+    "total_area_ha": 105139
+  },
+  "military_critical": {
+    "total_claims": 3363,
+    "total_area_ha": 5693014,
+    "us_connected_claims": 150,
+    "us_connected_area_ha": 238500
+  }
+}

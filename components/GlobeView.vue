@@ -144,7 +144,7 @@ import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
-import { isValidCoordinate, GROUP_COLORS, buildProjectPopupHTML, buildSpeciesPopupHTML } from '@/lib/map-utils'
+import { isValidCoordinate, GROUP_COLORS, buildProjectPopupHTML, buildSpeciesPopupHTML, computeClusterBlobPath } from '@/lib/map-utils'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
 import type { Species } from '@/lib/map-utils'
 import {
@@ -744,37 +744,74 @@ function createClusterMarkerElement(
     clusterInner.style.justifyContent = 'center'
     clusterInner.style.alignItems = 'center'
 
-    const ringOuterR = (containerSize + 6) / 2
-    const ringInnerR = ringOuterR - 1.5
+    // Rainbow ring (decorative, slightly larger)
+    const ringPad = 8
+    const ringOuterR = (containerSize + ringPad * 2) / 2
+    const ringInnerR = ringOuterR - 2
     const rainbowRing = document.createElement('div')
-    rainbowRing.className = 'cluster-rainbow-ring'
     rainbowRing.style.position = 'absolute'
-    rainbowRing.style.inset = '-3px'
+    rainbowRing.style.inset = `${-ringPad}px`
     rainbowRing.style.borderRadius = '50%'
-    rainbowRing.style.background = 'conic-gradient(from var(--a, 0deg), #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #9b59b6, #ff6b6b)'
+    rainbowRing.style.background = 'conic-gradient(from var(--a, 0deg), rgba(255,107,107,0.35), rgba(255,217,61,0.25), rgba(107,203,119,0.25), rgba(77,150,255,0.3), rgba(155,89,182,0.3), rgba(255,107,107,0.35))'
     rainbowRing.style.mask = `radial-gradient(farthest-side, transparent ${ringInnerR}px, #000 ${ringOuterR}px)`
     rainbowRing.style.webkitMask = `radial-gradient(farthest-side, transparent ${ringInnerR}px, #000 ${ringOuterR}px)`
     rainbowRing.style.pointerEvents = 'none'
+    rainbowRing.style.animation = 'cluster-rainbow-spin 8s linear infinite'
     clusterInner.appendChild(rainbowRing)
 
-    const bgBlob = document.createElement('div')
-    bgBlob.style.position = 'absolute'
-    bgBlob.style.inset = '-2px'
-    bgBlob.style.borderRadius = '50%'
-    bgBlob.style.background = `radial-gradient(circle at 30% 25%, rgba(${dr},${dg},${db},0.18), rgba(0,0,0,0.9) 75%)`
-    bgBlob.style.backdropFilter = 'blur(8px)'
-    bgBlob.style.boxShadow = `0 0 12px rgba(${dr},${dg},${db},0.25), inset 0 0 20px rgba(${dr},${dg},${db},0.04)`
-    bgBlob.style.transition = 'transform 200ms ease, box-shadow 200ms ease'
-    bgBlob.style.transformOrigin = 'center center'
-    clusterInner.appendChild(bgBlob)
-
+    // Compute orbit positions for blob path
     const angleStep = (Math.PI * 2) / items.length
+    const centers: { x: number; y: number }[] = []
+    items.forEach((_item, i) => {
+      const angle = angleStep * i - Math.PI / 2
+      centers.push({ x: Math.cos(angle) * orbitRadius, y: Math.sin(angle) * orbitRadius })
+    })
+
+    // SVG blob background — convex hull clipped around the mini circles
+    const blobPadding = 5
+    const blobPath = computeClusterBlobPath(centers, miniSize / 2, blobPadding)
+    const svgSize = containerSize + blobPadding * 4
+    const svgOffset = (containerSize - svgSize) / 2
+
+    const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svgEl.setAttribute('width', `${svgSize}px`)
+    svgEl.setAttribute('height', `${svgSize}px`)
+    svgEl.setAttribute('viewBox', `${svgOffset} ${svgOffset} ${containerSize} ${containerSize}`)
+    svgEl.style.position = 'absolute'
+    svgEl.style.top = '50%'
+    svgEl.style.left = '50%'
+    svgEl.style.transform = 'translate(-50%, -50%)'
+    svgEl.style.pointerEvents = 'none'
+    svgEl.style.overflow = 'visible'
+
+    // Blob fill path
+    const blobFill = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    blobFill.setAttribute('d', blobPath)
+    blobFill.setAttribute('fill', `rgba(${dr},${dg},${db},0.15)`)
+    blobFill.setAttribute('stroke', `rgba(${dr},${dg},${db},0.5)`)
+    blobFill.setAttribute('stroke-width', '1.5')
+    blobFill.setAttribute('stroke-linejoin', 'round')
+    blobFill.style.filter = 'drop-shadow(0 0 6px rgba(0,0,0,0.4))'
+    blobFill.style.transition = 'fill 200ms ease, stroke 200ms ease'
+    svgEl.appendChild(blobFill)
+
+    // Glow path (larger, blurred)
+    const blobGlow = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    blobGlow.setAttribute('d', blobPath)
+    blobGlow.setAttribute('fill', 'none')
+    blobGlow.setAttribute('stroke', `rgba(${dr},${dg},${db},0.15)`)
+    blobGlow.setAttribute('stroke-width', '6')
+    blobGlow.setAttribute('stroke-linejoin', 'round')
+    blobGlow.setAttribute('opacity', '0.6')
+    blobGlow.style.filter = 'blur(3px)'
+    svgEl.appendChild(blobGlow)
+
+    clusterInner.appendChild(svgEl)
+
+    // Mini circles at orbit positions
     items.forEach((_item, i) => {
       const { url, color: itemColor } = resolved[i]
-      const angle = angleStep * i - Math.PI / 2
-      const x = Math.cos(angle) * orbitRadius
-      const y = Math.sin(angle) * orbitRadius
-
+      const c = centers[i]
       const mini = document.createElement('div')
       mini.className = 'cluster-mini-hover'
       mini.style.position = 'absolute'
@@ -784,12 +821,14 @@ function createClusterMarkerElement(
       mini.style.background = `url("${url}") center/cover`
       mini.style.border = '1.5px solid rgba(255,255,255,0.85)'
       mini.style.boxShadow = `0 0 7px ${itemColor}, 0 0 1.5px #fff`
-      mini.style.top = `calc(50% + ${y}px - ${miniSize / 2}px)`
-      mini.style.left = `calc(50% + ${x}px - ${miniSize / 2}px)`
+      mini.style.top = `calc(50% + ${c.y}px - ${miniSize / 2}px)`
+      mini.style.left = `calc(50% + ${c.x}px - ${miniSize / 2}px)`
       mini.style.pointerEvents = 'none'
+      mini.style.zIndex = '2'
       clusterInner.appendChild(mini)
     })
 
+    // Count badge
     const countBadge = document.createElement('div')
     countBadge.textContent = `${count}`
     countBadge.style.position = 'absolute'
@@ -810,14 +849,18 @@ function createClusterMarkerElement(
     outer.appendChild(clusterInner)
 
     outer.addEventListener('mouseenter', () => {
-      bgBlob.style.transform = 'scale(1.12)'
-      bgBlob.style.boxShadow = `0 0 22px rgba(${dr},${dg},${db},0.45), inset 0 0 30px rgba(${dr},${dg},${db},0.08)`
+      blobFill.setAttribute('fill', `rgba(${dr},${dg},${db},0.25)`)
+      blobFill.setAttribute('stroke', `rgba(${dr},${dg},${db},0.8)`)
+      blobGlow.setAttribute('stroke', `rgba(${dr},${dg},${db},0.3)`)
+      blobGlow.setAttribute('opacity', '0.9')
       rainbowRing.style.opacity = '0.85'
       outer.style.zIndex = '100'
     })
     outer.addEventListener('mouseleave', () => {
-      bgBlob.style.transform = 'scale(1)'
-      bgBlob.style.boxShadow = `0 0 12px rgba(${dr},${dg},${db},0.25), inset 0 0 20px rgba(${dr},${dg},${db},0.04)`
+      blobFill.setAttribute('fill', `rgba(${dr},${dg},${db},0.15)`)
+      blobFill.setAttribute('stroke', `rgba(${dr},${dg},${db},0.5)`)
+      blobGlow.setAttribute('stroke', `rgba(${dr},${dg},${db},0.15)`)
+      blobGlow.setAttribute('opacity', '0.6')
       rainbowRing.style.opacity = '1'
       outer.style.zIndex = '20'
     })
@@ -853,18 +896,43 @@ function createClusterMarkerElement(
     grid.style.transition = 'transform 200ms ease, box-shadow 200ms ease'
     grid.style.transformOrigin = 'center center'
 
-    const gridOuterR = Math.min(gridW, gridH) / 2 + 2
-    const gridInnerR = gridOuterR - 1.5
-    const rainbowBorder = document.createElement('div')
-    rainbowBorder.className = 'cluster-rainbow-border'
-    rainbowBorder.style.position = 'absolute'
-    rainbowBorder.style.inset = '-2px'
-    rainbowBorder.style.borderRadius = '15px'
-    rainbowBorder.style.background = 'conic-gradient(from var(--a, 0deg), #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #9b59b6, #ff6b6b)'
-    rainbowBorder.style.mask = `radial-gradient(farthest-side, transparent ${gridInnerR}px, #000 ${gridOuterR}px)`
-    rainbowBorder.style.webkitMask = `radial-gradient(farthest-side, transparent ${gridInnerR}px, #000 ${gridOuterR}px)`
-    rainbowBorder.style.pointerEvents = 'none'
-    rainbowBorder.style.zIndex = '0'
+    // Compute blob path for grid layout
+    const gridCenters: { x: number; y: number }[] = []
+    const maxShow = cols * rows - 1
+    for (let i = 0; i < Math.min(resolved.length, maxShow); i++) {
+      const col = i % cols
+      const row = Math.floor(i / cols)
+      gridCenters.push({
+        x: pad + col * (miniSize + gap) + miniSize / 2,
+        y: pad + row * (miniSize + gap) + miniSize / 2,
+      })
+    }
+    if (count > maxShow) {
+      const totalSlots = cols * rows
+      const lastX = pad + ((totalSlots - 1) % cols) * (miniSize + gap) + miniSize / 2
+      const lastY = pad + Math.floor((totalSlots - 1) / cols) * (miniSize + gap) + miniSize / 2
+      gridCenters.push({ x: lastX, y: lastY })
+    }
+
+    const blobPath = computeClusterBlobPath(gridCenters, miniSize / 2, 4)
+    const gridSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    gridSvg.setAttribute('width', '100%')
+    gridSvg.setAttribute('height', '100%')
+    gridSvg.setAttribute('viewBox', `0 0 ${gridW} ${gridH}`)
+    gridSvg.style.position = 'absolute'
+    gridSvg.style.inset = '0'
+    gridSvg.style.pointerEvents = 'none'
+    gridSvg.style.zIndex = '0'
+
+    const gridBlob = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    gridBlob.setAttribute('d', blobPath)
+    gridBlob.setAttribute('fill', `rgba(${dr},${dg},${db},0.15)`)
+    gridBlob.setAttribute('stroke', `rgba(${dr},${dg},${db},0.5)`)
+    gridBlob.setAttribute('stroke-width', '1.5')
+    gridBlob.setAttribute('stroke-linejoin', 'round')
+    gridBlob.style.filter = 'drop-shadow(0 0 6px rgba(0,0,0,0.4))'
+    gridSvg.appendChild(gridBlob)
+    grid.appendChild(gridSvg)
 
     const gridInner = document.createElement('div')
     gridInner.style.position = 'relative'
@@ -877,7 +945,6 @@ function createClusterMarkerElement(
     gridInner.style.height = '100%'
     gridInner.style.zIndex = '1'
 
-    const maxShow = cols * rows - 1
     resolved.slice(0, maxShow).forEach(({ url, color: itemColor }) => {
       const mini = document.createElement('div')
       mini.className = 'cluster-mini-hover'
@@ -911,18 +978,18 @@ function createClusterMarkerElement(
       gridInner.appendChild(more)
     }
 
-    grid.appendChild(rainbowBorder)
     grid.appendChild(gridInner)
-    outer.appendChild(grid)
 
     outer.addEventListener('mouseenter', () => {
+      gridBlob.setAttribute('fill', `rgba(${dr},${dg},${db},0.25)`)
+      gridBlob.setAttribute('stroke', `rgba(${dr},${dg},${db},0.8)`)
       grid.style.transform = 'scale(1.1)'
-      grid.style.boxShadow = `0 0 22px rgba(${dr},${dg},${db},0.4), inset 0 0 28px rgba(${dr},${dg},${db},0.06)`
       outer.style.zIndex = '100'
     })
     outer.addEventListener('mouseleave', () => {
+      gridBlob.setAttribute('fill', `rgba(${dr},${dg},${db},0.15)`)
+      gridBlob.setAttribute('stroke', `rgba(${dr},${dg},${db},0.5)`)
       grid.style.transform = 'scale(1)'
-      grid.style.boxShadow = `0 0 12px rgba(${dr},${dg},${db},0.18), inset 0 0 16px rgba(${dr},${dg},${db},0.03)`
       outer.style.zIndex = '20'
     })
   }
@@ -1344,6 +1411,20 @@ if (typeof document !== 'undefined' && !document.getElementById('globe-styles'))
       0% { transform: scale(0); opacity: 0; }
       60% { transform: scale(1.15); }
       100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes cluster-rainbow-spin {
+      from { --a: 0deg; }
+      to { --a: 360deg; }
+    }
+    @property --a {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+    @keyframes flyto-pulse {
+      0% { transform: scale(0.3); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.6; }
+      100% { transform: scale(1); opacity: 0; }
     }
   `
   document.head.appendChild(style)

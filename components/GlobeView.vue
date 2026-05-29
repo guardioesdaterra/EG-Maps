@@ -997,7 +997,7 @@ function createClusterMarkerElement(
   return outer
 }
 
-let useNativeGeoJSON = true
+const useNativeGeoJSON = true
 const SOURCE_ID = 'globe-species-markers'
 
 function setupGeoJSONMarkers() {

@@ -252,7 +252,6 @@ const showConnections = ref(true)
 const showFilterPanel = ref(false)
 const activeDataset = ref<'project-grants' | 'endangered-species' | 'observatory-of-vulcan'>(props.defaultDataset)
 const layerVisibilityProp = computed(() => props.layerVisibility || {})
-let rareEarthLayersInitialized = false
 const hasError = ref(false)
 const errorMessage = ref('')
 const noWebglSupport = ref(false)
@@ -991,8 +990,7 @@ async function setupGeoJSONMarkers() {
           return
         }
         speciesIndex = await indexRes.json()
-      } catch (e) {
-        console.error('Failed to load species index:', e)
+      } catch {
         return
       }
     }
@@ -1006,7 +1004,7 @@ async function setupGeoJSONMarkers() {
     geoJSONMarkers.setupEventHandlers(
       SOURCE_ID,
       'endangered-species',
-      async (props, coords) => {
+      async (props, _coords) => {
         const speciesId = props.id as string
         const fullSpecies = await geoJSONMarkers.loadFullSpeciesData(speciesId, baseURL)
         if (fullSpecies) {
@@ -1101,8 +1099,8 @@ function setupRareEarthLayers() {
   }
 
   // ── Cluster layers (glow + core + count) ──
-  const clusterRadiusStep: any = ['step', ['get', 'point_count'], 5, 5, 10, 20, 16, 50, 22, 100, 36]
-  const dominantCatColor: any = ['case',
+  const clusterRadiusStep = ['step', ['get', 'point_count'], 5, 5, 10, 20, 16, 50, 22, 100, 36] as maplibregl.ExpressionSpecification
+  const dominantCatColor = ['case',
     ['all', ['>', ['get', 'dr'], 0], ['>=', ['get', 'dr'], ['get', 'ca']], ['>=', ['get', 'dr'], ['get', 'pg']], ['>=', ['get', 'dr'], ['get', 'hm']], ['>=', ['get', 'dr'], ['get', 'ph']], ['>=', ['get', 'dr'], ['get', 'st']]], '#e74c3c',
     ['all', ['>', ['get', 'ca'], 0], ['>=', ['get', 'ca'], ['get', 'dr']], ['>=', ['get', 'ca'], ['get', 'pg']], ['>=', ['get', 'ca'], ['get', 'hm']], ['>=', ['get', 'ca'], ['get', 'ph']], ['>=', ['get', 'ca'], ['get', 'st']]], '#f39c12',
     ['all', ['>', ['get', 'pg'], 0], ['>=', ['get', 'pg'], ['get', 'dr']], ['>=', ['get', 'pg'], ['get', 'ca']], ['>=', ['get', 'pg'], ['get', 'hm']], ['>=', ['get', 'pg'], ['get', 'ph']], ['>=', ['get', 'pg'], ['get', 'st']]], '#27ae60',
@@ -1144,9 +1142,9 @@ function setupRareEarthLayers() {
   })
 
   // ── Category point layers (each: glow halo + core dot) ──
-  const pointRadius: any = ['interpolate', ['linear'], ['zoom'], 4, 2.5, 8, 4, 12, 6, 16, 8]
+  const pointRadius = ['interpolate', ['linear'], ['zoom'], 4, 2.5, 8, 4, 12, 6, 16, 8] as maplibregl.ExpressionSpecification
   categories.forEach(cat => {
-    const filter: any = ['all', ['!', ['has', 'point_count']], ['==', ['get', 'c'], cat]]
+    const filter = ['all', ['!', ['has', 'point_count']], ['==', ['get', 'c'], cat]] as maplibregl.ExpressionSpecification
     const color = catColors[cat]
 
     map!.addLayer({
@@ -1275,7 +1273,6 @@ function setupRareEarthLayers() {
 
   // Apply initial layer visibility from parent
   syncRareEarthLayerVisibility()
-  rareEarthLayersInitialized = true
 }
 
 function addRareEarthGeoBoundaries() {

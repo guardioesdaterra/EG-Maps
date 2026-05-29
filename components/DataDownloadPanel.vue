@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { DOWNLOADABLE_DATASETS, downloadData, downloadAllDatasets, type DownloadableDataset } from '@/composables/useDataDownload'
 
-const props = defineProps<{ visible: boolean }>()
+defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const close = () => emit('close')
 

@@ -4,7 +4,7 @@ import type { ProjectData, Species } from './types'
 import { getProjectColorByBeneficiaries } from './colors'
 import { GROUP_COLORS, calculateDistance, generateCurvedPath, isValidCoordinate } from './map-utils'
 
-export type DatasetKey = 'project-grants' | 'endangered-species'
+export type DatasetKey = 'project-grants' | 'endangered-species' | 'observatory-of-vulcan'
 
 export interface ConnectionProperties {
   color: string

@@ -262,7 +262,7 @@ interface Props {
   isGlobeView?: boolean
   showHexGrid?: boolean
   showConnections?: boolean
-  dataset?: 'project-grants' | 'endangered-species'
+  dataset?: 'project-grants' | 'endangered-species' | 'observatory-of-vulcan'
   projects?: ProjectData[]
   species?: Species[]
   filterOpen?: boolean

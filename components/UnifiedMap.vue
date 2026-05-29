@@ -1870,7 +1870,7 @@ function initMap() {
 
     map.on('load', () => {
       isLoading.value = false
-      emit('mapInit', map)
+      if (map) emit('mapInit', map)
       if (activeDataset.value === 'observatory-of-vulcan') {
         setupRareEarthLayers()
       } else {

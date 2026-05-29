@@ -1099,8 +1099,10 @@ function setupRareEarthLayers() {
   }
 
   // ── Cluster layers (glow + core + count) ──
-  const clusterRadiusStep = ['step', ['get', 'point_count'], 5, 5, 10, 20, 16, 50, 22, 100, 36] as maplibregl.ExpressionSpecification
-  const dominantCatColor = ['case',
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const clusterRadiusStep: any = ['step', ['get', 'point_count'], 5, 5, 10, 20, 16, 50, 22, 100, 36]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dominantCatColor: any = ['case',
     ['all', ['>', ['get', 'dr'], 0], ['>=', ['get', 'dr'], ['get', 'ca']], ['>=', ['get', 'dr'], ['get', 'pg']], ['>=', ['get', 'dr'], ['get', 'hm']], ['>=', ['get', 'dr'], ['get', 'ph']], ['>=', ['get', 'dr'], ['get', 'st']]], '#e74c3c',
     ['all', ['>', ['get', 'ca'], 0], ['>=', ['get', 'ca'], ['get', 'dr']], ['>=', ['get', 'ca'], ['get', 'pg']], ['>=', ['get', 'ca'], ['get', 'hm']], ['>=', ['get', 'ca'], ['get', 'ph']], ['>=', ['get', 'ca'], ['get', 'st']]], '#f39c12',
     ['all', ['>', ['get', 'pg'], 0], ['>=', ['get', 'pg'], ['get', 'dr']], ['>=', ['get', 'pg'], ['get', 'ca']], ['>=', ['get', 'pg'], ['get', 'hm']], ['>=', ['get', 'pg'], ['get', 'ph']], ['>=', ['get', 'pg'], ['get', 'st']]], '#27ae60',
@@ -1142,9 +1144,11 @@ function setupRareEarthLayers() {
   })
 
   // ── Category point layers (each: glow halo + core dot) ──
-  const pointRadius = ['interpolate', ['linear'], ['zoom'], 4, 2.5, 8, 4, 12, 6, 16, 8] as maplibregl.ExpressionSpecification
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pointRadius: any = ['interpolate', ['linear'], ['zoom'], 4, 2.5, 8, 4, 12, 6, 16, 8]
   categories.forEach(cat => {
-    const filter = ['all', ['!', ['has', 'point_count']], ['==', ['get', 'c'], cat]] as maplibregl.ExpressionSpecification
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filter: any = ['all', ['!', ['has', 'point_count']], ['==', ['get', 'c'], cat]]
     const color = catColors[cat]
 
     map!.addLayer({

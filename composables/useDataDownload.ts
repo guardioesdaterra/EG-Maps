@@ -69,7 +69,7 @@ export const DOWNLOADABLE_DATASETS: DownloadableDataset[] = [
           city: e.city,
           sector: e.sector,
           description: e.description,
-          shareholders: e.shareholders.map(s => s.name + ' (' + s.stake + ')').join('; '),
+          shareholders: e.shareholders.join('; '),
           subsidiaries: e.subsidiaries.join('; '),
           holdings: e.holdings.join('; '),
         },

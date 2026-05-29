@@ -10,7 +10,7 @@ export interface EnterpriseHQ {
   sector: string
   link: string
   subsidiaries: string[]
-  shareholders: (string | { name: string; stake: string })[]
+  shareholders: string[]
   holdings: string[]
   color: string
 }

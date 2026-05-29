@@ -91,9 +91,8 @@
           </div>
           <div v-if="focusedEnterprise.shareholders.length" class="rede-detail-section">
             <h4>Shareholders</h4>
-            <div v-for="sh in focusedEnterprise.shareholders" :key="sh.name" class="rede-sh-row">
-              <span class="sh-name">{{ sh.name }}</span>
-              <span class="sh-stake">{{ sh.stake }}</span>
+            <div v-for="(sh, shi) in focusedEnterprise.shareholders" :key="shi" class="rede-sh-row">
+              <span class="sh-name">{{ sh }}</span>
             </div>
           </div>
           <div v-if="focusedEnterprise.holdings.length" class="rede-detail-section">

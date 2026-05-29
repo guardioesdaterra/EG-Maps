@@ -64,7 +64,7 @@ export const DOWNLOADABLE_DATASETS: DownloadableDataset[] = [
         type: 'Feature',
         properties: {
           name: e.name,
-          ticker: e.ticker,
+          ticker: e.ticker ?? undefined,
           country: e.country,
           city: e.city,
           sector: e.sector,

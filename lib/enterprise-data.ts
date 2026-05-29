@@ -348,7 +348,7 @@ export function buildEnterpriseHQGeoJSON(): GeoJSON.FeatureCollection {
       type: 'Feature',
       properties: {
         name: e.name,
-        ticker: e.ticker,
+        ticker: e.ticker ?? undefined,
         country: e.country,
         city: e.city,
         description: e.description,

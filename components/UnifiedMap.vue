@@ -1067,12 +1067,12 @@ function setupRareEarthLayers() {
     'ree-geo-fill', 'ree-geo-aquifer', 'ree-geo-conflict', 'ree-geo-line', 'ree-geo-label',
     'ree-site-glow', 'ree-site-label', 'ree-network-lines',
   ]
-  allLayerIds.forEach(id => { try { map!.removeLayer(id) } catch { /* empty */ } })
-  try { map!.removeSource('ree-points') } catch { /* empty */ }
-  try { map!.removeSource('ree-polys') } catch { /* empty */ }
-  try { map!.removeSource('ree-geo') } catch { /* empty */ }
-  try { map!.removeSource('ree-sites') } catch { /* empty */ }
-  try { map!.removeSource('ree-network') } catch { /* empty */ }
+  allLayerIds.forEach(id => { if (map!.getLayer(id)) map!.removeLayer(id) })
+  if (map!.getSource('ree-points')) map!.removeSource('ree-points')
+  if (map!.getSource('ree-polys')) map!.removeSource('ree-polys')
+  if (map!.getSource('ree-geo')) map!.removeSource('ree-geo')
+  if (map!.getSource('ree-sites')) map!.removeSource('ree-sites')
+  if (map!.getSource('ree-network')) map!.removeSource('ree-network')
 
   const catColors: Record<string, string> = {
     direct_ree: '#e74c3c', carbonatite_associated: '#f39c12', pegmatite_associated: '#27ae60',
@@ -1429,31 +1429,31 @@ function addRareEarthNetworkLines() {
 }
 
 function syncRareEarthLayerVisibility() {
-  if (!map || !rareEarthLayersInitialized) return
+  if (!map || !map.isStyleLoaded()) return
   const vis = layerVisibilityProp.value
   const catIds = Object.keys({ direct_ree: 1, carbonatite_associated: 1, pegmatite_associated: 1, heavy_mineral_associated: 1, phosphate_associated: 1, strategic_associated: 1 })
   catIds.forEach(cat => {
     const show = vis[cat] !== false
     ;[`ree-pt-${cat}-glow`, `ree-pt-${cat}`].forEach(id => {
-      try { map!.setLayoutProperty(id, 'visibility', show ? 'visible' : 'none') } catch { /* empty */ }
+      if (map!.getLayer(id)) map!.setLayoutProperty(id, 'visibility', show ? 'visible' : 'none')
     })
   })
   // Polygon layers
   const polyLayers = ['ree-poly-fill','ree-poly-glow','ree-poly-line','ree-poly-label']
   const showPolys = vis['polygons'] !== false
-  polyLayers.forEach(id => { try { map!.setLayoutProperty(id, 'visibility', showPolys ? 'visible' : 'none') } catch { /* empty */ } })
+  polyLayers.forEach(id => { if (map!.getLayer(id)) map!.setLayoutProperty(id, 'visibility', showPolys ? 'visible' : 'none') })
   // Geo layers (basins, aquifers, conflict zones)
   const geoFillLayers = ['ree-geo-fill','ree-geo-aquifer','ree-geo-conflict']
   const geoLineLayers = ['ree-geo-line','ree-geo-label']
   const showWater = vis['water'] !== false
-  geoFillLayers.forEach(id => { try { map!.setLayoutProperty(id, 'visibility', showWater ? 'visible' : 'none') } catch { /* empty */ } })
-  geoLineLayers.forEach(id => { try { map!.setLayoutProperty(id, 'visibility', showWater ? 'visible' : 'none') } catch { /* empty */ } })
+  geoFillLayers.forEach(id => { if (map!.getLayer(id)) map!.setLayoutProperty(id, 'visibility', showWater ? 'visible' : 'none') })
+  geoLineLayers.forEach(id => { if (map!.getLayer(id)) map!.setLayoutProperty(id, 'visibility', showWater ? 'visible' : 'none') })
   // Conflict site markers
   const siteLayers = ['ree-site-glow','ree-site-label']
   const showSites = vis['sites'] !== false
-  siteLayers.forEach(id => { try { map!.setLayoutProperty(id, 'visibility', showSites ? 'visible' : 'none') } catch { /* empty */ } })
+  siteLayers.forEach(id => { if (map!.getLayer(id)) map!.setLayoutProperty(id, 'visibility', showSites ? 'visible' : 'none') })
   // Network lines
-  try { map!.setLayoutProperty('ree-network-lines', 'visibility', vis['network'] !== false ? 'visible' : 'none') } catch { /* empty */ }
+  if (map!.getLayer('ree-network-lines')) map!.setLayoutProperty('ree-network-lines', 'visibility', vis['network'] !== false ? 'visible' : 'none')
 }
 
 // Watcher for layer visibility changes from parent

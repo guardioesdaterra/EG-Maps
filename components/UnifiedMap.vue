@@ -1832,19 +1832,7 @@ function initMap() {
     const isRee = activeDataset.value === 'observatory-of-vulcan'
     map = new maplibregl.Map({
       container: mapContainerRef.value,
-      style: isRee ? {
-        version: 8,
-        glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-        sources: {
-          'carto-light': {
-            type: 'raster',
-            tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png', 'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png', 'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png'],
-            tileSize: 256,
-            attribution: '© CARTO © OSM',
-          },
-        },
-        layers: [{ id: 'carto', type: 'raster', source: 'carto-light', minzoom: 0, maxzoom: 19 }],
-      } : MAP_STYLE,
+      style: MAP_STYLE,
       zoom: isRee ? 4.2 : isMobile.value ? 1.8 : 3,
       center: isRee ? [-48, -15] : [0, 0],
       attributionControl: false,

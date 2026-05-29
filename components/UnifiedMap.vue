@@ -222,7 +222,7 @@ interface Props {
   // Rare Earth dataset (observatory-of-vulcan)
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
-  rareEarthAnalysis?: Record<string, any>
+  rareEarthAnalysis?: Record<string, unknown>
   layerVisibility?: Record<string, boolean>  // Controlled by parent for rare earth
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null  // Parent can trigger fly-to
 }
@@ -458,9 +458,7 @@ function applySpeciesFilters(speciesIndex: SpeciesIndexItem[]): SpeciesIndexItem
 // Update filter panel when species index changes
 watch(speciesIndexData, (newIndex) => {
   if (newIndex.length > 0 && speciesFilterPanelRef.value) {
-    // Update filter panel with available groups from index
-    const groups = [...new Set(newIndex.map(s => s.taxonomicGroup))].sort()
-    // The filter panel will be updated via its internal logic
+    // Filter panel updated via its internal logic
   }
 }, { immediate: true })
 

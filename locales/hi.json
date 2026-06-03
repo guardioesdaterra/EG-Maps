@@ -195,6 +195,175 @@
     "save": "सहेजें",
     "cancel": "रद्द करें"
   },
+  "observatory": {
+    "tabs": {
+      "danger": "खतरा",
+      "military": "सैन्य",
+      "illegal": "अवैध",
+      "env": "पर्यावरण जोखिम",
+      "network": "नेटवर्क",
+      "timeline": "टाइमलाइन"
+    },
+    "dangerPanel": {
+      "title": "सबसे खतरनाक उद्यम",
+      "processes": "प्रक्रियाएं",
+      "area": "हेक्टेयर",
+      "showAll": "सभी {count} दिखाएं",
+      "showLess": "शीर्ष 20 दिखाएं",
+      "empty": "कोई डेटा लोड नहीं",
+      "flyTo": "{name} पर जाएं",
+      "pager": "पेजर",
+      "prevPage": "पिछला पृष्ठ",
+      "nextPage": "अगला पृष्ठ"
+    },
+    "military": {
+      "headline": "असली हित: सैन्य आपूर्ति श्रृंखला",
+      "headlineBody": "\"ऊर्जा संक्रमण\" की कथा एक दिखावा है। मुख्य चालक अमेरिकी रक्षा आपूर्ति श्रृंखला है: F-35 (417 किग्रा REE/यूनिट), परमाणु पनडुब्बियां (4,175 किग्रा), मिसाइल, राडार, ड्रोन।",
+      "kgPerUnit": "{kg} किग्रा REE",
+      "dodTitle": "DoD निवेश",
+      "stateDeptTitle": "विदेश विभाग और निर्यात वित्त",
+      "chinaBanTitle": "चीन निर्यात प्रतिबंध (अक्टूबर 2025)",
+      "chinaBanBody": "चीन ने अमेरिका को 12/17 REE तत्वों के निर्यात पर प्रतिबंध लगाया। अमेरिकी हथियारों का 78% चीनी REE पर निर्भर है।"
+    },
+    "illegal": {
+      "landSpec": "भूमि सट्टा",
+      "landSpecDesc": "437 कंपनियां सट्टा पैटर्न के साथ: 2020 के बाद 100% दावे, केवल शोध अनुरोध (कभी अधिकृत नहीं)।",
+      "landSpecEx1": "GR8: R$20K पूंजी, 137 दावे, 204,625 हेक्टेयर",
+      "landSpecEx2": "Nazca Gold: 129 दावे, कोई कॉर्पोरेट डेटा नहीं",
+      "landSpecEx3": "Pedra Cinza: 322 दावे, 531,844 हेक्टेयर",
+      "rejeito": "नियामक कब्जा — ऑपरेशन रेजीटो",
+      "rejeitoDesc": "सितंबर 2025: ANM निदेशक गिरफ्तार + 21 अन्य। अरबों डॉलर के लाइसेंस हेरफेर योजना।",
+      "rejeitoEx1": "निदेशक Caio Mário Seabra गिरफ्तार",
+      "rejeitoEx2": "धोखाधड़ी वाले दावे तेजी से संसाधित",
+      "rejeitoEx3": "रिश्वत और मनी लॉन्ड्रिंग योजना",
+      "secrecy": "खनन सूचना गोपनीयता",
+      "secrecyDesc": "ANM खनन प्रक्रिया डेटा पर गोपनीयता की अनुमति देता है। 88 दावे गोपनीयता के अधीन (105,139 हेक्टेयर)।",
+      "secrecyEx1": "Nacional de Grafite के 19 दावे गोपनीय",
+      "secrecyEx2": "Mosaic के 4 दावे गोपनीय",
+      "secrecyEx3": "ANM ने 2025 में नियम संशोधन के लिए परामर्श खोला",
+      "foreign": "रणनीतिक खनिजों पर विदेशी नियंत्रण",
+      "foreignDesc": "2,142 दावे (10.3%) ऑस्ट्रेलियाई, अमेरिकी, कनाडाई और यूरोपीय कंपनियों के नियंत्रण में।",
+      "foreignEx1": "ऑस्ट्रेलिया: 1,146 दावे, 1.73M हेक्टेयर",
+      "foreignEx2": "अमेरिका: 475 दावे, 644K हेक्टेयर",
+      "foreignEx3": "कनाडा: 190 दावे, 386K हेक्टेयर",
+      "foreignEx4": "यूरोप/ब्रिटेन: 331 दावे",
+      "exclusion": "सामुदायिक बहिष्करण",
+      "exclusionDesc": "पारंपरिक समुदायों, क्विलोम्बोला और स्वदेशी लोगों को अपने क्षेत्रों पर खनन के निर्णयों से बाहर रखा गया।",
+      "exclusionEx1": "क्विलोम्बो कलुंगा: संघीय न्यायालय ने निलंबित किया",
+      "exclusionEx2": "कानूनी अमेज़न में 40+ क्विलोम्बोला क्षेत्र खतरे में",
+      "exclusionEx3": "ब्राजील-चीन समझौता सामुदायिक सुरक्षा को बाहर करता है",
+      "water": "जल जोखिम",
+      "waterDesc": "REE खनन 400-500 लीटर/टन खपत करता है। Poços dealdas पहले से ही राशनिंग का सामना कर रहा है।",
+      "waterEx1": "Poços de Caldas: 2024 राशनिंग, Viridis 4 जलाशयों का उपयोग करने की योजना",
+      "waterEx2": "ISR: चीन में उसी विधि से प्रदूषण सिद्ध",
+      "waterEx3": "साओ फ्रांसिस्को नदी: Zn, Cd, Cr प्रदूषण"
+    },
+    "envPanel": {
+      "title": "क्षेत्र के अनुसार पर्यावरण जोखिम",
+      "flyTo": "{name} पर जाएं"
+    },
+    "network": {
+      "foxfireTitle": "केंद्रीय केंद्र: Foxfire Metals",
+      "foxfireBody": "डॉ. पॉल वूलरिच Foxfire → Axel REE → Si6 Metals → Spark Energy को जोड़ते हैं। 570+ दावे।",
+      "australianTitle": "ऑस्ट्रेलियाई आक्रमण",
+      "australianBody": "9 ASX कंपनियां ब्राजील में REE का पता लगा रही हैं। Viridis + Meteoric = Poços de Caldas।",
+      "usMilitaryTitle": "अमेरिकी सैन्य हित",
+      "usMilitaryBody": "DFC $565M → Serra Verde. विदेश विभाग $5M → Aclara. Export Finance Australia $100M → Viridis/Meteoric।",
+      "cbmmTitle": "CBMM चीन",
+      "cbmmBody": "Baosteel/CITIC/Anshan कंसोर्टियम 15% (US$1.95B) रखता है। नियोबियम टेलिंग्स में REE — कोई विशिष्ट नियमन नहीं।",
+      "relayout": "Re-layout",
+      "clickHint": "Click a node to focus · Click empty space to clear"
+    },
+    "timelinePanel": {
+      "title": "दावों की टाइमलाइन (2000–2026)",
+      "claims": "{count} दावे",
+      "cumulative": "संचयी {count}"
+    },
+    "actions": {
+      "verify": "ANM पर सत्यापित करें",
+      "report": "मुद्दे की रिपोर्ट करें",
+      "openInSidebar": "साइडबार में खोलें"
+    },
+    "layers": {
+      "title": "परतें",
+      "indigenousLands": "स्वदेशी भूमि",
+      "quilombolaTerritories": "क्विलोम्बोला क्षेत्र",
+      "overlaps": "ओवरलैपिंग दावे",
+      "polygons": "बहुभुज",
+      "hydrography": "जल निकासी",
+      "conflictZones": "संघर्ष क्षेत्र",
+      "corpNetwork": "कॉर्पोरेट नेटवर्क",
+      "enterpriseHq": "उद्यम मुख्यालय"
+    },
+    "search": "उद्यम, पदार्थ, राज्य खोजें...",
+    "legend": {
+      "hydrography": "जल निकासी",
+      "basins": "बेसिन",
+      "aquifers": "जलभृत",
+      "conflictZones": "संघर्ष क्षेत्र"
+    },
+    "badges": {
+      "mil": "MIL",
+      "amb": "AMB",
+      "ill": "अवैध",
+      "for": "विदेशी",
+      "env": "ENV",
+      "sus": "SUS"
+    },
+    "popups": {
+      "dangerLevel": "खतरे का स्तर",
+      "process": "प्रक्रिया",
+      "phase": "चरण",
+      "uf": "राज्य",
+      "area": "क्षेत्र",
+      "lastEvent": "अंतिम घटना",
+      "lastEventRecent": "हालिया",
+      "lastEventStale": "पुराना",
+      "protectedArea": "संरक्षित क्षेत्र",
+      "indigenousLand": "स्वदेशी भूमि",
+      "quilombolaTerritory": "क्विलोम्बोला क्षेत्र",
+      "fpicNotice": "इस क्षेत्र से ओवरलैप होने वाले खनन दावे ILO कन्वेंशन 169 के तहत स्वतंत्र, पूर्व और सूचित सहमति (FPIC) का उल्लंघन कर सकते हैं।",
+      "source": "स्रोत →",
+      "overlapWarning": "⚠ ओवरलैप: {names}",
+      "dangerLabel": "{score} खतरा",
+      "networkBadgeTitle": "कॉर्पोरेट नेटवर्क क्लस्टर",
+      "substances": "पदार्थ",
+      "year": "वर्ष",
+      "unknown": "अज्ञात",
+      "lastEventActive": "सक्रिय",
+      "overlaps": "ओवरलैप"
+    },
+    "myTerritory": {
+      "title": "मेरा क्षेत्र",
+      "dropPin": "पिन डालें",
+      "cancel": "रद्द करें",
+      "flyTo": "वहां जाएं",
+      "share": "लिंक कॉपी करें",
+      "copied": "कॉपी हुआ",
+      "clear": "पिन साफ़ करें",
+      "defaultLabel": "मेरा क्षेत्र",
+      "sharedBadge": "साझा किया गया"
+    },
+    "sync": {
+      "lastSync": "अंतिम ANM सिंक",
+      "secrecyClaims": "गोपनीय दावे",
+      "secrecyArea": "सीलबंद",
+      "syncNote": "SIGMINE से आवधिक अद्यतन",
+      "sealed": "सीलबंद"
+    },
+    "sidebarLabel": "ऑब्ज़र्वेटरी साइडबार",
+    "sidebarCollapse": "साइडबार बंद करें",
+    "sidebarExpand": "साइडबार खोलें",
+    "selectTab": "टैब चुनें",
+    "categories": {
+      "direct_ree": "प्रत्यक्ष REE",
+      "carbonatite_associated": "कार्बोनेटाइट/क्षारीय",
+      "pegmatite_associated": "पेग्माटाइट",
+      "heavy_mineral_associated": "भारी खनिज",
+      "phosphate_associated": "फॉस्फेट",
+      "strategic_associated": "रणनीतिक"
+    }
+  },
   "loading": {
     "projectGrantsMap": "प्रोजेक्ट अनुदान नक्शा लोड हो रहा है",
     "projectGrantsGlobe": "प्रोजेक्ट अनुदान ग्लोब लोड हो रहा है",
@@ -207,5 +376,29 @@
     "somethingWrong": "कुछ गलत हो गया",
     "goHome": "होम पर जाएं",
     "tryAgain": "पुनः प्रयास करें"
+  },
+  "a11y": {
+    "skipToContent": "मुख्य सामग्री पर जाएं"
+  },
+  "palette": {
+    "title": "कमांड पैलेट",
+    "placeholder": "कमांड टाइप करें, खोजें…",
+    "searchInput": "कमांड खोजें",
+    "navigate": "नेविगेट",
+    "select": "चुनें",
+    "close": "बंद करें",
+    "noResults": "कोई मेल खाने वाला कमांड नहीं",
+    "groupNavigation": "नेविगेशन",
+    "groupSettings": "सेटिंग्स",
+    "groupLanguage": "भाषा",
+    "groupObservatory": "ऑब्ज़र्वेटरी"
+  },
+  "shortcuts": {
+    "title": "कीबोर्ड शॉर्टकट",
+    "openPalette": "कमांड पैलेट खोलें",
+    "toggleTheme": "डार्क मोड टॉगल करें",
+    "toggleFullscreen": "फ़ुल स्क्रीन",
+    "showShortcuts": "यह ओवरले दिखाएं",
+    "closeOverlay": "ओवरले बंद करें"
   }
 }

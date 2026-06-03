@@ -227,9 +227,9 @@
             </div>
             <div v-else class="flex items-center justify-center py-4">
               <div class="flex gap-1">
-                <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce" style="animation-delay: 0ms" />
-                <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce" style="animation-delay: 150ms" />
-                <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce" style="animation-delay: 300ms" />
+                <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
+                <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
+                <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-3" />
               </div>
             </div>
           </template>

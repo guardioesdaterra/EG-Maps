@@ -128,7 +128,14 @@ export function useMapMarkers(
   baseURL?: string
 ) {
   const markers = shallowRef<maplibregl.Marker[]>([])
+  const disposers: Array<() => void> = []
   let pendingVisibilityUpdate = false
+
+  function disposeMarker(el: HTMLElement, marker: maplibregl.Marker) {
+    marker.remove()
+    const clone = el.cloneNode(false) as HTMLElement
+    if (el.parentNode) el.parentNode.replaceChild(clone, el)
+  }
 
   function rebuildMarkers(
     dataset: 'project-grants' | 'endangered-species',
@@ -146,11 +153,24 @@ export function useMapMarkers(
         if (!isValidCoordinate(project.latitude, project.longitude)) return
         const el = createProjectMarkerElement(project, baseURL)
         el.style.cursor = 'pointer'
-        el.addEventListener('click', () => _onProjectClick?.(project))
+        el.setAttribute('role', 'button')
+        el.setAttribute('tabindex', '0')
+        el.setAttribute('aria-label', project.project_title)
+        const onClick = () => _onProjectClick?.(project)
+        const onKeydown = (e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() }
+        }
+        el.addEventListener('click', onClick)
+        el.addEventListener('keydown', onKeydown)
         const marker: maplibregl.Marker = new maplibregl.Marker({ element: el, anchor: 'center' })
         marker.setLngLat([project.longitude, project.latitude])
         marker.addTo(map.value!)
         markers.value.push(marker as maplibregl.Marker)
+        disposers.push(() => {
+          el.removeEventListener('click', onClick)
+          el.removeEventListener('keydown', onKeydown)
+          disposeMarker(el, marker)
+        })
       })
     } else {
       const speciesToRender = species.filter(s => isValidCoordinate(s.lat, s.lng))
@@ -162,11 +182,21 @@ export function useMapMarkers(
         el.setAttribute('role', 'button')
         el.setAttribute('tabindex', '0')
         el.setAttribute('aria-label', `${sp.commonName} - ${sp.taxonomicGroup}`)
-        el.addEventListener('click', () => _onSpeciesClick?.(sp))
+        const onClick = () => _onSpeciesClick?.(sp)
+        const onKeydown = (e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() }
+        }
+        el.addEventListener('click', onClick)
+        el.addEventListener('keydown', onKeydown)
         const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
         marker.setLngLat([sp.lng, sp.lat])
         marker.addTo(map.value!)
         markers.value.push(marker)
+        disposers.push(() => {
+          el.removeEventListener('click', onClick)
+          el.removeEventListener('keydown', onKeydown)
+          disposeMarker(el, marker)
+        })
       })
     }
 
@@ -174,7 +204,7 @@ export function useMapMarkers(
   }
 
   function clearMarkers() {
-    markers.value.forEach(m => m.remove())
+    disposers.splice(0).forEach(d => d())
     markers.value = []
   }
 

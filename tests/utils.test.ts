@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { cn, formatCompact } from '../lib/utils'
 import { getProjectColorByBeneficiaries, getProjectColor } from '../lib/colors'
-import { isValidCoordinate, getGroupColor, calculateDistance, escapeHtml } from '../lib/map-utils'
+import { isValidCoordinate, getGroupColor, calculateDistance, escapeHtml, buildProjectPopupHTML } from '../lib/map-utils'
 import type { ProjectData } from '../lib/types'
 
 describe('cn', () => {
@@ -114,5 +114,45 @@ describe('escapeHtml', () => {
 
   it('leaves safe text', () => {
     expect(escapeHtml('hello world')).toBe('hello world')
+  })
+})
+
+describe('buildProjectPopupHTML', () => {
+  const baseProject = {
+    project_title: 'Sample Project',
+    country_province: 'Brazil',
+    latitude: 0,
+    longitude: 0,
+    direct_beneficiaries: 100,
+    indirect_beneficiaries: 200,
+  } as ProjectData
+
+  it('renders both metrics when both are non-zero', () => {
+    const html = buildProjectPopupHTML(baseProject)
+    expect(html).toContain('Direct Beneficiaries')
+    expect(html).toContain('Indirect Beneficiaries')
+    expect(html).toContain('100')
+    expect(html).toContain('200')
+    expect(html).toContain('project-metrics')
+  })
+
+  it('hides direct metric when direct_beneficiaries is 0', () => {
+    const html = buildProjectPopupHTML({ ...baseProject, direct_beneficiaries: 0 })
+    expect(html).not.toContain('Direct Beneficiaries')
+    expect(html).toContain('Indirect Beneficiaries')
+  })
+
+  it('hides indirect metric when indirect_beneficiaries is 0', () => {
+    const html = buildProjectPopupHTML({ ...baseProject, indirect_beneficiaries: 0 })
+    expect(html).toContain('Direct Beneficiaries')
+    expect(html).not.toContain('Indirect Beneficiaries')
+  })
+
+  it('hides metrics block entirely when both are 0', () => {
+    const html = buildProjectPopupHTML({ ...baseProject, direct_beneficiaries: 0, indirect_beneficiaries: 0 })
+    expect(html).not.toContain('Direct Beneficiaries')
+    expect(html).not.toContain('Indirect Beneficiaries')
+    expect(html).not.toContain('project-metrics')
+    expect(html).not.toContain('project-divider')
   })
 })

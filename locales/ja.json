@@ -195,6 +195,175 @@
     "save": "保存",
     "cancel": "キャンセル"
   },
+  "observatory": {
+    "tabs": {
+      "danger": "危険",
+      "military": "軍事",
+      "illegal": "違法",
+      "env": "環境リスク",
+      "network": "ネットワーク",
+      "timeline": "タイムライン"
+    },
+    "dangerPanel": {
+      "title": "最も危険な企業",
+      "processes": "プロセス",
+      "area": "ヘクタール",
+      "showAll": "すべて表示 {count}",
+      "showLess": "トップ20を表示",
+      "empty": "データなし",
+      "flyTo": "{name}へ移動",
+      "pager": "ページネーション",
+      "prevPage": "前のページ",
+      "nextPage": "次のページ"
+    },
+    "military": {
+      "headline": "本当の目的: 軍事サプライチェーン",
+      "headlineBody": "「エネルギー転換」という物語は表向きです。主な推進力は米国の防衛サプライチェーンです：F-35（417 kg REE/機）、原子力潜水艦（4,175 kg）、ミサイル、レーダー、ドローン。",
+      "kgPerUnit": "{kg} kg REE",
+      "dodTitle": "国防総省投資",
+      "stateDeptTitle": "国務省と輸出金融",
+      "chinaBanTitle": "中国の輸出禁止（2025年10月）",
+      "chinaBanBody": "中国は12/17のREE元素の米国への輸出を禁止しました。米国の武器の78%は中国産REEに依存しています。"
+    },
+    "illegal": {
+      "landSpec": "土地投機",
+      "landSpecDesc": "投機パターンのある437社：2020年以降100%の申請、研究要求のみ（許可されたことなし）。",
+      "landSpecEx1": "GR8：資本金R$20K、137申請、204,625ヘクタール",
+      "landSpecEx2": "Nazca Gold：129申請、企業データなし",
+      "landSpecEx3": "Pedra Cinza：322申請、531,844ヘクタール、すべて最近",
+      "rejeito": "規制掌握 — オペラソン・レジェイユ",
+      "rejeitoDesc": "2025年9月：ANM局長逮捕+他21名。数億ドル規模のライセンス操作スキーム。",
+      "rejeitoEx1": "局長Caio Mário Seabra逮捕",
+      "rejeitoEx2": "不正な申請プロセスの迅速処理",
+      "rejeitoEx3": "賄賂とマネーロンダリングのスキーム",
+      "secrecy": "鉱業情報の秘密",
+      "secrecyDesc": "ANMは鉱業プロセスデータの秘密を許可しています。88申請が秘密扱い（105,139ヘクタール）。",
+      "secrecyEx1": "Nacional de Grafiteの19申請が秘密扱い",
+      "secrecyEx2": "Mosaicの4申請が秘密扱い",
+      "secrecyEx3": "ANMは2025年に規則改訂の協議を開始",
+      "foreign": "戦略的鉱物の外国支配",
+      "foreignDesc": "2,142申請（10.3%）がオーストラリア、米国、カナダ、欧州企業によって支配されています。",
+      "foreignEx1": "オーストラリア：1,146申請、173万ヘクタール",
+      "foreignEx2": "米国：475申請、64.4万ヘクタール",
+      "foreignEx3": "カナダ：190申請、38.6万ヘクタール",
+      "foreignEx4": "欧州/英国：331申請",
+      "exclusion": "コミュニティの排除",
+      "exclusionDesc": "伝統的コミュニティ、キルンボラ、先住民族が自分たちの領土での採掘の決定から排除されています。",
+      "exclusionEx1": "キルンボ・カlunga：連邦裁判所が停止",
+      "exclusionEx2": "法的アマゾンで40以上のキルンボラ領土が脅かされている",
+      "exclusionEx3": "ブラジル・中国協定はコミュニティ保護を除外",
+      "water": "水リスク",
+      "waterDesc": "REE採掘は400-500L/トンを消費します。Poços de Caldasはすでに配給に直面しています。",
+      "waterEx1": "Poços de Caldas：2024年配給、Viridisは4つの貯水池を使用する計画",
+      "waterEx2": "ISR：中国で同じ方法による汚染が証明",
+      "waterEx3": "サンフランシスコ川：Zn、Cd、Cr汚染"
+    },
+    "envPanel": {
+      "title": "地域別環境リスク",
+      "flyTo": "{name}へ移動"
+    },
+    "network": {
+      "foxfireTitle": "中枢: Foxfire Metals",
+      "foxfireBody": "ポール・ウールリッチ博士がFoxfire → Axel REE → Si6 Metals → Spark Energyを結びつけます。相互接続ネットワーク経由で570以上の申請。",
+      "australianTitle": "オーストラリアの侵攻",
+      "australianBody": "9社のASX企業がブラジルでREEを探索。Viridis + Meteoric = Poços de Caldas。MPFが両社の停止を求めました。",
+      "usMilitaryTitle": "米国の軍事利益",
+      "usMilitaryBody": "DFC $565M → Serra Verde. 国務省 $5M → Aclara. Export Finance Australia $100M → Viridis/Meteoric.",
+      "cbmmTitle": "CBMM中国",
+      "cbmmBody": "Baosteel/CITIC/Anshanコンソーシアムが15%（19.5億ドル）を保有。ニオブ尾鉱中のREE — 特定の規制なし。",
+      "relayout": "Re-layout",
+      "clickHint": "Click a node to focus · Click empty space to clear"
+    },
+    "timelinePanel": {
+      "title": "申請タイムライン（2000–2026）",
+      "claims": "{count}申請",
+      "cumulative": "累計 {count}"
+    },
+    "actions": {
+      "verify": "ANMで確認",
+      "report": "問題を報告",
+      "openInSidebar": "サイドバーで開く"
+    },
+    "layers": {
+      "title": "レイヤー",
+      "indigenousLands": "先住民族の土地",
+      "quilombolaTerritories": "キルンボラ地域",
+      "overlaps": "重複申請",
+      "polygons": "ポリゴン",
+      "hydrography": "水系",
+      "conflictZones": " conflict zones",
+      "corpNetwork": "企業ネットワーク",
+      "enterpriseHq": "企業本社"
+    },
+    "search": "企業、物質、州を検索...",
+    "legend": {
+      "hydrography": "水系",
+      "basins": "流域",
+      "aquifers": "帯水層",
+      "conflictZones": " conflict zones"
+    },
+    "badges": {
+      "mil": "MIL",
+      "amb": "AMB",
+      "ill": "違法",
+      "for": "外国",
+      "env": "ENV",
+      "sus": "SUS"
+    },
+    "popups": {
+      "dangerLevel": "危険度",
+      "process": "プロセス",
+      "phase": "フェーズ",
+      "uf": "州",
+      "area": "面積",
+      "lastEvent": "最終イベント",
+      "lastEventRecent": "最近",
+      "lastEventStale": "古い",
+      "protectedArea": "保護地域",
+      "indigenousLand": "先住民族の土地",
+      "quilombolaTerritory": "キルンボラ地域",
+      "fpicNotice": "この領土と重なる鉱業申請は、ILO第169号条約に基づく自由で事前のインフォームド・コンセント（FPIC）に違反する可能性があります。",
+      "source": "ソース →",
+      "overlapWarning": "⚠ 重複: {names}",
+      "dangerLabel": "危険度 {score}",
+      "networkBadgeTitle": "企業ネットワーククラスター",
+      "substances": "物質",
+      "year": "年",
+      "unknown": "不明",
+      "lastEventActive": "アクティブ",
+      "overlaps": "重複"
+    },
+    "myTerritory": {
+      "title": "私の地域",
+      "dropPin": "ピンを置く",
+      "cancel": "キャンセル",
+      "flyTo": "ピンへ移動",
+      "share": "共有リンク",
+      "copied": "コピー済",
+      "clear": "ピンを削除",
+      "defaultLabel": "私の地域",
+      "sharedBadge": "共有中"
+    },
+    "sync": {
+      "lastSync": "最終ANM同期",
+      "secrecyClaims": "機密分類",
+      "secrecyArea": "封印中",
+      "syncNote": "SIGMINEから定期的に更新",
+      "sealed": "封印"
+    },
+    "sidebarLabel": "観測所サイドバー",
+    "sidebarCollapse": "サイドバーを折りたたむ",
+    "sidebarExpand": "サイドバーを展開",
+    "selectTab": "タブを選択",
+    "categories": {
+      "direct_ree": "直接REE",
+      "carbonatite_associated": "カーボナタイト/アルカリ",
+      "pegmatite_associated": "ペグマタイト",
+      "heavy_mineral_associated": "重鉱物",
+      "phosphate_associated": "リン酸塩",
+      "strategic_associated": "戦略的"
+    }
+  },
   "loading": {
     "projectGrantsMap": "プロジェクト助成金マップを読み込み中",
     "projectGrantsGlobe": "プロジェクト助成金globoを読み込み中",
@@ -207,5 +376,29 @@
     "somethingWrong": "問題が発生しました",
     "goHome": "ホームに戻る",
     "tryAgain": "再試行"
+  },
+  "a11y": {
+    "skipToContent": "メインコンテンツへスキップ"
+  },
+  "palette": {
+    "title": "コマンドパレット",
+    "placeholder": "コマンドを入力、検索…",
+    "searchInput": "コマンドを検索",
+    "navigate": "ナビゲート",
+    "select": "選択",
+    "close": "閉じる",
+    "noResults": "一致するコマンドがありません",
+    "groupNavigation": "ナビゲーション",
+    "groupSettings": "設定",
+    "groupLanguage": "言語",
+    "groupObservatory": "観測所"
+  },
+  "shortcuts": {
+    "title": "キーボードショートカット",
+    "openPalette": "コマンドパレットを開く",
+    "toggleTheme": "ダークモード切替",
+    "toggleFullscreen": "フルスクリーン",
+    "showShortcuts": "このオーバーレイを表示",
+    "closeOverlay": "オーバーレイを閉じる"
   }
 }

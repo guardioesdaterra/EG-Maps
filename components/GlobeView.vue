@@ -13,9 +13,9 @@
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('globe.loading') }}</p>
         <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
         <div class="mt-3 xs:mt-4 flex gap-1">
-          <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce" style="animation-delay: 0ms" />
-          <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce" style="animation-delay: 150ms" />
-          <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce" style="animation-delay: 300ms" />
+          <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
+          <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
+          <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-3" />
         </div>
       </div>
     </Transition>
@@ -59,7 +59,8 @@
 
     <!-- Scanline overlay with image-set for 2x resolution -->
     <div
-      class="absolute inset-0 pointer-events-none opacity-[0.015]"
+      aria-hidden="true"
+      class="absolute inset-0 pointer-events-none opacity-[0.02]"
       :style="{
         zIndex: 'calc(var(--z-map-effects) + 3)',
         backgroundImage: `image-set(url(${baseURL}scanline.gif) 1x, url(${baseURL}scanline.gif) 2x)`,
@@ -71,6 +72,7 @@
     <canvas
       v-if="isHexGridVisible"
       ref="hexCanvasRef"
+      aria-hidden="true"
       class="absolute inset-0 w-full h-full pointer-events-none opacity-15"
       :style="{ zIndex: 'var(--z-map-hex-grid)' }"
     />
@@ -650,6 +652,7 @@ function blendColors(colors: string[]): string {
 function createClusterMarkerElement(
   count: number,
   items: ClusterItem[],
+  onItemClick: (item: ClusterItem) => void,
   sourceProjects?: ProjectData[],
   sourceSpecies?: Species[]
 ) {
@@ -717,8 +720,9 @@ function createClusterMarkerElement(
       centers.push({ x: Math.cos(angle) * orbitRadius, y: Math.sin(angle) * orbitRadius })
     })
 
-    // Mini circles at orbit positions — only the circular markers, no shape behind
-    items.forEach((_item, i) => {
+    // Mini circles at orbit positions — only the circular markers, no shape behind.
+    // Each mini is individually clickable and opens the matching item.
+    items.forEach((item, i) => {
       const { url, color: itemColor } = resolved[i]
       const c = centers[i]
       const mini = document.createElement('div')
@@ -732,8 +736,22 @@ function createClusterMarkerElement(
       mini.style.boxShadow = `0 0 7px ${itemColor}, 0 0 1.5px #fff`
       mini.style.top = `calc(50% + ${c.y}px - ${miniSize / 2}px)`
       mini.style.left = `calc(50% + ${c.x}px - ${miniSize / 2}px)`
-      mini.style.pointerEvents = 'none'
+      mini.style.cursor = 'pointer'
       mini.style.zIndex = '2'
+      mini.setAttribute('tabindex', '0')
+      mini.setAttribute('role', 'button')
+      mini.setAttribute('aria-label', `Open item ${i + 1} of ${items.length}`)
+      mini.addEventListener('click', (e) => {
+        e.stopPropagation()
+        onItemClick(item)
+      })
+      mini.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          onItemClick(item)
+        }
+      })
       clusterInner.appendChild(mini)
     })
 
@@ -805,7 +823,8 @@ function createClusterMarkerElement(
     gridInner.style.height = '100%'
     gridInner.style.zIndex = '1'
 
-    resolved.slice(0, maxShow).forEach(({ url, color: itemColor }) => {
+    resolved.slice(0, maxShow).forEach(({ url, color: itemColor }, idx) => {
+      const item = items[idx]
       const mini = document.createElement('div')
       mini.className = 'cluster-mini-hover'
       mini.style.width = `${miniSize}px`
@@ -814,7 +833,21 @@ function createClusterMarkerElement(
       mini.style.background = `url("${url}") center/cover`
       mini.style.border = '1px solid rgba(255,255,255,0.75)'
       mini.style.boxShadow = `0 0 4px ${itemColor}`
+      mini.style.cursor = 'pointer'
       mini.style.flexShrink = '0'
+      mini.setAttribute('tabindex', '0')
+      mini.setAttribute('role', 'button')
+      mini.addEventListener('click', (e) => {
+        e.stopPropagation()
+        if (item) onItemClick(item)
+      })
+      mini.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          if (item) onItemClick(item)
+        }
+      })
       gridInner.appendChild(mini)
     })
 
@@ -856,8 +889,17 @@ function createClusterMarkerElement(
 const useNativeGeoJSON = true
 const SOURCE_ID = 'globe-species-markers'
 
-function setupGeoJSONMarkers() {
+let geoJSONInitializedFor: 'project-grants' | 'endangered-species' | null = null
+
+function setupGeoJSONMarkers(forceReinit = false) {
   if (!map || !useNativeGeoJSON) return
+
+  const dataset = activeDataset.value === 'project-grants' ? 'project-grants' : 'endangered-species'
+
+  if (!forceReinit && geoJSONInitializedFor === dataset) {
+    updateGeoJSONMarkerData()
+    return
+  }
 
   // Clean up old DOM markers
   markers.forEach(m => m.remove())
@@ -881,6 +923,7 @@ function setupGeoJSONMarkers() {
       },
       () => { /* easeTo handled inside setupEventHandlers */ }
     )
+    geoJSONInitializedFor = 'project-grants'
   } else if (speciesIndexData.value.length) {
     // Use lightweight index for map markers
     const geojson = speciesIndexToGeoJSON(speciesIndexData.value)
@@ -913,6 +956,7 @@ function setupGeoJSONMarkers() {
       },
       () => { /* easeTo handled inside setupEventHandlers */ }
     )
+    geoJSONInitializedFor = 'endangered-species'
   } else if (speciesData.value.length) {
     // Fallback to full species data if index not available
     const validSpecies = speciesData.value.filter(s => isValidCoordinate(s.lat, s.lng))
@@ -942,11 +986,37 @@ function setupGeoJSONMarkers() {
       },
       () => { /* easeTo handled inside setupEventHandlers */ }
     )
+    geoJSONInitializedFor = 'endangered-species'
   }
 
   lastClusterZoom = Math.floor(map.getZoom())
   const center = map.getCenter()
   lastBboxCenter = { lng: center.lng, lat: center.lat }
+}
+
+function updateGeoJSONMarkerData() {
+  if (!map || !geoJSONInitializedFor) return
+  if (geoJSONInitializedFor === 'project-grants') {
+    const validProjects = projectsData.value.filter(p => isValidCoordinate(p.latitude, p.longitude))
+    geoJSONMarkers.updateData(SOURCE_ID, projectsToGeoJSON(validProjects))
+  } else if (speciesIndexData.value.length) {
+    geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(speciesIndexData.value))
+  } else if (speciesData.value.length) {
+    const validSpecies = speciesData.value.filter(s => isValidCoordinate(s.lat, s.lng))
+    geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(validSpecies.map(s => ({
+      id: s.id,
+      commonName: s.commonName,
+      scientificName: s.scientificName,
+      taxonomicGroup: s.taxonomicGroup,
+      category: s.category,
+      lat: s.lat,
+      lng: s.lng,
+      imageUrl: s.imageUrl || null,
+      description: '',
+      endangerment: '',
+      threatTypes: s.threatTypes || [],
+    }))))
+  }
 }
 
 function rebuildMarkers() {
@@ -988,13 +1058,19 @@ function rebuildMarkers() {
 
     clusters.forEach((cp: ClusterPoint) => {
       if (cp.type === 'cluster') {
-        const el = createClusterMarkerElement(cp.count, cp.items, validProjects)
+        const onItemClick = (item: ClusterItem) => {
+          const project = validProjects[item.index]
+          if (project) openProjectOverlay(project)
+        }
+        const el = createClusterMarkerElement(cp.count, cp.items, onItemClick, validProjects)
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
         el.setAttribute('aria-label', `Cluster of ${cp.count} projects`)
-        el.addEventListener('click', () => {
+        el.addEventListener('click', (e) => {
+          // If click was on a mini-marker the click handler there already handled it
+          if ((e.target as HTMLElement | null)?.classList.contains('cluster-mini-hover')) return
           if (map) {
-            const zoom = Math.min(Math.max(clusterer.getClusterExpansionZoom(cp.clusterId), map.getZoom() + 1), 16)
+            const zoom = Math.min(Math.max(clusterer.getClusterExpansionZoom(cp.clusterId), map.getZoom() + 1), map.getMaxZoom())
             map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 500, essential: true })
           }
         })
@@ -1047,13 +1123,18 @@ function rebuildMarkers() {
 
     clusters.forEach((cp: ClusterPoint) => {
       if (cp.type === 'cluster') {
-        const el = createClusterMarkerElement(cp.count, cp.items, undefined, speciesToRender)
+        const onItemClick = (item: ClusterItem) => {
+          const species = speciesToRender[item.index]
+          if (species) openSpeciesOverlay(species)
+        }
+        const el = createClusterMarkerElement(cp.count, cp.items, onItemClick, undefined, speciesToRender)
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
         el.setAttribute('aria-label', `Cluster of ${cp.count} species`)
-        el.addEventListener('click', () => {
+        el.addEventListener('click', (e) => {
+          if ((e.target as HTMLElement | null)?.classList.contains('cluster-mini-hover')) return
           if (map) {
-            const zoom = Math.min(Math.max(clusterer.getClusterExpansionZoom(cp.clusterId), map.getZoom() + 1), 16)
+            const zoom = Math.min(Math.max(clusterer.getClusterExpansionZoom(cp.clusterId), map.getZoom() + 1), map.getMaxZoom())
             map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 500, essential: true })
           }
         })
@@ -1288,6 +1369,7 @@ onUnmounted(() => {
   if (useNativeGeoJSON) {
     geoJSONMarkers.cleanup()
   }
+  geoJSONInitializedFor = null
   clearImageCache()
   if (map) {
     map.remove()

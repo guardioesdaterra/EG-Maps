@@ -127,7 +127,7 @@ export function useGeoJSONMarkers() {
       type: 'geojson',
       data,
       cluster: clustering,
-      clusterMaxZoom: 14,
+      clusterMaxZoom: 16,
       clusterRadius: 50,
     })
   }
@@ -236,10 +236,13 @@ export function useGeoJSONMarkers() {
 
       if (clusterId !== undefined) {
         const expansionZoom = await getClusterExpansionZoom(sourceId, clusterId)
+        // Cap at the map's allowed max so co-located points can fully split.
+        const maxZoom = map.getMaxZoom()
+        const targetZoom = Math.min(Math.max(expansionZoom, map.getZoom() + 1), maxZoom)
 
         map.flyTo({
           center: coords,
-          zoom: Math.min(expansionZoom, 16),
+          zoom: targetZoom,
           duration: 600,
           essential: true,
         })

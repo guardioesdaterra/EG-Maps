@@ -195,6 +195,175 @@
     "save": "حفظ",
     "cancel": "إلغاء"
   },
+  "observatory": {
+    "tabs": {
+      "danger": "خطر",
+      "military": "عسكري",
+      "illegal": "غير قانوني",
+      "env": "مخاطر بيئية",
+      "network": "شبكة",
+      "timeline": "جدول زمني"
+    },
+    "dangerPanel": {
+      "title": "أخطر الشركات",
+      "processes": "عمليات",
+      "area": "هكتار",
+      "showAll": "عرض الكل {count}",
+      "showLess": "عرض أهم 20",
+      "empty": "لا توجد بيانات محملة",
+      "flyTo": "الانتقال إلى {name}",
+      "pager": "ترقيم الصفحات",
+      "prevPage": "الصفحة السابقة",
+      "nextPage": "الصفحة التالية"
+    },
+    "military": {
+      "headline": "الاهتمام الحقيقي: سلسلة التوريد العسكرية",
+      "headlineBody": "سردية \"التحول الطاقي\" واجهة. المحرك الأساسي هو سلسلة توريد الدفاع الأمريكية: F-35 (417 كجم REE/وحدة)، غواصات نووية (4,175 كجم)، صواريخ، رادارات، طائرات بدون طيار، حرب إلكترونية.",
+      "kgPerUnit": "{kg} كجم REE",
+      "dodTitle": "استثمارات وزارة الدفاع",
+      "stateDeptTitle": "وزارة الخارجية وتمويل الصادرات",
+      "chinaBanTitle": "حظر الصين للتصدير (أكتوبر 2025)",
+      "chinaBanBody": "حظرت الصين تصدير 12/17 من عناصر REE إلى الولايات المتحدة. 78% من الأسلحة الأمريكية تعتمد على REE الصينية."
+    },
+    "illegal": {
+      "landSpec": "المضاربة على الأراضي",
+      "landSpecDesc": "437 شركة بأنماط مضاربة: 100% من الطلبات بعد 2020، فقط طلبات بحث (لم تتم الموافقة عليها)، عشرات العمليات بمواد 1-2.",
+      "landSpecEx1": "GR8: رأس مال R$20K، 137 طلب، 204,625 هكتار",
+      "landSpecEx2": "Nazca Gold: 129 طلب، بدون بيانات شركة",
+      "landSpecEx3": "Pedra Cinza: 322 طلب، 531,844 هكتار، جميعها حديثة",
+      "rejeito": "الاستيلاء التنظيمي — عملية Rejeito",
+      "rejeitoDesc": "سبتمبر 2025: اعتقال مدير ANM + 21 آخرين. مخطط تلاعب بالتراخيص بمليار دولار.",
+      "rejeitoEx1": "اعتقال مدير Caio Mário Seabra",
+      "rejeitoEx2": "تسريع عمليات طلب احتيالية",
+      "rejeitoEx3": "مخطط رشوة وغسيل أموال",
+      "secrecy": "سرية معلومات التعدين",
+      "secrecyDesc": "تسمح ANM بالسرية على بيانات العمليات. 88 طلب تحت السرية (105,139 هكتار).",
+      "secrecyEx1": "19 طلب من Nacional de Grafite تحت السرية",
+      "secrecyEx2": "4 طلبات من Mosaic تحت السرية",
+      "secrecyEx3": "فتحت ANM مشاورة لمراجعة القواعد في 2025",
+      "foreign": "السيطرة الأجنبية على المعادن الاستراتيجية",
+      "foreignDesc": "2,142 طلب (10.3%) تحت سيطرة شركات أسترالية وأمريكية وكندية وأوروبية. صفر معالجة محلية.",
+      "foreignEx1": "أستراليا: 1,146 طلب، 1.73 مليون هكتار",
+      "foreignEx2": "الولايات المتحدة: 475 طلب، 644 ألف هكتار",
+      "foreignEx3": "كندا: 190 طلب، 386 ألف هكتار",
+      "foreignEx4": "أوروبا/المملكة المتحدة: 331 طلب",
+      "exclusion": "إقصاء المجتمع",
+      "exclusionDesc": "المجتمعات التقليدية والكيولومبولا والشعوب الأصلية مستبعدة من قرارات التعدين.",
+      "exclusionEx1": "كيولومبو Kalunga do Mimoso: علقت المحكمة الاتحادية",
+      "exclusionEx2": "+40 أراضي كيولومبولا مهددة في الأمازون القانونية",
+      "exclusionEx3": "اتفاقية البرازيل-الصين تستبعد ضمانات المجتمع",
+      "water": "مخاطر المياه",
+      "waterDesc": "يستهلك تعدين REE 400-500 لتر/طن. Poços de Caldas يواجه بالفعل التقنين.",
+      "waterEx1": "Poços de Caldas: تقنين 2024، تخطط Viridis لاستخدام 4 خزانات",
+      "waterEx2": "ISR: تلوث مثبت في الصين بنفس الطريقة",
+      "waterEx3": "نهر São Francisco: تلوث بالـ Zn وCd وCr"
+    },
+    "envPanel": {
+      "title": "المخاطر البيئية حسب المنطقة",
+      "flyTo": "الانتقال إلى {name}"
+    },
+    "network": {
+      "foxfireTitle": "المركز الأساسي: Foxfire Metals",
+      "foxfireBody": "يربط الدكتور Paul Woolrich Foxfire → Axel REE → Si6 Metals → Spark Energy. أكثر من 570 طلب عبر شبكة مترابطة.",
+      "australianTitle": "الغزو الأسترالي",
+      "australianBody": "9 شركات من ASX تستكشف REE في البرازيل. Viridis + Meteoric = Poços de Caldas.",
+      "usMilitaryTitle": "الاهتمام العسكري الأمريكي",
+      "usMilitaryBody": "DFC 565 مليون → Serra Verde. وزارة الخارجية 5 ملايين → Aclara. Export Finance Australia 100 مليون → Viridis/Meteoric.",
+      "cbmmTitle": "CBMM الصين",
+      "cbmmBody": "يحفظ اتحاد Baosteel/CITIC/Anshan 15% (1.95 مليار دولار). REE في مخلفات النيوبيوم — بدون تنظيم محدد.",
+      "relayout": "Re-layout",
+      "clickHint": "Click a node to focus · Click empty space to clear"
+    },
+    "timelinePanel": {
+      "title": "الجدول الزمني للطلبات (2000–2026)",
+      "claims": "{count} طلب",
+      "cumulative": "تراكمي {count}"
+    },
+    "actions": {
+      "verify": "تحقق من ANM",
+      "report": "الإبلاغ عن مشكلة",
+      "openInSidebar": "فتح في الشريط الجانبي"
+    },
+    "layers": {
+      "title": "الطبقات",
+      "indigenousLands": "أراضي الشعوب الأصلية",
+      "quilombolaTerritories": "أراضي الكيولومبولا",
+      "overlaps": "تداخل المطالبات",
+      "polygons": "المضلعات",
+      "hydrography": "الصرف الصحي",
+      "conflictZones": "مناطق الصراع",
+      "corpNetwork": "شبكة الشركات",
+      "enterpriseHq": "مقار الشركات"
+    },
+    "search": "البحث عن شركة أو مادة أو ولاية...",
+    "legend": {
+      "hydrography": "الصرف الصحي",
+      "basins": "الأحواض",
+      "aquifers": "الطبقات المائية",
+      "conflictZones": "مناطق الصراع"
+    },
+    "badges": {
+      "mil": "MIL",
+      "amb": "AMB",
+      "ill": "غير قانوني",
+      "for": "أجنبي",
+      "env": "ENV",
+      "sus": "SUS"
+    },
+    "popups": {
+      "dangerLevel": "مستوى الخطر",
+      "process": "العملية",
+      "phase": "المرحلة",
+      "uf": "الولاية",
+      "area": "المساحة",
+      "lastEvent": "الحدث الأخير",
+      "lastEventRecent": "حديث",
+      "lastEventStale": "قديم",
+      "protectedArea": "منطقة محمية",
+      "indigenousLand": "أرض الشعوب الأصلية",
+      "quilombolaTerritory": "إقليم الكيولومبولا",
+      "fpicNotice": "قد تنتهك مطالبات التعدين المتداخلة مع هذا الإقليم الموافقة الحرة والمسبقة والمستنيرة (FPIC) بموجب اتفاقية منظمة العمل الدولية 169.",
+      "source": "المصدر ←",
+      "overlapWarning": "⚠ تداخلات: {names}",
+      "dangerLabel": "{score} خطر",
+      "networkBadgeTitle": "تجمع شبكة الشركات",
+      "substances": "المواد",
+      "year": "السنة",
+      "unknown": "غير معروف",
+      "lastEventActive": "نشط",
+      "overlaps": "تداخلات"
+    },
+    "myTerritory": {
+      "title": "أراضي",
+      "dropPin": "ضع دبوس",
+      "cancel": "إلغاء",
+      "flyTo": "اذهب إلى",
+      "share": "نسخ الرابط",
+      "copied": "تم النسخ",
+      "clear": "مسح الدبوس",
+      "defaultLabel": "أراضي",
+      "sharedBadge": "مشترك"
+    },
+    "sync": {
+      "lastSync": "آخر مزامنة ANM",
+      "secrecyClaims": "مطالبات السرية",
+      "secrecyArea": "تحت الختم",
+      "syncNote": "تحديث دوري من SIGMINE",
+      "sealed": "مختوم"
+    },
+    "sidebarLabel": "الشريط الجانبي للمرصد",
+    "sidebarCollapse": "طي الشريط",
+    "sidebarExpand": "توسيع الشريط",
+    "selectTab": "اختر تبويباً",
+    "categories": {
+      "direct_ree": "REE مباشرة",
+      "carbonatite_associated": "كربوناتيت/قلوي",
+      "pegmatite_associated": "بيغماتيت",
+      "heavy_mineral_associated": "معدن ثقيل",
+      "phosphate_associated": "فوسفات",
+      "strategic_associated": "استراتيجي"
+    }
+  },
   "loading": {
     "projectGrantsMap": "جارٍ تحميل خريطة منح المشاريع",
     "projectGrantsGlobe": "جارٍ تحميل كرة منح المشاريع الأرضية",
@@ -207,5 +376,29 @@
     "somethingWrong": "حدث خطأ ما",
     "goHome": "الذهاب إلى الرئيسية",
     "tryAgain": "إعادة المحاولة"
+  },
+  "a11y": {
+    "skipToContent": "الانتقال إلى المحتوى الرئيسي"
+  },
+  "palette": {
+    "title": "لوحة الأوامر",
+    "placeholder": "اكتب أمراً، ابحث…",
+    "searchInput": "البحث عن الأوامر",
+    "navigate": "تنقل",
+    "select": "اختر",
+    "close": "إغلاق",
+    "noResults": "لا توجد أوامر مطابقة",
+    "groupNavigation": "التنقل",
+    "groupSettings": "الإعدادات",
+    "groupLanguage": "اللغة",
+    "groupObservatory": "المرصد"
+  },
+  "shortcuts": {
+    "title": "اختصارات لوحة المفاتيح",
+    "openPalette": "فتح لوحة الأوامر",
+    "toggleTheme": "تبديل الوضع الداكن",
+    "toggleFullscreen": "ملء الشاشة",
+    "showShortcuts": "عرض هذه اللوحة",
+    "closeOverlay": "إغلاق اللوحة"
   }
 }

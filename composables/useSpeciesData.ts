@@ -8,15 +8,40 @@ const DB_NAME = 'eg-maps-species'
 const DB_VERSION = 1
 const STORE_NAME = 'datasets'
 
+// Singleton IDBDatabase connection. Opening multiple connections to the
+// same database quickly exhausts the per-origin cap (~50) and triggers
+// QuotaExceededError on subsequent opens. We resolve a single shared
+// connection and reuse it for all transactions.
+let dbPromise: Promise<IDBDatabase> | null = null
+
 function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+  if (dbPromise) return dbPromise
+  dbPromise = new Promise((resolve, reject) => {
+    if (typeof indexedDB === 'undefined') {
+      reject(new Error('IndexedDB is not available'))
+      return
+    }
     const req = indexedDB.open(DB_NAME, DB_VERSION)
     req.onupgradeneeded = () => {
       req.result.createObjectStore(STORE_NAME)
     }
-    req.onsuccess = () => resolve(req.result)
-    req.onerror = () => reject(req.error)
+    req.onsuccess = () => {
+      const db = req.result
+      // If the connection is unexpectedly closed (e.g. by the browser under
+      // storage pressure), clear the cached promise so the next call reopens.
+      db.onclose = () => { dbPromise = null }
+      db.onversionchange = () => {
+        try { db.close() } catch { /* empty */ }
+        dbPromise = null
+      }
+      resolve(db)
+    }
+    req.onerror = () => {
+      dbPromise = null
+      reject(req.error)
+    }
   })
+  return dbPromise
 }
 
 async function idbGet<T>(key: string): Promise<T | undefined> {

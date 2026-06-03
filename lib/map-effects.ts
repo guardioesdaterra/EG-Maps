@@ -2,7 +2,11 @@ import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { Feature, LineString } from 'geojson'
 import type { ProjectData, Species } from './types'
 import { getProjectColorByBeneficiaries } from './colors'
-import { GROUP_COLORS, calculateDistance, generateCurvedPath, isValidCoordinate } from './map-utils'
+import { GROUP_COLORS, generateCurvedPath, isValidCoordinate } from './map-utils'
+
+function pickRandomIndex(length: number): number {
+  return Math.floor(Math.random() * length)
+}
 
 export type DatasetKey = 'project-grants' | 'endangered-species' | 'observatory-of-vulcan'
 
@@ -49,27 +53,24 @@ function buildProjectConnectionFeatures(projects: ProjectData[], isMobile: boole
     if (!isValidCoordinate(project.latitude, project.longitude)) return
 
     const projectKey = project.project_title
+    const color = getProjectColorByBeneficiaries(project.direct_beneficiaries, project.indirect_beneficiaries)
 
     const availableTargets = projectsToProcess
       .filter(p =>
         p.project_title !== project.project_title &&
         isValidCoordinate(p.latitude, p.longitude) &&
         !edgeKeys.has([projectKey, p.project_title].sort().join('::')) &&
-        (incomingCountByProject.get(p.project_title) ?? 0) < 1
+        (incomingCountByProject.get(p.project_title) ?? 0) < 1 &&
+        getProjectColorByBeneficiaries(p.direct_beneficiaries, p.indirect_beneficiaries) === color
       )
-      .map(target => ({
-        target,
-        distance: calculateDistance(project.latitude, project.longitude, target.latitude, target.longitude),
-      }))
-      .sort((a, b) => a.distance - b.distance)
 
     const connectionsToMake = Math.min(maxConnectionsPerProject, availableTargets.length)
 
     for (let i = 0; i < connectionsToMake; i++) {
-      const target = availableTargets[i]?.target
+      if (!availableTargets.length) continue
+      const targetIndex = pickRandomIndex(availableTargets.length)
+      const target = availableTargets.splice(targetIndex, 1)[0]
       if (!target) continue
-
-      const color = getProjectColorByBeneficiaries(project.direct_beneficiaries, project.indirect_beneficiaries)
 
       features.push(createConnectionFeature({
         from: [project.longitude, project.latitude],
@@ -105,6 +106,7 @@ function buildSpeciesConnectionFeatures(species: Species[], isMobile: boolean): 
     }
     const incomingCount = incomingCountByGroup.get(group)!
     const sourceKey = source.id || source.commonName
+    const color = GROUP_COLORS[group] ?? '#B64032'
 
     const availableTargets = speciesToProcess
       .filter(target => {
@@ -116,17 +118,13 @@ function buildSpeciesConnectionFeatures(species: Species[], isMobile: boolean): 
           !edgeKeys.has(normalizedEdgeKey) &&
           (incomingCount.get(targetKey) ?? 0) < (isMobile ? 1 : 2)
       })
-      .map(target => ({
-        target,
-        distance: calculateDistance(source.lat, source.lng, target.lat, target.lng),
-      }))
-      .sort((a, b) => a.distance - b.distance)
 
     const connectionsToMake = Math.min(maxConnectionsPerSpecies, availableTargets.length)
-    const color = GROUP_COLORS[group] ?? '#B64032'
 
     for (let i = 0; i < connectionsToMake; i++) {
-      const target = availableTargets[i]?.target
+      if (!availableTargets.length) continue
+      const targetIndex = pickRandomIndex(availableTargets.length)
+      const target = availableTargets.splice(targetIndex, 1)[0]
       if (!target) continue
 
       features.push(createConnectionFeature({
@@ -270,8 +268,10 @@ export function createMapParticleSystem({
   let particles: Particle[] = []
   let activeGroup: string | null = null
   let groupChangeTimer: ReturnType<typeof setTimeout> | null = null
+  let cancelled = false
 
   function stop() {
+    cancelled = true
     if (particleAnimationFrame) {
       cancelAnimationFrame(particleAnimationFrame)
       particleAnimationFrame = null
@@ -346,6 +346,7 @@ export function createMapParticleSystem({
     if (!getFeatures().length) return
 
     stop()
+    cancelled = false
 
     const computedPosition = window.getComputedStyle(container).position
     if (computedPosition === 'static') {
@@ -380,7 +381,7 @@ export function createMapParticleSystem({
     resizeCanvas()
 
     const animate = (timestamp: number) => {
-      if (!particleCanvas) return
+      if (cancelled || !particleCanvas) return
       particleAnimationFrame = requestAnimationFrame(animate)
       if (timestamp - lastFrame < frameInterval) return
       lastFrame = timestamp

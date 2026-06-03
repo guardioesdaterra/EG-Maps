@@ -1,4 +1,8 @@
 {
+  "last_sync": "2026-06-01T00:00:00Z",
+  "data_source": "ANM SIGMINE public dump (csv)",
+  "sync_frequency": "manual",
+  "sync_url": "https://app.anm.gov.br/SIGMINE",
   "suspicious_speculators_count": 437,
   "top_suspicious": [
     {

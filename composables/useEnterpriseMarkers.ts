@@ -13,9 +13,22 @@ const ENTERPRISE_CONN_GLOW = 'enterprise-connections-glow'
 const LAYER_IDS = [ENTERPRISE_CONN_GLOW, ENTERPRISE_CONN_LAYER, ENTERPRISE_GLOW, ENTERPRISE_LAYER, ENTERPRISE_LABEL]
 const SOURCE_IDS = [ENTERPRISE_CONN_SOURCE, ENTERPRISE_SOURCE]
 
-let mapInstance: MapLibreMap | null = null
-let hqMarkers: maplibregl.Marker[] = []
-let onHQClick: ((enterprise: EnterpriseHQ) => void) | null = null
+interface EnterpriseLayerState {
+  markers: maplibregl.Marker[]
+  disposers: Array<() => void>
+  onClick: ((enterprise: EnterpriseHQ) => void) | null
+}
+
+const stateByMap = new WeakMap<MapLibreMap, EnterpriseLayerState>()
+
+function getState(map: MapLibreMap): EnterpriseLayerState {
+  let state = stateByMap.get(map)
+  if (!state) {
+    state = { markers: [], disposers: [], onClick: null }
+    stateByMap.set(map, state)
+  }
+  return state
+}
 
 function safeRemoveLayer(map: MapLibreMap, id: string) {
   try { if (map.getLayer(id)) map.removeLayer(id) } catch { /* empty */ }
@@ -29,10 +42,74 @@ function canAddSource(map: MapLibreMap, id: string): boolean {
   return !!(map.isStyleLoaded() && !map.getSource(id))
 }
 
+function getConnectionColor(type: string): string {
+  switch (type) {
+    case 'shareholding': return '#e74c3c'
+    case 'subsidiary': return '#3498db'
+    case 'joint_venture': return '#27ae60'
+    case 'board_overlap': return '#8e44ad'
+    case 'partnership': return '#f39c12'
+    default: return '#666'
+  }
+}
+
+function addEnterpriseConnections(map: MapLibreMap) {
+  if (!canAddSource(map, ENTERPRISE_CONN_SOURCE)) return
+  const features: GeoJSON.Feature[] = CORPORATE_CONNECTIONS.map(conn => {
+    const from = ENTERPRISES.find(e => e.name === conn.from)
+    const to = ENTERPRISES.find(e => e.name === conn.to)
+    if (!from || !to) return null
+    const color = getConnectionColor(conn.type)
+    return {
+      type: 'Feature',
+      properties: { type: conn.type, color, from: conn.from, to: conn.to },
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [from.lng, from.lat],
+          [(from.lng + to.lng) / 2 + 2, (from.lat + to.lat) / 2],
+          [to.lng, to.lat],
+        ],
+      },
+    }
+  }).filter(Boolean) as GeoJSON.Feature[]
+
+  if (!features.length) return
+
+  map.addSource(ENTERPRISE_CONN_SOURCE, {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features },
+  })
+
+  map.addLayer({
+    id: ENTERPRISE_CONN_GLOW,
+    type: 'line',
+    source: ENTERPRISE_CONN_SOURCE,
+    paint: {
+      'line-color': ['get', 'color'],
+      'line-width': 3,
+      'line-opacity': 0.15,
+      'line-blur': 3,
+    },
+  })
+
+  map.addLayer({
+    id: ENTERPRISE_CONN_LAYER,
+    type: 'line',
+    source: ENTERPRISE_CONN_SOURCE,
+    paint: {
+      'line-color': ['get', 'color'],
+      'line-width': 0.8,
+      'line-opacity': 0.3,
+      'line-dasharray': [1, 3],
+    },
+  })
+}
+
 export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (e: EnterpriseHQ) => void) {
   try {
-    mapInstance = map
-    onHQClick = onClick || null
+    const state = getState(map)
+    state.onClick = onClick || null
 
     cleanupEnterpriseLayer(map)
 
@@ -94,7 +171,7 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (e: EnterpriseH
       if (!e.features?.length) return
       const props = e.features[0].properties
       const enterprise = ENTERPRISES.find(ent => ent.name === props.name)
-      if (enterprise && onHQClick) onHQClick(enterprise)
+      if (enterprise && state.onClick) state.onClick(enterprise)
     })
 
     map.on('mouseenter', ENTERPRISE_LAYER, () => { map.getCanvas().style.cursor = 'pointer' })
@@ -118,14 +195,27 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (e: EnterpriseH
       el.style.color = '#fff'
       el.textContent = ent.name.slice(0, 2)
       el.title = ent.name
-      el.addEventListener('click', () => {
-        if (onHQClick) onHQClick(ent)
-      })
+      el.setAttribute('role', 'button')
+      el.setAttribute('tabindex', '0')
+      el.setAttribute('aria-label', ent.name)
+      const onClick = () => { if (state.onClick) state.onClick(ent) }
+      const onKeydown = (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() }
+      }
+      el.addEventListener('click', onClick)
+      el.addEventListener('keydown', onKeydown)
 
       const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
         .setLngLat([ent.lng, ent.lat])
         .addTo(map)
-      hqMarkers.push(marker)
+      state.markers.push(marker)
+      state.disposers.push(() => {
+        el.removeEventListener('click', onClick)
+        el.removeEventListener('keydown', onKeydown)
+        marker.remove()
+        const clone = el.cloneNode(false) as HTMLElement
+        if (el.parentNode) el.parentNode.replaceChild(clone, el)
+      })
     })
 
     addEnterpriseConnections(map)
@@ -134,74 +224,14 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (e: EnterpriseH
   }
 }
 
-function addEnterpriseConnections(map: MapLibreMap) {
-  if (!canAddSource(map, ENTERPRISE_CONN_SOURCE)) return
-  const features: GeoJSON.Feature[] = CORPORATE_CONNECTIONS.map(conn => {
-    const from = ENTERPRISES.find(e => e.name === conn.from)
-    const to = ENTERPRISES.find(e => e.name === conn.to)
-    if (!from || !to) return null
-    const color = getConnectionColor(conn.type)
-    return {
-      type: 'Feature',
-      properties: { type: conn.type, color, from: conn.from, to: conn.to },
-      geometry: {
-        type: 'LineString',
-        coordinates: [
-          [from.lng, from.lat],
-          [(from.lng + to.lng) / 2 + 2, (from.lat + to.lat) / 2],
-          [to.lng, to.lat],
-        ],
-      },
-    }
-  }).filter(Boolean) as GeoJSON.Feature[]
-
-  if (!features.length) return
-
-  map.addSource(ENTERPRISE_CONN_SOURCE, {
-    type: 'geojson',
-    data: { type: 'FeatureCollection', features },
-  })
-
-  map.addLayer({
-    id: ENTERPRISE_CONN_GLOW,
-    type: 'line',
-    source: ENTERPRISE_CONN_SOURCE,
-    paint: {
-      'line-color': ['get', 'color'],
-      'line-width': 3,
-      'line-opacity': 0.15,
-      'line-blur': 3,
-    },
-  })
-
-  map.addLayer({
-    id: ENTERPRISE_CONN_LAYER,
-    type: 'line',
-    source: ENTERPRISE_CONN_SOURCE,
-    paint: {
-      'line-color': ['get', 'color'],
-      'line-width': 0.8,
-      'line-opacity': 0.3,
-      'line-dasharray': [1, 3],
-    },
-  })
-}
-
-function getConnectionColor(type: string): string {
-  switch (type) {
-    case 'shareholding': return '#e74c3c'
-    case 'subsidiary': return '#3498db'
-    case 'joint_venture': return '#27ae60'
-    case 'board_overlap': return '#8e44ad'
-    case 'partnership': return '#f39c12'
-    default: return '#666'
-  }
-}
-
 export function cleanupEnterpriseLayer(map: MapLibreMap) {
-  hqMarkers.forEach(m => m.remove())
-  hqMarkers = []
+  const state = stateByMap.get(map)
+  if (state) {
+    state.disposers.splice(0).forEach(d => d())
+    state.markers = []
+    state.disposers = []
+    state.onClick = null
+  }
   LAYER_IDS.forEach(id => safeRemoveLayer(map, id))
   SOURCE_IDS.forEach(id => safeRemoveSource(map, id))
-  mapInstance = null
 }

@@ -198,6 +198,175 @@
     "save": "Guardar",
     "cancel": "Cancelar"
   },
+  "observatory": {
+    "tabs": {
+      "danger": "Peligro",
+      "military": "Militar",
+      "illegal": "Ilegal",
+      "env": "Riesgo Amb.",
+      "network": "Red",
+      "timeline": "Cronología"
+    },
+    "dangerPanel": {
+      "title": "Empresas más peligrosas",
+      "processes": "procesos",
+      "area": "ha",
+      "showAll": "Ver {count}",
+      "showLess": "Ver top 20",
+      "empty": "Sin datos cargados",
+      "flyTo": "Ir a {name}",
+      "pager": "Paginación",
+      "prevPage": "Página anterior",
+      "nextPage": "Página siguiente"
+    },
+    "military": {
+      "headline": "El verdadero interés: CADENA DE SUMINISTRO MILITAR",
+      "headlineBody": "La narrativa de la \"Transición Energética\" es una fachada. El motor principal es la cadena de suministro de defensa de EE.UU.: F-35 (417 kg REE/unidad), submarinos nucleares (4.175 kg), misiles, radares, drones, guerra electrónica.",
+      "kgPerUnit": "{kg} kg REE",
+      "dodTitle": "Inversiones del DoD",
+      "stateDeptTitle": "Departamento de Estado y Finanzas de Exportación",
+      "chinaBanTitle": "Prohibición de exportación de China (oct 2025)",
+      "chinaBanBody": "China prohibió la exportación de 12/17 elementos REE a EE.UU. El 78% de las armas de EE.UU. dependen de REE chinos. Mandato DFARS 2027: los contratistas de defensa de EE.UU. deben obtener REE fuera de China."
+    },
+    "illegal": {
+      "landSpec": "Especulación de tierras",
+      "landSpecDesc": "437 empresas con patrones de especulación: 100% de reclamos después de 2020, solo solicitudes de investigación (nunca autorizadas), docenas de procesos con 1-2 sustancias.",
+      "landSpecEx1": "GR8: R$20K de capital, 137 reclamos, 204.625 ha",
+      "landSpecEx2": "Nazca Gold: 129 reclamos, sin datos corporativos",
+      "landSpecEx3": "Pedra Cinza: 322 reclamos, 531.844 ha, todos recientes",
+      "rejeito": "Captura regulatoria — Operación Rejeito",
+      "rejeitoDesc": "Sep/2025: Director de la ANM arrestado + 21 más. Esquema de manipulación de licencias por miles de millones. 1/3 de los directores de la ANM eran ex empleados del sector minero.",
+      "rejeitoEx1": "Director Caio Mário Seabra arrestado",
+      "rejeitoEx2": "Procesos de reclamo fraudulentos acelerados",
+      "rejeitoEx3": "Esquema de soborno y lavado de dinero",
+      "secrecy": "Secreto en información minera",
+      "secrecyDesc": "La ANM permite el secreto sobre datos de procesos mineros. 88 reclamos bajo secreto (105.139 ha). La Operación Rejeito demostró que el secreto facilitó la corrupción.",
+      "secrecyEx1": "19 reclamos de Nacional de Grafite bajo secreto",
+      "secrecyEx2": "4 reclamos de Mosaic bajo secreto",
+      "secrecyEx3": "La ANM abrió consulta para revisar las reglas en 2025",
+      "foreign": "Control extranjero de minerales estratégicos",
+      "foreignDesc": "2.142 reclamos (10,3%) controlados por empresas australianas, estadounidenses, canadienses y europeas. Cero procesamiento nacional — mineral crudo exportado.",
+      "foreignEx1": "Australia: 1.146 reclamos, 1,73M ha",
+      "foreignEx2": "EE.UU.: 475 reclamos, 644K ha",
+      "foreignEx3": "Canadá: 190 reclamos, 386K ha",
+      "foreignEx4": "Europa/Reino Unido: 331 reclamos",
+      "exclusion": "Exclusión comunitaria",
+      "exclusionDesc": "Comunidades tradicionales, quilombolas y pueblos indígenas excluidos de las decisiones sobre minería en sus territorios.",
+      "exclusionEx1": "Quilombo Kalunga do Mimoso: Tribunal Federal suspendió",
+      "exclusionEx2": "40+ territorios quilombolas amenazados en la Amazonía Legal",
+      "exclusionEx3": "Acuerdo Brasil-China excluye garantías comunitarias",
+      "water": "Riesgo hídrico",
+      "waterDesc": "La minería de REE consume 400-500L/tonelada. Poços de Caldas ya enfrenta racionamiento. La lixiviación in-situ ha demostrado contaminar acuíferos.",
+      "waterEx1": "Poços de Caldas: racionamiento 2024, Viridis planea usar 4 embalses",
+      "waterEx2": "ISR: contaminación comprobada en China con el mismo método",
+      "waterEx3": "Río São Francisco: contaminación con Zn, Cd, Cr"
+    },
+    "envPanel": {
+      "title": "Riesgo ambiental por región",
+      "flyTo": "Ir a {name}"
+    },
+    "network": {
+      "foxfireTitle": "Núcleo central: Foxfire Metals",
+      "foxfireBody": "Dr. Paul Woolrich conecta Foxfire → Axel REE (ASX:AXL) → Si6 Metals (ASX:SI6) → Spark Energy (CSE:SPRK). Más de 570 reclamos a través de la red interconectada de empresas.",
+      "australianTitle": "Invasión australiana",
+      "australianBody": "9 empresas del ASX exploran REE en Brasil. Viridis + Meteoric = Poços de Caldas. El MPF pidió suspender ambas.",
+      "usMilitaryTitle": "Interés militar de EE.UU.",
+      "usMilitaryBody": "DFC $565M → Serra Verde. Departamento de Estado $5M → Aclara. Export Finance Australia $100M → Viridis/Meteoric. MOU de Ucore → óxido militar en EE.UU.",
+      "cbmmTitle": "CBMM China",
+      "cbmmBody": "Consorcio Baosteel/CITIC/Anshan tiene 15% (US$1.95B). REE en relaves de niobio — sin regulación específica.",
+      "relayout": "Re-layout",
+      "clickHint": "Click a node to focus · Click empty space to clear"
+    },
+    "timelinePanel": {
+      "title": "Cronología de reclamos (2000–2026)",
+      "claims": "{count} reclamos",
+      "cumulative": "acum. {count}"
+    },
+    "actions": {
+      "verify": "Verificar en ANM",
+      "report": "Reportar problema",
+      "openInSidebar": "Abrir en barra lateral"
+    },
+    "layers": {
+      "title": "Capas",
+      "indigenousLands": "Tierras indígenas",
+      "quilombolaTerritories": "Territorios quilombolas",
+      "overlaps": "Reclamos superpuestos",
+      "polygons": "Polígonos",
+      "hydrography": "Hidrografía",
+      "conflictZones": "Zonas de conflicto",
+      "corpNetwork": "Red corporativa",
+      "enterpriseHq": "Sedes empresariales"
+    },
+    "search": "Buscar empresa, sustancia, estado...",
+    "legend": {
+      "hydrography": "Hidrografía",
+      "basins": "Cuencas",
+      "aquifers": "Acuíferos",
+      "conflictZones": "Zonas de conflicto"
+    },
+    "badges": {
+      "mil": "MIL",
+      "amb": "AMB",
+      "ill": "ILE",
+      "for": "EXT",
+      "env": "AMB",
+      "sus": "SUS"
+    },
+    "popups": {
+      "dangerLevel": "Nivel de peligro",
+      "process": "Proceso",
+      "phase": "Fase",
+      "uf": "UF",
+      "area": "Área",
+      "lastEvent": "Último evento",
+      "lastEventRecent": "Reciente",
+      "lastEventStale": "Antiguo",
+      "protectedArea": "Área protegida",
+      "indigenousLand": "Tierra Indígena",
+      "quilombolaTerritory": "Territorio Quilombola",
+      "fpicNotice": "Los reclamos mineros que se superponen a este territorio pueden violar el Consentimiento Libre, Previo e Informado (CLPI) bajo el Convenio 169 de la OIT.",
+      "source": "Fuente →",
+      "overlapWarning": "⚠ Superposiciones: {names}",
+      "dangerLabel": "{score} peligro",
+      "networkBadgeTitle": "Clúster de red corporativa",
+      "substances": "Sustancias",
+      "year": "Año",
+      "unknown": "Desconocido",
+      "lastEventActive": "Activo",
+      "overlaps": "Superposiciones"
+    },
+    "myTerritory": {
+      "title": "Mi territorio",
+      "dropPin": "Marcar punto",
+      "cancel": "Cancelar",
+      "flyTo": "Ir al punto",
+      "share": "Copiar enlace",
+      "copied": "¡Copiado!",
+      "clear": "Borrar punto",
+      "defaultLabel": "Mi territorio",
+      "sharedBadge": "Compartido"
+    },
+    "sync": {
+      "lastSync": "Última sincronización ANM",
+      "secrecyClaims": "Reclamaciones con sigilo",
+      "secrecyArea": "bajo secreto",
+      "syncNote": "Actualizado periódicamente desde SIGMINE",
+      "sealed": "sellado"
+    },
+    "sidebarLabel": "Barra lateral del Observatorio",
+    "sidebarCollapse": "Colapsar barra",
+    "sidebarExpand": "Expandir barra",
+    "selectTab": "Selecciona una pestaña",
+    "categories": {
+      "direct_ree": "REE directas",
+      "carbonatite_associated": "Carbonatita/Alcalino",
+      "pegmatite_associated": "Pegmatita",
+      "heavy_mineral_associated": "Mineral pesado",
+      "phosphate_associated": "Fosfato",
+      "strategic_associated": "Estratégicos"
+    }
+  },
   "loading": {
     "projectGrantsMap": "Cargando mapa de subvenciones",
     "projectGrantsGlobe": "Cargando globo de subvenciones",
@@ -210,5 +379,29 @@
     "somethingWrong": "Algo salió mal",
     "goHome": "Volver al inicio",
     "tryAgain": "Intentar de nuevo"
+  },
+  "a11y": {
+    "skipToContent": "Saltar al contenido principal"
+  },
+  "palette": {
+    "title": "Paleta de comandos",
+    "placeholder": "Escribe un comando, buscar…",
+    "searchInput": "Buscar comandos",
+    "navigate": "navegar",
+    "select": "seleccionar",
+    "close": "cerrar",
+    "noResults": "Sin comandos coincidentes",
+    "groupNavigation": "Navegación",
+    "groupSettings": "Ajustes",
+    "groupLanguage": "Idioma",
+    "groupObservatory": "Observatorio"
+  },
+  "shortcuts": {
+    "title": "Atajos de teclado",
+    "openPalette": "Abrir paleta de comandos",
+    "toggleTheme": "Cambiar modo oscuro",
+    "toggleFullscreen": "Pantalla completa",
+    "showShortcuts": "Mostrar este panel",
+    "closeOverlay": "Cerrar panel"
   }
 }

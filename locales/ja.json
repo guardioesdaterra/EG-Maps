@@ -139,7 +139,13 @@
     "scientificName": "学名",
     "threatTypes": "脅威の種類",
     "population": "個体数",
-    "habitat": "生息地"
+    "habitat": "生息地",
+    "panelTitle": "種",
+    "endangerment": "危機状況",
+    "about": "概要",
+    "ecosystem": "生態系",
+    "actions": "保護活動",
+    "iucnProfile": "IUCNプロフィール"
   },
   "taxonomy": {
     "Mammal": "哺乳類",

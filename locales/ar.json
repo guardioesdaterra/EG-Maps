@@ -139,7 +139,13 @@
     "scientificName": "الاسم العلمي",
     "threatTypes": "أنواع التهديدات",
     "population": "عدد السكان",
-    "habitat": "الموطن"
+    "habitat": "الموطن",
+    "panelTitle": "الأنواع",
+    "endangerment": "خطر الانقراض",
+    "about": "حول",
+    "ecosystem": "النظام البيئي",
+    "actions": "الإجراءات",
+    "iucnProfile": "الملف الشخصي IUCN"
   },
   "taxonomy": {
     "Mammal": "الثدييات",

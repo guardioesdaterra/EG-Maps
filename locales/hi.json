@@ -139,7 +139,13 @@
     "scientificName": "वैज्ञानिक नाम",
     "threatTypes": "खतरे के प्रकार",
     "population": "जनसंख्या",
-    "habitat": "आवास"
+    "habitat": "आवास",
+    "panelTitle": "प्रजातियाँ",
+    "endangerment": "खतरे की स्थिति",
+    "about": "परिचय",
+    "ecosystem": "पारिस्थितिकी तंत्र",
+    "actions": "कार्रवाइयाँ",
+    "iucnProfile": "IUCN प्रोफ़ाइल"
   },
   "taxonomy": {
     "Mammal": "स्तनधारी",

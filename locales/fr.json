@@ -139,7 +139,13 @@
     "scientificName": "Nom scientifique",
     "threatTypes": "Types de menace",
     "population": "Population",
-    "habitat": "Habitat"
+    "habitat": "Habitat",
+    "panelTitle": "Espèces",
+    "endangerment": "Menace",
+    "about": "À propos",
+    "ecosystem": "Écosystème",
+    "actions": "Actions",
+    "iucnProfile": "Profil UICN"
   },
   "taxonomy": {
     "Mammal": "Mammifères",

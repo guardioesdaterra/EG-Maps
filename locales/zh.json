@@ -139,7 +139,13 @@
     "scientificName": "学名",
     "threatTypes": "威胁类型",
     "population": "种群",
-    "habitat": "栖息地"
+    "habitat": "栖息地",
+    "panelTitle": "物种",
+    "endangerment": "濒危状况",
+    "about": "简介",
+    "ecosystem": "生态系统",
+    "actions": "保护行动",
+    "iucnProfile": "IUCN资料"
   },
   "taxonomy": {
     "Mammal": "哺乳动物",

@@ -835,6 +835,7 @@
   inset: 0;
   z-index: 0;
   background: #000;
+  pointer-events: none;
 }
 
 .star-field::before,

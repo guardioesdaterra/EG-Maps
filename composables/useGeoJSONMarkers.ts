@@ -121,8 +121,11 @@ export function useGeoJSONMarkers() {
     }
 
     if (map.getSource(sourceId)) {
+      map.removeLayer(`${sourceId}-clusters-glow`)
+      map.removeLayer(`${sourceId}-clusters-ring`)
       map.removeLayer(`${sourceId}-clusters`)
       map.removeLayer(`${sourceId}-cluster-count`)
+      map.removeLayer(`${sourceId}-points-glow`)
       map.removeLayer(`${sourceId}-points`)
       map.removeSource(sourceId)
     }
@@ -141,20 +144,51 @@ export function useGeoJSONMarkers() {
   function addClusterLayers(sourceId: string, dataset: 'project-grants' | 'endangered-species') {
     if (!map) return
 
-    // Cluster circles layer
+    const clusterColors = dataset === 'endangered-species'
+      ? ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']
+      : ['#06b6d4', '#22c55e', '#eab308', '#ef4444']
+
+    // Cluster glow — soft halo behind the main circle
+    map.addLayer({
+      id: `${sourceId}-clusters-glow`,
+      type: 'circle',
+      source: sourceId,
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': ['step', ['get', 'point_count'],
+          clusterColors[0], 10, clusterColors[1], 50, clusterColors[2], 100, clusterColors[3]],
+        'circle-radius': ['step', ['get', 'point_count'], 28, 10, 36, 50, 44, 100, 54],
+        'circle-blur': 0.9,
+        'circle-opacity': 0.25,
+      }
+    })
+
+    // Cluster main circle — solid core with crisp edge
     map.addLayer({
       id: `${sourceId}-clusters`,
       type: 'circle',
       source: sourceId,
       filter: ['has', 'point_count'],
       paint: {
-        'circle-color': dataset === 'endangered-species'
-          ? ['step', ['get', 'point_count'], '#06b6d4', 10, '#3b82f6', 50, '#8b5cf6', 100, '#ec4899']
-          : ['step', ['get', 'point_count'], '#06b6d4', 10, '#22c55e', 50, '#eab308', 100, '#ef4444'],
-        'circle-radius': ['step', ['get', 'point_count'], 18, 10, 24, 50, 30, 100, 38],
-        'circle-stroke-width': 2,
-        'circle-stroke-color': 'rgba(255, 255, 255, 0.8)',
-        'circle-opacity': 0.9,
+        'circle-color': ['step', ['get', 'point_count'],
+          clusterColors[0], 10, clusterColors[1], 50, clusterColors[2], 100, clusterColors[3]],
+        'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 28, 100, 36],
+        'circle-stroke-width': 2.5,
+        'circle-stroke-color': 'rgba(255, 255, 255, 0.85)',
+        'circle-opacity': 0.92,
+      }
+    })
+
+    // Cluster inner ring — subtle lighter inset for depth
+    map.addLayer({
+      id: `${sourceId}-clusters-ring`,
+      type: 'circle',
+      source: sourceId,
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': 'rgba(255, 255, 255, 0.18)',
+        'circle-radius': ['step', ['get', 'point_count'], 8, 10, 10, 50, 12, 100, 14],
+        'circle-opacity': 0.6,
       }
     })
 
@@ -169,10 +203,28 @@ export function useGeoJSONMarkers() {
         'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
         'text-size': 12,
       },
-      paint: { 'text-color': '#ffffff' }
+      paint: {
+        'text-color': '#ffffff',
+        'text-halo-color': 'rgba(0, 0, 0, 0.35)',
+        'text-halo-width': 1.5,
+      }
     })
 
-    // Individual points
+    // Individual point glow — subtle halo
+    map.addLayer({
+      id: `${sourceId}-points-glow`,
+      type: 'circle',
+      source: sourceId,
+      filter: ['!', ['has', 'point_count']],
+      paint: {
+        'circle-color': ['get', 'color'],
+        'circle-radius': ['case', ['get', 'hasImage'], 13, 10],
+        'circle-blur': 0.8,
+        'circle-opacity': 0.2,
+      }
+    })
+
+    // Individual points — crisp dot
     map.addLayer({
       id: `${sourceId}-points`,
       type: 'circle',
@@ -180,9 +232,9 @@ export function useGeoJSONMarkers() {
       filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-color': ['get', 'color'],
-        'circle-radius': ['case', ['get', 'hasImage'], 8, 6],
+        'circle-radius': ['case', ['get', 'hasImage'], 7, 5],
         'circle-stroke-width': 1.5,
-        'circle-stroke-color': 'rgba(255, 255, 255, 0.9)',
+        'circle-stroke-color': 'rgba(255, 255, 255, 0.85)',
         'circle-opacity': 0.95,
       }
     })
@@ -207,6 +259,7 @@ export function useGeoJSONMarkers() {
     detachHandlers()
 
     const clusterLayerId = `${sourceId}-clusters`
+    const clusterRingId = `${sourceId}-clusters-ring`
     const pointsLayerId = `${sourceId}-points`
 
     const clusterClick = async (e: MapLayerMouseEvent) => {
@@ -253,9 +306,12 @@ export function useGeoJSONMarkers() {
     }
 
     register(clusterLayerId, 'click', clusterClick)
+    register(clusterRingId, 'click', clusterClick)
     register(pointsLayerId, 'click', pointClick)
     register(clusterLayerId, 'mouseenter', enterPointer)
     register(clusterLayerId, 'mouseleave', leavePointer)
+    register(clusterRingId, 'mouseenter', enterPointer)
+    register(clusterRingId, 'mouseleave', leavePointer)
     register(pointsLayerId, 'mouseenter', enterPointer)
     register(pointsLayerId, 'mouseleave', leavePointer)
   }
@@ -280,8 +336,11 @@ export function useGeoJSONMarkers() {
     if (!map || !currentSourceId) return
 
     const layersToRemove = [
+      `${currentSourceId}-clusters-glow`,
+      `${currentSourceId}-clusters-ring`,
       `${currentSourceId}-clusters`,
       `${currentSourceId}-cluster-count`,
+      `${currentSourceId}-points-glow`,
       `${currentSourceId}-points`
     ]
 

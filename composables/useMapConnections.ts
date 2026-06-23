@@ -10,10 +10,26 @@ import {
 } from '@/lib/map-effects'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 
+type MapGetter = MapLibreMap | null | (() => MapLibreMap | null)
+
+function resolveMap(getter: MapGetter): MapLibreMap | null {
+  return typeof getter === 'function' ? getter() : getter
+}
+
+export interface ConnectionOptions {
+  zIndex?: number
+  isMounted?: () => boolean
+}
+
 export function useMapConnections(
-  map: Ref<MapLibreMap | null>,
-  containerRef: Ref<HTMLElement | null>
+  map: MapGetter | Ref<MapLibreMap | null>,
+  containerRef: Ref<HTMLElement | null>,
+  options: ConnectionOptions = {},
 ) {
+  const getMap = (): MapLibreMap | null =>
+    map && typeof map === 'object' && 'value' in map ? (map as Ref<MapLibreMap | null>).value : resolveMap(map as MapGetter)
+
+  const { zIndex = 2, isMounted = () => true } = options
   const showConnections = ref(true)
   const connectionFeatures = ref<MapConnectionFeature[]>([])
   let particleSystem: MapParticleSystem | null = null
@@ -79,11 +95,12 @@ export function useMapConnections(
     species: Species[],
   ) {
     cleanupParticles()
-    if (!map.value) return
+    const m = getMap()
+    if (!m) return
 
     if (!showConnections.value) {
       connectionFeatures.value = []
-      syncMapConnectionLayers(map.value, [])
+      syncMapConnectionLayers(m, [])
       return
     }
 
@@ -94,7 +111,7 @@ export function useMapConnections(
       isMobile: isMobile.value,
     })
 
-    syncMapConnectionLayers(map.value, connectionFeatures.value)
+    syncMapConnectionLayers(m, connectionFeatures.value)
   }
 
   function cleanupParticles() {
@@ -103,15 +120,17 @@ export function useMapConnections(
   }
 
   function startParticles() {
-    if (!showConnections.value || !map.value || !containerRef.value || !connectionFeatures.value.length) return
+    const m = getMap()
+    if (!showConnections.value || !m || !containerRef.value || !connectionFeatures.value.length) return
+    if (!isMounted()) return
     cleanupParticles()
     isPaused = false
     particleSystem = createMapParticleSystem({
-      map: map.value,
+      map: m,
       container: containerRef.value,
       getFeatures: () => connectionFeatures.value,
       isMobile: () => isMobile.value,
-      zIndex: 2,
+      zIndex,
     })
     particleSystem.start()
     setupVisibilityTracking()
@@ -124,8 +143,9 @@ export function useMapConnections(
   function cleanup() {
     cleanupParticles()
     teardownVisibilityTracking()
-    if (map.value) {
-      syncMapConnectionLayers(map.value, [])
+    const m = getMap()
+    if (m) {
+      syncMapConnectionLayers(m, [])
     }
     connectionFeatures.value = []
   }

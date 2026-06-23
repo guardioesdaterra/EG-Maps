@@ -97,6 +97,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { allProjectsData } from '@/lib/project-data'
+import { crewOverallStats } from '@/lib/crew-data'
 import { formatCompact } from '@/lib/utils'
 
 const { t } = useI18n()
@@ -185,6 +186,18 @@ const datasets = computed(() => [
     stats: [
       '20K+ mining processes',
       '6 categories',
+    ],
+  },
+  {
+    path: '/active-crews',
+    icon: 'lucide:users-round',
+    label: 'Crews',
+    title: t('home.activeCrewsTitle'),
+    description: t('home.activeCrewsDesc'),
+    ariaLabel: 'View Active Crews data visualization',
+    stats: [
+      `${crewOverallStats.totalActiveCrews} ${t('home.activeCrewsCount')}`,
+      `${crewOverallStats.totalMembers.toLocaleString()}+ ${t('home.crewMembersCount')}`,
     ],
   },
 ])

@@ -5,6 +5,7 @@
     "projectGrants": "项目资助",
     "endangeredSpecies": "濒危物种",
     "observatoryOfVulcan": "火山观测站",
+    "activeCrews": "Active Crews",
     "crews": "团队",
     "joinEarthGuardians": "加入地球守护者",
     "switchToLight": "切换到浅色模式",
@@ -23,10 +24,14 @@
     "speciesDesc": "发现世界各地的极危物种及其栖息地。",
     "observatoryTitle": "火山观测站",
     "observatoryDesc": "巴西稀土采矿权 — 资本入侵、企业网络、军事利益与社会环境影响。",
+    "activeCrewsTitle": "Active Crews",
+    "activeCrewsDesc": "Explore Earth Guardians' active crews across 7 regions — 131 crews, 1,241 members, 47 countries worldwide.",
     "projectsCount": "项目",
     "beneficiariesCount": "受益人",
     "speciesCount": "物种",
     "groupsCount": "群组",
+    "activeCrewsCount": "Active Crews",
+    "crewMembersCount": "Crew Members",
     "view2d": "2D地图",
     "view3d": "3D地球仪",
     "projectGrants": "项目资助",
@@ -48,6 +53,7 @@
     "search": "搜索",
     "searchProjects": "搜索项目",
     "searchSpecies": "搜索物种",
+    "searchCrews": "Search Crews",
     "searchPlaceholder": "按名称或位置搜索...",
     "searchSpeciesPlaceholder": "按名称或地区搜索...",
     "showAll": "显示全部",
@@ -146,6 +152,14 @@
     "ecosystem": "生态系统",
     "actions": "保护行动",
     "iucnProfile": "IUCN资料"
+  },
+  "crews": {
+    "activeCrews": "Active Crews",
+    "inactiveCrews": "Inactive Crews",
+    "totalMembers": "Total Members",
+    "countries": "Countries",
+    "region": "Region",
+    "growthSince2022": "Growth since 2022"
   },
   "taxonomy": {
     "Mammal": "哺乳动物",
@@ -383,6 +397,7 @@
     "endangeredSpeciesGlobe": "正在加载濒危物种地球仪",
     "observatoryOfVulcan": "正在加载火山观测站",
     "observatoryOfVulcanGlobe": "正在加载火山观测站地球仪",
+    "activeCrewsMap": "Loading Active Crews Map",
     "initializingVisualization": "正在初始化交互式可视化..."
   },
   "error": {

@@ -230,6 +230,7 @@ const navItems: NavItem[] = [
   { path: '/project-grants', labelKey: 'nav.projectGrants', icon: 'lucide:hand-heart', variant: 'purple' },
   { path: '/endangered-species', labelKey: 'nav.endangeredSpecies', icon: 'lucide:bird', variant: 'green' },
   { path: '/observatory-of-vulcan', labelKey: 'nav.observatoryOfVulcan', icon: 'lucide:microscope', variant: 'orange' },
+  { path: '/active-crews', labelKey: 'nav.activeCrews', icon: 'lucide:users-round', variant: 'cyan' },
 ]
 
 const headerItems: NavItem[] = [
@@ -240,7 +241,7 @@ const headerItems: NavItem[] = [
 const { isDark, toggle: toggleDarkMode } = useDarkMode()
 
 const isMapRoute = computed(() =>
-  route.path.startsWith('/project-grants') || route.path.startsWith('/endangered-species') || route.path.startsWith('/observatory-of-vulcan')
+  route.path.startsWith('/project-grants') || route.path.startsWith('/endangered-species') || route.path.startsWith('/observatory-of-vulcan') || route.path.startsWith('/active-crews')
 )
 const is3DRoute = computed(() => route.path.endsWith('/3d'))
 const showUnifiedHeader = computed(() => isMapRoute.value || route.path === '/info')

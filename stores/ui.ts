@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'pt', 'ar', 'hi', 'ja', 'zh'] as const
+const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'pt', 'ar', 'hi', 'ja', 'zh', 'nl', 'de'] as const
 export type SupportedLocale = typeof SUPPORTED_LOCALES[number]
 
 export const useUiStore = defineStore('ui', () => {

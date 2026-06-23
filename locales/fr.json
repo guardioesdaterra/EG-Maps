@@ -5,6 +5,7 @@
     "projectGrants": "Subventions",
     "endangeredSpecies": "Espèces menacées",
     "observatoryOfVulcan": "Observatoire du Vulcain",
+    "activeCrews": "Équipages Actifs",
     "crews": "Crews",
     "joinEarthGuardians": "Rejoindre Earth Guardians",
     "switchToLight": "Passer au mode clair",
@@ -23,10 +24,14 @@
     "speciesDesc": "Découvrez les espèces en danger critique et leurs habitats dans le monde.",
     "observatoryTitle": "Observatoire du Vulcain",
     "observatoryDesc": "Demandes d'exploitation de terres rares au Brésil — invasion de capitaux, réseaux d'entreprises, intérêts militaires et impact socio-environnemental.",
+    "activeCrewsTitle": "Équipages Actifs",
+    "activeCrewsDesc": "Découvrez les équipages actifs d'Earth Guardians dans 7 régions — 131 équipages, 1 241 membres, 47 pays.",
     "projectsCount": "Projets",
     "beneficiariesCount": "Bénéficiaires",
     "speciesCount": "Espèces",
     "groupsCount": "Groupes",
+    "activeCrewsCount": "Équipages Actifs",
+    "crewMembersCount": "Membres d'Équipage",
     "view2d": "Carte 2D",
     "view3d": "Globe 3D",
     "projectGrants": "Subventions",
@@ -48,6 +53,7 @@
     "search": "Rechercher",
     "searchProjects": "Rechercher des projets",
     "searchSpecies": "Rechercher des espèces",
+    "searchCrews": "Rechercher Équipages",
     "searchPlaceholder": "Rechercher par nom ou lieu...",
     "searchSpeciesPlaceholder": "Rechercher par nom ou région...",
     "showAll": "Tout afficher",
@@ -146,6 +152,14 @@
     "ecosystem": "Écosystème",
     "actions": "Actions",
     "iucnProfile": "Profil UICN"
+  },
+  "crews": {
+    "activeCrews": "Équipages Actifs",
+    "inactiveCrews": "Équipages Inactifs",
+    "totalMembers": "Total Membres",
+    "countries": "Pays",
+    "region": "Région",
+    "growthSince2022": "Croissance depuis 2022"
   },
   "taxonomy": {
     "Mammal": "Mammifères",
@@ -383,6 +397,7 @@
     "endangeredSpeciesGlobe": "Chargement du globe des espèces menacées",
     "observatoryOfVulcan": "Chargement de l'Observatoire du Vulcain",
     "observatoryOfVulcanGlobe": "Chargement du globe de l'Observatoire du Vulcain",
+    "activeCrewsMap": "Chargement de la Carte des Équipages Actifs",
     "initializingVisualization": "Initialisation de la visualisation interactive..."
   },
   "error": {

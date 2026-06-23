@@ -38,6 +38,8 @@ export default defineNuxtConfig({
       { code: 'hi', language: 'hi-IN', name: 'हिन्दी', file: 'hi.json' },
       { code: 'ja', language: 'ja-JP', name: '日本語', file: 'ja.json' },
       { code: 'zh', language: 'zh-CN', name: '中文', file: 'zh.json' },
+      { code: 'nl', language: 'nl-NL', name: 'Nederlands', file: 'nl.json' },
+      { code: 'de', language: 'de-DE', name: 'Deutsch', file: 'de.json' },
     ],
     detectBrowserLanguage: false,
   },
@@ -47,6 +49,7 @@ export default defineNuxtConfig({
   routeRules: {
     '/**': { prerender: true },
     '/observatory-of-vulcan/3d': { redirect: `${baseURL}observatory-of-vulcan?mode=3d` },
+    '/active-crews/3d': { redirect: `${baseURL}active-crews?mode=3d` },
     '/globe': { redirect: `${baseURL}project-grants/3d` },
   },
 
@@ -112,7 +115,7 @@ export default defineNuxtConfig({
     preset: 'static',
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/observatory-of-vulcan', '/observatory-of-vulcan/3d'],
+      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/observatory-of-vulcan', '/observatory-of-vulcan/3d', '/active-crews', '/active-crews/3d'],
       ignore: ['/EG-Maps/manifest.json'],
     },
     compressPublicAssets: true,

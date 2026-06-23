@@ -16,7 +16,7 @@
             <span v-if="recentSearches.length > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-white rounded-full" />
           </UiButton>
         </template>
-        <p>{{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'observatory-of-vulcan' ? 'Search cities' : t('mapControls.searchSpecies') }} <span class="text-gray-500 ml-1">{{ t('mapControls.keyboardShortcut') }}</span></p>
+        <p>{{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'observatory-of-vulcan' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }} <span class="text-gray-500 ml-1">{{ t('mapControls.keyboardShortcut') }}</span></p>
       </UiTooltip>
 
       <!-- Filter Panel Toggle -->
@@ -97,7 +97,7 @@
         <div class="flex justify-between items-center mb-2 xs:mb-3">
           <h3 class="text-xs xs:text-sm font-bold text-[var(--tool-btn-text)] flex items-center gap-1.5 xs:gap-2">
             <iconify-icon icon="lucide:search" class="h-3.5 w-3.5 xs:h-4 xs:w-4" />
-            {{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'observatory-of-vulcan' ? 'Search cities' : t('mapControls.searchSpecies') }}
+            {{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'observatory-of-vulcan' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }}
           </h3>
           <div class="flex items-center gap-1">
             <span class="text-[10px] text-[var(--text-muted)] hidden sm:inline">ESC</span>
@@ -112,7 +112,7 @@
             <UiInput
               ref="searchInputRef"
               type="text"
-              :placeholder="dataset === 'project-grants' ? t('mapControls.searchPlaceholder') : dataset === 'observatory-of-vulcan' ? 'Search Brazilian cities...' : t('mapControls.searchSpeciesPlaceholder')"
+              :placeholder="dataset === 'project-grants' ? t('mapControls.searchPlaceholder') : dataset === 'observatory-of-vulcan' ? 'Search Brazilian cities...' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpeciesPlaceholder')"
               v-model="searchQuery"
               class="pr-8"
               :style="{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }"
@@ -261,13 +261,14 @@ import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
 import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
+import type { CrewRegionData } from '@/lib/crew-data'
 import { searchCities, BRAZILIAN_CITIES, type BrazilianCity } from '@/lib/brazilian-cities'
 
 interface Props {
   isGlobeView?: boolean
   showHexGrid?: boolean
   showConnections?: boolean
-  dataset?: 'project-grants' | 'endangered-species' | 'observatory-of-vulcan'
+  dataset?: 'project-grants' | 'endangered-species' | 'observatory-of-vulcan' | 'active-crews'
   projects?: ProjectData[]
   species?: (Species | SpeciesIndexItem)[]
   filterOpen?: boolean
@@ -296,7 +297,7 @@ const fullscreen = ref(false)
 const showSearch = ref(false)
 const showAllItems = ref(false)
 const searchQuery = ref('')
-type SearchResult = ProjectData | Species | BrazilianCity
+type SearchResult = ProjectData | Species | BrazilianCity | CrewRegionData
 const searchResults = ref<SearchResult[]>([])
 const searchInputRef = ref<{ inputRef?: HTMLInputElement } | null>(null)
 const selectedIndex = ref(-1)
@@ -413,27 +414,35 @@ function isCityResult(result: SearchResult): result is BrazilianCity {
   return 'state' in result && 'population' in result && !('commonName' in result)
 }
 
+function isCrewResult(result: SearchResult): result is CrewRegionData {
+  return 'activeCrews' in result && 'totalMembers' in result
+}
+
 function getResultTitle(result: SearchResult): string {
   if (isProjectResult(result)) return result.project_title
   if (isSpeciesResult(result)) return result.commonName
+  if (isCrewResult(result)) return result.region
   return result.name
 }
 
 function getResultLocation(result: SearchResult): string {
   if (isProjectResult(result)) return result.country_province
   if (isSpeciesResult(result)) return result.region
+  if (isCrewResult(result)) return `${result.activeCrews} active crews`
   return `${result.name}, ${result.state}`
 }
 
 function getResultLat(result: SearchResult): number {
   if (isProjectResult(result)) return result.latitude
   if (isSpeciesResult(result)) return result.lat
+  if (isCrewResult(result)) return result.latitude
   return result.lat
 }
 
 function getResultLng(result: SearchResult): number {
   if (isProjectResult(result)) return result.longitude
   if (isSpeciesResult(result)) return result.lng
+  if (isCrewResult(result)) return result.longitude
   return result.lng
 }
 
@@ -474,6 +483,22 @@ watch([searchQuery, showAllItems, () => props.dataset], () => {
     } else if (showAllItems.value) {
       searchResults.value = [...BRAZILIAN_CITIES].sort((a, b) =>
         a.name.localeCompare(b.name)
+      )
+    } else {
+      searchResults.value = []
+    }
+  } else if (props.dataset === 'active-crews') {
+    // Crew region search
+    const crewList = currentProjects.value as any[]
+    if (searchQuery.value.length > 1) {
+      const query = searchQuery.value.toLowerCase().trim()
+      searchResults.value = crewList.filter((c: any) =>
+        c.region?.toLowerCase().includes(query)
+      )
+      showAllItems.value = false
+    } else if (showAllItems.value) {
+      searchResults.value = [...crewList].sort((a: any, b: any) =>
+        (a.region || '').localeCompare(b.region || '')
       )
     } else {
       searchResults.value = []

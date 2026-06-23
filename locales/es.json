@@ -5,6 +5,7 @@
     "projectGrants": "Subvenciones",
     "endangeredSpecies": "Especies en peligro",
     "observatoryOfVulcan": "Observatorio del Volcán",
+    "activeCrews": "Crews Activos",
     "crews": "Crews",
     "joinEarthGuardians": "Unirse a Earth Guardians",
     "switchToLight": "Cambiar a modo claro",
@@ -23,10 +24,14 @@
     "speciesDesc": "Descubre especies en peligro crítico y sus hábitats alrededor del mundo.",
     "observatoryTitle": "Observatorio del Volcán",
     "observatoryDesc": "Reclamos mineros de tierras raras en Brasil — invasión de capital, redes corporativas, intereses militares e impacto socioambiental.",
+    "activeCrewsTitle": "Equipes Ativos",
+    "activeCrewsDesc": "Explore as equipes ativas da Earth Guardians em 7 regiões — 131 equipes, 1.241 membros, 47 países.",
     "projectsCount": "Proyectos",
     "beneficiariesCount": "Beneficiarios",
     "speciesCount": "Especies",
     "groupsCount": "Grupos",
+    "activeCrewsCount": "Equipes Ativos",
+    "crewMembersCount": "Membros das Equipes",
     "view2d": "Mapa 2D",
     "view3d": "Globo 3D",
     "projectGrants": "Subvenciones",
@@ -48,6 +53,7 @@
     "search": "Buscar",
     "searchProjects": "Buscar proyectos",
     "searchSpecies": "Buscar especies",
+    "searchCrews": "Buscar Equipes",
     "searchPlaceholder": "Buscar por nombre o ubicación...",
     "searchSpeciesPlaceholder": "Buscar por nombre o región...",
     "showAll": "Mostrar todo",
@@ -146,6 +152,14 @@
     "ecosystem": "Ecosistema",
     "actions": "Acciones",
     "iucnProfile": "Perfil UICN"
+  },
+  "crews": {
+    "activeCrews": "Equipes Ativos",
+    "inactiveCrews": "Equipes Inativos",
+    "totalMembers": "Total de Membros",
+    "countries": "Países",
+    "region": "Região",
+    "growthSince2022": "Crescimento desde 2022"
   },
   "taxonomy": {
     "Mammal": "Mamíferos",
@@ -383,6 +397,7 @@
     "endangeredSpeciesGlobe": "Cargando globo de especies en peligro",
     "observatoryOfVulcan": "Cargando Observatorio del Volcán",
     "observatoryOfVulcanGlobe": "Cargando Observatorio del Volcán Globo",
+    "activeCrewsMap": "Carregando Mapa de Equipes Ativos",
     "initializingVisualization": "Inicializando visualización interactiva..."
   },
   "error": {

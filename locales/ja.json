@@ -5,6 +5,7 @@
     "projectGrants": "プロジェクト助成金",
     "endangeredSpecies": "絶滅危惧種",
     "observatoryOfVulcan": "バルカン観測所",
+    "activeCrews": "Active Crews",
     "crews": "ークル",
     "joinEarthGuardians": "アースガーディアンズに参加",
     "switchToLight": "ライトモードに切り替え",
@@ -23,10 +24,14 @@
     "speciesDesc": "世界中の危機に瀕した種とその生息地を発見します。",
     "observatoryTitle": "バルカン観測所",
     "observatoryDesc": "ブラジルの希土類鉱業権 — 資本侵攻、企業ネットワーク、軍事利益、社会環境への影響。",
+    "activeCrewsTitle": "Active Crews",
+    "activeCrewsDesc": "Explore Earth Guardians' active crews across 7 regions — 131 crews, 1,241 members, 47 countries worldwide.",
     "projectsCount": "プロジェクト",
     "beneficiariesCount": "受益者",
     "speciesCount": "種",
     "groupsCount": "グループ",
+    "activeCrewsCount": "Active Crews",
+    "crewMembersCount": "Crew Members",
     "view2d": "2Dマップ",
     "view3d": "3D globo",
     "projectGrants": "プロジェクト助成金",
@@ -48,6 +53,7 @@
     "search": "検索",
     "searchProjects": "プロジェクトを検索",
     "searchSpecies": "種を検索",
+    "searchCrews": "Search Crews",
     "searchPlaceholder": "名前または場所で検索...",
     "searchSpeciesPlaceholder": "名前または領域で検索...",
     "showAll": "すべて表示",
@@ -146,6 +152,14 @@
     "ecosystem": "生態系",
     "actions": "保護活動",
     "iucnProfile": "IUCNプロフィール"
+  },
+  "crews": {
+    "activeCrews": "Active Crews",
+    "inactiveCrews": "Inactive Crews",
+    "totalMembers": "Total Members",
+    "countries": "Countries",
+    "region": "Region",
+    "growthSince2022": "Growth since 2022"
   },
   "taxonomy": {
     "Mammal": "哺乳類",
@@ -383,6 +397,7 @@
     "endangeredSpeciesGlobe": "絶滅危惧種globoを読み込み中",
     "observatoryOfVulcan": "バルカン観測所を読み込み中",
     "observatoryOfVulcanGlobe": "バルカン観測所globoを読み込み中",
+    "activeCrewsMap": "Loading Active Crews Map",
     "initializingVisualization": "インタラクティブ可視化を初期化中..."
   },
   "error": {

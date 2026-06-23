@@ -139,7 +139,13 @@
     "scientificName": "Scientific Name",
     "threatTypes": "Threat Types",
     "population": "Population",
-    "habitat": "Habitat"
+    "habitat": "Habitat",
+    "panelTitle": "Species",
+    "endangerment": "Endangerment",
+    "about": "About",
+    "ecosystem": "Ecosystem",
+    "actions": "Actions",
+    "iucnProfile": "IUCN Profile"
   },
   "taxonomy": {
     "Mammal": "Mammals",

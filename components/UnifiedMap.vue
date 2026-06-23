@@ -151,6 +151,9 @@
       <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
       <div class="project-popup-content-fixed" v-html="projectOverlayHTML"></div>
     </div>
+
+    <!-- Species cluster panel -->
+    <SpeciesPanel @species-selected="handleSpeciesSelected" />
   </div>
 </template>
 
@@ -188,8 +191,10 @@ import {
   type SpeciesIndexItem,
 } from '@/composables/useGeoJSONMarkers'
 import { useRareEarthController } from '@/composables/useRareEarthController'
+import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 
 const { t, locale } = useI18n()
+const speciesPanel = useSpeciesPanel()
 
 const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
 const baseURL = useRuntimeConfig().app.baseURL
@@ -293,6 +298,17 @@ function closeSpeciesOverlay() {
   showSpeciesOverlay.value = false
   speciesOverlayHTML.value = ''
   nextTick(() => lastFocusedEl?.focus())
+}
+
+function handleSpeciesSelected(species: SpeciesIndexItem) {
+  speciesPanel.closePanel()
+  openSpeciesOverlay(species)
+}
+
+function findSpeciesAtCoord(lat: number, lng: number, source: SpeciesIndexItem[]): SpeciesIndexItem[] {
+  return source.filter(s =>
+    Math.abs(s.lat - lat) < 0.001 && Math.abs(s.lng - lng) < 0.001
+  )
 }
 
 function openProjectOverlay(project: ProjectData) {
@@ -921,22 +937,24 @@ async function setupGeoJSONMarkers(forceReinit = false) {
     geoJSONMarkers.setupEventHandlers(
       SOURCE_ID,
       'endangered-species',
-      (props, _coords) => {
-        const speciesId = props.id as string
-        const indexItem = speciesIndex.find(s => s.id === speciesId)
-        if (indexItem) {
-          const minimalSpecies = {
-            ...indexItem,
-            region: '',
-            ecosystem: '',
-            imageCredit: '',
-            threatTypes: indexItem.threatTypes || [],
-            content: {},
-          } as Species
-          openSpeciesOverlay(minimalSpecies)
+      (props, coords) => {
+        const [lng, lat] = coords
+        const matches = findSpeciesAtCoord(lat, lng, speciesIndex)
+        if (matches.length > 1) {
+          speciesPanel.openPanel(matches, { lat, lng })
+        } else {
+          const speciesId = props.id as string
+          const indexItem = speciesIndex.find(s => s.id === speciesId)
+          if (indexItem) openSpeciesOverlay(indexItem)
         }
       },
-      () => { /* flyTo handled inside setupEventHandlers */ }
+      (_, coords) => {
+        const [lng, lat] = coords
+        const matches = findSpeciesAtCoord(lat, lng, speciesIndex)
+        if (matches.length > 1) {
+          speciesPanel.openPanel(matches, { lat, lng })
+        }
+      }
     )
     geoJSONInitializedFor = 'endangered-species'
   }

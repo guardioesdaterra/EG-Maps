@@ -1,5 +1,4 @@
-import type { Map as MapLibreMap, MapLayerMouseEvent, GeoJSONSource, DataDrivenPropertyValueSpecification } from 'maplibre-gl'
-import type { Point } from 'geojson'
+import type { Map as MapLibreMap, MapLayerMouseEvent, DataDrivenPropertyValueSpecification } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 import { buildRareEarthPopupHTML, escapeHtml } from '@/lib/map-utils'
 import { citiesToGeoJSON } from '@/lib/brazilian-cities'
@@ -13,13 +12,6 @@ export const REE_SOURCE_PROTECTED = 'ree-protected'
 export const REE_SOURCE_CITIES = 'ree-cities'
 
 export const REE_LAYER_IDS = [
-  'ree-clusters-glow', 'ree-clusters', 'ree-clusters-ring', 'ree-cluster-count',
-  'ree-pt-direct_ree-glow', 'ree-pt-direct_ree',
-  'ree-pt-carbonatite_associated-glow', 'ree-pt-carbonatite_associated',
-  'ree-pt-pegmatite_associated-glow', 'ree-pt-pegmatite_associated',
-  'ree-pt-heavy_mineral_associated-glow', 'ree-pt-heavy_mineral_associated',
-  'ree-pt-phosphate_associated-glow', 'ree-pt-phosphate_associated',
-  'ree-pt-strategic_associated-glow', 'ree-pt-strategic_associated',
   'ree-poly-fill', 'ree-poly-glow', 'ree-poly-line', 'ree-poly-label',
   'ree-geo-fill', 'ree-geo-aquifer', 'ree-geo-conflict', 'ree-geo-line', 'ree-geo-label',
   'ree-site-glow', 'ree-site-label',
@@ -43,17 +35,6 @@ export interface RareEarthLayerOptions {
   networkFeatures?: GeoJSON.FeatureCollection | null
   onClaimClick?: (props: Record<string, any>, lngLat: [number, number]) => void
 }
-
-const CATEGORY_COLORS: Record<string, string> = {
-  direct_ree: '#e74c3c',
-  carbonatite_associated: '#f39c12',
-  pegmatite_associated: '#27ae60',
-  heavy_mineral_associated: '#2980b9',
-  phosphate_associated: '#8e44ad',
-  strategic_associated: '#e91e63',
-}
-
-const CATEGORIES = Object.keys(CATEGORY_COLORS)
 
 function safeRemoveLayer(map: MapLibreMap, id: string) {
   try { if (map.getLayer(id)) map.removeLayer(id) } catch { /* */ }
@@ -95,120 +76,6 @@ export function setupRareEarthLayers(
 
   if (polys) {
     map.addSource(REE_SOURCE_POLYS, { type: 'geojson', data: polys })
-  }
-
-  const dominantCatColor: any = ['case',
-    ['all', ['>', ['get', 'dr'], 0], ['>=', ['get', 'dr'], ['get', 'ca']], ['>=', ['get', 'dr'], ['get', 'pg']], ['>=', ['get', 'dr'], ['get', 'hm']], ['>=', ['get', 'dr'], ['get', 'ph']], ['>=', ['get', 'dr'], ['get', 'st']]], '#e74c3c',
-    ['all', ['>', ['get', 'ca'], 0], ['>=', ['get', 'ca'], ['get', 'dr']], ['>=', ['get', 'ca'], ['get', 'pg']], ['>=', ['get', 'ca'], ['get', 'hm']], ['>=', ['get', 'ca'], ['get', 'ph']], ['>=', ['get', 'ca'], ['get', 'st']]], '#f39c12',
-    ['all', ['>', ['get', 'pg'], 0], ['>=', ['get', 'pg'], ['get', 'dr']], ['>=', ['get', 'pg'], ['get', 'ca']], ['>=', ['get', 'pg'], ['get', 'hm']], ['>=', ['get', 'pg'], ['get', 'ph']], ['>=', ['get', 'pg'], ['get', 'st']]], '#27ae60',
-    ['all', ['>', ['get', 'hm'], 0], ['>=', ['get', 'hm'], ['get', 'dr']], ['>=', ['get', 'hm'], ['get', 'ca']], ['>=', ['get', 'hm'], ['get', 'pg']], ['>=', ['get', 'hm'], ['get', 'ph']], ['>=', ['get', 'hm'], ['get', 'st']]], '#2980b9',
-    ['all', ['>', ['get', 'ph'], 0], ['>=', ['get', 'ph'], ['get', 'dr']], ['>=', ['get', 'ph'], ['get', 'ca']], ['>=', ['get', 'ph'], ['get', 'pg']], ['>=', ['get', 'ph'], ['get', 'hm']], ['>=', ['get', 'ph'], ['get', 'st']]], '#8e44ad',
-    ['all', ['>', ['get', 'st'], 0], ['>=', ['get', 'st'], ['get', 'dr']], ['>=', ['get', 'st'], ['get', 'ca']], ['>=', ['get', 'st'], ['get', 'pg']], ['>=', ['get', 'st'], ['get', 'hm']], ['>=', ['get', 'st'], ['get', 'ph']]], '#e91e63',
-    '#c0392b',
-  ]
-
-  // Unified bubble style matching project-grants: transparent glow + solid core + inner ring
-  map.addLayer({
-    id: 'ree-clusters-glow', type: 'circle', source: REE_SOURCE_POINTS,
-    filter: ['has', 'point_count'],
-    paint: {
-      'circle-color': dominantCatColor,
-      'circle-radius': ['step', ['get', 'point_count'], 28, 10, 36, 50, 44, 100, 54],
-      'circle-opacity': 0.25, 'circle-blur': 0.9,
-    },
-  })
-  map.addLayer({
-    id: 'ree-clusters', type: 'circle', source: REE_SOURCE_POINTS,
-    filter: ['has', 'point_count'],
-    paint: {
-      'circle-color': dominantCatColor,
-      'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 28, 100, 36],
-      'circle-opacity': 0.92,
-      'circle-stroke-width': 2.5, 'circle-stroke-color': 'rgba(255,255,255,0.85)',
-    },
-  })
-  map.addLayer({
-    id: 'ree-clusters-ring', type: 'circle', source: REE_SOURCE_POINTS,
-    filter: ['has', 'point_count'],
-    paint: {
-      'circle-color': 'rgba(255, 255, 255, 0.18)',
-      'circle-radius': ['step', ['get', 'point_count'], 8, 10, 10, 50, 12, 100, 14],
-      'circle-opacity': 0.6,
-    },
-  })
-  map.addLayer({
-    id: 'ree-cluster-count', type: 'symbol', source: REE_SOURCE_POINTS,
-    filter: ['has', 'point_count'],
-    layout: {
-      'text-field': '{point_count_abbreviated}',
-      'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-      'text-size': 12,
-    },
-    paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0,0,0,0.35)', 'text-halo-width': 1.5 },
-  })
-
-  // Individual points: unified transparent circular style with category color
-  CATEGORIES.forEach(cat => {
-    const filter: any = ['all', ['!', ['has', 'point_count']], ['==', ['get', 'c'], cat]]
-    const color = CATEGORY_COLORS[cat]
-    map.addLayer({
-      id: `ree-pt-${cat}-glow`, type: 'circle', source: REE_SOURCE_POINTS,
-      filter,
-      paint: {
-        'circle-color': color,
-        'circle-radius': 10,
-        'circle-blur': 0.8,
-        'circle-opacity': 0.2,
-      },
-    })
-    map.addLayer({
-      id: `ree-pt-${cat}`, type: 'circle', source: REE_SOURCE_POINTS,
-      filter,
-      paint: {
-        'circle-color': color,
-        'circle-radius': 5,
-        'circle-stroke-width': 1.5,
-        'circle-stroke-color': 'rgba(255,255,255,0.85)',
-        'circle-opacity': 0.95,
-      },
-    })
-  })
-
-  CATEGORIES.forEach(cat => {
-    const layerId = `ree-pt-${cat}`
-    map.on('click', layerId, (e: MapLayerMouseEvent) => {
-      if (!e.features?.length) return
-      const p = e.features[0].properties
-      if (options.onClaimClick) {
-        options.onClaimClick(p, [e.lngLat.lng, e.lngLat.lat])
-        return
-      }
-      const html = buildRareEarthPopupHTML(p)
-      new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .setMaxWidth('none')
-        .addTo(map)
-    })
-    map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer' })
-    map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = '' })
-  })
-
-  const onClusterClick = async (e: MapLayerMouseEvent) => {
-    const layers = ['ree-clusters', 'ree-clusters-ring']
-    const fs = map.queryRenderedFeatures(e.point, { layers })
-    if (!fs.length) return
-    const cid = Number(fs[0].properties.cluster_id)
-    const src = map.getSource(REE_SOURCE_POINTS) as GeoJSONSource
-    const z = await src?.getClusterExpansionZoom(cid)
-    const coords = (fs[0].geometry as Point).coordinates as [number, number]
-    map.flyTo({ center: coords, zoom: Math.min(z ?? 14, 14), duration: 800 })
-  }
-  map.on('click', 'ree-clusters', onClusterClick)
-  map.on('click', 'ree-clusters-ring', onClusterClick)
-  for (const id of ['ree-clusters', 'ree-clusters-ring']) {
-    map.on('mouseenter', id, () => { map.getCanvas().style.cursor = 'pointer' })
-    map.on('mouseleave', id, () => { map.getCanvas().style.cursor = '' })
   }
 
   if (polys) {
@@ -527,12 +394,6 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
 
 export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<string, boolean>) {
   if (!map || !map.isStyleLoaded()) return
-  CATEGORIES.forEach(cat => {
-    const show = vis[cat] !== false
-    ;[`ree-pt-${cat}-glow`, `ree-pt-${cat}`].forEach(id => {
-      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', show ? 'visible' : 'none')
-    })
-  })
   const polyLayers = ['ree-poly-fill', 'ree-poly-glow', 'ree-poly-line', 'ree-poly-label']
   const showPolys = vis['polygons'] !== false
   polyLayers.forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', showPolys ? 'visible' : 'none') })

@@ -1,13 +1,6 @@
 <template>
   <div>
-    <div v-if="pageLoading" class="flex h-screen w-full items-center justify-center bg-zinc-950 text-white">
-      <div class="relative mb-5">
-        <div class="w-16 h-16 rounded-full border-4 border-red-500/20 border-t-red-500 animate-spin" />
-        <div class="absolute inset-0 w-16 h-16 rounded-full border-4 border-white/10 border-b-white/50 animate-spin" style="animation-delay: 0.5s; animation-direction: reverse" />
-      </div>
-      <LoadingSpinner :message="t('loading.observatoryOfVulcan')" :inline="true" />
-    </div>
-    <ClientOnly v-else>
+    <ClientOnly>
       <UnifiedMap
         :default-dataset="'observatory-of-vulcan'"
         :rare-earth-points="pointsData"
@@ -274,7 +267,6 @@ useHead({
   meta: [{ name: 'description', content: 'Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.' }],
 })
 
-const pageLoading = ref(true)
 const { pointsData, polygonsData, protectedData, features: allFeatures, speculatorIndex, deepAnalysis, isLoading: dataLoading, load: loadRareEarthData } = useRareEarthData(baseURL)
 const searchTerm = ref('')
 const flyToTarget = ref<{ lng: number; lat: number; zoom?: number } | null>(null)
@@ -488,7 +480,5 @@ function updateFilter() {
 
 onMounted(async () => {
   await loadRareEarthData()
-  pageLoading.value = dataLoading.value === false ? false : true
-  watch(dataLoading, (v) => { if (!v) pageLoading.value = false })
 })
 </script>

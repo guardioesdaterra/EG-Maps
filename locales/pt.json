@@ -4,6 +4,7 @@
     "info": "Info e feedback",
     "projectGrants": "Subvenções",
     "endangeredSpecies": "Espécies ameaçadas",
+    "observatoryOfVulcan": "Observatório do Vulcão",
     "crews": "Crews",
     "joinEarthGuardians": "Junte-se ao Earth Guardians",
     "switchToLight": "Mudar para modo claro",
@@ -20,6 +21,8 @@
     "projectGrantsDesc": "Explore iniciativas globais de financiamento e seu impacto em comunidades ao redor do mundo.",
     "speciesTitle": "Espécies ameaçadas",
     "speciesDesc": "Descubra espécies criticamente ameaçadas e seus habitats ao redor do mundo.",
+    "observatoryTitle": "Observatório do Vulcão",
+    "observatoryDesc": "Reivindicações de mineração de terras raras no Brasil — invasão de capital, redes corporativas, interesses militares e impacto socioambiental.",
     "projectsCount": "Projetos",
     "beneficiariesCount": "Beneficiários",
     "speciesCount": "Espécies",
@@ -372,6 +375,8 @@
     "projectGrantsGlobe": "Carregando globo de subvenções",
     "endangeredSpeciesMap": "Carregando mapa de espécies ameaçadas",
     "endangeredSpeciesGlobe": "Carregando globo de espécies ameaçadas",
+    "observatoryOfVulcan": "Carregando Observatório do Vulcão",
+    "observatoryOfVulcanGlobe": "Carregando Globo do Observatório do Vulcão",
     "initializingVisualization": "Inicializando visualização interativa..."
   },
   "error": {

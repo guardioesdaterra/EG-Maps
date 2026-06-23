@@ -4,6 +4,7 @@
     "info": "信息和反馈",
     "projectGrants": "项目资助",
     "endangeredSpecies": "濒危物种",
+    "observatoryOfVulcan": "火山观测站",
     "crews": "团队",
     "joinEarthGuardians": "加入地球守护者",
     "switchToLight": "切换到浅色模式",
@@ -13,10 +14,15 @@
   "home": {
     "title": "地球守护者",
     "subtitle": "交互式数据可视化平台",
+    "dataMaps": "数据地图",
+    "2d": "2D",
+    "3d": "3D",
     "projectGrantsTitle": "项目资助",
     "projectGrantsDesc": "探索全球资助倡议及其对世界各地社区的影响。",
     "speciesTitle": "濒危物种",
     "speciesDesc": "发现世界各地的极危物种及其栖息地。",
+    "observatoryTitle": "火山观测站",
+    "observatoryDesc": "巴西稀土采矿权 — 资本入侵、企业网络、军事利益与社会环境影响。",
     "projectsCount": "项目",
     "beneficiariesCount": "受益人",
     "speciesCount": "物种",
@@ -369,6 +375,8 @@
     "projectGrantsGlobe": "正在加载项目资助地球仪",
     "endangeredSpeciesMap": "正在加载濒危物种地图",
     "endangeredSpeciesGlobe": "正在加载濒危物种地球仪",
+    "observatoryOfVulcan": "正在加载火山观测站",
+    "observatoryOfVulcanGlobe": "正在加载火山观测站地球仪",
     "initializingVisualization": "正在初始化交互式可视化..."
   },
   "error": {

@@ -167,7 +167,7 @@ import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
 import type { Species } from '@/lib/map-utils'
-import { buildProjectPopupHTML, buildSpeciesPopupHTML, isValidCoordinate, GROUP_COLORS } from '@/lib/map-utils'
+import { buildProjectPopupHTML, buildSpeciesPopupHTML, buildRareEarthPopupHTML, isValidCoordinate, GROUP_COLORS, RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
 import type { GeoJSONSource } from 'maplibre-gl'
 import {
   getMarkerImageUrl,
@@ -322,6 +322,16 @@ function openProjectOverlay(project: ProjectData) {
   showProjectOverlay.value = true
   lastFocusedEl = document.activeElement as HTMLElement
   nextTick(() => projectCloseBtnRef.value?.focus())
+}
+
+function openRareEarthOverlay(feature: GeoJSON.Feature) {
+  const props = feature.properties as Record<string, any> || {}
+  const html = buildRareEarthPopupHTML(props)
+  new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    .setLngLat([(feature.geometry as any).coordinates[0], (feature.geometry as any).coordinates[1]])
+    .setHTML(html)
+    .setMaxWidth('none')
+    .addTo(map!)
 }
 
 function closeProjectOverlay() {
@@ -596,6 +606,17 @@ function createSpeciesMarkerElement(species: Species | SpeciesIndexItem): HTMLEl
   }))
 }
 
+function createRareEarthMarkerElement(feature: GeoJSON.Feature): HTMLElement {
+  const props = feature.properties as Record<string, any> || {}
+  const cat = RARE_EARTH_CATEGORIES[props.c] ?? { label: 'Unknown', color: '#666' }
+  const size = 20
+  return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
+    color: cat.color,
+    size,
+    group: props.c,
+  }))
+}
+
 function parseColor(hex: string): [number, number, number] {
   const c = hex.replace('#', '')
   return [parseInt(c.substring(0, 2), 16), parseInt(c.substring(2, 4), 16), parseInt(c.substring(4, 6), 16)]
@@ -622,7 +643,8 @@ function createClusterMarkerElement(
   items: ClusterItem[],
   onItemClick: (item: ClusterItem) => void,
   sourceProjects?: ProjectData[],
-  sourceSpecies?: (Species | SpeciesIndexItem)[]
+  sourceSpecies?: (Species | SpeciesIndexItem)[],
+  sourceRareEarth?: GeoJSON.Feature[]
 ) {
   const dataset = activeDataset.value
 
@@ -644,6 +666,13 @@ function createClusterMarkerElement(
         const color = getProjectColorByBeneficiaries(pr.direct_beneficiaries, pr.indirect_beneficiaries)
         const placeholder = getProjectPlaceholder(pr.project_title)
         return { url: getMarkerPlaceholder(placeholder), color }
+      }
+    }
+    if (dataset === 'observatory-of-vulcan' && sourceRareEarth?.length) {
+      const feature = sourceRareEarth[item.index]
+      if (feature?.properties) {
+        const cat = RARE_EARTH_CATEGORIES[feature.properties.c] ?? { label: 'Unknown', color: '#666' }
+        return { url: getMarkerPlaceholder(feature.properties.c), color: cat.color }
       }
     }
     return { url: getMarkerPlaceholder(), color: '#6366f1' }
@@ -987,13 +1016,7 @@ function rebuildMarkers() {
 
   const currentZoom = map.getZoom()
 
-  // Use native GeoJSON for large datasets (endangered species with 4000+ points)
-  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500) {
-    setupGeoJSONMarkers()
-    return
-  }
-
-  // For smaller datasets or project grants, use DOM markers
+  // Always use DOM markers for all datasets (consistent marker style)
   markers.forEach(m => m.remove())
   markers = []
   clusterer.destroy()
@@ -1055,6 +1078,64 @@ function rebuildMarkers() {
         })
         const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
           .setLngLat([project.longitude, project.latitude])
+          .addTo(map!)
+        markers.push(marker)
+      }
+    })
+  } else if (activeDataset.value === 'observatory-of-vulcan' && props.rareEarthPoints?.features?.length) {
+    const features = props.rareEarthPoints.features
+
+    const clusterItems = features.map((f, i) => ({
+      lng: (f.geometry as any).coordinates[0],
+      lat: (f.geometry as any).coordinates[1],
+      type: 'rareEarth' as const,
+      index: i,
+    }))
+
+    clusterer.loadImmediate(clusterItems)
+
+    const bounds = map.getBounds()
+    const bbox: [number, number, number, number] = [
+      bounds.getWest(), bounds.getSouth(),
+      bounds.getEast(), bounds.getNorth(),
+    ]
+    const clusters = clusterer.getClusters(bbox, currentZoom)
+
+    clusters.forEach((cp: ClusterPoint) => {
+      if (cp.type === 'cluster') {
+        const onItemClick = (item: ClusterItem) => {
+          const feature = features[item.index]
+          if (feature) openRareEarthOverlay(feature)
+        }
+        const el = createClusterMarkerElement(cp.count, cp.items, onItemClick, undefined, undefined, features)
+        el.setAttribute('tabindex', '0')
+        el.setAttribute('role', 'button')
+        el.setAttribute('aria-label', `Cluster of ${cp.count} rare earth claims`)
+        el.addEventListener('click', (e) => {
+          if ((e.target as HTMLElement | null)?.classList.contains('cluster-mini-hover')) return
+          if (map) {
+            const zoom = Math.min(Math.max(clusterer.getClusterExpansionZoom(cp.clusterId), map.getZoom() + 1), map.getMaxZoom())
+            map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 500, essential: true })
+          }
+        })
+        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([cp.lng, cp.lat])
+          .addTo(map!)
+        markers.push(marker)
+      } else {
+        const feature = features[cp.sourceIndex]
+        if (!feature) return
+        const el = createRareEarthMarkerElement(feature)
+        el.style.cursor = 'pointer'
+        el.setAttribute('tabindex', '0')
+        el.setAttribute('role', 'button')
+        el.setAttribute('aria-label', feature.properties?.n || 'Rare Earth claim')
+        el.addEventListener('click', () => { openRareEarthOverlay(feature) })
+        el.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRareEarthOverlay(feature) }
+        })
+        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([(feature.geometry as any).coordinates[0], (feature.geometry as any).coordinates[1]])
           .addTo(map!)
         markers.push(marker)
       }
@@ -1293,8 +1374,9 @@ function initMap() {
       if (map) emit('mapInit', map)
       if (activeDataset.value === 'observatory-of-vulcan') {
         setupRareEarthLayers()
-      } else {
-        rebuildMarkers()
+      }
+      rebuildMarkers()
+      if (activeDataset.value !== 'observatory-of-vulcan') {
         connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
         connections2D.startParticles()
       }
@@ -1302,8 +1384,9 @@ function initMap() {
     })
 
     map.on('move', () => {
-      // Only run visibility update for DOM markers
-      if (!useNativeGeoJSON && !pendingVisibilityUpdate) {
+      // Only run visibility update for DOM markers (not native GeoJSON)
+      const usingNativeGeoJSON = useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500
+      if (!usingNativeGeoJSON && !pendingVisibilityUpdate) {
         pendingVisibilityUpdate = true
         requestAnimationFrame(() => {
           updateMarkerVisibility()
@@ -1312,7 +1395,7 @@ function initMap() {
       }
       if (!pendingClusterRebuild && map) {
         // Skip cluster rebuilds for GeoJSON path — MapLibre handles viewport natively
-        if (useNativeGeoJSON && activeDataset.value === 'endangered-species') return
+        if (usingNativeGeoJSON) return
         let needsRebuild = false
         const currentZoom = Math.floor(map.getZoom())
         if (currentZoom !== lastClusterZoom) {
@@ -1441,6 +1524,13 @@ watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData]
   }
 }, { deep: true })
 
+// Watch rare earth data changes (observatory-of-vulcan) to rebuild markers
+watch(() => [props.rareEarthPoints, props.rareEarthPolygons], () => {
+  if (!map || activeDataset.value !== 'observatory-of-vulcan') return
+  setupRareEarthLayers()
+  rebuildMarkers()
+}, { deep: true })
+
 watch(showHexGrid, async (visible) => {
   if (!visible) return
   await nextTick()
@@ -1451,6 +1541,17 @@ watch(connections2D.showConnections, () => {
   connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
   if (connections2D.showConnections.value) connections2D.startParticles()
 })
+
+// Fly-to target from parent (for all datasets)
+watch(() => props.flyToTarget, (target) => {
+  if (!target || !map) return
+  map.flyTo({
+    center: [target.lng, target.lat],
+    zoom: target.zoom ?? 5,
+    duration: 1500,
+    essential: true,
+  })
+}, { deep: true })
 
 // Pause particles when overlay is open to save CPU
 watch([showSpeciesOverlay, showProjectOverlay], ([speciesOpen, projectOpen]) => {

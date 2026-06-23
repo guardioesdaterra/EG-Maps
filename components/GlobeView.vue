@@ -175,7 +175,7 @@ import {
 const { t, locale } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
 
-function getLocalizedSpecies(species: Species): Species {
+function getLocalizedSpecies(species: Species | SpeciesIndexItem): Species {
   const content = species.content?.[locale.value] ?? species.content?.en
   if (!content) return species
 
@@ -247,7 +247,7 @@ const clusterer = useMapCluster()
 const geoJSONMarkers = useGeoJSONMarkers()
 let lastClusterZoom = -1
 let lastBboxCenter: { lng: number; lat: number } | null = null
-function openSpeciesOverlay(species: Species) {
+function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
   const localizedSpecies = getLocalizedSpecies(species)
   const speciesPopupTranslations = {
     scientificName: t('species.scientificName'),
@@ -258,7 +258,7 @@ function openSpeciesOverlay(species: Species) {
     ecosystem: t('filter.ecosystem'),
     groupLabels: getTaxonomicGroupLabels()
   }
-  speciesOverlayHTML.value = buildSpeciesPopupHTML(localizedSpecies, speciesPopupTranslations, baseURL)
+  speciesOverlayHTML.value = buildSpeciesPopupHTML(localizedSpecies as Species, speciesPopupTranslations, baseURL)
   showSpeciesOverlay.value = true
   lastFocusedEl = document.activeElement as HTMLElement
   nextTick(() => speciesCloseBtnRef.value?.focus())
@@ -890,6 +890,11 @@ const useNativeGeoJSON = true
 const SOURCE_ID = 'globe-species-markers'
 
 let geoJSONInitializedFor: 'project-grants' | 'endangered-species' | null = null
+let geoJSONSpeciesIndex: SpeciesIndexItem[] | null = null
+
+function applySpeciesFilters(speciesIndex: SpeciesIndexItem[]): SpeciesIndexItem[] {
+  return speciesIndex
+}
 
 function setupGeoJSONMarkers(forceReinit = false) {
   if (!map || !useNativeGeoJSON) return
@@ -926,32 +931,28 @@ function setupGeoJSONMarkers(forceReinit = false) {
     geoJSONInitializedFor = 'project-grants'
   } else if (speciesIndexData.value.length) {
     // Use lightweight index for map markers
-    const geojson = speciesIndexToGeoJSON(speciesIndexData.value)
+    const filteredIndex = applySpeciesFilters(speciesIndexData.value)
+    geoJSONSpeciesIndex = speciesIndexData.value
+    const geojson = speciesIndexToGeoJSON(filteredIndex)
     geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
     geoJSONMarkers.addClusterLayers(SOURCE_ID, 'endangered-species')
 
     geoJSONMarkers.setupEventHandlers(
       SOURCE_ID,
       'endangered-species',
-      async (props, _coords) => {
+      (props, _coords) => {
         const speciesId = props.id as string
-        const fullSpecies = await geoJSONMarkers.loadFullSpeciesData(speciesId, baseURL)
-        if (fullSpecies) {
-          openSpeciesOverlay(fullSpecies)
-        } else {
-          // Fallback: create minimal species from index
-          const indexItem = speciesIndexData.value.find(s => s.id === speciesId)
-          if (indexItem) {
-            const minimalSpecies = {
-              ...indexItem,
-              region: '',
-              ecosystem: '',
-              imageCredit: '',
-              threatTypes: indexItem.threatTypes || [],
-              content: {},
-            } as Species
-            openSpeciesOverlay(minimalSpecies)
-          }
+        const indexItem = speciesIndexData.value.find(s => s.id === speciesId)
+        if (indexItem) {
+          const minimalSpecies = {
+            ...indexItem,
+            region: '',
+            ecosystem: '',
+            imageCredit: '',
+            threatTypes: indexItem.threatTypes || [],
+            content: {},
+          } as Species
+          openSpeciesOverlay(minimalSpecies)
         }
       },
       () => { /* easeTo handled inside setupEventHandlers */ }
@@ -1000,7 +1001,7 @@ function updateGeoJSONMarkerData() {
     const validProjects = projectsData.value.filter(p => isValidCoordinate(p.latitude, p.longitude))
     geoJSONMarkers.updateData(SOURCE_ID, projectsToGeoJSON(validProjects))
   } else if (speciesIndexData.value.length) {
-    geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(speciesIndexData.value))
+    geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(applySpeciesFilters(speciesIndexData.value)))
   } else if (speciesData.value.length) {
     const validSpecies = speciesData.value.filter(s => isValidCoordinate(s.lat, s.lng))
     geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(validSpecies.map(s => ({
@@ -1025,7 +1026,7 @@ function rebuildMarkers() {
   const currentZoom = map.getZoom()
 
   // Use native GeoJSON for large datasets (endangered species with 4000+ points)
-  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesData.value.length > 500) {
+  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500) {
     setupGeoJSONMarkers()
     return
   }
@@ -1096,10 +1097,10 @@ function rebuildMarkers() {
         markers.push(marker)
       }
     })
-  } else if (activeDataset.value === 'endangered-species' && speciesData.value.length) {
+  } else if (activeDataset.value === 'endangered-species' && speciesIndexData.value.length) {
     const data = isMobile.value
-      ? speciesData.value.slice(0, 80)
-      : speciesData.value
+      ? speciesIndexData.value.slice(0, 80)
+      : speciesIndexData.value
     const speciesToRender = data.filter(s => isValidCoordinate(s.lat, s.lng))
     const imageUrls = speciesToRender.map(s => s.imageUrl).filter(Boolean)
 

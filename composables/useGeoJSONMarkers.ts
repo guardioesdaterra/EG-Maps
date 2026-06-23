@@ -1,12 +1,11 @@
 /**
  * High-performance marker rendering using MapLibre's native GeoJSON clustering.
- * 
+ *
  * This approach uses GPU-accelerated vector rendering instead of DOM-based markers,
  * which can handle 10,000+ points smoothly compared to the 100-200 limit of DOM markers.
  */
 
 import type { Map as MapLibreMap, GeoJSONSource, MapLayerMouseEvent, MapLayerEventType } from 'maplibre-gl'
-import type { Species } from '@/lib/types'
 import { GROUP_COLORS } from '@/lib/map-utils'
 
 export interface SpeciesIndexItem {
@@ -25,9 +24,15 @@ export interface SpeciesIndexItem {
 
 const GROUP_COLORS_HEX: Record<string, string> = GROUP_COLORS
 
+// Cache for speciesIndexToGeoJSON to avoid recalculating on every rebuild
+let _geoJSONCacheInput: SpeciesIndexItem[] | null = null
+let _geoJSONCacheOutput: GeoJSON.FeatureCollection | null = null
+
 // Lightweight index for markers - only 3.2MB vs 35MB full data
 export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.FeatureCollection {
-  return {
+  if (_geoJSONCacheInput === species && _geoJSONCacheOutput) return _geoJSONCacheOutput
+
+  const result: GeoJSON.FeatureCollection = {
     type: 'FeatureCollection',
     features: species
       .filter(s => s.lat != null && s.lng != null && isFinite(s.lat) && isFinite(s.lng))
@@ -48,6 +53,10 @@ export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.Feat
         }
       }))
   }
+
+  _geoJSONCacheInput = species
+  _geoJSONCacheOutput = result
+  return result
 }
 
 // Convert project data to GeoJSON FeatureCollection
@@ -90,9 +99,6 @@ function getProjectColor(totalBeneficiaries: number): string {
 export function useGeoJSONMarkers() {
   let map: MapLibreMap | null = null
   let currentSourceId: string | null = null
-
-  // Cache for full species data loaded on demand
-  const speciesCache = new Map<string, Species>()
 
   // Track installed event handlers so they can be removed on re-setup/cleanup
   type InstalledHandler = {
@@ -187,30 +193,6 @@ export function useGeoJSONMarkers() {
     const source = map.getSource(sourceId) as GeoJSONSource
     if (!source || typeof source.getClusterExpansionZoom !== 'function') return 10
     return await source.getClusterExpansionZoom(clusterId)
-  }
-
-  // Load full species data on demand (only when user clicks)
-  async function loadFullSpeciesData(speciesId: string, baseURL: string): Promise<Species | null> {
-    if (speciesCache.has(speciesId)) {
-      return speciesCache.get(speciesId)!
-    }
-
-    try {
-      // Try loading from full dataset first
-      const res = await fetch(`${baseURL}data/species/icmbio-brazil.json`)
-      if (res.ok) {
-        const allSpecies: Species[] = await res.json()
-        const species = allSpecies.find(s => s.id === speciesId)
-        if (species) {
-          speciesCache.set(speciesId, species)
-          return species
-        }
-      }
-    } catch {
-      // Silently fail
-    }
-
-    return null
   }
 
   function setupEventHandlers(
@@ -319,7 +301,6 @@ export function useGeoJSONMarkers() {
   function cleanup() {
     detachHandlers()
     removeLayersAndSource()
-    speciesCache.clear()
     map = null
   }
 
@@ -330,7 +311,6 @@ export function useGeoJSONMarkers() {
     getClusterExpansionZoom,
     setupEventHandlers,
     updateData,
-    loadFullSpeciesData,
     removeLayersAndSource,
     cleanup,
   }

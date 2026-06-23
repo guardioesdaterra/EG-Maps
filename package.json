@@ -15,6 +15,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "species:index": "node scripts/create-species-index.mjs",
     "postinstall": "nuxt prepare && node scripts/patch-eslint-flat-config.mjs",
     "tiles:download": "node scripts/download-tiles.mjs",
     "tiles:stats": "node -e \"const {readdirSync, statSync, existsSync} = require('fs'); const {resolve} = require('path'); const d='public/tiles'; if(!existsSync(d)){console.log('No tiles directory');process.exit(0)} let total=0,bytes=0; for(const z of readdirSync(d)){for(const x of readdirSync(resolve(d,z))){for(const f of readdirSync(resolve(d,z,x))){total++;bytes+=statSync(resolve(d,z,x,f)).size}}}; console.log('Tiles:',total.toLocaleString());console.log('Size:',(bytes/1024/1024).toFixed(1),'MB');\""
@@ -25,6 +26,7 @@
     "@vueuse/core": "^14.3.0",
     "@vueuse/gesture": "^2.0.0",
     "@vueuse/motion": "^3.0.3",
+    "@vueuse/nuxt": "^14.3.0",
     "clsx": "^2.1.1",
     "iconify-icon": "^3.0.2",
     "maplibre-gl": "^5.24.0",

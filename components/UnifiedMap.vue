@@ -438,13 +438,6 @@ function applySpeciesFilters(speciesIndex: SpeciesIndexItem[]): SpeciesIndexItem
   )
 }
 
-// Update filter panel when species index changes
-watch(speciesIndexData, (newIndex) => {
-  if (newIndex.length > 0 && speciesFilterPanelRef.value) {
-    // Filter panel updated via its internal logic
-  }
-}, { immediate: true })
-
 function handleFilterChange(filtered: Species[]) {
   filteredSpeciesList.value = filtered
   rebuildMarkers()
@@ -891,15 +884,15 @@ async function setupGeoJSONMarkers(forceReinit = false) {
       speciesIndex = speciesIndexData.value
       geoJSONSpeciesIndex = speciesIndex
     } else {
-      // Fetch lightweight index (3.2MB vs 35MB)
+      // Fetch lightweight index for all datasets
       try {
-        const indexRes = await fetch(`${baseURL}data/species/icmbio-brazil-index.json`)
-        if (!indexRes.ok) {
-          // eslint-disable-next-line no-console
-          console.error('Failed to load species index')
-          return
-        }
-        speciesIndex = await indexRes.json()
+        const [icmbioRes, iucnRes] = await Promise.all([
+          fetch(`${baseURL}data/species/icmbio-brazil-index.json`),
+          fetch(`${baseURL}data/species/iucn-index.json`),
+        ])
+        const icmbio = icmbioRes.ok ? await icmbioRes.json() : []
+        const iucn = iucnRes.ok ? await iucnRes.json() : []
+        speciesIndex = [...icmbio, ...iucn]
         geoJSONSpeciesIndex = speciesIndex
       } catch {
         return
@@ -915,26 +908,19 @@ async function setupGeoJSONMarkers(forceReinit = false) {
     geoJSONMarkers.setupEventHandlers(
       SOURCE_ID,
       'endangered-species',
-      async (props, _coords) => {
+      (props, _coords) => {
         const speciesId = props.id as string
-        const fullSpecies = await geoJSONMarkers.loadFullSpeciesData(speciesId, baseURL)
-        if (fullSpecies) {
-          openSpeciesOverlay(fullSpecies)
-        } else {
-          // Fallback: find from index and use basic info
-          const indexItem = speciesIndex.find(s => s.id === speciesId)
-          if (indexItem) {
-            // Create minimal species object from index
-            const minimalSpecies = {
-              ...indexItem,
-              region: '',
-              ecosystem: '',
-              imageCredit: '',
-              threatTypes: indexItem.threatTypes || [],
-              content: {},
-            } as Species
-            openSpeciesOverlay(minimalSpecies)
-          }
+        const indexItem = speciesIndex.find(s => s.id === speciesId)
+        if (indexItem) {
+          const minimalSpecies = {
+            ...indexItem,
+            region: '',
+            ecosystem: '',
+            imageCredit: '',
+            threatTypes: indexItem.threatTypes || [],
+            content: {},
+          } as Species
+          openSpeciesOverlay(minimalSpecies)
         }
       },
       () => { /* flyTo handled inside setupEventHandlers */ }
@@ -1340,6 +1326,8 @@ function initMap() {
         })
       }
       if (!pendingClusterRebuild && map) {
+        // Skip cluster rebuilds for GeoJSON path — MapLibre handles viewport natively
+        if (useNativeGeoJSON && activeDataset.value === 'endangered-species') return
         let needsRebuild = false
         const currentZoom = Math.floor(map.getZoom())
         if (currentZoom !== lastClusterZoom) {

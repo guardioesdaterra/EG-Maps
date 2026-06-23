@@ -1,28 +1,33 @@
 import { readFileSync, writeFileSync } from 'fs';
 
-// Read the full species data
-const fullData = JSON.parse(readFileSync('./public/data/species/icmbio-brazil.json', 'utf8'));
+const DATASETS = [
+  { id: 'icmbio-brazil', file: 'icmbio-brazil.json' },
+  { id: 'iucn', file: 'iucn.json' },
+];
 
-// Create lightweight index - only marker data + English text for popup
-const lightweight = fullData.map(s => ({
-  id: s.id,
-  commonName: s.commonName,
-  scientificName: s.scientificName,
-  taxonomicGroup: s.taxonomicGroup,
-  category: s.category,
-  lat: s.lat,
-  lng: s.lng,
-  imageUrl: s.imageUrl || null,
-  // Only include English content for basic info
-  description: s.content?.en?.description || '',
-  endangerment: s.content?.en?.endangerment || '',
-  threatTypes: s.threatTypes || [],
-}));
+for (const ds of DATASETS) {
+  const srcPath = `./public/data/species/${ds.file}`;
+  const outPath = `./public/data/species/${ds.id}-index.json`;
 
-// Write lightweight index
-writeFileSync('./public/data/species/icmbio-brazil-index.json', JSON.stringify(lightweight, null, 0));
+  const fullData = JSON.parse(readFileSync(srcPath, 'utf8'));
 
-// Report sizes
-console.log('Original file size:', (readFileSync('./public/data/species/icmbio-brazil.json').length / 1024 / 1024).toFixed(2), 'MB');
-console.log('Lightweight index:', (readFileSync('./public/data/species/icmbio-brazil-index.json').length / 1024).toFixed(0), 'KB');
-console.log('Species count:', lightweight.length);
+  const lightweight = fullData.map(s => ({
+    id: s.id,
+    commonName: s.commonName,
+    scientificName: s.scientificName,
+    taxonomicGroup: s.taxonomicGroup,
+    category: s.category,
+    lat: s.lat,
+    lng: s.lng,
+    imageUrl: s.imageUrl || null,
+    description: s.content?.en?.description || '',
+    endangerment: s.content?.en?.endangerment || '',
+    threatTypes: s.threatTypes || [],
+  }));
+
+  writeFileSync(outPath, JSON.stringify(lightweight, null, 0));
+
+  const srcSize = (readFileSync(srcPath).length / 1024 / 1024).toFixed(2);
+  const outSize = (readFileSync(outPath).length / 1024).toFixed(0);
+  console.log(`${ds.id}: ${srcSize} MB → ${outSize} KB (${lightweight.length} species)`);
+}

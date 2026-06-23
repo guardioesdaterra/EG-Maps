@@ -5,6 +5,7 @@
     "projectGrants": "المنح المشاريع",
     "endangeredSpecies": "الأنواع المهددة بالانقراض",
     "observatoryOfVulcan": "مرصد فولكان",
+    "activeCrews": "Active Crews",
     "crews": "الفرق",
     "joinEarthGuardians": "انضم إلى حراس الأرض",
     "switchToLight": "التبديل إلى الوضع الفاتح",
@@ -23,10 +24,14 @@
     "speciesDesc": "اكتشف الأنواع المهددة بالانقراض بشكل حرج وموائلها حول العالم.",
     "observatoryTitle": "مرصد فولكان",
     "observatoryDesc": "مطالبات تعدين العناصر الأرضية النادرة في البرازيل — غزو رأس المال، شبكات الشركات، المصالح العسكرية والأثر الاجتماعي البيئي.",
+    "activeCrewsTitle": "Active Crews",
+    "activeCrewsDesc": "Explore Earth Guardians' active crews across 7 regions — 131 crews, 1,241 members, 47 countries worldwide.",
     "projectsCount": "المشاريع",
     "beneficiariesCount": "المستفيدون",
     "speciesCount": "الأنواع",
     "groupsCount": "المجموعات",
+    "activeCrewsCount": "Active Crews",
+    "crewMembersCount": "Crew Members",
     "view2d": "خريطة ثنائية الأبعاد",
     "view3d": "كرة أرضية ثلاثية الأبعاد",
     "projectGrants": "المنح المشاريع",
@@ -48,6 +53,7 @@
     "search": "بحث",
     "searchProjects": "بحث في المشاريع",
     "searchSpecies": "بحث في الأنواع",
+    "searchCrews": "Search Crews",
     "searchPlaceholder": "بحث بالاسم أو الموقع...",
     "searchSpeciesPlaceholder": "بحث بالاسم أو المنطقة...",
     "showAll": "إظهار الكل",
@@ -146,6 +152,14 @@
     "ecosystem": "النظام البيئي",
     "actions": "الإجراءات",
     "iucnProfile": "الملف الشخصي IUCN"
+  },
+  "crews": {
+    "activeCrews": "Active Crews",
+    "inactiveCrews": "Inactive Crews",
+    "totalMembers": "Total Members",
+    "countries": "Countries",
+    "region": "Region",
+    "growthSince2022": "Growth since 2022"
   },
   "taxonomy": {
     "Mammal": "الثدييات",
@@ -383,6 +397,7 @@
     "endangeredSpeciesGlobe": "جارٍ تحميل كرة الأنواع المهددة الأرضية",
     "observatoryOfVulcan": "جارٍ تحميل مرصد فولكان",
     "observatoryOfVulcanGlobe": "جارٍ تحميل كرة مرصد فولكان الأرضية",
+    "activeCrewsMap": "Loading Active Crews Map",
     "initializingVisualization": "جارٍ تهيئة التصور التفاعلي..."
   },
   "error": {

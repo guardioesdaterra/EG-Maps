@@ -5,6 +5,7 @@
     "projectGrants": "प्रोजेक्ट अनुदान",
     "endangeredSpecies": "लुप्तप्राय प्रजातियाँ",
     "observatoryOfVulcan": "वल्कन वेधशाला",
+    "activeCrews": "Active Crews",
     "crews": "क्रू",
     "joinEarthGuardians": "अर्थ गार्जियंस में शामिल हों",
     "switchToLight": "लाइट मोड पर स्विच करें",
@@ -23,10 +24,14 @@
     "speciesDesc": "दुनिया भर में गंभीर रूप से लुप्तप्राय प्रजातियों और उनके आवासों की खोज करें।",
     "observatoryTitle": "वल्कन वेधशाला",
     "observatoryDesc": "ब्राज़ील दुर्लभ मृदा खनन दावे — पूंजी आक्रमण, कॉर्पोरेट नेटवर्क, सैन्य हित और सामाजिक-पर्यावरणीय प्रभाव।",
+    "activeCrewsTitle": "Active Crews",
+    "activeCrewsDesc": "Explore Earth Guardians' active crews across 7 regions — 131 crews, 1,241 members, 47 countries worldwide.",
     "projectsCount": "प्रोजेक्ट",
     "beneficiariesCount": "लाभार्थी",
     "speciesCount": "प्रजातियाँ",
     "groupsCount": "समूह",
+    "activeCrewsCount": "Active Crews",
+    "crewMembersCount": "Crew Members",
     "view2d": "2D नक्शा",
     "view3d": "3D ग्लोब",
     "projectGrants": "प्रोजेक्ट अनुदान",
@@ -48,6 +53,7 @@
     "search": "खोजें",
     "searchProjects": "प्रोजेक्ट खोजें",
     "searchSpecies": "प्रजाति खोजें",
+    "searchCrews": "Search Crews",
     "searchPlaceholder": "नाम या स्थान से खोजें...",
     "searchSpeciesPlaceholder": "नाम या क्षेत्र से खोजें...",
     "showAll": "सभी दिखाएं",
@@ -146,6 +152,14 @@
     "ecosystem": "पारिस्थितिकी तंत्र",
     "actions": "कार्रवाइयाँ",
     "iucnProfile": "IUCN प्रोफ़ाइल"
+  },
+  "crews": {
+    "activeCrews": "Active Crews",
+    "inactiveCrews": "Inactive Crews",
+    "totalMembers": "Total Members",
+    "countries": "Countries",
+    "region": "Region",
+    "growthSince2022": "Growth since 2022"
   },
   "taxonomy": {
     "Mammal": "स्तनधारी",
@@ -383,6 +397,7 @@
     "endangeredSpeciesGlobe": "लुप्तप्राय प्रजाति ग्लोब लोड हो रहा है",
     "observatoryOfVulcan": "वल्कन वेधशाला लोड हो रही है",
     "observatoryOfVulcanGlobe": "वल्कन वेधशाला ग्लोब लोड हो रहा है",
+    "activeCrewsMap": "Loading Active Crews Map",
     "initializingVisualization": "इंटरैक्टिव विज़ुअलाइज़ेशन प्रारंभ हो रहा है..."
   },
   "error": {

@@ -143,6 +143,16 @@
     <!-- Detached fullscreen species popup overlay -->
     <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Species details" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
       <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" aria-label="Close species details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+      <div v-if="availablePopupLocales.length > 0" class="species-popup-lang-bar">
+        <button
+          v-for="loc in availablePopupLocales"
+          :key="loc"
+          class="species-popup-lang-btn"
+          :class="{ active: popupLocale === loc }"
+          @click="popupLocale = loc"
+          :aria-label="`Show in ${(localeNames as Record<string, string>)[loc] || loc}`"
+        >{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
+      </div>
       <div class="species-popup-content-fixed" v-html="speciesOverlayHTML"></div>
     </div>
 
@@ -150,6 +160,12 @@
     <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Project details" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
       <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
       <div class="project-popup-content-fixed" v-html="projectOverlayHTML"></div>
+    </div>
+
+    <!-- Detached fullscreen crew popup overlay -->
+    <div v-if="showCrewOverlay" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew region details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
+      <button ref="crewCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+      <div class="project-popup-content-fixed" v-html="crewOverlayHTML"></div>
     </div>
 
     <!-- Species cluster panel -->
@@ -165,9 +181,10 @@ import { useI18n } from '@/composables/useI18n'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
+import type { CrewRegionData } from '@/lib/crew-data'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
 import type { Species } from '@/lib/map-utils'
-import { buildProjectPopupHTML, buildSpeciesPopupHTML, buildRareEarthPopupHTML, isValidCoordinate, GROUP_COLORS, RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
+import { buildProjectPopupHTML, buildSpeciesPopupHTML, buildRareEarthPopupHTML, buildCrewPopupHTML, isValidCoordinate, GROUP_COLORS, RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
 import type { GeoJSONSource } from 'maplibre-gl'
 import {
   getMarkerImageUrl,
@@ -187,7 +204,7 @@ import { useRareEarthController } from '@/composables/useRareEarthController'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { useMapConnections } from '@/composables/useMapConnections'
 
-const { t, locale } = useI18n()
+const { t, locale, localeNames } = useI18n()
 const speciesPanel = useSpeciesPanel()
 
 const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
@@ -205,7 +222,8 @@ interface Props {
   projects?: ProjectData[]
   species?: Species[]
   speciesIndex?: SpeciesIndexItem[]  // Lightweight index for markers
-  defaultDataset?: 'project-grants' | 'endangered-species' | 'observatory-of-vulcan'
+  defaultDataset?: 'project-grants' | 'endangered-species' | 'observatory-of-vulcan' | 'active-crews'
+  crews?: CrewRegionData[]
   // Rare Earth dataset (observatory-of-vulcan)
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
@@ -221,6 +239,7 @@ const props = withDefaults(defineProps<Props>(), {
   defaultDataset: 'project-grants',
 })
 const projectsData = computed(() => props.projects || allProjectsData)
+const crewsData = computed(() => props.crews || [])
 const speciesData = computed(() => props.species || [])
 const speciesIndexData = computed(() => props.speciesIndex || [])
 const filteredProjectsList = ref<ProjectData[] | null>(null)
@@ -237,7 +256,7 @@ const speciesFilterPanelRef = ref<{ toggleTaxonomicGroup: (_group: string) => vo
 const selectedSpeciesGroups = ref<string[]>([])
 const showHexGrid = ref(true)
 const showFilterPanel = ref(false)
-const activeDataset = ref<'project-grants' | 'endangered-species' | 'observatory-of-vulcan'>(props.defaultDataset)
+const activeDataset = ref<'project-grants' | 'endangered-species' | 'observatory-of-vulcan' | 'active-crews'>(props.defaultDataset)
 
 const connections2D = useMapConnections(
   () => map,
@@ -251,8 +270,17 @@ const noWebglSupport = ref(false)
 const isLoading = ref(true)
 const showSpeciesOverlay = ref(false)
 const speciesOverlayHTML = ref('')
+const popupLocale = ref<string>(locale.value)
+const selectedPopupSpecies = ref<Species | SpeciesIndexItem | null>(null)
+const availablePopupLocales = computed(() => {
+  const s = selectedPopupSpecies.value
+  if (!s || !('content' in s) || !s.content) return []
+  return (Object.keys(s.content) as Array<string>).filter(l => l !== popupLocale.value)
+})
 const showProjectOverlay = ref(false)
 const projectOverlayHTML = ref('')
+const showCrewOverlay = ref(false)
+const crewOverlayHTML = ref('')
 
 let map: maplibregl.Map | null = null
 let markers: maplibregl.Marker[] = []
@@ -266,6 +294,7 @@ let lastBboxCenter: { lng: number; lat: number } | null = null
 
 const speciesCloseBtnRef = ref<HTMLElement | null>(null)
 const projectCloseBtnRef = ref<HTMLElement | null>(null)
+const crewCloseBtnRef = ref<HTMLElement | null>(null)
 const speciesOverlayRef = ref<HTMLElement | null>(null)
 const projectOverlayRef = ref<HTMLElement | null>(null)
 let lastFocusedEl: HTMLElement | null = null
@@ -276,7 +305,18 @@ useFocusTrap(speciesOverlayRef, { active: speciesOverlayActive })
 useFocusTrap(projectOverlayRef, { active: projectOverlayActive })
 
 function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
-  const localizedSpecies = getLocalizedSpecies(species)
+  selectedPopupSpecies.value = species
+  popupLocale.value = locale.value
+  rebuildSpeciesOverlay()
+  showSpeciesOverlay.value = true
+  lastFocusedEl = document.activeElement as HTMLElement
+  nextTick(() => speciesCloseBtnRef.value?.focus())
+}
+
+function rebuildSpeciesOverlay() {
+  const species = selectedPopupSpecies.value
+  if (!species) return
+  const localizedSpecies = getLocalizedSpecies(species, popupLocale.value)
   const speciesPopupTranslations = {
     scientificName: t('species.scientificName'),
     threatTypes: t('species.threatTypes'),
@@ -287,14 +327,12 @@ function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
     groupLabels: getTaxonomicGroupLabels()
   }
   speciesOverlayHTML.value = buildSpeciesPopupHTML(localizedSpecies, speciesPopupTranslations, baseURL)
-  showSpeciesOverlay.value = true
-  lastFocusedEl = document.activeElement as HTMLElement
-  nextTick(() => speciesCloseBtnRef.value?.focus())
 }
 
 function closeSpeciesOverlay() {
   showSpeciesOverlay.value = false
   speciesOverlayHTML.value = ''
+  selectedPopupSpecies.value = null
   nextTick(() => lastFocusedEl?.focus())
 }
 
@@ -324,6 +362,21 @@ function openProjectOverlay(project: ProjectData) {
   nextTick(() => projectCloseBtnRef.value?.focus())
 }
 
+function openCrewOverlay(crew: CrewRegionData) {
+  const crewPopupTranslations = {
+    activeCrews: t('crews.activeCrews'),
+    inactiveCrews: t('crews.inactiveCrews'),
+    totalMembers: t('crews.totalMembers'),
+    countries: t('crews.countries'),
+    region: t('crews.region'),
+    growthSince2022: t('crews.growthSince2022'),
+  }
+  crewOverlayHTML.value = buildCrewPopupHTML(crew, crewPopupTranslations)
+  showCrewOverlay.value = true
+  lastFocusedEl = document.activeElement as HTMLElement
+  nextTick(() => crewCloseBtnRef.value?.focus())
+}
+
 function openRareEarthOverlay(feature: GeoJSON.Feature) {
   const props = feature.properties as Record<string, any> || {}
   const html = buildRareEarthPopupHTML(props)
@@ -340,6 +393,12 @@ function closeProjectOverlay() {
   nextTick(() => lastFocusedEl?.focus())
 }
 
+function closeCrewOverlay() {
+  showCrewOverlay.value = false
+  crewOverlayHTML.value = ''
+  nextTick(() => lastFocusedEl?.focus())
+}
+
 function taxonomicGroupLabel(group: string) {
   return t(`taxonomy.${group}`)
 }
@@ -351,7 +410,7 @@ function getTaxonomicGroupLabels() {
   }, {})
 }
 
-function getLocalizedSpecies(species: Species | SpeciesIndexItem): Species {
+function getLocalizedSpecies(species: Species | SpeciesIndexItem, overLocale?: string): Species {
   if (!('content' in species)) {
     return {
       ...species,
@@ -365,7 +424,8 @@ function getLocalizedSpecies(species: Species | SpeciesIndexItem): Species {
     }
   }
 
-  const content = species.content?.[locale.value] ?? species.content?.en
+  const targetLocale = overLocale ?? locale.value
+  const content = species.content?.[targetLocale] ?? species.content?.en
   if (!content) return species
 
   return {
@@ -617,6 +677,18 @@ function createRareEarthMarkerElement(feature: GeoJSON.Feature): HTMLElement {
   }))
 }
 
+function createCrewMarkerElement(crew: CrewRegionData): HTMLElement {
+  const memberFactor = Math.min(Math.max(crew.totalMembers / 200, 0.5), 5)
+  const markerSize = 15 + memberFactor * 10
+  const color = crew.activeCrews > 20 ? '#22c55e' : crew.activeCrews > 5 ? '#3b82f6' : '#a855f7'
+
+  return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
+    color,
+    size: markerSize,
+    group: 'crew',
+  }))
+}
+
 function parseColor(hex: string): [number, number, number] {
   const c = hex.replace('#', '')
   return [parseInt(c.substring(0, 2), 16), parseInt(c.substring(2, 4), 16), parseInt(c.substring(4, 6), 16)]
@@ -644,7 +716,8 @@ function createClusterMarkerElement(
   onItemClick: (item: ClusterItem) => void,
   sourceProjects?: ProjectData[],
   sourceSpecies?: (Species | SpeciesIndexItem)[],
-  sourceRareEarth?: GeoJSON.Feature[]
+  sourceRareEarth?: GeoJSON.Feature[],
+  sourceCrews?: { lng: number; lat: number }[]
 ) {
   const dataset = activeDataset.value
 
@@ -674,6 +747,9 @@ function createClusterMarkerElement(
         const cat = RARE_EARTH_CATEGORIES[feature.properties.c] ?? { label: 'Unknown', color: '#666' }
         return { url: getMarkerPlaceholder(feature.properties.c), color: cat.color }
       }
+    }
+    if (dataset === 'active-crews' && sourceCrews?.length) {
+      return { url: getMarkerPlaceholder('crew'), color: '#22c55e' }
     }
     return { url: getMarkerPlaceholder(), color: '#6366f1' }
   }
@@ -1140,6 +1216,64 @@ function rebuildMarkers() {
         markers.push(marker)
       }
     })
+  } else if (activeDataset.value === 'active-crews') {
+    const validCrews = crewsData.value.filter(c => isValidCoordinate(c.latitude, c.longitude))
+
+    const clusterItems = validCrews.map((c, i) => ({
+      lng: c.longitude,
+      lat: c.latitude,
+      type: 'project' as const,
+      index: i,
+    }))
+
+    clusterer.loadImmediate(clusterItems)
+
+    const bounds = map.getBounds()
+    const bbox: [number, number, number, number] = [
+      bounds.getWest(), bounds.getSouth(),
+      bounds.getEast(), bounds.getNorth(),
+    ]
+    const clusters = clusterer.getClusters(bbox, currentZoom)
+
+    clusters.forEach((cp: ClusterPoint) => {
+      if (cp.type === 'cluster') {
+        const onItemClick = (item: ClusterItem) => {
+          const crew = validCrews[item.index]
+          if (crew) openCrewOverlay(crew)
+        }
+        const el = createClusterMarkerElement(cp.count, cp.items, onItemClick, undefined, undefined, undefined, validCrews.map(c => ({ lng: c.longitude, lat: c.latitude })))
+        el.setAttribute('tabindex', '0')
+        el.setAttribute('role', 'button')
+        el.setAttribute('aria-label', `Cluster of ${cp.count} crew regions`)
+        el.addEventListener('click', (e) => {
+          if ((e.target as HTMLElement | null)?.classList.contains('cluster-mini-hover')) return
+          if (map) {
+            const zoom = Math.min(Math.max(clusterer.getClusterExpansionZoom(cp.clusterId), map.getZoom() + 1), map.getMaxZoom())
+            map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 500, essential: true })
+          }
+        })
+        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([cp.lng, cp.lat])
+          .addTo(map!)
+        markers.push(marker)
+      } else {
+        const crew = validCrews[cp.sourceIndex]
+        if (!crew) return
+        const el = createCrewMarkerElement(crew)
+        el.style.cursor = 'pointer'
+        el.setAttribute('tabindex', '0')
+        el.setAttribute('role', 'button')
+        el.setAttribute('aria-label', `${crew.region} - ${crew.activeCrews} active crews`)
+        el.addEventListener('click', () => { openCrewOverlay(crew) })
+        el.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCrewOverlay(crew) }
+        })
+        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([crew.longitude, crew.latitude])
+          .addTo(map!)
+        markers.push(marker)
+      }
+    })
   } else if (activeDataset.value === 'endangered-species' && speciesIndexData.value.length) {
     const speciesList = isMobile.value
       ? speciesIndexData.value.slice(0, 80)
@@ -1473,16 +1607,24 @@ function initMap() {
         const errObj = err as { error?: { status?: number; message?: string } }
         if (errObj?.error?.status === 403) {
           errorMessage.value = 'MapTiler API key is invalid or restricted. Please update your API key in the .env file.'
+        } else if (errObj?.error?.message) {
+          errorMessage.value = errObj.error.message
+        } else {
+          errorMessage.value = 'Failed to load map tiles. Please check your network connection and try again.'
         }
       }
     })
 
-    // Timeout fallback for loading
+    // Timeout fallback — show error instead of silently hiding loading
     setTimeout(() => {
       if (isLoading.value) {
         isLoading.value = false
+        if (!hasError.value) {
+          hasError.value = true
+          errorMessage.value = 'Map tiles took too long to load. Please check your network connection and try again.'
+        }
       }
-    }, 10000)
+    }, 20000)
 
     window.addEventListener('resize', debouncedSetupHexGrid)
   } catch (err) {
@@ -1554,12 +1696,17 @@ watch(() => props.flyToTarget, (target) => {
 }, { deep: true })
 
 // Pause particles when overlay is open to save CPU
-watch([showSpeciesOverlay, showProjectOverlay], ([speciesOpen, projectOpen]) => {
-  if (speciesOpen || projectOpen) {
+watch([showSpeciesOverlay, showProjectOverlay, showCrewOverlay], ([speciesOpen, projectOpen, crewOpen]) => {
+  if (speciesOpen || projectOpen || crewOpen) {
     connections2D.cleanupParticles()
   } else if (connections2D.showConnections.value) {
     connections2D.startParticles()
   }
+})
+
+// Rebuild species overlay when popup language changes
+watch(popupLocale, () => {
+  if (showSpeciesOverlay.value) rebuildSpeciesOverlay()
 })
 
 onUnmounted(() => {
@@ -2191,7 +2338,45 @@ onUnmounted(() => {
     border-radius: 0;
   }
 
-  .species-popup-close-btn-fixed {
+/* Species popup language selector bar */
+.species-popup-lang-bar {
+  position: absolute;
+  top: 68px;
+  right: 16px;
+  z-index: 2147483647;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 180px;
+}
+
+.species-popup-lang-btn {
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.species-popup-lang-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.species-popup-lang-btn.active {
+  background: rgba(6, 182, 212, 0.25);
+  border-color: rgba(6, 182, 212, 0.5);
+  color: #67e8f9;
+}
+
+.species-popup-close-btn-fixed {
     top: 12px;
     right: 12px;
     width: 40px;

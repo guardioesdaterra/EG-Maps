@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-export type DatasetKey = 'project-grants' | 'endangered-species' | 'endangered-species-3d' | 'observatory-of-vulcan' | 'observatory-of-vulcan-3d'
+export type DatasetKey = 'project-grants' | 'endangered-species' | 'endangered-species-3d' | 'observatory-of-vulcan' | 'observatory-of-vulcan-3d' | 'active-crews' | 'active-crews-3d'
 
 export interface FilterState {
   selectedGroups: string[]

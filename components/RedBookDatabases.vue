@@ -10,7 +10,12 @@
         </p>
       </header>
 
-      <div class="grid gap-[clamp(0.875rem,2vw,1.5rem)] md:grid-cols-2">
+      <div v-if="loading" class="flex items-center gap-2 text-sm text-black/50">
+        <LoadingSpinner class="h-4 w-4" />
+        {{ t('general.loading') }}
+      </div>
+
+      <div v-else class="grid gap-[clamp(0.875rem,2vw,1.5rem)] md:grid-cols-2">
         <article
           v-for="db in databases"
           :key="db.id"
@@ -27,6 +32,11 @@
 
           <h3 class="text-[clamp(1rem,2.5vw,1.35rem)] font-black leading-tight tracking-normal">{{ db.title }}</h3>
           <p class="mt-2 xs:mt-3 flex-1 text-xs xs:text-sm leading-6 text-black/65">{{ db.description }}</p>
+
+          <div v-if="db.speciesCount" class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-black/50">
+            <span>{{ db.speciesCount }} {{ t('home.speciesCount').toLowerCase() }}</span>
+            <span v-if="db.groupCount">· {{ db.groupCount }} {{ t('home.groupsCount').toLowerCase() }}</span>
+          </div>
 
           <div class="mt-4 xs:mt-6 flex flex-wrap items-center gap-2 xs:gap-3">
             <a
@@ -53,6 +63,16 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+
+interface DatasetInfo {
+  id: string
+  name: string
+  url: string
+  speciesCount: number
+  taxonomicGroups: Record<string, number>
+}
+
 interface Database {
   id: string
   icon: string
@@ -60,26 +80,47 @@ interface Database {
   title: string
   description: string
   link: string
+  speciesCount: number | null
+  groupCount: number | null
 }
 
 const { t } = useI18n()
 
-const databases: Database[] = [
-  {
-    id: 'iucn',
-    icon: 'lucide:globe',
-    scope: t('home.iucnScope'),
-    title: t('home.iucnTitle'),
-    description: t('home.iucnDesc'),
-    link: 'https://www.iucnredlist.org/',
-  },
-  {
-    id: 'icmbio',
-    icon: 'lucide:tree-pine',
-    scope: t('home.icmbioScope'),
-    title: t('home.icmbioTitle'),
-    description: t('home.icmbioDesc'),
-    link: 'https://www.gov.br/icmbio/pt-br/assuntos/biodiversidade',
-  },
-]
+const loading = ref(true)
+const databases = ref<Database[]>([])
+
+const DATASET_ICONS: Record<string, string> = {
+  iucn: 'lucide:globe',
+  'icmbio-brazil': 'lucide:tree-pine',
+}
+
+onMounted(async () => {
+  try {
+    const baseURL = (useRuntimeConfig().app?.baseURL as string) || '/'
+    const res = await fetch(`${baseURL}data/species/index.json`)
+    const index: { datasets: DatasetInfo[] } = await res.json()
+
+    databases.value = index.datasets.map((ds) => {
+      const keyId = datasetKeyId(ds.id)
+      return {
+        id: ds.id,
+        icon: DATASET_ICONS[ds.id] || 'lucide:database',
+        scope: t(`home.${keyId}Scope`),
+        title: t(`home.${keyId}Title`),
+        description: t(`home.${keyId}Desc`),
+        link: ds.url,
+        speciesCount: ds.speciesCount,
+        groupCount: Object.keys(ds.taxonomicGroups).length,
+      }
+    })
+  } catch {
+    databases.value = []
+  } finally {
+    loading.value = false
+  }
+})
+
+function datasetKeyId(id: string): string {
+  return id === 'icmbio-brazil' ? 'icmbio' : id
+}
 </script>

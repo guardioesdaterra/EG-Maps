@@ -5,6 +5,7 @@
     "projectGrants": "Project Grants",
     "endangeredSpecies": "Endangered Species",
     "observatoryOfVulcan": "Observatory of Vulcan",
+    "activeCrews": "Active Crews",
     "crews": "Crews",
     "joinEarthGuardians": "Join Earth Guardians",
     "switchToLight": "Switch to Light Mode",
@@ -23,10 +24,14 @@
     "speciesDesc": "Discover critically endangered species and their habitats around the world.",
     "observatoryTitle": "Observatory of Vulcan",
     "observatoryDesc": "Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.",
+    "activeCrewsTitle": "Active Crews",
+    "activeCrewsDesc": "Explore Earth Guardians' active crews across 7 regions — 131 crews, 1,241 members, 47 countries worldwide.",
     "projectsCount": "Projects",
     "beneficiariesCount": "Beneficiaries",
     "speciesCount": "Species",
     "groupsCount": "Groups",
+    "activeCrewsCount": "Active Crews",
+    "crewMembersCount": "Crew Members",
     "view2d": "2D Map",
     "view3d": "3D Globe",
     "projectGrants": "Project Grants",
@@ -48,6 +53,7 @@
     "search": "Search",
     "searchProjects": "Search Projects",
     "searchSpecies": "Search Species",
+    "searchCrews": "Search Crews",
     "searchPlaceholder": "Search by name or location...",
     "searchSpeciesPlaceholder": "Search by name or region...",
     "showAll": "Show All",
@@ -146,6 +152,14 @@
     "ecosystem": "Ecosystem",
     "actions": "Actions",
     "iucnProfile": "IUCN Profile"
+  },
+  "crews": {
+    "activeCrews": "Active Crews",
+    "inactiveCrews": "Inactive Crews",
+    "totalMembers": "Total Members",
+    "countries": "Countries",
+    "region": "Region",
+    "growthSince2022": "Growth since 2022"
   },
   "taxonomy": {
     "Mammal": "Mammals",
@@ -383,6 +397,7 @@
     "endangeredSpeciesGlobe": "Loading Endangered Species Globe",
     "observatoryOfVulcan": "Loading Observatory of Vulcan",
     "observatoryOfVulcanGlobe": "Loading Observatory of Vulcan Globe",
+    "activeCrewsMap": "Loading Active Crews Map",
     "initializingVisualization": "Initializing interactive visualization..."
   },
   "error": {

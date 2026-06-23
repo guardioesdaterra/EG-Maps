@@ -7,7 +7,7 @@ export interface Translation {
   [key: string]: string | Translation
 }
 
-const localeIds: Locale[] = ['en', 'es', 'pt', 'fr', 'ja', 'zh', 'ar', 'hi']
+const localeIds: Locale[] = ['en', 'es', 'pt', 'fr', 'ja', 'zh', 'ar', 'hi', 'nl', 'de']
 
 // English fallback (used when a key is missing in the current locale)
 function deepGet(obj: Translation | undefined, path: string[]): string | undefined {
@@ -98,6 +98,8 @@ export function useI18n() {
       zh: '中文',
       ar: 'العربية',
       hi: 'हिन्दी',
+      nl: 'Nederlands',
+      de: 'Deutsch',
     } satisfies Record<Locale, string>,
     setLocale,
   }

@@ -128,6 +128,16 @@
     <!-- Detached fullscreen species popup overlay -->
     <div v-if="showSpeciesOverlay" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Species details" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
       <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" aria-label="Close species details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+      <div v-if="availablePopupLocales.length > 0" class="species-popup-lang-bar">
+        <button
+          v-for="loc in availablePopupLocales"
+          :key="loc"
+          class="species-popup-lang-btn"
+          :class="{ active: popupLocale === loc }"
+          @click="popupLocale = loc"
+          :aria-label="`Show in ${(localeNames as Record<string, string>)[loc] || loc}`"
+        >{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
+      </div>
       <div class="species-popup-content-fixed" v-html="speciesOverlayHTML"></div>
     </div>
 
@@ -170,11 +180,11 @@ import {
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { useMapConnections } from '@/composables/useMapConnections'
 
-const { t, locale } = useI18n()
+const { t, locale, localeNames } = useI18n()
 const speciesPanel = useSpeciesPanel()
 const baseURL = useRuntimeConfig().app.baseURL
 
-function getLocalizedSpecies(species: Species | SpeciesIndexItem): Species {
+function getLocalizedSpecies(species: Species | SpeciesIndexItem, overLocale?: string): Species {
   if (!('content' in species)) {
     return {
       ...species,
@@ -188,7 +198,8 @@ function getLocalizedSpecies(species: Species | SpeciesIndexItem): Species {
     }
   }
 
-  const content = species.content?.[locale.value] ?? species.content?.en
+  const targetLocale = overLocale ?? locale.value
+  const content = species.content?.[targetLocale] ?? species.content?.en
   if (!content) return species
 
   return {
@@ -238,6 +249,13 @@ const activeDataset = ref<'project-grants' | 'endangered-species'>(props.default
 const isHexGridVisible = ref(props.showHexGrid)
 const showSpeciesOverlay = ref(false)
 const speciesOverlayHTML = ref('')
+const popupLocale = ref<string>(locale.value)
+const selectedPopupSpecies = ref<Species | SpeciesIndexItem | null>(null)
+const availablePopupLocales = computed(() => {
+  const s = selectedPopupSpecies.value
+  if (!s || !('content' in s) || !s.content) return []
+  return (Object.keys(s.content) as Array<string>).filter(l => l !== popupLocale.value)
+})
 const showProjectOverlay = ref(false)
 const projectOverlayHTML = ref('')
 
@@ -263,7 +281,18 @@ const geoJSONMarkers = useGeoJSONMarkers()
 let lastClusterZoom = -1
 let lastBboxCenter: { lng: number; lat: number } | null = null
 function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
-  const localizedSpecies = getLocalizedSpecies(species)
+  selectedPopupSpecies.value = species
+  popupLocale.value = locale.value
+  rebuildSpeciesOverlay()
+  showSpeciesOverlay.value = true
+  lastFocusedEl = document.activeElement as HTMLElement
+  nextTick(() => speciesCloseBtnRef.value?.focus())
+}
+
+function rebuildSpeciesOverlay() {
+  const species = selectedPopupSpecies.value
+  if (!species) return
+  const localizedSpecies = getLocalizedSpecies(species, popupLocale.value)
   const speciesPopupTranslations = {
     scientificName: t('species.scientificName'),
     threatTypes: t('species.threatTypes'),
@@ -273,15 +302,13 @@ function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
     ecosystem: t('filter.ecosystem'),
     groupLabels: getTaxonomicGroupLabels()
   }
-  speciesOverlayHTML.value = buildSpeciesPopupHTML(localizedSpecies as Species, speciesPopupTranslations, baseURL)
-  showSpeciesOverlay.value = true
-  lastFocusedEl = document.activeElement as HTMLElement
-  nextTick(() => speciesCloseBtnRef.value?.focus())
+  speciesOverlayHTML.value = buildSpeciesPopupHTML(localizedSpecies, speciesPopupTranslations, baseURL)
 }
 
 function closeSpeciesOverlay() {
   showSpeciesOverlay.value = false
   speciesOverlayHTML.value = ''
+  selectedPopupSpecies.value = null
   nextTick(() => lastFocusedEl?.focus())
 }
 
@@ -480,16 +507,24 @@ async function initMap() {
         const errObj = err as { error?: { status?: number; message?: string } }
         if (errObj?.error?.status === 403) {
           errorMessage.value = 'MapTiler API key is invalid or restricted. Please update your API key in the .env file.'
+        } else if (errObj?.error?.message) {
+          errorMessage.value = errObj.error.message
+        } else {
+          errorMessage.value = 'Failed to load globe tiles. Please check your network connection and try again.'
         }
       }
     })
 
-    // Timeout fallback for loading
+    // Timeout fallback — show error instead of silently hiding loading
     setTimeout(() => {
       if (isLoading.value) {
         isLoading.value = false
+        if (!hasError.value) {
+          hasError.value = true
+          errorMessage.value = 'Globe tiles took too long to load. Please check your network connection and try again.'
+        }
       }
-    }, 10000)
+    }, 20000)
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('Failed to load maplibre-gl:', err)
@@ -1296,6 +1331,20 @@ if (typeof document !== 'undefined' && !document.getElementById('globe-styles'))
       initial-value: 0deg;
       inherits: false;
     }
+    .species-popup-lang-bar {
+      position: absolute; top: 68px; right: 16px;
+      z-index: 2147483647; display: flex; flex-wrap: wrap; gap: 4px; max-width: 180px;
+    }
+    .species-popup-lang-btn {
+      padding: 3px 8px; font-size: 10px; font-weight: 700; line-height: 1.3;
+      border-radius: 4px; border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6);
+      cursor: pointer; transition: all 0.15s ease; letter-spacing: 0.02em; text-transform: uppercase;
+    }
+    .species-popup-lang-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .species-popup-lang-btn.active {
+      background: rgba(6,182,212,0.25); border-color: rgba(6,182,212,0.5); color: #67e8f9;
+    }
     @keyframes flyto-pulse {
       0% { transform: scale(0.3); opacity: 1; }
       50% { transform: scale(1.2); opacity: 0.6; }
@@ -1355,6 +1404,11 @@ watch(speciesIndexData, () => {
     rebuildMarkers()
   }
 }, { deep: true })
+
+// Rebuild species overlay when popup language changes
+watch(popupLocale, () => {
+  if (showSpeciesOverlay.value) rebuildSpeciesOverlay()
+})
 
 onUnmounted(() => {
   isMounted = false

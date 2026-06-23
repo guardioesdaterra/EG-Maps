@@ -1,5 +1,6 @@
 import { getProjectColorByBeneficiaries, COLOR_MAMMAL } from './colors'
 import type { ProjectData, Species } from './types'
+import type { CrewRegionData } from './crew-data'
 import { isMilitaryInterest as _isMilitaryInterest, isHighEnvRisk as _isHighEnvRisk, isSuspiciousBasic, buildAnmVerifyUrl, buildClaimReportMailtoUrl, type SpeculatorIndexEntry } from './observatory-analysis'
 
 export type { Species }
@@ -96,6 +97,91 @@ export function buildProjectPopupHTML(project: ProjectData, translations?: Popup
           </div>
         </div>
         ${metricsBlock}
+      </div>
+      <div class="project-popup-footer">
+        <div class="project-footer-glow" style="background: ${color}"></div>
+      </div>
+    </div>
+  `
+}
+
+export interface CrewPopupTranslations {
+  activeCrews: string
+  inactiveCrews: string
+  totalMembers: string
+  countries: string
+  region: string
+  growthSince2022: string
+}
+
+export function buildCrewPopupHTML(crew: CrewRegionData, translations?: CrewPopupTranslations): string {
+  const t = translations || {
+    activeCrews: 'Active Crews',
+    inactiveCrews: 'Inactive Crews',
+    totalMembers: 'Total Members',
+    countries: 'Countries',
+    region: 'Region',
+    growthSince2022: 'Growth since 2022',
+  }
+  const color = crew.activeCrews > 20 ? '#22c55e' : crew.activeCrews > 5 ? '#3b82f6' : '#a855f7'
+  const history2022 = crew.history.find(h => h.year === 2022)
+  const growth = history2022 && history2022.activeCrews > 0
+    ? Math.round(((crew.activeCrews - history2022.activeCrews) / history2022.activeCrews) * 100)
+    : null
+
+  return `
+    <div class="project-popup-wrapper" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere; overflow: hidden;">
+      <div class="project-popup-header">
+        <div class="project-corner-accent top-left"></div>
+        <div class="project-corner-accent top-right"></div>
+        <div class="project-header-content">
+          <div class="project-status-bar">
+            <span class="project-badge">Earth Guardians Crew</span>
+            <span class="project-indicator" style="background: ${color}"></span>
+          </div>
+          <h3 class="project-title" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere;">${escapeHtml(crew.region)}</h3>
+        </div>
+        <div class="project-header-line"></div>
+      </div>
+      <div class="project-popup-body">
+        <div class="project-stat-row">
+          <div class="project-stat-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="project-stat-content">
+            <span class="project-stat-label">${t.activeCrews}</span>
+            <span class="project-stat-value">${crew.activeCrews}</span>
+          </div>
+        </div>
+        <div class="project-stat-row">
+          <div class="project-stat-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div class="project-stat-content">
+            <span class="project-stat-label">${t.totalMembers}</span>
+            <span class="project-stat-value">${crew.totalMembers.toLocaleString()}</span>
+          </div>
+        </div>
+        <div class="project-stat-row">
+          <div class="project-stat-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="project-stat-content">
+            <span class="project-stat-label">${t.countries}</span>
+            <span class="project-stat-value">${crew.countries}</span>
+          </div>
+        </div>
+        ${growth !== null ? `
+        <div class="project-divider"></div>
+        <div class="project-metrics">
+          <div class="project-metric">
+            <div class="project-metric-header">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>
+              <span>${t.growthSince2022}</span>
+            </div>
+            <span class="project-metric-value direct">+${growth}%</span>
+          </div>
+        </div>` : ''}
       </div>
       <div class="project-popup-footer">
         <div class="project-footer-glow" style="background: ${color}"></div>

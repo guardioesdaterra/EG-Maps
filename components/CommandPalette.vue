@@ -11,6 +11,7 @@ const { t } = useI18n()
 const { open, query: stateQuery, items, closePalette, setQuery: setStateQuery } = useCommandPalette()
 
 const inputRef = ref<HTMLInputElement | null>(null)
+const panelRef = ref<HTMLElement | null>(null)
 const query = ref('')
 const activeIndex = ref(0)
 
@@ -203,12 +204,6 @@ onUnmounted(() => {
     </Transition>
   </Teleport>
 </template>
-
-<script lang="ts">
-import { ref as _ref } from 'vue'
-const panelRef = _ref<HTMLElement | null>(null)
-export default {}
-</script>
 
 <style scoped>
 .cmd-backdrop {

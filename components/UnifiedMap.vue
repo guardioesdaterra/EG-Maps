@@ -77,7 +77,7 @@
     </div>
 
     <!-- Map Container -->
-    <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" />
+    <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" :style="{ zIndex: 'var(--z-map-base)' }" />
 
     <!-- Custom overlays slot (used by observatory-of-vulcan) -->
     <slot name="overlays" />
@@ -182,18 +182,21 @@ import { useFocusTrap } from '@/composables/useFocusTrap'
 import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData } from '@/lib/crew-data'
-import { getProjectColorByBeneficiaries } from '@/lib/colors'
 import type { Species } from '@/lib/map-utils'
-import { buildProjectPopupHTML, buildSpeciesPopupHTML, buildRareEarthPopupHTML, buildCrewPopupHTML, isValidCoordinate, GROUP_COLORS, RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
+import { buildProjectPopupHTML, buildSpeciesPopupHTML, buildRareEarthPopupHTML, buildCrewPopupHTML, isValidCoordinate, GROUP_COLORS } from '@/lib/map-utils'
 import type { GeoJSONSource } from 'maplibre-gl'
 import {
-  getMarkerImageUrl,
   preloadSpeciesImages,
-  getMarkerPlaceholder,
-  getProjectPlaceholder,
 } from '@/lib/image-utils'
 import { useMapCluster } from '@/composables/useMapCluster'
-import { MAX_CLUSTER_SIZE, type ClusterPoint, type ClusterItem } from '@/composables/useMapCluster'
+import type { ClusterPoint, ClusterItem } from '@/composables/useMapCluster'
+import {
+  createProjectMarkerElement,
+  createSpeciesMarkerElement,
+  createRareEarthMarkerElement,
+  createCrewMarkerElement,
+  createClusterMarkerElement,
+} from '@/composables/useMapMarkers'
 import {
   useGeoJSONMarkers,
   speciesIndexToGeoJSON,
@@ -556,408 +559,9 @@ function handleSearchOpenChange(open: boolean) {
 }
 
 
-function getUnifiedMarkerMetrics(options: {
-  color: string
-  size: number
-  centerScale?: number
-  imageUrl?: string
-  originalImageUrl?: string
-  group?: string
-}) {
-  const hitSize = Math.max(34, Math.round(options.size + 12))
-  const visualSize = Math.round(options.size)
 
-  return {
-    hitSize,
-    visualSize,
-    color: options.color,
-    centerSize: Math.max(7, Math.round(visualSize * (options.centerScale ?? 0.42))),
-    imageUrl: options.imageUrl,
-    originalImageUrl: options.originalImageUrl,
-    group: options.group,
-  }
-}
 
-function createUnifiedMarkerElement(metrics: ReturnType<typeof getUnifiedMarkerMetrics>) {
-  const el = document.createElement('div')
-  el.className = 'globe-marker-item'
-  el.style.width = `${metrics.hitSize}px`
-  el.style.height = `${metrics.hitSize}px`
-  el.style.display = 'flex'
-  el.style.justifyContent = 'center'
-  el.style.alignItems = 'center'
-  el.style.cursor = 'pointer'
-  el.style.pointerEvents = 'auto'
-  el.style.zIndex = '10'
 
-  const inner = document.createElement('div')
-  inner.style.width = `${metrics.visualSize}px`
-  inner.style.height = `${metrics.visualSize}px`
-  inner.style.borderRadius = '50%'
-  inner.style.background = `radial-gradient(circle at 30% 25%, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.88) 85%)`
-  inner.style.backdropFilter = 'blur(4px)'
-  inner.style.border = `1.5px solid ${metrics.color}`
-  inner.style.boxShadow = `0 0 ${Math.max(6, metrics.visualSize * 0.35)}px ${metrics.color}, 0 0 1px rgba(255,255,255,0.5), inset 0 0 12px rgba(0,0,0,0.3)`
-  inner.style.display = 'flex'
-  inner.style.justifyContent = 'center'
-  inner.style.alignItems = 'center'
-  inner.style.position = 'relative'
-  inner.style.overflow = 'hidden'
-  inner.style.transition = 'transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 180ms ease'
-  inner.style.transformOrigin = 'center center'
-  inner.style.transform = 'scale(1)'
-  inner.classList.add('marker-glow-breathe')
-
-  if (metrics.originalImageUrl) {
-    const thumbUrl = getMarkerImageUrl(metrics.originalImageUrl, baseURL)
-    if (thumbUrl) {
-      inner.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.25)), url("${thumbUrl}")`
-      inner.style.backgroundSize = 'cover'
-      inner.style.backgroundPosition = 'center'
-    }
-  } else if (metrics.imageUrl) {
-    inner.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.25)), url("${metrics.imageUrl}")`
-    inner.style.backgroundSize = 'cover'
-    inner.style.backgroundPosition = 'center'
-  } else {
-    inner.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.25)), url("${getMarkerPlaceholder(metrics.group)}")`
-    inner.style.backgroundSize = 'cover'
-    inner.style.backgroundPosition = 'center'
-  }
-
-  el.appendChild(inner)
-
-  el.addEventListener('mouseenter', () => {
-    inner.style.transform = 'scale(1.25)'
-    inner.style.boxShadow = `0 0 ${Math.max(14, metrics.visualSize * 0.8)}px ${metrics.color}, 0 0 3px rgba(255,255,255,0.8), inset 0 0 16px rgba(0,0,0,0.2)`
-    el.style.zIndex = '100'
-  })
-
-  el.addEventListener('mouseleave', () => {
-    inner.style.transform = 'scale(1)'
-    inner.style.boxShadow = `0 0 ${Math.max(6, metrics.visualSize * 0.35)}px ${metrics.color}, 0 0 1px rgba(255,255,255,0.5), inset 0 0 12px rgba(0,0,0,0.3)`
-    el.style.zIndex = '10'
-  })
-
-  return el
-}
-
-function createProjectMarkerElement(project: ProjectData): HTMLElement {
-  const totalBeneficiaries = project.direct_beneficiaries + project.indirect_beneficiaries
-  const beneficiaryFactor = Math.min(Math.max(totalBeneficiaries / 10000, 0.5), 5)
-  const markerSize = 15 + beneficiaryFactor * 10
-  const color = getProjectColorByBeneficiaries(project.direct_beneficiaries, project.indirect_beneficiaries)
-
-  return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
-    color,
-    size: markerSize,
-    group: getProjectPlaceholder(project.project_title),
-  }))
-}
-
-function createSpeciesMarkerElement(species: Species | SpeciesIndexItem): HTMLElement {
-  const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64030'
-  return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
-    color,
-    size: species.imageUrl ? 26 : 20,
-    centerScale: 0.62,
-    originalImageUrl: species.imageUrl || undefined,
-    group: species.taxonomicGroup,
-  }))
-}
-
-function createRareEarthMarkerElement(feature: GeoJSON.Feature): HTMLElement {
-  const props = feature.properties as Record<string, any> || {}
-  const cat = RARE_EARTH_CATEGORIES[props.c] ?? { label: 'Unknown', color: '#666' }
-  const size = 20
-  return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
-    color: cat.color,
-    size,
-    group: props.c,
-  }))
-}
-
-function createCrewMarkerElement(crew: CrewRegionData): HTMLElement {
-  const memberFactor = Math.min(Math.max(crew.totalMembers / 200, 0.5), 5)
-  const markerSize = 15 + memberFactor * 10
-  const color = crew.activeCrews > 20 ? '#22c55e' : crew.activeCrews > 5 ? '#3b82f6' : '#a855f7'
-
-  return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
-    color,
-    size: markerSize,
-    group: 'crew',
-  }))
-}
-
-function parseColor(hex: string): [number, number, number] {
-  const c = hex.replace('#', '')
-  return [parseInt(c.substring(0, 2), 16), parseInt(c.substring(2, 4), 16), parseInt(c.substring(4, 6), 16)]
-}
-
-function formatColor(r: number, g: number, b: number): string {
-  return `#${[r, g, b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('')}`
-}
-
-function blendColors(colors: string[]): string {
-  if (!colors.length) return '#6366f1'
-  const unique = [...new Set(colors)]
-  if (unique.length === 1) return unique[0]
-  const parsed = unique.map(c => parseColor(c))
-  const total = parsed.reduce((s, c) => [s[0] + c[0], s[1] + c[1], s[2] + c[2]], [0, 0, 0])
-  const r = Math.round(total[0] / parsed.length)
-  const g = Math.round(total[1] / parsed.length)
-  const b = Math.round(total[2] / parsed.length)
-  return formatColor(r, g, b)
-}
-
-function createClusterMarkerElement(
-  count: number,
-  items: ClusterItem[],
-  onItemClick: (item: ClusterItem) => void,
-  sourceProjects?: ProjectData[],
-  sourceSpecies?: (Species | SpeciesIndexItem)[],
-  sourceRareEarth?: GeoJSON.Feature[],
-  sourceCrews?: { lng: number; lat: number }[]
-) {
-  const dataset = activeDataset.value
-
-  function resolveMini(item: ClusterItem): { url: string; color: string } {
-    if (dataset === 'endangered-species' && sourceSpecies?.length) {
-      const sp = sourceSpecies[item.index]
-      if (sp) {
-        const color = GROUP_COLORS[sp.taxonomicGroup] ?? '#B64030'
-        if (sp.imageUrl) {
-          const thumbUrl = getMarkerImageUrl(sp.imageUrl, baseURL)
-          if (thumbUrl) return { url: thumbUrl, color }
-        }
-        return { url: getMarkerPlaceholder(sp.taxonomicGroup), color }
-      }
-    }
-    if (dataset === 'project-grants' && sourceProjects?.length) {
-      const pr = sourceProjects[item.index]
-      if (pr) {
-        const color = getProjectColorByBeneficiaries(pr.direct_beneficiaries, pr.indirect_beneficiaries)
-        const placeholder = getProjectPlaceholder(pr.project_title)
-        return { url: getMarkerPlaceholder(placeholder), color }
-      }
-    }
-    if (dataset === 'observatory-of-vulcan' && sourceRareEarth?.length) {
-      const feature = sourceRareEarth[item.index]
-      if (feature?.properties) {
-        const cat = RARE_EARTH_CATEGORIES[feature.properties.c] ?? { label: 'Unknown', color: '#666' }
-        return { url: getMarkerPlaceholder(feature.properties.c), color: cat.color }
-      }
-    }
-    if (dataset === 'active-crews' && sourceCrews?.length) {
-      return { url: getMarkerPlaceholder('crew'), color: '#22c55e' }
-    }
-    return { url: getMarkerPlaceholder(), color: '#6366f1' }
-  }
-
-  const resolved = items.map(i => resolveMini(i))
-  const dominant = blendColors(resolved.map(r => r.color))
-  const [dr, dg, db] = parseColor(dominant)
-
-  const outer = document.createElement('div')
-  outer.className = 'globe-marker-item'
-  outer.style.cursor = 'pointer'
-  outer.style.pointerEvents = 'auto'
-  outer.style.zIndex = '20'
-  outer.style.position = 'relative'
-  outer.title = `${count} items`
-
-  if (items.length <= MAX_CLUSTER_SIZE) {
-    const miniSize = items.length <= 3 ? 24 : 20
-    const containerSize = items.length <= 2 ? 48 : items.length <= 4 ? 58 : 66
-    const orbitRadius = items.length <= 2 ? 10 : items.length <= 4 ? 14 : 17
-
-    outer.style.width = `${containerSize}px`
-    outer.style.height = `${containerSize}px`
-    outer.style.display = 'flex'
-    outer.style.justifyContent = 'center'
-    outer.style.alignItems = 'center'
-
-    const clusterInner = document.createElement('div')
-    clusterInner.style.position = 'relative'
-    clusterInner.style.width = `${containerSize}px`
-    clusterInner.style.height = `${containerSize}px`
-    clusterInner.style.display = 'flex'
-    clusterInner.style.justifyContent = 'center'
-    clusterInner.style.alignItems = 'center'
-
-    // Compute orbit positions for mini circles
-    const angleStep = (Math.PI * 2) / items.length
-    const centers: { x: number; y: number }[] = []
-    items.forEach((_item, i) => {
-      const angle = angleStep * i - Math.PI / 2
-      centers.push({ x: Math.cos(angle) * orbitRadius, y: Math.sin(angle) * orbitRadius })
-    })
-
-    // Mini circles at orbit positions — only the circular markers, no shape behind.
-    // Each mini is individually clickable and opens the matching item.
-    items.forEach((item, i) => {
-      const { url, color: itemColor } = resolved[i]
-      const c = centers[i]
-      const mini = document.createElement('div')
-      mini.className = 'cluster-mini-hover'
-      mini.style.position = 'absolute'
-      mini.style.width = `${miniSize}px`
-      mini.style.height = `${miniSize}px`
-      mini.style.borderRadius = '50%'
-      mini.style.background = `url("${url}") center/cover`
-      mini.style.border = '1.5px solid rgba(255,255,255,0.85)'
-      mini.style.boxShadow = `0 0 7px ${itemColor}, 0 0 1.5px #fff`
-      mini.style.top = `calc(50% + ${c.y}px - ${miniSize / 2}px)`
-      mini.style.left = `calc(50% + ${c.x}px - ${miniSize / 2}px)`
-      mini.style.cursor = 'pointer'
-      mini.style.zIndex = '2'
-      mini.setAttribute('tabindex', '0')
-      mini.setAttribute('role', 'button')
-      mini.setAttribute('aria-label', `Open item ${i + 1} of ${items.length}`)
-      mini.addEventListener('click', (e) => {
-        e.stopPropagation()
-        onItemClick(item)
-      })
-      mini.addEventListener('keydown', (e: KeyboardEvent) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          e.stopPropagation()
-          onItemClick(item)
-        }
-      })
-      clusterInner.appendChild(mini)
-    })
-
-    // Count badge
-    const countBadge = document.createElement('div')
-    countBadge.textContent = `${count}`
-    countBadge.style.position = 'absolute'
-    countBadge.style.bottom = '-4px'
-    countBadge.style.right = '-4px'
-    countBadge.style.background = dominant
-    countBadge.style.color = '#fff'
-    countBadge.style.fontSize = '8px'
-    countBadge.style.fontWeight = '800'
-    countBadge.style.lineHeight = '1'
-    countBadge.style.padding = '2px 5px'
-    countBadge.style.borderRadius = '8px'
-    countBadge.style.border = '1.5px solid rgba(0,0,0,0.5)'
-    countBadge.style.boxShadow = `0 0 8px ${dominant}`
-    countBadge.style.zIndex = '5'
-    clusterInner.appendChild(countBadge)
-
-    outer.appendChild(clusterInner)
-
-    outer.addEventListener('mouseenter', () => {
-      outer.style.zIndex = '100'
-    })
-    outer.addEventListener('mouseleave', () => {
-      outer.style.zIndex = '20'
-    })
-  } else {
-    const miniSize = 14
-    const cols = 4
-    const rows = Math.ceil(Math.min(count, 12) / cols)
-    const gap = 2
-    const pad = 5
-    const gridW = cols * (miniSize + gap) - gap + pad * 2
-    const gridH = rows * (miniSize + gap) - gap + pad * 2
-
-    outer.style.width = `${gridW}px`
-    outer.style.height = `${gridH}px`
-    outer.style.display = 'flex'
-    outer.style.justifyContent = 'center'
-    outer.style.alignItems = 'center'
-
-    const grid = document.createElement('div')
-    grid.style.position = 'relative'
-    grid.style.display = 'flex'
-    grid.style.flexWrap = 'wrap'
-    grid.style.alignContent = 'center'
-    grid.style.justifyContent = 'center'
-    grid.style.gap = `${gap}px`
-    grid.style.width = '100%'
-    grid.style.height = '100%'
-    grid.style.padding = `${pad}px`
-    grid.style.borderRadius = '14px'
-    grid.style.transition = 'transform 200ms ease'
-    grid.style.transformOrigin = 'center center'
-
-    const maxShow = cols * rows - 1
-
-    const gridInner = document.createElement('div')
-    gridInner.style.position = 'relative'
-    gridInner.style.display = 'flex'
-    gridInner.style.flexWrap = 'wrap'
-    gridInner.style.alignContent = 'center'
-    gridInner.style.justifyContent = 'center'
-    gridInner.style.gap = `${gap}px`
-    gridInner.style.width = '100%'
-    gridInner.style.height = '100%'
-    gridInner.style.zIndex = '1'
-
-    resolved.slice(0, maxShow).forEach(({ url, color: itemColor }, idx) => {
-      const item = items[idx]
-      const mini = document.createElement('div')
-      mini.className = 'cluster-mini-hover'
-      mini.style.width = `${miniSize}px`
-      mini.style.height = `${miniSize}px`
-      mini.style.borderRadius = '50%'
-      mini.style.background = `url("${url}") center/cover`
-      mini.style.border = '1px solid rgba(255,255,255,0.75)'
-      mini.style.boxShadow = `0 0 4px ${itemColor}`
-      mini.style.cursor = 'pointer'
-      mini.style.flexShrink = '0'
-      mini.setAttribute('tabindex', '0')
-      mini.setAttribute('role', 'button')
-      mini.addEventListener('click', (e) => {
-        e.stopPropagation()
-        if (item) onItemClick(item)
-      })
-      mini.addEventListener('keydown', (e: KeyboardEvent) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          e.stopPropagation()
-          if (item) onItemClick(item)
-        }
-      })
-      gridInner.appendChild(mini)
-    })
-
-    if (count > maxShow) {
-      const more = document.createElement('div')
-      more.className = 'cluster-mini-hover'
-      more.textContent = `+${count - maxShow}`
-      more.style.width = `${miniSize}px`
-      more.style.height = `${miniSize}px`
-      more.style.borderRadius = '50%'
-      more.style.background = `rgba(${dr},${dg},${db},0.55)`
-      more.style.backdropFilter = 'blur(4px)'
-      more.style.border = `1.5px solid ${dominant}`
-      more.style.color = '#fff'
-      more.style.fontSize = '7px'
-      more.style.fontWeight = '800'
-      more.style.display = 'flex'
-      more.style.alignItems = 'center'
-      more.style.justifyContent = 'center'
-      more.style.flexShrink = '0'
-      gridInner.appendChild(more)
-    }
-
-    grid.appendChild(gridInner)
-
-    outer.addEventListener('mouseenter', () => {
-      grid.style.transform = 'scale(1.1)'
-      outer.style.zIndex = '100'
-    })
-    outer.addEventListener('mouseleave', () => {
-      grid.style.transform = 'scale(1)'
-      outer.style.zIndex = '20'
-    })
-  }
-
-  return outer
-}
 
 const useNativeGeoJSON = true
 const SOURCE_ID = 'species-markers'
@@ -1125,7 +729,7 @@ function rebuildMarkers() {
           const project = visibleProjects.value[item.index]
           if (project) openProjectOverlay(project)
         }
-        const el = createClusterMarkerElement(cp.count, cp.items, onItemClick, validProjects)
+        const el = createClusterMarkerElement(activeDataset.value, cp.count, cp.items, onItemClick, validProjects)
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
         el.setAttribute('aria-label', `Cluster of ${cp.count} projects`)
@@ -1183,7 +787,7 @@ function rebuildMarkers() {
           const feature = features[item.index]
           if (feature) openRareEarthOverlay(feature)
         }
-        const el = createClusterMarkerElement(cp.count, cp.items, onItemClick, undefined, undefined, features)
+        const el = createClusterMarkerElement(activeDataset.value, cp.count, cp.items, onItemClick, undefined, undefined, features)
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
         el.setAttribute('aria-label', `Cluster of ${cp.count} rare earth claims`)
@@ -1241,7 +845,7 @@ function rebuildMarkers() {
           const crew = validCrews[item.index]
           if (crew) openCrewOverlay(crew)
         }
-        const el = createClusterMarkerElement(cp.count, cp.items, onItemClick, undefined, undefined, undefined, validCrews.map(c => ({ lng: c.longitude, lat: c.latitude })))
+        const el = createClusterMarkerElement(activeDataset.value, cp.count, cp.items, onItemClick, undefined, undefined, undefined, validCrews.map(c => ({ lng: c.longitude, lat: c.latitude })))
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
         el.setAttribute('aria-label', `Cluster of ${cp.count} crew regions`)
@@ -1305,7 +909,7 @@ function rebuildMarkers() {
           const species = speciesToRender[item.index]
           if (species) openSpeciesOverlay(species)
         }
-        const el = createClusterMarkerElement(cp.count, cp.items, onItemClick, undefined, speciesToRender)
+        const el = createClusterMarkerElement(activeDataset.value, cp.count, cp.items, onItemClick, undefined, speciesToRender)
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
         el.setAttribute('aria-label', `Cluster of ${cp.count} species`)

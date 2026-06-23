@@ -1,6 +1,8 @@
 /**
  * Lightweight, framework-agnostic utilities used across components.
  */
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
 /**
  * Format a number using compact notation (1.2K, 3.4M, etc.)
@@ -116,12 +118,6 @@ export function throttle<T extends (...args: never[]) => void>(fn: T, wait: numb
     }
   }) as T
 }
-
-/**
- * cn — merge class names with tailwind-merge + clsx.
- */
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs))

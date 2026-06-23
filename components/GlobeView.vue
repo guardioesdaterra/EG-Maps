@@ -585,7 +585,8 @@ function createUnifiedMarkerElement(metrics: ReturnType<typeof getUnifiedMarkerM
 }
 
 function createProjectMarkerElement(project: ProjectData): HTMLElement {
-  const beneficiaryFactor = Math.min(Math.max(project.indirect_beneficiaries / 10000, 0.5), 5)
+  const totalBeneficiaries = project.direct_beneficiaries + project.indirect_beneficiaries
+  const beneficiaryFactor = Math.min(Math.max(totalBeneficiaries / 10000, 0.5), 5)
   const markerSize = 15 + beneficiaryFactor * 10
   const color = getProjectColorByBeneficiaries(project.direct_beneficiaries, project.indirect_beneficiaries)
 
@@ -1076,7 +1077,7 @@ function rebuildMarkers() {
       index: i,
     }))
 
-    clusterer.load(clusterItems)
+    clusterer.loadImmediate(clusterItems)
 
     const bounds = map.getBounds()
     const bbox: [number, number, number, number] = [
@@ -1141,7 +1142,7 @@ function rebuildMarkers() {
       index: i,
     }))
 
-    clusterer.load(clusterItems)
+    clusterer.loadImmediate(clusterItems)
 
     const bounds = map.getBounds()
     const bbox: [number, number, number, number] = [

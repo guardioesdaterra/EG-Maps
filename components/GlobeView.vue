@@ -176,6 +176,19 @@ const { t, locale } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
 
 function getLocalizedSpecies(species: Species | SpeciesIndexItem): Species {
+  if (!('content' in species)) {
+    return {
+      ...species,
+      imageUrl: species.imageUrl ?? '',
+      region: '',
+      ecosystem: '',
+      imageCredit: '',
+      ecosystemNeeds: undefined,
+      actions: undefined,
+      content: {},
+    }
+  }
+
   const content = species.content?.[locale.value] ?? species.content?.en
   if (!content) return species
 
@@ -570,7 +583,7 @@ function createProjectMarkerElement(project: ProjectData): HTMLElement {
   }))
 }
 
-function createSpeciesMarkerElement(species: Species): HTMLElement {
+function createSpeciesMarkerElement(species: Species | SpeciesIndexItem): HTMLElement {
   const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64030'
   return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
     color,
@@ -654,7 +667,7 @@ function createClusterMarkerElement(
   items: ClusterItem[],
   onItemClick: (item: ClusterItem) => void,
   sourceProjects?: ProjectData[],
-  sourceSpecies?: Species[]
+  sourceSpecies?: (Species | SpeciesIndexItem)[]
 ) {
   const dataset = activeDataset.value
 
@@ -1102,7 +1115,7 @@ function rebuildMarkers() {
       ? speciesIndexData.value.slice(0, 80)
       : speciesIndexData.value
     const speciesToRender = data.filter(s => isValidCoordinate(s.lat, s.lng))
-    const imageUrls = speciesToRender.map(s => s.imageUrl).filter(Boolean)
+    const imageUrls = speciesToRender.map(s => s.imageUrl).filter((url): url is string => url !== null)
 
     preloadSpeciesImages(imageUrls, true, baseURL)
 

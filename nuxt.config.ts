@@ -16,11 +16,6 @@ export default defineNuxtConfig({
 
   plugins: ['~/plugins/iconify-icon.client.ts', '~/plugins/command-palette.client.ts'],
 
-  // vueuse-motion configuration
-  motion: {
-    directives: ['fade', 'slide', 'pop', 'bounce', 'flip', 'morph'],
-  },
-
   // vueuse module
   vueuse: {
     ssrHandlers: true,

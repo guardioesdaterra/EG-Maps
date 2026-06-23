@@ -1011,7 +1011,7 @@ function rebuildMarkers() {
       index: i,
     }))
 
-    clusterer.load(clusterItems)
+    clusterer.loadImmediate(clusterItems)
 
     const bounds = map.getBounds()
     const bbox: [number, number, number, number] = [
@@ -1075,7 +1075,7 @@ function rebuildMarkers() {
       index: i,
     }))
 
-    clusterer.load(clusterItems)
+    clusterer.loadImmediate(clusterItems)
 
     const bounds = map.getBounds()
     const bbox: [number, number, number, number] = [

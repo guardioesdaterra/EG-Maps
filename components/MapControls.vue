@@ -257,6 +257,7 @@ import { useI18n } from '@/composables/useI18n'
 import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
 import type { Species } from '@/lib/map-utils'
+import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 
 interface Props {
   isGlobeView?: boolean
@@ -264,7 +265,7 @@ interface Props {
   showConnections?: boolean
   dataset?: 'project-grants' | 'endangered-species' | 'observatory-of-vulcan'
   projects?: ProjectData[]
-  species?: Species[]
+  species?: (Species | SpeciesIndexItem)[]
   filterOpen?: boolean
 }
 
@@ -448,7 +449,7 @@ watch([searchQuery, showAllItems, () => props.dataset], () => {
       searchResults.value = speciesList.filter(species =>
         species.commonName.toLowerCase().includes(query) ||
         species.scientificName.toLowerCase().includes(query) ||
-        species.region.toLowerCase().includes(query) ||
+        (species as Species).region?.toLowerCase().includes(query) ||
         species.taxonomicGroup.toLowerCase().includes(query)
       )
       showAllItems.value = false

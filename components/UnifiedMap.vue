@@ -115,7 +115,7 @@
       :show-connections="showConnections"
       :dataset="activeDataset"
       :projects="activeDataset === 'project-grants' ? visibleProjects : undefined"
-      :species="activeDataset === 'endangered-species' ? visibleSpecies : undefined"
+      :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined"
       :filter-open="showFilterPanel"
       @toggle-hex-grid="showHexGrid = !showHexGrid"
       @toggle-connections="toggleConnections"
@@ -272,7 +272,7 @@ const projectOverlayActive = computed(() => showProjectOverlay.value)
 useFocusTrap(speciesOverlayRef, { active: speciesOverlayActive })
 useFocusTrap(projectOverlayRef, { active: projectOverlayActive })
 
-function openSpeciesOverlay(species: Species) {
+function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
   const localizedSpecies = getLocalizedSpecies(species)
   const speciesPopupTranslations = {
     scientificName: t('species.scientificName'),
@@ -327,7 +327,20 @@ function getTaxonomicGroupLabels() {
   }, {})
 }
 
-function getLocalizedSpecies(species: Species): Species {
+function getLocalizedSpecies(species: Species | SpeciesIndexItem): Species {
+  if (!('content' in species)) {
+    return {
+      ...species,
+      imageUrl: species.imageUrl ?? '',
+      region: '',
+      ecosystem: '',
+      imageCredit: '',
+      ecosystemNeeds: undefined,
+      actions: undefined,
+      content: {},
+    }
+  }
+
   const content = species.content?.[locale.value] ?? species.content?.en
   if (!content) return species
 
@@ -561,7 +574,7 @@ function createProjectMarkerElement(project: ProjectData): HTMLElement {
   }))
 }
 
-function createSpeciesMarkerElement(species: Species): HTMLElement {
+function createSpeciesMarkerElement(species: Species | SpeciesIndexItem): HTMLElement {
   const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64030'
   return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
     color,
@@ -598,7 +611,7 @@ function createClusterMarkerElement(
   items: ClusterItem[],
   onItemClick: (item: ClusterItem) => void,
   sourceProjects?: ProjectData[],
-  sourceSpecies?: Species[]
+  sourceSpecies?: (Species | SpeciesIndexItem)[]
 ) {
   const dataset = activeDataset.value
 
@@ -962,7 +975,7 @@ function rebuildMarkers() {
   const currentZoom = map.getZoom()
 
   // Use native GeoJSON for large datasets (endangered species with 4000+ points)
-  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && visibleSpecies.value.length > 500) {
+  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500) {
     setupGeoJSONMarkers()
     return
   }
@@ -1033,12 +1046,12 @@ function rebuildMarkers() {
         markers.push(marker)
       }
     })
-  } else if (activeDataset.value === 'endangered-species') {
+  } else if (activeDataset.value === 'endangered-species' && speciesIndexData.value.length) {
     const speciesList = isMobile.value
-      ? visibleSpecies.value.slice(0, 80)
-      : visibleSpecies.value
+      ? speciesIndexData.value.slice(0, 80)
+      : speciesIndexData.value
     const speciesToRender = speciesList.filter(s => isValidCoordinate(s.lat, s.lng))
-    const imageUrls = speciesToRender.map(s => s.imageUrl).filter(Boolean)
+    const imageUrls = speciesToRender.map(s => s.imageUrl).filter((url): url is string => url !== null)
 
     preloadSpeciesImages(imageUrls, true, baseURL)
 
@@ -1443,7 +1456,7 @@ watch(locale, () => {
 // re-adding the source/layers) by calling setData on the existing source.
 // Falls back to rebuildMarkers() if the GeoJSON source isn't ready yet
 // (first paint, dataset switch, etc.).
-watch([visibleSpecies, visibleProjects, selectedSpeciesGroups], () => {
+watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData], () => {
   if (!map || !useNativeGeoJSON) {
     rebuildMarkers()
     return

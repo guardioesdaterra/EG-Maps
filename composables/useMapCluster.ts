@@ -4,7 +4,7 @@ import type { PointFeature } from 'supercluster'
 export interface ClusterItem {
   lng: number
   lat: number
-  type: 'project' | 'species'
+  type: 'project' | 'species' | 'rareEarth'
   index: number
 }
 
@@ -34,7 +34,7 @@ interface GeoJsonProperties {
   point_count?: number
   point_count_abbreviated?: number | string
   sourceIndex?: number
-  type?: 'project' | 'species'
+  type?: 'project' | 'species' | 'rareEarth'
 }
 
 const SUPERCLUSTER_OPTIONS = {

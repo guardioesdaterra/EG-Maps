@@ -4,6 +4,7 @@
     "info": "Info et retours",
     "projectGrants": "Subventions",
     "endangeredSpecies": "Espèces menacées",
+    "observatoryOfVulcan": "Observatoire du Vulcain",
     "crews": "Crews",
     "joinEarthGuardians": "Rejoindre Earth Guardians",
     "switchToLight": "Passer au mode clair",
@@ -20,6 +21,8 @@
     "projectGrantsDesc": "Explorez les initiatives mondiales de financement et leur impact sur les communautés.",
     "speciesTitle": "Espèces menacées",
     "speciesDesc": "Découvrez les espèces en danger critique et leurs habitats dans le monde.",
+    "observatoryTitle": "Observatoire du Vulcain",
+    "observatoryDesc": "Demandes d'exploitation de terres rares au Brésil — invasion de capitaux, réseaux d'entreprises, intérêts militaires et impact socio-environnemental.",
     "projectsCount": "Projets",
     "beneficiariesCount": "Bénéficiaires",
     "speciesCount": "Espèces",
@@ -372,6 +375,8 @@
     "projectGrantsGlobe": "Chargement du globe des subventions",
     "endangeredSpeciesMap": "Chargement de la carte des espèces menacées",
     "endangeredSpeciesGlobe": "Chargement du globe des espèces menacées",
+    "observatoryOfVulcan": "Chargement de l'Observatoire du Vulcain",
+    "observatoryOfVulcanGlobe": "Chargement du globe de l'Observatoire du Vulcain",
     "initializingVisualization": "Initialisation de la visualisation interactive..."
   },
   "error": {

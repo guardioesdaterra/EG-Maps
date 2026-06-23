@@ -3,7 +3,7 @@
     <a href="#main-content" class="skip-link">{{ skipLabel }}</a>
     <NuxtLayout>
       <Transition name="page" mode="out-in">
-        <NuxtPage />
+        <NuxtPage :key="route.fullPath" />
       </Transition>
     </NuxtLayout>
     <ToastHost position="bottom-right" />

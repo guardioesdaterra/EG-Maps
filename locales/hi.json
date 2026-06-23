@@ -4,6 +4,7 @@
     "info": "जानकारी और प्रतिक्रिया",
     "projectGrants": "प्रोजेक्ट अनुदान",
     "endangeredSpecies": "लुप्तप्राय प्रजातियाँ",
+    "observatoryOfVulcan": "वल्कन वेधशाला",
     "crews": "क्रू",
     "joinEarthGuardians": "अर्थ गार्जियंस में शामिल हों",
     "switchToLight": "लाइट मोड पर स्विच करें",
@@ -13,10 +14,15 @@
   "home": {
     "title": "अर्थ गार्जियंस",
     "subtitle": "इंटरैक्टिव डेटा विज़ुअलाइज़ेशन प्लेटफ़ॉर्म",
+    "dataMaps": "डेटा मैप्स",
+    "2d": "2D",
+    "3d": "3D",
     "projectGrantsTitle": "प्रोजेक्ट अनुदान",
     "projectGrantsDesc": "दुनिया भर में समुदायों पर उनके प्रभाव के साथ वैश्विक अनुदान पहल का पता लगाएं।",
     "speciesTitle": "लुप्तप्राय प्रजातियाँ",
     "speciesDesc": "दुनिया भर में गंभीर रूप से लुप्तप्राय प्रजातियों और उनके आवासों की खोज करें।",
+    "observatoryTitle": "वल्कन वेधशाला",
+    "observatoryDesc": "ब्राज़ील दुर्लभ मृदा खनन दावे — पूंजी आक्रमण, कॉर्पोरेट नेटवर्क, सैन्य हित और सामाजिक-पर्यावरणीय प्रभाव।",
     "projectsCount": "प्रोजेक्ट",
     "beneficiariesCount": "लाभार्थी",
     "speciesCount": "प्रजातियाँ",
@@ -369,6 +375,8 @@
     "projectGrantsGlobe": "प्रोजेक्ट अनुदान ग्लोब लोड हो रहा है",
     "endangeredSpeciesMap": "लुप्तप्राय प्रजाति नक्शा लोड हो रहा है",
     "endangeredSpeciesGlobe": "लुप्तप्राय प्रजाति ग्लोब लोड हो रहा है",
+    "observatoryOfVulcan": "वल्कन वेधशाला लोड हो रही है",
+    "observatoryOfVulcanGlobe": "वल्कन वेधशाला ग्लोब लोड हो रहा है",
     "initializingVisualization": "इंटरैक्टिव विज़ुअलाइज़ेशन प्रारंभ हो रहा है..."
   },
   "error": {

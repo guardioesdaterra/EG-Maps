@@ -4,6 +4,7 @@
     "info": "Info y comentarios",
     "projectGrants": "Subvenciones",
     "endangeredSpecies": "Especies en peligro",
+    "observatoryOfVulcan": "Observatorio del Volcán",
     "crews": "Crews",
     "joinEarthGuardians": "Unirse a Earth Guardians",
     "switchToLight": "Cambiar a modo claro",
@@ -20,6 +21,8 @@
     "projectGrantsDesc": "Explora iniciativas globales de financiación y su impacto en comunidades de todo el mundo.",
     "speciesTitle": "Especies en peligro",
     "speciesDesc": "Descubre especies en peligro crítico y sus hábitats alrededor del mundo.",
+    "observatoryTitle": "Observatorio del Volcán",
+    "observatoryDesc": "Reclamos mineros de tierras raras en Brasil — invasión de capital, redes corporativas, intereses militares e impacto socioambiental.",
     "projectsCount": "Proyectos",
     "beneficiariesCount": "Beneficiarios",
     "speciesCount": "Especies",
@@ -372,6 +375,8 @@
     "projectGrantsGlobe": "Cargando globo de subvenciones",
     "endangeredSpeciesMap": "Cargando mapa de especies en peligro",
     "endangeredSpeciesGlobe": "Cargando globo de especies en peligro",
+    "observatoryOfVulcan": "Cargando Observatorio del Volcán",
+    "observatoryOfVulcanGlobe": "Cargando Observatorio del Volcán Globo",
     "initializingVisualization": "Inicializando visualización interactiva..."
   },
   "error": {

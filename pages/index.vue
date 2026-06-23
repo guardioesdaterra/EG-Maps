@@ -3,18 +3,14 @@
     <section class="mx-auto flex min-h-[100svh] w-[min(100%,78rem)] flex-col justify-center px-[clamp(0.875rem,4vw,2.5rem)] py-[clamp(5.75rem,10vh,8rem)]">
       <div class="grid gap-[clamp(1.5rem,4vw,3.25rem)] lg:grid-cols-[minmax(0,0.9fr)_minmax(22rem,1.1fr)] lg:items-end">
         <header class="max-w-[min(100%,38rem)]">
-          <div class="mb-[clamp(1.75rem,4vw,3rem)] flex flex-col items-center text-center">
-            <img
-              :src="`${baseURL}eg-logo.png`"
-              alt="Earth Guardians"
-              class="h-[clamp(5.5rem,16vw,10rem)] w-[clamp(5.5rem,16vw,10rem)] rounded-full object-cover"
-              loading="eager"
-            />
-            <div class="mt-3 xs:mt-4">
-              <p class="text-[10px] xs:text-xs font-bold uppercase tracking-[0.26em] text-black/60">Earth Guardians</p>
-              <p class="mt-1 text-xs xs:text-sm font-semibold text-black">{{ t('home.dataMaps') || 'Data maps' }}</p>
+            <div class="mb-[clamp(1.75rem,4vw,3rem)] flex flex-col items-center text-center">
+              <img
+                :src="`${baseURL}eg-logo.png`"
+                alt="Earth Guardians"
+                class="h-[clamp(8rem,22vw,14rem)] w-auto"
+                loading="eager"
+              />
             </div>
-          </div>
 
           <h1 class="text-[clamp(1.75rem,5.5vw,4rem)] font-black leading-[1.1] tracking-normal">
             {{ t('home.title') }}

@@ -4,6 +4,7 @@
     "info": "المعلومات والتعليقات",
     "projectGrants": "المنح المشاريع",
     "endangeredSpecies": "الأنواع المهددة بالانقراض",
+    "observatoryOfVulcan": "مرصد فولكان",
     "crews": "الفرق",
     "joinEarthGuardians": "انضم إلى حراس الأرض",
     "switchToLight": "التبديل إلى الوضع الفاتح",
@@ -13,10 +14,15 @@
   "home": {
     "title": "حراس الأرض",
     "subtitle": "منصة تصور البيانات التفاعلية",
+    "dataMaps": "خرائط البيانات",
+    "2d": "ثنائي الأبعاد",
+    "3d": "ثلاثي الأبعاد",
     "projectGrantsTitle": "المنح المشاريع",
     "projectGrantsDesc": "استكشف مبادرات المنح العالمية وتأثيرها على المجتمعات حول العالم.",
     "speciesTitle": "الأنواع المهددة بالانقراض",
     "speciesDesc": "اكتشف الأنواع المهددة بالانقراض بشكل حرج وموائلها حول العالم.",
+    "observatoryTitle": "مرصد فولكان",
+    "observatoryDesc": "مطالبات تعدين العناصر الأرضية النادرة في البرازيل — غزو رأس المال، شبكات الشركات، المصالح العسكرية والأثر الاجتماعي البيئي.",
     "projectsCount": "المشاريع",
     "beneficiariesCount": "المستفيدون",
     "speciesCount": "الأنواع",
@@ -369,6 +375,8 @@
     "projectGrantsGlobe": "جارٍ تحميل كرة منح المشاريع الأرضية",
     "endangeredSpeciesMap": "جارٍ تحميل خريطة الأنواع المهددة",
     "endangeredSpeciesGlobe": "جارٍ تحميل كرة الأنواع المهددة الأرضية",
+    "observatoryOfVulcan": "جارٍ تحميل مرصد فولكان",
+    "observatoryOfVulcanGlobe": "جارٍ تحميل كرة مرصد فولكان الأرضية",
     "initializingVisualization": "جارٍ تهيئة التصور التفاعلي..."
   },
   "error": {

@@ -4,6 +4,7 @@
     "info": "情報とフィードバック",
     "projectGrants": "プロジェクト助成金",
     "endangeredSpecies": "絶滅危惧種",
+    "observatoryOfVulcan": "バルカン観測所",
     "crews": "ークル",
     "joinEarthGuardians": "アースガーディアンズに参加",
     "switchToLight": "ライトモードに切り替え",
@@ -13,10 +14,15 @@
   "home": {
     "title": "アースガーディアンズ",
     "subtitle": "インタラクティブデータ可視化プラットフォーム",
+    "dataMaps": "データマップ",
+    "2d": "2D",
+    "3d": "3D",
     "projectGrantsTitle": "プロジェクト助成金",
     "projectGrantsDesc": "世界中のコミュニティへの影響を可視化し、全球的なグラントイニシアチブを探ります。",
     "speciesTitle": "絶滅危惧種",
     "speciesDesc": "世界中の危機に瀕した種とその生息地を発見します。",
+    "observatoryTitle": "バルカン観測所",
+    "observatoryDesc": "ブラジルの希土類鉱業権 — 資本侵攻、企業ネットワーク、軍事利益、社会環境への影響。",
     "projectsCount": "プロジェクト",
     "beneficiariesCount": "受益者",
     "speciesCount": "種",
@@ -369,6 +375,8 @@
     "projectGrantsGlobe": "プロジェクト助成金globoを読み込み中",
     "endangeredSpeciesMap": "絶滅危惧種マップを読み込み中",
     "endangeredSpeciesGlobe": "絶滅危惧種globoを読み込み中",
+    "observatoryOfVulcan": "バルカン観測所を読み込み中",
+    "observatoryOfVulcanGlobe": "バルカン観測所globoを読み込み中",
     "initializingVisualization": "インタラクティブ可視化を初期化中..."
   },
   "error": {

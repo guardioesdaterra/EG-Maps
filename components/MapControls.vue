@@ -16,7 +16,7 @@
             <span v-if="recentSearches.length > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-white rounded-full" />
           </UiButton>
         </template>
-        <p>{{ dataset === 'project-grants' ? t('mapControls.searchProjects') : t('mapControls.searchSpecies') }} <span class="text-gray-500 ml-1">{{ t('mapControls.keyboardShortcut') }}</span></p>
+        <p>{{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'observatory-of-vulcan' ? 'Search cities' : t('mapControls.searchSpecies') }} <span class="text-gray-500 ml-1">{{ t('mapControls.keyboardShortcut') }}</span></p>
       </UiTooltip>
 
       <!-- Filter Panel Toggle -->
@@ -97,7 +97,7 @@
         <div class="flex justify-between items-center mb-2 xs:mb-3">
           <h3 class="text-xs xs:text-sm font-bold text-[var(--tool-btn-text)] flex items-center gap-1.5 xs:gap-2">
             <iconify-icon icon="lucide:search" class="h-3.5 w-3.5 xs:h-4 xs:w-4" />
-            {{ dataset === 'project-grants' ? t('mapControls.searchProjects') : t('mapControls.searchSpecies') }}
+            {{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'observatory-of-vulcan' ? 'Search cities' : t('mapControls.searchSpecies') }}
           </h3>
           <div class="flex items-center gap-1">
             <span class="text-[10px] text-[var(--text-muted)] hidden sm:inline">ESC</span>
@@ -112,7 +112,7 @@
             <UiInput
               ref="searchInputRef"
               type="text"
-              :placeholder="dataset === 'project-grants' ? t('mapControls.searchPlaceholder') : t('mapControls.searchSpeciesPlaceholder')"
+              :placeholder="dataset === 'project-grants' ? t('mapControls.searchPlaceholder') : dataset === 'observatory-of-vulcan' ? 'Search Brazilian cities...' : t('mapControls.searchSpeciesPlaceholder')"
               v-model="searchQuery"
               class="pr-8"
               :style="{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }"
@@ -203,6 +203,9 @@
                   <p v-else-if="getSpeciesGroup(result)" class="text-xs text-[var(--text-muted)]">
                     {{ getSpeciesGroup(result) }}
                   </p>
+                  <p v-else-if="getCityPopulation(result)" class="text-xs text-[var(--text-muted)]">
+                    {{ getCityPopulation(result)?.toLocaleString() }} hab.
+                  </p>
                 </div>
               </div>
               <iconify-icon class="h-4 w-4 transition-all duration-150 flex-shrink-0 mt-1 text-[var(--search-result-text)] opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" icon="lucide:arrow-right" />
@@ -258,6 +261,7 @@ import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
 import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
+import { searchCities, BRAZILIAN_CITIES, type BrazilianCity } from '@/lib/brazilian-cities'
 
 interface Props {
   isGlobeView?: boolean
@@ -292,7 +296,8 @@ const fullscreen = ref(false)
 const showSearch = ref(false)
 const showAllItems = ref(false)
 const searchQuery = ref('')
-const searchResults = ref<Array<ProjectData | Species>>([])
+type SearchResult = ProjectData | Species | BrazilianCity
+const searchResults = ref<SearchResult[]>([])
 const searchInputRef = ref<{ inputRef?: HTMLInputElement } | null>(null)
 const selectedIndex = ref(-1)
 const selectedResultEl = ref<Element | null>(null)
@@ -396,32 +401,52 @@ watch(searchResults, () => {
 // Search data based on active dataset
 const currentProjects = computed(() => props.projects || allProjectsData)
 
-function isProjectResult(result: ProjectData | Species): result is ProjectData {
+function isProjectResult(result: SearchResult): result is ProjectData {
   return 'project_title' in result
 }
 
-function getResultTitle(result: ProjectData | Species): string {
-  return isProjectResult(result) ? result.project_title : result.commonName
+function isSpeciesResult(result: SearchResult): result is Species {
+  return 'commonName' in result && 'scientificName' in result
 }
 
-function getResultLocation(result: ProjectData | Species): string {
-  return isProjectResult(result) ? result.country_province : result.region
+function isCityResult(result: SearchResult): result is BrazilianCity {
+  return 'state' in result && 'population' in result && !('commonName' in result)
 }
 
-function getResultLat(result: ProjectData | Species): number {
-  return isProjectResult(result) ? result.latitude : result.lat
+function getResultTitle(result: SearchResult): string {
+  if (isProjectResult(result)) return result.project_title
+  if (isSpeciesResult(result)) return result.commonName
+  return result.name
 }
 
-function getResultLng(result: ProjectData | Species): number {
-  return isProjectResult(result) ? result.longitude : result.lng
+function getResultLocation(result: SearchResult): string {
+  if (isProjectResult(result)) return result.country_province
+  if (isSpeciesResult(result)) return result.region
+  return `${result.name}, ${result.state}`
 }
 
-function getProjectBeneficiaries(result: ProjectData | Species): number | null {
+function getResultLat(result: SearchResult): number {
+  if (isProjectResult(result)) return result.latitude
+  if (isSpeciesResult(result)) return result.lat
+  return result.lat
+}
+
+function getResultLng(result: SearchResult): number {
+  if (isProjectResult(result)) return result.longitude
+  if (isSpeciesResult(result)) return result.lng
+  return result.lng
+}
+
+function getProjectBeneficiaries(result: SearchResult): number | null {
   return isProjectResult(result) ? result.indirect_beneficiaries : null
 }
 
-function getSpeciesGroup(result: ProjectData | Species): string | null {
-  return isProjectResult(result) ? null : result.taxonomicGroup
+function getSpeciesGroup(result: SearchResult): string | null {
+  return isSpeciesResult(result) ? result.taxonomicGroup : null
+}
+
+function getCityPopulation(result: SearchResult): number | null {
+  return isCityResult(result) ? result.population : null
 }
 
 // Search logic
@@ -437,6 +462,18 @@ watch([searchQuery, showAllItems, () => props.dataset], () => {
     } else if (showAllItems.value) {
       searchResults.value = [...currentProjects.value].sort((a, b) =>
         a.project_title.localeCompare(b.project_title)
+      )
+    } else {
+      searchResults.value = []
+    }
+  } else if (props.dataset === 'observatory-of-vulcan') {
+    // City search
+    if (searchQuery.value.length > 1) {
+      searchResults.value = searchCities(searchQuery.value)
+      showAllItems.value = false
+    } else if (showAllItems.value) {
+      searchResults.value = [...BRAZILIAN_CITIES].sort((a, b) =>
+        a.name.localeCompare(b.name)
       )
     } else {
       searchResults.value = []

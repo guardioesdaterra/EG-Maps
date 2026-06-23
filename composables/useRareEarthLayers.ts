@@ -2,6 +2,7 @@ import type { Map as MapLibreMap, MapLayerMouseEvent, GeoJSONSource, DataDrivenP
 import type { Point } from 'geojson'
 import maplibregl from 'maplibre-gl'
 import { buildRareEarthPopupHTML, escapeHtml } from '@/lib/map-utils'
+import { citiesToGeoJSON } from '@/lib/brazilian-cities'
 
 export const REE_SOURCE_POINTS = 'ree-points'
 export const REE_SOURCE_POLYS = 'ree-polys'
@@ -9,9 +10,10 @@ export const REE_SOURCE_GEO = 'ree-geo'
 export const REE_SOURCE_SITES = 'ree-sites'
 export const REE_SOURCE_NETWORK = 'ree-network'
 export const REE_SOURCE_PROTECTED = 'ree-protected'
+export const REE_SOURCE_CITIES = 'ree-cities'
 
 export const REE_LAYER_IDS = [
-  'ree-clusters-glow', 'ree-clusters', 'ree-cluster-count',
+  'ree-clusters-glow', 'ree-clusters', 'ree-clusters-ring', 'ree-cluster-count',
   'ree-pt-direct_ree-glow', 'ree-pt-direct_ree',
   'ree-pt-carbonatite_associated-glow', 'ree-pt-carbonatite_associated',
   'ree-pt-pegmatite_associated-glow', 'ree-pt-pegmatite_associated',
@@ -24,12 +26,14 @@ export const REE_LAYER_IDS = [
   'ree-network-lines',
   'ree-protected-ti-fill', 'ree-protected-ti-line', 'ree-protected-ti-label',
   'ree-protected-quilombo-fill', 'ree-protected-quilombo-line', 'ree-protected-quilombo-label',
+  'ree-cities-label',
   'ree-overlap-glow',
 ] as const
 
 export const REE_SOURCE_IDS = [
   REE_SOURCE_POINTS, REE_SOURCE_POLYS, REE_SOURCE_GEO,
   REE_SOURCE_SITES, REE_SOURCE_NETWORK, REE_SOURCE_PROTECTED,
+  REE_SOURCE_CITIES,
 ] as const
 
 export interface RareEarthLayerOptions {
@@ -93,7 +97,6 @@ export function setupRareEarthLayers(
     map.addSource(REE_SOURCE_POLYS, { type: 'geojson', data: polys })
   }
 
-  const clusterRadiusStep: any = ['step', ['get', 'point_count'], 5, 5, 10, 20, 16, 50, 22, 100, 36]
   const dominantCatColor: any = ['case',
     ['all', ['>', ['get', 'dr'], 0], ['>=', ['get', 'dr'], ['get', 'ca']], ['>=', ['get', 'dr'], ['get', 'pg']], ['>=', ['get', 'dr'], ['get', 'hm']], ['>=', ['get', 'dr'], ['get', 'ph']], ['>=', ['get', 'dr'], ['get', 'st']]], '#e74c3c',
     ['all', ['>', ['get', 'ca'], 0], ['>=', ['get', 'ca'], ['get', 'dr']], ['>=', ['get', 'ca'], ['get', 'pg']], ['>=', ['get', 'ca'], ['get', 'hm']], ['>=', ['get', 'ca'], ['get', 'ph']], ['>=', ['get', 'ca'], ['get', 'st']]], '#f39c12',
@@ -103,13 +106,15 @@ export function setupRareEarthLayers(
     ['all', ['>', ['get', 'st'], 0], ['>=', ['get', 'st'], ['get', 'dr']], ['>=', ['get', 'st'], ['get', 'ca']], ['>=', ['get', 'st'], ['get', 'pg']], ['>=', ['get', 'st'], ['get', 'hm']], ['>=', ['get', 'st'], ['get', 'ph']]], '#e91e63',
     '#c0392b',
   ]
+
+  // Unified bubble style matching project-grants: transparent glow + solid core + inner ring
   map.addLayer({
     id: 'ree-clusters-glow', type: 'circle', source: REE_SOURCE_POINTS,
     filter: ['has', 'point_count'],
     paint: {
       'circle-color': dominantCatColor,
-      'circle-radius': ['step', ['get', 'point_count'], 10, 5, 18, 20, 28, 50, 36, 100, 52],
-      'circle-opacity': 0.15, 'circle-blur': 2.5,
+      'circle-radius': ['step', ['get', 'point_count'], 28, 10, 36, 50, 44, 100, 54],
+      'circle-opacity': 0.25, 'circle-blur': 0.9,
     },
   })
   map.addLayer({
@@ -117,9 +122,18 @@ export function setupRareEarthLayers(
     filter: ['has', 'point_count'],
     paint: {
       'circle-color': dominantCatColor,
-      'circle-radius': clusterRadiusStep,
-      'circle-opacity': 0.55,
-      'circle-stroke-width': 1.5, 'circle-stroke-color': 'rgba(255,255,255,0.15)',
+      'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 28, 100, 36],
+      'circle-opacity': 0.92,
+      'circle-stroke-width': 2.5, 'circle-stroke-color': 'rgba(255,255,255,0.85)',
+    },
+  })
+  map.addLayer({
+    id: 'ree-clusters-ring', type: 'circle', source: REE_SOURCE_POINTS,
+    filter: ['has', 'point_count'],
+    paint: {
+      'circle-color': 'rgba(255, 255, 255, 0.18)',
+      'circle-radius': ['step', ['get', 'point_count'], 8, 10, 10, 50, 12, 100, 14],
+      'circle-opacity': 0.6,
     },
   })
   map.addLayer({
@@ -127,13 +141,13 @@ export function setupRareEarthLayers(
     filter: ['has', 'point_count'],
     layout: {
       'text-field': '{point_count_abbreviated}',
-      'text-font': ['Open Sans Regular'],
-      'text-size': ['step', ['get', 'point_count'], 9, 5, 11, 20, 13],
+      'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+      'text-size': 12,
     },
-    paint: { 'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.85)', 'text-halo-width': 1.5 },
+    paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0,0,0,0.35)', 'text-halo-width': 1.5 },
   })
 
-  const pointRadius: any = ['interpolate', ['linear'], ['zoom'], 4, 2.5, 8, 4, 12, 6, 16, 8]
+  // Individual points: unified transparent circular style with category color
   CATEGORIES.forEach(cat => {
     const filter: any = ['all', ['!', ['has', 'point_count']], ['==', ['get', 'c'], cat]]
     const color = CATEGORY_COLORS[cat]
@@ -142,8 +156,9 @@ export function setupRareEarthLayers(
       filter,
       paint: {
         'circle-color': color,
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 6, 8, 9, 12, 13, 16, 17],
-        'circle-opacity': 0.12, 'circle-blur': 2,
+        'circle-radius': 10,
+        'circle-blur': 0.8,
+        'circle-opacity': 0.2,
       },
     })
     map.addLayer({
@@ -151,8 +166,10 @@ export function setupRareEarthLayers(
       filter,
       paint: {
         'circle-color': color,
-        'circle-radius': pointRadius, 'circle-opacity': 0.85,
-        'circle-stroke-width': 0.5, 'circle-stroke-color': 'rgba(255,255,255,0.35)',
+        'circle-radius': 5,
+        'circle-stroke-width': 1.5,
+        'circle-stroke-color': 'rgba(255,255,255,0.85)',
+        'circle-opacity': 0.95,
       },
     })
   })
@@ -177,17 +194,22 @@ export function setupRareEarthLayers(
     map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = '' })
   })
 
-  map.on('click', 'ree-clusters', async (e: MapLayerMouseEvent) => {
-    const fs = map.queryRenderedFeatures(e.point, { layers: ['ree-clusters'] })
+  const onClusterClick = async (e: MapLayerMouseEvent) => {
+    const layers = ['ree-clusters', 'ree-clusters-ring']
+    const fs = map.queryRenderedFeatures(e.point, { layers })
     if (!fs.length) return
     const cid = Number(fs[0].properties.cluster_id)
     const src = map.getSource(REE_SOURCE_POINTS) as GeoJSONSource
     const z = await src?.getClusterExpansionZoom(cid)
     const coords = (fs[0].geometry as Point).coordinates as [number, number]
     map.flyTo({ center: coords, zoom: Math.min(z ?? 14, 14), duration: 800 })
-  })
-  map.on('mouseenter', 'ree-clusters', () => { map.getCanvas().style.cursor = 'pointer' })
-  map.on('mouseleave', 'ree-clusters', () => { map.getCanvas().style.cursor = '' })
+  }
+  map.on('click', 'ree-clusters', onClusterClick)
+  map.on('click', 'ree-clusters-ring', onClusterClick)
+  for (const id of ['ree-clusters', 'ree-clusters-ring']) {
+    map.on('mouseenter', id, () => { map.getCanvas().style.cursor = 'pointer' })
+    map.on('mouseleave', id, () => { map.getCanvas().style.cursor = '' })
+  }
 
   if (polys) {
     const polyColorMatch: DataDrivenPropertyValueSpecification<string> = ['match', ['get', 'category'],
@@ -245,6 +267,7 @@ export function setupRareEarthLayers(
     })
   }
 
+  addBrazilianCitiesLayer(map)
   addRareEarthConflictSites(map)
   addRareEarthGeoBoundaries(map)
   if (options.networkFeatures) {
@@ -342,8 +365,8 @@ export function addRareEarthConflictSites(map: MapLibreMap) {
     id: 'ree-site-glow', type: 'circle', source: REE_SOURCE_SITES,
     paint: {
       'circle-color': '#c0392b',
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 8, 10, 14],
-      'circle-opacity': 0.12, 'circle-blur': 3,
+      'circle-radius': 13,
+      'circle-opacity': 0.2, 'circle-blur': 0.8,
     },
   })
   map.addLayer({
@@ -391,6 +414,29 @@ export function addRareEarthNetworkLines(map: MapLibreMap, networkFeatures: GeoJ
     paint: {
       'line-color': '#5dade2',
       'line-width': 0.5, 'line-opacity': 0.25, 'line-dasharray': [1, 3],
+    },
+  })
+}
+
+export function addBrazilianCitiesLayer(map: MapLibreMap) {
+  const cityData = citiesToGeoJSON()
+  map.addSource(REE_SOURCE_CITIES, { type: 'geojson', data: cityData })
+  map.addLayer({
+    id: 'ree-cities-label', type: 'symbol', source: REE_SOURCE_CITIES,
+    layout: {
+      'text-field': ['get', 'name'],
+      'text-font': ['Open Sans Regular'],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 4, 0, 7, 8, 10, 11, 14, 13],
+      'text-allow-overlap': false,
+      'text-ignore-placement': false,
+      'text-anchor': 'bottom',
+      'text-offset': [0, 1.5],
+    },
+    paint: {
+      'text-color': '#e8e8e8',
+      'text-halo-color': 'rgba(0,0,0,0.85)',
+      'text-halo-width': 2,
+      'text-opacity': ['interpolate', ['linear'], ['zoom'], 4, 0, 7, 0.7, 10, 0.9],
     },
   })
 }
@@ -448,8 +494,8 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
     filter: ['>', ['to-number', ['get', 'overlaps_count']], 0],
     paint: {
       'circle-color': '#ff00ff',
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 8, 8, 14, 12, 22],
-      'circle-opacity': 0.18, 'circle-blur': 2,
+      'circle-radius': 14,
+      'circle-opacity': 0.2, 'circle-blur': 0.8,
       'circle-stroke-color': '#ff00ff', 'circle-stroke-width': 1.5, 'circle-stroke-opacity': 0.8,
     },
   })
@@ -505,6 +551,7 @@ export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<strin
   const quilomboLayers = ['ree-protected-quilombo-fill', 'ree-protected-quilombo-line', 'ree-protected-quilombo-label']
   quilomboLayers.forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis['protected_quilombo'] !== false ? 'visible' : 'none') })
   if (map.getLayer('ree-overlap-glow')) map.setLayoutProperty('ree-overlap-glow', 'visibility', vis['overlaps'] !== false ? 'visible' : 'none')
+  if (map.getLayer('ree-cities-label')) map.setLayoutProperty('ree-cities-label', 'visibility', vis['cities'] !== false ? 'visible' : 'none')
 }
 
 export function buildNetworkLinesFromClaims(points: GeoJSON.FeatureCollection, maxPerGroup = 200): GeoJSON.FeatureCollection {

@@ -112,13 +112,13 @@
     <MapControls
       :is-globe-view="false"
       :show-hex-grid="showHexGrid"
-      :show-connections="showConnections"
+      :show-connections="showConnections2D"
       :dataset="activeDataset"
       :projects="activeDataset === 'project-grants' ? visibleProjects : undefined"
       :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined"
       :filter-open="showFilterPanel"
       @toggle-hex-grid="showHexGrid = !showHexGrid"
-      @toggle-connections="toggleConnections"
+      @toggle-connections="toggleConnections2D"
       @toggle-filter="showFilterPanel = !showFilterPanel"
       @search-open-change="handleSearchOpenChange"
       @navigate="navigateToLocation"
@@ -168,13 +168,6 @@ import type { ProjectData } from '@/lib/types'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
 import type { Species } from '@/lib/map-utils'
 import { buildProjectPopupHTML, buildSpeciesPopupHTML, isValidCoordinate, GROUP_COLORS } from '@/lib/map-utils'
-import {
-  buildMapConnectionFeatures,
-  createMapParticleSystem,
-  syncMapConnectionLayers,
-  type MapConnectionFeature,
-  type MapParticleSystem,
-} from '@/lib/map-effects'
 import type { GeoJSONSource } from 'maplibre-gl'
 import {
   getMarkerImageUrl,
@@ -192,6 +185,7 @@ import {
 } from '@/composables/useGeoJSONMarkers'
 import { useRareEarthController } from '@/composables/useRareEarthController'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
+import { useMapConnections } from '@/composables/useMapConnections'
 
 const { t, locale } = useI18n()
 const speciesPanel = useSpeciesPanel()
@@ -242,9 +236,15 @@ const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
 const speciesFilterPanelRef = ref<{ toggleTaxonomicGroup: (_group: string) => void } | null>(null)
 const selectedSpeciesGroups = ref<string[]>([])
 const showHexGrid = ref(true)
-const showConnections = ref(true)
 const showFilterPanel = ref(false)
 const activeDataset = ref<'project-grants' | 'endangered-species' | 'observatory-of-vulcan'>(props.defaultDataset)
+
+const connections2D = useMapConnections(
+  () => map,
+  mapContainerRef as import('vue').Ref<HTMLElement | null>,
+  { zIndex: 2 },
+)
+const { showConnections: showConnections2D, toggleConnections: toggleConnections2D } = connections2D
 const hasError = ref(false)
 const errorMessage = ref('')
 const noWebglSupport = ref(false)
@@ -259,8 +259,6 @@ let markers: maplibregl.Marker[] = []
 let isMounted = true
 let pendingVisibilityUpdate = false
 let pendingClusterRebuild = false
-let connectionFeatures: MapConnectionFeature[] = []
-let particleSystem: MapParticleSystem | null = null
 const clusterer = useMapCluster()
 const geoJSONMarkers = useGeoJSONMarkers()
 let lastClusterZoom = -1
@@ -470,15 +468,15 @@ function applySpeciesFilters(speciesIndex: SpeciesIndexItem[]): SpeciesIndexItem
 function handleFilterChange(filtered: Species[]) {
   filteredSpeciesList.value = filtered
   rebuildMarkers()
-  addConnections()
-  if (showConnections.value) startParticles()
+  connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+  if (connections2D.showConnections.value) connections2D.startParticles()
 }
 
 function handleProjectFilterChange(filtered: ProjectData[]) {
   filteredProjectsList.value = filtered
   rebuildMarkers()
-  addConnections()
-  if (showConnections.value) startParticles()
+  connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+  if (connections2D.showConnections.value) connections2D.startParticles()
 }
 
 function handleSearchOpenChange(open: boolean) {
@@ -487,9 +485,6 @@ function handleSearchOpenChange(open: boolean) {
   }
 }
 
-function toggleConnections() {
-  showConnections.value = !showConnections.value
-}
 
 function getUnifiedMarkerMetrics(options: {
   color: string
@@ -1181,47 +1176,6 @@ function updateMarkerVisibility() {
   })
 }
 
-function addConnections() {
-  if (!map) return
-
-  cleanupParticles()
-
-  if (!showConnections.value) {
-    connectionFeatures = []
-    syncMapConnectionLayers(map, [])
-    return
-  }
-
-  connectionFeatures = buildMapConnectionFeatures({
-    dataset: activeDataset.value,
-    projects: visibleProjects.value,
-    species: visibleSpecies.value,
-    isMobile: isMobile.value,
-  })
-
-  syncMapConnectionLayers(map, connectionFeatures)
-}
-
-function cleanupParticles() {
-  particleSystem?.stop()
-  particleSystem = null
-}
-
-function startParticles() {
-  if (!showConnections.value || !map || !mapContainerRef.value || !connectionFeatures.length) return
-
-  cleanupParticles()
-
-  particleSystem = createMapParticleSystem({
-    map,
-    container: mapContainerRef.value,
-    getFeatures: () => connectionFeatures,
-    isMobile: () => isMobile.value,
-    zIndex: 2,
-  })
-  particleSystem.start()
-}
-
 function navigateToLocation(lat: number, lng: number) {
   if (map) {
     map.flyTo({ center: [lng, lat], zoom: 6, duration: 1500, essential: true })
@@ -1341,8 +1295,8 @@ function initMap() {
         setupRareEarthLayers()
       } else {
         rebuildMarkers()
-        addConnections()
-        startParticles()
+        connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+        connections2D.startParticles()
       }
       setupHexGrid()
     })
@@ -1475,12 +1429,15 @@ watch(locale, () => {
 // Falls back to rebuildMarkers() if the GeoJSON source isn't ready yet
 // (first paint, dataset switch, etc.).
 watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData], () => {
-  if (!map || !useNativeGeoJSON) {
+  if (!map) return
+  if (!useNativeGeoJSON) {
     rebuildMarkers()
     return
   }
   if (geoJSONInitializedFor) {
     updateGeoJSONMarkerData()
+  } else {
+    rebuildMarkers()
   }
 }, { deep: true })
 
@@ -1490,17 +1447,17 @@ watch(showHexGrid, async (visible) => {
   setupHexGrid()
 })
 
-watch(showConnections, () => {
-  addConnections()
-  if (showConnections.value) startParticles()
+watch(connections2D.showConnections, () => {
+  connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+  if (connections2D.showConnections.value) connections2D.startParticles()
 })
 
 // Pause particles when overlay is open to save CPU
 watch([showSpeciesOverlay, showProjectOverlay], ([speciesOpen, projectOpen]) => {
   if (speciesOpen || projectOpen) {
-    cleanupParticles()
-  } else if (showConnections.value) {
-    startParticles()
+    connections2D.cleanupParticles()
+  } else if (connections2D.showConnections.value) {
+    connections2D.startParticles()
   }
 })
 
@@ -1508,7 +1465,7 @@ onUnmounted(() => {
   isMounted = false
   if (hexGridDebounceTimer) clearTimeout(hexGridDebounceTimer)
   if (hexGridRafId) cancelAnimationFrame(hexGridRafId)
-  cleanupParticles()
+  connections2D.cleanup()
   markers.forEach(m => m.remove())
   markers = []
   clusterer.destroy()

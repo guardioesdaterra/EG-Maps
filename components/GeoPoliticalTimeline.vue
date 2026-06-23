@@ -1,15 +1,15 @@
 <template>
   <Transition name="fade-scale">
     <div v-if="visible" class="geotimeline-overlay" @click.self="close" @keydown.esc="close">
-      <div class="geotimeline-modal">
-        <button class="geotimeline-close" @click="close" aria-label="Close timeline">&times;</button>
+      <div ref="modalRef" class="geotimeline-modal" role="dialog" aria-modal="true" aria-labelledby="geotimeline-title">
+        <button class="geotimeline-close" @click="close" aria-label="Close timeline"><Icon name="lucide:x" class="w-4 h-4" /></button>
 
         <!-- Hero header -->
         <div class="geotimeline-hero">
           <div class="geotimeline-hero-bg" />
           <div class="geotimeline-hero-content">
             <div class="geotimeline-badge">GEOPOLITICAL INTELLIGENCE BRIEF</div>
-            <h1 class="geotimeline-title">The Rare Earth Chessboard</h1>
+            <h1 id="geotimeline-title" class="geotimeline-title">The Rare Earth Chessboard</h1>
             <p class="geotimeline-subtitle">How China's export control is driving a global scramble for Brazil's strategic minerals — and why the world must choose between sovereignty and exploitation</p>
             <div class="geotimeline-hero-stats">
               <div class="hero-stat"><span class="hero-stat-value">78%</span><span class="hero-stat-label">US weapons dependent on Chinese REE</span></div>
@@ -188,11 +188,16 @@
 </template>
 
 <script setup lang="ts">
-import { h } from 'vue'
+import { h, ref, computed } from 'vue'
 import { GEOPOLITICAL_TIMELINE, MINING_PHASE_TIMELINE, type TimelineEvent } from '@/lib/observatory-timeline'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
-defineProps<{ visible: boolean }>()
+const props = defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ close: [] }>()
+
+const modalRef = ref<HTMLDivElement | null>(null)
+const isActive = computed(() => props.visible)
+useFocusTrap(modalRef, { active: isActive })
 
 function close() { emit('close') }
 
@@ -261,7 +266,7 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
 }
 .geotimeline-close:hover {
   background: rgba(231, 76, 60, 0.2);
@@ -607,7 +612,7 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
   text-align: center;
-  transition: all 0.2s;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 .cta-card:hover {
   background: rgba(255, 255, 255, 0.04);

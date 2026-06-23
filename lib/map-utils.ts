@@ -1,5 +1,6 @@
 import { getProjectColorByBeneficiaries, COLOR_MAMMAL } from './colors'
 import type { ProjectData, Species } from './types'
+import { isMilitaryInterest as _isMilitaryInterest, isHighEnvRisk as _isHighEnvRisk, isSuspiciousBasic, buildAnmVerifyUrl, buildClaimReportMailtoUrl, type SpeculatorIndexEntry } from './observatory-analysis'
 
 export type { Species }
 
@@ -42,6 +43,34 @@ export function buildProjectPopupHTML(project: ProjectData, translations?: Popup
     status: 'Status',
     unknownLocation: 'Unknown location'
   }
+  const showDirect = project.direct_beneficiaries > 0
+  const showIndirect = project.indirect_beneficiaries > 0
+  const showMetrics = showDirect || showIndirect
+
+  const directMetricHTML = showDirect ? `
+          <div class="project-metric">
+            <div class="project-metric-header">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>${t.directBeneficiaries}</span>
+            </div>
+            <span class="project-metric-value direct">${project.direct_beneficiaries.toLocaleString()}</span>
+          </div>` : ''
+
+  const indirectMetricHTML = showIndirect ? `
+          <div class="project-metric">
+            <div class="project-metric-header">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span>${t.indirectBeneficiaries}</span>
+            </div>
+            <span class="project-metric-value indirect">${project.indirect_beneficiaries.toLocaleString()}</span>
+          </div>` : ''
+
+  const metricsBlock = showMetrics
+    ? `<div class="project-divider"></div>
+        <div class="project-metrics">${directMetricHTML}${indirectMetricHTML}
+        </div>`
+    : ''
+
   return `
     <div class="project-popup-wrapper" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere; overflow: hidden;">
       <div class="project-popup-header">
@@ -66,23 +95,7 @@ export function buildProjectPopupHTML(project: ProjectData, translations?: Popup
             <span class="project-stat-value" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere;">${escapeHtml(project.country_province || t.unknownLocation)}</span>
           </div>
         </div>
-        <div class="project-divider"></div>
-        <div class="project-metrics">
-          <div class="project-metric">
-            <div class="project-metric-header">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              <span>${t.directBeneficiaries}</span>
-            </div>
-            <span class="project-metric-value direct">${project.direct_beneficiaries.toLocaleString()}</span>
-          </div>
-          <div class="project-metric">
-            <div class="project-metric-header">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              <span>${t.indirectBeneficiaries}</span>
-            </div>
-            <span class="project-metric-value indirect">${project.indirect_beneficiaries.toLocaleString()}</span>
-          </div>
-        </div>
+        ${metricsBlock}
       </div>
       <div class="project-popup-footer">
         <div class="project-footer-glow" style="background: ${color}"></div>
@@ -258,17 +271,10 @@ export function getCategoryColor(cat: string): string {
   return RARE_EARTH_CATEGORIES[cat]?.color ?? '#666'
 }
 
-export function isMilitaryInterest(ufs: string | string[]): boolean {
-  const list = Array.isArray(ufs) ? ufs : [ufs]
-  return list.some(u => ['AM','AP','PA','RR','RO','MT'].includes(u))
-}
-
-export function isHighEnvRisk(props: Record<string, any>): boolean {
-  return (props.s && String(props.s).includes('FOSFATO')) || (props.ds ?? 5) >= 8
-}
-
-export function isSuspicious(props: Record<string, any>): boolean {
-  return (props.ds ?? 5) >= 5 && (props.y ?? 0) >= 2020 && (props.f && String(props.f).includes('REQUERIMENTO'))
+export const isMilitaryInterest = _isMilitaryInterest
+export const isHighEnvRisk = _isHighEnvRisk
+export function isSuspicious(props: Record<string, any>, speculator?: SpeculatorIndexEntry | null): boolean {
+  return isSuspiciousBasic(props, speculator ?? null)
 }
 
 export function buildRareEarthPopupHTML(props: Record<string, any>): string {
@@ -285,6 +291,51 @@ export function buildRareEarthPopupHTML(props: Record<string, any>): string {
     envFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(39,174,96,0.2);color:#27ae60">ENV</span>' : '',
     susFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(142,68,173,0.2);color:#8e44ad">SUS</span>' : '',
   ].filter(Boolean).join('')
+
+  const anmUrl = buildAnmVerifyUrl(props.p, props.ano ?? props.y)
+  const mailtoUrl = buildClaimReportMailtoUrl({
+    processo: props.p,
+    nome: props.n,
+    lat: props.la,
+    lng: props.lo,
+    uf: props.u,
+    subs: props.s,
+  })
+
+  const anmLink = anmUrl
+    ? `<a href="${escapeHtml(anmUrl)}" target="_blank" rel="noopener" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:9px;font-weight:700;padding:5px 8px;border-radius:4px;text-decoration:none;letter-spacing:0.04em;border:1px solid rgba(52,152,219,0.3);background:rgba(52,152,219,0.10);color:#5dade2">↗ Verify on ANM</a>`
+    : ''
+  const reportLink = `<a href="${escapeHtml(mailtoUrl)}" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:9px;font-weight:700;padding:5px 8px;border-radius:4px;text-decoration:none;letter-spacing:0.04em;border:1px solid rgba(231,76,60,0.25);background:rgba(231,76,60,0.08);color:#e74c3c">⚑ Report issue</a>`
+
+  const lastEvent = props.ev
+  let lastEventHTML = ''
+  if (lastEvent) {
+    const refYear = Number(props.ano ?? props.y ?? 0)
+    const currentYear = new Date().getFullYear()
+    const ageYears = refYear ? Math.max(0, currentYear - refYear) : 99
+    const evColor = ageYears < 1 ? '#27ae60' : ageYears <= 3 ? '#f39c12' : '#e74c3c'
+    const evLabel = ageYears < 1 ? 'Recent' : ageYears <= 3 ? 'Active' : 'Stale'
+    lastEventHTML = `<div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
+      <div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:2px">Last event</div>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:9.5px;color:#ccc;line-height:1.4;flex:1;word-wrap:break-word">${escapeHtml(lastEvent)}</span>
+        <span style="font-size:7.5px;padding:1px 6px;border-radius:2px;font-weight:700;background:${evColor}22;color:${evColor}">${evLabel}</span>
+      </div>
+    </div>`
+  }
+
+  const overlaps: Array<{ name: string; kind: string; distance_km: number }> = Array.isArray(props.ov) ? props.ov : []
+  let overlapHTML = ''
+  if (overlaps.length) {
+    const items = overlaps.slice(0, 3).map(o =>
+      `<span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;padding:1px 5px;border-radius:2px;background:rgba(231,76,60,0.18);color:#ff6b6b;font-weight:600;margin:1px">⚠ ${escapeHtml(o.name)}${o.distance_km ? ` <span style="opacity:0.7;font-weight:400">· ${o.distance_km}km</span>` : ''}</span>`
+    ).join('')
+    const more = overlaps.length > 3 ? `<span style="font-size:8px;color:#888;margin-left:4px">+${overlaps.length - 3} more</span>` : ''
+    overlapHTML = `<div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
+      <div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:3px">Overlaps</div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:0">${items}${more}</div>
+    </div>`
+  }
 
   return `
     <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;min-width:250px;position:relative">
@@ -324,6 +375,14 @@ export function buildRareEarthPopupHTML(props: Record<string, any>): string {
             <span style="font-size:10px;font-weight:700;color:${dangerColor};min-width:24px;text-align:right">${(props.ds ?? 5).toFixed(1)}</span>
           </div>
         </div>
+        ${lastEventHTML}
+        ${overlapHTML}
+      </div>
+
+      <!-- Footer actions -->
+      <div style="display:flex;gap:6px;padding:8px 14px 12px;border-top:1px solid rgba(255,255,255,0.06)">
+        ${anmLink}
+        ${reportLink}
       </div>
 
       <!-- Footer glow bar -->

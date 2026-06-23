@@ -7,8 +7,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -17,6 +15,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -28,6 +30,14 @@ jobs:
         with:
           version: 10.12.0
           run_install: false
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -44,18 +54,14 @@ jobs:
       - name: Build species icon mapping (Game Icons SSG)
         run: node scripts/build-species-icon-mapping.mjs
 
+      - name: Compute overlap indicators (P1.7)
+        run: node scripts/compute-overlaps.mjs
+
       - name: Build static site
         run: pnpm generate
         env:
           NUXT_APP_BASE_URL: /EG-Maps/
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
-
-      - name: Copy species data for static hosting
-        run: |
-          mkdir -p .output/public/data/species
-          cp -r public/data/species/* .output/public/data/species/ || true
-          mkdir -p .output/public/data
-          cp -r public/data/* .output/public/data/ || true
 
       - name: Copy 200.html as 404.html for SPA fallback
         run: |
@@ -67,6 +73,13 @@ jobs:
             echo "Warning: No 200.html or index.html found for 404 fallback"
           fi
 
+      - name: Verify .nojekyll present
+        run: |
+          if [ ! -f .output/public/.nojekyll ]; then
+            echo "::error::.nojekyll missing from build output — _payload.json would be hidden by Jekyll"
+            exit 1
+          fi
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .output/public
@@ -74,6 +87,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

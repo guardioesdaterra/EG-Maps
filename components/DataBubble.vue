@@ -173,7 +173,7 @@ const stats = computed(() => {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: var(--panel-shadow);
-  transition: all var(--transition-normal) ease;
+  transition: box-shadow var(--transition-normal) ease;
   position: relative;
 }
 
@@ -248,7 +248,7 @@ const stats = computed(() => {
   height: 1.375rem;
   border-radius: 4px;
   color: var(--text-muted);
-  transition: all 0.15s ease;
+  transition: color 0.15s ease;
   cursor: pointer;
   background: transparent;
   border: none;
@@ -286,7 +286,7 @@ const stats = computed(() => {
   border-radius: 6px;
   cursor: pointer;
   text-align: left;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
   border: none;
   background: transparent;
   color: var(--text-secondary);
@@ -364,7 +364,7 @@ const stats = computed(() => {
 /* Expansion transition */
 .bubble-expand-enter-active,
 .bubble-expand-leave-active {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .bubble-expand-enter-from,

@@ -1,4 +1,4 @@
-import { ref, type Ref } from 'vue'
+import { ref, onScopeDispose, type Ref } from 'vue'
 
 export interface OfflineTileStats {
   cachedTiles: number
@@ -61,8 +61,15 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
   const memCache = new Map<string, ArrayBuffer>()
   const MEM_CACHE_MAX = 200
 
-  window.addEventListener('online', () => { isOnline.value = true; stats.value.isOffline = false })
-  window.addEventListener('offline', () => { isOnline.value = false; stats.value.isOffline = true })
+  function handleOnline() { isOnline.value = true; stats.value.isOffline = false }
+  function handleOffline() { isOnline.value = false; stats.value.isOffline = true }
+
+  window.addEventListener('online', handleOnline)
+  window.addEventListener('offline', handleOffline)
+  onScopeDispose(() => {
+    window.removeEventListener('online', handleOnline)
+    window.removeEventListener('offline', handleOffline)
+  })
 
   async function init() {
     if (isInitialized.value) return

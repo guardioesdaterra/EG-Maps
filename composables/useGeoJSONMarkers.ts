@@ -1,12 +1,11 @@
 /**
  * High-performance marker rendering using MapLibre's native GeoJSON clustering.
- * 
+ *
  * This approach uses GPU-accelerated vector rendering instead of DOM-based markers,
  * which can handle 10,000+ points smoothly compared to the 100-200 limit of DOM markers.
  */
 
-import type { Map as MapLibreMap, GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl'
-import type { Species } from '@/lib/types'
+import type { Map as MapLibreMap, GeoJSONSource, MapLayerMouseEvent, MapLayerEventType } from 'maplibre-gl'
 import { GROUP_COLORS } from '@/lib/map-utils'
 
 export interface SpeciesIndexItem {
@@ -25,9 +24,15 @@ export interface SpeciesIndexItem {
 
 const GROUP_COLORS_HEX: Record<string, string> = GROUP_COLORS
 
+// Cache for speciesIndexToGeoJSON to avoid recalculating on every rebuild
+let _geoJSONCacheInput: SpeciesIndexItem[] | null = null
+let _geoJSONCacheOutput: GeoJSON.FeatureCollection | null = null
+
 // Lightweight index for markers - only 3.2MB vs 35MB full data
 export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.FeatureCollection {
-  return {
+  if (_geoJSONCacheInput === species && _geoJSONCacheOutput) return _geoJSONCacheOutput
+
+  const result: GeoJSON.FeatureCollection = {
     type: 'FeatureCollection',
     features: species
       .filter(s => s.lat != null && s.lng != null && isFinite(s.lat) && isFinite(s.lng))
@@ -48,6 +53,10 @@ export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.Feat
         }
       }))
   }
+
+  _geoJSONCacheInput = species
+  _geoJSONCacheOutput = result
+  return result
 }
 
 // Convert project data to GeoJSON FeatureCollection
@@ -90,9 +99,15 @@ function getProjectColor(totalBeneficiaries: number): string {
 export function useGeoJSONMarkers() {
   let map: MapLibreMap | null = null
   let currentSourceId: string | null = null
-  
-  // Cache for full species data loaded on demand
-  const speciesCache = new Map<string, Species>()
+
+  // Track installed event handlers so they can be removed on re-setup/cleanup
+  type InstalledHandler = {
+    id: string
+    evt: keyof MapLayerEventType
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    handler: (...args: any[]) => void
+  }
+  const installedHandlers: InstalledHandler[] = []
 
   function init(mapInstance: MapLibreMap) {
     map = mapInstance
@@ -118,7 +133,7 @@ export function useGeoJSONMarkers() {
       type: 'geojson',
       data,
       cluster: clustering,
-      clusterMaxZoom: 14,
+      clusterMaxZoom: 16,
       clusterRadius: 50,
     })
   }
@@ -180,39 +195,21 @@ export function useGeoJSONMarkers() {
     return await source.getClusterExpansionZoom(clusterId)
   }
 
-  // Load full species data on demand (only when user clicks)
-  async function loadFullSpeciesData(speciesId: string, baseURL: string): Promise<Species | null> {
-    if (speciesCache.has(speciesId)) {
-      return speciesCache.get(speciesId)!
-    }
-
-    try {
-      // Try loading from full dataset first
-      const res = await fetch(`${baseURL}data/species/icmbio-brazil.json`)
-      if (res.ok) {
-        const allSpecies: Species[] = await res.json()
-        const species = allSpecies.find(s => s.id === speciesId)
-        if (species) {
-          speciesCache.set(speciesId, species)
-          return species
-        }
-      }
-    } catch {
-      // Silently fail
-    }
-
-    return null
-  }
-
   function setupEventHandlers(
     sourceId: string,
-    dataset: 'project-grants' | 'endangered-species',
+    _dataset: 'project-grants' | 'endangered-species',
     onFeatureClick: (properties: Record<string, unknown>, coords: [number, number]) => void,
-    onClusterClick: (clusterId: number, coords: [number, number]) => void
+    onClusterClick?: (clusterId: number, coords: [number, number]) => void
   ) {
     if (!map) return
 
-    map.on('click', `${sourceId}-clusters`, async (e: MapLayerMouseEvent) => {
+    // Remove any previous handlers we installed (e.g., on re-init) to avoid duplicates
+    detachHandlers()
+
+    const clusterLayerId = `${sourceId}-clusters`
+    const pointsLayerId = `${sourceId}-points`
+
+    const clusterClick = async (e: MapLayerMouseEvent) => {
       if (!map || !e.features?.[0]) return
 
       const feature = e.features[0]
@@ -221,18 +218,22 @@ export function useGeoJSONMarkers() {
 
       if (clusterId !== undefined) {
         const expansionZoom = await getClusterExpansionZoom(sourceId, clusterId)
-        
-        map.easeTo({
-          center: coords,
-          zoom: Math.min(expansionZoom, 16),
-          duration: 500
-        })
-        
-        onClusterClick(clusterId, coords)
-      }
-    })
+        // Cap at the map's allowed max so co-located points can fully split.
+        const maxZoom = map.getMaxZoom()
+        const targetZoom = Math.min(Math.max(expansionZoom, map.getZoom() + 1), maxZoom)
 
-    map.on('click', `${sourceId}-points`, (e: MapLayerMouseEvent) => {
+        map.flyTo({
+          center: coords,
+          zoom: targetZoom,
+          duration: 600,
+          essential: true,
+        })
+
+        onClusterClick?.(clusterId, coords)
+      }
+    }
+
+    const pointClick = (e: MapLayerMouseEvent) => {
       if (!e.features?.[0]) return
 
       const feature = e.features[0]
@@ -240,21 +241,31 @@ export function useGeoJSONMarkers() {
       const properties = feature.properties || {}
 
       onFeatureClick(properties, coords)
-    })
+    }
 
-    // Cursor change on hover
-    map.on('mouseenter', `${sourceId}-clusters`, () => {
-      if (map) map.getCanvas().style.cursor = 'pointer'
-    })
-    map.on('mouseleave', `${sourceId}-clusters`, () => {
-      if (map) map.getCanvas().style.cursor = ''
-    })
-    map.on('mouseenter', `${sourceId}-points`, () => {
-      if (map) map.getCanvas().style.cursor = 'pointer'
-    })
-    map.on('mouseleave', `${sourceId}-points`, () => {
-      if (map) map.getCanvas().style.cursor = ''
-    })
+    const enterPointer = () => { if (map) map.getCanvas().style.cursor = 'pointer' }
+    const leavePointer = () => { if (map) map.getCanvas().style.cursor = '' }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const register = (id: string, evt: keyof MapLayerEventType, handler: any) => {
+      map!.on(evt, id, handler)
+      installedHandlers.push({ id, evt, handler })
+    }
+
+    register(clusterLayerId, 'click', clusterClick)
+    register(pointsLayerId, 'click', pointClick)
+    register(clusterLayerId, 'mouseenter', enterPointer)
+    register(clusterLayerId, 'mouseleave', leavePointer)
+    register(pointsLayerId, 'mouseenter', enterPointer)
+    register(pointsLayerId, 'mouseleave', leavePointer)
+  }
+
+  function detachHandlers() {
+    if (!map) return
+    for (const { id, evt, handler } of installedHandlers) {
+      map.off(evt, id, handler)
+    }
+    installedHandlers.length = 0
   }
 
   function updateData(sourceId: string, data: GeoJSON.FeatureCollection) {
@@ -288,8 +299,8 @@ export function useGeoJSONMarkers() {
   }
 
   function cleanup() {
+    detachHandlers()
     removeLayersAndSource()
-    speciesCache.clear()
     map = null
   }
 
@@ -300,7 +311,6 @@ export function useGeoJSONMarkers() {
     getClusterExpansionZoom,
     setupEventHandlers,
     updateData,
-    loadFullSpeciesData,
     removeLayersAndSource,
     cleanup,
   }

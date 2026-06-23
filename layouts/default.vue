@@ -192,12 +192,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, shallowRef, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n as useAppI18n } from '@/composables/useI18n'
 
 const route = useRoute()
 
 // i18n
-const { t, locale, availableLocales, localeNames, setLocale } = useI18n()
+const { t, locale, availableLocales, localeNames, setLocale } = useAppI18n()
 
 // #no-dock hash support — hides the dock navigation bar
 const showDock = ref(true)
@@ -360,7 +361,7 @@ function getHeaderItemClass(path: string) {
 
 // Dock magnification logic
 const dockRef = ref<HTMLElement | null>(null)
-const dockItemRefs = new Map<number, Element>()
+const dockItemRefs = shallowRef(new Map<number, Element>())
 const hoveredIndex = ref<number | null>(null)
 
 const baseSize = 44
@@ -369,11 +370,11 @@ const neighborSize = 50
 
 // +1 for language switcher (dark mode moved to header)
 const totalDockItems = computed(() => navItems.length + 1)
-const itemSizes = ref<number[]>(Array(totalDockItems.value).fill(baseSize))
+const itemSizes = shallowRef<number[]>(Array(totalDockItems.value).fill(baseSize))
 
 function onDockHover(index: number) {
   hoveredIndex.value = index
-  const newSizes = [...itemSizes.value]
+  const newSizes = new Array(itemSizes.value.length)
   for (let i = 0; i < newSizes.length; i++) {
     const distance = Math.abs(i - index)
     if (distance === 0) {

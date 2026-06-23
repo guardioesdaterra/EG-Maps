@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, onMounted, onUnmounted, onScopeDispose, type Ref } from 'vue'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import { useOfflineTiles } from './useOfflineTiles'
 
@@ -9,6 +9,11 @@ export function getMapStyle(apiKey?: string): string {
 
 const tileCache = new Map<string, Response>()
 const MAX_TILE_CACHE = 500
+
+// Clear tile cache on scope dispose to prevent stale data across route changes
+onScopeDispose(() => {
+  tileCache.clear()
+})
 
 export function trimTileCache() {
   if (tileCache.size > MAX_TILE_CACHE) {

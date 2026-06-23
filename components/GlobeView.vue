@@ -13,9 +13,9 @@
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('globe.loading') }}</p>
         <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
         <div class="mt-3 xs:mt-4 flex gap-1">
-          <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce" style="animation-delay: 0ms" />
-          <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce" style="animation-delay: 150ms" />
-          <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce" style="animation-delay: 300ms" />
+          <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
+          <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
+          <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-3" />
         </div>
       </div>
     </Transition>
@@ -59,7 +59,8 @@
 
     <!-- Scanline overlay with image-set for 2x resolution -->
     <div
-      class="absolute inset-0 pointer-events-none opacity-[0.015]"
+      aria-hidden="true"
+      class="absolute inset-0 pointer-events-none opacity-[0.02]"
       :style="{
         zIndex: 'calc(var(--z-map-effects) + 3)',
         backgroundImage: `image-set(url(${baseURL}scanline.gif) 1x, url(${baseURL}scanline.gif) 2x)`,
@@ -71,6 +72,7 @@
     <canvas
       v-if="isHexGridVisible"
       ref="hexCanvasRef"
+      aria-hidden="true"
       class="absolute inset-0 w-full h-full pointer-events-none opacity-15"
       :style="{ zIndex: 'var(--z-map-hex-grid)' }"
     />
@@ -144,7 +146,7 @@ import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
-import { isValidCoordinate, GROUP_COLORS, buildProjectPopupHTML, buildSpeciesPopupHTML, computeClusterBlobPath } from '@/lib/map-utils'
+import { isValidCoordinate, GROUP_COLORS, buildProjectPopupHTML, buildSpeciesPopupHTML } from '@/lib/map-utils'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
 import type { Species } from '@/lib/map-utils'
 import {
@@ -173,7 +175,7 @@ import {
 const { t, locale } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
 
-function getLocalizedSpecies(species: Species): Species {
+function getLocalizedSpecies(species: Species | SpeciesIndexItem): Species {
   const content = species.content?.[locale.value] ?? species.content?.en
   if (!content) return species
 
@@ -245,7 +247,7 @@ const clusterer = useMapCluster()
 const geoJSONMarkers = useGeoJSONMarkers()
 let lastClusterZoom = -1
 let lastBboxCenter: { lng: number; lat: number } | null = null
-function openSpeciesOverlay(species: Species) {
+function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
   const localizedSpecies = getLocalizedSpecies(species)
   const speciesPopupTranslations = {
     scientificName: t('species.scientificName'),
@@ -256,7 +258,7 @@ function openSpeciesOverlay(species: Species) {
     ecosystem: t('filter.ecosystem'),
     groupLabels: getTaxonomicGroupLabels()
   }
-  speciesOverlayHTML.value = buildSpeciesPopupHTML(localizedSpecies, speciesPopupTranslations, baseURL)
+  speciesOverlayHTML.value = buildSpeciesPopupHTML(localizedSpecies as Species, speciesPopupTranslations, baseURL)
   showSpeciesOverlay.value = true
   lastFocusedEl = document.activeElement as HTMLElement
   nextTick(() => speciesCloseBtnRef.value?.focus())
@@ -650,6 +652,7 @@ function blendColors(colors: string[]): string {
 function createClusterMarkerElement(
   count: number,
   items: ClusterItem[],
+  onItemClick: (item: ClusterItem) => void,
   sourceProjects?: ProjectData[],
   sourceSpecies?: Species[]
 ) {
@@ -679,8 +682,7 @@ function createClusterMarkerElement(
   }
 
   const resolved = items.map(i => resolveMini(i))
-  const colors = resolved.map(r => r.color)
-  const dominant = blendColors(colors)
+  const dominant = blendColors(resolved.map(r => r.color))
   const [dr, dg, db] = parseColor(dominant)
 
   const outer = document.createElement('div')
@@ -710,22 +712,7 @@ function createClusterMarkerElement(
     clusterInner.style.justifyContent = 'center'
     clusterInner.style.alignItems = 'center'
 
-    // Rainbow ring (decorative, slightly larger)
-    const ringPad = 8
-    const ringOuterR = (containerSize + ringPad * 2) / 2
-    const ringInnerR = ringOuterR - 2
-    const rainbowRing = document.createElement('div')
-    rainbowRing.style.position = 'absolute'
-    rainbowRing.style.inset = `${-ringPad}px`
-    rainbowRing.style.borderRadius = '50%'
-    rainbowRing.style.background = 'conic-gradient(from var(--a, 0deg), rgba(255,107,107,0.35), rgba(255,217,61,0.25), rgba(107,203,119,0.25), rgba(77,150,255,0.3), rgba(155,89,182,0.3), rgba(255,107,107,0.35))'
-    rainbowRing.style.mask = `radial-gradient(farthest-side, transparent ${ringInnerR}px, #000 ${ringOuterR}px)`
-    rainbowRing.style.webkitMask = `radial-gradient(farthest-side, transparent ${ringInnerR}px, #000 ${ringOuterR}px)`
-    rainbowRing.style.pointerEvents = 'none'
-    rainbowRing.style.animation = 'cluster-rainbow-spin 8s linear infinite'
-    clusterInner.appendChild(rainbowRing)
-
-    // Compute orbit positions for blob path
+    // Compute orbit positions for mini circles
     const angleStep = (Math.PI * 2) / items.length
     const centers: { x: number; y: number }[] = []
     items.forEach((_item, i) => {
@@ -733,49 +720,9 @@ function createClusterMarkerElement(
       centers.push({ x: Math.cos(angle) * orbitRadius, y: Math.sin(angle) * orbitRadius })
     })
 
-    // SVG blob background — convex hull clipped around the mini circles
-    const blobPadding = 5
-    const blobPath = computeClusterBlobPath(centers, miniSize / 2, blobPadding)
-    const svgSize = containerSize + blobPadding * 4
-    const svgOffset = (containerSize - svgSize) / 2
-
-    const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svgEl.setAttribute('width', `${svgSize}px`)
-    svgEl.setAttribute('height', `${svgSize}px`)
-    svgEl.setAttribute('viewBox', `${svgOffset} ${svgOffset} ${containerSize} ${containerSize}`)
-    svgEl.style.position = 'absolute'
-    svgEl.style.top = '50%'
-    svgEl.style.left = '50%'
-    svgEl.style.transform = 'translate(-50%, -50%)'
-    svgEl.style.pointerEvents = 'none'
-    svgEl.style.overflow = 'visible'
-
-    // Blob fill path
-    const blobFill = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-    blobFill.setAttribute('d', blobPath)
-    blobFill.setAttribute('fill', `rgba(${dr},${dg},${db},0.15)`)
-    blobFill.setAttribute('stroke', `rgba(${dr},${dg},${db},0.5)`)
-    blobFill.setAttribute('stroke-width', '1.5')
-    blobFill.setAttribute('stroke-linejoin', 'round')
-    blobFill.style.filter = 'drop-shadow(0 0 6px rgba(0,0,0,0.4))'
-    blobFill.style.transition = 'fill 200ms ease, stroke 200ms ease'
-    svgEl.appendChild(blobFill)
-
-    // Glow path (larger, blurred)
-    const blobGlow = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-    blobGlow.setAttribute('d', blobPath)
-    blobGlow.setAttribute('fill', 'none')
-    blobGlow.setAttribute('stroke', `rgba(${dr},${dg},${db},0.15)`)
-    blobGlow.setAttribute('stroke-width', '6')
-    blobGlow.setAttribute('stroke-linejoin', 'round')
-    blobGlow.setAttribute('opacity', '0.6')
-    blobGlow.style.filter = 'blur(3px)'
-    svgEl.appendChild(blobGlow)
-
-    clusterInner.appendChild(svgEl)
-
-    // Mini circles at orbit positions
-    items.forEach((_item, i) => {
+    // Mini circles at orbit positions — only the circular markers, no shape behind.
+    // Each mini is individually clickable and opens the matching item.
+    items.forEach((item, i) => {
       const { url, color: itemColor } = resolved[i]
       const c = centers[i]
       const mini = document.createElement('div')
@@ -789,8 +736,22 @@ function createClusterMarkerElement(
       mini.style.boxShadow = `0 0 7px ${itemColor}, 0 0 1.5px #fff`
       mini.style.top = `calc(50% + ${c.y}px - ${miniSize / 2}px)`
       mini.style.left = `calc(50% + ${c.x}px - ${miniSize / 2}px)`
-      mini.style.pointerEvents = 'none'
+      mini.style.cursor = 'pointer'
       mini.style.zIndex = '2'
+      mini.setAttribute('tabindex', '0')
+      mini.setAttribute('role', 'button')
+      mini.setAttribute('aria-label', `Open item ${i + 1} of ${items.length}`)
+      mini.addEventListener('click', (e) => {
+        e.stopPropagation()
+        onItemClick(item)
+      })
+      mini.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          onItemClick(item)
+        }
+      })
       clusterInner.appendChild(mini)
     })
 
@@ -815,19 +776,9 @@ function createClusterMarkerElement(
     outer.appendChild(clusterInner)
 
     outer.addEventListener('mouseenter', () => {
-      blobFill.setAttribute('fill', `rgba(${dr},${dg},${db},0.25)`)
-      blobFill.setAttribute('stroke', `rgba(${dr},${dg},${db},0.8)`)
-      blobGlow.setAttribute('stroke', `rgba(${dr},${dg},${db},0.3)`)
-      blobGlow.setAttribute('opacity', '0.9')
-      rainbowRing.style.opacity = '0.85'
       outer.style.zIndex = '100'
     })
     outer.addEventListener('mouseleave', () => {
-      blobFill.setAttribute('fill', `rgba(${dr},${dg},${db},0.15)`)
-      blobFill.setAttribute('stroke', `rgba(${dr},${dg},${db},0.5)`)
-      blobGlow.setAttribute('stroke', `rgba(${dr},${dg},${db},0.15)`)
-      blobGlow.setAttribute('opacity', '0.6')
-      rainbowRing.style.opacity = '1'
       outer.style.zIndex = '20'
     })
   } else {
@@ -856,49 +807,10 @@ function createClusterMarkerElement(
     grid.style.height = '100%'
     grid.style.padding = `${pad}px`
     grid.style.borderRadius = '14px'
-    grid.style.background = `radial-gradient(circle at 30% 25%, rgba(${dr},${dg},${db},0.12), rgba(0,0,0,0.92) 75%)`
-    grid.style.backdropFilter = 'blur(8px)'
-    grid.style.boxShadow = `0 0 12px rgba(${dr},${dg},${db},0.18), inset 0 0 16px rgba(${dr},${dg},${db},0.03)`
-    grid.style.transition = 'transform 200ms ease, box-shadow 200ms ease'
+    grid.style.transition = 'transform 200ms ease'
     grid.style.transformOrigin = 'center center'
 
-    // Compute blob path for grid layout
-    const gridCenters: { x: number; y: number }[] = []
     const maxShow = cols * rows - 1
-    for (let i = 0; i < Math.min(resolved.length, maxShow); i++) {
-      const col = i % cols
-      const row = Math.floor(i / cols)
-      gridCenters.push({
-        x: pad + col * (miniSize + gap) + miniSize / 2,
-        y: pad + row * (miniSize + gap) + miniSize / 2,
-      })
-    }
-    if (count > maxShow) {
-      const totalSlots = cols * rows
-      const lastX = pad + ((totalSlots - 1) % cols) * (miniSize + gap) + miniSize / 2
-      const lastY = pad + Math.floor((totalSlots - 1) / cols) * (miniSize + gap) + miniSize / 2
-      gridCenters.push({ x: lastX, y: lastY })
-    }
-
-    const blobPath = computeClusterBlobPath(gridCenters, miniSize / 2, 4)
-    const gridSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    gridSvg.setAttribute('width', '100%')
-    gridSvg.setAttribute('height', '100%')
-    gridSvg.setAttribute('viewBox', `0 0 ${gridW} ${gridH}`)
-    gridSvg.style.position = 'absolute'
-    gridSvg.style.inset = '0'
-    gridSvg.style.pointerEvents = 'none'
-    gridSvg.style.zIndex = '0'
-
-    const gridBlob = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-    gridBlob.setAttribute('d', blobPath)
-    gridBlob.setAttribute('fill', `rgba(${dr},${dg},${db},0.15)`)
-    gridBlob.setAttribute('stroke', `rgba(${dr},${dg},${db},0.5)`)
-    gridBlob.setAttribute('stroke-width', '1.5')
-    gridBlob.setAttribute('stroke-linejoin', 'round')
-    gridBlob.style.filter = 'drop-shadow(0 0 6px rgba(0,0,0,0.4))'
-    gridSvg.appendChild(gridBlob)
-    grid.appendChild(gridSvg)
 
     const gridInner = document.createElement('div')
     gridInner.style.position = 'relative'
@@ -911,7 +823,8 @@ function createClusterMarkerElement(
     gridInner.style.height = '100%'
     gridInner.style.zIndex = '1'
 
-    resolved.slice(0, maxShow).forEach(({ url, color: itemColor }) => {
+    resolved.slice(0, maxShow).forEach(({ url, color: itemColor }, idx) => {
+      const item = items[idx]
       const mini = document.createElement('div')
       mini.className = 'cluster-mini-hover'
       mini.style.width = `${miniSize}px`
@@ -920,7 +833,21 @@ function createClusterMarkerElement(
       mini.style.background = `url("${url}") center/cover`
       mini.style.border = '1px solid rgba(255,255,255,0.75)'
       mini.style.boxShadow = `0 0 4px ${itemColor}`
+      mini.style.cursor = 'pointer'
       mini.style.flexShrink = '0'
+      mini.setAttribute('tabindex', '0')
+      mini.setAttribute('role', 'button')
+      mini.addEventListener('click', (e) => {
+        e.stopPropagation()
+        if (item) onItemClick(item)
+      })
+      mini.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          e.stopPropagation()
+          if (item) onItemClick(item)
+        }
+      })
       gridInner.appendChild(mini)
     })
 
@@ -947,14 +874,10 @@ function createClusterMarkerElement(
     grid.appendChild(gridInner)
 
     outer.addEventListener('mouseenter', () => {
-      gridBlob.setAttribute('fill', `rgba(${dr},${dg},${db},0.25)`)
-      gridBlob.setAttribute('stroke', `rgba(${dr},${dg},${db},0.8)`)
       grid.style.transform = 'scale(1.1)'
       outer.style.zIndex = '100'
     })
     outer.addEventListener('mouseleave', () => {
-      gridBlob.setAttribute('fill', `rgba(${dr},${dg},${db},0.15)`)
-      gridBlob.setAttribute('stroke', `rgba(${dr},${dg},${db},0.5)`)
       grid.style.transform = 'scale(1)'
       outer.style.zIndex = '20'
     })
@@ -966,8 +889,22 @@ function createClusterMarkerElement(
 const useNativeGeoJSON = true
 const SOURCE_ID = 'globe-species-markers'
 
-function setupGeoJSONMarkers() {
+let geoJSONInitializedFor: 'project-grants' | 'endangered-species' | null = null
+let geoJSONSpeciesIndex: SpeciesIndexItem[] | null = null
+
+function applySpeciesFilters(speciesIndex: SpeciesIndexItem[]): SpeciesIndexItem[] {
+  return speciesIndex
+}
+
+function setupGeoJSONMarkers(forceReinit = false) {
   if (!map || !useNativeGeoJSON) return
+
+  const dataset = activeDataset.value === 'project-grants' ? 'project-grants' : 'endangered-species'
+
+  if (!forceReinit && geoJSONInitializedFor === dataset) {
+    updateGeoJSONMarkerData()
+    return
+  }
 
   // Clean up old DOM markers
   markers.forEach(m => m.remove())
@@ -981,71 +918,46 @@ function setupGeoJSONMarkers() {
     const geojson = projectsToGeoJSON(validProjects)
     geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
     geoJSONMarkers.addClusterLayers(SOURCE_ID, 'project-grants')
-    
+
     geoJSONMarkers.setupEventHandlers(
       SOURCE_ID,
       'project-grants',
-      (props, coords) => {
-        const project = validProjects.find(p => 
-          Math.abs(p.longitude - coords[0]) < 0.001 && 
-          Math.abs(p.latitude - coords[1]) < 0.001
-        )
+      (props, _coords) => {
+        const project = validProjects.find(p => p.project_title === props.id)
         if (project) openProjectOverlay(project)
       },
-      (clusterId, coords) => {
-        if (map) {
-          geoJSONMarkers.getClusterExpansionZoom(SOURCE_ID, clusterId).then((expansionZoom: number) => {
-            map!.flyTo({
-              center: coords,
-              zoom: Math.min(expansionZoom, 14),
-              duration: 500
-            })
-          })
-        }
-      }
+      () => { /* easeTo handled inside setupEventHandlers */ }
     )
+    geoJSONInitializedFor = 'project-grants'
   } else if (speciesIndexData.value.length) {
     // Use lightweight index for map markers
-    const geojson = speciesIndexToGeoJSON(speciesIndexData.value)
+    const filteredIndex = applySpeciesFilters(speciesIndexData.value)
+    geoJSONSpeciesIndex = speciesIndexData.value
+    const geojson = speciesIndexToGeoJSON(filteredIndex)
     geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
     geoJSONMarkers.addClusterLayers(SOURCE_ID, 'endangered-species')
-    
+
     geoJSONMarkers.setupEventHandlers(
       SOURCE_ID,
       'endangered-species',
-      async (props, _coords) => {
+      (props, _coords) => {
         const speciesId = props.id as string
-        const fullSpecies = await geoJSONMarkers.loadFullSpeciesData(speciesId, baseURL)
-        if (fullSpecies) {
-          openSpeciesOverlay(fullSpecies)
-        } else {
-          // Fallback: create minimal species from index
-          const indexItem = speciesIndexData.value.find(s => s.id === speciesId)
-          if (indexItem) {
-            const minimalSpecies = {
-              ...indexItem,
-              region: '',
-              ecosystem: '',
-              imageCredit: '',
-              threatTypes: indexItem.threatTypes || [],
-              content: {},
-            } as Species
-            openSpeciesOverlay(minimalSpecies)
-          }
+        const indexItem = speciesIndexData.value.find(s => s.id === speciesId)
+        if (indexItem) {
+          const minimalSpecies = {
+            ...indexItem,
+            region: '',
+            ecosystem: '',
+            imageCredit: '',
+            threatTypes: indexItem.threatTypes || [],
+            content: {},
+          } as Species
+          openSpeciesOverlay(minimalSpecies)
         }
       },
-      (clusterId, coords) => {
-        if (map) {
-          geoJSONMarkers.getClusterExpansionZoom(SOURCE_ID, clusterId).then((expansionZoom: number) => {
-            map!.flyTo({
-              center: coords,
-              zoom: Math.min(expansionZoom, 14),
-              duration: 500
-            })
-          })
-        }
-      }
+      () => { /* easeTo handled inside setupEventHandlers */ }
     )
+    geoJSONInitializedFor = 'endangered-species'
   } else if (speciesData.value.length) {
     // Fallback to full species data if index not available
     const validSpecies = speciesData.value.filter(s => isValidCoordinate(s.lat, s.lng))
@@ -1064,7 +976,7 @@ function setupGeoJSONMarkers() {
     })))
     geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
     geoJSONMarkers.addClusterLayers(SOURCE_ID, 'endangered-species')
-    
+
     geoJSONMarkers.setupEventHandlers(
       SOURCE_ID,
       'endangered-species',
@@ -1073,23 +985,39 @@ function setupGeoJSONMarkers() {
         const species = speciesData.value.find(s => s.id === speciesId)
         if (species) openSpeciesOverlay(species)
       },
-      (clusterId, coords) => {
-        if (map) {
-          geoJSONMarkers.getClusterExpansionZoom(SOURCE_ID, clusterId).then((expansionZoom: number) => {
-            map!.flyTo({
-              center: coords,
-              zoom: Math.min(expansionZoom, 14),
-              duration: 500
-            })
-          })
-        }
-      }
+      () => { /* easeTo handled inside setupEventHandlers */ }
     )
+    geoJSONInitializedFor = 'endangered-species'
   }
 
   lastClusterZoom = Math.floor(map.getZoom())
   const center = map.getCenter()
   lastBboxCenter = { lng: center.lng, lat: center.lat }
+}
+
+function updateGeoJSONMarkerData() {
+  if (!map || !geoJSONInitializedFor) return
+  if (geoJSONInitializedFor === 'project-grants') {
+    const validProjects = projectsData.value.filter(p => isValidCoordinate(p.latitude, p.longitude))
+    geoJSONMarkers.updateData(SOURCE_ID, projectsToGeoJSON(validProjects))
+  } else if (speciesIndexData.value.length) {
+    geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(applySpeciesFilters(speciesIndexData.value)))
+  } else if (speciesData.value.length) {
+    const validSpecies = speciesData.value.filter(s => isValidCoordinate(s.lat, s.lng))
+    geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(validSpecies.map(s => ({
+      id: s.id,
+      commonName: s.commonName,
+      scientificName: s.scientificName,
+      taxonomicGroup: s.taxonomicGroup,
+      category: s.category,
+      lat: s.lat,
+      lng: s.lng,
+      imageUrl: s.imageUrl || null,
+      description: '',
+      endangerment: '',
+      threatTypes: s.threatTypes || [],
+    }))))
+  }
 }
 
 function rebuildMarkers() {
@@ -1098,7 +1026,7 @@ function rebuildMarkers() {
   const currentZoom = map.getZoom()
 
   // Use native GeoJSON for large datasets (endangered species with 4000+ points)
-  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesData.value.length > 500) {
+  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500) {
     setupGeoJSONMarkers()
     return
   }
@@ -1131,24 +1059,20 @@ function rebuildMarkers() {
 
     clusters.forEach((cp: ClusterPoint) => {
       if (cp.type === 'cluster') {
-        const el = createClusterMarkerElement(cp.count, cp.items, validProjects)
+        const onItemClick = (item: ClusterItem) => {
+          const project = validProjects[item.index]
+          if (project) openProjectOverlay(project)
+        }
+        const el = createClusterMarkerElement(cp.count, cp.items, onItemClick, validProjects)
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
         el.setAttribute('aria-label', `Cluster of ${cp.count} projects`)
-        el.addEventListener('click', () => {
+        el.addEventListener('click', (e) => {
+          // If click was on a mini-marker the click handler there already handled it
+          if ((e.target as HTMLElement | null)?.classList.contains('cluster-mini-hover')) return
           if (map) {
-            const items = cp.items
-            const lats = items.map(i => i.lat)
-            const lngs = items.map(i => i.lng)
-            const maxLat = Math.max(...lats)
-            const minLat = Math.min(...lats)
-            const maxLng = Math.max(...lngs)
-            const minLng = Math.min(...lngs)
-            const spanLat = maxLat - minLat
-            const spanLng = maxLng - minLng
-            const span = Math.max(spanLat, spanLng)
-            const zoom = Math.max(4, Math.min(12, 14 - Math.log2(Math.max(span, 0.1))))
-            map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 400 })
+            const zoom = Math.min(Math.max(clusterer.getClusterExpansionZoom(cp.clusterId), map.getZoom() + 1), map.getMaxZoom())
+            map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 500, essential: true })
           }
         })
         const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
@@ -1173,13 +1097,13 @@ function rebuildMarkers() {
         markers.push(marker)
       }
     })
-  } else if (activeDataset.value === 'endangered-species' && speciesData.value.length) {
+  } else if (activeDataset.value === 'endangered-species' && speciesIndexData.value.length) {
     const data = isMobile.value
-      ? speciesData.value.slice(0, 80)
-      : speciesData.value
+      ? speciesIndexData.value.slice(0, 80)
+      : speciesIndexData.value
     const speciesToRender = data.filter(s => isValidCoordinate(s.lat, s.lng))
     const imageUrls = speciesToRender.map(s => s.imageUrl).filter(Boolean)
-    
+
     preloadSpeciesImages(imageUrls, true, baseURL)
 
     const clusterItems = speciesToRender.map((s, i) => ({
@@ -1200,18 +1124,19 @@ function rebuildMarkers() {
 
     clusters.forEach((cp: ClusterPoint) => {
       if (cp.type === 'cluster') {
-        const el = createClusterMarkerElement(cp.count, cp.items, undefined, speciesToRender)
+        const onItemClick = (item: ClusterItem) => {
+          const species = speciesToRender[item.index]
+          if (species) openSpeciesOverlay(species)
+        }
+        const el = createClusterMarkerElement(cp.count, cp.items, onItemClick, undefined, speciesToRender)
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
         el.setAttribute('aria-label', `Cluster of ${cp.count} species`)
-        el.addEventListener('click', () => {
+        el.addEventListener('click', (e) => {
+          if ((e.target as HTMLElement | null)?.classList.contains('cluster-mini-hover')) return
           if (map) {
-            const items = cp.items
-            const lats = items.map(i => i.lat)
-            const lngs = items.map(i => i.lng)
-            const span = Math.max(Math.max(...lats) - Math.min(...lats), Math.max(...lngs) - Math.min(...lngs))
-            const zoom = Math.max(4, Math.min(12, 14 - Math.log2(Math.max(span, 0.1))))
-            map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 400 })
+            const zoom = Math.min(Math.max(clusterer.getClusterExpansionZoom(cp.clusterId), map.getZoom() + 1), map.getMaxZoom())
+            map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 500, essential: true })
           }
         })
         const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
@@ -1445,6 +1370,7 @@ onUnmounted(() => {
   if (useNativeGeoJSON) {
     geoJSONMarkers.cleanup()
   }
+  geoJSONInitializedFor = null
   clearImageCache()
   if (map) {
     map.remove()

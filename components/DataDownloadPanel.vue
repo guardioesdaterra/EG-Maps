@@ -1,14 +1,14 @@
 <template>
   <Transition name="fade">
-    <div v-if="visible" class="download-overlay" @click.self="close">
-      <div class="download-panel">
+    <div v-if="visible" class="download-overlay" @click.self="close" @keydown.esc="close">
+      <div ref="modalRef" class="download-panel" role="dialog" aria-modal="true" aria-labelledby="download-modal-title">
         <div class="download-header">
           <div class="download-header-left">
             <span class="download-badge">DATA EXPORT</span>
-            <h2 class="download-title">Download All Data</h2>
+            <h2 id="download-modal-title" class="download-title">Download All Data</h2>
             <p class="download-subtitle">JSON, GeoJSON & CSV formats — for research, analysis & verification</p>
           </div>
-          <button class="download-close" @click="close" aria-label="Close">&times;</button>
+          <button class="download-close" @click="close" aria-label="Close"><Icon name="lucide:x" class="w-4 h-4" /></button>
         </div>
 
         <div class="download-body">
@@ -50,20 +50,37 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { DOWNLOADABLE_DATASETS, downloadData, downloadAllDatasets, type DownloadableDataset } from '@/composables/useDataDownload'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
-defineProps<{ visible: boolean }>()
+const props = defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const close = () => emit('close')
 
-const datasets = DOWNLOADABLE_DATASETS
+const modalRef = ref<HTMLDivElement | null>(null)
+const isActive = computed(() => props.visible)
+useFocusTrap(modalRef, { active: isActive })
 
-function downloadOne(ds: DownloadableDataset) {
-  downloadData(ds)
+const datasets = DOWNLOADABLE_DATASETS
+const toast = useToast()
+
+async function downloadOne(ds: DownloadableDataset) {
+  try {
+    await downloadData(ds)
+    toast.success(ds.label || ds.id)
+  } catch {
+    toast.error('Download failed')
+  }
 }
 
-function downloadAll() {
-  downloadAllDatasets()
+async function downloadAll() {
+  try {
+    await downloadAllDatasets()
+    toast.success('All datasets downloaded')
+  } catch {
+    toast.error('Bulk download failed')
+  }
 }
 </script>
 
@@ -153,7 +170,7 @@ function downloadAll() {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: all 0.2s;
+  transition: background-color 0.2s, border-color 0.2s;
   font-family: inherit;
 }
 .download-all-btn:hover {
@@ -197,7 +214,7 @@ function downloadAll() {
   border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.04);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background-color 0.15s, border-color 0.15s;
 }
 .download-item:hover {
   background: rgba(255,255,255,0.03);
@@ -245,7 +262,7 @@ function downloadAll() {
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
-  transition: all 0.15s;
+  transition: background-color 0.15s, color 0.15s;
 }
 .download-item-btn:hover {
   background: rgba(255,255,255,0.05);

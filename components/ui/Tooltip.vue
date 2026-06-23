@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, onActivated, onDeactivated, watch, nextTick } from 'vue'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -146,6 +146,17 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', updatePosition)
   window.removeEventListener('scroll', updatePosition)
+})
+
+onDeactivated(() => {
+  hide()
+  window.removeEventListener('resize', updatePosition)
+  window.removeEventListener('scroll', updatePosition)
+})
+
+onActivated(() => {
+  window.addEventListener('resize', updatePosition)
+  window.addEventListener('scroll', updatePosition)
 })
 
 defineExpose({ show, hide })

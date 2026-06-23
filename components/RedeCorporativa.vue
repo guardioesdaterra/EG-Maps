@@ -1,18 +1,18 @@
 <template>
   <Transition name="fade">
-    <div v-if="visible" class="rede-overlay" @click.self="close">
-      <div class="rede-modal">
+    <div v-if="visible" class="rede-overlay" @click.self="close" @keydown.esc="close">
+      <div ref="modalRef" class="rede-modal" role="dialog" aria-modal="true" aria-labelledby="rede-modal-title">
         <div class="rede-header">
           <div>
             <span class="rede-badge">CORPORATE NETWORK</span>
-            <h2 class="rede-title">Rede Corporativa</h2>
+            <h2 id="rede-modal-title" class="rede-title">Rede Corporativa</h2>
             <p class="rede-subtitle">Enterprise connections in the Brazilian REE sector</p>
           </div>
-          <button class="rede-close" @click="close" aria-label="Close">&times;</button>
+          <button class="rede-close" @click="close" aria-label="Close"><Icon name="lucide:x" class="w-4 h-4" /></button>
         </div>
 
         <div class="rede-canvas-wrap">
-          <canvas ref="canvasRef" class="rede-canvas" />
+          <canvas ref="canvasRef" aria-hidden="true" class="rede-canvas" />
           <div v-if="hoveredEdge" class="rede-tooltip" :style="tooltipPos">
             <strong>{{ hoveredEdge.from }}</strong> → <strong>{{ hoveredEdge.to }}</strong>
             <span class="rede-edge-type" :style="{ background: getConnectionColor(hoveredEdge.type) }">{{ hoveredEdge.label || hoveredEdge.type }}</span>
@@ -24,6 +24,13 @@
             <span class="rede-legend-dot" :style="{ background: l.color }" />
             {{ l.label }}
           </span>
+        </div>
+
+        <div class="rede-toolbar">
+          <button class="rede-toolbar-btn" @click="relayout" :aria-label="t('observatory.network.relayout')">
+            <span>↻</span> {{ t('observatory.network.relayout') }}
+          </button>
+          <span class="rede-toolbar-hint">{{ t('observatory.network.clickHint') }}</span>
         </div>
 
         <div v-if="focusedEnterprise" class="rede-detail-bar">
@@ -39,16 +46,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, onUnmounted } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { ENTERPRISES, CORPORATE_CONNECTIONS, type EnterpriseHQ } from '@/lib/enterprise-data'
+import { useFocusTrap } from '@/composables/useFocusTrap'
+import { computeForceLayout, type ForceNode } from '@/composables/useForceLayout'
+import { useI18n } from '@/composables/useI18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ close: []; flyToEnterprise: [_name: string] }>()
 const close = () => { focusedEnterprise.value = null; emit('close') }
 const flyTo = (e: EnterpriseHQ) => { emit('flyToEnterprise', e.name) }
 
+let layoutSeed = 42
+function relayout() {
+  layoutSeed = (layoutSeed + 1) >>> 0
+  drawGraph()
+}
+
+const modalRef = ref<HTMLDivElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const focusedEnterprise = ref<EnterpriseHQ | null>(null)
+const isActive = computed(() => props.visible)
+useFocusTrap(modalRef, { active: isActive })
 const hoveredEdge = ref<{ from: string; to: string; type: string; label?: string } | null>(null)
 const tooltipPos = ref({ left: '0px', top: '0px' })
 
@@ -64,23 +85,48 @@ function getConnectionColor(type: string): string {
   return legendItems.find(l => l.key === type)?.color || '#666'
 }
 
-interface LayoutNode { x: number; y: number; ent: EnterpriseHQ; connections: number }
+interface LayoutNode { id: string; x: number; y: number; ent: EnterpriseHQ; connections: number }
 
 function layoutGraph(cw: number, ch: number): LayoutNode[] {
-  const cx = cw / 2
-  const cy = ch / 2
-  const radius = Math.min(cw, ch) * 0.32
-  const nodes: LayoutNode[] = ENTERPRISES.map((ent, i) => {
-    const angle = (i / ENTERPRISES.length) * Math.PI * 2 - Math.PI / 2
-    return { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius, ent, connections: 0 }
+  // Pre-compute per-node connection count (used for node radius)
+  const connectionCounts = new Map<string, number>()
+  for (const e of ENTERPRISES) connectionCounts.set(e.name, 0)
+  for (const conn of CORPORATE_CONNECTIONS) {
+    connectionCounts.set(conn.from, (connectionCounts.get(conn.from) || 0) + 1)
+    connectionCounts.set(conn.to, (connectionCounts.get(conn.to) || 0) + 1)
+  }
+
+  // Seed input for the force layout — Fruchterman-Reingold handles the rest
+  const inputNodes: ForceNode[] = ENTERPRISES.map(e => ({
+    id: e.name,
+    x: 0, y: 0, // will be placed by the layout
+    mass: 1 + (connectionCounts.get(e.name) || 0) * 0.2,
+  }))
+  const inputEdges = CORPORATE_CONNECTIONS.map(c => ({
+    source: c.from,
+    target: c.to,
+    weight: 1.5,
+  }))
+
+  const positioned = computeForceLayout(inputNodes, inputEdges, {
+    width: cw,
+    height: ch,
+    iterations: 300,
+    padding: 50,
+    seed: layoutSeed,
   })
-  CORPORATE_CONNECTIONS.forEach(conn => {
-    const fi = nodes.findIndex(n => n.ent.name === conn.from)
-    const ti = nodes.findIndex(n => n.ent.name === conn.to)
-    if (fi >= 0) nodes[fi].connections++
-    if (ti >= 0) nodes[ti].connections++
+
+  const byId = new Map(positioned.map(p => [p.id, p]))
+  return ENTERPRISES.map(ent => {
+    const p = byId.get(ent.name)
+    return {
+      id: ent.name,
+      x: p?.x ?? cw / 2,
+      y: p?.y ?? ch / 2,
+      ent,
+      connections: connectionCounts.get(ent.name) || 0,
+    }
   })
-  return nodes
 }
 
 let resizeTimer: ReturnType<typeof setTimeout> | null = null
@@ -236,8 +282,11 @@ function onResize() {
   resizeTimer = setTimeout(drawGraph, 150)
 }
 
+let visibilityTimer: ReturnType<typeof setTimeout> | null = null
+
 watch(() => props.visible, (v) => {
-  if (v) setTimeout(drawGraph, 50)
+  if (visibilityTimer) clearTimeout(visibilityTimer)
+  if (v) visibilityTimer = setTimeout(drawGraph, 50)
 })
 
 onMounted(() => {
@@ -251,6 +300,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (visibilityTimer) clearTimeout(visibilityTimer)
   window.removeEventListener('resize', onResize)
   const canvas = canvasRef.value
   if (canvas) {
@@ -308,6 +358,21 @@ onUnmounted(() => {
   display: inline-block; margin-left: 6px; padding: 1px 5px;
   border-radius: 3px; color: #fff; font-size: 9px; font-weight: 700;
 }
+.rede-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 20px; gap: 12px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.015);
+}
+.rede-toolbar-btn {
+  background: rgba(52,152,219,0.1); border: 1px solid rgba(52,152,219,0.25);
+  color: #5dade2; padding: 3px 9px; border-radius: 5px;
+  font-size: 10px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.rede-toolbar-btn:hover { background: rgba(52,152,219,0.2); }
+.rede-toolbar-hint { font-size: 9px; color: #555; }
+
 .rede-legend {
   display: flex; flex-wrap: wrap; gap: 8px;
   padding: 10px 20px; border-top: 1px solid rgba(255,255,255,0.06);

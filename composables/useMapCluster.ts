@@ -37,31 +37,63 @@ interface GeoJsonProperties {
   type?: 'project' | 'species'
 }
 
+const SUPERCLUSTER_OPTIONS = {
+  radius: 40,
+  maxZoom: 14,
+  minZoom: 0,
+  extent: 512,
+  nodeSize: 64,
+}
+
+function toFeatures(data: ClusterItem[]): PointFeature<GeoJsonProperties>[] {
+  return data.map((item) => ({
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [item.lng, item.lat],
+    },
+    properties: {
+      sourceIndex: item.index,
+      type: item.type,
+    },
+  }))
+}
+
 export function useMapCluster() {
   let index: Supercluster<GeoJsonProperties, GeoJsonProperties> | null = null
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null
+  let pendingData: ClusterItem[] | null = null
 
   function load(data: ClusterItem[]) {
-    const features: PointFeature<GeoJsonProperties>[] = data.map((item) => ({
-      type: 'Feature',
-      geometry: {
-        type: 'Point',
-        coordinates: [item.lng, item.lat],
-      },
-      properties: {
-        sourceIndex: item.index,
-        type: item.type,
-      },
-    }))
+    // Supercluster has no incremental add(), so reloads are O(N log N).
+    // Debounce rapid back-to-back loads (e.g. map move events) so the index
+    // isn't rebuilt on every frame. The first call lands within the same
+    // tick to keep perceived latency low for direct user filters.
+    if (debounceTimer) {
+      clearTimeout(debounceTimer)
+      debounceTimer = null
+    }
+    pendingData = data
+    debounceTimer = setTimeout(() => {
+      debounceTimer = null
+      if (pendingData) flushLoad(pendingData)
+    }, 80)
+  }
 
-    index = new Supercluster<GeoJsonProperties, GeoJsonProperties>({
-      radius: 40,
-      maxZoom: 14,
-      minZoom: 0,
-      extent: 512,
-      nodeSize: 64,
-    })
+  function flushLoad(data: ClusterItem[]) {
+    pendingData = null
+    const next = new Supercluster<GeoJsonProperties, GeoJsonProperties>(SUPERCLUSTER_OPTIONS)
+    next.load(toFeatures(data))
+    index = next
+  }
 
-    index.load(features)
+  function loadImmediate(data: ClusterItem[]) {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer)
+      debounceTimer = null
+      pendingData = null
+    }
+    flushLoad(data)
   }
 
   function getClusters(bbox: [number, number, number, number], zoom: number): ClusterPoint[] {
@@ -140,10 +172,15 @@ export function useMapCluster() {
   }
 
   function destroy() {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer)
+      debounceTimer = null
+    }
+    pendingData = null
     index = null
   }
 
-  return { load, getClusters, getClusterExpansionZoom, destroy }
+  return { load, loadImmediate, getClusters, getClusterExpansionZoom, destroy }
 }
 
 function splitIntoGroups(arr: PointFeature<GeoJsonProperties>[], maxSize: number): PointFeature<GeoJsonProperties>[][] {

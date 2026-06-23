@@ -1,21 +1,15 @@
-import { ref } from 'vue'
 import enTranslations from '../locales/en.json'
+import { useUiStore, type SupportedLocale } from '@/stores/ui'
 
-export type Locale = 'en' | 'es' | 'pt' | 'fr' | 'ja' | 'zh' | 'ar' | 'hi'
+export type Locale = SupportedLocale
 
 export interface Translation {
   [key: string]: string | Translation
 }
 
-const localeState = ref<Locale>('en')
-
 const localeIds: Locale[] = ['en', 'es', 'pt', 'fr', 'ja', 'zh', 'ar', 'hi']
 
-const translationCache = new Map<Locale, Translation>()
-const failedLocales = new Set<Locale>()
-translationCache.set('en', enTranslations as Translation)
-
-// Deep merge function for fallback
+// English fallback (used when a key is missing in the current locale)
 function deepGet(obj: Translation | undefined, path: string[]): string | undefined {
   if (!obj) return undefined
   let current: string | Translation = obj
@@ -26,107 +20,73 @@ function deepGet(obj: Translation | undefined, path: string[]): string | undefin
   return typeof current === 'string' ? current : undefined
 }
 
-// Get translation with deep fallback (locale -> en -> key)
-function getTranslation(locale: Locale, key: string, fallbackToKey = true): string {
-  const path = key.split('.')
-
-  // Try current locale first
-  const localeValue = deepGet(translationCache.get(locale), path)
-  if (localeValue !== undefined) return localeValue
-
-  // Fallback to English if not current locale
-  if (locale !== 'en') {
-    const enValue = deepGet(enTranslations as Translation, path)
-    if (enValue !== undefined) return enValue
-  }
-
-  // Return key as last resort (or undefined for debugging)
-  return fallbackToKey ? key : (undefined as unknown as string)
+function englishFallback(key: string): string | undefined {
+  return deepGet(enTranslations as Translation, key.split('.'))
 }
 
-function detectLocale(): Locale {
-  if (typeof window === 'undefined') return 'en'
+/**
+ * Composable that wraps vue-i18n's $t with the same call signature as the
+ * project's previous useI18n so all existing call sites work unchanged.
+ *
+ * - vue-i18n handles the current-locale lookup, lazy bundle loading, and
+ *   interpolation (this is configured by @nuxtjs/i18n in nuxt.config.ts)
+ * - This wrapper provides an English fallback for missing keys (preserving
+ *   the previous behavior)
+ * - The locale ref comes from the Pinia UI store so cross-component changes
+ *   are reactive everywhere
+ * - The vue-i18n Composer is retrieved via useNuxtApp().$i18n, not by
+ *   importing useI18n, so we don't conflict with the auto-imported version
+ *   from @nuxtjs/i18n
+ */
+export function useI18n() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const nuxtApp = useNuxtApp() as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const i18n = nuxtApp.$i18n as { t: (k: string, ...a: unknown[]) => string; locale: import('vue').Ref<string> } | undefined
 
-  const stored = localStorage.getItem('eg-maps-locale')
-  if (stored && localeIds.includes(stored as Locale)) return stored as Locale
+  const ui = useUiStore()
 
-  const browserLang = navigator.language.toLowerCase()
-  if (browserLang.startsWith('es')) return 'es'
-  if (browserLang.startsWith('pt')) return 'pt'
-  if (browserLang.startsWith('fr')) return 'fr'
-  if (browserLang.startsWith('ja')) return 'ja'
-  if (browserLang.startsWith('zh')) return 'zh'
-  if (browserLang.startsWith('ar')) return 'ar'
-  if (browserLang.startsWith('hi')) return 'hi'
-
-  return 'en'
-}
-
-async function loadLocale(locale: Locale, baseURL?: string): Promise<Translation> {
-  if (translationCache.has(locale)) {
-    return translationCache.get(locale)!
-  }
-  if (failedLocales.has(locale)) {
-    throw new Error(`Failed to load locale: ${locale}`)
-  }
-  const prefix = baseURL && baseURL !== '/' ? baseURL.replace(/\/+$/, '') : ''
-  const response = await fetch(`${prefix}/locales/${locale}.json`)
-  if (!response.ok) {
-    failedLocales.add(locale)
-    throw new Error(`Failed to load locale: ${locale}`)
-  }
-  const data = await response.json()
-  translationCache.set(locale, data)
-  return data
-}
-
-function interpolate(template: string, args: unknown[]): string {
-  let result = template
-
-  args.forEach((arg, index) => {
-    result = result.replace(new RegExp(`\\{${index}\\}`, 'g'), String(arg))
+  // vue-i18n might not be initialized during certain tests or builds. In that
+  // case, fall back to a passthrough that performs English fallback.
+  const vt = i18n?.t ?? ((k: string, ...args: unknown[]): string => {
+    const v = englishFallback(k) ?? k
+    return interpolate(v, args)
   })
+  const vLocale = i18n?.locale ?? ref<Locale>('en')
 
-  if (args.length === 1 && args[0] && typeof args[0] === 'object') {
-    Object.entries(args[0] as Record<string, unknown>).forEach(([key, value]) => {
-      result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), String(value))
+  // Sync vue-i18n locale with Pinia UI store
+  watch(
+    () => ui.locale,
+    (val) => {
+      if (vLocale.value !== val) vLocale.value = val
+    },
+    { immediate: true },
+  )
+  if (i18n) {
+    watch(vLocale, (val) => {
+      if (ui.locale !== val) ui.setLocale(val as Locale)
     })
   }
 
-  return result
-}
-
-export function useI18n() {
-  const baseURL = useRuntimeConfig().app.baseURL
-
-  // Initialize from localStorage on client-side mount
-  if (import.meta.client && localeState.value === 'en') {
-    const detected = detectLocale()
-    if (detected !== 'en') {
-      loadLocale(detected, baseURL).then(() => {
-        localeState.value = detected
-      })
-    }
-  }
-
   function t(key: string, ...args: unknown[]): string {
-    // Use new getTranslation for proper fallback chain: locale -> en -> key
-    const value = getTranslation(localeState.value, key, true)
-    return interpolate(value, args)
+    const value = vt(key, ...args)
+    if (value === key) {
+      const fb = englishFallback(key)
+      if (fb !== undefined) return interpolate(fb, args)
+    }
+    return value
   }
 
   function setLocale(newLocale: Locale) {
     if (!localeIds.includes(newLocale)) return
-    loadLocale(newLocale, baseURL).then(() => {
-      localeState.value = newLocale
-    })
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('eg-maps-locale', newLocale)
-    }
+    ui.setLocale(newLocale)
   }
 
   return {
-    locale: localeState,
+    locale: computed({
+      get: () => vLocale.value as Locale,
+      set: (val) => { ui.setLocale(val) },
+    }),
     t,
     availableLocales: localeIds,
     localeNames: {
@@ -141,4 +101,17 @@ export function useI18n() {
     } satisfies Record<Locale, string>,
     setLocale,
   }
+}
+
+function interpolate(template: string, args: unknown[]): string {
+  let result = template
+  args.forEach((arg, index) => {
+    result = result.replace(new RegExp(`\\{${index}\\}`, 'g'), String(arg))
+  })
+  if (args.length === 1 && args[0] && typeof args[0] === 'object') {
+    for (const [k, v] of Object.entries(args[0] as Record<string, unknown>)) {
+      result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v))
+    }
+  }
+  return result
 }

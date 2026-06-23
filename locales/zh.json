@@ -195,6 +195,175 @@
     "save": "保存",
     "cancel": "取消"
   },
+  "observatory": {
+    "tabs": {
+      "danger": "危险",
+      "military": "军事",
+      "illegal": "非法",
+      "env": "环境风险",
+      "network": "网络",
+      "timeline": "时间线"
+    },
+    "dangerPanel": {
+      "title": "最危险的企业",
+      "processes": "个申请",
+      "area": "公顷",
+      "showAll": "显示全部 {count}",
+      "showLess": "显示前 20",
+      "empty": "暂无数据",
+      "flyTo": "飞到 {name}",
+      "pager": "分页",
+      "prevPage": "上一页",
+      "nextPage": "下一页"
+    },
+    "military": {
+      "headline": "真正的利益：军事供应链",
+      "headlineBody": "「能源转型」叙事只是表面。主要驱动力是美国国防供应链：F-35（每架417公斤REE）、核潜艇（4,175公斤）、导弹、雷达、无人机。",
+      "kgPerUnit": "{kg} 公斤 REE",
+      "dodTitle": "国防部投资",
+      "stateDeptTitle": "国务院与出口金融",
+      "chinaBanTitle": "中国出口禁令（2025年10月）",
+      "chinaBanBody": "中国禁止向美国出口12/17种REE元素。美国78%的武器依赖中国REE。DFARS 2027指令：美国国防承包商必须使用非中国REE。"
+    },
+    "illegal": {
+      "landSpec": "土地投机",
+      "landSpecDesc": "437家具有投机模式的公司：2020年后100%申请，仅研究请求（从未获批）。",
+      "landSpecEx1": "GR8：R$20K资本，137申请，204,625公顷",
+      "landSpecEx2": "Nazca Gold：129申请，无公司数据",
+      "landSpecEx3": "Pedra Cinza：322申请，531,844公顷，全部为近期",
+      "rejeito": "监管俘获 — Rejeito行动",
+      "rejeitoDesc": "2025年9月：ANM局长被捕+21人。数十亿美元许可证操纵计划。",
+      "rejeitoEx1": "局长Caio Mário Seabra被捕",
+      "rejeitoEx2": "欺诈申请快速处理",
+      "rejeitoEx3": "贿赂和洗钱计划",
+      "secrecy": "矿业信息保密",
+      "secrecyDesc": "ANM允许矿业过程数据保密。88个申请处于保密状态（105,139公顷）。",
+      "secrecyEx1": "Nacional de Grafite的19个申请保密",
+      "secrecyEx2": "Mosaic的4个申请保密",
+      "secrecyEx3": "ANM于2025年开放咨询以修订规则",
+      "foreign": "战略矿产的外国控制",
+      "foreignDesc": "2,142个申请（10.3%）由澳大利亚、美国、加拿大和欧洲公司控制。",
+      "foreignEx1": "澳大利亚：1,146申请，173万公顷",
+      "foreignEx2": "美国：475申请，64.4万公顷",
+      "foreignEx3": "加拿大：190申请，38.6万公顷",
+      "foreignEx4": "欧洲/英国：331申请",
+      "exclusion": "社区排斥",
+      "exclusionDesc": "传统社区、 quilombolas和原住民被排除在其领土采矿决策之外。",
+      "exclusionEx1": "Quilombo Kalunga：联邦法院暂停",
+      "exclusionEx2": "在法定亚马逊地区有40多个quilombola领土受到威胁",
+      "exclusionEx3": "巴中协议排除社区保障",
+      "water": "水风险",
+      "waterDesc": "REE采矿消耗400-500升/吨。Poços de Caldas已面临定量配给。",
+      "waterEx1": "Poços de Caldas：2024年定量配给，Viridis计划使用4个水库",
+      "waterEx2": "ISR：在中国已被证明同样方法造成污染",
+      "waterEx3": "圣弗朗西斯科河：Zn、Cd、Cr污染"
+    },
+    "envPanel": {
+      "title": "按地区划分的环境风险",
+      "flyTo": "飞到 {name}"
+    },
+    "network": {
+      "foxfireTitle": "中心枢纽：Foxfire Metals",
+      "foxfireBody": "Paul Woolrich博士将Foxfire → Axel REE → Si6 Metals → Spark Energy连接起来。通过互联公司网络有570+申请。",
+      "australianTitle": "澳大利亚入侵",
+      "australianBody": "9家ASX公司在巴西勘探REE。Viridis + Meteoric = Poços de Caldas。MPF寻求暂停这两家公司。",
+      "usMilitaryTitle": "美国军事利益",
+      "usMilitaryBody": "DFC 5.65亿美元 → Serra Verde. 国务院 500万美元 → Aclara. 澳大利亚出口金融 1亿美元 → Viridis/Meteoric.",
+      "cbmmTitle": "CBMM 中国",
+      "cbmmBody": "宝钢/中信/鞍山财团持有15%（19.5亿美元）。铌尾矿中的REE — 无具体监管。",
+      "relayout": "Re-layout",
+      "clickHint": "Click a node to focus · Click empty space to clear"
+    },
+    "timelinePanel": {
+      "title": "申请时间线（2000–2026）",
+      "claims": "{count}个申请",
+      "cumulative": "累计 {count}"
+    },
+    "actions": {
+      "verify": "在ANM上验证",
+      "report": "报告问题",
+      "openInSidebar": "在侧边栏中打开"
+    },
+    "layers": {
+      "title": "图层",
+      "indigenousLands": "原住民土地",
+      "quilombolaTerritories": "Quilombola 领土",
+      "overlaps": "重叠申请",
+      "polygons": "多边形",
+      "hydrography": "水文",
+      "conflictZones": "冲突区",
+      "corpNetwork": "企业网络",
+      "enterpriseHq": "企业总部"
+    },
+    "search": "搜索企业、物质、州...",
+    "legend": {
+      "hydrography": "水文",
+      "basins": "流域",
+      "aquifers": "含水层",
+      "conflictZones": "冲突区"
+    },
+    "badges": {
+      "mil": "MIL",
+      "amb": "AMB",
+      "ill": "非法",
+      "for": "外国",
+      "env": "ENV",
+      "sus": "SUS"
+    },
+    "popups": {
+      "dangerLevel": "危险等级",
+      "process": "流程",
+      "phase": "阶段",
+      "uf": "州",
+      "area": "面积",
+      "lastEvent": "最后事件",
+      "lastEventRecent": "最近",
+      "lastEventStale": "陈旧",
+      "protectedArea": "保护区",
+      "indigenousLand": "原住民土地",
+      "quilombolaTerritory": "Quilombola 领土",
+      "fpicNotice": "与此领土重叠的采矿申请可能违反ILO第169号公约下的自由、事先和知情同意（FPIC）。",
+      "source": "来源 →",
+      "overlapWarning": "⚠ 重叠：{names}",
+      "dangerLabel": "{score} 危险",
+      "networkBadgeTitle": "企业网络集群",
+      "substances": "物质",
+      "year": "年份",
+      "unknown": "未知",
+      "lastEventActive": "活跃",
+      "overlaps": "重叠"
+    },
+    "myTerritory": {
+      "title": "我的领地",
+      "dropPin": "放置图钉",
+      "cancel": "取消",
+      "flyTo": "飞到图钉",
+      "share": "复制分享链接",
+      "copied": "已复制",
+      "clear": "清除图钉",
+      "defaultLabel": "我的领地",
+      "sharedBadge": "已分享"
+    },
+    "sync": {
+      "lastSync": "最近 ANM 同步",
+      "secrecyClaims": "保密申请",
+      "secrecyArea": "已封存",
+      "syncNote": "定期从 SIGMINE 更新",
+      "sealed": "封存"
+    },
+    "sidebarLabel": "观测台侧边栏",
+    "sidebarCollapse": "折叠侧边栏",
+    "sidebarExpand": "展开侧边栏",
+    "selectTab": "选择标签",
+    "categories": {
+      "direct_ree": "直接REE",
+      "carbonatite_associated": "碳酸岩/碱性",
+      "pegmatite_associated": "伟晶岩",
+      "heavy_mineral_associated": "重砂矿物",
+      "phosphate_associated": "磷酸盐",
+      "strategic_associated": "战略性"
+    }
+  },
   "loading": {
     "projectGrantsMap": "正在加载项目资助地图",
     "projectGrantsGlobe": "正在加载项目资助地球仪",
@@ -207,5 +376,29 @@
     "somethingWrong": "出现问题",
     "goHome": "返回首页",
     "tryAgain": "重试"
+  },
+  "a11y": {
+    "skipToContent": "跳到主要内容"
+  },
+  "palette": {
+    "title": "命令面板",
+    "placeholder": "输入命令，搜索…",
+    "searchInput": "搜索命令",
+    "navigate": "导航",
+    "select": "选择",
+    "close": "关闭",
+    "noResults": "无匹配命令",
+    "groupNavigation": "导航",
+    "groupSettings": "设置",
+    "groupLanguage": "语言",
+    "groupObservatory": "观测台"
+  },
+  "shortcuts": {
+    "title": "键盘快捷键",
+    "openPalette": "打开命令面板",
+    "toggleTheme": "切换深色模式",
+    "toggleFullscreen": "全屏",
+    "showShortcuts": "显示此覆盖",
+    "closeOverlay": "关闭覆盖"
   }
 }

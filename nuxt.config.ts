@@ -5,14 +5,54 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
   devtools: { enabled: true },
 
-  modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint'],
+  modules: [
+    '@nuxtjs/tailwindcss',
+    '@nuxt/eslint',
+    '@pinia/nuxt',
+    '@nuxtjs/i18n',
+    '@vueuse/motion/nuxt',
+    '@vueuse/nuxt',
+  ],
 
-  plugins: ['~/plugins/iconify-icon.client.ts'],
+  plugins: ['~/plugins/iconify-icon.client.ts', '~/plugins/command-palette.client.ts'],
+
+  // vueuse-motion configuration
+  motion: {
+    directives: ['fade', 'slide', 'pop', 'bounce', 'flip', 'morph'],
+  },
+
+  // vueuse module
+  vueuse: {
+    ssrHandlers: true,
+  },
+
+  // i18n — keep URLs unchanged via no_prefix; the existing useI18n composable
+  // delegates to vue-i18n's $t so we get lazy-loaded locale bundles and
+  // proper pluralization/formatting for free.
+  i18n: {
+    strategy: 'no_prefix',
+    defaultLocale: 'en',
+    vueI18n: './i18n.config.ts',
+    langDir: '../locales',
+    locales: [
+      { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
+      { code: 'es', language: 'es-ES', name: 'Español', file: 'es.json' },
+      { code: 'fr', language: 'fr-FR', name: 'Français', file: 'fr.json' },
+      { code: 'pt', language: 'pt-BR', name: 'Português', file: 'pt.json' },
+      { code: 'ar', language: 'ar-SA', name: 'العربية', file: 'ar.json' },
+      { code: 'hi', language: 'hi-IN', name: 'हिन्दी', file: 'hi.json' },
+      { code: 'ja', language: 'ja-JP', name: '日本語', file: 'ja.json' },
+      { code: 'zh', language: 'zh-CN', name: '中文', file: 'zh.json' },
+    ],
+    detectBrowserLanguage: false,
+  },
 
   // SSG with prerendered HTML for all routes - enables proper GitHub Pages indexing and refresh
   ssr: true,
   routeRules: {
     '/**': { prerender: true },
+    '/observatory-of-vulcan/3d': { redirect: `${baseURL}observatory-of-vulcan?mode=3d` },
+    '/globe': { redirect: `${baseURL}project-grants/3d` },
   },
 
   // App configuration
@@ -52,10 +92,13 @@ export default defineNuxtConfig({
     },
   },
 
-  // Runtime config for API keys
+  // Runtime config for API keys + analytics
   runtimeConfig: {
     public: {
       maptilerApiKey: process.env.NUXT_PUBLIC_MAPTILER_API_KEY || process.env.MAPTILER_API_KEY || '',
+      // Set NUXT_PUBLIC_PLAUSIBLE_DOMAIN to enable Plausible analytics.
+      // Example: 'eg-maps.example.org'
+      plausibleDomain: process.env.NUXT_PUBLIC_PLAUSIBLE_DOMAIN || '',
     },
   },
 

@@ -1,0 +1,384 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terra Indígena Xingu",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": true,
+        "state": "MT",
+        "area_ha": 2642000,
+        "people": "16 ethnic groups (Kuikuro, Kamayurá, Yawalapiti, etc.)",
+        "source_url": "https://www.gov.br/funai/pt-br/assuntos/terras-indigenas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-53.5, -10.5], [-52.0, -10.3], [-51.2, -11.2], [-52.0, -12.5],
+          [-53.2, -13.0], [-54.0, -12.3], [-54.2, -11.0], [-53.5, -10.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terra Indígena Yanomami",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": true,
+        "state": "AM/RR",
+        "area_ha": 9660000,
+        "people": "Yanomami and Ye'kwana",
+        "source_url": "https://www.gov.br/funai/pt-br/assuntos/terras-indigenas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-64.5, 2.5], [-63.0, 2.8], [-61.5, 2.3], [-60.2, 1.5],
+          [-60.5, 0.5], [-62.0, -0.2], [-63.8, -0.5], [-64.8, 0.5],
+          [-65.2, 1.5], [-64.5, 2.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terra Indígena Munduruku",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": true,
+        "state": "PA/AM",
+        "area_ha": 2381000,
+        "people": "Munduruku",
+        "source_url": "https://www.gov.br/funai/pt-br/assuntos/terras-indigenas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-58.5, -7.0], [-57.0, -7.0], [-56.0, -7.8], [-55.5, -8.8],
+          [-56.2, -9.8], [-57.5, -9.8], [-58.5, -8.8], [-59.0, -7.8], [-58.5, -7.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terra Indígena Kayapó",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": true,
+        "state": "PA/MT",
+        "area_ha": 3283000,
+        "people": "Kayapó (Mebêngôkre)",
+        "source_url": "https://www.gov.br/funai/pt-br/assuntos/terras-indigenas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-52.5, -7.5], [-50.5, -7.8], [-49.0, -8.5], [-48.5, -9.8],
+          [-49.5, -10.8], [-51.5, -10.5], [-52.8, -9.5], [-53.0, -8.5], [-52.5, -7.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terra Indígena Raposa Serra do Sol",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": true,
+        "state": "RR",
+        "area_ha": 1746000,
+        "people": "Ingarikó, Taurepang, Macuxi, Wapixana, Patamona",
+        "source_url": "https://www.gov.br/funai/pt-br/assuntos/terras-indigenas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-60.5, 5.0], [-59.5, 4.8], [-59.2, 4.0], [-59.8, 3.2],
+          [-60.5, 3.0], [-60.8, 4.0], [-60.5, 5.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terra Indígena Sararé (Massaco)",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": true,
+        "state": "MT",
+        "area_ha": 164000,
+        "people": "Nambikwara, Manoki",
+        "source_url": "https://www.gov.br/funai/pt-br/assuntos/terras-indigenas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-59.0, -14.0], [-58.0, -14.0], [-57.8, -14.8], [-58.5, -15.2],
+          [-59.2, -14.8], [-59.0, -14.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terra Indígena Capoto/Jarina",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": true,
+        "state": "MT",
+        "area_ha": 634000,
+        "people": "Kayapó (Mebêngôkre)",
+        "source_url": "https://www.gov.br/funai/pt-br/assuntos/terras-indigenas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-52.5, -10.5], [-51.0, -10.5], [-50.5, -11.3], [-51.0, -12.0],
+          [-52.0, -12.0], [-52.8, -11.3], [-52.5, -10.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Quilombo Kalunga (Sítio Histórico e Patrimônio Cultural)",
+        "kind": "quilombo",
+        "category": "quilombola_territory",
+        "color": "#f39c12",
+        "overlap_warning": true,
+        "state": "GO",
+        "area_ha": 253000,
+        "people": "Kalunga (largest remaining quilombo in Brazil)",
+        "source_url": "http://www.incra.gov.br/quilombolas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-47.5, -13.5], [-47.0, -13.5], [-47.0, -14.5], [-47.5, -14.5],
+          [-47.7, -14.0], [-47.5, -13.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Quilombo do Mimoso",
+        "kind": "quilombo",
+        "category": "quilombola_territory",
+        "color": "#f39c12",
+        "overlap_warning": true,
+        "state": "MT",
+        "area_ha": 14000,
+        "people": "~30 families, mining threat suspended by Federal Court",
+        "source_url": "http://www.incra.gov.br/quilombolas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-54.0, -15.5], [-53.8, -15.5], [-53.8, -15.7], [-54.0, -15.7],
+          [-54.0, -15.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Quilombo da Favela (Chapéu Preto)",
+        "kind": "quilombo",
+        "category": "quilombola_territory",
+        "color": "#f39c12",
+        "overlap_warning": true,
+        "state": "MG",
+        "area_ha": 3200,
+        "people": "Quilombola community in Poços dealdas region",
+        "source_url": "http://www.incra.gov.br/quilombolas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-46.6, -21.6], [-46.5, -21.6], [-46.5, -21.7], [-46.6, -21.7],
+          [-46.6, -21.6]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Quilombo de Paiol de Telha",
+        "kind": "quilombo",
+        "category": "quilombola_territory",
+        "color": "#f39c12",
+        "overlap_warning": true,
+        "state": "PR",
+        "area_ha": 8400,
+        "people": "Quilombola community",
+        "source_url": "http://www.incra.gov.br/quilombolas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-50.0, -23.5], [-49.8, -23.5], [-49.8, -23.7], [-50.0, -23.7],
+          [-50.0, -23.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Quilombo de Mesquita (GO)",
+        "kind": "quilombo",
+        "category": "quilombola_territory",
+        "color": "#f39c12",
+        "overlap_warning": true,
+        "state": "GO",
+        "area_ha": 4250,
+        "people": "Quilombola community in Goiás",
+        "source_url": "http://www.incra.gov.br/quilombolas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-48.5, -14.4], [-48.3, -14.4], [-48.3, -14.6], [-48.5, -14.6],
+          [-48.5, -14.4]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Reserva Extrativista Chico Mendes",
+        "kind": "conservation_unit",
+        "category": "extractive_reserve",
+        "color": "#27ae60",
+        "overlap_warning": false,
+        "state": "AC",
+        "area_ha": 970000,
+        "people": "Rubber tappers and traditional communities",
+        "source_url": "https://www.gov.br/icmbio/pt-br"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-69.5, -10.5], [-68.0, -10.3], [-67.5, -11.2], [-68.0, -12.0],
+          [-69.2, -12.0], [-69.8, -11.0], [-69.5, -10.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Parque Nacional dos Lençóis Maranhenses",
+        "kind": "conservation_unit",
+        "category": "national_park",
+        "color": "#27ae60",
+        "overlap_warning": false,
+        "state": "MA",
+        "area_ha": 155000,
+        "people": "Protected ecosystem (no permanent residents)",
+        "source_url": "https://www.gov.br/icmbio/pt-br"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-43.2, -2.5], [-42.5, -2.5], [-42.4, -3.0], [-42.8, -3.3],
+          [-43.3, -3.1], [-43.4, -2.8], [-43.2, -2.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terra Indígena Krahô (TIs Kraolandia e Itacaiúnas)",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": true,
+        "state": "TO",
+        "area_ha": 327000,
+        "people": "Krahô (Canela)",
+        "source_url": "https://www.gov.br/funai/pt-br/assuntos/terras-indigenas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-47.8, -7.5], [-47.0, -7.5], [-47.0, -8.2], [-47.5, -8.5],
+          [-48.0, -8.2], [-47.8, -7.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Quilombo Ribeirão Grande / Terra Seca",
+        "kind": "quilombo",
+        "category": "quilombola_territory",
+        "color": "#f39c12",
+        "overlap_warning": true,
+        "state": "BA",
+        "area_ha": 7600,
+        "people": "Quilombola community near Jequié",
+        "source_url": "http://www.incra.gov.br/quilombolas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-40.3, -13.7], [-40.1, -13.7], [-40.1, -13.9], [-40.3, -13.9],
+          [-40.3, -13.7]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terra Indígena Paresi",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": true,
+        "state": "MT",
+        "area_ha": 564000,
+        "people": "Paresi (Haliti)",
+        "source_url": "https://www.gov.br/funai/pt-br/assuntos/terras-indigenas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-58.5, -13.5], [-57.0, -13.5], [-56.8, -14.5], [-57.5, -15.0],
+          [-58.5, -14.8], [-58.7, -14.0], [-58.5, -13.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Quilombo do Povo do Livramento",
+        "kind": "quilombo",
+        "category": "quilombola_territory",
+        "color": "#f39c12",
+        "overlap_warning": true,
+        "state": "MG",
+        "area_ha": 12000,
+        "people": "Quilombola community near Araxá",
+        "source_url": "http://www.incra.gov.br/quilombolas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-46.8, -19.4], [-46.6, -19.4], [-46.6, -19.6], [-46.8, -19.6],
+          [-46.8, -19.4]
+        ]]
+      }
+    }
+  ]
+}

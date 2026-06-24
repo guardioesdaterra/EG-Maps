@@ -3,6 +3,9 @@ import {
   buildRareEarthPopupHTML,
   isValidCoordinate,
   escapeHtml,
+  RARE_EARTH_PHASES,
+  getPhaseShortLabel,
+  getPhaseColor,
 } from '../lib/map-utils'
 import {
   computeSpeculatorIndex,
@@ -14,6 +17,11 @@ import {
   buildAnmVerifyUrl,
   type RareEarthFeatureCollection,
 } from '../lib/observatory-analysis'
+import {
+  buildEnterpriseNetworkLines,
+  buildEnterpriseHQGeoJSON,
+  ENTERPRISES,
+} from '../lib/enterprise-data'
 import { computeForceLayout } from '../composables/useForceLayout'
 
 // ============================================================================
@@ -602,5 +610,159 @@ describe('isValidCoordinate', () => {
 
   it('rejects NaN', () => {
     expect(isValidCoordinate(NaN, 0)).toBe(false)
+  })
+})
+
+// ============================================================================
+// RARE_EARTH_PHASES
+// ============================================================================
+
+describe('RARE_EARTH_PHASES', () => {
+  it('has all expected phases', () => {
+    expect(RARE_EARTH_PHASES.REQUERIMENTO).toBeDefined()
+    expect(RARE_EARTH_PHASES.CONCESSÃO).toBeDefined()
+    expect(RARE_EARTH_PHASES.LAVRA).toBeDefined()
+    expect(RARE_EARTH_PHASES.LICENCIAMENTO).toBeDefined()
+  })
+
+  it('each phase has label, shortLabel, and color', () => {
+    for (const [, phase] of Object.entries(RARE_EARTH_PHASES)) {
+      expect(phase.label).toBeTruthy()
+      expect(phase.shortLabel).toBeTruthy()
+      expect(phase.color).toMatch(/^#[0-9a-f]{6}$/i)
+    }
+  })
+
+  it('getPhaseShortLabel returns shortLabel for known phases', () => {
+    expect(getPhaseShortLabel('REQUERIMENTO')).toBe('REQ')
+    expect(getPhaseShortLabel('CONCESSÃO')).toBe('CONC')
+  })
+
+  it('getPhaseShortLabel returns truncated raw for unknown phases', () => {
+    expect(getPhaseShortLabel('UNKNOWN_PHASE')).toBe('UNKNO')
+  })
+
+  it('getPhaseColor returns color for known phases', () => {
+    expect(getPhaseColor('REQUERIMENTO')).toBe('#9ca3af')
+    expect(getPhaseColor('LAVRA')).toBe('#7f1d1d')
+  })
+
+  it('getPhaseColor returns fallback for unknown phases', () => {
+    expect(getPhaseColor('NONEXISTENT')).toBe('#666')
+  })
+})
+
+// ============================================================================
+// buildEnterpriseNetworkLines
+// ============================================================================
+
+describe('buildEnterpriseNetworkLines', () => {
+  it('returns a FeatureCollection', () => {
+    const fc: RareEarthFeatureCollection = {
+      type: 'FeatureCollection',
+      features: [],
+    }
+    const result = buildEnterpriseNetworkLines(fc as any)
+    expect(result.type).toBe('FeatureCollection')
+    expect(result.features).toBeInstanceOf(Array)
+  })
+
+  it('draws lines from enterprise HQ to claim centroids for matching claims', () => {
+    const fc: RareEarthFeatureCollection = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: { nome: 'VALE S.A.', area_ha: 1000, ano: 2023 },
+          geometry: { type: 'Point', coordinates: [-43.2, -22.9] },
+        },
+        {
+          type: 'Feature',
+          properties: { nome: 'VALE S.A.', area_ha: 2000, ano: 2022 },
+          geometry: { type: 'Point', coordinates: [-43.1, -22.8] },
+        },
+      ],
+    }
+    const result = buildEnterpriseNetworkLines(fc as any)
+    const valeLine = result.features.find(f =>
+      f.properties?.from === 'VALE S.A.' && f.properties?.type === 'domestic_claims'
+    )
+    expect(valeLine).toBeDefined()
+    expect(valeLine!.properties!.claimCount).toBe(2)
+    expect(valeLine!.geometry!.type).toBe('LineString')
+  })
+
+  it('includes corporate connection lines between enterprises', () => {
+    const fc: RareEarthFeatureCollection = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: { nome: 'Foxfire Metals', area_ha: 500, ano: 2023 },
+          geometry: { type: 'Point', coordinates: [144.9, -37.8] },
+        },
+        {
+          type: 'Feature',
+          properties: { nome: 'Axel REE', area_ha: 200, ano: 2023 },
+          geometry: { type: 'Point', coordinates: [145.0, -37.8] },
+        },
+      ],
+    }
+    const result = buildEnterpriseNetworkLines(fc as any)
+    const corpLine = result.features.find(f =>
+      f.properties?.connectionType === 'corporate' && f.properties?.from === 'Foxfire Metals'
+    )
+    expect(corpLine).toBeDefined()
+    expect(corpLine!.properties!.to).toBe('Axel REE')
+  })
+
+  it('marks foreign enterprise lines with foreign_to_claims type', () => {
+    const fc: RareEarthFeatureCollection = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: { nome: 'Rio Tinto', area_ha: 5000, ano: 2023 },
+          geometry: { type: 'Point', coordinates: [-43.0, -22.5] },
+        },
+      ],
+    }
+    const result = buildEnterpriseNetworkLines(fc as any)
+    const rioLine = result.features.find(f =>
+      f.properties?.from === 'Rio Tinto' && f.properties?.type === 'foreign_to_claims'
+    )
+    expect(rioLine).toBeDefined()
+    expect(rioLine!.properties!.color).toBe('#e74c3c')
+  })
+})
+
+// ============================================================================
+// buildEnterpriseHQGeoJSON
+// ============================================================================
+
+describe('buildEnterpriseHQGeoJSON', () => {
+  it('returns all enterprises as FeatureCollection', () => {
+    const result = buildEnterpriseHQGeoJSON()
+    expect(result.type).toBe('FeatureCollection')
+    expect(result.features.length).toBe(ENTERPRISES.length)
+  })
+
+  it('uses centroid from speculatorIndex when available', () => {
+    const centroid = { lng: -50.0, lat: -15.0 }
+    const specIndex = [
+      { normalizedName: 'VALE', centroid },
+    ]
+    const result = buildEnterpriseHQGeoJSON(specIndex)
+    const valeFeature = result.features.find(f => f.properties?.name === 'VALE S.A.')
+    expect(valeFeature).toBeDefined()
+    expect((valeFeature!.geometry as any).coordinates).toEqual([-50.0, -15.0])
+    expect(valeFeature!.properties!.hasCentroid).toBe(true)
+  })
+
+  it('falls back to HQ coordinates when no speculatorIndex provided', () => {
+    const result = buildEnterpriseHQGeoJSON()
+    const valeFeature = result.features.find(f => f.properties?.name === 'VALE S.A.')
+    expect(valeFeature).toBeDefined()
+    expect((valeFeature!.geometry as any).coordinates).toEqual([-43.1761, -22.9542])
   })
 })

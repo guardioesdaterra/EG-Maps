@@ -353,6 +353,24 @@ export const RARE_EARTH_CATEGORIES: Record<string, { label: string; color: strin
   strategic_associated: { label: 'Estratégicos', color: '#e91e63' },
 }
 
+export const RARE_EARTH_PHASES: Record<string, { label: string; shortLabel: string; color: string }> = {
+  REQUERIMENTO: { label: 'Requerimento', shortLabel: 'REQ', color: '#9ca3af' },
+  'REQUERIMENTO DE PESQUISA': { label: 'Requerimento de Pesquisa', shortLabel: 'REQ', color: '#9ca3af' },
+  'AUTORIZAÇÃO DE PESQUISA': { label: 'Autorização de Pesquisa', shortLabel: 'AUTH', color: '#f59e0b' },
+  DISPONIBILIDADE: { label: 'Disponibilidade', shortLabel: 'AVAIL', color: '#ea580c' },
+  LICENCIAMENTO: { label: 'Licenciamento', shortLabel: 'LICEN', color: '#dc2626' },
+  CONCESSÃO: { label: 'Concessão', shortLabel: 'CONC', color: '#b91c1c' },
+  LAVRA: { label: 'Lavra', shortLabel: 'LAVRA', color: '#7f1d1d' },
+}
+
+export function getPhaseShortLabel(phase: string): string {
+  return RARE_EARTH_PHASES[phase]?.shortLabel ?? phase?.slice(0, 5) ?? '?'
+}
+
+export function getPhaseColor(phase: string): string {
+  return RARE_EARTH_PHASES[phase]?.color ?? '#666'
+}
+
 export function getCategoryColor(cat: string): string {
   return RARE_EARTH_CATEGORIES[cat]?.color ?? '#666'
 }

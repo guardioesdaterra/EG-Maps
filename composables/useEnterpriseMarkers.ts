@@ -106,7 +106,7 @@ function addEnterpriseConnections(map: MapLibreMap) {
   })
 }
 
-export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (e: EnterpriseHQ) => void) {
+export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (e: EnterpriseHQ) => void, speculatorIndex?: Array<{ normalizedName: string; centroid: { lng: number; lat: number } | null }>) {
   try {
     const state = getState(map)
     state.onClick = onClick || null
@@ -118,7 +118,7 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (e: EnterpriseH
       return
     }
 
-    const geojson = buildEnterpriseHQGeoJSON()
+    const geojson = buildEnterpriseHQGeoJSON(speculatorIndex)
 
     if (!canAddSource(map, ENTERPRISE_SOURCE)) return
     map.addSource(ENTERPRISE_SOURCE, { type: 'geojson', data: geojson })

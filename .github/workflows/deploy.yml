@@ -63,6 +63,21 @@ jobs:
           NUXT_APP_BASE_URL: /EG-Maps/
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
 
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Start static server
+        run: npx http-server .output/public -p 3000 -s --cors &
+        shell: bash
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:3000
+
+      - name: Playwright E2E tests
+        run: npx playwright test --config=playwright.static.config.ts tests/map-rendering.spec.ts
+        env:
+          CI: true
+
       - name: Copy 200.html as 404.html for SPA fallback
         run: |
           if [ -f .output/public/200.html ]; then

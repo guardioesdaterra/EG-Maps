@@ -91,9 +91,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
+import { RARE_EARTH_CATEGORIES, isSuspicious } from '@/lib/map-utils'
 import { isMilitaryInterest, isHighEnvRisk, buildAnmVerifyUrl, buildClaimReportMailtoUrl } from '@/lib/observatory-analysis'
-import { isSuspicious } from '@/lib/map-utils'
 import type { SpeculatorIndexEntry } from '@/lib/observatory-analysis'
 
 const props = defineProps<{

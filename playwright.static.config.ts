@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    baseURL: process.env.BASE_URL || 'http://localhost:3000/EG-Maps',
     trace: 'on-first-retry',
   },
 
@@ -21,7 +21,7 @@ export default defineConfig({
 
   webServer: {
     command: 'npx http-server .output/public -p 3000 -s --cors',
-    url: process.env.BASE_URL || 'http://localhost:3000',
+    url: process.env.BASE_URL || 'http://localhost:3000/EG-Maps',
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',
     stderr: 'pipe',

@@ -15,6 +15,7 @@ export interface RareEarthFeatureSummary {
   lo: number
   la: number
   ov: Array<{ name: string; kind: string; distance_km: number }> | null
+  dsprocesso: string
 }
 
 export interface DeepAnalysis {
@@ -76,6 +77,7 @@ export function useRareEarthData(baseURL: string) {
         lo: f.geometry.coordinates[0] ?? 0,
         la: f.geometry.coordinates[1] ?? 0,
         ov: overlapsByProcesso[f.properties.processo] || null,
+        dsprocesso: f.properties.dsprocesso ?? '',
       }))
       pointsData.value = pointsGJ
       if (polysRes && polysRes.ok) polygonsData.value = await polysRes.json()

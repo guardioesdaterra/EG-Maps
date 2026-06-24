@@ -189,6 +189,7 @@ import {
   preloadSpeciesImages,
 } from '@/lib/image-utils'
 import { useMapCluster } from '@/composables/useMapCluster'
+import { detectWebGLSupport } from '@/composables/useMapLibre'
 import type { ClusterPoint, ClusterItem } from '@/composables/useMapCluster'
 import {
   createProjectMarkerElement,
@@ -1062,6 +1063,15 @@ function debouncedSetupHexGrid() {
 
 function initMap() {
   if (!mapContainerRef.value) return
+
+  // Detect WebGL support before attempting to create map
+  if (!detectWebGLSupport()) {
+    noWebglSupport.value = true
+    isLoading.value = false
+    hasError.value = true
+    errorMessage.value = 'WebGL is not supported in your browser. Please use a modern browser that supports WebGL.'
+    return
+  }
 
   // Clean up existing map if retry
   if (map) {

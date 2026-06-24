@@ -388,6 +388,53 @@
       "heavy_mineral_associated": "Heavy Mineral",
       "phosphate_associated": "Phosphate",
       "strategic_associated": "Strategic"
+    },
+    "yearSlider": {
+      "title": "Filing Year",
+      "minYear": "Minimum year",
+      "maxYear": "Maximum year",
+      "play": "Play",
+      "pause": "Pause",
+      "reset": "Reset",
+      "claims": "claims visible"
+    },
+    "phaseFilter": {
+      "title": "Mining Phase",
+      "all": "Select all",
+      "none": "Clear all"
+    },
+    "claimReport": {
+      "title": "Report Claim Issue",
+      "close": "Close",
+      "claimInfo": "Reported claim",
+      "reportType": "Report type",
+      "types": {
+        "newActivity": "New activity / drilling",
+        "pollution": "Water / soil contamination",
+        "conflict": "Violence / intimidation",
+        "correction": "Data correction",
+        "fieldReport": "Field report"
+      },
+      "description": "Description",
+      "descriptionPlaceholder": "Describe what you observed (min. 10 characters)...",
+      "includeLocation": "Include my GPS location",
+      "geoPending": "Requesting location...",
+      "contactOptional": "Contact (optional)",
+      "contactPlaceholder": "Email or phone (encrypted)",
+      "cancel": "Cancel",
+      "submit": "Send Report"
+    },
+    "export": {
+      "title": "Export Map View",
+      "close": "Close",
+      "format": "Format",
+      "resolution": "Resolution",
+      "paperSize": "Paper size",
+      "includeLegend": "Include legend overlay",
+      "includeTitle": "Include title & metadata",
+      "cancel": "Cancel",
+      "download": "Download",
+      "exporting": "Exporting..."
     }
   },
   "loading": {

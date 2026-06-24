@@ -279,10 +279,24 @@ export function addRareEarthNetworkLines(map: MapLibreMap, networkFeatures: GeoJ
   map.addLayer({
     id: 'ree-network-lines', type: 'line', source: REE_SOURCE_NETWORK,
     paint: {
-      'line-color': '#5dade2',
-      'line-width': 0.5, 'line-opacity': 0.25, 'line-dasharray': [1, 3],
+      'line-color': ['coalesce', ['get', 'color'], '#5dade2'],
+      'line-width': [
+        'case',
+        ['==', ['get', 'connectionType'], 'corporate'], 1.5,
+        ['==', ['get', 'connectionType'], 'foreign_to_claims'], 1,
+        0.5,
+      ],
+      'line-opacity': 0.4,
+      'line-dasharray': [
+        'case',
+        ['==', ['get', 'connectionType'], 'corporate'], ['literal', [2, 2]],
+        ['==', ['get', 'connectionType'], 'foreign_to_claims'], ['literal', [4, 2]],
+        ['literal', [1, 3]],
+      ],
     },
   })
+  map.on('mouseenter', 'ree-network-lines', () => { map.getCanvas().style.cursor = 'pointer' })
+  map.on('mouseleave', 'ree-network-lines', () => { map.getCanvas().style.cursor = '' })
 }
 
 export function addBrazilianCitiesLayer(map: MapLibreMap) {

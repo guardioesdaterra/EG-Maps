@@ -388,6 +388,53 @@
       "heavy_mineral_associated": "Mineral pesado",
       "phosphate_associated": "Fosfato",
       "strategic_associated": "Estratégicos"
+    },
+    "yearSlider": {
+      "title": "Ano de protocolo",
+      "minYear": "Ano mínimo",
+      "maxYear": "Ano máximo",
+      "play": "Reproduzir",
+      "pause": "Pausar",
+      "reset": "Redefinir",
+      "claims": "reclamações visíveis"
+    },
+    "phaseFilter": {
+      "title": "Fase minerária",
+      "all": "Selecionar tudo",
+      "none": "Limpar tudo"
+    },
+    "claimReport": {
+      "title": "Reportar problema da reclamação",
+      "close": "Fechar",
+      "claimInfo": "Reclamação reportada",
+      "reportType": "Tipo de relatório",
+      "types": {
+        "newActivity": "Nova atividade / perfuração",
+        "pollution": "Contaminação de água / solo",
+        "conflict": "Violência / intimidação",
+        "correction": "Correção de dados",
+        "fieldReport": "Relato de campo"
+      },
+      "description": "Descrição",
+      "descriptionPlaceholder": "Descreva o que você observou (mín. 10 caracteres)...",
+      "includeLocation": "Incluir minha localização GPS",
+      "geoPending": "Solicitando localização...",
+      "contactOptional": "Contato (opcional)",
+      "contactPlaceholder": "E-mail ou telefone (criptografado)",
+      "cancel": "Cancelar",
+      "submit": "Enviar relatório"
+    },
+    "export": {
+      "title": "Exportar visualização do mapa",
+      "close": "Fechar",
+      "format": "Formato",
+      "resolution": "Resolução",
+      "paperSize": "Tamanho do papel",
+      "includeLegend": "Incluir legenda",
+      "includeTitle": "Incluir título e metadados",
+      "cancel": "Cancelar",
+      "download": "Baixar",
+      "exporting": "Exportando..."
     }
   },
   "loading": {

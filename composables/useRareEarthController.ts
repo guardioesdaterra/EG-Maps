@@ -4,8 +4,8 @@ import maplibregl from 'maplibre-gl'
 import {
   setupRareEarthLayers as setupRareEarthLayersInternal,
   syncRareEarthLayerVisibility as syncRareEarthLayerVisibilityInternal,
-  buildNetworkLinesFromClaims,
 } from '@/composables/useRareEarthLayers'
+import { buildEnterpriseNetworkLines } from '@/lib/enterprise-data'
 
 export interface RareEarthControllerProps {
   rareEarthPoints?: GeoJSON.FeatureCollection
@@ -76,7 +76,7 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       points: p.rareEarthPoints,
       polys: p.rareEarthPolygons ?? null,
       protected: p.rareEarthProtected ?? null,
-      networkFeatures: buildNetworkLinesFromClaims(p.rareEarthPoints),
+      networkFeatures: buildEnterpriseNetworkLines(p.rareEarthPoints),
     })
     syncRareEarthLayerVisibilityInternal(m, p.layerVisibility || {})
   }
@@ -101,7 +101,7 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       try {
         const src = map.value.getSource('ree-points') as maplibregl.GeoJSONSource
         if (src) src.setData(newVal)
-        const netFc = buildNetworkLinesFromClaims(newVal)
+        const netFc = buildEnterpriseNetworkLines(newVal)
         const netSrc = map.value.getSource('ree-network') as maplibregl.GeoJSONSource | undefined
         if (netSrc) netSrc.setData(netFc)
       } catch { /* ignore */ }

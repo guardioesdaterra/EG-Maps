@@ -166,6 +166,7 @@ import {
   clearImageCache,
 } from '@/lib/image-utils'
 import { useMapCluster } from '@/composables/useMapCluster'
+import { detectWebGLSupport } from '@/composables/useMapLibre'
 import type { ClusterPoint, ClusterItem } from '@/composables/useMapCluster'
 import {
   createProjectMarkerElement,
@@ -378,6 +379,15 @@ function stopAutoRotate() {
 
 async function initMap() {
   if (typeof window === 'undefined' || !containerRef.value) return
+
+  // Detect WebGL support before attempting to create map
+  if (!detectWebGLSupport()) {
+    noWebglSupport.value = true
+    isLoading.value = false
+    hasError.value = true
+    errorMessage.value = 'WebGL is not supported in your browser. Please use a modern browser that supports WebGL.'
+    return
+  }
 
   noWebglSupport.value = false
   isLoading.value = true

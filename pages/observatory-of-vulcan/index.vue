@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="main-content">
     <ClientOnly>
       <UnifiedMap
         :default-dataset="'observatory-of-vulcan'"
@@ -69,6 +69,11 @@
               style="background:rgba(39,174,96,0.15);border-color:rgba(39,174,96,0.3);color:#27ae60">
               <span>⬇️</span> Download Data
             </button>
+            <button @click="showExport = true"
+              class="px-2.5 py-1.5 text-[9px] font-bold rounded-lg border transition-all flex items-center gap-1.5"
+              style="background:rgba(155,89,182,0.15);border-color:rgba(155,89,182,0.3);color:#af7ac5">
+              <span>📄</span> Export
+            </button>
             <button @click="toggleEnterpriseLayer"
               class="px-2.5 py-1.5 text-[9px] font-bold rounded-lg border transition-all flex items-center gap-1.5"
               :style="enterpriseLayerVisible
@@ -127,8 +132,25 @@
             {{ pinPickerMode ? t('observatory.myTerritory.cancel') : t('observatory.myTerritory.dropPin') }}
           </button>
 
-          <!-- Layer toggles -->
-          <div class="absolute bottom-6 left-3 z-[500] bg-black/70 backdrop-blur border border-zinc-800 rounded-xl px-3 py-2.5 shadow-lg max-w-[180px]">
+          <!-- Layer toggles + Year Slider + Phase Filter -->
+          <div class="absolute bottom-6 left-3 z-[500] bg-black/70 backdrop-blur border border-zinc-800 rounded-xl px-3 py-2.5 shadow-lg max-w-[220px]">
+            <YearSlider
+              :year-min="yearMin"
+              :year-max="yearMax"
+              :filtered-count="filteredCount"
+              @update:year-min="(v) => { yearMin = v; debouncedFilter() }"
+              @update:year-max="(v) => { yearMax = v; debouncedFilter() }"
+            />
+
+            <hr class="border-zinc-800 my-2" />
+
+            <PhaseFilter
+              :selected="selectedPhases"
+              @update:selected="(v) => { selectedPhases = v; debouncedFilter() }"
+            />
+
+            <hr class="border-zinc-800 my-2" />
+
             <h3 class="text-[8px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">{{ t('observatory.layers.title') }}</h3>
             <div v-for="c in categories" :key="c.key" class="flex items-center gap-2 py-1 cursor-pointer select-none"
               @click="toggleLayer(c.key)">
@@ -186,6 +208,18 @@
               </div>
               <span class="text-[10px] text-zinc-400 font-medium">{{ t('observatory.layers.enterpriseHq') }}</span>
             </div>
+
+            <hr class="border-zinc-800 my-1.5" />
+
+            <label class="flex items-center gap-2 py-1 cursor-pointer select-none"
+              @click.stop="sobDemandaOnly = !sobDemandaOnly; debouncedFilter()">
+              <div :class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
+                sobDemandaOnly ? '' : 'opacity-30']"
+                style="border-color:#7B2FBE;color:#7B2FBE">
+                <div v-if="sobDemandaOnly" class="w-1.5 h-1.5 rounded-sm" style="background:#7B2FBE" />
+              </div>
+              <span class="text-[10px] text-zinc-400 font-medium">Sob Demanda</span>
+            </label>
           </div>
 
           <!-- Search -->
@@ -213,6 +247,12 @@
       <!-- Download Panel -->
       <DataDownloadPanel :visible="showDownload" @close="showDownload = false" />
 
+      <!-- Claim Report Modal -->
+      <ClaimReportModal :visible="showClaimReport" :claim="reportClaim" @close="showClaimReport = false" />
+
+      <!-- Export Modal -->
+      <ExportModal :visible="showExport" :map-container="mapContainerRef" :filter-summary="activeFilterSummary" @close="showExport = false" />
+
       <template #fallback>
         <div class="flex h-screen w-full items-center justify-center bg-zinc-950 text-white">
           <LoadingSpinner :message="t('loading.observatoryOfVulcan')" :inline="true" />
@@ -227,9 +267,13 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import { RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
 import type { EnterpriseHQ } from '@/lib/enterprise-data'
-import { setupEnterpriseLayer, cleanupEnterpriseLayer } from '@/composables/useEnterpriseMarkers'
 import { ENTERPRISES } from '@/lib/enterprise-data'
+import { setupEnterpriseLayer, cleanupEnterpriseLayer } from '@/composables/useEnterpriseMarkers'
 import ObservatorySidebar from '@/components/observatory/ObservatorySidebar.vue'
+import YearSlider from '@/components/observatory/YearSlider.vue'
+import PhaseFilter from '@/components/observatory/PhaseFilter.vue'
+import ClaimReportModal from '@/components/observatory/ClaimReportModal.vue'
+import ExportModal from '@/components/observatory/ExportModal.vue'
 import { useRareEarthData } from '@/composables/useRareEarthData'
 
 type ObservatoryTabKey = 'danger' | 'military' | 'illegal' | 'env' | 'network' | 'timeline'
@@ -276,7 +320,21 @@ let mapRef: maplibregl.Map | null = null
 const showTimeline = ref(false)
 const showRedeCorporativa = ref(false)
 const showDownload = ref(false)
+const showExport = ref(false)
+const showClaimReport = ref(false)
+const reportClaim = ref<Record<string, any> | null>(null)
 const enterpriseLayerVisible = ref(false)
+const mapContainerRef = ref<HTMLElement | null>(null)
+
+// Year & Phase filters
+const yearMin = ref(1935)
+const yearMax = ref(2026)
+const selectedPhases = ref(new Set<string>([
+  'REQUERIMENTO', 'REQUERIMENTO DE PESQUISA', 'AUTORIZAÇÃO DE PESQUISA',
+  'DISPONIBILIDADE', 'LICENCIAMENTO', 'CONCESSÃO', 'LAVRA',
+]))
+const sobDemandaOnly = ref(false)
+const filteredCount = ref(0)
 
 // My Territory pin
 const { pin: userPin, sharedFromUrl: userPinShared, setPin: setUserPin, clearPin, copyShareUrl } = useUserPin()
@@ -414,7 +472,7 @@ function toggleLayer(key: string) {
     enterpriseLayerVisible.value = layerVis.value[key]
     if (mapRef) {
       if (enterpriseLayerVisible.value) {
-        setupEnterpriseLayer(mapRef, onEnterpriseClick)
+        setupEnterpriseLayer(mapRef, onEnterpriseClick, speculatorIndex.value)
       } else {
         cleanupEnterpriseLayer(mapRef)
       }
@@ -431,7 +489,12 @@ function onEnterpriseClick(enterprise: EnterpriseHQ) {
 }
 
 function flyToEnterprise(name: string) {
-  const ent = ENTERPRISES.find(e => e.name === name)
+  const specEntry = speculatorIndex.value.find(s =>
+    s.normalizedName.includes(name.toUpperCase().split(' ')[0]) ||
+    name.toUpperCase().includes(s.displayName.split('/')[0].trim().split(' ')[0])
+  )
+  if (specEntry?.centroid) { flyToTarget.value = { lng: specEntry.centroid.lng, lat: specEntry.centroid.lat, zoom: 6 }; return }
+  const ent = ENTERPRISES.find(e => e.name === name || name.includes(e.name))
   if (ent) flyToTarget.value = { lng: ent.lng, lat: ent.lat, zoom: 6 }
 }
 
@@ -466,8 +529,12 @@ function updateFilter() {
   const filtered = allFeatures.value.filter((d: any) => {
     if (!visKeys.includes(d.c)) return false
     if (term) return `${d.n} ${d.s} ${d.u} ${d.p} ${d.f} ${d.net||''}`.toLowerCase().includes(term)
+    if (d.y < yearMin.value || d.y > yearMax.value) return false
+    if (!selectedPhases.value.has(d.f)) return false
+    if (sobDemandaOnly.value && !String(d.dsprocesso || '').includes('DEMANDA')) return false
     return true
   })
+  filteredCount.value = filtered.length
   pointsData.value = {
     type: 'FeatureCollection',
     features: filtered.map((d: any, i: number) => ({
@@ -478,7 +545,18 @@ function updateFilter() {
   }
 }
 
+const activeFilterSummary = computed(() => {
+  const parts: string[] = []
+  if (yearMin.value > 1935 || yearMax.value < 2026) parts.push(`${yearMin.value}-${yearMax.value}`)
+  if (selectedPhases.value.size < 7) parts.push(`${selectedPhases.value.size} phases`)
+  if (sobDemandaOnly.value) parts.push('Sob Demanda')
+  if (searchTerm.value.trim()) parts.push(`"${searchTerm.value.trim()}"`)
+  return parts.join(', ') || 'All claims'
+})
+
 onMounted(async () => {
   await loadRareEarthData()
+  filteredCount.value = allFeatures.value.length
+  mapContainerRef.value = document.querySelector('.maplibregl-canvas-container')?.closest('.relative') as HTMLElement | null
 })
 </script>

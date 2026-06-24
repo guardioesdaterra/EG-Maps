@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, onScopeDispose, type Ref } from 'vue'
+import { ref, onMounted, onUnmounted, type Ref } from 'vue'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import { useOfflineTiles } from './useOfflineTiles'
 
@@ -7,29 +7,15 @@ export function getMapStyle(apiKey?: string): string {
   return 'https://demotiles.maplibre.org/style.json'
 }
 
-const tileCache = new Map<string, Response>()
-const MAX_TILE_CACHE = 500
-
-// Clear tile cache on scope dispose to prevent stale data across route changes
-onScopeDispose(() => {
-  tileCache.clear()
-})
-
-export function trimTileCache() {
-  if (tileCache.size > MAX_TILE_CACHE) {
-    const keys = [...tileCache.keys()]
-    const toDelete = keys.slice(0, tileCache.size - MAX_TILE_CACHE)
-    toDelete.forEach(k => tileCache.delete(k))
+export function detectWebGLSupport(): boolean {
+  if (typeof document === 'undefined') return false
+  try {
+    const canvas = document.createElement('canvas')
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+    return !!gl
+  } catch {
+    return false
   }
-}
-
-export function cacheTileResponse(url: string, response: Response) {
-  tileCache.set(url, response)
-  trimTileCache()
-}
-
-export function clearMapCache() {
-  tileCache.clear()
 }
 
 export function useMapLibre(
@@ -75,17 +61,6 @@ export function useMapLibre(
 
   function createTransformRequest() {
     return (url: string, resourceType?: string) => {
-      if (tileCache.has(url)) {
-        return {
-          url,
-          headers: {},
-          method: 'GET' as const,
-          type: 'image' as const,
-          credentials: 'same-origin' as const,
-          collectResourceTiming: false,
-        }
-      }
-
       if (resourceType === 'Tile' && !navigator.onLine) {
         const match = url.match(/\/satellite\/(\d+)\/(\d+)\/(\d+)\./)
         if (match) {
@@ -94,7 +69,6 @@ export function useMapLibre(
           return { url: localUrl }
         }
       }
-
       return { url }
     }
   }

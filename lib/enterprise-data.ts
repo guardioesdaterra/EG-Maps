@@ -341,22 +341,124 @@ export function getEnterpriseConnections(name: string): { from: CorporateConnect
   }
 }
 
-export function buildEnterpriseHQGeoJSON(): GeoJSON.FeatureCollection {
-  return {
-    type: 'FeatureCollection',
-    features: ENTERPRISES.filter(e => e.lat !== 0).map(e => ({
+function normalizeEnterpriseName(raw: string): string {
+  return String(raw)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/\b(LTDA|S\.?A\.?|S\/A|MINERACAO|MINERAÇÃO|MINERALS|MINING|METALS|MINERAIS|RECURSOS|HOLDINGS|GROUP|GMBH|INC|LLC|CORP)\b/g, '')
+    .replace(/[^A-Z0-9]+/g, ' ')
+    .trim()
+}
+
+export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): GeoJSON.FeatureCollection {
+  const enterpriseClaimMap = new Map<string, { lng: number; lat: number; area: number }[]>()
+
+  for (const ent of ENTERPRISES) {
+    enterpriseClaimMap.set(normalizeEnterpriseName(ent.name), [])
+  }
+
+  for (const f of points.features) {
+    const p = f.properties || {}
+    const rawName = String(p.nome ?? p.NOME ?? '').trim()
+    if (!rawName) continue
+    const normClaim = normalizeEnterpriseName(rawName)
+    const coords = (f.geometry as any)?.coordinates
+    if (!coords || !Array.isArray(coords) || coords.length < 2) continue
+    const [lng, lat] = coords
+    if (typeof lng !== 'number' || typeof lat !== 'number') continue
+    const area = Number(p.area_ha ?? p.AREA_HA ?? 0)
+
+    for (const [entKey, claims] of enterpriseClaimMap) {
+      if (normClaim.includes(entKey) || entKey.includes(normClaim)) {
+        claims.push({ lng, lat, area })
+        break
+      }
+    }
+  }
+
+  const features: GeoJSON.Feature[] = []
+
+  for (const ent of ENTERPRISES) {
+    const claims = enterpriseClaimMap.get(normalizeEnterpriseName(ent.name)) || []
+    if (claims.length === 0) continue
+
+    const centroidLng = claims.reduce((s, c) => s + c.lng, 0) / claims.length
+    const centroidLat = claims.reduce((s, c) => s + c.lat, 0) / claims.length
+    const totalArea = claims.reduce((s, c) => s + c.area, 0)
+
+    const connectionType = ent.country !== 'Brazil' ? 'foreign_to_claims' : 'domestic_claims'
+    const color = ent.country !== 'Brazil' ? '#e74c3c' : '#27ae60'
+
+    features.push({
       type: 'Feature',
       properties: {
-        name: e.name,
-        ticker: e.ticker ?? undefined,
-        country: e.country,
-        city: e.city,
-        description: e.description,
-        sector: e.sector,
-        color: e.color,
-        type: 'enterprise_hq',
+        from: ent.name,
+        to: `${claims.length} claims`,
+        type: connectionType,
+        label: `${ent.name} → ${claims.length} claims (${totalArea.toFixed(0)} ha)`,
+        enterprise: ent.name,
+        claimCount: claims.length,
+        totalArea,
+        country: ent.country,
+        color,
       },
-      geometry: { type: 'Point', coordinates: [e.lng, e.lat] },
-    })),
+      geometry: { type: 'LineString', coordinates: [[ent.lng, ent.lat], [centroidLng, centroidLat]] },
+    })
+
+    for (const conn of CORPORATE_CONNECTIONS.filter(c => c.from === ent.name || c.to === ent.name)) {
+      const otherName = conn.from === ent.name ? conn.to : conn.from
+      const otherEnt = ENTERPRISES.find(e => e.name === otherName)
+      if (!otherEnt) continue
+
+      features.push({
+        type: 'Feature',
+        properties: {
+          from: conn.from,
+          to: conn.to,
+          type: conn.type,
+          label: conn.label,
+          connectionType: 'corporate',
+          color: '#5dade2',
+        },
+        geometry: { type: 'LineString', coordinates: [[ent.lng, ent.lat], [otherEnt.lng, otherEnt.lat]] },
+      })
+    }
+  }
+
+  return { type: 'FeatureCollection', features }
+}
+
+export function buildEnterpriseHQGeoJSON(speculatorIndex?: Array<{ normalizedName: string; centroid: { lng: number; lat: number } | null }>): GeoJSON.FeatureCollection {
+  const centroidMap = new Map<string, { lng: number; lat: number }>()
+  if (speculatorIndex) {
+    for (const entry of speculatorIndex) {
+      if (entry.centroid) centroidMap.set(entry.normalizedName, entry.centroid)
+    }
+  }
+
+  return {
+    type: 'FeatureCollection',
+    features: ENTERPRISES.filter(e => e.lat !== 0).map(e => {
+      const normName = normalizeEnterpriseName(e.name)
+      const centroid = centroidMap.get(normName)
+      const lng = centroid?.lng ?? e.lng
+      const lat = centroid?.lat ?? e.lat
+      return {
+        type: 'Feature',
+        properties: {
+          name: e.name,
+          ticker: e.ticker ?? undefined,
+          country: e.country,
+          city: e.city,
+          description: e.description,
+          sector: e.sector,
+          color: e.color,
+          type: 'enterprise_hq',
+          hasCentroid: !!centroid,
+        },
+        geometry: { type: 'Point', coordinates: [lng, lat] },
+      }
+    }),
   }
 }

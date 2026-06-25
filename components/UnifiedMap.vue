@@ -184,7 +184,6 @@ import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
 import { buildProjectPopupHTML, buildSpeciesPopupHTML, buildRareEarthPopupHTML, buildCrewPopupHTML, isValidCoordinate, GROUP_COLORS } from '@/lib/map-utils'
-import type { GeoJSONSource } from 'maplibre-gl'
 import {
   preloadSpeciesImages,
 } from '@/lib/image-utils'
@@ -696,6 +695,16 @@ function rebuildMarkers() {
   if (!map) return
 
   const currentZoom = map.getZoom()
+
+  // Use native GeoJSON for large datasets (endangered species with 500+ points)
+  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500) {
+    setupGeoJSONMarkers()
+    return
+  }
+  if (useNativeGeoJSON && activeDataset.value === 'project-grants' && visibleProjects.value.length > 500) {
+    setupGeoJSONMarkers()
+    return
+  }
 
   // Always use DOM markers for all datasets (consistent marker style)
   markers.forEach(m => m.remove())

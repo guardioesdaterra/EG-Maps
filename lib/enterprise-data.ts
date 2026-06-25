@@ -363,7 +363,7 @@ export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): 
     const rawName = String(p.nome ?? p.NOME ?? '').trim()
     if (!rawName) continue
     const normClaim = normalizeEnterpriseName(rawName)
-    const coords = (f.geometry as any)?.coordinates
+    const coords = (f.geometry as GeoJSON.Point)?.coordinates
     if (!coords || !Array.isArray(coords) || coords.length < 2) continue
     const [lng, lat] = coords
     if (typeof lng !== 'number' || typeof lat !== 'number') continue

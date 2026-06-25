@@ -33,7 +33,7 @@ export interface RareEarthLayerOptions {
   polys?: GeoJSON.FeatureCollection | null
   protected?: GeoJSON.FeatureCollection | null
   networkFeatures?: GeoJSON.FeatureCollection | null
-  onClaimClick?: (props: Record<string, any>, lngLat: [number, number]) => void
+  onClaimClick?: (_props: Record<string, unknown>, _lngLat: [number, number]) => void
 }
 
 function safeRemoveLayer(map: MapLibreMap, id: string) {
@@ -145,7 +145,7 @@ export function setupRareEarthLayers(
   }
 }
 
-export function adaptPolygonProps(p: Record<string, any>): Record<string, any> {
+export function adaptPolygonProps(p: Record<string, unknown>): Record<string, unknown> {
   return {
     c: p.category,
     ds: p.ds ?? p.danger_score ?? 5,
@@ -432,14 +432,15 @@ export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<strin
 export function buildNetworkLinesFromClaims(points: GeoJSON.FeatureCollection, maxPerGroup = 200): GeoJSON.FeatureCollection {
   const byNet: Record<string, { lng: number; lat: number; name: string }[]> = {}
   for (const f of points.features) {
-    const props: any = f.properties || {}
+    const props: Record<string, unknown> = (f.properties || {}) as Record<string, unknown>
     const net = props.net || props.network_id
     if (!net) continue
-    if (!byNet[net]) byNet[net] = []
-    if (byNet[net].length >= maxPerGroup) continue
-    const coords = (f.geometry as any)?.coordinates
+    const netKey = String(net)
+    if (!byNet[netKey]) byNet[netKey] = []
+    if (byNet[netKey].length >= maxPerGroup) continue
+    const coords = (f.geometry as GeoJSON.Point)?.coordinates
     if (!Array.isArray(coords) || coords.length < 2) continue
-    byNet[net].push({ lng: coords[0], lat: coords[1], name: props.n || props.nome || '' })
+    byNet[netKey].push({ lng: coords[0] as number, lat: coords[1] as number, name: String(props.n || props.nome || '') })
   }
   const features: GeoJSON.Feature[] = []
   for (const [netId, nodes] of Object.entries(byNet)) {

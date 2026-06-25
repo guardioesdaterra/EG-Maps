@@ -263,7 +263,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import { RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
 import type { EnterpriseHQ } from '@/lib/enterprise-data'
@@ -311,7 +311,7 @@ useHead({
   meta: [{ name: 'description', content: 'Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.' }],
 })
 
-const { pointsData, polygonsData, protectedData, features: allFeatures, speculatorIndex, deepAnalysis, isLoading: dataLoading, load: loadRareEarthData } = useRareEarthData(baseURL)
+const { pointsData, polygonsData, protectedData, features: allFeatures, speculatorIndex, deepAnalysis, isLoading: _dataLoading, load: loadRareEarthData } = useRareEarthData(baseURL)
 const searchTerm = ref('')
 const flyToTarget = ref<{ lng: number; lat: number; zoom?: number } | null>(null)
 let mapRef: maplibregl.Map | null = null
@@ -322,7 +322,8 @@ const showRedeCorporativa = ref(false)
 const showDownload = ref(false)
 const showExport = ref(false)
 const showClaimReport = ref(false)
-const reportClaim = ref<Record<string, any> | null>(null)
+interface ClaimReportData { p?: string; n?: string; u?: string; s?: string; la?: number; lo?: number; [key: string]: unknown }
+const reportClaim = ref<ClaimReportData | null>(null)
 const enterpriseLayerVisible = ref(false)
 const mapContainerRef = ref<HTMLElement | null>(null)
 
@@ -340,8 +341,8 @@ const filteredCount = ref(0)
 const { pin: userPin, sharedFromUrl: userPinShared, setPin: setUserPin, clearPin, copyShareUrl } = useUserPin()
 const pinPickerMode = ref(false)
 const shareCopied = ref(false)
-let pinClickHandler: ((e: any) => void) | null = null
-let pinKeyHandler: ((e: KeyboardEvent) => void) | null = null
+let pinClickHandler: ((_e: maplibregl.MapMouseEvent) => void) | null = null
+let pinKeyHandler: ((_e: KeyboardEvent) => void) | null = null
 
 function togglePinPicker() {
   if (pinPickerMode.value) {
@@ -356,7 +357,7 @@ function togglePinPicker() {
 function attachPinClick() {
   if (!mapRef) return
   mapRef.getCanvas().style.cursor = 'crosshair'
-  pinClickHandler = (e: any) => {
+  pinClickHandler = (e: maplibregl.MapMouseEvent) => {
     if (!pinPickerMode.value) return
     const { lng, lat } = e.lngLat
     setUserPin({ lng, lat }, t('observatory.myTerritory.defaultLabel'))
@@ -427,7 +428,7 @@ layerVis.value['protected_ti'] = true
 layerVis.value['protected_quilombo'] = true
 layerVis.value['overlaps'] = true
 
-const tabs = [
+const _tabs = [
   { key: 'danger', labelKey: 'observatory.tabs.danger' },
   { key: 'military', labelKey: 'observatory.tabs.military' },
   { key: 'illegal', labelKey: 'observatory.tabs.illegal' },
@@ -442,7 +443,7 @@ const showAll = ref(false)
 const categoryStats = computed(() => {
   const counts: Record<string, number> = {}
   categories.forEach(c => counts[c.key] = 0)
-  allFeatures.value.forEach((d: any) => { if (counts[d.c] !== undefined) counts[d.c]++ })
+  allFeatures.value.forEach((d: { c: string }) => { if (counts[d.c] !== undefined) counts[d.c]++ })
   return categories.map(c => ({ key: c.key, label: c.label.split(' ')[0], color: c.color, count: counts[c.key] || 0 }))
 })
 
@@ -526,7 +527,7 @@ function updateFilter() {
   const term = searchTerm.value.toLowerCase().trim()
   const catKeys = Object.keys(RARE_EARTH_CATEGORIES)
   const visKeys = Object.entries(layerVis.value).filter(([k, v]) => v && catKeys.includes(k)).map(([k]) => k)
-  const filtered = allFeatures.value.filter((d: any) => {
+  const filtered = allFeatures.value.filter((d: { c: string; n: string; s: string; u: string; p: string; f: string; net: string; y: number; dsprocesso: string }) => {
     if (!visKeys.includes(d.c)) return false
     if (term) return `${d.n} ${d.s} ${d.u} ${d.p} ${d.f} ${d.net||''}`.toLowerCase().includes(term)
     if (d.y < yearMin.value || d.y > yearMax.value) return false
@@ -537,7 +538,7 @@ function updateFilter() {
   filteredCount.value = filtered.length
   pointsData.value = {
     type: 'FeatureCollection',
-    features: filtered.map((d: any, i: number) => ({
+    features: filtered.map((d: { lo: number; la: number; [key: string]: unknown }, i: number) => ({
       type: 'Feature', id: i,
       properties: { ...d, id: i },
       geometry: { type: 'Point', coordinates: [d.lo, d.la] },

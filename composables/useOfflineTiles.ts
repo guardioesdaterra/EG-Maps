@@ -86,8 +86,8 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
 
       await statsP
       isInitialized.value = true
-    } catch (e) {
-      console.warn('IndexedDB not available, falling back to memory cache only:', e)
+    } catch (_e) {
+      // IndexedDB not available, falling back to memory cache only
       isInitialized.value = true
     }
   }

@@ -8,7 +8,7 @@ export interface DownloadableDataset {
   description: string
   filename: string
   format: 'json' | 'csv' | 'geojson'
-  getData: () => any
+  getData: () => unknown
 }
 
 export const DOWNLOADABLE_DATASETS: DownloadableDataset[] = [
@@ -137,7 +137,7 @@ export const DOWNLOADABLE_DATASETS: DownloadableDataset[] = [
   },
 ]
 
-function convertToCSV(data: Record<string, any>[]): string {
+function convertToCSV(data: Record<string, unknown>[]): string {
   if (!data.length) return ''
   const headers = Object.keys(data[0])
   const lines = [headers.join(',')]
@@ -153,9 +153,10 @@ function convertToCSV(data: Record<string, any>[]): string {
 
 function getBaseURL(): string {
   if (typeof window === 'undefined') return ''
-  const cfg = (window as any).$nuxt?.$config?.app?.baseURL
+  const cfg = (window as unknown as { $nuxt?: { $config?: { app?: { baseURL?: string } } } }).$nuxt?.$config?.app?.baseURL
   if (typeof cfg === 'string') return cfg
-  if (typeof (window as any).__NUXT__?.config?.app?.baseURL === 'string') return (window as any).__NUXT__.config.app.baseURL
+  const nuxtState = (window as unknown as { __NUXT__?: { config?: { app?: { baseURL?: string } } } }).__NUXT__
+  if (typeof nuxtState?.config?.app?.baseURL === 'string') return nuxtState.config.app.baseURL
   const meta = document.querySelector('meta[name="nuxt-baseurl"]') as HTMLMetaElement | null
   if (meta?.content) return meta.content
   return '/'
@@ -170,7 +171,7 @@ async function fetchAndPackageGeoJson(path: string): Promise<unknown> {
 }
 
 function isPromiseLike(v: unknown): v is PromiseLike<unknown> {
-  return !!v && typeof v === 'object' && typeof (v as any).then === 'function'
+  return !!v && typeof v === 'object' && typeof (v as { then?: unknown }).then === 'function'
 }
 
 function triggerDownload(content: string, mime: string, filename: string) {
@@ -191,7 +192,7 @@ export async function downloadData(dataset: DownloadableDataset) {
     const result = dataset.getData()
     data = isPromiseLike(result) ? await result : result
   } catch (err) {
-    console.error(`[downloadData] ${dataset.id} failed:`, err)
+    throw new Error(`[downloadData] ${dataset.id} failed: ${err instanceof Error ? err.message : String(err)}`)
     throw err
   }
 
@@ -223,8 +224,8 @@ export async function downloadAllDatasets() {
   for (const ds of DOWNLOADABLE_DATASETS) {
     try {
       await downloadData(ds)
-    } catch (err) {
-      console.error(`[downloadAllDatasets] ${ds.id} skipped:`, err)
+    } catch (_err) {
+      // skip failed dataset, continue with next
     }
   }
 }

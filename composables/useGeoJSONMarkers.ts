@@ -250,8 +250,8 @@ export function useGeoJSONMarkers() {
   function setupEventHandlers(
     sourceId: string,
     _dataset: 'project-grants' | 'endangered-species',
-    onFeatureClick: (properties: Record<string, unknown>, coords: [number, number]) => void,
-    onClusterClick?: (clusterId: number, coords: [number, number]) => void
+    onFeatureClick: (_properties: Record<string, unknown>, _coords: [number, number]) => void,
+    onClusterClick?: (_clusterId: number, _coords: [number, number]) => void
   ) {
     if (!map) return
 

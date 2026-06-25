@@ -79,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { buildClaimReportMailtoUrl } from '@/lib/observatory-analysis'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 

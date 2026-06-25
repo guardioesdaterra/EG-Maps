@@ -1,4 +1,4 @@
-import { shallowRef, ref, computed, type Ref } from 'vue'
+import { shallowRef, ref, computed } from 'vue'
 import { computeSpeculatorIndex, type RareEarthFeatureCollection, type SpeculatorIndexEntry } from '@/lib/observatory-analysis'
 
 export interface RareEarthFeatureSummary {
@@ -57,35 +57,36 @@ export function useRareEarthData(baseURL: string) {
         const overlapsGJ = await overlapsRes.json()
         overlapsByProcesso = {}
         for (const f of overlapsGJ.features) {
-          const proc = (f.properties as any)?.processo
-          if (proc && Array.isArray((f.properties as any).overlaps) && (f.properties as any).overlaps.length) {
-            overlapsByProcesso[proc] = (f.properties as any).overlaps
+          const proc = (f.properties as Record<string, unknown>)?.processo
+          if (proc && Array.isArray((f.properties as Record<string, unknown>).overlaps) && ((f.properties as Record<string, unknown>).overlaps as unknown[]).length) {
+            overlapsByProcesso[proc as string] = (f.properties as Record<string, unknown>).overlaps as Array<{ name: string; kind: string; distance_km: number }>
           }
         }
       }
-      features.value = pointsGJ.features.map((f: any) => ({
-        p: f.properties.processo,
-        n: f.properties.nome,
-        s: f.properties.subs,
-        c: f.properties.category,
-        f: f.properties.fase,
-        u: f.properties.uf,
-        a: f.properties.area_ha ?? 0,
-        ds: f.properties.danger_score ?? 0,
-        net: f.properties.network_id ?? '',
-        y: f.properties.ano ?? 0,
-        lo: f.geometry.coordinates[0] ?? 0,
-        la: f.geometry.coordinates[1] ?? 0,
-        ov: overlapsByProcesso[f.properties.processo] || null,
-        dsprocesso: f.properties.dsprocesso ?? '',
-      }))
+      features.value = pointsGJ.features.map((f: RareEarthFeature) => {
+        const p = f.properties
+        return {
+          p: String(p.processo ?? ''),
+          n: String(p.nome ?? ''),
+          s: String(p.subs ?? ''),
+          c: String(p.category ?? ''),
+          f: String(p.fase ?? ''),
+          u: String(p.uf ?? ''),
+          a: Number(p.area_ha ?? 0),
+          ds: Number(p.danger_score ?? 0),
+          net: String(p.network_id ?? ''),
+          y: Number(p.ano ?? 0),
+          lo: ((f.geometry as GeoJSON.Point)?.coordinates?.[0] as number) ?? 0,
+          la: ((f.geometry as GeoJSON.Point)?.coordinates?.[1] as number) ?? 0,
+          ov: overlapsByProcesso[String(p.processo ?? '')] || null,
+          dsprocesso: String(p.dsprocesso ?? ''),
+        }
       pointsData.value = pointsGJ
       if (polysRes && polysRes.ok) polygonsData.value = await polysRes.json()
       if (protectedRes && protectedRes.ok) protectedData.value = await protectedRes.json()
       if (analysisRes && analysisRes.ok) deepAnalysis.value = await analysisRes.json()
     } catch (e) {
       error.value = e instanceof Error ? e : new Error(String(e))
-      console.error('Failed to load rare earth data:', error.value)
     } finally {
       isLoading.value = false
     }

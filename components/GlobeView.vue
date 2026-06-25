@@ -707,7 +707,11 @@ function updateGeoJSONMarkerData() {
   if (geoJSONInitializedFor === 'project-grants') {
     const validProjects = projectsData.value.filter(p => isValidCoordinate(p.latitude, p.longitude))
     geoJSONMarkers.updateData(SOURCE_ID, projectsToGeoJSON(validProjects))
+  } else if (geoJSONSpeciesIndex) {
+    const filteredIndex = applySpeciesFilters(geoJSONSpeciesIndex)
+    geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(filteredIndex))
   } else if (speciesIndexData.value.length) {
+    geoJSONSpeciesIndex = speciesIndexData.value
     geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(applySpeciesFilters(speciesIndexData.value)))
   } else if (speciesData.value.length) {
     const validSpecies = speciesData.value.filter(s => isValidCoordinate(s.lat, s.lng))

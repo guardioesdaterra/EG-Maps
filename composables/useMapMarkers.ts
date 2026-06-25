@@ -133,7 +133,7 @@ export function createSpeciesMarkerElement(species: { imageUrl?: string | null; 
 }
 
 export function createRareEarthMarkerElement(feature: GeoJSON.Feature, baseURL?: string): HTMLElement {
-  const props = feature.properties as Record<string, any> || {}
+  const props = feature.properties as Record<string, unknown> || {}
   const cat = RARE_EARTH_CATEGORIES[props.c] ?? { label: 'Unknown', color: '#666' }
   return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
     color: cat.color,
@@ -183,8 +183,8 @@ function getMarkerColor(dataset: string, sourceProjects?: ProjectData[], sourceS
   }
   if (dataset === 'observatory-of-vulcan' && sourceRareEarth?.length) {
     return blendColors(sourceRareEarth.map(f => {
-      const props = f.properties as Record<string, any> || {}
-      const cat = RARE_EARTH_CATEGORIES[props.c] ?? { label: 'Unknown', color: '#666' }
+      const props = f.properties as Record<string, unknown> || {}
+      const cat = RARE_EARTH_CATEGORIES[props.c as string] ?? { label: 'Unknown', color: '#666' }
       return cat.color
     }))
   }
@@ -205,8 +205,8 @@ function getMiniColor(dataset: string, item: ClusterItem, sourceProjects?: Proje
   }
   if (dataset === 'observatory-of-vulcan' && sourceRareEarth?.length) {
     const feature = sourceRareEarth[item.index]
-    const props = feature?.properties as Record<string, any> || {}
-    const cat = RARE_EARTH_CATEGORIES[props.c] ?? { label: 'Unknown', color: '#666' }
+    const props = feature?.properties as Record<string, unknown> || {}
+    const cat = RARE_EARTH_CATEGORIES[props.c as string] ?? { label: 'Unknown', color: '#666' }
     return cat.color
   }
   if (dataset === 'active-crews' && sourceCrews?.length) {

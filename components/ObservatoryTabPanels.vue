@@ -71,7 +71,7 @@
         <div class="obs-callout__title">{{ t('observatory.military.headline') }}</div>
         <div class="obs-callout__body">{{ t('observatory.military.headlineBody') }}</div>
       </div>
-      <div v-for="m in MILITARY_ASSETS" :key="m.name" class="obs-asset" :style="{ borderLeftColor: '#e74c3c' }">
+      <div v-for="m in (MILITARY_ASSETS as MilitaryAsset[])" :key="m.name" class="obs-asset" :style="{ borderLeftColor: '#e74c3c' }">
         <div class="obs-asset__head">
           <span class="obs-asset__flag">{{ m.flag }}</span>
           <span class="obs-asset__name">{{ m.name }}</span>
@@ -79,7 +79,7 @@
         </div>
         <div class="obs-asset__body">{{ m.description }}</div>
       </div>
-      <div v-for="i in US_INVESTMENTS" :key="`${i.from}-${i.to}-${i.year}`" class="obs-asset" :style="{ borderLeftColor: '#f39c12' }">
+      <div v-for="i in (US_INVESTMENTS as InvestmentFlow[])" :key="`${i.from}-${i.to}-${i.year}`" class="obs-asset" :style="{ borderLeftColor: '#f39c12' }">
         <div class="obs-asset__head">
           <span class="obs-asset__name">{{ i.from }} → {{ i.to }}</span>
           <span class="obs-asset__kg">{{ i.amount }}</span>
@@ -156,9 +156,6 @@ interface DangerItem {
 
 interface MilitaryAsset { flag: string; name: string; country?: string; kgPerUnit: number | null; description: string }
 interface InvestmentFlow { from: string; to: string; amount: string; year: number }
-
-const _militaryAssets: MilitaryAsset[] = MILITARY_ASSETS as MilitaryAsset[]
-const _investmentFlows: InvestmentFlow[] = US_INVESTMENTS as InvestmentFlow[]
 
 const props = defineProps<{
   activeTab: string

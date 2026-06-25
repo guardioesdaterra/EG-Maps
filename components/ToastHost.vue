@@ -49,7 +49,7 @@
 <script setup lang="ts">
 const { t } = useI18n()
 
-const { position } = withDefaults(defineProps<{
+withDefaults(defineProps<{
   position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
 }>(), {
   position: 'bottom-right',
@@ -58,7 +58,7 @@ const { position } = withDefaults(defineProps<{
 const { toasts, dismiss } = useToast()
 
 function runAction(id: string, onClick: () => void) {
-  try { onClick() } catch (_e) { /* toast action error — silently ignore */ }
+  try { onClick() } catch { /* toast action error — silently ignore */ }
   void dismiss(id)
 }
 </script>

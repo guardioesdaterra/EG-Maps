@@ -29,7 +29,8 @@
 
             <div>
               <label class="block text-[10px] text-zinc-500 uppercase tracking-wider font-bold mb-1">{{ t('observatory.claimReport.description') }}</label>
-              <textarea v-model="description" rows="4" maxlength="500"
+              <textarea
+v-model="description" rows="4" maxlength="500"
                 class="w-full px-3 py-2 text-xs bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 outline-none focus:border-red-500/50 resize-none"
                 :placeholder="t('observatory.claimReport.descriptionPlaceholder')" />
               <div class="text-[9px] text-zinc-600 mt-0.5 text-right">{{ description.length }}/500</div>
@@ -50,19 +51,22 @@
 
             <div>
               <label class="block text-[10px] text-zinc-500 uppercase tracking-wider font-bold mb-1">{{ t('observatory.claimReport.contactOptional') }}</label>
-              <input v-model="contact" type="text"
+              <input
+v-model="contact" type="text"
                 class="w-full px-3 py-2 text-xs bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 outline-none focus:border-red-500/50"
                 :placeholder="t('observatory.claimReport.contactPlaceholder')" />
             </div>
           </div>
 
           <div class="flex gap-2 mt-5">
-            <button type="button"
+            <button
+type="button"
               class="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
               @click="$emit('close')">
               {{ t('observatory.claimReport.cancel') }}
             </button>
-            <button type="button"
+            <button
+type="button"
               class="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg border transition-colors"
               :class="canSubmit
                 ? 'border-red-500/40 bg-red-500/15 text-red-400 hover:bg-red-500/25'

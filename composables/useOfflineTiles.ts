@@ -86,7 +86,7 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
 
       await statsP
       isInitialized.value = true
-    } catch (_e) {
+    } catch {
       // IndexedDB not available, falling back to memory cache only
       isInitialized.value = true
     }

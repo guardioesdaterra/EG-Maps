@@ -16,7 +16,7 @@ const SOURCE_IDS = [ENTERPRISE_CONN_SOURCE, ENTERPRISE_SOURCE]
 interface EnterpriseLayerState {
   markers: maplibregl.Marker[]
   disposers: Array<() => void>
-  onClick: ((enterprise: EnterpriseHQ) => void) | null
+  onClick: ((_enterprise: EnterpriseHQ) => void) | null
 }
 
 const stateByMap = new WeakMap<MapLibreMap, EnterpriseLayerState>()
@@ -106,7 +106,7 @@ function addEnterpriseConnections(map: MapLibreMap) {
   })
 }
 
-export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (enterprise: EnterpriseHQ) => void, speculatorIndex?: Array<{ normalizedName: string; centroid: { lng: number; lat: number } | null }>) {
+export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (_enterprise: EnterpriseHQ) => void, speculatorIndex?: Array<{ normalizedName: string; centroid: { lng: number; lat: number } | null }>) {
   try {
     const state = getState(map)
     state.onClick = onClick || null
@@ -219,8 +219,8 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (enterprise: En
     })
 
     addEnterpriseConnections(map)
-  } catch (e) {
-    console.warn('Failed to setup enterprise layer:', e)
+  } catch {
+    // Failed to setup enterprise layer — silently ignore
   }
 }
 

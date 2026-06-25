@@ -381,10 +381,11 @@ function openCrewOverlay(crew: CrewRegionData) {
 }
 
 function openRareEarthOverlay(feature: GeoJSON.Feature) {
-  const props = feature.properties as Record<string, any> || {}
-  const html = buildRareEarthPopupHTML(props)
+  const props = feature.properties as Record<string, unknown> || {}
+  const html = buildRareEarthPopupHTML(props as { c?: string; ds?: number; a?: number; [key: string]: unknown })
+  const coords = (feature.geometry as GeoJSON.Point).coordinates
   new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
-    .setLngLat([(feature.geometry as any).coordinates[0], (feature.geometry as any).coordinates[1]])
+    .setLngLat([coords[0] as number, coords[1] as number])
     .setHTML(html)
     .setMaxWidth('none')
     .addTo(map!)
@@ -775,12 +776,15 @@ function rebuildMarkers() {
   } else if (activeDataset.value === 'observatory-of-vulcan' && props.rareEarthPoints?.features?.length) {
     const features = props.rareEarthPoints.features
 
-    const clusterItems = features.map((f, i) => ({
-      lng: (f.geometry as any).coordinates[0],
-      lat: (f.geometry as any).coordinates[1],
-      type: 'rareEarth' as const,
-      index: i,
-    }))
+    const clusterItems = features.map((f, i) => {
+      const coords = (f.geometry as GeoJSON.Point).coordinates
+      return {
+        lng: coords[0] as number,
+        lat: coords[1] as number,
+        type: 'rareEarth' as const,
+        index: i,
+      }
+    })
 
     clusterer.loadImmediate(clusterItems)
 
@@ -824,8 +828,9 @@ function rebuildMarkers() {
         el.addEventListener('keydown', (e: KeyboardEvent) => {
           if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRareEarthOverlay(feature) }
         })
+        const markerCoords = (feature.geometry as GeoJSON.Point).coordinates
         const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([(feature.geometry as any).coordinates[0], (feature.geometry as any).coordinates[1]])
+          .setLngLat([markerCoords[0] as number, markerCoords[1] as number])
           .addTo(map!)
         markers.push(marker)
       }

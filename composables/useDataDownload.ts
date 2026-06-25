@@ -224,7 +224,7 @@ export async function downloadAllDatasets() {
   for (const ds of DOWNLOADABLE_DATASETS) {
     try {
       await downloadData(ds)
-    } catch (_err) {
+    } catch {
       // skip failed dataset, continue with next
     }
   }

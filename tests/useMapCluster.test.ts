@@ -65,7 +65,7 @@ describe('useMapCluster', () => {
   })
 
   it('destroy cancels pending debounced loads', () => {
-    const { load, getClusters: _getClusters, destroy } = useMapCluster()
+    const { load, destroy } = useMapCluster()
     load(makeItems(10))
     destroy()
     // Advancing time after destroy should not bring clusters back

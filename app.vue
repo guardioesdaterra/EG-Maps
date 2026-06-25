@@ -29,7 +29,7 @@ const route = useRoute()
 // navigation between pages.
 function trackPageview(url: string) {
   if (typeof window === 'undefined') return
-  const w = window as unknown as { plausible?: (eventName: string, options?: { u: string }) => void }
+  const w = window as unknown as { plausible?: (_eventName: string, _options?: { u: string }) => void }
   if (typeof w.plausible === 'function') {
     w.plausible('pageview', { u: url })
   }

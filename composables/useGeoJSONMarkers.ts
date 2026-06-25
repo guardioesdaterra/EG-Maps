@@ -104,8 +104,7 @@ export function useGeoJSONMarkers() {
   type InstalledHandler = {
     id: string
     evt: keyof MapLayerEventType
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    handler: (...args: any[]) => void
+    handler: (..._args: unknown[]) => void
   }
   const installedHandlers: InstalledHandler[] = []
 

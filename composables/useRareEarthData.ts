@@ -1,5 +1,5 @@
 import { shallowRef, ref, computed } from 'vue'
-import { computeSpeculatorIndex, type RareEarthFeatureCollection, type SpeculatorIndexEntry } from '@/lib/observatory-analysis'
+import { computeSpeculatorIndex, type RareEarthFeature, type RareEarthFeatureCollection, type SpeculatorIndexEntry } from '@/lib/observatory-analysis'
 
 export interface RareEarthFeatureSummary {
   p: string
@@ -81,6 +81,7 @@ export function useRareEarthData(baseURL: string) {
           ov: overlapsByProcesso[String(p.processo ?? '')] || null,
           dsprocesso: String(p.dsprocesso ?? ''),
         }
+      })
       pointsData.value = pointsGJ
       if (polysRes && polysRes.ok) polygonsData.value = await polysRes.json()
       if (protectedRes && protectedRes.ok) protectedData.value = await protectedRes.json()

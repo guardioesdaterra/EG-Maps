@@ -378,6 +378,8 @@ function stopAutoRotate() {
 }
 
 async function initMap() {
+  // eslint-disable-next-line no-console
+  console.debug('[GlobeView] initMap called', { windowDefined: typeof window !== 'undefined', containerRef: !!containerRef.value })
   if (typeof window === 'undefined' || !containerRef.value) return
 
   // Detect WebGL support before attempting to create map
@@ -393,6 +395,8 @@ async function initMap() {
   isLoading.value = true
 
   try {
+    // eslint-disable-next-line no-console
+    console.debug('[GlobeView] creating maplibregl.Map', { style: MAP_STYLE.substring(0, 80), isMobile: isMobile.value })
     map = new maplibregl.Map({
       container: containerRef.value,
       style: MAP_STYLE,
@@ -424,6 +428,8 @@ async function initMap() {
     })
 
     map.on('load', () => {
+      // eslint-disable-next-line no-console
+      console.debug('[GlobeView] map loaded successfully')
       isLoading.value = false
       rebuildMarkers()
       connectionsGlobe.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', projectsData.value, speciesData.value)
@@ -503,7 +509,7 @@ async function initMap() {
 
     map.on('error', (err) => {
       // eslint-disable-next-line no-console
-      console.error('MapLibre error:', err)
+      console.error('[GlobeView] MapLibre error:', err)
       errorCount++
       if (!usedFallback && errorCount >= 2 && MAP_STYLE.includes('maptiler.com')) {
         usedFallback = true
@@ -538,7 +544,7 @@ async function initMap() {
     }, 20000)
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error('Failed to load maplibre-gl:', err)
+    console.error('[GlobeView] Failed to initialize map:', err)
     isLoading.value = false
     hasError.value = true
   }
@@ -1020,6 +1026,8 @@ if (typeof document !== 'undefined' && !document.getElementById('globe-transitio
 }
 
 onMounted(() => {
+  // eslint-disable-next-line no-console
+  console.debug('[GlobeView] onMounted', { dataset: props.defaultDataset, containerRef: !!containerRef.value })
   initMap()
   window.addEventListener('resize', debouncedSetupHexGrid)
 })

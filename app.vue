@@ -6,9 +6,11 @@
         <NuxtPage :key="route.fullPath" />
       </Transition>
     </NuxtLayout>
-    <ToastHost position="bottom-right" />
-    <CommandPalette />
-    <KeyboardShortcuts />
+    <ClientOnly>
+      <ToastHost position="bottom-right" />
+      <CommandPalette />
+      <KeyboardShortcuts />
+    </ClientOnly>
   </div>
 </template>
 

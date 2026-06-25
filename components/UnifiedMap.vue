@@ -1076,6 +1076,8 @@ function debouncedSetupHexGrid() {
 }
 
 function initMap() {
+  // eslint-disable-next-line no-console
+  console.debug('[UnifiedMap] initMap called', { containerRef: !!mapContainerRef.value })
   if (!mapContainerRef.value) return
 
   // Detect WebGL support before attempting to create map
@@ -1105,6 +1107,8 @@ function initMap() {
 
   try {
     const isRee = activeDataset.value === 'observatory-of-vulcan'
+    // eslint-disable-next-line no-console
+    console.debug('[UnifiedMap] creating maplibregl.Map', { style: MAP_STYLE.substring(0, 80), isMobile: isMobile.value })
     map = new maplibregl.Map({
       container: mapContainerRef.value,
       style: MAP_STYLE,
@@ -1131,6 +1135,8 @@ function initMap() {
     }
 
     map.on('load', () => {
+      // eslint-disable-next-line no-console
+      console.debug('[UnifiedMap] map loaded successfully')
       if (!isMounted) return
       isLoading.value = false
       if (map) emit('mapInit', map)
@@ -1220,7 +1226,7 @@ function initMap() {
 
     map.on('error', (err) => {
       // eslint-disable-next-line no-console
-      console.error('MapLibre error:', err)
+      console.error('[UnifiedMap] MapLibre error:', err)
       errorCount++
       if (!usedFallback && errorCount >= 2 && MAP_STYLE.includes('maptiler.com')) {
         usedFallback = true
@@ -1257,13 +1263,15 @@ function initMap() {
     window.addEventListener('resize', debouncedSetupHexGrid)
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error('Failed to initialize map:', err)
+    console.error('[UnifiedMap] Failed to initialize map:', err)
     isLoading.value = false
     hasError.value = true
   }
 }
 
 onMounted(() => {
+  // eslint-disable-next-line no-console
+  console.debug('[UnifiedMap] onMounted', { dataset: props.defaultDataset, mapContainer: !!mapContainerRef.value })
   showFilterPanel.value = !isMobile.value
   initMap()
 })

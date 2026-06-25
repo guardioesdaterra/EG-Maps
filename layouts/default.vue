@@ -201,10 +201,13 @@ const route = useRoute()
 const { t, locale, availableLocales, localeNames, setLocale } = useAppI18n()
 
 // #no-dock hash support — hides the dock navigation bar
+// Start with a safe default and only modify on client to avoid hydration mismatch
 const showDock = ref(true)
 
 function updateDockFromHash() {
-  showDock.value = !window.location.hash.includes('no-dock')
+  if (typeof window !== 'undefined') {
+    showDock.value = !window.location.hash.includes('no-dock')
+  }
 }
 
 onMounted(() => {

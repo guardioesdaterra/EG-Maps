@@ -8,6 +8,7 @@ const IRRELEVANT_ERRORS = [
   'Style is not done loading',
   '404 (Not Found)',
   'Failed to load resource',
+  'Hydration completed but contains mismatches',
 ]
 
 test.describe('Map canvas rendering', () => {

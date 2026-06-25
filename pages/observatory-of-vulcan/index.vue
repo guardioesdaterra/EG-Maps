@@ -54,27 +54,32 @@
 
           <!-- Action Buttons Row -->
           <div class="absolute top-20 left-3 z-[500] flex flex-wrap gap-1.5 max-w-[320px]">
-            <button @click="showTimeline = true"
+            <button
+@click="showTimeline = true"
               class="px-2.5 py-1.5 text-[9px] font-bold rounded-lg border transition-all flex items-center gap-1.5"
               style="background:rgba(231,76,60,0.15);border-color:rgba(231,76,60,0.3);color:#e74c3c">
               <span>📖</span> Geopolitical Timeline
             </button>
-            <button @click="showRedeCorporativa = true"
+            <button
+@click="showRedeCorporativa = true"
               class="px-2.5 py-1.5 text-[9px] font-bold rounded-lg border transition-all flex items-center gap-1.5"
               style="background:rgba(52,152,219,0.15);border-color:rgba(52,152,219,0.3);color:#5dade2">
               <span>🔗</span> Rede Corporativa
             </button>
-            <button @click="showDownload = true"
+            <button
+@click="showDownload = true"
               class="px-2.5 py-1.5 text-[9px] font-bold rounded-lg border transition-all flex items-center gap-1.5"
               style="background:rgba(39,174,96,0.15);border-color:rgba(39,174,96,0.3);color:#27ae60">
               <span>⬇️</span> Download Data
             </button>
-            <button @click="showExport = true"
+            <button
+@click="showExport = true"
               class="px-2.5 py-1.5 text-[9px] font-bold rounded-lg border transition-all flex items-center gap-1.5"
               style="background:rgba(155,89,182,0.15);border-color:rgba(155,89,182,0.3);color:#af7ac5">
               <span>📄</span> Export
             </button>
-            <button @click="toggleEnterpriseLayer"
+            <button
+@click="toggleEnterpriseLayer"
               class="px-2.5 py-1.5 text-[9px] font-bold rounded-lg border transition-all flex items-center gap-1.5"
               :style="enterpriseLayerVisible
                 ? 'background:rgba(155,89,182,0.2);border-color:rgba(155,89,182,0.4);color:#af7ac5'
@@ -97,7 +102,8 @@
           />
 
           <!-- My Territory Pin -->
-          <div v-if="userPin" class="absolute z-[500] bg-black/85 backdrop-blur border border-emerald-700/40 rounded-xl px-3 py-2.5 shadow-lg max-w-[280px]"
+          <div
+v-if="userPin" class="absolute z-[500] bg-black/85 backdrop-blur border border-emerald-700/40 rounded-xl px-3 py-2.5 shadow-lg max-w-[280px]"
             style="bottom: 7.5rem; right: 0.75rem;">
             <div class="flex items-center justify-between gap-2 mb-1.5">
               <div class="flex items-center gap-1.5">
@@ -124,7 +130,8 @@
           </div>
 
           <!-- Drop Pin Floating Button -->
-          <button type="button"
+          <button
+type="button"
             class="absolute z-[500] bg-black/85 backdrop-blur border border-emerald-700/40 rounded-full px-3 py-2 text-[10px] font-bold text-emerald-300 hover:bg-emerald-900/30 hover:border-emerald-500 transition-all flex items-center gap-1.5 shadow-lg"
             :style="pinPickerMode ? 'bottom: 5.5rem; right: 0.75rem; background: rgba(16, 185, 129, 0.25); border-color: #10b981; color: #fff;' : 'bottom: 5.5rem; right: 0.75rem;'"
             @click="togglePinPicker">
@@ -152,9 +159,11 @@
             <hr class="border-zinc-800 my-2" />
 
             <h3 class="text-[8px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">{{ t('observatory.layers.title') }}</h3>
-            <div v-for="c in categories" :key="c.key" class="flex items-center gap-2 py-1 cursor-pointer select-none"
+            <div
+v-for="c in categories" :key="c.key" class="flex items-center gap-2 py-1 cursor-pointer select-none"
               @click="toggleLayer(c.key)">
-              <div :class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
+              <div
+:class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
                 layerVis[c.key] ? '' : 'opacity-30']"
                 :style="{ borderColor: c.color, color: c.color }">
                 <div v-if="layerVis[c.key]" class="w-1.5 h-1.5 rounded-sm" :style="{ background: c.color }" />
@@ -162,9 +171,11 @@
               <span class="text-[10px] text-zinc-400 font-medium">{{ c.label }}</span>
             </div>
             <hr class="border-zinc-800 my-1.5" />
-            <div v-for="e in extraLayers" :key="e.key" class="flex items-center gap-2 py-1 cursor-pointer select-none"
+            <div
+v-for="e in extraLayers" :key="e.key" class="flex items-center gap-2 py-1 cursor-pointer select-none"
               @click="toggleLayer(e.key)">
-              <div :class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
+              <div
+:class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
                 layerVis[e.key] ? '' : 'opacity-30']"
                 :style="{ borderColor: e.color, color: e.color }">
                 <div v-if="layerVis[e.key]" class="w-1.5 h-1.5 rounded-sm" :style="{ background: e.color }" />
@@ -172,36 +183,44 @@
               <span class="text-[10px] text-zinc-400 font-medium">{{ t(e.labelKey) }}</span>
             </div>
             <hr class="border-zinc-800 my-1.5" />
-            <div class="flex items-center gap-2 py-1 cursor-pointer select-none"
+            <div
+class="flex items-center gap-2 py-1 cursor-pointer select-none"
               @click="toggleLayer('protected_ti')">
-              <div :class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
+              <div
+:class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
                 layerVis['protected_ti'] !== false ? '' : 'opacity-30']"
                 style="border-color:#c0392b;color:#c0392b">
                 <div v-if="layerVis['protected_ti'] !== false" class="w-1.5 h-1.5 rounded-sm" style="background:#c0392b" />
               </div>
               <span class="text-[10px] text-zinc-400 font-medium">{{ t('observatory.layers.indigenousLands') }}</span>
             </div>
-            <div class="flex items-center gap-2 py-1 cursor-pointer select-none"
+            <div
+class="flex items-center gap-2 py-1 cursor-pointer select-none"
               @click="toggleLayer('protected_quilombo')">
-              <div :class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
+              <div
+:class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
                 layerVis['protected_quilombo'] !== false ? '' : 'opacity-30']"
                 style="border-color:#f39c12;color:#f39c12">
                 <div v-if="layerVis['protected_quilombo'] !== false" class="w-1.5 h-1.5 rounded-sm" style="background:#f39c12" />
               </div>
               <span class="text-[10px] text-zinc-400 font-medium">{{ t('observatory.layers.quilombolaTerritories') }}</span>
             </div>
-            <div class="flex items-center gap-2 py-1 cursor-pointer select-none"
+            <div
+class="flex items-center gap-2 py-1 cursor-pointer select-none"
               @click="toggleLayer('overlaps')">
-              <div :class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
+              <div
+:class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
                 layerVis['overlaps'] !== false ? '' : 'opacity-30']"
                 style="border-color:#ff00ff;color:#ff00ff">
                 <div v-if="layerVis['overlaps'] !== false" class="w-1.5 h-1.5 rounded-sm" style="background:#ff00ff" />
               </div>
               <span class="text-[10px] text-zinc-400 font-medium">{{ t('observatory.layers.overlaps') }}</span>
             </div>
-            <div class="flex items-center gap-2 py-1 cursor-pointer select-none"
+            <div
+class="flex items-center gap-2 py-1 cursor-pointer select-none"
               @click="toggleLayer('enterprise_hq')">
-              <div :class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
+              <div
+:class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
                 layerVis['enterprise_hq'] !== false ? '' : 'opacity-30']"
                 style="border-color:#9b59b6;color:#9b59b6">
                 <div v-if="layerVis['enterprise_hq'] !== false" class="w-1.5 h-1.5 rounded-sm" style="background:#9b59b6" />
@@ -211,9 +230,11 @@
 
             <hr class="border-zinc-800 my-1.5" />
 
-            <label class="flex items-center gap-2 py-1 cursor-pointer select-none"
+            <label
+class="flex items-center gap-2 py-1 cursor-pointer select-none"
               @click.stop="sobDemandaOnly = !sobDemandaOnly; debouncedFilter()">
-              <div :class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
+              <div
+:class="['w-3 h-3 rounded border-2 flex items-center justify-center transition-all',
                 sobDemandaOnly ? '' : 'opacity-30']"
                 style="border-color:#7B2FBE;color:#7B2FBE">
                 <div v-if="sobDemandaOnly" class="w-1.5 h-1.5 rounded-sm" style="background:#7B2FBE" />
@@ -224,7 +245,8 @@
 
           <!-- Search -->
           <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-[500] hidden sm:block">
-            <input v-model="searchTerm" @input="debouncedFilter" :placeholder="t('observatory.search')"
+            <input
+v-model="searchTerm" @input="debouncedFilter" :placeholder="t('observatory.search')"
               class="w-[240px] px-3 py-2 text-xs bg-black/70 border border-zinc-700 rounded-lg text-zinc-300 placeholder-zinc-500 outline-none focus:border-red-500/50 shadow-lg" />
           </div>
 
@@ -311,7 +333,7 @@ useHead({
   meta: [{ name: 'description', content: 'Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.' }],
 })
 
-const { pointsData, polygonsData, protectedData, features: allFeatures, speculatorIndex, deepAnalysis, isLoading: _dataLoading, load: loadRareEarthData } = useRareEarthData(baseURL)
+const { pointsData, polygonsData, protectedData, features: allFeatures, speculatorIndex, deepAnalysis, load: loadRareEarthData } = useRareEarthData(baseURL)
 const searchTerm = ref('')
 const flyToTarget = ref<{ lng: number; lat: number; zoom?: number } | null>(null)
 let mapRef: maplibregl.Map | null = null
@@ -428,14 +450,6 @@ layerVis.value['protected_ti'] = true
 layerVis.value['protected_quilombo'] = true
 layerVis.value['overlaps'] = true
 
-const _tabs = [
-  { key: 'danger', labelKey: 'observatory.tabs.danger' },
-  { key: 'military', labelKey: 'observatory.tabs.military' },
-  { key: 'illegal', labelKey: 'observatory.tabs.illegal' },
-  { key: 'env', labelKey: 'observatory.tabs.env' },
-  { key: 'network', labelKey: 'observatory.tabs.network' },
-  { key: 'timeline', labelKey: 'observatory.tabs.timeline' },
-]
 const activeTab = ref<ObservatoryTabKey>('danger')
 
 const showAll = ref(false)

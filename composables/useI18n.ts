@@ -41,7 +41,7 @@ function englishFallback(key: string): string | undefined {
 export function useI18n() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const nuxtApp = useNuxtApp() as any
-  const i18n = nuxtApp.$i18n as { t: (key: string, ...args: unknown[]) => string; locale: import('vue').Ref<string> } | undefined
+  const i18n = nuxtApp.$i18n as { t: (_key: string, ..._args: unknown[]) => string; locale: import('vue').Ref<string> } | undefined
 
   const ui = useUiStore()
 

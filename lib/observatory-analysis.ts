@@ -1,6 +1,6 @@
 export interface RareEarthFeature {
   type: 'Feature'
-  geometry: { type: 'Point' | 'Polygon'; coordinates: unknown }
+  geometry: GeoJSON.Geometry
   properties: Record<string, unknown>
 }
 
@@ -115,7 +115,7 @@ export function computeSpeculatorIndex(points: RareEarthFeatureCollection): Spec
   }
   for (const f of points.features) {
     const p = f.properties || {}
-    const key = normalizeName(p.nome ?? p.NOME ?? '')
+    const key = normalizeName(String(p.nome ?? p.NOME ?? ''))
     const entry = map.get(key)
     if (!entry) continue
     const ano = Number(p.ano ?? p.ANO ?? 0)
@@ -138,7 +138,7 @@ export function computeSpeculatorIndex(points: RareEarthFeatureCollection): Spec
   }
   const byNorm = new Map<string, { lng: number; lat: number; n: number }>()
   for (const f of points.features) {
-    const key = normalizeName(f.properties?.nome ?? f.properties?.NOME ?? '')
+    const key = normalizeName(String(f.properties?.nome ?? f.properties?.NOME ?? ''))
     const coords = (f.geometry as GeoJSON.Point)?.coordinates
     if (!coords || !Array.isArray(coords) || coords.length < 2) continue
     const [lng, lat] = coords
@@ -166,7 +166,7 @@ export function computeDangerScore(
   let score = 4.0
   if (isHighEnvRisk(props)) score += 1.0
   if (isSuspiciousBasic(props, speculator)) score += 1.5
-  const uf = props.uf ?? props.UF
+  const uf = String(props.uf ?? props.UF ?? '')
   if (isMilitaryInterest(uf)) score += 1.0
   const area = Number(props.area_ha ?? props.AREA_HA ?? 0)
   if (area > 100000) score += 1.0

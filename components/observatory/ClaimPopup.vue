@@ -1,15 +1,19 @@
 <template>
   <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;min-width:250px;position:relative">
-    <div class="absolute top-2 left-2 w-2.5 h-2.5 border-t-2 border-l-2 pointer-events-none z-[1]"
+    <div
+class="absolute top-2 left-2 w-2.5 h-2.5 border-t-2 border-l-2 pointer-events-none z-[1]"
       :style="{ borderColor: cat.color + '60' }" />
-    <div class="absolute top-2 right-2 w-2.5 h-2.5 border-t-2 border-r-2 pointer-events-none z-[1]"
+    <div
+class="absolute top-2 right-2 w-2.5 h-2.5 border-t-2 border-r-2 pointer-events-none z-[1]"
       :style="{ borderColor: cat.color + '60' }" />
 
     <div class="px-3.5 pt-3.5 pb-2.5 relative">
       <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
-        <span class="inline-flex items-center gap-1 text-[8px] font-bold px-2 py-0.5 rounded text-white uppercase tracking-wider"
+        <span
+class="inline-flex items-center gap-1 text-[8px] font-bold px-2 py-0.5 rounded text-white uppercase tracking-wider"
           :style="{ background: cat.color }">{{ cat.label }}</span>
-        <span class="inline-flex items-center gap-0.5 text-[8px] font-bold px-2 py-0.5 rounded text-white"
+        <span
+class="inline-flex items-center gap-0.5 text-[8px] font-bold px-2 py-0.5 rounded text-white"
           :style="{ background: dangerColor }">{{ dangerScore.toFixed(1) }} Danger</span>
         <span v-if="props.net" class="text-[7px] px-1.5 py-0.5 rounded font-semibold bg-blue-900/30 text-blue-400 tracking-wide">
           {{ props.net }}
@@ -65,7 +69,8 @@
       <div v-if="overlaps.length" class="mt-1.5 pt-1.5 border-t border-zinc-800/50">
         <div class="text-[7.5px] text-zinc-600 uppercase tracking-widest font-semibold mb-0.5">Overlaps</div>
         <div class="flex items-center flex-wrap gap-0">
-          <span v-for="(o, i) in displayedOverlaps" :key="i"
+          <span
+v-for="(o, i) in displayedOverlaps" :key="i"
             class="inline-flex items-center gap-0.5 text-[8px] px-1 py-0.5 rounded bg-red-900/18 text-red-400 font-semibold mr-0.5 mb-0.5">
             ⚠ {{ o.name }}<span v-if="o.distance_km" class="opacity-70 font-normal"> · {{ o.distance_km }}km</span>
           </span>
@@ -75,11 +80,13 @@
     </div>
 
     <div class="flex gap-1.5 px-3.5 py-2 border-t border-zinc-800/40">
-      <a v-if="anmUrl" :href="anmUrl" target="_blank" rel="noopener"
+      <a
+v-if="anmUrl" :href="anmUrl" target="_blank" rel="noopener"
         class="flex-1 inline-flex items-center justify-center gap-1 text-[9px] font-bold py-1.5 px-2 rounded no-underline border border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors">
         ↗ Verify on ANM
       </a>
-      <a :href="mailtoUrl"
+      <a
+:href="mailtoUrl"
         class="flex-1 inline-flex items-center justify-center gap-1 text-[9px] font-bold py-1.5 px-2 rounded no-underline border border-red-500/25 bg-red-500/8 text-red-400 hover:bg-red-500/15 transition-colors">
         ⚑ Report issue
       </a>

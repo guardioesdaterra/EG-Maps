@@ -72,21 +72,21 @@ function formatArea(ha: number): string {
 export function buildRareEarthPopupContent(props: Record<string, unknown>, lngLat: [number, number]): RareEarthPopupContent {
   const { t, locale } = useI18n()
 
-  const catKey: string = props.c ?? props.category ?? 'unknown'
+  const catKey = String(props.c ?? props.category ?? 'unknown')
   const cat = RARE_EARTH_CATEGORIES[catKey] ?? { label: catKey, color: '#666' }
   const catLabelKey = `observatory.categories.${catKey}`
   const catLabel = (locale.value && t(catLabelKey) !== catLabelKey) ? t(catLabelKey) : cat.label
 
   const dangerScore = Number(props.ds ?? props.danger_score ?? 5)
   const areaHa = Number(props.a ?? props.area_ha ?? 0)
-  const uf: string = props.u ?? props.uf ?? ''
-  const processo: string = props.p ?? props.processo ?? ''
-  const nome: string = props.n ?? props.nome ?? t('observatory.popups.unknown')
-  const subs: string = props.s ?? props.subs ?? '—'
-  const fase: string = props.f ?? props.fase ?? '—'
-  const ano: number = Number(props.ano ?? props.y ?? 0)
-  const networkId: string = props.net ?? props.network_id ?? ''
-  const lastEventText: string = props.ev ?? props.ultimo_evento ?? ''
+  const uf = String(props.u ?? props.uf ?? '')
+  const processo = String(props.p ?? props.processo ?? '')
+  const nome = String(props.n ?? props.nome ?? t('observatory.popups.unknown'))
+  const subs = String(props.s ?? props.subs ?? '—')
+  const fase = String(props.f ?? props.fase ?? '—')
+  const ano = Number(props.ano ?? props.y ?? 0)
+  const networkId = String(props.net ?? props.network_id ?? '')
+  const lastEventText = String(props.ev ?? props.ultimo_evento ?? '')
   const overlaps: RareEarthPopupOverlap[] = Array.isArray(props.ov) ? props.ov : []
 
   const badges: RareEarthPopupBadge[] = []
@@ -169,7 +169,7 @@ export function buildRareEarthPopupContent(props: Record<string, unknown>, lngLa
     lastEvent,
     overlaps,
     actions,
-    sourceFeatureId: props.id ?? null,
+    sourceFeatureId: typeof props.id === 'string' || typeof props.id === 'number' ? props.id : null,
   }
 }
 

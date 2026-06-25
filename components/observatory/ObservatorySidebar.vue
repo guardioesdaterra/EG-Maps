@@ -167,8 +167,8 @@ function onFlyToCoord(coord: [number, number]) {
 
 // Focus trap when expanded
 const panelEl = ref<HTMLElement | null>(null)
-// useFocusTrap is registered on the panel
-const _trap = useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activeTab) })
+// useFocusTrap is registered on the panel (side-effect only)
+useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activeTab) })
 </script>
 
 <style scoped>

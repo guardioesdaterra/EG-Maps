@@ -134,11 +134,11 @@ export function createSpeciesMarkerElement(species: { imageUrl?: string | null; 
 
 export function createRareEarthMarkerElement(feature: GeoJSON.Feature, baseURL?: string): HTMLElement {
   const props = feature.properties as Record<string, unknown> || {}
-  const cat = RARE_EARTH_CATEGORIES[props.c] ?? { label: 'Unknown', color: '#666' }
+  const cat = RARE_EARTH_CATEGORIES[props.c as string] ?? { label: 'Unknown', color: '#666' }
   return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
     color: cat.color,
     size: 20,
-    number: props.c?.charAt(0) || '?',
+    number: (props.c as string)?.charAt(0) || '?',
   }), baseURL)
 }
 

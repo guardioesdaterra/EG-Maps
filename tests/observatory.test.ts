@@ -16,6 +16,7 @@ import {
   buildClaimReportMailtoUrl,
   buildAnmVerifyUrl,
   type RareEarthFeatureCollection,
+  type RareEarthFeature,
 } from '../lib/observatory-analysis'
 import {
   buildEnterpriseNetworkLines,
@@ -192,7 +193,7 @@ describe('computeSpeculatorIndex', () => {
       },
       geometry: { type: 'Point' as const, coordinates: [f.lng ?? 0, f.lat ?? 0] },
       id: i,
-    } as any)),
+    } as RareEarthFeature)),
   })
 
   it('returns empty array for empty input', () => {
@@ -289,7 +290,7 @@ describe('computeSpeculatorIndex', () => {
         type: 'Feature',
         properties: { NOME: 'UPPERCASE CO', SUBS: 'NIOBIO', AREA_HA: 1000, UF: 'MG', ANO: 2024, FASE: 'REQUERIMENTO' },
         geometry: { type: 'Point', coordinates: [0, 0] },
-      } as any],
+      } as RareEarthFeature],
     }
     const result = computeSpeculatorIndex(fc)
     expect(result).toHaveLength(1)
@@ -662,7 +663,7 @@ describe('buildEnterpriseNetworkLines', () => {
       type: 'FeatureCollection',
       features: [],
     }
-    const result = buildEnterpriseNetworkLines(fc as any)
+    const result = buildEnterpriseNetworkLines(fc as RareEarthFeatureCollection)
     expect(result.type).toBe('FeatureCollection')
     expect(result.features).toBeInstanceOf(Array)
   })
@@ -683,7 +684,7 @@ describe('buildEnterpriseNetworkLines', () => {
         },
       ],
     }
-    const result = buildEnterpriseNetworkLines(fc as any)
+    const result = buildEnterpriseNetworkLines(fc as RareEarthFeatureCollection)
     const valeLine = result.features.find(f =>
       f.properties?.from === 'VALE S.A.' && f.properties?.type === 'domestic_claims'
     )
@@ -708,7 +709,7 @@ describe('buildEnterpriseNetworkLines', () => {
         },
       ],
     }
-    const result = buildEnterpriseNetworkLines(fc as any)
+    const result = buildEnterpriseNetworkLines(fc as RareEarthFeatureCollection)
     const corpLine = result.features.find(f =>
       f.properties?.connectionType === 'corporate' && f.properties?.from === 'Foxfire Metals'
     )
@@ -727,7 +728,7 @@ describe('buildEnterpriseNetworkLines', () => {
         },
       ],
     }
-    const result = buildEnterpriseNetworkLines(fc as any)
+    const result = buildEnterpriseNetworkLines(fc as RareEarthFeatureCollection)
     const rioLine = result.features.find(f =>
       f.properties?.from === 'Rio Tinto' && f.properties?.type === 'foreign_to_claims'
     )
@@ -755,7 +756,7 @@ describe('buildEnterpriseHQGeoJSON', () => {
     const result = buildEnterpriseHQGeoJSON(specIndex)
     const valeFeature = result.features.find(f => f.properties?.name === 'VALE S.A.')
     expect(valeFeature).toBeDefined()
-    expect((valeFeature!.geometry as any).coordinates).toEqual([-50.0, -15.0])
+    expect((valeFeature!.geometry as GeoJSON.Point).coordinates).toEqual([-50.0, -15.0])
     expect(valeFeature!.properties!.hasCentroid).toBe(true)
   })
 
@@ -763,6 +764,6 @@ describe('buildEnterpriseHQGeoJSON', () => {
     const result = buildEnterpriseHQGeoJSON()
     const valeFeature = result.features.find(f => f.properties?.name === 'VALE S.A.')
     expect(valeFeature).toBeDefined()
-    expect((valeFeature!.geometry as any).coordinates).toEqual([-43.1761, -22.9542])
+    expect((valeFeature!.geometry as GeoJSON.Point).coordinates).toEqual([-43.1761, -22.9542])
   })
 })

@@ -13,7 +13,8 @@
             <div>
               <label class="block text-[10px] text-zinc-500 uppercase tracking-wider font-bold mb-1.5">{{ t('observatory.export.format') }}</label>
               <div class="flex gap-2">
-                <button v-for="fmt in formats" :key="fmt.key" type="button"
+                <button
+v-for="fmt in formats" :key="fmt.key" type="button"
                   class="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg border transition-all text-center"
                   :class="selectedFormat === fmt.key
                     ? 'border-green-500/40 bg-green-500/15 text-green-400'
@@ -27,7 +28,8 @@
             <div v-if="selectedFormat === 'png'">
               <label class="block text-[10px] text-zinc-500 uppercase tracking-wider font-bold mb-1.5">{{ t('observatory.export.resolution') }}</label>
               <div class="flex gap-2">
-                <button v-for="res in resolutions" :key="res.key" type="button"
+                <button
+v-for="res in resolutions" :key="res.key" type="button"
                   class="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg border transition-all text-center"
                   :class="selectedResolution === res.key
                     ? 'border-blue-500/40 bg-blue-500/15 text-blue-400'
@@ -41,7 +43,8 @@
             <div v-if="selectedFormat === 'pdf'">
               <label class="block text-[10px] text-zinc-500 uppercase tracking-wider font-bold mb-1.5">{{ t('observatory.export.paperSize') }}</label>
               <div class="flex gap-2">
-                <button v-for="ps in paperSizes" :key="ps.key" type="button"
+                <button
+v-for="ps in paperSizes" :key="ps.key" type="button"
                   class="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg border transition-all text-center"
                   :class="selectedPaperSize === ps.key
                     ? 'border-blue-500/40 bg-blue-500/15 text-blue-400'
@@ -65,12 +68,14 @@
           </div>
 
           <div class="flex gap-2 mt-5">
-            <button type="button"
+            <button
+type="button"
               class="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
               @click="$emit('close')">
               {{ t('observatory.export.cancel') }}
             </button>
-            <button type="button"
+            <button
+type="button"
               class="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg border border-green-500/40 bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-colors"
               :disabled="isExporting"
               @click="doExport">
@@ -85,7 +90,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { exportMapToImage, type ExportOptions as _ExportOptions } from '@/lib/map-export'
+import { exportMapToImage } from '@/lib/map-export'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const props = defineProps<{
@@ -139,7 +144,7 @@ async function doExport() {
       filterSummary: props.filterSummary,
     })
     emit('close')
-  } catch (_e) {
+  } catch {
     // Export failed — silently ignore
   } finally {
     isExporting.value = false

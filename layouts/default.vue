@@ -251,12 +251,12 @@ const showUnifiedHeader = computed(() => isMapRoute.value || route.path === '/in
 const showViewToggle = computed(() => isMapRoute.value)
 
 const view2DRoute = computed(() => {
-  const base = route.path.endsWith('/3d') ? route.path.replace('/3d', '') : route.path
-  return base
+  const p = route.path.replace(/\/+$/, '')
+  return p.endsWith('/3d') ? p.replace(/\/3d$/, '') : p
 })
 const view3DRoute = computed(() => {
-  const base = route.path.endsWith('/3d') ? route.path : `${route.path}/3d`
-  return base
+  const p = route.path.replace(/\/+$/, '')
+  return p.endsWith('/3d') ? p : `${p}/3d`
 })
 
 const isLightTheme = computed(() => !isDark.value)

@@ -377,19 +377,27 @@ export function getCategoryColor(cat: string): string {
 
 export const isMilitaryInterest = _isMilitaryInterest
 export const isHighEnvRisk = _isHighEnvRisk
-export function isSuspicious(props: Record<string, any>, speculator?: SpeculatorIndexEntry | null): boolean {
+export function isSuspicious(props: Record<string, unknown>, speculator?: SpeculatorIndexEntry | null): boolean {
   return isSuspiciousBasic(props, speculator ?? null)
 }
 
-export function buildRareEarthPopupHTML(props: Record<string, any>): string {
-  const cat = RARE_EARTH_CATEGORIES[props.c] ?? { label: props.c || 'Unknown', color: '#666' }
+/** Properties expected on a rare-earth GeoJSON feature for popup rendering. */
+interface REEPopupProps {
+  c?: string; ds?: number; a?: number; mil?: boolean; env?: boolean; sus?: boolean
+  u?: string; p?: string; n?: string; s?: string; f?: string; y?: number
+  la?: number; lo?: number; ev?: string; net?: string; ano?: number
+  [key: string]: unknown
+}
+
+export function buildRareEarthPopupHTML(props: REEPopupProps): string {
+  const cat = RARE_EARTH_CATEGORIES[props.c ?? ''] ?? { label: props.c || 'Unknown', color: '#666' }
   const dangerColor = (props.ds ?? 5) >= 8 ? '#e74c3c' : (props.ds ?? 5) >= 6 ? '#f39c12' : '#27ae60'
   const areaHa = Number(props.a ?? 0)
   const area = areaHa >= 10000 ? `${(areaHa / 1000).toFixed(0)}K ha` : `${areaHa.toLocaleString()} ha`
 
   const milFlag = props.mil !== false && isMilitaryInterest(props.u || '')
-  const envFlag = props.env !== false && isHighEnvRisk(props)
-  const susFlag = props.sus !== false && isSuspicious(props)
+  const envFlag = props.env !== false && isHighEnvRisk(props as unknown as Record<string, unknown>)
+  const susFlag = props.sus !== false && isSuspicious(props as unknown as Record<string, unknown>)
 
   const flagsHTML = [milFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(231,76,60,0.2);color:#e74c3c">MIL</span>' : '',
     envFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(39,174,96,0.2);color:#27ae60">ENV</span>' : '',

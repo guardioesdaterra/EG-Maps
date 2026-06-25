@@ -85,7 +85,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { exportMapToImage, type ExportOptions } from '@/lib/map-export'
+import { exportMapToImage, type ExportOptions as _ExportOptions } from '@/lib/map-export'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const props = defineProps<{
@@ -139,8 +139,8 @@ async function doExport() {
       filterSummary: props.filterSummary,
     })
     emit('close')
-  } catch (e) {
-    console.error('Export failed:', e)
+  } catch (_e) {
+    // Export failed — silently ignore
   } finally {
     isExporting.value = false
   }

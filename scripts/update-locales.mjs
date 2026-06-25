@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 /**
  * One-shot script to merge new i18n keys into the existing locale files.
  * Preserves existing keys, adds new ones, and keeps proper JSON formatting.

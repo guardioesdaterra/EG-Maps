@@ -489,15 +489,15 @@ watch([searchQuery, showAllItems, () => props.dataset], () => {
     }
   } else if (props.dataset === 'active-crews') {
     // Crew region search
-    const crewList = currentProjects.value as any[]
+    const crewList = currentProjects.value as unknown as CrewRegionData[]
     if (searchQuery.value.length > 1) {
       const query = searchQuery.value.toLowerCase().trim()
-      searchResults.value = crewList.filter((c: any) =>
+      searchResults.value = crewList.filter((c: CrewRegionData) =>
         c.region?.toLowerCase().includes(query)
       )
       showAllItems.value = false
     } else if (showAllItems.value) {
-      searchResults.value = [...crewList].sort((a: any, b: any) =>
+      searchResults.value = [...crewList].sort((a: CrewRegionData, b: CrewRegionData) =>
         (a.region || '').localeCompare(b.region || '')
       )
     } else {

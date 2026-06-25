@@ -1,7 +1,7 @@
 export interface RareEarthFeature {
   type: 'Feature'
-  geometry: { type: 'Point' | 'Polygon'; coordinates: any }
-  properties: Record<string, any>
+  geometry: { type: 'Point' | 'Polygon'; coordinates: unknown }
+  properties: Record<string, unknown>
 }
 
 export interface RareEarthFeatureCollection {
@@ -39,7 +39,7 @@ export function isMilitaryInterest(uf: string | string[] | null | undefined): bo
   return list.some(u => MILITARY_UFS.has(String(u).toUpperCase()))
 }
 
-export function isHighEnvRisk(props: Record<string, any>): boolean {
+export function isHighEnvRisk(props: Record<string, unknown>): boolean {
   const subs = String(props.subs ?? props.SUBS ?? '').toUpperCase()
   const area = Number(props.area_ha ?? props.AREA_HA ?? 0)
   const uf = String(props.uf ?? props.UF ?? '')
@@ -51,7 +51,7 @@ export function isHighEnvRisk(props: Record<string, any>): boolean {
   return false
 }
 
-export function isSuspiciousBasic(props: Record<string, any>, speculator: SpeculatorIndexEntry | null): boolean {
+export function isSuspiciousBasic(props: Record<string, unknown>, speculator: SpeculatorIndexEntry | null): boolean {
   const ano = Number(props.ano ?? props.ANO ?? 0)
   const fase = String(props.fase ?? props.FASE ?? '')
   if (ano < 2020) return false
@@ -139,7 +139,7 @@ export function computeSpeculatorIndex(points: RareEarthFeatureCollection): Spec
   const byNorm = new Map<string, { lng: number; lat: number; n: number }>()
   for (const f of points.features) {
     const key = normalizeName(f.properties?.nome ?? f.properties?.NOME ?? '')
-    const coords = (f.geometry as any)?.coordinates
+    const coords = (f.geometry as GeoJSON.Point)?.coordinates
     if (!coords || !Array.isArray(coords) || coords.length < 2) continue
     const [lng, lat] = coords
     if (typeof lng !== 'number' || typeof lat !== 'number') continue
@@ -160,7 +160,7 @@ export function computeSpeculatorIndex(points: RareEarthFeatureCollection): Spec
 }
 
 export function computeDangerScore(
-  props: Record<string, any>,
+  props: Record<string, unknown>,
   speculator: SpeculatorIndexEntry | null,
 ): number {
   let score = 4.0

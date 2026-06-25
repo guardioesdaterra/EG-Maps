@@ -69,7 +69,7 @@ function formatArea(ha: number): string {
  * Convert a raw GeoJSON feature property set (snake_case keys, ANM format)
  * to the structured popup model.
  */
-export function buildRareEarthPopupContent(props: Record<string, any>, lngLat: [number, number]): RareEarthPopupContent {
+export function buildRareEarthPopupContent(props: Record<string, unknown>, lngLat: [number, number]): RareEarthPopupContent {
   const { t, locale } = useI18n()
 
   const catKey: string = props.c ?? props.category ?? 'unknown'
@@ -179,7 +179,7 @@ export function buildRareEarthPopupContent(props: Record<string, any>, lngLat: [
  */
 export function renderRareEarthPopup(
   content: RareEarthPopupContent,
-  options: { className?: string; maxWidth?: string } = {},
+  _options: { className?: string; maxWidth?: string } = {},
 ): HTMLElement {
   const root = document.createElement('div')
   root.className = 'ree-popup'
@@ -262,7 +262,7 @@ function label(key: string): string {
 }
 
 interface ClickHandlers {
-  onSidebarOpen?: (payload: { processo: string; nome: string; tab: string; coords: [number, number] }) => void
+  onSidebarOpen?: (_payload: { processo: string; nome: string; tab: string; coords: [number, number] }) => void
 }
 
 /**
@@ -271,7 +271,7 @@ interface ClickHandlers {
  */
 export function openRareEarthPopup(
   map: MapLibreMap,
-  props: Record<string, any>,
+  props: Record<string, unknown>,
   lngLat: [number, number],
   handlers: ClickHandlers = {},
 ): maplibregl.Popup {
@@ -319,7 +319,7 @@ export function attachRareEarthPopupHandler(
   const wrapped = layerIds.map((id) => {
     const handler = (e: MapLayerMouseEvent) => {
       if (!e.features?.length) return
-      const p = e.features[0].properties as Record<string, any>
+      const p = e.features[0].properties as Record<string, unknown>
       openRareEarthPopup(map, p, [e.lngLat.lng, e.lngLat.lat], handlers)
     }
     map.on('click', id, handler)

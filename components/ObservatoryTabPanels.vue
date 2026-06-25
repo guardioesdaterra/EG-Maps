@@ -140,10 +140,6 @@ import {
   ENV_REGIONS,
   NETWORK_NOTES,
   TIMELINE_HIGHLIGHTS,
-  type EnvRegion,
-  type IllegalPattern,
-  type NetworkNote,
-  type TimelineHighlight,
 } from '@/lib/observatory-tabs'
 
 interface DangerItem {
@@ -160,6 +156,9 @@ interface DangerItem {
 
 interface MilitaryAsset { flag: string; name: string; country?: string; kgPerUnit: number | null; description: string }
 interface InvestmentFlow { from: string; to: string; amount: string; year: number }
+
+const _militaryAssets: MilitaryAsset[] = MILITARY_ASSETS as MilitaryAsset[]
+const _investmentFlows: InvestmentFlow[] = US_INVESTMENTS as InvestmentFlow[]
 
 const props = defineProps<{
   activeTab: string

@@ -106,7 +106,7 @@ function addEnterpriseConnections(map: MapLibreMap) {
   })
 }
 
-export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (e: EnterpriseHQ) => void, speculatorIndex?: Array<{ normalizedName: string; centroid: { lng: number; lat: number } | null }>) {
+export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (enterprise: EnterpriseHQ) => void, speculatorIndex?: Array<{ normalizedName: string; centroid: { lng: number; lat: number } | null }>) {
   try {
     const state = getState(map)
     state.onClick = onClick || null
@@ -167,7 +167,7 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (e: EnterpriseH
       },
     })
 
-    map.on('click', ENTERPRISE_LAYER, (e: any) => {
+    map.on('click', ENTERPRISE_LAYER, (e: maplibregl.MapLayerMouseEvent) => {
       if (!e.features?.length) return
       const props = e.features[0].properties
       const enterprise = ENTERPRISES.find(ent => ent.name === props.name)

@@ -3,8 +3,6 @@
  * When a feature is selected on the map, the sidebar can react (scroll to it,
  * open the relevant tab) — and vice versa.
  */
-import type { Ref } from 'vue'
-
 export interface ObservatorySelection {
   /** Selected claim process id (processo) */
   processo: string | null

@@ -67,7 +67,7 @@ export function clamp(value: number, min: number, max: number): number {
 /**
  * Stable debounce implementation. Cancels previous invocations within `wait` ms.
  */
-export function debounce<T extends (...args: never[]) => void>(
+export function debounce<T extends (..._args: never[]) => void>(
   fn: T,
   wait: number,
 ): T & { cancel: () => void } {
@@ -91,7 +91,7 @@ export function debounce<T extends (...args: never[]) => void>(
 /**
  * Throttle a function to fire at most once per `wait` ms (trailing edge).
  */
-export function throttle<T extends (...args: never[]) => void>(fn: T, wait: number): T {
+export function throttle<T extends (..._args: never[]) => void>(fn: T, wait: number): T {
   let last = 0
   let pendingArgs: Parameters<T> | null = null
   let timer: ReturnType<typeof setTimeout> | null = null

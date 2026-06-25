@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DialogContent, DialogDescription, DialogTitle, DialogPortal, DialogRoot, DialogTrigger, VisuallyHidden } from 'reka-ui'
+import { DialogContent, DialogDescription, DialogTitle, DialogPortal, DialogRoot, VisuallyHidden } from 'reka-ui'
 
 interface Props {
   open?: boolean

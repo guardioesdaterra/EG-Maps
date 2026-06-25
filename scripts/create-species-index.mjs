@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { readFileSync, writeFileSync } from 'fs';
 
 const DATASETS = [

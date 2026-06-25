@@ -1,16 +1,18 @@
 <template>
-  <ClientOnly>
-    <GlobeView :default-dataset="'project-grants'" />
-    <template #fallback>
-      <div class="flex h-screen w-full items-center justify-center bg-black text-white">
-        <LoadingSpinner
-          icon="svg-spinners:wind-toy"
-          :message="t('loading.projectGrantsGlobe')"
-          :inline="true"
-        />
-      </div>
-    </template>
-  </ClientOnly>
+  <div>
+    <ClientOnly>
+      <GlobeView :default-dataset="'project-grants'" />
+      <template #fallback>
+        <div class="flex h-screen w-full items-center justify-center bg-black text-white">
+          <LoadingSpinner
+            icon="svg-spinners:wind-toy"
+            :message="t('loading.projectGrantsGlobe')"
+            :inline="true"
+          />
+        </div>
+      </template>
+    </ClientOnly>
+  </div>
 </template>
 
 <script setup lang="ts">

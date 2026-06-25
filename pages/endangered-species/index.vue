@@ -1,16 +1,18 @@
 <template>
-  <ClientOnly>
-    <UnifiedMap :species-index="speciesIndex || []" :default-dataset="'endangered-species'" />
-    <template #fallback>
-      <div class="flex h-screen w-full items-center justify-center bg-black text-white">
-        <LoadingSpinner
-          icon="svg-spinners:wind-toy"
-          :message="t('loading.endangeredSpeciesMap')"
-          :inline="true"
-        />
-      </div>
-    </template>
-  </ClientOnly>
+  <div>
+    <ClientOnly>
+      <UnifiedMap :species-index="speciesIndex || []" :default-dataset="'endangered-species'" />
+      <template #fallback>
+        <div class="flex h-screen w-full items-center justify-center bg-black text-white">
+          <LoadingSpinner
+            icon="svg-spinners:wind-toy"
+            :message="t('loading.endangeredSpeciesMap')"
+            :inline="true"
+          />
+        </div>
+      </template>
+    </ClientOnly>
+  </div>
 </template>
 
 <script setup lang="ts">

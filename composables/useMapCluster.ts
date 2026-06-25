@@ -1,5 +1,6 @@
 import Supercluster from 'supercluster'
 import type { PointFeature } from 'supercluster'
+import { MAX_CLUSTER_SIZE } from '@/lib/constants'
 
 export interface ClusterItem {
   lng: number
@@ -25,8 +26,6 @@ export interface PointResult {
 }
 
 export type ClusterPoint = ClusterResult | PointResult
-
-export const MAX_CLUSTER_SIZE = 5
 
 interface GeoJsonProperties {
   cluster?: boolean
@@ -108,7 +107,7 @@ export function useMapCluster() {
         const count = feature.properties.point_count ?? 0
         const clusterId = feature.properties.cluster_id!
 
-        const leaves = index.getLeaves(clusterId, Infinity)
+        const leaves = index.getLeaves(clusterId, MAX_CLUSTER_SIZE)
 
         if (count <= MAX_CLUSTER_SIZE) {
           result.push({
@@ -188,16 +187,21 @@ function splitIntoGroups(arr: PointFeature<GeoJsonProperties>[], maxSize: number
 
   const groups: PointFeature<GeoJsonProperties>[][] = []
   const remaining = [...arr]
+  const used = new Set<number>()
 
-  while (remaining.length > 0) {
-    const group: PointFeature<GeoJsonProperties>[] = [remaining.shift()!]
-    const centerLng = group[0].geometry.coordinates[0]
-    const centerLat = group[0].geometry.coordinates[1]
+  while (used.size < remaining.length) {
+    let firstIdx = 0
+    while (used.has(firstIdx)) firstIdx++
+    used.add(firstIdx)
+    const group: PointFeature<GeoJsonProperties>[] = [remaining[firstIdx]]
+    const centerLng = remaining[firstIdx].geometry.coordinates[0]
+    const centerLat = remaining[firstIdx].geometry.coordinates[1]
 
-    while (group.length < maxSize && remaining.length > 0) {
-      let closestIdx = 0
+    while (group.length < maxSize) {
+      let closestIdx = -1
       let closestDist = Infinity
       for (let i = 0; i < remaining.length; i++) {
+        if (used.has(i)) continue
         const dx = remaining[i].geometry.coordinates[0] - centerLng
         const dy = remaining[i].geometry.coordinates[1] - centerLat
         const dist = dx * dx + dy * dy
@@ -206,7 +210,9 @@ function splitIntoGroups(arr: PointFeature<GeoJsonProperties>[], maxSize: number
           closestIdx = i
         }
       }
-      group.push(remaining.splice(closestIdx, 1)[0])
+      if (closestIdx === -1) break
+      used.add(closestIdx)
+      group.push(remaining[closestIdx])
     }
     groups.push(group)
   }

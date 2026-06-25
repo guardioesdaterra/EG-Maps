@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-screen relative overflow-hidden bg-black" role="main" aria-label="Interactive Map Visualization">
+  <div class="w-full h-[100svh] relative overflow-hidden bg-black" role="main" aria-label="Interactive Map Visualization">
     <!-- Loading skeleton -->
     <Transition name="fade">
       <div v-if="isLoading" class="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center">
@@ -52,7 +52,7 @@
     />
 
     <!-- Vignette -->
-    <div aria-hidden="true" class="absolute inset-0 pointer-events-none" :style="{ zIndex: 'var(--z-map-overlays)', boxShadow: 'inset 0 0 100px 15px rgba(0,0,0,0.5)' }" />
+    <div aria-hidden="true" class="absolute inset-0 pointer-events-none" :style="{ zIndex: 'var(--z-map-overlays)',     boxShadow: 'inset 0 0 clamp(30px, 8vw, 100px) clamp(5px, 2vw, 15px) rgba(0,0,0,0.5)' }" />
 
     <!-- Hex grid overlay -->
     <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-20" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
@@ -70,10 +70,10 @@
 
     <!-- Earth Guardians Banner - Mobile optimized -->
     <div v-if="isMobile" class="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none px-2 sm:px-3" :style="{ zIndex: 'var(--z-map-banner)' }">
-      <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[10vh] xs:max-h-[12vh] max-w-[180px] xs:max-w-[240px] object-contain" loading="lazy" />
+      <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[10vh] xs:max-h-[12vh] max-w-[clamp(10rem,24vw,16rem)] object-contain" loading="lazy" />
     </div>
     <div v-else class="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" :style="{ zIndex: 'var(--z-map-banner)' }">
-      <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[180px] -rotate-90 origin-center" loading="lazy" />
+      <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[clamp(10rem,24vw,16rem)] -rotate-90 origin-center" loading="lazy" />
     </div>
 
     <!-- Map Container -->
@@ -188,6 +188,7 @@ import {
   preloadSpeciesImages,
 } from '@/lib/image-utils'
 import { useMapCluster } from '@/composables/useMapCluster'
+import { useToast } from '@/composables/useToast'
 import { detectWebGLSupport } from '@/composables/useMapLibre'
 import type { ClusterPoint, ClusterItem } from '@/composables/useMapCluster'
 import {
@@ -291,6 +292,7 @@ let isMounted = true
 let pendingVisibilityUpdate = false
 let pendingClusterRebuild = false
 const clusterer = useMapCluster()
+const toast = useToast()
 const geoJSONMarkers = useGeoJSONMarkers()
 let lastClusterZoom = -1
 let lastBboxCenter: { lng: number; lat: number } | null = null
@@ -451,80 +453,6 @@ function handleSpeciesGroupSelection(groups: string[]) {
 }
 
 // Dynamically adjust popup size and position to show fully on screen
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-function _fitPopupToScreen(popup: maplibregl.Popup) {
-  const popupEl = popup.getElement()
-  if (!popupEl) return
-
-  // Set ultra-high z-index to be on top of everything
-  popupEl.style.zIndex = '2147483647'
-  
-  const content = popupEl.querySelector('.maplibregl-popup-content') as HTMLElement
-  if (!content) return
-
-  const margin = 16
-  const maxWidth = window.innerWidth - margin * 2
-  const maxHeight = window.innerHeight - margin * 2
-
-  // Set max dimensions
-  content.style.maxWidth = `${maxWidth}px`
-  content.style.maxHeight = `${maxHeight}px`
-  content.style.overflow = 'auto'
-  
-  // Get actual dimensions after setting max
-  requestAnimationFrame(() => {
-    const rect = content.getBoundingClientRect()
-
-    // Reposition popup to keep it fully on screen
-    let topOffset = 0
-    let leftOffset = 0
-
-    if (rect.right > window.innerWidth - margin) {
-      leftOffset = window.innerWidth - rect.width - margin - rect.left
-    }
-
-    if (rect.left < margin) {
-      leftOffset = margin - rect.left
-    }
-
-    if (rect.top < margin) {
-      topOffset = margin - rect.top
-    }
-
-    if (rect.bottom > window.innerHeight - margin) {
-      topOffset = window.innerHeight - rect.height - margin - rect.top
-    }
-
-    if (rect.height > maxHeight) {
-      topOffset = margin - rect.top
-      content.style.maxHeight = `${maxHeight}px`
-      content.style.overflowY = 'auto'
-    }
-
-    if (topOffset !== 0 || leftOffset !== 0) {
-      const tip = popupEl.querySelector('.maplibregl-popup-tip') as HTMLElement | null
-      const currentTransform = tip?.style.transform || content.style.transform || ''
-      const translateMatch = currentTransform.match(/translate\(([^)]+)\)/)
-      let baseX = 0
-      let baseY = 0
-      if (translateMatch) {
-        const parts = translateMatch[1].split(',').map(s => parseFloat(s.trim()) || 0)
-        baseX = parts[0] || 0
-        baseY = parts[1] || 0
-      }
-      const adjustedX = baseX + leftOffset
-      const adjustedY = baseY + topOffset
-      const newTransform = `translate(${adjustedX}px, ${adjustedY}px)`
-      if (translateMatch) {
-        if (tip) tip.style.transform = currentTransform.replace(translateMatch[0], newTransform)
-        else content.style.transform = newTransform
-      } else {
-        if (tip) tip.style.transform = newTransform
-        else content.style.transform = newTransform
-      }
-    }
-  })
-}
 
 // Filter species index by selected groups
 function applySpeciesFilters(speciesIndex: SpeciesIndexItem[]): SpeciesIndexItem[] {
@@ -575,6 +503,8 @@ let geoJSONSpeciesIndex: SpeciesIndexItem[] | null = null
 
 async function setupGeoJSONMarkers(forceReinit = false) {
   if (!map || !useNativeGeoJSON) return
+
+  if (activeDataset.value !== 'project-grants' && activeDataset.value !== 'endangered-species') return
 
   const dataset = activeDataset.value === 'project-grants' ? 'project-grants' : 'endangered-species'
 
@@ -629,6 +559,7 @@ async function setupGeoJSONMarkers(forceReinit = false) {
         speciesIndex = [...icmbio, ...iucn]
         geoJSONSpeciesIndex = speciesIndex
       } catch {
+        toast.error('Failed to load species data')
         return
       }
     }

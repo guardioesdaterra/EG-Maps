@@ -12,6 +12,8 @@ export const REE_SOURCE_PROTECTED = 'ree-protected'
 export const REE_SOURCE_CITIES = 'ree-cities'
 
 export const REE_LAYER_IDS = [
+  'ree-point-circle', 'ree-cluster-circle', 'ree-cluster-count', 'ree-point-hover',
+  'ree-heat-layer',
   'ree-poly-fill', 'ree-poly-glow', 'ree-poly-line', 'ree-poly-label',
   'ree-geo-fill', 'ree-geo-aquifer', 'ree-geo-conflict', 'ree-geo-line', 'ree-geo-label',
   'ree-site-glow', 'ree-site-label',
@@ -36,6 +38,8 @@ export interface RareEarthLayerOptions {
   onClaimClick?: (_props: Record<string, unknown>, _lngLat: [number, number]) => void
 }
 
+export type CleanupFn = () => void
+
 function safeRemoveLayer(map: MapLibreMap, id: string) {
   try { if (map.getLayer(id)) map.removeLayer(id) } catch { /* */ }
 }
@@ -51,9 +55,10 @@ export function cleanupRareEarthLayers(map: MapLibreMap) {
 export function setupRareEarthLayers(
   map: MapLibreMap,
   options: RareEarthLayerOptions,
-) {
+): CleanupFn {
   const { points, polys, protected: protectedAreas } = options
-  if (!points) return
+  const cleanups: Array<() => void> = []
+  if (!points) return () => {}
 
   cleanupRareEarthLayers(map)
 
@@ -61,8 +66,8 @@ export function setupRareEarthLayers(
     type: 'geojson',
     data: points,
     cluster: true,
-    clusterMaxZoom: 11,
-    clusterRadius: 45,
+    clusterMaxZoom: 14,
+    clusterRadius: 50,
     clusterProperties: {
       dr: ['+', ['case', ['==', ['get', 'c'], 'direct_ree'], 1, 0]],
       ca: ['+', ['case', ['==', ['get', 'c'], 'carbonatite_associated'], 1, 0]],
@@ -71,6 +76,161 @@ export function setupRareEarthLayers(
       ph: ['+', ['case', ['==', ['get', 'c'], 'phosphate_associated'], 1, 0]],
       st: ['+', ['case', ['==', ['get', 'c'], 'strategic_associated'], 1, 0]],
       md: ['max', ['get', 'ds']],
+    },
+  })
+
+  // Unclustered point layer — individual claims with category color
+  map.addLayer({
+    id: 'ree-point-circle',
+    type: 'circle',
+    source: REE_SOURCE_POINTS,
+    filter: ['!', ['has', 'point_count']],
+    paint: {
+      'circle-color': ['match', ['get', 'c'],
+        'direct_ree', '#e74c3c',
+        'carbonatite_associated', '#f39c12',
+        'pegmatite_associated', '#27ae60',
+        'heavy_mineral_associated', '#2980b9',
+        'phosphate_associated', '#8e44ad',
+        'strategic_associated', '#e91e63',
+        '#999',
+      ],
+      'circle-radius': [
+        'interpolate', ['linear'], ['zoom'],
+        6, 2.5,
+        10, 5,
+        14, 7,
+        18, 10,
+      ],
+      'circle-opacity': [
+        'interpolate', ['linear'], ['zoom'],
+        6, 0.6,
+        10, 0.8,
+        14, 0.95,
+      ],
+      'circle-stroke-color': 'rgba(0,0,0,0.4)',
+      'circle-stroke-width': [
+        'interpolate', ['linear'], ['zoom'],
+        6, 0.5,
+        10, 1,
+        14, 1.5,
+      ],
+    },
+  })
+
+  // Cluster circle layer with dynamic radius based on count
+  map.addLayer({
+    id: 'ree-cluster-circle',
+    type: 'circle',
+    source: REE_SOURCE_POINTS,
+    filter: ['has', 'point_count'],
+    paint: {
+      'circle-color': [
+        'case',
+        ['>=', ['get', 'point_count'], 100], '#c0392b',
+        ['>=', ['get', 'point_count'], 50], '#e74c3c',
+        ['>=', ['get', 'point_count'], 20], '#f39c12',
+        ['>=', ['get', 'point_count'], 5], '#27ae60',
+        '#2ecc71',
+      ],
+      'circle-radius': [
+        'interpolate', ['linear'], ['sqrt', ['to-number', ['get', 'point_count']]],
+        1, 8,
+        10, 20,
+        50, 35,
+        100, 50,
+      ],
+      'circle-opacity': 0.75,
+      'circle-stroke-color': 'rgba(0,0,0,0.3)',
+      'circle-stroke-width': 1.5,
+    },
+  })
+
+  // Cluster count label
+  map.addLayer({
+    id: 'ree-cluster-count',
+    type: 'symbol',
+    source: REE_SOURCE_POINTS,
+    filter: ['has', 'point_count'],
+    layout: {
+      'text-field': ['get', 'point_count_abbreviated'],
+      'text-font': ['Open Sans Bold'],
+      'text-size': [
+        'interpolate', ['linear'], ['sqrt', ['to-number', ['get', 'point_count']]],
+        1, 10,
+        10, 14,
+        50, 16,
+        100, 18,
+      ],
+    },
+    paint: {
+      'text-color': '#fff',
+      'text-halo-color': 'rgba(0,0,0,0.5)',
+      'text-halo-width': 1.5,
+    },
+  })
+
+  // Heatmap layer for density visualization (togglable)
+  map.addLayer({
+    id: 'ree-heat-layer',
+    type: 'heatmap',
+    source: REE_SOURCE_POINTS,
+    maxzoom: 15,
+    paint: {
+      'heatmap-weight': [
+        'interpolate', ['linear'], ['zoom'],
+        0, 0.3,
+        6, 0.5,
+        12, 1,
+      ],
+      'heatmap-intensity': [
+        'interpolate', ['linear'], ['zoom'],
+        0, 1,
+        6, 3,
+        12, 8,
+      ],
+      'heatmap-color': [
+        'interpolate', ['linear'], ['heatmap-density'],
+        0, 'rgba(0,0,0,0)',
+        0.1, 'rgba(39,174,96,0.3)',
+        0.3, 'rgba(243,156,18,0.5)',
+        0.5, 'rgba(231,76,60,0.6)',
+        0.7, 'rgba(192,57,43,0.7)',
+        1, 'rgba(192,57,43,0.9)',
+      ],
+      'heatmap-radius': [
+        'interpolate', ['linear'], ['zoom'],
+        0, 2,
+        6, 12,
+        12, 20,
+      ],
+      'heatmap-opacity': [
+        'interpolate', ['linear'], ['zoom'],
+        6, 0.7,
+        12, 0.3,
+        15, 0,
+      ],
+    },
+  }, 'ree-point-circle')
+
+  // Hover effect for unclustered points
+  map.addLayer({
+    id: 'ree-point-hover',
+    type: 'circle',
+    source: REE_SOURCE_POINTS,
+    filter: ['all', ['!', ['has', 'point_count']]],
+    paint: {
+      'circle-color': 'transparent',
+      'circle-radius': [
+        'interpolate', ['linear'], ['zoom'],
+        6, 6,
+        10, 10,
+        14, 14,
+        18, 18,
+      ],
+      'circle-stroke-color': '#fff',
+      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2, 0],
+      'circle-stroke-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.8, 0],
     },
   })
 
@@ -117,7 +277,7 @@ export function setupRareEarthLayers(
         'text-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 0.8],
       },
     })
-    map.on('click', 'ree-poly-fill', (e: MapLayerMouseEvent) => {
+    const onPolyClick = (e: MapLayerMouseEvent) => {
       if (!e.features?.length) return
       const p = e.features[0].properties
       const adapted = adaptPolygonProps(p)
@@ -131,8 +291,77 @@ export function setupRareEarthLayers(
         .setHTML(html)
         .setMaxWidth('none')
         .addTo(map)
+    }
+    map.on('click', 'ree-poly-fill', onPolyClick)
+    cleanups.push(() => { map.off('click', 'ree-poly-fill', onPolyClick) })
+  }
+
+  // Click handler for unclustered point circles
+  const onPointClick = (e: MapLayerMouseEvent) => {
+    if (!e.features?.length) return
+    const p = e.features[0].properties as Record<string, unknown>
+    if (options.onClaimClick) {
+      options.onClaimClick(p, [e.lngLat.lng, e.lngLat.lat])
+      return
+    }
+    const html = buildRareEarthPopupHTML(p)
+    new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+      .setLngLat(e.lngLat)
+      .setHTML(html)
+      .setMaxWidth('none')
+      .addTo(map)
+  }
+
+  // Click handler for clusters — zoom in
+  const onClusterClick = (e: MapLayerMouseEvent) => {
+    if (!e.features?.length) return
+    const clusterId = e.features[0].properties?.cluster_id
+    if (clusterId == null) return
+    const source = map.getSource(REE_SOURCE_POINTS) as maplibregl.GeoJSONSource
+    if (!source) return
+    source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+      if (err) return
+      map.flyTo({ center: e.lngLat, zoom: zoom as number, duration: 600 })
     })
   }
+
+  // Hover effects
+  const onPointEnter = (e: { features?: Array<{ id: string | number }> }) => {
+    map.getCanvas().style.cursor = 'pointer'
+    if (e.features?.length) {
+      map.setFeatureState(
+        { source: REE_SOURCE_POINTS, id: e.features[0].id },
+        { hover: true },
+      )
+    }
+  }
+  const onPointLeave = (e: { features?: Array<{ id: string | number }> }) => {
+    map.getCanvas().style.cursor = ''
+    if (e.features?.length) {
+      map.setFeatureState(
+        { source: REE_SOURCE_POINTS, id: e.features[0].id },
+        { hover: false },
+      )
+    }
+  }
+  const onClusterEnter = () => { map.getCanvas().style.cursor = 'pointer' }
+  const onClusterLeave = () => { map.getCanvas().style.cursor = '' }
+
+  map.on('click', 'ree-point-circle', onPointClick)
+  map.on('click', 'ree-cluster-circle', onClusterClick)
+  map.on('mouseenter', 'ree-point-circle', onPointEnter)
+  map.on('mouseleave', 'ree-point-circle', onPointLeave)
+  map.on('mouseenter', 'ree-cluster-circle', onClusterEnter)
+  map.on('mouseleave', 'ree-cluster-circle', onClusterLeave)
+
+  cleanups.push(() => {
+    map.off('click', 'ree-point-circle', onPointClick)
+    map.off('click', 'ree-cluster-circle', onClusterClick)
+    map.off('mouseenter', 'ree-point-circle', onPointEnter)
+    map.off('mouseleave', 'ree-point-circle', onPointLeave)
+    map.off('mouseenter', 'ree-cluster-circle', onClusterEnter)
+    map.off('mouseleave', 'ree-cluster-circle', onClusterLeave)
+  })
 
   addBrazilianCitiesLayer(map)
   addRareEarthConflictSites(map)
@@ -142,6 +371,75 @@ export function setupRareEarthLayers(
   }
   if (protectedAreas) {
     addProtectedAreasLayer(map, protectedAreas)
+  }
+
+  // Track site click/hover handlers for cleanup
+  const onSiteClick = (e: MapLayerMouseEvent) => {
+    if (!e.features?.length) return
+    const p = e.features[0].properties
+    const dangerScore = p.danger ?? 5
+    const dColor = dangerScore >= 9 ? '#e74c3c' : dangerScore >= 7 ? '#f39c12' : '#27ae60'
+    const siteHtml = `<div class="ree-popup-wrapper" style="padding:14px;min-width:200px;position:relative">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${dColor};color:#fff">${dangerScore.toFixed(1)} Danger</span>
+        <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(192,57,43,0.2);color:#c0392b">CONFLICT ZONE</span>
+      </div>
+      <h3 style="margin:0;font-size:13px;font-weight:700;color:#e8e8e8">${escapeHtml(p.name || 'Unknown')}</h3>
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px">${escapeHtml(p.tag || '')}</div>
+    </div>`
+    new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+      .setLngLat(e.lngLat)
+      .setHTML(siteHtml)
+      .setMaxWidth('none')
+      .addTo(map)
+  }
+  const onSiteEnter = () => { map.getCanvas().style.cursor = 'pointer' }
+  const onSiteLeave = () => { map.getCanvas().style.cursor = '' }
+  map.on('click', 'ree-site-label', onSiteClick)
+  map.on('mouseenter', 'ree-site-label', onSiteEnter)
+  map.on('mouseleave', 'ree-site-label', onSiteLeave)
+  cleanups.push(() => {
+    map.off('click', 'ree-site-label', onSiteClick)
+    map.off('mouseenter', 'ree-site-label', onSiteEnter)
+    map.off('mouseleave', 'ree-site-label', onSiteLeave)
+  })
+
+  // Track protected area click/hover handlers
+  for (const layerId of ['ree-protected-ti-fill', 'ree-protected-quilombo-fill']) {
+    const onProtClick = (e: MapLayerMouseEvent) => {
+      if (!e.features?.length) return
+      const p = e.features[0].properties
+      const kind = p.kind === 'ti' ? 'Indigenous Land (Terra Indígena)' : 'Quilombola Territory'
+      const html = `<div class="ree-popup-wrapper" style="padding:14px;min-width:220px;position:relative">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${p.kind === 'ti' ? '#c0392b' : '#f39c12'};color:#fff">PROTECTED AREA</span>
+          <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(255,255,255,0.06);color:#888">${escapeHtml(kind)}</span>
+        </div>
+        <h3 style="margin:0;font-size:13px;font-weight:700;color:#e8e8e8">${escapeHtml(p.name || 'Unknown')}</h3>
+        <p style="font-size:10px;color:#888;margin:6px 0 0;line-height:1.45">Mining claims overlapping this territory may violate Free, Prior and Informed Consent (FPIC) under ILO Convention 169.</p>
+        ${p.source_url ? `<a href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:10px;color:#5dade2">Source &rarr;</a>` : ''}
+      </div>`
+      new maplibregl.Popup({ offset: 8, closeButton: true, className: 'cyberpunk-popup' })
+        .setLngLat(e.lngLat)
+        .setHTML(html)
+        .setMaxWidth('none')
+        .addTo(map)
+    }
+    const onProtEnter = () => { map.getCanvas().style.cursor = 'pointer' }
+    const onProtLeave = () => { map.getCanvas().style.cursor = '' }
+    map.on('click', layerId, onProtClick)
+    map.on('mouseenter', layerId, onProtEnter)
+    map.on('mouseleave', layerId, onProtLeave)
+    cleanups.push(() => {
+      map.off('click', layerId, onProtClick)
+      map.off('mouseenter', layerId, onProtEnter)
+      map.off('mouseleave', layerId, onProtLeave)
+    })
+  }
+
+  return () => {
+    cleanups.forEach(fn => fn())
+    cleanupRareEarthLayers(map)
   }
 }
 
@@ -250,27 +548,6 @@ export function addRareEarthConflictSites(map: MapLibreMap) {
       'text-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0, 7, 0.9],
     },
   })
-  map.on('click', 'ree-site-label', (e: MapLayerMouseEvent) => {
-    if (!e.features?.length) return
-    const p = e.features[0].properties
-    const dangerScore = p.danger ?? 5
-    const dangerColor = dangerScore >= 9 ? '#e74c3c' : dangerScore >= 7 ? '#f39c12' : '#27ae60'
-    const siteHtml = `<div class="ree-popup-wrapper" style="padding:14px;min-width:200px;position:relative">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-        <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${dangerColor};color:#fff">${dangerScore.toFixed(1)} Danger</span>
-        <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(192,57,43,0.2);color:#c0392b">CONFLICT ZONE</span>
-      </div>
-      <h3 style="margin:0;font-size:13px;font-weight:700;color:#e8e8e8">${escapeHtml(p.name || 'Unknown')}</h3>
-      <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px">${escapeHtml(p.tag || '')}</div>
-    </div>`
-    new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
-      .setLngLat(e.lngLat)
-      .setHTML(siteHtml)
-      .setMaxWidth('none')
-      .addTo(map)
-  })
-  map.on('mouseenter', 'ree-site-label', () => { map.getCanvas().style.cursor = 'pointer' })
-  map.on('mouseleave', 'ree-site-label', () => { map.getCanvas().style.cursor = '' })
 }
 
 export function addRareEarthNetworkLines(map: MapLibreMap, networkFeatures: GeoJSON.FeatureCollection) {
@@ -372,7 +649,7 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
 
   map.addLayer({
     id: 'ree-overlap-glow', type: 'circle', source: REE_SOURCE_POINTS,
-    filter: ['>', ['to-number', ['get', 'overlaps_count']], 0],
+    filter: ['all', ['!', ['has', 'point_count']], ['>', ['to-number', ['coalesce', ['get', 'overlaps_count'], ['length', ['get', 'ov']]]], 0]],
     paint: {
       'circle-color': '#ff00ff',
       'circle-radius': 14,
@@ -380,34 +657,19 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
       'circle-stroke-color': '#ff00ff', 'circle-stroke-width': 1.5, 'circle-stroke-opacity': 0.8,
     },
   })
-
-  for (const layerId of ['ree-protected-ti-fill', 'ree-protected-quilombo-fill']) {
-    map.on('click', layerId, (e: MapLayerMouseEvent) => {
-      if (!e.features?.length) return
-      const p = e.features[0].properties
-      const kind = p.kind === 'ti' ? 'Indigenous Land (Terra Indígena)' : 'Quilombola Territory'
-      const html = `<div class="ree-popup-wrapper" style="padding:14px;min-width:220px;position:relative">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-          <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${p.kind === 'ti' ? '#c0392b' : '#f39c12'};color:#fff">PROTECTED AREA</span>
-          <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(255,255,255,0.06);color:#888">${escapeHtml(kind)}</span>
-        </div>
-        <h3 style="margin:0;font-size:13px;font-weight:700;color:#e8e8e8">${escapeHtml(p.name || 'Unknown')}</h3>
-        <p style="font-size:10px;color:#888;margin:6px 0 0;line-height:1.45">Mining claims overlapping this territory may violate Free, Prior and Informed Consent (FPIC) under ILO Convention 169.</p>
-        ${p.source_url ? `<a href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:10px;color:#5dade2">Source &rarr;</a>` : ''}
-      </div>`
-      new maplibregl.Popup({ offset: 8, closeButton: true, className: 'cyberpunk-popup' })
-        .setLngLat(e.lngLat)
-        .setHTML(html)
-        .setMaxWidth('none')
-        .addTo(map)
-    })
-    map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer' })
-    map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = '' })
-  }
 }
 
 export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<string, boolean>) {
   if (!map || !map.isStyleLoaded()) return
+
+  // Point layers - hide when points source has no visible categories
+  const pointLayers = ['ree-point-circle', 'ree-cluster-circle', 'ree-cluster-count', 'ree-point-hover', 'ree-overlap-glow']
+  const showPoints = vis['points'] !== false
+  pointLayers.forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', showPoints ? 'visible' : 'none') })
+
+  // Heatmap layer - togglable via 'heatmap' key
+  if (map.getLayer('ree-heat-layer')) map.setLayoutProperty('ree-heat-layer', 'visibility', vis['heatmap'] !== false ? 'visible' : 'none')
+
   const polyLayers = ['ree-poly-fill', 'ree-poly-glow', 'ree-poly-line', 'ree-poly-label']
   const showPolys = vis['polygons'] !== false
   polyLayers.forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', showPolys ? 'visible' : 'none') })

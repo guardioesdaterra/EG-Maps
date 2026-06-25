@@ -7,79 +7,83 @@
     :aria-label="t('observatory.sidebarLabel')"
   >
     <!-- Collapsed tab strip -->
-    <nav v-if="collapsed" class="obs-tabstrip" :aria-label="t('observatory.sidebarLabel')">
-      <button
-        v-for="tb in tabs"
-        :key="tb.key"
-        type="button"
-        class="obs-tabstrip__btn"
-        :title="t(tb.labelKey)"
-        :aria-label="t(tb.labelKey)"
-        :aria-pressed="activeTab === tb.key"
-        @click="onTabClick(tb.key)"
-      >
-        <span class="obs-tabstrip__icon" aria-hidden="true">{{ tb.icon }}</span>
-      </button>
-      <button
-        type="button"
-        class="obs-tabstrip__btn obs-tabstrip__btn--expand"
-        :aria-label="t('observatory.sidebarExpand')"
-        @click="collapsed = false"
-      >
-        <span aria-hidden="true">»</span>
-      </button>
-    </nav>
-
-    <!-- Expanded panel -->
-    <div v-else class="obs-panel" :aria-hidden="false">
-      <header class="obs-panel__head">
-        <div class="obs-panel__tabs" role="tablist" :aria-label="t('observatory.sidebarLabel')">
-          <button
-            v-for="tb in tabs"
-            :key="tb.key"
-            type="button"
-            role="tab"
-            class="obs-panel__tab"
-            :class="{ 'is-active': activeTab === tb.key }"
-            :aria-selected="activeTab === tb.key"
-            :tabindex="activeTab === tb.key ? 0 : -1"
-            @click="onTabClick(tb.key)"
-            @keydown="onTabKeydown($event, tb.key)"
-          >
-            <span class="obs-panel__tab-icon" aria-hidden="true">{{ tb.icon }}</span>
-            <span class="obs-panel__tab-label">{{ t(tb.labelKey) }}</span>
-          </button>
-        </div>
+    <Transition name="obs-strip">
+      <nav v-if="collapsed" class="obs-tabstrip" :aria-label="t('observatory.sidebarLabel')">
+        <button
+          v-for="tb in tabs"
+          :key="tb.key"
+          type="button"
+          class="obs-tabstrip__btn"
+          :title="t(tb.labelKey)"
+          :aria-label="t(tb.labelKey)"
+          :aria-pressed="activeTab === tb.key"
+          @click="onTabClick(tb.key)"
+        >
+          <span class="obs-tabstrip__icon" aria-hidden="true">{{ tb.icon }}</span>
+        </button>
         <button
           type="button"
-          class="obs-panel__collapse"
-          :aria-label="t('observatory.sidebarCollapse')"
-          @click="collapsed = true"
+          class="obs-tabstrip__btn obs-tabstrip__btn--expand"
+          :aria-label="t('observatory.sidebarExpand')"
+          @click="collapsed = false"
         >
-          «
+          <span aria-hidden="true">»</span>
         </button>
-      </header>
+      </nav>
+    </Transition>
 
-      <div class="obs-panel__body" :key="activeTab ?? 'none'">
-        <DangerTab
-          v-if="activeTab === 'danger'"
-          :items="dangerItems"
-          :show-all="showAll"
-          @fly-to-enterprise="onFlyToEnterprise"
-        />
-        <MilitaryTab v-else-if="activeTab === 'military'" />
-        <IllegalTab v-else-if="activeTab === 'illegal'" />
-        <EnvironmentTab
-          v-else-if="activeTab === 'env'"
-          @fly-to-coord="onFlyToCoord"
-        />
-        <NetworkTab v-else-if="activeTab === 'network'" />
-        <TimelineTab v-else-if="activeTab === 'timeline'" />
-        <div v-else class="obs-panel__empty">
-          {{ t('observatory.selectTab') }}
+    <!-- Expanded panel -->
+    <Transition name="obs-panel">
+      <div v-if="!collapsed" class="obs-panel" ref="panelEl" :aria-hidden="false">
+        <header class="obs-panel__head">
+          <div class="obs-panel__tabs" role="tablist" :aria-label="t('observatory.sidebarLabel')">
+            <button
+              v-for="tb in tabs"
+              :key="tb.key"
+              type="button"
+              role="tab"
+              class="obs-panel__tab"
+              :class="{ 'is-active': activeTab === tb.key }"
+              :aria-selected="activeTab === tb.key"
+              :tabindex="activeTab === tb.key ? 0 : -1"
+              @click="onTabClick(tb.key)"
+              @keydown="onTabKeydown($event, tb.key)"
+            >
+              <span class="obs-panel__tab-icon" aria-hidden="true">{{ tb.icon }}</span>
+              <span class="obs-panel__tab-label">{{ t(tb.labelKey) }}</span>
+            </button>
+          </div>
+          <button
+            type="button"
+            class="obs-panel__collapse"
+            :aria-label="t('observatory.sidebarCollapse')"
+            @click="collapsed = true"
+          >
+            «
+          </button>
+        </header>
+
+        <div class="obs-panel__body" :key="activeTab ?? 'none'">
+          <DangerTab
+            v-if="activeTab === 'danger'"
+            :items="dangerItems"
+            :show-all="showAll"
+            @fly-to-enterprise="onFlyToEnterprise"
+          />
+          <MilitaryTab v-else-if="activeTab === 'military'" />
+          <IllegalTab v-else-if="activeTab === 'illegal'" />
+          <EnvironmentTab
+            v-else-if="activeTab === 'env'"
+            @fly-to-coord="onFlyToCoord"
+          />
+          <NetworkTab v-else-if="activeTab === 'network'" />
+          <TimelineTab v-else-if="activeTab === 'timeline'" />
+          <div v-else class="obs-panel__empty">
+            {{ t('observatory.selectTab') }}
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </section>
 </template>
 
@@ -185,11 +189,12 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   flex-direction: column;
   gap: 4px;
   padding: 4px;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 }
 .obs-tabstrip__btn {
   width: 40px;
@@ -199,21 +204,23 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   justify-content: center;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.55);
   font-size: 16px;
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.1s, color 0.1s;
+  transition: all 0.15s ease;
 }
 .obs-tabstrip__btn:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   color: #fafafa;
+  transform: scale(1.08);
 }
 .obs-tabstrip__btn[aria-pressed="true"] {
   background: rgba(231, 76, 60, 0.2);
   border-color: rgba(231, 76, 60, 0.4);
   color: #fff;
+  box-shadow: 0 0 12px rgba(231, 76, 60, 0.15);
 }
 .obs-tabstrip__btn--expand {
   margin-top: 4px;
@@ -226,12 +233,12 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   width: 340px;
   max-height: calc(100vh - 12rem);
   background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 }
 
 .obs-panel__head {
@@ -256,7 +263,7 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   background: transparent;
   border: 0;
   border-bottom: 2px solid transparent;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -264,7 +271,8 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   cursor: pointer;
   font-family: inherit;
   white-space: nowrap;
-  transition: color 0.1s, border-color 0.1s, background 0.1s;
+  transition: all 0.15s ease;
+  position: relative;
 }
 .obs-panel__tab:hover {
   color: #fafafa;
@@ -275,6 +283,17 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   border-bottom-color: #e74c3c;
   background: rgba(231, 76, 60, 0.08);
 }
+.obs-panel__tab.is-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: #e74c3c;
+  border-radius: 1px;
+  box-shadow: 0 0 8px rgba(231, 76, 60, 0.4);
+}
 .obs-panel__tab-icon { font-size: 12px; }
 .obs-panel__tab-label { font-size: 10px; }
 
@@ -283,12 +302,13 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   background: transparent;
   border: 0;
   border-left: 1px solid rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.45);
   font-size: 14px;
   cursor: pointer;
   font-family: inherit;
   height: 100%;
   align-self: stretch;
+  transition: all 0.15s ease;
 }
 .obs-panel__collapse:hover { color: #fafafa; background: rgba(255, 255, 255, 0.04); }
 
@@ -296,7 +316,12 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   flex: 1;
   overflow-y: auto;
   padding: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
+.obs-panel__body::-webkit-scrollbar { width: 4px; }
+.obs-panel__body::-webkit-scrollbar-track { background: transparent; }
+.obs-panel__body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 
 .obs-panel__empty {
   padding: 24px 16px;
@@ -305,7 +330,37 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   font-size: 12px;
 }
 
+/* Transitions */
+.obs-strip-enter-active,
+.obs-strip-leave-active {
+  transition: all 0.2s ease;
+}
+.obs-strip-enter-from,
+.obs-strip-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.obs-panel-enter-active {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.obs-panel-leave-active {
+  transition: all 0.15s ease;
+}
+.obs-panel-enter-from {
+  opacity: 0;
+  transform: translateX(20px) scale(0.98);
+}
+.obs-panel-leave-to {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .obs-panel__tab, .obs-tabstrip__btn, .obs-panel__collapse { transition: none; }
+  .obs-panel__tab:hover { transform: none; }
+  .obs-tabstrip__btn:hover { transform: none; }
+  .obs-strip-enter-active, .obs-strip-leave-active,
+  .obs-panel-enter-active, .obs-panel-leave-active { transition: none; }
 }
 </style>

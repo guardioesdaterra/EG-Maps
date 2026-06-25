@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-[100svh] bg-[var(--bg-secondary)]">
+  <div class="min-h-viewport bg-[var(--bg-secondary)]">
     <slot />
 
     <!-- Unified Top Header - 2D/3D + Utilities + Theme -->
-    <header v-if="showUnifiedHeader" class="fixed left-2 xs:left-4 top-[clamp(4.5rem,14vw,6rem)] z-[10000] sm:left-auto sm:right-[max(1rem,env(safe-area-inset-right))] sm:top-[0.5rem]">
+    <header v-if="showUnifiedHeader" class="fixed left-2 xs:left-4 top-[clamp(4.5rem,12vw,6rem)] z-[10000] sm:left-auto sm:right-[max(1rem,env(safe-area-inset-right))] sm:top-[0.5rem]">
       <div :class="unifiedHeaderShellClass">
         <!-- Left: 2D/3D Toggle -->
         <div v-if="showViewToggle" class="map-view-switcher flex flex-col sm:flex-row items-start sm:items-center gap-0.5">
@@ -263,8 +263,8 @@ const isLightTheme = computed(() => !isDark.value)
 const unifiedHeaderShellClass = computed(() => [
   'flex flex-col sm:flex-row w-fit max-w-[calc(100vw-2rem)] sm:max-w-full items-start sm:items-center gap-2 sm:gap-1 rounded-xl border px-1.5 py-2 sm:px-1 sm:py-1 shadow-xl backdrop-blur-xl',
   isLightTheme.value
-    ? 'bg-white/95 border-black text-black shadow-[0_12px_32px_rgba(0,0,0,0.18)]'
-    : 'bg-black/80 border-white/20 text-white shadow-[0_8px_32px_rgba(0,0,0,0.6)]',
+    ? 'bg-white/95 border-black text-black shadow-[var(--panel-shadow)]'
+    : 'bg-black/80 border-white/20 text-white shadow-[var(--panel-shadow)]',
 ])
 const headerSeparatorClass = computed(() => [
   'mx-0.5 h-5 w-px self-center',
@@ -273,8 +273,8 @@ const headerSeparatorClass = computed(() => [
 const dockShellClass = computed(() => [
   'max-w-full px-2 py-2 rounded-2xl border shadow-xl backdrop-blur-xl transition-colors duration-200',
   isLightTheme.value
-    ? 'bg-white/95 border-black text-black shadow-[0_12px_32px_rgba(0,0,0,0.18)]'
-    : 'bg-black/90 border-white/20 text-white shadow-[0_8px_32px_rgba(0,0,0,0.6)]',
+    ? 'bg-white/95 border-black text-black shadow-[var(--panel-shadow)]'
+    : 'bg-black/90 border-white/20 text-white shadow-[var(--panel-shadow)]',
 ])
 const headerUtilityClass = computed(() => [
   'inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-semibold transition-colors max-sm:h-8 max-sm:w-8 max-sm:justify-center max-sm:px-0',
@@ -295,7 +295,7 @@ const tooltipArrowClass = computed(() => [
 const inactiveIconClass = computed(() =>
   isLightTheme.value
     ? 'bg-white text-black border border-black hover:bg-black hover:text-white'
-    : 'bg-[#1e1e1e] text-[#c8c8c8] hover:bg-white hover:text-black'
+    : 'bg-[var(--tool-btn-bg)] text-[var(--tool-btn-text)] hover:bg-white hover:text-black'
 )
 const utilityIconClass = computed(() => [
   'flex items-center justify-center rounded-xl transition-all duration-150 ease-out',
@@ -306,7 +306,7 @@ const separatorClass = computed(() => [
   isLightTheme.value ? 'bg-black' : 'bg-white/20',
 ])
 const dropdownClass = computed(() => [
-  'absolute bottom-full left-1/2 -translate-x-1/2 mb-2 overflow-hidden rounded-lg shadow-xl min-w-[120px]',
+  'absolute bottom-full left-1/2 -translate-x-1/2 mb-2 overflow-hidden rounded-lg shadow-xl min-w-[clamp(8rem,15vw,9rem)]',
   isLightTheme.value
     ? 'bg-white border-2 border-black'
     : 'bg-gray-900/95 backdrop-blur border border-white/10',

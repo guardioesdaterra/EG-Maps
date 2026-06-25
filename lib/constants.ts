@@ -26,3 +26,6 @@ export const RoutePath = {
   HOME: '/',
   INFO: '/info',
 } as const
+
+// Maximum number of items to show in a cluster marker
+export const MAX_CLUSTER_SIZE = 5

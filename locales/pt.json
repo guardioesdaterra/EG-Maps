@@ -319,7 +319,8 @@
       "hydrography": "Hidrografia",
       "conflictZones": "Zonas de conflito",
       "corpNetwork": "Rede corporativa",
-      "enterpriseHq": "Sedes das empresas"
+      "enterpriseHq": "Sedes das empresas",
+      "heatmap": "Mapa de calor"
     },
     "search": "Buscar empresa, substância, UF...",
     "legend": {

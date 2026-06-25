@@ -10,9 +10,16 @@ export default {
   ],
   darkMode: 'class',
   theme: {
+    screens: {
+      xs: '480px',
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1536px',
+    },
     extend: {
       colors: {
-        // Earth Guardians nature theme
         'eg-forest': '#2D5016',
         'eg-teal': '#10BFAE',
         'eg-sand': '#F5E6D3',
@@ -22,7 +29,6 @@ export default {
         'eg-danger': '#EF4444',
         'eg-warning': '#F59E0B',
         'eg-success': '#22C55E',
-        // Cyberpunk accents from project-grants
         'cyber-cyan': '#06B6D4',
         'cyber-purple': '#A855F7',
         'cyber-pink': '#EC4899',
@@ -31,6 +37,38 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         heading: ['Montserrat', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        'fluid-xs': 'clamp(0.625rem, 0.8vw, 0.75rem)',
+        'fluid-sm': 'clamp(0.6875rem, 0.9vw, 0.8125rem)',
+        'fluid-base': 'clamp(0.75rem, 1vw, 0.875rem)',
+        'fluid-lg': 'clamp(0.875rem, 1.25vw, 1rem)',
+        'fluid-xl': 'clamp(1rem, 1.6vw, 1.25rem)',
+        'fluid-2xl': 'clamp(1.125rem, 2vw, 1.5rem)',
+        'fluid-3xl': 'clamp(1.25rem, 3vw, 2rem)',
+        'fluid-4xl': 'clamp(1.5rem, 4vw, 2.5rem)',
+        'fluid-5xl': 'clamp(1.75rem, 5.5vw, 3.5rem)',
+      },
+      spacing: {
+        'fluid-xs': 'clamp(0.25rem, 0.5vw, 0.5rem)',
+        'fluid-sm': 'clamp(0.375rem, 0.75vw, 0.75rem)',
+        'fluid-md': 'clamp(0.5rem, 1vw, 1rem)',
+        'fluid-lg': 'clamp(0.75rem, 1.5vw, 1.5rem)',
+        'fluid-xl': 'clamp(1rem, 2vw, 2rem)',
+        'fluid-2xl': 'clamp(1.5rem, 3vw, 3rem)',
+        'fluid-3xl': 'clamp(2rem, 4vw, 4rem)',
+        'gutter': 'clamp(0.75rem, 3vw, 2rem)',
+        'section': 'clamp(1.5rem, 4vh, 4rem)',
+      },
+      gap: {
+        'fluid': 'clamp(0.375rem, 1vw, 0.75rem)',
+        'fluid-lg': 'clamp(0.5rem, 1.5vw, 1rem)',
+        'fluid-xl': 'clamp(0.75rem, 2vw, 1.5rem)',
+      },
+      borderRadius: {
+        'fluid': 'clamp(0.25rem, 0.5vw, 0.5rem)',
+        'fluid-lg': 'clamp(0.5rem, 1vw, 0.75rem)',
+        'fluid-xl': 'clamp(0.75rem, 1.5vw, 1rem)',
       },
       transitionDuration: {
         DEFAULT: '150ms',

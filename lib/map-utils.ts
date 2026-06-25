@@ -267,7 +267,7 @@ export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPo
             </div>
             <div class="species-detail-content">
               <span class="species-detail-label">${t.threatTypes}</span>
-              <span class="species-detail-value">${species.threatTypes.map(t => `<span class="species-threat-tag">${escapeHtml(t)}</span>`).join('')}</span>
+              <span class="species-detail-value">${(species.threatTypes ?? []).map(threat => `<span class="species-threat-tag">${escapeHtml(threat)}</span>`).join('')}</span>
             </div>
           </div>
           <div class="species-detail-row">
@@ -559,7 +559,6 @@ export function computeClusterBlobPath(centers: BlobPoint[], miniRadius: number,
 }
 
 export function escapeHtml(text: string): string {
-  const div = document.createElement('div')
-  div.appendChild(document.createTextNode(text))
-  return div.innerHTML
+  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
+  return text.replace(/[&<>"']/g, c => map[c])
 }

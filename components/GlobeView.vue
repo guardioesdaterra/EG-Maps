@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-screen relative overflow-hidden bg-black" role="main" aria-label="3D Globe Visualization">
+  <div class="w-full h-[100svh] relative overflow-hidden bg-black" role="main" aria-label="3D Globe Visualization">
     <!-- Loading skeleton -->
     <Transition name="fade">
       <div v-if="isLoading" class="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center">
@@ -35,7 +35,7 @@
     </div>
 
     <!-- Vignette -->
-    <div class="absolute inset-0 pointer-events-none z-20" style="box-shadow: inset 0 0 150px 30px rgba(0,0,0,0.7)"></div>
+      <div class="absolute inset-0 pointer-events-none z-20" :style="{ boxShadow: `inset 0 0 clamp(40px, 12vw, 150px) clamp(8px, 3vw, 30px) rgba(0,0,0,0.7)` }"></div>
 
     <!-- Grid overlay with image-set for 2x resolution -->
     <div
@@ -82,17 +82,19 @@
 
     <!-- White Banner - Mobile optimized -->
     <div v-if="isMobile" class="absolute top-2 xs:top-3 left-1/2 -translate-x-1/2 pointer-events-none px-2" :style="{ zIndex: 'var(--z-map-banner)' }">
-      <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[10vh] xs:max-h-[12vh] max-w-[180px] xs:max-w-[240px] object-contain" loading="lazy" />
+      <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[10vh] xs:max-h-[12vh] max-w-[clamp(10rem,24vw,16rem)] object-contain" loading="lazy" />
     </div>
     <div v-else class="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" :style="{ zIndex: 'var(--z-map-banner)' }">
-      <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[180px] -rotate-90 origin-center" loading="lazy" />
+      <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[clamp(10rem,24vw,16rem)] -rotate-90 origin-center" loading="lazy" />
     </div>
 
     <!-- Data Bubble: species groups or project stats -->
     <DataBubble
       :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'"
+      :selected-groups="selectedSpeciesGroups"
       :projects="projectsData"
       position-top="clamp(14rem, 35vh, 19rem)"
+      @toggle-group="toggleLegendGroup"
     />
 
     <!-- Map Controls -->
@@ -102,10 +104,12 @@
       :show-connections="showConnectionsGlobe"
       :dataset="activeDataset"
       :projects="activeDataset === 'project-grants' ? projectsData : undefined"
-      :species="activeDataset === 'endangered-species' ? speciesData : undefined"
+      :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined"
+      :filter-open="showFilterPanel"
       :style="{ zIndex: 'var(--z-map-ui-controls)' }"
       @toggle-hex-grid="isHexGridVisible = !isHexGridVisible"
       @toggle-connections="toggleConnectionsGlobe"
+      @toggle-filter="showFilterPanel = !showFilterPanel"
       @navigate="navigateToLocation"
     />
 
@@ -163,7 +167,6 @@ import { isValidCoordinate, GROUP_COLORS, buildProjectPopupHTML, buildSpeciesPop
 import type { Species } from '@/lib/map-utils'
 import {
   preloadSpeciesImages,
-  clearImageCache,
 } from '@/lib/image-utils'
 import { useMapCluster } from '@/composables/useMapCluster'
 import { detectWebGLSupport } from '@/composables/useMapLibre'
@@ -253,6 +256,8 @@ const showSpeciesOverlay = ref(false)
 const speciesOverlayHTML = ref('')
 const popupLocale = ref<string>(locale.value)
 const selectedPopupSpecies = ref<Species | SpeciesIndexItem | null>(null)
+const selectedSpeciesGroups = ref<string[]>([])
+const showFilterPanel = ref(false)
 const availablePopupLocales = computed(() => {
   const s = selectedPopupSpecies.value
   if (!s || !('content' in s) || !s.content) return []
@@ -435,7 +440,6 @@ async function initMap() {
       connectionsGlobe.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', projectsData.value, speciesData.value)
       connectionsGlobe.startParticles()
       setupHexGrid()
-      startMarkerVisibilityCheck()
       startAutoRotate()
     })
 
@@ -593,9 +597,6 @@ function updateMarkerVisibility() {
   })
 }
 
-function startMarkerVisibilityCheck() {
-  // RAF-based updates handle this during interaction
-}
 
 const useNativeGeoJSON = true
 const SOURCE_ID = 'globe-species-markers'
@@ -604,7 +605,22 @@ let geoJSONInitializedFor: 'project-grants' | 'endangered-species' | null = null
 let geoJSONSpeciesIndex: SpeciesIndexItem[] | null = null
 
 function applySpeciesFilters(speciesIndex: SpeciesIndexItem[]): SpeciesIndexItem[] {
-  return speciesIndex
+  if (selectedSpeciesGroups.value.length === 0) {
+    return speciesIndex
+  }
+  return speciesIndex.filter(s =>
+    selectedSpeciesGroups.value.includes(s.taxonomicGroup)
+  )
+}
+
+function toggleLegendGroup(group: string | number) {
+  const g = String(group)
+  const idx = selectedSpeciesGroups.value.indexOf(g)
+  if (idx === -1) {
+    selectedSpeciesGroups.value = [...selectedSpeciesGroups.value, g]
+  } else {
+    selectedSpeciesGroups.value = selectedSpeciesGroups.value.filter(x => x !== g)
+  }
 }
 
 function setupGeoJSONMarkers(forceReinit = false) {
@@ -742,7 +758,7 @@ function rebuildMarkers() {
 
   const currentZoom = map.getZoom()
 
-  // Use native GeoJSON for large datasets (endangered species with 4000+ points)
+  // Use native GeoJSON for large datasets (endangered species with 500+ points)
   if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500) {
     setupGeoJSONMarkers()
     return
@@ -1077,7 +1093,6 @@ onUnmounted(() => {
     geoJSONMarkers.cleanup()
   }
   geoJSONInitializedFor = null
-  clearImageCache()
   if (map) {
     map.remove()
     map = null

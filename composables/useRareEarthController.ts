@@ -94,17 +94,22 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
   )
 
   // Watcher: points data updates (e.g. from search filtering)
+  // Debounced to avoid rapid setData calls during fast filter changes
+  let pointsDebounceTimer: ReturnType<typeof setTimeout> | null = null
   const stopPointsWatch = watch(
     () => getProps().rareEarthPoints,
     (newVal) => {
       if (!isActiveGetter() || !newVal || !map.value || !map.value.isStyleLoaded()) return
-      try {
-        const src = map.value.getSource('ree-points') as maplibregl.GeoJSONSource
-        if (src) src.setData(newVal)
-        const netFc = buildEnterpriseNetworkLines(newVal)
-        const netSrc = map.value.getSource('ree-network') as maplibregl.GeoJSONSource | undefined
-        if (netSrc) netSrc.setData(netFc)
-      } catch { /* ignore */ }
+      if (pointsDebounceTimer) clearTimeout(pointsDebounceTimer)
+      pointsDebounceTimer = setTimeout(() => {
+        try {
+          const src = map.value?.getSource('ree-points') as maplibregl.GeoJSONSource | undefined
+          if (src && newVal) src.setData(newVal)
+          const netFc = buildEnterpriseNetworkLines(newVal)
+          const netSrc = map.value?.getSource('ree-network') as maplibregl.GeoJSONSource | undefined
+          if (netSrc) netSrc.setData(netFc)
+        } catch { /* ignore */ }
+      }, 16) // ~1 frame debounce
     },
   )
 
@@ -137,6 +142,7 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     stopPointsWatch()
     stopProtectedWatch()
     stopFlyToWatch()
+    if (pointsDebounceTimer) clearTimeout(pointsDebounceTimer)
     if (flyToHighlightTimer) clearTimeout(flyToHighlightTimer)
     if (flyToHighlightMarker) { flyToHighlightMarker.remove(); flyToHighlightMarker = null }
   })

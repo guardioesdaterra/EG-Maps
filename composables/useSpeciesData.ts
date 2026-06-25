@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import type { Species } from '@/lib/types'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 
-const memCache = new Map<string, Species[]>()
+const memCache = new Map<string, Species[] | SpeciesIndexItem[]>()
 
 const DB_NAME = 'eg-maps-species'
 const DB_VERSION = 1
@@ -192,6 +192,9 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
   }
 
   if (import.meta.client) {
+    for (const ds of datasets) {
+      preloadJSON(baseURL, `${ds}-index`)
+    }
     load()
   }
 
@@ -222,19 +225,6 @@ export function useSpeciesDetails(dataset?: DatasetParam) {
       }
     }
     
-    // Last resort: fetch the full dataset (expensive)
-    for (const ds of datasets) {
-      try {
-        const species = await fetchSpeciesById(baseURL, ds, speciesId)
-        if (species) {
-          cache.set(speciesId, species)
-          return species
-        }
-      } catch {
-        // Continue
-      }
-    }
-    
     return null
   }
 
@@ -251,6 +241,10 @@ export async function clearSpeciesCache() {
     const db = await openDB()
     const tx = db.transaction(STORE_NAME, 'readwrite')
     tx.objectStore(STORE_NAME).clear()
+    await new Promise<void>((resolve, reject) => {
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => reject(tx.error)
+    })
   } catch {
     // IndexedDB might not be available, ignore errors
   }

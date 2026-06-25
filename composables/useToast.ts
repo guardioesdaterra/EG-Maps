@@ -19,6 +19,7 @@ const DEFAULT_DURATIONS: Record<ToastMessage['kind'], number> = {
 
 export function useToast() {
   const state = useState<ToastState>('toast', () => ({ toasts: [] }))
+  const timers = new Map<string, ReturnType<typeof setTimeout>>()
 
   function push(toast: Omit<ToastMessage, 'id' | 'createdAt'>): string {
     const id = makeId()
@@ -29,19 +30,28 @@ export function useToast() {
       durationMs: toast.durationMs ?? DEFAULT_DURATIONS[toast.kind],
     }
     state.value.toasts = [...state.value.toasts, full]
-    if (full.durationMs && full.durationMs > 0) {
+    if (full.durationMs != null && full.durationMs > 0) {
       if (typeof window !== 'undefined') {
-        window.setTimeout(() => dismiss(id), full.durationMs!)
+        timers.set(id, window.setTimeout(() => {
+          timers.delete(id)
+          dismiss(id)
+        }, full.durationMs))
       }
     }
     return id
   }
 
   function dismiss(id: string) {
+    if (timers.has(id)) {
+      clearTimeout(timers.get(id)!)
+      timers.delete(id)
+    }
     state.value.toasts = state.value.toasts.filter(t => t.id !== id)
   }
 
   function clear() {
+    for (const timer of timers.values()) clearTimeout(timer)
+    timers.clear()
     state.value.toasts = []
   }
 

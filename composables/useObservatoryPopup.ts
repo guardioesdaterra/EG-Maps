@@ -2,6 +2,7 @@
  * Reactive, i18n-aware popup content for Rare Earth Observatory features.
  * Replaces the raw HTML string builder with a structured data model that
  * can be rendered reactively and rebuilt on locale change.
+ * Optimized with popup caching and minimal DOM operations.
  */
 import type { Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
@@ -65,12 +66,36 @@ function formatArea(ha: number): string {
   return `${ha.toLocaleString()} ha`
 }
 
+// Simple popup cache to avoid rebuilding identical popups
+const popupCache = new Map<string, RareEarthPopupContent>()
+const CACHE_MAX_SIZE = 200
+let lastCacheLocale = ''
+
+function getCacheKey(props: Record<string, unknown>, locale?: string): string {
+  const id = String(props.p ?? props.processo ?? props.id ?? JSON.stringify(props).slice(0, 100))
+  return locale ? `${locale}:${id}` : id
+}
+
 /**
  * Convert a raw GeoJSON feature property set (snake_case keys, ANM format)
- * to the structured popup model.
+ * to the structured popup model. Results are cached by processo/ID.
+ * Requires `t` and `locale` from the caller's Vue setup context.
  */
-export function buildRareEarthPopupContent(props: Record<string, unknown>, lngLat: [number, number]): RareEarthPopupContent {
-  const { t, locale } = useI18n()
+export function buildRareEarthPopupContent(
+  props: Record<string, unknown>,
+  lngLat: [number, number],
+  t: (_key: string, _params?: Record<string, unknown>) => string,
+  locale: { value: string },
+): RareEarthPopupContent {
+  // Clear cache on locale change
+  if (lastCacheLocale && lastCacheLocale !== locale.value) {
+    popupCache.clear()
+  }
+  lastCacheLocale = locale.value
+
+  const cacheKey = getCacheKey(props, locale.value)
+  const cached = popupCache.get(cacheKey)
+  if (cached) return cached
 
   const catKey = String(props.c ?? props.category ?? 'unknown')
   const cat = RARE_EARTH_CATEGORIES[catKey] ?? { label: catKey, color: '#666' }
@@ -160,7 +185,7 @@ export function buildRareEarthPopupContent(props: Record<string, unknown>, lngLa
     icon: '⤴',
   })
 
-  return {
+  const result: RareEarthPopupContent = {
     title: nome,
     subtitle: subs,
     badges,
@@ -171,6 +196,15 @@ export function buildRareEarthPopupContent(props: Record<string, unknown>, lngLa
     actions,
     sourceFeatureId: typeof props.id === 'string' || typeof props.id === 'number' ? props.id : null,
   }
+
+  // Cache the result
+  if (popupCache.size >= CACHE_MAX_SIZE) {
+    const firstKey = popupCache.keys().next().value
+    if (firstKey) popupCache.delete(firstKey)
+  }
+  popupCache.set(cacheKey, result)
+
+  return result
 }
 
 /**
@@ -179,17 +213,18 @@ export function buildRareEarthPopupContent(props: Record<string, unknown>, lngLa
  */
 export function renderRareEarthPopup(
   content: RareEarthPopupContent,
+  t: (_key: string) => string,
   _options: { className?: string; maxWidth?: string } = {},
 ): HTMLElement {
   const root = document.createElement('div')
   root.className = 'ree-popup'
   root.setAttribute('role', 'dialog')
   root.setAttribute('aria-label', content.title)
-  root.innerHTML = rareEarthPopupHTML(content)
+  root.innerHTML = rareEarthPopupHTML(content, t)
   return root
 }
 
-function rareEarthPopupHTML(c: RareEarthPopupContent): string {
+function rareEarthPopupHTML(c: RareEarthPopupContent, t: (_key: string) => string): string {
   const dangerColorVal = dangerColor(c.dangerScore)
   const badgesHTML = c.badges
     .map(b => `<span class="ree-popup__badge" style="background:${b.color};color:#fff" title="${escapeAttr(b.title ?? b.label)}">${escapeText(b.label)}</span>`)
@@ -201,17 +236,17 @@ function rareEarthPopupHTML(c: RareEarthPopupContent): string {
 
   const lastEventHTML = c.lastEvent
     ? `<div class="ree-popup__section">
-         <div class="ree-popup__section-label">${escapeText(label('lastEvent'))}</div>
+         <div class="ree-popup__section-label">${escapeText(label('lastEvent', t))}</div>
          <div class="ree-popup__last-event">
            <span class="ree-popup__event-text">${escapeText(c.lastEvent.text)}</span>
-           <span class="ree-popup__event-freshness ree-popup__event-freshness--${c.lastEvent.freshness}">${escapeText(label('lastEvent' + c.lastEvent.freshness.charAt(0).toUpperCase() + c.lastEvent.freshness.slice(1)))}</span>
+           <span class="ree-popup__event-freshness ree-popup__event-freshness--${c.lastEvent.freshness}">${escapeText(label('lastEvent' + c.lastEvent.freshness.charAt(0).toUpperCase() + c.lastEvent.freshness.slice(1), t))}</span>
          </div>
        </div>`
     : ''
 
   const overlapsHTML = c.overlaps && c.overlaps.length
     ? `<div class="ree-popup__section">
-         <div class="ree-popup__section-label">${escapeText(label('overlaps'))}</div>
+         <div class="ree-popup__section-label">${escapeText(label('overlaps', t))}</div>
          <div class="ree-popup__overlaps">
            ${c.overlaps.slice(0, 4).map(o => `<span class="ree-popup__overlap">⚠ ${escapeText(o.name)}${o.distance_km ? ` <span class="ree-popup__overlap-dist">· ${o.distance_km}km</span>` : ''}</span>`).join('')}
            ${c.overlaps.length > 4 ? `<span class="ree-popup__overlap-more">+${c.overlaps.length - 4}</span>` : ''}
@@ -237,7 +272,7 @@ function rareEarthPopupHTML(c: RareEarthPopupContent): string {
       </div>
       <div class="ree-popup__body">
         <div class="ree-popup__danger">
-          <div class="ree-popup__danger-label">${escapeText(label('dangerLevel'))}</div>
+          <div class="ree-popup__danger-label">${escapeText(label('dangerLevel', t))}</div>
           <div class="ree-popup__danger-bar"><div class="ree-popup__danger-fill" style="width:${Math.min(100, c.dangerScore * 10)}%;background:${dangerColorVal}"></div></div>
           <div class="ree-popup__danger-score" style="color:${dangerColorVal}">${c.dangerScore.toFixed(1)}</div>
         </div>
@@ -256,8 +291,7 @@ function escapeText(s: string): string {
 function escapeAttr(s: string): string {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
 }
-function label(key: string): string {
-  const { t } = useI18n()
+function label(key: string, t: ReturnType<typeof useI18n>['t']): string {
   return t(`observatory.popups.${key}`)
 }
 
@@ -268,15 +302,18 @@ interface ClickHandlers {
 /**
  * Open a MapLibre popup on the map for the given feature properties.
  * Wires the "open in sidebar" action through the provided handler.
+ * Requires `t` and `locale` from the caller's Vue setup context.
  */
 export function openRareEarthPopup(
   map: MapLibreMap,
   props: Record<string, unknown>,
   lngLat: [number, number],
   handlers: ClickHandlers = {},
+  t: (_key: string, _params?: Record<string, unknown>) => string = (k) => k,
+  locale: { value: string } = { value: 'en' },
 ): maplibregl.Popup {
-  const content = buildRareEarthPopupContent(props, lngLat)
-  const node = renderRareEarthPopup(content, { className: 'ree-popup' })
+  const content = buildRareEarthPopupContent(props, lngLat, t, locale)
+  const node = renderRareEarthPopup(content, t, { className: 'ree-popup' })
 
   // Wire sidebar action
   node.querySelectorAll<HTMLButtonElement>('[data-event="observatory:open"]').forEach((btn) => {
@@ -310,17 +347,20 @@ export function openRareEarthPopup(
 /**
  * Wire up the global click-to-popup handler for the rare-earth layers.
  * Returns a cleanup function.
+ * Requires `t` and `locale` from the caller's Vue setup context.
  */
 export function attachRareEarthPopupHandler(
   map: MapLibreMap,
   layerIds: string[],
   handlers: ClickHandlers = {},
+  t: (_key: string, _params?: Record<string, unknown>) => string = (k) => k,
+  locale: { value: string } = { value: 'en' },
 ): () => void {
   const wrapped = layerIds.map((id) => {
     const handler = (e: MapLayerMouseEvent) => {
       if (!e.features?.length) return
       const p = e.features[0].properties as Record<string, unknown>
-      openRareEarthPopup(map, p, [e.lngLat.lng, e.lngLat.lat], handlers)
+      openRareEarthPopup(map, p, [e.lngLat.lng, e.lngLat.lat], handlers, t, locale)
     }
     map.on('click', id, handler)
     return [id, handler] as const

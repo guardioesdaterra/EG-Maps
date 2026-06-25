@@ -7,6 +7,7 @@
 
 import type { Map as MapLibreMap, GeoJSONSource, MapLayerMouseEvent, MapLayerEventType } from 'maplibre-gl'
 import { GROUP_COLORS } from '@/lib/map-utils'
+import { getProjectColorByBeneficiaries } from '@/lib/colors'
 
 export interface SpeciesIndexItem {
   id: string
@@ -24,13 +25,8 @@ export interface SpeciesIndexItem {
 
 const GROUP_COLORS_HEX: Record<string, string> = GROUP_COLORS
 
-// Cache for speciesIndexToGeoJSON to avoid recalculating on every rebuild
-let _geoJSONCacheInput: SpeciesIndexItem[] | null = null
-let _geoJSONCacheOutput: GeoJSON.FeatureCollection | null = null
-
 // Lightweight index for markers - only 3.2MB vs 35MB full data
 export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.FeatureCollection {
-  if (_geoJSONCacheInput === species && _geoJSONCacheOutput) return _geoJSONCacheOutput
 
   const result: GeoJSON.FeatureCollection = {
     type: 'FeatureCollection',
@@ -50,12 +46,11 @@ export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.Feat
           category: s.category,
           color: GROUP_COLORS_HEX[s.taxonomicGroup] ?? '#B64032',
           hasImage: !!s.imageUrl,
+          threatCount: s.threatTypes?.length ?? 0,
         }
       }))
   }
 
-  _geoJSONCacheInput = species
-  _geoJSONCacheOutput = result
   return result
 }
 
@@ -67,7 +62,7 @@ export function projectsToGeoJSON(projects: { latitude: number; longitude: numbe
       .filter(p => p.latitude != null && p.longitude != null && isFinite(p.latitude) && isFinite(p.longitude))
       .map(p => {
         const total = p.direct_beneficiaries + p.indirect_beneficiaries
-        const color = getProjectColor(total)
+        const color = getProjectColorByBeneficiaries(p.direct_beneficiaries, p.indirect_beneficiaries)
         return {
           type: 'Feature' as const,
           geometry: {
@@ -86,14 +81,6 @@ export function projectsToGeoJSON(projects: { latitude: number; longitude: numbe
         }
       })
   }
-}
-
-function getProjectColor(totalBeneficiaries: number): string {
-  if (totalBeneficiaries >= 50000) return '#06b6d4'
-  if (totalBeneficiaries >= 25000) return '#22c55e'
-  if (totalBeneficiaries >= 10000) return '#eab308'
-  if (totalBeneficiaries >= 5000) return '#f97316'
-  return '#ef4444'
 }
 
 export function useGeoJSONMarkers() {
@@ -199,7 +186,7 @@ export function useGeoJSONMarkers() {
       filter: ['has', 'point_count'],
       layout: {
         'text-field': ['get', 'point_count_abbreviated'],
-        'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+        'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
         'text-size': 12,
       },
       paint: {
@@ -217,7 +204,10 @@ export function useGeoJSONMarkers() {
       filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-color': ['get', 'color'],
-        'circle-radius': ['case', ['get', 'hasImage'], 13, 10],
+        'circle-radius': ['case',
+          ['get', 'hasImage'], 13,
+          ['step', ['get', 'threatCount'], 7, 2, 10, 4, 13]
+        ],
         'circle-blur': 0.8,
         'circle-opacity': 0.2,
       }
@@ -231,7 +221,10 @@ export function useGeoJSONMarkers() {
       filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-color': ['get', 'color'],
-        'circle-radius': ['case', ['get', 'hasImage'], 7, 5],
+        'circle-radius': ['case',
+          ['get', 'hasImage'], 7,
+          ['step', ['get', 'threatCount'], 5, 2, 7, 4, 9]
+        ],
         'circle-stroke-width': 1.5,
         'circle-stroke-color': 'rgba(255, 255, 255, 0.85)',
         'circle-opacity': 0.95,
@@ -372,11 +365,4 @@ export function useGeoJSONMarkers() {
     removeLayersAndSource,
     cleanup,
   }
-}
-
-export function hexToRgb(hex: string): [number, number, number] {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-  return result
-    ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
-    : [182, 64, 50]
 }

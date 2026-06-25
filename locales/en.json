@@ -319,7 +319,8 @@
       "hydrography": "Hydrography",
       "conflictZones": "Conflict Zones",
       "corpNetwork": "Corp Network",
-      "enterpriseHq": "Enterprise HQs"
+      "enterpriseHq": "Enterprise HQs",
+      "heatmap": "Density Heatmap"
     },
     "myTerritory": {
       "title": "My territory",

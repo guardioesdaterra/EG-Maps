@@ -67,7 +67,7 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Playwright E2E tests
-        run: npx playwright test --config=playwright.static.config.ts tests/map-rendering.spec.ts
+        run: npx playwright test --config=playwright.config.ts tests/map-rendering.spec.ts
         env:
           CI: true
 

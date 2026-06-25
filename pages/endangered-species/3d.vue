@@ -9,20 +9,19 @@
   <div v-else-if="error" class="flex h-screen w-full items-center justify-center bg-black text-white">
     <p class="text-red-400">{{ t('globe.connectionError') }}</p>
   </div>
-  <div v-else>
-    <ClientOnly>
-      <GlobeView :species-index="speciesIndex" :default-dataset="'endangered-species'" />
-      <template #fallback>
-        <div class="flex h-screen w-full items-center justify-center bg-black text-white">
-          <LoadingSpinner
-            icon="svg-spinners:wind-toy"
-            :message="t('loading.endangeredSpeciesGlobe')"
-            :inline="true"
-          />
-        </div>
-      </template>
-    </ClientOnly>
-  </div>
+  <ClientOnly v-else>
+    <!-- Use lightweight species index for map markers -->
+    <GlobeView :species-index="speciesIndex" :default-dataset="'endangered-species'" />
+    <template #fallback>
+      <div class="flex h-screen w-full items-center justify-center bg-black text-white">
+        <LoadingSpinner
+          icon="svg-spinners:wind-toy"
+          :message="t('loading.endangeredSpeciesGlobe')"
+          :inline="true"
+        />
+      </div>
+    </template>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">

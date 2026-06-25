@@ -3,7 +3,9 @@
     <a href="#main-content" class="skip-link">{{ skipLabel }}</a>
     <NuxtLayout>
       <Transition name="page" mode="out-in">
-        <NuxtPage :key="route.fullPath" />
+        <div :key="route.fullPath" class="contents">
+          <NuxtPage />
+        </div>
       </Transition>
     </NuxtLayout>
     <ClientOnly>

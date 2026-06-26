@@ -1,6 +1,7 @@
 import type { Map as MapLibreMap, MapLayerMouseEvent, DataDrivenPropertyValueSpecification } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 import { buildRareEarthPopupHTML, escapeHtml } from '@/lib/map-utils'
+import { openRareEarthPopup } from '@/composables/useObservatoryPopup'
 import { citiesToGeoJSON } from '@/lib/brazilian-cities'
 
 export const REE_SOURCE_POINTS = 'ree-points'
@@ -36,6 +37,11 @@ export interface RareEarthLayerOptions {
   protected?: GeoJSON.FeatureCollection | null
   networkFeatures?: GeoJSON.FeatureCollection | null
   onClaimClick?: (_props: Record<string, unknown>, _lngLat: [number, number]) => void
+  popup?: {
+    t: (_key: string, _params?: Record<string, unknown>) => string
+    locale: { value: string }
+    onSidebarOpen?: (_payload: { processo: string; nome: string; tab: string; coords: [number, number] }) => void
+  }
 }
 
 export type CleanupFn = () => void
@@ -66,8 +72,8 @@ export function setupRareEarthLayers(
     type: 'geojson',
     data: points,
     cluster: true,
-    clusterMaxZoom: 14,
-    clusterRadius: 50,
+    clusterMaxZoom: 11,
+    clusterRadius: 80,
     clusterProperties: {
       dr: ['+', ['case', ['==', ['get', 'c'], 'direct_ree'], 1, 0]],
       ca: ['+', ['case', ['==', ['get', 'c'], 'carbonatite_associated'], 1, 0]],
@@ -97,23 +103,23 @@ export function setupRareEarthLayers(
       ],
       'circle-radius': [
         'interpolate', ['linear'], ['zoom'],
-        6, 2.5,
-        10, 5,
-        14, 7,
-        18, 10,
+        6, 2,
+        10, 3.5,
+        14, 5,
+        18, 7,
       ],
       'circle-opacity': [
         'interpolate', ['linear'], ['zoom'],
-        6, 0.6,
-        10, 0.8,
-        14, 0.95,
+        6, 0.5,
+        10, 0.7,
+        14, 0.9,
       ],
-      'circle-stroke-color': 'rgba(0,0,0,0.4)',
+      'circle-stroke-color': 'rgba(0,0,0,0.5)',
       'circle-stroke-width': [
         'interpolate', ['linear'], ['zoom'],
-        6, 0.5,
-        10, 1,
-        14, 1.5,
+        6, 0.3,
+        10, 0.6,
+        14, 1,
       ],
     },
   })
@@ -127,22 +133,22 @@ export function setupRareEarthLayers(
     paint: {
       'circle-color': [
         'case',
-        ['>=', ['get', 'point_count'], 100], '#c0392b',
-        ['>=', ['get', 'point_count'], 50], '#e74c3c',
-        ['>=', ['get', 'point_count'], 20], '#f39c12',
-        ['>=', ['get', 'point_count'], 5], '#27ae60',
-        '#2ecc71',
+        ['>=', ['get', 'point_count'], 100], 'rgba(192,57,43,0.85)',
+        ['>=', ['get', 'point_count'], 50], 'rgba(231,76,60,0.8)',
+        ['>=', ['get', 'point_count'], 20], 'rgba(243,156,18,0.75)',
+        ['>=', ['get', 'point_count'], 5], 'rgba(39,174,96,0.7)',
+        'rgba(46,204,113,0.65)',
       ],
       'circle-radius': [
         'interpolate', ['linear'], ['sqrt', ['to-number', ['get', 'point_count']]],
-        1, 8,
-        10, 20,
-        50, 35,
-        100, 50,
+        1, 6,
+        10, 16,
+        50, 28,
+        100, 40,
       ],
-      'circle-opacity': 0.75,
-      'circle-stroke-color': 'rgba(0,0,0,0.3)',
-      'circle-stroke-width': 1.5,
+      'circle-opacity': 0.8,
+      'circle-stroke-color': 'rgba(255,255,255,0.15)',
+      'circle-stroke-width': 1,
     },
   })
 
@@ -157,15 +163,15 @@ export function setupRareEarthLayers(
       'text-font': ['Open Sans Bold'],
       'text-size': [
         'interpolate', ['linear'], ['sqrt', ['to-number', ['get', 'point_count']]],
-        1, 10,
-        10, 14,
-        50, 16,
-        100, 18,
+        1, 9,
+        10, 12,
+        50, 14,
+        100, 16,
       ],
     },
     paint: {
       'text-color': '#fff',
-      'text-halo-color': 'rgba(0,0,0,0.5)',
+      'text-halo-color': 'rgba(0,0,0,0.6)',
       'text-halo-width': 1.5,
     },
   })
@@ -223,14 +229,14 @@ export function setupRareEarthLayers(
       'circle-color': 'transparent',
       'circle-radius': [
         'interpolate', ['linear'], ['zoom'],
-        6, 6,
-        10, 10,
-        14, 14,
-        18, 18,
+        6, 5,
+        10, 8,
+        14, 10,
+        18, 14,
       ],
       'circle-stroke-color': '#fff',
-      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2, 0],
-      'circle-stroke-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.8, 0],
+      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 1.5, 0],
+      'circle-stroke-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.7, 0],
     },
   })
 
@@ -302,6 +308,17 @@ export function setupRareEarthLayers(
     const p = e.features[0].properties as Record<string, unknown>
     if (options.onClaimClick) {
       options.onClaimClick(p, [e.lngLat.lng, e.lngLat.lat])
+      return
+    }
+    if (options.popup) {
+      openRareEarthPopup(
+        map,
+        p,
+        [e.lngLat.lng, e.lngLat.lat],
+        { onSidebarOpen: options.popup.onSidebarOpen },
+        options.popup.t,
+        options.popup.locale,
+      )
       return
     }
     const html = buildRareEarthPopupHTML(p)

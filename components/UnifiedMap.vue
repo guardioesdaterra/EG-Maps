@@ -620,6 +620,10 @@ const rareEarthController = useRareEarthController({
   map: computed(() => map),
   isActive: computed(() => activeDataset.value === 'observatory-of-vulcan'),
   getProps: () => props,
+  popup: {
+    t,
+    locale,
+  },
 })
 
 // Fallback rebuildMarkers using DOM markers (for smaller datasets or when GeoJSON isn't available)

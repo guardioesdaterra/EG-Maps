@@ -15,6 +15,12 @@ export interface RareEarthControllerProps {
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null
 }
 
+export interface RareEarthPopupConfig {
+  t: (_key: string, _params?: Record<string, unknown>) => string
+  locale: { value: string }
+  onSidebarOpen?: (_payload: { processo: string; nome: string; tab: string; coords: [number, number] }) => void
+}
+
 export interface RareEarthControllerOptions {
   /** Map instance (null until ready) */
   map: Ref<MapLibreMap | null>
@@ -22,6 +28,8 @@ export interface RareEarthControllerOptions {
   isActive: Ref<boolean> | (() => boolean)
   /** Reactive props getter (so watchers re-fire when upstream changes) */
   getProps: () => RareEarthControllerProps
+  /** Popup configuration for i18n-aware popup rendering */
+  popup?: RareEarthPopupConfig
 }
 
 /**
@@ -77,6 +85,7 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       polys: p.rareEarthPolygons ?? null,
       protected: p.rareEarthProtected ?? null,
       networkFeatures: buildEnterpriseNetworkLines(p.rareEarthPoints),
+      popup: options.popup,
     })
     syncRareEarthLayerVisibilityInternal(m, p.layerVisibility || {})
   }

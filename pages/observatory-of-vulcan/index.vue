@@ -356,9 +356,6 @@ v-model="searchTerm" @input="debouncedFilter" :placeholder="t('observatory.searc
             </div>
           </div>
 
-          <!-- Minimap -->
-          <Minimap :map="mapRef" class="hidden lg:block" />
-
           <!-- Water legend -->
           <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] right-[clamp(0.5rem,1.5vw,0.75rem)] z-[500] obs-legend-panel">
             <h3 class="obs-legend-title">{{ t('observatory.legend.hydrography') }}</h3>
@@ -416,7 +413,6 @@ import ClaimReportModal from '@/components/observatory/ClaimReportModal.vue'
 import ExportModal from '@/components/observatory/ExportModal.vue'
 import { useRareEarthData } from '@/composables/useRareEarthData'
 import { useStateHash } from '@/composables/useStateHash'
-import Minimap from '@/components/observatory/Minimap.vue'
 import KeyboardShortcuts from '@/components/observatory/KeyboardShortcuts.vue'
 import ClaimsDataTable from '@/components/observatory/ClaimsDataTable.vue'
 import GeoLocateModal from '@/components/observatory/GeoLocateModal.vue'
@@ -1179,69 +1175,5 @@ watch(activeTab, scheduleHashUpdate)
 .obs-legend-line--dashed {
   border: 1px dashed;
   background: transparent !important;
-}
-
-.obs-minimap {
-  position: absolute;
-  bottom: clamp(4rem, 10vh, 5.5rem);
-  left: clamp(0.5rem, 1.5vw, 0.75rem);
-  z-index: 500;
-  width: 140px;
-  height: 100px;
-  background: var(--obs-panel-bg);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--obs-panel-border);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  transition: width 0.2s, height 0.2s;
-}
-.obs-minimap--collapsed {
-  width: 28px;
-  height: 28px;
-}
-.obs-minimap__toggle {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  z-index: 2;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
-  border: 0;
-  border-radius: 4px;
-  color: var(--obs-text-body);
-  font-size: 10px;
-  cursor: pointer;
-  transition: color 0.15s;
-}
-.obs-minimap__toggle:hover {
-  color: var(--obs-red);
-}
-.obs-minimap__map {
-  width: 100%;
-  height: 100%;
-}
-.obs-minimap__loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.obs-minimap__spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--obs-panel-border);
-  border-top-color: var(--obs-red);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 </style>

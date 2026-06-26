@@ -5,7 +5,7 @@
     "projectGrants": "प्रोजेक्ट अनुदान",
     "endangeredSpecies": "लुप्तप्राय प्रजातियाँ",
     "observatoryOfVulcan": "वल्कन वेधशाला",
-    "activeCrews": "Active Crews",
+    "activeCrews": "सक्रिय दल",
     "crews": "क्रू",
     "joinEarthGuardians": "अर्थ गार्जियंस में शामिल हों",
     "switchToLight": "लाइट मोड पर स्विच करें",
@@ -24,14 +24,14 @@
     "speciesDesc": "दुनिया भर में गंभीर रूप से लुप्तप्राय प्रजातियों और उनके आवासों की खोज करें।",
     "observatoryTitle": "वल्कन वेधशाला",
     "observatoryDesc": "ब्राज़ील दुर्लभ मृदा खनन दावे — पूंजी आक्रमण, कॉर्पोरेट नेटवर्क, सैन्य हित और सामाजिक-पर्यावरणीय प्रभाव।",
-    "activeCrewsTitle": "Active Crews",
-    "activeCrewsDesc": "Explore Earth Guardians' active crews across 7 regions — 131 crews, 1,241 members, 47 countries worldwide.",
+    "activeCrewsTitle": "सक्रिय दल",
+    "activeCrewsDesc": "पृथ्वी रक्षकों के 7 क्षेत्रों में सक्रिय दलों का अन्वेषण करें — 131 दल, 1,241 सदस्य, 47 देश।",
     "projectsCount": "प्रोजेक्ट",
     "beneficiariesCount": "लाभार्थी",
     "speciesCount": "प्रजातियाँ",
     "groupsCount": "समूह",
-    "activeCrewsCount": "Active Crews",
-    "crewMembersCount": "Crew Members",
+    "activeCrewsCount": "सक्रिय दल",
+    "crewMembersCount": "दल सदस्य",
     "view2d": "2D नक्शा",
     "view3d": "3D ग्लोब",
     "projectGrants": "प्रोजेक्ट अनुदान",
@@ -47,13 +47,14 @@
     "icmbioDesc": "ICMBio और IBAMA द्वारा बनाए रखा गया ब्राज़ील के लुप्तप्राय प्रजातियों का आधिकारिक रजिस्ट्री। देश की समृद्ध जैव विविधता की संरक्षण स्थिति का दस्तावेज़ीकरण करता है।",
     "icmbioScope": "ब्राज़ील",
     "suggestDataset": "डेटासेट सुझाएं",
-    "suggestDatasetSubject": "EG-Maps के लिए नया डेटासेट सुझाएं"
+    "suggestDatasetSubject": "EG-Maps के लिए नया डेटासेट सुझाएं",
+    "viewSource": "स्रोत पर जाएं"
   },
   "mapControls": {
     "search": "खोजें",
     "searchProjects": "प्रोजेक्ट खोजें",
     "searchSpecies": "प्रजाति खोजें",
-    "searchCrews": "Search Crews",
+    "searchCrews": "दल खोजें",
     "searchPlaceholder": "नाम या स्थान से खोजें...",
     "searchSpeciesPlaceholder": "नाम या क्षेत्र से खोजें...",
     "showAll": "सभी दिखाएं",
@@ -154,12 +155,12 @@
     "iucnProfile": "IUCN प्रोफ़ाइल"
   },
   "crews": {
-    "activeCrews": "Active Crews",
-    "inactiveCrews": "Inactive Crews",
-    "totalMembers": "Total Members",
-    "countries": "Countries",
-    "region": "Region",
-    "growthSince2022": "Growth since 2022"
+    "activeCrews": "सक्रिय दल",
+    "inactiveCrews": "निष्क्रिय दल",
+    "totalMembers": "कुल सदस्य",
+    "countries": "देश",
+    "region": "क्षेत्र",
+    "growthSince2022": "2022 से वृद्धि"
   },
   "taxonomy": {
     "Mammal": "स्तनधारी",
@@ -279,7 +280,7 @@
       "exclusionEx2": "कानूनी अमेज़न में 40+ क्विलोम्बोला क्षेत्र खतरे में",
       "exclusionEx3": "ब्राजील-चीन समझौता सामुदायिक सुरक्षा को बाहर करता है",
       "water": "जल जोखिम",
-      "waterDesc": "REE खनन 400-500 लीटर/टन खपत करता है। Poços dealdas पहले से ही राशनिंग का सामना कर रहा है।",
+      "waterDesc": "REE खनन 400-500 लीटर/टन खपत करता है। Poços de Caldas पहले से ही राशनिंग का सामना कर रहा है।",
       "waterEx1": "Poços de Caldas: 2024 राशनिंग, Viridis 4 जलाशयों का उपयोग करने की योजना",
       "waterEx2": "ISR: चीन में उसी विधि से प्रदूषण सिद्ध",
       "waterEx3": "साओ फ्रांसिस्को नदी: Zn, Cd, Cr प्रदूषण"
@@ -297,8 +298,8 @@
       "usMilitaryBody": "DFC $565M → Serra Verde. विदेश विभाग $5M → Aclara. Export Finance Australia $100M → Viridis/Meteoric।",
       "cbmmTitle": "CBMM चीन",
       "cbmmBody": "Baosteel/CITIC/Anshan कंसोर्टियम 15% (US$1.95B) रखता है। नियोबियम टेलिंग्स में REE — कोई विशिष्ट नियमन नहीं।",
-      "relayout": "Re-layout",
-      "clickHint": "Click a node to focus · Click empty space to clear"
+      "relayout": "पुनर्व्यवस्था",
+      "clickHint": "विस्तार के लिए क्षेत्र पर क्लिक करें"
     },
     "timelinePanel": {
       "title": "दावों की टाइमलाइन (2000–2026)",
@@ -319,7 +320,8 @@
       "hydrography": "जल निकासी",
       "conflictZones": "संघर्ष क्षेत्र",
       "corpNetwork": "कॉर्पोरेट नेटवर्क",
-      "enterpriseHq": "उद्यम मुख्यालय"
+      "enterpriseHq": "उद्यम मुख्यालय",
+      "heatmap": "घनत्व हीटमैप"
     },
     "search": "उद्यम, पदार्थ, राज्य खोजें...",
     "legend": {
@@ -370,6 +372,24 @@
       "defaultLabel": "मेरा क्षेत्र",
       "sharedBadge": "साझा किया गया"
     },
+    "geoLocate": {
+      "title": "आप कहाँ हैं?",
+      "description": "हमें अपने क्षेत्र के सबसे निकटतम खनन दावे दिखाने में मदद करें। हम केवल मानचित्र को केंद्रित करने के लिए आपका स्थान उपयोग करते हैं।",
+      "locating": "स्थान का पता लगाया जा रहा है...",
+      "useLocation": "मेरा स्थान उपयोग करें",
+      "or": "या",
+      "cityPlaceholder": "शहर का नाम टाइप करें...",
+      "noResults": "कोई शहर नहीं मिला। कोई अन्य नाम आज़माएं।",
+      "searchFailed": "खोज विफल रही। कृपया पुनः प्रयास करें।",
+      "denied": "स्थान एक्सेस अस्वीकृत हो गया। कृपया ब्राउज़र सेटिंग्स में स्थान एक्सेस की अनुमति दें या शहर से खोजें।",
+      "yourArea": "आपका क्षेत्र",
+      "failed": "स्थान का पता नहीं लगाया जा सका। कृपया शहर से खोजें।",
+      "foundTitle": "हमने आपको ढूंढ लिया!",
+      "foundDesc": "क्या यह सही है? हम इस स्थान के पास के खनन दावे दिखाएंगे।",
+      "showNearby": "निकटतम दावे दिखाएं",
+      "wrongPlace": "गलत जगह",
+      "skip": "अभी छोड़ें"
+    },
     "sync": {
       "lastSync": "अंतिम ANM सिंक",
       "secrecyClaims": "गोपनीय दावे",
@@ -388,6 +408,53 @@
       "heavy_mineral_associated": "भारी खनिज",
       "phosphate_associated": "फॉस्फेट",
       "strategic_associated": "रणनीतिक"
+    },
+    "yearSlider": {
+      "title": "दावा वर्ष",
+      "minYear": "न्यूनतम वर्ष",
+      "maxYear": "अधिकतम वर्ष",
+      "play": "चलाएं",
+      "pause": "रोकें",
+      "reset": "रीसेट",
+      "claims": "दावे दिखाई दे रहे हैं"
+    },
+    "phaseFilter": {
+      "title": "खनन चरण",
+      "all": "सभी चुनें",
+      "none": "सभी हटाएं"
+    },
+    "claimReport": {
+      "title": "दावे की समस्या रिपोर्ट करें",
+      "close": "बंद करें",
+      "claimInfo": "रिपोर्ट किया गया दावा",
+      "reportType": "रिपोर्ट प्रकार",
+      "types": {
+        "newActivity": "नई गतिविधि / ड्रिलिंग",
+        "pollution": "जल / मृदा प्रदूषण",
+        "conflict": "हिंसा / धमकी",
+        "correction": "डेटा सुधार",
+        "fieldReport": "फ़ील्ड रिपोर्ट"
+      },
+      "description": "विवरण",
+      "descriptionPlaceholder": "वर्णन करें कि आपने क्या देखा (न्यूनतम 10 अक्षर)...",
+      "includeLocation": "मेरा GPS स्थान शामिल करें",
+      "geoPending": "स्थान अनुरोध किया जा रहा है...",
+      "contactOptional": "संपर्क (वैकल्पिक)",
+      "contactPlaceholder": "ईमेल या फ़ोन (एन्क्रिप्टेड)",
+      "cancel": "रद्द करें",
+      "submit": "रिपोर्ट भेजें"
+    },
+    "export": {
+      "title": "मानचित्र दृश्य निर्यात करें",
+      "close": "बंद करें",
+      "format": "प्रारूप",
+      "resolution": "रिज़ॉल्यूशन",
+      "paperSize": "पेपर आकार",
+      "includeLegend": "लेजेंड ओवरले शामिल करें",
+      "includeTitle": "शीर्षक और मेटाडेटा शामिल करें",
+      "cancel": "रद्द करें",
+      "download": "डाउनलोड",
+      "exporting": "निर्यात हो रहा है..."
     }
   },
   "loading": {
@@ -397,7 +464,7 @@
     "endangeredSpeciesGlobe": "लुप्तप्राय प्रजाति ग्लोब लोड हो रहा है",
     "observatoryOfVulcan": "वल्कन वेधशाला लोड हो रही है",
     "observatoryOfVulcanGlobe": "वल्कन वेधशाला ग्लोब लोड हो रहा है",
-    "activeCrewsMap": "Loading Active Crews Map",
+    "activeCrewsMap": "सक्रिय दल मानचित्र लोड हो रहा है",
     "initializingVisualization": "इंटरैक्टिव विज़ुअलाइज़ेशन प्रारंभ हो रहा है..."
   },
   "error": {

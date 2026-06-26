@@ -50,12 +50,12 @@
       >
         <template #overlays>
           <!-- Stats panel top-left -->
-          <div class="absolute top-[clamp(0.75rem,2vh,1rem)] left-[clamp(0.5rem,1.5vw,0.75rem)] z-[500] obs-stats-panel">
+          <div class="absolute top-[clamp(0.75rem,2vh,1rem)] left-[clamp(0.75rem,2vw,1rem)] z-[500] obs-stats-panel">
             <div class="flex items-center gap-2 mb-1.5">
               <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
               <h1 class="text-fluid-sm font-black text-red-400 uppercase tracking-tight">Terras Raras Brasil</h1>
             </div>
-            <p class="text-[9px] text-zinc-400 leading-tight">
+            <p class="text-[9px] text-zinc-400 leading-tight hidden sm:block">
               <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-red);color:#fff">{{ t('observatory.badges.mil') }}</span>
               <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-green);color:#fff">{{ t('observatory.badges.amb') }}</span>
               <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-purple);color:#fff">{{ t('observatory.badges.ill') }}</span>
@@ -65,7 +65,7 @@
           </div>
 
           <!-- Animated stats counts -->
-          <div class="absolute top-[clamp(0.75rem,2vh,1rem)] left-1/2 -translate-x-1/2 z-[500] hidden md:flex gap-2 bg-[var(--obs-panel-bg)] backdrop-blur border border-[var(--obs-panel-border)] rounded-xl px-fluid-md py-fluid-sm shadow-lg">
+          <div class="absolute top-[clamp(0.75rem,2vh,1rem)] left-1/2 -translate-x-1/2 z-[500] hidden md:flex gap-2 bg-[var(--obs-panel-bg)] backdrop-blur border border-[var(--obs-panel-border)] rounded-xl px-3 py-1.5 shadow-lg">
             <div v-for="s in categoryStats" :key="s.key" class="flex items-center gap-1.5 text-[9px] group cursor-default" :title="s.label">
               <span class="w-2 h-2 rounded-full transition-transform group-hover:scale-150" :style="{ background: s.color }" />
               <span class="font-bold text-zinc-200 tabular-nums">{{ animatedCount(s.key, s.count) }}</span>
@@ -76,7 +76,7 @@
           </div>
 
           <!-- Sync + Secrecy -->
-          <div v-if="deepAnalysis" class="absolute top-[clamp(0.75rem,2vh,1rem)] right-[clamp(0.5rem,1.5vw,0.75rem)] z-[500] hidden lg:flex flex-col gap-1 bg-[var(--obs-panel-bg)] backdrop-blur border border-[var(--obs-panel-border)] rounded-xl px-3 py-2 shadow-lg max-w-[clamp(10rem,20vw,14rem)]">
+          <div v-if="deepAnalysis" class="absolute top-[clamp(0.75rem,2vh,1rem)] right-[clamp(0.75rem,2vw,1rem)] z-[500] hidden lg:flex flex-col gap-1 bg-[var(--obs-panel-bg)] backdrop-blur border border-[var(--obs-panel-border)] rounded-xl px-3 py-2 shadow-lg max-w-[clamp(10rem,20vw,14rem)]">
             <div class="flex items-center gap-1.5 text-[8.5px]" :title="t('observatory.sync.syncNote')">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span class="text-zinc-500 uppercase tracking-wider font-bold">{{ t('observatory.sync.lastSync') }}</span>
@@ -91,24 +91,24 @@
           </div>
 
           <!-- Action Buttons Row -->
-          <div class="absolute top-[clamp(3.5rem,10vh,5rem)] left-[clamp(0.5rem,1.5vw,0.75rem)] z-[500] flex flex-wrap gap-1.5 max-w-[clamp(16rem,40vw,22rem)]">
+          <div class="absolute top-[clamp(3.5rem,10vh,5rem)] left-[clamp(0.75rem,2vw,1rem)] z-[500] flex flex-wrap gap-1.5 max-w-[clamp(16rem,40vw,22rem)]">
             <button
 @click="showTimeline = true"
               class="obs-action-btn"
               :style="{ '--accent': 'var(--obs-red)' }">
-              <span>📖</span> Geopolitical Timeline
+              <span>📖</span> <span class="hidden sm:inline">Geopolitical Timeline</span><span class="sm:hidden">Timeline</span>
             </button>
             <button
 @click="showRedeCorporativa = true"
               class="obs-action-btn"
               :style="{ '--accent': 'var(--obs-blue-light)' }">
-              <span>🔗</span> Rede Corporativa
+              <span>🔗</span> <span class="hidden sm:inline">Rede Corporativa</span><span class="sm:hidden">Network</span>
             </button>
             <button
 @click="showDownload = true"
               class="obs-action-btn"
               :style="{ '--accent': 'var(--obs-green)' }">
-              <span>⬇️</span> Download Data
+              <span>⬇️</span> <span class="hidden sm:inline">Download Data</span><span class="sm:hidden">Download</span>
             </button>
             <button
 @click="showExport = true"
@@ -121,7 +121,7 @@
               class="obs-action-btn"
               :class="enterpriseLayerVisible ? 'obs-action-btn--active' : ''"
               :style="{ '--accent': 'var(--obs-purple-soft)' }">
-              <span>🏢</span> {{ t('observatory.layers.enterpriseHq') }}
+              <span>🏢</span> <span class="hidden sm:inline">{{ t('observatory.layers.enterpriseHq') }}</span><span class="sm:hidden">HQ</span>
             </button>
             <button
 @click="showShortcuts = true"
@@ -142,7 +142,7 @@
               class="obs-action-btn"
               title="Find claims near you"
               style="--accent:#27ae60">
-              <span>📍</span> Near Me
+              <span>📍</span> <span class="hidden sm:inline">Near Me</span><span class="sm:hidden">Near</span>
             </button>
           </div>
 
@@ -152,7 +152,7 @@
             :danger-items="speculatorIndex"
             :show-all="showAll"
             class="absolute"
-            style="top: clamp(5.5rem, 14vh, 8rem); right: clamp(0.5rem, 1.5vw, 0.75rem);"
+            style="top: clamp(5.5rem, 14vh, 8rem); right: clamp(0.75rem, 2vw, 1rem);"
             @update:active-tab="(tab) => activeTab = tab"
             @update:show-all="(v) => showAll = v"
             @fly-to-enterprise="zoomToDanger"
@@ -162,7 +162,7 @@
           <!-- My Territory Pin -->
           <div
 v-if="userPin" class="absolute z-[500] bg-[var(--obs-panel-bg-dark)] backdrop-blur border border-emerald-700/40 rounded-xl px-3 py-2.5 shadow-lg max-w-[clamp(14rem,35vw,18rem)]"
-            style="bottom: clamp(5rem, 12vh, 7.5rem); right: clamp(0.5rem, 1.5vw, 0.75rem);">
+            style="bottom: clamp(5rem, 12vh, 7.5rem); right: clamp(0.75rem, 2vw, 1rem);">
             <div class="flex items-center justify-between gap-2 mb-1.5">
               <div class="flex items-center gap-1.5">
                 <span class="text-fluid-sm">📍</span>
@@ -191,14 +191,14 @@ v-if="userPin" class="absolute z-[500] bg-[var(--obs-panel-bg-dark)] backdrop-bl
           <button
 type="button"
             class="absolute z-[500] bg-[var(--obs-panel-bg-dark)] backdrop-blur border border-emerald-700/40 rounded-full px-3 py-2 text-fluid-xs font-bold text-emerald-300 hover:bg-emerald-900/30 hover:border-emerald-500 transition-all flex items-center gap-1.5 shadow-lg"
-            :style="pinPickerMode ? 'bottom: clamp(4rem, 10vh, 5.5rem); right: clamp(0.5rem, 1.5vw, 0.75rem); background: color-mix(in srgb, var(--obs-emerald) 25%, transparent); border-color: var(--obs-emerald); color: #fff;' : 'bottom: clamp(4rem, 10vh, 5.5rem); right: clamp(0.5rem, 1.5vw, 0.75rem);'"
+            :style="pinPickerMode ? 'bottom: clamp(4rem, 10vh, 5.5rem); right: clamp(0.75rem, 2vw, 1rem); background: color-mix(in srgb, var(--obs-emerald) 25%, transparent); border-color: var(--obs-emerald); color: #fff;' : 'bottom: clamp(4rem, 10vh, 5.5rem); right: clamp(0.75rem, 2vw, 1rem);'"
             @click="togglePinPicker">
             <span>📍</span>
             {{ pinPickerMode ? t('observatory.myTerritory.cancel') : t('observatory.myTerritory.dropPin') }}
           </button>
 
           <!-- Layer toggles + Year Slider + Phase Filter -->
-          <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] left-[clamp(0.5rem,1.5vw,0.75rem)] z-[500] obs-filter-panel">
+          <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] left-[clamp(0.75rem,2vw,1rem)] z-[500] obs-filter-panel">
             <button
               type="button"
               class="obs-filter-toggle"
@@ -357,7 +357,7 @@ v-model="searchTerm" @input="debouncedFilter" :placeholder="t('observatory.searc
           </div>
 
           <!-- Water legend -->
-          <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] right-[clamp(0.5rem,1.5vw,0.75rem)] z-[500] obs-legend-panel">
+          <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] right-[clamp(0.75rem,2vw,1rem)] z-[500] obs-legend-panel hidden md:block">
             <h3 class="obs-legend-title">{{ t('observatory.legend.hydrography') }}</h3>
             <div class="obs-legend-item"><div class="obs-legend-line" :style="{ background: 'var(--obs-blue)' }"></div>{{ t('observatory.legend.basins') }}</div>
             <div class="obs-legend-item"><div class="obs-legend-line" :style="{ background: 'var(--obs-purple-light)' }"></div>{{ t('observatory.legend.aquifers') }}</div>
@@ -903,6 +903,13 @@ watch(activeTab, scheduleHashUpdate)
   transition: opacity 0.3s, transform 0.3s;
 }
 
+@media (max-width: 640px) {
+  .obs-stats-panel {
+    max-width: 180px;
+    padding: 8px 10px;
+  }
+}
+
 .obs-action-btn {
   display: flex;
   align-items: center;
@@ -931,6 +938,14 @@ watch(activeTab, scheduleHashUpdate)
 .obs-action-btn--active {
   background: color-mix(in srgb, var(--accent) 20%, transparent);
   border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+@media (max-width: 640px) {
+  .obs-action-btn {
+    padding: 5px 8px;
+    font-size: 8px;
+    gap: 4px;
+  }
 }
 
 .fade-enter-active,
@@ -962,6 +977,13 @@ watch(activeTab, scheduleHashUpdate)
   box-shadow: var(--obs-panel-shadow-deep), inset var(--obs-panel-inset);
   max-width: 260px;
   overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .obs-filter-panel {
+    max-width: min(220px, calc(100vw - 2rem));
+    border-radius: 10px;
+  }
 }
 
 .obs-filter-toggle {
@@ -1112,6 +1134,15 @@ watch(activeTab, scheduleHashUpdate)
   border-color: rgba(231, 76, 60, 0.4);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(231, 76, 60, 0.1);
 }
+
+@media (max-width: 640px) {
+  .obs-search {
+    width: min(220px, calc(100vw - 2rem));
+    height: 32px;
+    padding: 0 10px;
+    gap: 6px;
+  }
+}
 .obs-search__icon {
   font-size: 12px;
   opacity: 0.5;
@@ -1149,6 +1180,13 @@ watch(activeTab, scheduleHashUpdate)
   border-radius: 10px;
   padding: 8px 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 640px) {
+  .obs-legend-panel {
+    padding: 6px 8px;
+    border-radius: 8px;
+  }
 }
 .obs-legend-title {
   font-size: 8px;

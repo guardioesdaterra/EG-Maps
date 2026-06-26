@@ -93,6 +93,7 @@ import { OBSERVATORY_TABS, type ObservatoryTab } from '@/lib/observatory-tabs'
 import type { SpeculatorIndexEntry } from '@/lib/observatory-analysis'
 import { useUrlState } from '@/composables/useUrlState'
 import { useFocusTrap } from '@/composables/useFocusTrap'
+import { useMediaQuery } from '@/composables/useMediaQuery'
 
 import DangerTab from '@/components/observatory/tabs/DangerTab.vue'
 import MilitaryTab from '@/components/observatory/tabs/MilitaryTab.vue'
@@ -119,7 +120,8 @@ const emit = defineEmits<{
 }>()
 
 const tabs: ObservatoryTab[] = OBSERVATORY_TABS
-const collapsed = ref(false)
+const isMobile = useMediaQuery('(max-width: 768px)')
+const collapsed = ref(isMobile.value)
 
 // URL state sync for active tab + selected feature
 const urlState = useUrlState<{ tab: string; feature: string | null; showAll: string | null }>('obs', {
@@ -134,6 +136,11 @@ onMounted(() => {
     emit('update:activeTab', urlState.state.value.tab as ObservatoryTab['key'])
   }
 })
+
+// Sync collapsed state with screen size changes
+watch(isMobile, (mobile) => {
+  collapsed.value = mobile
+}, { immediate: true })
 
 watch(() => props.activeTab, (v) => {
   if (v) urlState.set('tab', v)
@@ -196,6 +203,19 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   border-radius: 10px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 }
+
+@media (max-width: 768px) {
+  .obs-tabstrip {
+    gap: 2px;
+    padding: 3px;
+    border-radius: 8px;
+  }
+  .obs-tabstrip__btn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+}
 .obs-tabstrip__btn {
   width: 40px;
   height: 40px;
@@ -241,6 +261,13 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 }
 
+@media (max-width: 768px) {
+  .obs-panel {
+    width: min(280px, calc(100vw - 4rem));
+    max-height: calc(100vh - 10rem);
+  }
+}
+
 .obs-panel__head {
   display: flex;
   align-items: center;
@@ -273,6 +300,17 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   white-space: nowrap;
   transition: all 0.15s ease;
   position: relative;
+}
+
+@media (max-width: 768px) {
+  .obs-panel__tab {
+    padding: 8px 6px;
+    font-size: 9px;
+    gap: 2px;
+  }
+  .obs-panel__tab-icon {
+    font-size: 10px;
+  }
 }
 .obs-panel__tab:hover {
   color: #fafafa;
@@ -318,6 +356,12 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   padding: 6px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+@media (max-width: 768px) {
+  .obs-panel__body {
+    padding: 4px;
+  }
 }
 .obs-panel__body::-webkit-scrollbar { width: 4px; }
 .obs-panel__body::-webkit-scrollbar-track { background: transparent; }

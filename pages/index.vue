@@ -1,88 +1,104 @@
 <template>
-  <main class="bg-white text-black">
-    <section class="mx-auto flex h-[100svh] w-container flex-col justify-center overflow-hidden section-padding">
-      <div class="grid gap-fluid-xl lg:grid-cols-[minmax(0,0.9fr)_minmax(22rem,1.1fr)] lg:items-center">
+  <main class="bg-white dark:bg-[var(--bg-primary)] text-black dark:text-[var(--text-primary)]">
+    <section class="mx-auto flex min-h-auto lg:min-h-[100svh] w-container flex-col justify-center px-4 py-8 sm:px-fluid-sm sm:section-padding pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-section">
+      <div class="grid gap-fluid-xl lg:grid-cols-[1fr_1.1fr] lg:items-center">
         <header class="max-w-[min(100%,38rem)]">
-            <div class="mb-fluid-lg flex flex-col items-center text-center">
+            <div class="mb-4 sm:mb-fluid-lg flex flex-col items-center text-center">
               <img
                 :src="`${baseURL}eg-logo.png`"
                 alt="Earth Guardians"
-                class="h-[clamp(4rem,14vw,8rem)] w-auto"
+                class="h-[clamp(3rem,18vw,8rem)] w-auto"
                 loading="eager"
               />
             </div>
 
-          <h1 class="text-fluid-5xl font-black leading-[1.1] tracking-normal">
+          <h1
+            v-motion
+            :initial="{ opacity: 0, y: 20 }"
+            :enter="{ opacity: 1, y: 0, transition: { duration: 400 } }"
+            class="text-[1.75rem] xs:text-fluid-5xl font-black leading-[1.1] tracking-normal text-center sm:text-left"
+          >
             {{ t('home.title') }}
           </h1>
-          <p class="mt-fluid-sm max-w-[min(100%,34rem)] text-fluid-lg leading-[1.6] text-black/70">
+          <p
+            v-motion
+            :initial="{ opacity: 0, y: 15 }"
+            :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 100 } }"
+            class="mt-2 sm:mt-fluid-sm max-w-[min(100%,34rem)] text-[0.95rem] xs:text-fluid-lg leading-[1.6] text-black/70 dark:text-[var(--text-secondary)] text-center sm:text-left"
+          >
             {{ t('home.subtitle') }}
           </p>
 
-          <div class="mt-fluid-md grid grid-cols-3 divide-x divide-black border-y border-black text-center">
-            <div class="px-0.5 py-fluid-sm">
-              <p class="text-fluid-3xl font-black leading-none">{{ projectStats.totalProjects }}</p>
-              <p class="mt-0.5 text-[8px] xs:text-[10px] font-bold uppercase tracking-[0.16em] text-black/55">{{ t('home.projectsCount') }}</p>
+          <div
+            v-motion
+            :initial="{ opacity: 0, y: 15 }"
+            :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 200 } }"
+            class="mt-4 sm:mt-fluid-md grid grid-cols-3 gap-1.5 sm:gap-2 border-y border-black dark:border-[var(--border-color)] text-center"
+          >
+            <div class="py-2.5 sm:py-fluid-sm">
+              <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ projectStats.totalProjects }}</p>
+              <p class="mt-0.5 text-[10px] xs:text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.projectsCount') }}</p>
             </div>
-            <div class="px-0.5 py-fluid-sm">
-              <p class="text-fluid-3xl font-black leading-none">{{ speciesCount }}</p>
-              <p class="mt-0.5 text-[8px] xs:text-[10px] font-bold uppercase tracking-[0.16em] text-black/55">{{ t('home.speciesCount') }}</p>
+            <div class="py-2.5 sm:py-fluid-sm">
+              <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ speciesCount }}</p>
+              <p class="mt-0.5 text-[10px] xs:text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.speciesCount') }}</p>
             </div>
-            <div class="px-0.5 py-fluid-sm">
-              <p class="text-fluid-3xl font-black leading-none">{{ taxonomicGroupCount }}</p>
-              <p class="mt-0.5 text-[8px] xs:text-[10px] font-bold uppercase tracking-[0.16em] text-black/55">{{ t('home.groupsCount') }}</p>
+            <div class="py-2.5 sm:py-fluid-sm">
+              <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ taxonomicGroupCount }}</p>
+              <p class="mt-0.5 text-[10px] xs:text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.groupsCount') }}</p>
             </div>
           </div>
         </header>
 
-        <div class="grid gap-fluid">
+        <div class="grid gap-2.5 sm:gap-fluid">
           <article
-            v-for="dataset in datasets"
+            v-for="(dataset, index) in datasets"
             :key="dataset.path"
-            class="group grid min-h-[clamp(7rem,20vh,11rem)] overflow-hidden rounded-fluid-lg border-2 border-black bg-white transition-transform duration-200 hover:-translate-y-0.5 sm:grid-cols-[minmax(0,1fr)_auto]"
+            v-motion
+            :initial="{ opacity: 0, y: 20 }"
+            :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 150 + index * 100 } }"
+            class="group flex flex-col overflow-hidden rounded-fluid-lg border-2 border-black dark:border-[var(--border-color)] bg-white dark:bg-[var(--card)] transition-transform duration-200 hover:-translate-y-0.5"
           >
-            <div class="flex min-w-0 flex-col justify-between card-padding">
+            <div class="flex min-w-0 flex-col justify-between px-3.5 py-3 sm:card-padding">
               <div>
-                <div class="mb-fluid flex items-center justify-between gap-2 xs:gap-3">
-                  <div class="flex h-[clamp(1.75rem,5vw,2.5rem)] w-[clamp(1.75rem,5vw,2.5rem)] shrink-0 items-center justify-center rounded-full border-2 border-black bg-black text-white">
+                <div class="mb-2 sm:mb-fluid flex items-center justify-between gap-2 xs:gap-3">
+                  <div class="flex h-[clamp(2rem,6vw,2.5rem)] w-[clamp(2rem,6vw,2.5rem)] shrink-0 items-center justify-center rounded-full border-2 border-black bg-black dark:bg-[var(--text-primary)] text-white dark:text-black">
                     <Icon :name="dataset.icon" class="h-4 w-4 xs:h-5 xs:w-5" />
                   </div>
-                  <span class="max-w-[60%] truncate rounded-full border border-black chip-fluid font-black uppercase tracking-[0.16em]">
+                  <span class="max-w-[60%] truncate rounded-full border border-black dark:border-[var(--border-color)] px-2 py-0.5 sm:chip-fluid text-[10px] sm:text-[11px] font-black uppercase tracking-[0.16em]">
                     {{ dataset.label }}
                   </span>
                 </div>
-                <h2 class="text-fluid-2xl font-black leading-tight tracking-normal">{{ dataset.title }}</h2>
-                <p class="mt-1 xs:mt-1.5 max-w-[min(100%,40rem)] text-fluid-xs leading-5 text-black/65">{{ dataset.description }}</p>
+                <h2 class="text-[1.15rem] xs:text-fluid-2xl font-black leading-tight tracking-normal">{{ dataset.title }}</h2>
+                <p class="mt-1 xs:mt-1.5 max-w-[min(100%,40rem)] text-[0.8rem] xs:text-fluid-xs leading-5 text-black/65 dark:text-[var(--text-secondary)]">{{ dataset.description }}</p>
               </div>
 
-              <div class="mt-fluid-xs flex flex-wrap gap-1 xs:gap-1.5">
+              <div class="mt-2 sm:mt-fluid-xs flex flex-wrap gap-1 xs:gap-1.5">
                 <span
                   v-for="stat in dataset.stats"
                   :key="stat"
-                  class="rounded-fluid border border-black chip-fluid font-bold text-black"
+                  class="rounded-fluid border border-black dark:border-[var(--border-color)] px-1.5 py-0.5 sm:chip-fluid text-[10px] sm:text-[11px] font-bold text-black dark:text-[var(--text-primary)]"
                 >
                   {{ stat }}
                 </span>
               </div>
             </div>
 
-            <div class="flex border-t-2 border-black bg-black text-white sm:w-[clamp(5rem,8vw,6.5rem)] sm:flex-col sm:border-l-2 sm:border-t-0">
+            <div class="flex border-t-2 border-black dark:border-[var(--border-color)]">
               <NuxtLink
                 :to="dataset.path"
-                class="flex flex-1 items-center justify-center gap-1 border-r border-white/25 px-2.5 xs:px-3 py-2 text-[11px] xs:text-xs font-black transition-colors hover:bg-white hover:text-black focus:outline-none focus:ring-4 focus:ring-black/20 sm:border-b sm:border-r-0"
+                class="flex flex-1 items-center justify-center gap-1.5 border-r border-white/25 dark:border-[var(--border-color)] min-h-[44px] px-3 py-2.5 sm:py-2 text-xs sm:text-xs font-black transition-colors bg-black dark:bg-[var(--text-primary)] text-white dark:text-black hover:bg-white dark:hover:bg-[var(--bg-primary)] hover:text-black dark:hover:text-[var(--text-primary)] focus:outline-none focus:ring-4 focus:ring-black/20 dark:focus:ring-[var(--text-primary)]/20 active:scale-[0.97]"
                 :aria-label="dataset.ariaLabel"
               >
-                <Icon name="lucide:map" class="h-3 w-3" />
-                <span class="sm:hidden">{{ t('home.2d') || '2D' }}</span>
-                <span class="hidden sm:inline">{{ t('home.view2d') }}</span>
+                <Icon name="lucide:map" class="h-3.5 w-3.5 sm:h-3 sm:w-3" />
+                <span>{{ t('home.2d') || '2D' }}</span>
               </NuxtLink>
               <NuxtLink
                 :to="`${dataset.path}/3d`"
-                class="flex flex-1 items-center justify-center gap-1 px-2.5 xs:px-3 py-2 text-[11px] xs:text-xs font-black transition-colors hover:bg-white hover:text-black focus:outline-none focus:ring-4 focus:ring-black/20"
+                class="flex flex-1 items-center justify-center gap-1.5 min-h-[44px] px-3 py-2.5 sm:py-2 text-xs sm:text-xs font-black transition-colors bg-black dark:bg-[var(--text-primary)] text-white dark:text-black hover:bg-white dark:hover:bg-[var(--bg-primary)] hover:text-black dark:hover:text-[var(--text-primary)] focus:outline-none focus:ring-4 focus:ring-black/20 dark:focus:ring-[var(--text-primary)]/20 active:scale-[0.97]"
               >
-                <Icon name="lucide:globe" class="h-3 w-3" />
-                <span class="sm:hidden">{{ t('home.3d') || '3D' }}</span>
-                <span class="hidden sm:inline">{{ t('home.view3d') }}</span>
+                <Icon name="lucide:globe" class="h-3.5 w-3.5 sm:h-3 sm:w-3" />
+                <span>{{ t('home.3d') || '3D' }}</span>
               </NuxtLink>
             </div>
           </article>

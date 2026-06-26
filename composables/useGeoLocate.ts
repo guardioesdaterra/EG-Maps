@@ -27,11 +27,14 @@ export interface CitySuggestion {
 }
 
 const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org'
-const HEADERS = { 'Accept-Language': 'en,pt' }
+const NOMINATIM_HEADERS = {
+  'Accept-Language': 'en,pt',
+  'User-Agent': 'EG-Maps/1.0 (https://earthguardians.org)',
+}
 
 /**
  * Get browser geolocation position.
- * Returns null if denied/unavailable.
+ * Returns null if denied/unavailable, throws with reason on hard failures.
  */
 export function getBrowserLocation(): Promise<GeoLocation | null> {
   return new Promise((resolve) => {
@@ -47,8 +50,17 @@ export function getBrowserLocation(): Promise<GeoLocation | null> {
           accuracy: pos.coords.accuracy,
         })
       },
-      () => resolve(null),
-      { timeout: 8000, maximumAge: 300_000, enableHighAccuracy: false },
+      (err) => {
+        // err.code: 1=PERMISSION_DENIED, 2=POSITION_UNAVAILABLE, 3=TIMEOUT
+        if (err.code === 1) {
+          // Permission denied — user blocked it, return null gracefully
+          resolve(null)
+        } else {
+          // Position unavailable or timeout — also return null
+          resolve(null)
+        }
+      },
+      { timeout: 10000, maximumAge: 300_000, enableHighAccuracy: true },
     )
   })
 }
@@ -59,7 +71,7 @@ export function getBrowserLocation(): Promise<GeoLocation | null> {
 export async function reverseGeocode(lat: number, lng: number): Promise<GeoAddress | null> {
   try {
     const url = `${NOMINATIM_BASE}/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`
-    const res = await fetch(url, { headers: HEADERS })
+    const res = await fetch(url, { headers: NOMINATIM_HEADERS })
     if (!res.ok) return null
     const data = await res.json()
     return {
@@ -81,7 +93,7 @@ export async function forwardGeocode(query: string): Promise<CitySuggestion[]> {
   if (!query.trim()) return []
   try {
     const url = `${NOMINATIM_BASE}/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=br`
-    const res = await fetch(url, { headers: HEADERS })
+    const res = await fetch(url, { headers: NOMINATIM_HEADERS })
     if (!res.ok) return []
     const data = await res.json()
     return data.map((r: Record<string, unknown>) => {

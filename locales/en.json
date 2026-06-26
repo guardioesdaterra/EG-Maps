@@ -47,7 +47,8 @@
     "icmbioDesc": "The official Brazilian registry of endangered species, maintained by ICMBio and IBAMA. Documents the conservation status of the country's rich biodiversity.",
     "icmbioScope": "Brazil",
     "suggestDataset": "Suggest Dataset",
-    "suggestDatasetSubject": "Suggest a new dataset for EG-Maps"
+    "suggestDatasetSubject": "Suggest a new dataset for EG-Maps",
+    "viewSource": "Visit Source"
   },
   "mapControls": {
     "search": "Search",
@@ -332,6 +333,24 @@
       "clear": "Clear pin",
       "defaultLabel": "My territory",
       "sharedBadge": "Shared"
+    },
+    "geoLocate": {
+      "title": "Where are you located?",
+      "description": "Help us show you mining claims closest to your area. We only use your location to center the map.",
+      "locating": "Detecting location...",
+      "useLocation": "Use my location",
+      "or": "or",
+      "cityPlaceholder": "Type a city name...",
+      "noResults": "No cities found. Try a different name.",
+      "searchFailed": "Search failed. Please try again.",
+      "denied": "Location access was denied. Please allow location access in your browser settings, or search by city.",
+      "yourArea": "Your area",
+      "failed": "Could not detect location. Please search by city.",
+      "foundTitle": "We found you!",
+      "foundDesc": "Is this correct? We'll show mining claims near this location.",
+      "showNearby": "Show claims nearby",
+      "wrongPlace": "Wrong place",
+      "skip": "Skip for now"
     },
     "search": "Search enterprise, substance, UF...",
     "legend": {

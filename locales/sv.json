@@ -47,7 +47,8 @@
     "icmbioDesc": "Det officiella brasilianska registret över hotade arter, underhållet av ICMBio och IBAMA. Dokumenterar bevarandestatusen för landets rika biologiska mångfald.",
     "icmbioScope": "Brasilien",
     "suggestDataset": "Föreslå datamängd",
-    "suggestDatasetSubject": "Föreslå en ny datamängd för EG-Maps"
+    "suggestDatasetSubject": "Föreslå en ny datamängd för EG-Maps",
+    "viewSource": "Besök Källa"
   },
   "mapControls": {
     "search": "Sök",
@@ -319,7 +320,8 @@
       "hydrography": "Hydrografi",
       "conflictZones": "Konfliktzoner",
       "corpNetwork": "Företagsnätverk",
-      "enterpriseHq": "Företagshuvudkontor"
+      "enterpriseHq": "Företagshuvudkontor",
+      "heatmap": "Densitetsvärmebild"
     },
     "myTerritory": {
       "title": "Mitt territorium",
@@ -331,6 +333,24 @@
       "clear": "Rensa nål",
       "defaultLabel": "Mitt territorium",
       "sharedBadge": "Delad"
+    },
+    "geoLocate": {
+      "title": "Var befinner du dig?",
+      "description": "Hjälp oss att visa dig de närmast gruvkoncessionerna. Vi använder din plats bara för att centrera kartan.",
+      "locating": "Identifierar plats...",
+      "useLocation": "Använd min plats",
+      "or": "eller",
+      "cityPlaceholder": "Skriv ett stadsnamn...",
+      "noResults": "Inga städer hittades. Försök med ett annat namn.",
+      "searchFailed": "Sökningen misslyckades. Försök igen.",
+      "denied": "Platsåtkomst nekades. Tillåt åtkomst i webbläsarinställningarna eller sök efter stad.",
+      "yourArea": "Ditt område",
+      "failed": "Kunde inte identifiera plats. Sök efter stad.",
+      "foundTitle": "Vi hittade dig!",
+      "foundDesc": "Är det korrekt? Vi visar gruvkoncessioner nära denna plats.",
+      "showNearby": "Visa närliggande koncessioner",
+      "wrongPlace": "Fel plats",
+      "skip": "Hoppa över"
     },
     "search": "Sök företag, substans, delstat...",
     "legend": {
@@ -388,6 +408,53 @@
       "heavy_mineral_associated": "Tung mineral",
       "phosphate_associated": "Fosfat",
       "strategic_associated": "Strategisk"
+    },
+    "yearSlider": {
+      "title": "Ansökningsår",
+      "minYear": "Minsta år",
+      "maxYear": "Största år",
+      "play": "Spela",
+      "pause": "Pausa",
+      "reset": "Återställ",
+      "claims": "Synliga anspråk"
+    },
+    "phaseFilter": {
+      "title": "Gruvfas",
+      "all": "Välj alla",
+      "none": "Avmarkera alla"
+    },
+    "claimReport": {
+      "title": "Rapportera problem med koncession",
+      "close": "Stäng",
+      "claimInfo": "Rapporterad koncession",
+      "reportType": "Rapporttyp",
+      "types": {
+        "newActivity": "Ny aktivitet / borrning",
+        "pollution": "Vatten- / jordförorening",
+        "conflict": "Våld / hot",
+        "correction": "Datakorrigering",
+        "fieldReport": "Fältrapport"
+      },
+      "description": "Beskrivning",
+      "descriptionPlaceholder": "Beskriv vad du observerade (minst 10 tecken)...",
+      "includeLocation": "Inkludera min GPS-position",
+      "geoPending": "Begär position...",
+      "contactOptional": "Kontakt (valfritt)",
+      "contactPlaceholder": "E-post eller telefon (krypterad)",
+      "cancel": "Avbryt",
+      "submit": "Skicka rapport"
+    },
+    "export": {
+      "title": "Exportera kartvy",
+      "close": "Stäng",
+      "format": "Format",
+      "resolution": "Upplösning",
+      "paperSize": "Papperstorlek",
+      "includeLegend": "Inkludera legends",
+      "includeTitle": "Inkludera titel och metadata",
+      "cancel": "Avbryt",
+      "download": "Ladda ner",
+      "exporting": "Exporterar..."
     }
   },
   "loading": {

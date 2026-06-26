@@ -5,7 +5,7 @@
     "projectGrants": "Projectsubsidies",
     "endangeredSpecies": "Bedreigde diersoorten",
     "observatoryOfVulcan": "Observatorium van Vulcanus",
-    "activeCrews": "Active Crews",
+    "activeCrews": "Actieve crews",
     "crews": "Crews",
     "joinEarthGuardians": "Sluit je aan bij Earth Guardians",
     "switchToLight": "Overschakelen naar lichte modus",
@@ -24,14 +24,14 @@
     "speciesDesc": "Ontdek ernstig bedreigde diersoorten en hun leefgebieden over de hele wereld.",
     "observatoryTitle": "Observatorium van Vulcanus",
     "observatoryDesc": "Zeldzame aardmetalen mijnbouwclaims in Brazilië — kapitaalinvasie, bedrijfsnetwerken, militaire belangen en sociaal-milieueffecten.",
-    "activeCrewsTitle": "Active Crews",
-    "activeCrewsDesc": "Explore Earth Guardians' active crews across 7 regions — 131 crews, 1,241 members, 47 countries worldwide.",
+    "activeCrewsTitle": "Actieve crews",
+    "activeCrewsDesc": "Ontdek de actieve crews van Earth Guardians in 7 regio's — 131 crews, 1.241 leden, 47 landen wereldwijd.",
     "projectsCount": "Projecten",
     "beneficiariesCount": "Begunstigden",
     "speciesCount": "Soorten",
     "groupsCount": "Groepen",
-    "activeCrewsCount": "Active Crews",
-    "crewMembersCount": "Crew Members",
+    "activeCrewsCount": "Actieve crews",
+    "crewMembersCount": "Crewleden",
     "view2d": "2D-kaart",
     "view3d": "3D-globe",
     "projectGrants": "Projectsubsidies",
@@ -47,13 +47,14 @@
     "icmbioDesc": "Het officiële Braziliaanse register van bedreigde diersoorten, bijgehouden door ICMBio en IBAMA. Documenteert de instandhoudingsstatus van de rijke biodiversiteit van het land.",
     "icmbioScope": "Brazilië",
     "suggestDataset": "Dataset voorstellen",
-    "suggestDatasetSubject": "Stel een nieuwe dataset voor EG-Maps voor"
+    "suggestDatasetSubject": "Stel een nieuwe dataset voor EG-Maps voor",
+    "viewSource": "Bezoek Bron"
   },
   "mapControls": {
     "search": "Zoeken",
     "searchProjects": "Projecten zoeken",
     "searchSpecies": "Soorten zoeken",
-    "searchCrews": "Search Crews",
+    "searchCrews": "Crews zoeken",
     "searchPlaceholder": "Zoeken op naam of locatie...",
     "searchSpeciesPlaceholder": "Zoeken op naam of regio...",
     "showAll": "Alles tonen",
@@ -154,12 +155,12 @@
     "iucnProfile": "IUCN-profiel"
   },
   "crews": {
-    "activeCrews": "Active Crews",
-    "inactiveCrews": "Inactive Crews",
-    "totalMembers": "Total Members",
-    "countries": "Countries",
-    "region": "Region",
-    "growthSince2022": "Growth since 2022"
+    "activeCrews": "Actieve crews",
+    "inactiveCrews": "Inactieve crews",
+    "totalMembers": "Totaal leden",
+    "countries": "Landen",
+    "region": "Regio",
+    "growthSince2022": "Groei sinds 2022"
   },
   "taxonomy": {
     "Mammal": "Zoogdieren",
@@ -319,7 +320,8 @@
       "hydrography": "Hydrografie",
       "conflictZones": "Conflictzones",
       "corpNetwork": "Bedrijfsnetwerk",
-      "enterpriseHq": "Bedrijfshoofdkantoren"
+      "enterpriseHq": "Bedrijfshoofdkantoren",
+      "heatmap": "Dichtheid warmtekaart"
     },
     "myTerritory": {
       "title": "Mijn territorium",
@@ -331,6 +333,24 @@
       "clear": "Marker wissen",
       "defaultLabel": "Mijn territorium",
       "sharedBadge": "Gedeeld"
+    },
+    "geoLocate": {
+      "title": "Waar bevindt u zich?",
+      "description": "Help ons u de dichtstbijzijnde mijnbouwconcessies te tonen. We gebruiken uw locatie alleen om de kaart te centreren.",
+      "locating": "Locatie wordt gedetecteerd...",
+      "useLocation": "Gebruik mijn locatie",
+      "or": "of",
+      "cityPlaceholder": "Typ een stadsnaam...",
+      "noResults": "Geen steden gevonden. Probeer een andere naam.",
+      "searchFailed": "Zoeken mislukt. Probeer het opnieuw.",
+      "denied": "Locatietoegang is geweigerd. Sta toegang toe in uw browserinstellingen of zoek op stad.",
+      "yourArea": "Uw omgeving",
+      "failed": "Locatie kon niet worden gedetecteerd. Zoek op stad.",
+      "foundTitle": "We hebben u gevonden!",
+      "foundDesc": "Is dit correct? We tonen mijnbouwconcessies in de buurt van deze locatie.",
+      "showNearby": "Toon concessies in de buurt",
+      "wrongPlace": "Verkeerde plaats",
+      "skip": "Nu overslaan"
     },
     "search": "Zoek bedrijf, stof, UF...",
     "legend": {
@@ -344,7 +364,7 @@
       "amb": "AMB",
       "ill": "ILL",
       "for": "FOR",
-      "env": "MIL",
+      "env": "OMG",
       "sus": "SUS"
     },
     "popups": {
@@ -388,6 +408,53 @@
       "heavy_mineral_associated": "Zwaar mineraal",
       "phosphate_associated": "Fosfaat",
       "strategic_associated": "Strategisch"
+    },
+    "yearSlider": {
+      "title": "Aanvraagjaar",
+      "minYear": "Minimum jaar",
+      "maxYear": "Maximum jaar",
+      "play": "Automatisch afspelen",
+      "pause": "Pauzeren",
+      "reset": "Resetten",
+      "claims": "claims zichtbaar"
+    },
+    "phaseFilter": {
+      "title": "Mijnbouwfase",
+      "all": "Alles selecteren",
+      "none": "Alles wissen"
+    },
+    "claimReport": {
+      "title": "Claimprobleem melden",
+      "close": "Sluiten",
+      "claimInfo": "Gemelde claim",
+      "reportType": "Rapporttype",
+      "types": {
+        "newActivity": "Nieuwe activiteit / boringen",
+        "pollution": "Water-/bodemverontreiniging",
+        "conflict": "Geweld / intimidatie",
+        "correction": "Gegevenscorrectie",
+        "fieldReport": "Veldrapport"
+      },
+      "description": "Beschrijving",
+      "descriptionPlaceholder": "Beschrijf wat u heeft waargenomen (min. 10 tekens)...",
+      "includeLocation": "Mijn GPS-locatie opnemen",
+      "geoPending": "Locatie aanvragen...",
+      "contactOptional": "Contact (optioneel)",
+      "contactPlaceholder": "E-mail of telefoon (versleuteld)",
+      "cancel": "Annuleren",
+      "submit": "Rapport verzenden"
+    },
+    "export": {
+      "title": "Kaartweergave exporteren",
+      "close": "Sluiten",
+      "format": "Formaat",
+      "resolution": "Resolutie",
+      "paperSize": "Papierformaat",
+      "includeLegend": "Legenda opnemen",
+      "includeTitle": "Titel & metadata opnemen",
+      "cancel": "Annuleren",
+      "download": "Downloaden",
+      "exporting": "Exporteren..."
     }
   },
   "loading": {
@@ -397,7 +464,7 @@
     "endangeredSpeciesGlobe": "Globe bedreigde soorten laden",
     "observatoryOfVulcan": "Observatorium van Vulcanus laden",
     "observatoryOfVulcanGlobe": "Observatorium van Vulcanus Globe laden",
-    "activeCrewsMap": "Loading Active Crews Map",
+    "activeCrewsMap": "Actieve crews kaart laden",
     "initializingVisualization": "Interactieve visualisatie initialiseren..."
   },
   "error": {

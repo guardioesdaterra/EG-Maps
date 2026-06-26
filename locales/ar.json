@@ -5,7 +5,7 @@
     "projectGrants": "المنح المشاريع",
     "endangeredSpecies": "الأنواع المهددة بالانقراض",
     "observatoryOfVulcan": "مرصد فولكان",
-    "activeCrews": "Active Crews",
+    "activeCrews": "الفرق النشطة",
     "crews": "الفرق",
     "joinEarthGuardians": "انضم إلى حراس الأرض",
     "switchToLight": "التبديل إلى الوضع الفاتح",
@@ -24,14 +24,14 @@
     "speciesDesc": "اكتشف الأنواع المهددة بالانقراض بشكل حرج وموائلها حول العالم.",
     "observatoryTitle": "مرصد فولكان",
     "observatoryDesc": "مطالبات تعدين العناصر الأرضية النادرة في البرازيل — غزو رأس المال، شبكات الشركات، المصالح العسكرية والأثر الاجتماعي البيئي.",
-    "activeCrewsTitle": "Active Crews",
-    "activeCrewsDesc": "Explore Earth Guardians' active crews across 7 regions — 131 crews, 1,241 members, 47 countries worldwide.",
+    "activeCrewsTitle": "الفرق النشطة",
+    "activeCrewsDesc": "استكشف الفرق النشطة لحراس الأرض عبر 7 مناطق — 131 فرقة، 1,241 عضو، 47 دولة حول العالم.",
     "projectsCount": "المشاريع",
     "beneficiariesCount": "المستفيدون",
     "speciesCount": "الأنواع",
     "groupsCount": "المجموعات",
-    "activeCrewsCount": "Active Crews",
-    "crewMembersCount": "Crew Members",
+    "activeCrewsCount": "الفرق النشطة",
+    "crewMembersCount": "أعضاء الفرق",
     "view2d": "خريطة ثنائية الأبعاد",
     "view3d": "كرة أرضية ثلاثية الأبعاد",
     "projectGrants": "المنح المشاريع",
@@ -47,13 +47,14 @@
     "icmbioDesc": "السجل الرسمي للأنواع المهددة بالانقراض في البرازيل، مقدم من ICMBio و IBAMA. يوثق حالة حفظ التنوع البيولوجي الغني للبلاد.",
     "icmbioScope": "البرازيل",
     "suggestDataset": "اقتراح مجموعة بيانات",
-    "suggestDatasetSubject": "اقتراح مجموعة بيانات جديدة لـ EG-Maps"
+    "suggestDatasetSubject": "اقتراح مجموعة بيانات جديدة لـ EG-Maps",
+    "viewSource": "زيارة المصدر"
   },
   "mapControls": {
     "search": "بحث",
     "searchProjects": "بحث في المشاريع",
     "searchSpecies": "بحث في الأنواع",
-    "searchCrews": "Search Crews",
+    "searchCrews": "البحث عن فرق",
     "searchPlaceholder": "بحث بالاسم أو الموقع...",
     "searchSpeciesPlaceholder": "بحث بالاسم أو المنطقة...",
     "showAll": "إظهار الكل",
@@ -154,12 +155,12 @@
     "iucnProfile": "الملف الشخصي IUCN"
   },
   "crews": {
-    "activeCrews": "Active Crews",
-    "inactiveCrews": "Inactive Crews",
-    "totalMembers": "Total Members",
-    "countries": "Countries",
-    "region": "Region",
-    "growthSince2022": "Growth since 2022"
+    "activeCrews": "الفرق النشطة",
+    "inactiveCrews": "الفرق غير النشطة",
+    "totalMembers": "إجمالي الأعضاء",
+    "countries": "الدول",
+    "region": "المنطقة",
+    "growthSince2022": "النمو منذ 2022"
   },
   "taxonomy": {
     "Mammal": "الثدييات",
@@ -297,8 +298,8 @@
       "usMilitaryBody": "DFC 565 مليون → Serra Verde. وزارة الخارجية 5 ملايين → Aclara. Export Finance Australia 100 مليون → Viridis/Meteoric.",
       "cbmmTitle": "CBMM الصين",
       "cbmmBody": "يحفظ اتحاد Baosteel/CITIC/Anshan 15% (1.95 مليار دولار). REE في مخلفات النيوبيوم — بدون تنظيم محدد.",
-      "relayout": "Re-layout",
-      "clickHint": "Click a node to focus · Click empty space to clear"
+      "relayout": "إعادة تخطيط",
+      "clickHint": "انقر على منطقة لتوسيعها"
     },
     "timelinePanel": {
       "title": "الجدول الزمني للطلبات (2000–2026)",
@@ -319,7 +320,8 @@
       "hydrography": "الصرف الصحي",
       "conflictZones": "مناطق الصراع",
       "corpNetwork": "شبكة الشركات",
-      "enterpriseHq": "مقار الشركات"
+      "enterpriseHq": "مقار الشركات",
+      "heatmap": "خريطة كثافة"
     },
     "search": "البحث عن شركة أو مادة أو ولاية...",
     "legend": {
@@ -370,6 +372,71 @@
       "defaultLabel": "أراضي",
       "sharedBadge": "مشترك"
     },
+    "geoLocate": {
+      "title": "أين تقع؟",
+      "description": "ساعدنا في إظهار أقرب امتيازات تعدين من منطقتك. نستخدم موقعك فقط لتوسيط الخريطة.",
+      "locating": "جاري اكتشاف الموقع...",
+      "useLocation": "استخدام موقعي",
+      "or": "أو",
+      "cityPlaceholder": "اكتب اسم المدينة...",
+      "noResults": "لم يتم العثور على مدن. جرب اسمًا مختلفًا.",
+      "searchFailed": "فشل البحث. يرجى المحاولة مرة أخرى.",
+      "denied": "تم رفض الوصول إلى الموقع. يرجى السماح بالوصول في إعدادات المتصفح أو البحث حسب المدينة.",
+      "yourArea": "منطقتك",
+      "failed": "تعذر اكتشاف الموقع. يرجى البحث حسب المدينة.",
+      "foundTitle": "وجدناك!",
+      "foundDesc": "هل هذا صحيح؟ سنعرض امتيازات التعدين القريبة من هذا الموقع.",
+      "showNearby": "عرض الامتيازات القريبة",
+      "wrongPlace": "المكان غير صحيح",
+      "skip": "تخطي الآن"
+    },
+    "yearSlider": {
+      "title": "سنة الإيداع",
+      "minYear": "الحد الأدنى للسنة",
+      "maxYear": "الحد الأقصى للسنة",
+      "play": "تشغيل",
+      "pause": "إيقاف مؤقت",
+      "reset": "إعادة تعيين",
+      "claims": "مطالبات مرئية"
+    },
+    "phaseFilter": {
+      "title": "مرحلة التعدين",
+      "all": "تحديد الكل",
+      "none": "مسح الكل"
+    },
+    "claimReport": {
+      "title": "الإبلاغ عن مشكلة في المطالبة",
+      "close": "إغلاق",
+      "claimInfo": "المطالبة المُبلّغ عنها",
+      "reportType": "نوع البلاغ",
+      "types": {
+        "newActivity": "نشاط جديد / حفر استكشافي",
+        "pollution": "تلوث مياه / تربة",
+        "conflict": "عنف / ترهيب",
+        "correction": "تصحيح بيانات",
+        "fieldReport": "تقرير ميداني"
+      },
+      "description": "الوصف",
+      "descriptionPlaceholder": "صف ما لاحظته (الحد الأدنى 10 أحرف)...",
+      "includeLocation": "تضمين موقعي GPS",
+      "geoPending": "جاري طلب الموقع...",
+      "contactOptional": "جهة الاتصال (اختياري)",
+      "contactPlaceholder": "بريد إلكتروني أو هاتف (مشفر)",
+      "cancel": "إلغاء",
+      "submit": "إرسال البلاغ"
+    },
+    "export": {
+      "title": "تصدير عرض الخريطة",
+      "close": "إغلاق",
+      "format": "التنسيق",
+      "resolution": "الدقة",
+      "paperSize": "حجم الورق",
+      "includeLegend": "تضمين مفتاح الألوان",
+      "includeTitle": "تضمين العنوان والبيانات الوصفية",
+      "cancel": "إلغاء",
+      "download": "تحميل",
+      "exporting": "جاري التصدير..."
+    },
     "sync": {
       "lastSync": "آخر مزامنة ANM",
       "secrecyClaims": "مطالبات السرية",
@@ -397,7 +464,7 @@
     "endangeredSpeciesGlobe": "جارٍ تحميل كرة الأنواع المهددة الأرضية",
     "observatoryOfVulcan": "جارٍ تحميل مرصد فولكان",
     "observatoryOfVulcanGlobe": "جارٍ تحميل كرة مرصد فولكان الأرضية",
-    "activeCrewsMap": "Loading Active Crews Map",
+    "activeCrewsMap": "جاري تحميل خريطة الفرق النشطة",
     "initializingVisualization": "جارٍ تهيئة التصور التفاعلي..."
   },
   "error": {

@@ -5,8 +5,8 @@
     "projectGrants": "プロジェクト助成金",
     "endangeredSpecies": "絶滅危惧種",
     "observatoryOfVulcan": "バルカン観測所",
-    "activeCrews": "Active Crews",
-    "crews": "ークル",
+    "activeCrews": "アクティブクルー",
+    "crews": "クルー",
     "joinEarthGuardians": "アースガーディアンズに参加",
     "switchToLight": "ライトモードに切り替え",
     "switchToDark": "ダークモードに切り替え",
@@ -24,16 +24,16 @@
     "speciesDesc": "世界中の危機に瀕した種とその生息地を発見します。",
     "observatoryTitle": "バルカン観測所",
     "observatoryDesc": "ブラジルの希土類鉱業権 — 資本侵攻、企業ネットワーク、軍事利益、社会環境への影響。",
-    "activeCrewsTitle": "Active Crews",
-    "activeCrewsDesc": "Explore Earth Guardians' active crews across 7 regions — 131 crews, 1,241 members, 47 countries worldwide.",
+    "activeCrewsTitle": "アクティブクルー",
+    "activeCrewsDesc": "地球の守護者の7地域にわたるアクティブクルーを探索 — 131のクルー、1,241人のメンバー、47カ国。",
     "projectsCount": "プロジェクト",
     "beneficiariesCount": "受益者",
     "speciesCount": "種",
     "groupsCount": "グループ",
-    "activeCrewsCount": "Active Crews",
-    "crewMembersCount": "Crew Members",
+    "activeCrewsCount": "アクティブクルー",
+    "crewMembersCount": "クルーメンバー",
     "view2d": "2Dマップ",
-    "view3d": "3D globo",
+    "view3d": "3D地球儀",
     "projectGrants": "プロジェクト助成金",
     "species": "絶滅危惧種",
     "footer": "世界中の若者が主導する環境行動を強化",
@@ -47,13 +47,14 @@
     "icmbioDesc": "ICMBioとIBAMAにより維持される、ブラジルの絶滅危惧種の公式レジストリ。この国の豊かな生物多様性の保全状況を記録しています。",
     "icmbioScope": "ブラジル",
     "suggestDataset": "データセットを提案",
-    "suggestDatasetSubject": "EG-Mapsへの新しいデータセットを提案"
+    "suggestDatasetSubject": "EG-Mapsへの新しいデータセットを提案",
+    "viewSource": "ソースにアクセス"
   },
   "mapControls": {
     "search": "検索",
     "searchProjects": "プロジェクトを検索",
     "searchSpecies": "種を検索",
-    "searchCrews": "Search Crews",
+    "searchCrews": "クルーを検索",
     "searchPlaceholder": "名前または場所で検索...",
     "searchSpeciesPlaceholder": "名前または領域で検索...",
     "showAll": "すべて表示",
@@ -121,18 +122,18 @@
     "close": "閉じる"
   },
   "globe": {
-    "loading": "3D globoを読み込み中",
+    "loading": "3D地球儀を読み込み中",
     "preparingData": "{dataset}データを準備中...",
     "unableToLoad": "可視化を読み込めません",
     "connectionError": "可視化を読み込めませんでした。接続を確認して再試行してください。",
     "tryAgain": "再試行",
     "taxonomicGroups": "分類群",
     "switchTo2d": "2Dマップ表示に切り替え",
-    "switchTo3d": "3D globo表示に切り替え",
+    "switchTo3d": "3D地球儀表示に切り替え",
     "switchTo2D": "2Dマップ表示に切り替え",
-    "switchTo3D": "3D globo表示に切り替え",
+    "switchTo3D": "3D地球儀表示に切り替え",
     "view2D": "2Dマップ",
-    "view3D": "3D globo"
+    "view3D": "3D地球儀"
   },
   "project": {
     "directBeneficiaries": "直接受益者",
@@ -154,12 +155,12 @@
     "iucnProfile": "IUCNプロフィール"
   },
   "crews": {
-    "activeCrews": "Active Crews",
-    "inactiveCrews": "Inactive Crews",
-    "totalMembers": "Total Members",
-    "countries": "Countries",
-    "region": "Region",
-    "growthSince2022": "Growth since 2022"
+    "activeCrews": "アクティブクルー",
+    "inactiveCrews": "非アクティブクルー",
+    "totalMembers": "合計メンバー",
+    "countries": "国",
+    "region": "地域",
+    "growthSince2022": "2022年以降の成長"
   },
   "taxonomy": {
     "Mammal": "哺乳類",
@@ -183,7 +184,7 @@
     "projectGrants": "プロジェクト助成金",
     "projectGrantsDesc": "{count}件のアクティブなプロジェクトと完全な受益者統計を持つアースガーディアンズのグローバル助成イニシアチブを探索します。",
     "view2dMap": "2Dマップを表示",
-    "view3dGlobe": "3D globoを表示",
+    "view3dGlobe": "3D地球儀を表示",
     "endangeredSpecies": "絶滅危惧種",
     "endangeredSpeciesDesc": "{speciesCount}種の種と{groupCount}の分類群を持つ完全なメタデータで、世界中の危機に瀕した種とその生息地を発見します。",
     "projects": "プロジェクト",
@@ -297,8 +298,8 @@
       "usMilitaryBody": "DFC $565M → Serra Verde. 国務省 $5M → Aclara. Export Finance Australia $100M → Viridis/Meteoric.",
       "cbmmTitle": "CBMM中国",
       "cbmmBody": "Baosteel/CITIC/Anshanコンソーシアムが15%（19.5億ドル）を保有。ニオブ尾鉱中のREE — 特定の規制なし。",
-      "relayout": "Re-layout",
-      "clickHint": "Click a node to focus · Click empty space to clear"
+      "relayout": "再レイアウト",
+      "clickHint": "ノードをクリックしてフォーカス · 空白をクリックしてクリア"
     },
     "timelinePanel": {
       "title": "申請タイムライン（2000–2026）",
@@ -317,16 +318,17 @@
       "overlaps": "重複申請",
       "polygons": "ポリゴン",
       "hydrography": "水系",
-      "conflictZones": " conflict zones",
+      "conflictZones": "紛争地帯",
       "corpNetwork": "企業ネットワーク",
-      "enterpriseHq": "企業本社"
+      "enterpriseHq": "企業本社",
+      "heatmap": "密度ヒートマップ"
     },
     "search": "企業、物質、州を検索...",
     "legend": {
       "hydrography": "水系",
       "basins": "流域",
       "aquifers": "帯水層",
-      "conflictZones": " conflict zones"
+      "conflictZones": "紛争地帯"
     },
     "badges": {
       "mil": "MIL",
@@ -359,6 +361,53 @@
       "lastEventActive": "アクティブ",
       "overlaps": "重複"
     },
+    "yearSlider": {
+      "title": "提出年",
+      "minYear": "最小年",
+      "maxYear": "最大年",
+      "play": "再生",
+      "pause": "一時停止",
+      "reset": "リセット",
+      "claims": "件の権利が表示"
+    },
+    "phaseFilter": {
+      "title": "鉱業フェーズ",
+      "all": "すべて選択",
+      "none": "すべてクリア"
+    },
+    "claimReport": {
+      "title": "権利の問題を報告",
+      "close": "閉じる",
+      "claimInfo": "報告された権利",
+      "reportType": "報告タイプ",
+      "types": {
+        "newActivity": "新規活動 / 採掘",
+        "pollution": "水質 / 土壌汚染",
+        "conflict": "暴力 / 脅迫",
+        "correction": "データ修正",
+        "fieldReport": "現地報告"
+      },
+      "description": "説明",
+      "descriptionPlaceholder": "観察した内容を記述してください（最低10文字）...",
+      "includeLocation": "GPS位置情報を含める",
+      "geoPending": "位置情報を取得中...",
+      "contactOptional": "連絡先（任意）",
+      "contactPlaceholder": "メールまたは電話（暗号化）",
+      "cancel": "キャンセル",
+      "submit": "報告を送信"
+    },
+    "export": {
+      "title": "マップビューをエクスポート",
+      "close": "閉じる",
+      "format": "フォーマット",
+      "resolution": "解像度",
+      "paperSize": "用紙サイズ",
+      "includeLegend": "凡例を含める",
+      "includeTitle": "タイトルとメタデータを含める",
+      "cancel": "キャンセル",
+      "download": "ダウンロード",
+      "exporting": "エクスポート中..."
+    },
     "myTerritory": {
       "title": "私の地域",
       "dropPin": "ピンを置く",
@@ -369,6 +418,24 @@
       "clear": "ピンを削除",
       "defaultLabel": "私の地域",
       "sharedBadge": "共有中"
+    },
+    "geoLocate": {
+      "title": "現在地はどこですか？",
+      "description": "お近くの鉱業権を表示するのにご協力ください。地図の中央表示にのみ位置情報を利用します。",
+      "locating": "位置を検出中...",
+      "useLocation": "現在地を使用",
+      "or": "または",
+      "cityPlaceholder": "都市名を入力...",
+      "noResults": "都市が見つかりません。別の名前をお試しください。",
+      "searchFailed": "検索に失敗しました。もう一度お試しください。",
+      "denied": "位置情報へのアクセスが拒否されました。ブラウザの設定で位置情報へのアクセスを許可するか、都市で検索してください。",
+      "yourArea": "あなたの地域",
+      "failed": "位置情報を検出できませんでした。都市で検索してください。",
+      "foundTitle": "お見つけしました！",
+      "foundDesc": "正しいですか？この位置近くの鉱業権を表示します。",
+      "showNearby": "付近の鉱業権を表示",
+      "wrongPlace": "場所が違います",
+      "skip": "スキップ"
     },
     "sync": {
       "lastSync": "最終ANM同期",
@@ -392,12 +459,12 @@
   },
   "loading": {
     "projectGrantsMap": "プロジェクト助成金マップを読み込み中",
-    "projectGrantsGlobe": "プロジェクト助成金globoを読み込み中",
+    "projectGrantsGlobe": "プロジェクト助成金地球儀を読み込み中",
     "endangeredSpeciesMap": "絶滅危惧種マップを読み込み中",
-    "endangeredSpeciesGlobe": "絶滅危惧種globoを読み込み中",
+    "endangeredSpeciesGlobe": "絶滅危惧種地球儀を読み込み中",
     "observatoryOfVulcan": "バルカン観測所を読み込み中",
-    "observatoryOfVulcanGlobe": "バルカン観測所globoを読み込み中",
-    "activeCrewsMap": "Loading Active Crews Map",
+    "observatoryOfVulcanGlobe": "バルカン観測所地球儀を読み込み中",
+    "activeCrewsMap": "アクティブクルーマップを読み込み中",
     "initializingVisualization": "インタラクティブ可視化を初期化中..."
   },
   "error": {

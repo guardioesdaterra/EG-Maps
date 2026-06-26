@@ -47,7 +47,8 @@
     "icmbioDesc": "O registro oficial brasileiro de espécies ameaçadas de extinção, mantido pelo ICMBio e IBAMA. Documenta o estado de conservação da rica biodiversidade do país.",
     "icmbioScope": "Brasil",
     "suggestDataset": "Sugerir Dataset",
-    "suggestDatasetSubject": "Sugerir um novo dataset para EG-Maps"
+    "suggestDatasetSubject": "Sugerir um novo dataset para EG-Maps",
+    "viewSource": "Visitar Fonte"
   },
   "mapControls": {
     "search": "Buscar",
@@ -297,8 +298,8 @@
       "usMilitaryBody": "DFC $565M → Serra Verde. Dept. de Estado $5M → Aclara. Export Finance Australia $100M → Viridis/Meteoric. MOU Ucore → óxido militar nos EUA.",
       "cbmmTitle": "CBMM China",
       "cbmmBody": "Consórcio Baosteel/CITIC/Anshan detém 15% (US$1,95B). REE em rejeitos de nióbio — sem regulação específica.",
-      "relayout": "Re-layout",
-      "clickHint": "Click a node to focus · Click empty space to clear"
+      "relayout": "Reorganizar",
+      "clickHint": "Clique em uma zona para ampliá-la"
     },
     "timelinePanel": {
       "title": "Cronologia de requerimentos (2000–2026)",
@@ -370,6 +371,24 @@
       "clear": "Apagar ponto",
       "defaultLabel": "Meu território",
       "sharedBadge": "Compartilhado"
+    },
+    "geoLocate": {
+      "title": "Onde você está?",
+      "description": "Ajude-nos a mostrar as concessões mineras mais próximas da sua área. Usamos sua localização apenas para centralizar o mapa.",
+      "locating": "Detectando localização...",
+      "useLocation": "Usar minha localização",
+      "or": "ou",
+      "cityPlaceholder": "Digite o nome de uma cidade...",
+      "noResults": "Nenhuma cidade encontrada. Tente outro nome.",
+      "searchFailed": "A busca falhou. Por favor, tente novamente.",
+      "denied": "O acesso à localização foi negado. Permita o acesso nas configurações do navegador ou busque por cidade.",
+      "yourArea": "Sua região",
+      "failed": "Não foi possível detectar a localização. Busque por cidade.",
+      "foundTitle": "Você foi encontrado!",
+      "foundDesc": "Está correto? Mostraremos as concessões mineras próximas a esta localização.",
+      "showNearby": "Mostrar concessões próximas",
+      "wrongPlace": "Local incorreto",
+      "skip": "Pular por agora"
     },
     "sync": {
       "lastSync": "Última sincronia ANM",

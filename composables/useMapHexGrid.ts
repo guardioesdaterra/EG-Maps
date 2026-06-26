@@ -1,7 +1,22 @@
 import { ref, nextTick, onScopeDispose, type Ref } from 'vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
+import { HEX_GRID } from '@/lib/constants'
 
-export function useMapHexGrid(canvasRef: Ref<HTMLCanvasElement | null>) {
+export interface HexGridOptions {
+  /** Hex size for mobile (default: HEX_GRID.mobileSize) */
+  mobileSize?: number
+  /** Hex size for desktop (default: HEX_GRID.desktopSize) */
+  desktopSize?: number
+  /** Stroke color (default: HEX_GRID.strokeColor) */
+  strokeColor?: string
+  /** Line width (default: HEX_GRID.lineWidth) */
+  lineWidth?: number
+}
+
+export function useMapHexGrid(
+  canvasRef: Ref<HTMLCanvasElement | null>,
+  options: HexGridOptions = {},
+) {
   const showHexGrid = ref(true)
   const isMobile = useMediaQuery('(max-width: 768px)')
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
@@ -11,6 +26,13 @@ export function useMapHexGrid(canvasRef: Ref<HTMLCanvasElement | null>) {
   let lastWidth = 0
   let lastHeight = 0
   let lastDpr = 0
+
+  const cfg = {
+    mobileSize: options.mobileSize ?? HEX_GRID.mobileSize,
+    desktopSize: options.desktopSize ?? HEX_GRID.desktopSize,
+    strokeColor: options.strokeColor ?? HEX_GRID.strokeColor,
+    lineWidth: options.lineWidth ?? HEX_GRID.lineWidth,
+  }
 
   function setupHexGrid() {
     if (cancelled || isDrawing) return
@@ -36,7 +58,7 @@ export function useMapHexGrid(canvasRef: Ref<HTMLCanvasElement | null>) {
       if (!ctx) return
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-      const hexSize = isMobile.value ? 35 : 50
+      const hexSize = isMobile.value ? cfg.mobileSize : cfg.desktopSize
       const hexHeight = hexSize * Math.sqrt(3)
       const hexWidth = hexSize * 2
       const hexVerticalOffset = hexHeight * 0.75
@@ -44,8 +66,8 @@ export function useMapHexGrid(canvasRef: Ref<HTMLCanvasElement | null>) {
       const columns = Math.ceil(w / hexHorizontalOffset) + 1
       const rows = Math.ceil(h / hexVerticalOffset) + 1
 
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.25)'
-      ctx.lineWidth = 1.5
+      ctx.strokeStyle = cfg.strokeColor
+      ctx.lineWidth = cfg.lineWidth
 
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
@@ -80,7 +102,7 @@ export function useMapHexGrid(canvasRef: Ref<HTMLCanvasElement | null>) {
         rafHandle = null
         setupHexGrid()
       })
-    }, 150)
+    }, HEX_GRID.debounceMs)
   }
 
   async function onVisibilityChange(visible: boolean) {

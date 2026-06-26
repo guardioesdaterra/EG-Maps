@@ -502,62 +502,6 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
     </div>`
 }
 
-interface BlobPoint {
-  x: number
-  y: number
-}
-
-export function computeClusterBlobPath(centers: BlobPoint[], miniRadius: number, padding: number): string {
-  if (centers.length === 0) return ''
-  const R = miniRadius + padding
-
-  // Single circle
-  if (centers.length === 1) {
-    const c = centers[0]
-    return `M${c.x - R},${c.y}A${R},${R},0,1,1,${c.x + R},${c.y}A${R},${R},0,1,1,${c.x - R},${c.y}Z`
-  }
-
-  // Centroid for sorting
-  const cx = centers.reduce((s, c) => s + c.x, 0) / centers.length
-  const cy = centers.reduce((s, c) => s + c.y, 0) / centers.length
-
-  // Sort by angle around centroid = convex hull order
-  const sorted = [...centers].sort((a, b) => Math.atan2(a.y - cy, a.x - cx) - Math.atan2(b.y - cy, b.x - cx))
-
-  // 2 points → pill/oval
-  if (sorted.length === 2) {
-    const p0 = sorted[0], p1 = sorted[1]
-    const dx = p1.x - p0.x, dy = p1.y - p0.y
-    const d = Math.sqrt(dx * dx + dy * dy) || 1
-    const nx = -dy / d * R, ny = dx / d * R
-    return `M${p0.x + nx},${p0.y + ny}A${R},${R},0,0,1,${p0.x - nx},${p0.y - ny}L${p1.x - nx},${p1.y - ny}A${R},${R},0,0,1,${p1.x + nx},${p1.y + ny}Z`
-  }
-
-  // 3+ points → expand outward from centroid, smooth Catmull-Rom curve
-  const expanded = sorted.map(p => {
-    const dx = p.x - cx, dy = p.y - cy
-    const d = Math.sqrt(dx * dx + dy * dy) || 1
-    return { x: p.x + (dx / d) * R, y: p.y + (dy / d) * R }
-  })
-
-  const tension = 0.35
-  const n = expanded.length
-  let path = ''
-  for (let i = 0; i < n; i++) {
-    const p = expanded[i]
-    const p1 = expanded[(i + 1) % n]
-    const p_1 = expanded[(i - 1 + n) % n]
-    const cp1x = p.x + (p1.x - p_1.x) * tension
-    const cp1y = p.y + (p1.y - p_1.y) * tension
-    const cp2x = p1.x - (p.x - p_1.x) * tension
-    const cp2y = p1.y - (p.y - p_1.y) * tension
-    if (i === 0) path += `M${p.x},${p.y}`
-    path += `C${cp1x},${cp1y} ${cp2x},${cp2y} ${p1.x},${p1.y}`
-  }
-  path += 'Z'
-  return path
-}
-
 export function escapeHtml(text: string): string {
   const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
   return text.replace(/[&<>"']/g, c => map[c])

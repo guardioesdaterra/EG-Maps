@@ -19,7 +19,7 @@ const DEFAULT_DURATIONS: Record<ToastMessage['kind'], number> = {
 
 export function useToast() {
   const state = useState<ToastState>('toast', () => ({ toasts: [] }))
-  const timers = new Map<string, ReturnType<typeof setTimeout>>()
+  const timers = new Map<string, ReturnType<typeof setTimeout> | number>()
 
   function push(toast: Omit<ToastMessage, 'id' | 'createdAt'>): string {
     const id = makeId()

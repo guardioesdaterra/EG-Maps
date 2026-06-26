@@ -99,8 +99,8 @@ const sortedData = computed(() => {
   const key = sortKey.value
   const dir = sortDir.value === 'asc' ? 1 : -1
   return [...filteredData.value].sort((a, b) => {
-    const av = (a as Record<string, unknown>)[key] ?? ''
-    const bv = (b as Record<string, unknown>)[key] ?? ''
+    const av = (a as unknown as Record<string, unknown>)[key] ?? ''
+    const bv = (b as unknown as Record<string, unknown>)[key] ?? ''
     if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir
     return String(av).localeCompare(String(bv)) * dir
   })

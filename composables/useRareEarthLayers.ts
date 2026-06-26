@@ -319,27 +319,26 @@ export function setupRareEarthLayers(
     if (clusterId == null) return
     const source = map.getSource(REE_SOURCE_POINTS) as maplibregl.GeoJSONSource
     if (!source) return
-    source.getClusterExpansionZoom(clusterId, (err, zoom) => {
-      if (err) return
-      map.flyTo({ center: e.lngLat, zoom: zoom as number, duration: 600 })
+    source.getClusterExpansionZoom(clusterId).then((zoom: number) => {
+      map.flyTo({ center: e.lngLat, zoom, duration: 600 })
     })
   }
 
   // Hover effects
-  const onPointEnter = (e: { features?: Array<{ id: string | number }> }) => {
+  const onPointEnter = (e: MapLayerMouseEvent) => {
     map.getCanvas().style.cursor = 'pointer'
     if (e.features?.length) {
       map.setFeatureState(
-        { source: REE_SOURCE_POINTS, id: e.features[0].id },
+        { source: REE_SOURCE_POINTS, id: e.features[0].id! },
         { hover: true },
       )
     }
   }
-  const onPointLeave = (e: { features?: Array<{ id: string | number }> }) => {
+  const onPointLeave = (e: MapLayerMouseEvent) => {
     map.getCanvas().style.cursor = ''
     if (e.features?.length) {
       map.setFeatureState(
-        { source: REE_SOURCE_POINTS, id: e.features[0].id },
+        { source: REE_SOURCE_POINTS, id: e.features[0].id! },
         { hover: false },
       )
     }

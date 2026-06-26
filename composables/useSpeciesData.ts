@@ -88,7 +88,7 @@ function preloadJSON(baseURL: string, dataset: string) {
 }
 
 async function fetchDataset(baseURL: string, ds: string): Promise<Species[]> {
-  if (memCache.has(ds)) return memCache.get(ds)!
+  if (memCache.has(ds)) return memCache.get(ds)! as Species[]
 
   const cached = await idbGet<Species[]>(ds)
   if (cached) {

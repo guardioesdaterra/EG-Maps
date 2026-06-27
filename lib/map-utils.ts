@@ -190,6 +190,63 @@ export function buildCrewPopupHTML(crew: CrewRegionData, translations?: CrewPopu
   `
 }
 
+export interface CrewLocationPopupTranslations {
+  crewName: string
+  country: string
+  city: string
+  region: string
+}
+
+export function buildCrewLocationPopupHTML(crew: { name: string; country: string; city: string; state: string; region: string }, translations?: CrewLocationPopupTranslations): string {
+  const t = translations || {
+    crewName: 'Crew Name',
+    country: 'Country',
+    city: 'City',
+    region: 'Region',
+  }
+  const location = [crew.city, crew.state, crew.country].filter(Boolean).join(', ')
+
+  return `
+    <div class="project-popup-wrapper" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere; overflow: hidden;">
+      <div class="project-popup-header">
+        <div class="project-corner-accent top-left"></div>
+        <div class="project-corner-accent top-right"></div>
+        <div class="project-header-content">
+          <div class="project-status-bar">
+            <span class="project-badge">Earth Guardians Crew</span>
+            <span class="project-indicator" style="background: #22c55e"></span>
+          </div>
+          <h3 class="project-title" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere;">${escapeHtml(crew.name)}</h3>
+        </div>
+        <div class="project-header-line"></div>
+      </div>
+      <div class="project-popup-body">
+        <div class="project-stat-row">
+          <div class="project-stat-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="project-stat-content">
+            <span class="project-stat-label">${t.city}</span>
+            <span class="project-stat-value">${escapeHtml(location)}</span>
+          </div>
+        </div>
+        <div class="project-stat-row">
+          <div class="project-stat-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+          <div class="project-stat-content">
+            <span class="project-stat-label">${t.region}</span>
+            <span class="project-stat-value">${escapeHtml(crew.region)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="project-popup-footer">
+        <div class="project-footer-glow" style="background: #22c55e"></div>
+      </div>
+    </div>
+  `
+}
+
 export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPopupTranslations, baseURL?: string): string {
   const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64032'
   const endangerment = species.endangerment ?? 'Unknown'
@@ -267,7 +324,7 @@ export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPo
             </div>
             <div class="species-detail-content">
               <span class="species-detail-label">${t.threatTypes}</span>
-              <span class="species-detail-value">${species.threatTypes.map(t => `<span class="species-threat-tag">${escapeHtml(t)}</span>`).join('')}</span>
+              <span class="species-detail-value">${(species.threatTypes ?? []).map(threat => `<span class="species-threat-tag">${escapeHtml(threat)}</span>`).join('')}</span>
             </div>
           </div>
           <div class="species-detail-row">
@@ -502,64 +559,7 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
     </div>`
 }
 
-interface BlobPoint {
-  x: number
-  y: number
-}
-
-export function computeClusterBlobPath(centers: BlobPoint[], miniRadius: number, padding: number): string {
-  if (centers.length === 0) return ''
-  const R = miniRadius + padding
-
-  // Single circle
-  if (centers.length === 1) {
-    const c = centers[0]
-    return `M${c.x - R},${c.y}A${R},${R},0,1,1,${c.x + R},${c.y}A${R},${R},0,1,1,${c.x - R},${c.y}Z`
-  }
-
-  // Centroid for sorting
-  const cx = centers.reduce((s, c) => s + c.x, 0) / centers.length
-  const cy = centers.reduce((s, c) => s + c.y, 0) / centers.length
-
-  // Sort by angle around centroid = convex hull order
-  const sorted = [...centers].sort((a, b) => Math.atan2(a.y - cy, a.x - cx) - Math.atan2(b.y - cy, b.x - cx))
-
-  // 2 points → pill/oval
-  if (sorted.length === 2) {
-    const p0 = sorted[0], p1 = sorted[1]
-    const dx = p1.x - p0.x, dy = p1.y - p0.y
-    const d = Math.sqrt(dx * dx + dy * dy) || 1
-    const nx = -dy / d * R, ny = dx / d * R
-    return `M${p0.x + nx},${p0.y + ny}A${R},${R},0,0,1,${p0.x - nx},${p0.y - ny}L${p1.x - nx},${p1.y - ny}A${R},${R},0,0,1,${p1.x + nx},${p1.y + ny}Z`
-  }
-
-  // 3+ points → expand outward from centroid, smooth Catmull-Rom curve
-  const expanded = sorted.map(p => {
-    const dx = p.x - cx, dy = p.y - cy
-    const d = Math.sqrt(dx * dx + dy * dy) || 1
-    return { x: p.x + (dx / d) * R, y: p.y + (dy / d) * R }
-  })
-
-  const tension = 0.35
-  const n = expanded.length
-  let path = ''
-  for (let i = 0; i < n; i++) {
-    const p = expanded[i]
-    const p1 = expanded[(i + 1) % n]
-    const p_1 = expanded[(i - 1 + n) % n]
-    const cp1x = p.x + (p1.x - p_1.x) * tension
-    const cp1y = p.y + (p1.y - p_1.y) * tension
-    const cp2x = p1.x - (p.x - p_1.x) * tension
-    const cp2y = p1.y - (p.y - p_1.y) * tension
-    if (i === 0) path += `M${p.x},${p.y}`
-    path += `C${cp1x},${cp1y} ${cp2x},${cp2y} ${p1.x},${p1.y}`
-  }
-  path += 'Z'
-  return path
-}
-
 export function escapeHtml(text: string): string {
-  const div = document.createElement('div')
-  div.appendChild(document.createTextNode(text))
-  return div.innerHTML
+  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
+  return text.replace(/[&<>"']/g, c => map[c])
 }

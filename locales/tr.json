@@ -47,7 +47,8 @@
     "icmbioDesc": "ICMBio ve IBAMA tarafından tutulan Brezilya'nın resmi nesli tükenmekte olan türler kaydı. Ülkenin zengin biyoçeşitliliğinin koruma durumunu belgeler.",
     "icmbioScope": "Brezilya",
     "suggestDataset": "Veri Seti Öner",
-    "suggestDatasetSubject": "EG-Maps için yeni bir veri seti öner"
+    "suggestDatasetSubject": "EG-Maps için yeni bir veri seti öner",
+    "viewSource": "Kaynağı Ziyaret Et"
   },
   "mapControls": {
     "search": "Ara",
@@ -319,7 +320,8 @@
       "hydrography": "Hidrografi",
       "conflictZones": "Çatışma Bölgeleri",
       "corpNetwork": "Kurumsal Ağ",
-      "enterpriseHq": "Şirket Merkezleri"
+      "enterpriseHq": "Şirket Merkezleri",
+      "heatmap": "Yoğunluk Isı Haritası"
     },
     "myTerritory": {
       "title": "Benim bölgem",
@@ -331,6 +333,24 @@
       "clear": "İşareti temizle",
       "defaultLabel": "Benim bölgem",
       "sharedBadge": "Paylaşıldı"
+    },
+    "geoLocate": {
+      "title": "Neredesiniz?",
+      "description": "Size en yakın maden ruhsatlarını göstermemize yardımcı olun. Konumunuz yalnızca haritayı ortalamak için kullanılır.",
+      "locating": "Konum algılanıyor...",
+      "useLocation": "Konumumu kullan",
+      "or": "veya",
+      "cityPlaceholder": "Şehir adı yazın...",
+      "noResults": "Şehir bulunamadı. Farklı bir ad deneyin.",
+      "searchFailed": "Arama başarısız oldu. Lütfen tekrar deneyin.",
+      "denied": "Konum erişimi reddedildi. Lütfen tarayıcı ayarlarından konum erişimine izin verin veya şehir ile arama yapın.",
+      "yourArea": "Bölgeniz",
+      "failed": "Konum algılanamadı. Lütfen şehir ile arama yapın.",
+      "foundTitle": "Sizi bulduk!",
+      "foundDesc": "Bu doğru mu? Bu konuya yakın maden ruhsatlarını göstereceğiz.",
+      "showNearby": "Yakın ruhsatları göster",
+      "wrongPlace": "Yanlış yer",
+      "skip": "Şimdige atla"
     },
     "search": "İşletme, madde, eyalet ara...",
     "legend": {
@@ -388,6 +408,53 @@
       "heavy_mineral_associated": "Ağır Mineral",
       "phosphate_associated": "Fosfat",
       "strategic_associated": "Stratejik"
+    },
+    "yearSlider": {
+      "title": "Başvuru Yılı",
+      "minYear": "Minimum Yıl",
+      "maxYear": "Maksimum Yıl",
+      "play": "Oynat",
+      "pause": "Duraklat",
+      "reset": "Sıfırla",
+      "claims": "Görünür Ruhsatlar"
+    },
+    "phaseFilter": {
+      "title": "Maden Aşaması",
+      "all": "Tümünü Seç",
+      "none": "Tümünü Kaldır"
+    },
+    "claimReport": {
+      "title": "Ruhsat sorununu bildir",
+      "close": "Kapat",
+      "claimInfo": "Bildirilen Ruhsat",
+      "reportType": "Bildirim Türü",
+      "types": {
+        "newActivity": "Yeni Faaliyet / Sondaj",
+        "pollution": "Su / Toprak Kirliliği",
+        "conflict": "Şiddet / Tehdit",
+        "correction": "Veri Düzeltme",
+        "fieldReport": "Saha Raporu"
+      },
+      "description": "Açıklama",
+      "descriptionPlaceholder": "Gözlemlediğinizi açıklayın (min. 10 karakter)...",
+      "includeLocation": "GPS konumumu dahil et",
+      "geoPending": "Konum isteniyor...",
+      "contactOptional": "İletişim (isteğe bağlı)",
+      "contactPlaceholder": "E-posta veya telefon (şifreli)",
+      "cancel": "İptal",
+      "submit": "Bildirimi Gönder"
+    },
+    "export": {
+      "title": "Harita Görünümünü Dışa Aktar",
+      "close": "Kapat",
+      "format": "Format",
+      "resolution": "Çözünürlük",
+      "paperSize": "Kağıt Boyutu",
+      "includeLegend": "Lejant dahil et",
+      "includeTitle": "Başlık ve metaveri dahil et",
+      "cancel": "İptal",
+      "download": "İndir",
+      "exporting": "Dışa aktarılıyor..."
     }
   },
   "loading": {
@@ -427,7 +494,7 @@
     "openPalette": "Komut paletini aç",
     "toggleTheme": "Koyu modu aç/kapat",
     "toggleFullscreen": "Tam ekranı aç/kapat",
-    "showShortcuts": "Bu katmanı göster",
-    "closeOverlay": "Herhangi bir katmanı kapat"
+      "showShortcuts": "Bu overlay'yi göster",
+      "closeOverlay": "Herhangi bir overlay'yi kapat"
   }
 }

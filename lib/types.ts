@@ -17,13 +17,13 @@ export interface Species {
   ecosystem: string;
   lat: number;
   lng: number;
-  imageUrl: string;
+  imageUrl: string | null;
   imageCredit: string;
   description?: string;
   endangerment?: string;
   ecosystemNeeds?: string;
   actions?: string;
-  threatTypes: string[];
+  threatTypes?: string[];
   iucnUrl?: string;
   range?: {
     type: string;
@@ -115,14 +115,4 @@ export interface CommandPaletteItem {
   onSelect: () => void
   /** Optional keywords to match against in addition to label/hint */
   keywords?: string[]
-}
-
-export interface ToastMessage {
-  id: string
-  kind: 'info' | 'success' | 'warning' | 'error'
-  title: string
-  body?: string
-  durationMs?: number
-  action?: { label: string; onClick: () => void }
-  createdAt: number
 }

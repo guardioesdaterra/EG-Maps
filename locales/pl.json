@@ -47,7 +47,8 @@
     "icmbioDesc": "Oficjalny brazylijski rejestr gatunków zagrożonych, prowadzony przez ICMBio i IBAMA. Dokumentuje stan ochrony bogatej bioróżnorodności kraju.",
     "icmbioScope": "Brazylia",
     "suggestDataset": "Zaproponuj zbiór danych",
-    "suggestDatasetSubject": "Zaproponuj nowy zbiór danych dla EG-Maps"
+    "suggestDatasetSubject": "Zaproponuj nowy zbiór danych dla EG-Maps",
+    "viewSource": "Odwiedź Źródło"
   },
   "mapControls": {
     "search": "Szukaj",
@@ -319,7 +320,8 @@
       "hydrography": "Hydrografia",
       "conflictZones": "Strefy konfliktu",
       "corpNetwork": "Sieć korporacyjna",
-      "enterpriseHq": "Siedziby firm"
+      "enterpriseHq": "Siedziby firm",
+      "heatmap": "Mapa ciepła gęstości"
     },
     "myTerritory": {
       "title": "Moje terytorium",
@@ -331,6 +333,24 @@
       "clear": "Wyczyść pinezkę",
       "defaultLabel": "Moje terytorium",
       "sharedBadge": "Udostępnione"
+    },
+    "geoLocate": {
+      "title": "Gdzie się znajdujesz?",
+      "description": "Pomóż nam pokazać najbliższe koncesje górnicze. Używamy Twojej lokalizacji tylko do wycentrowania mapy.",
+      "locating": "Wykrywanie lokalizacji...",
+      "useLocation": "Użyj mojej lokalizacji",
+      "or": "lub",
+      "cityPlaceholder": "Wpisz nazwę miasta...",
+      "noResults": "Nie znaleziono miast. Spróbuj innej nazwy.",
+      "searchFailed": "Wyszukiwanie nie powiodło się. Spróbuj ponownie.",
+      "denied": "Dostęp do lokalizacji został zablokowany. Zezwól na dostęp w ustawieniach przeglądarki lub wyszukaj po mieście.",
+      "yourArea": "Twój region",
+      "failed": "Nie udało się wykryć lokalizacji. Wyszukaj po mieście.",
+      "foundTitle": "Znaleźliśmy Cię!",
+      "foundDesc": "Czy to poprawne? Pokażemy koncesje górnicze w pobliżu tej lokalizacji.",
+      "showNearby": "Pokaż pobliskie koncesje",
+      "wrongPlace": "Błędne miejsce",
+      "skip": "Pomiń na razie"
     },
     "search": "Szukaj firmy, substancji, stanu...",
     "legend": {
@@ -388,6 +408,53 @@
       "heavy_mineral_associated": "Minerał ciężki",
       "phosphate_associated": "Fosforan",
       "strategic_associated": "Strategiczne"
+    },
+    "yearSlider": {
+      "title": "Rok wniosku",
+      "minYear": "Rok minimalny",
+      "maxYear": "Rok maksymalny",
+      "play": "Odtwórz",
+      "pause": "Wstrzymaj",
+      "reset": "Resetuj",
+      "claims": "Widoczne roszczenia"
+    },
+    "phaseFilter": {
+      "title": "Faza wydobywcza",
+      "all": "Wybierz wszystkie",
+      "none": "Odznacz wszystkie"
+    },
+    "claimReport": {
+      "title": "Zgłoś problem z koncesją",
+      "close": "Zamknij",
+      "claimInfo": "Zgłoszona koncesja",
+      "reportType": "Typ zgłoszenia",
+      "types": {
+        "newActivity": "Nowa działalność / wiertnictwo",
+        "pollution": "Zanieczyszczenie wody / gleby",
+        "conflict": "Przemoc / zastraszanie",
+        "correction": "Korekta danych",
+        "fieldReport": "Rapport terenowy"
+      },
+      "description": "Opis",
+      "descriptionPlaceholder": "Opisz, co zaobserwowałeś (min. 10 znaków)...",
+      "includeLocation": "Dołącz moją lokalizację GPS",
+      "geoPending": "Trwa żądanie lokalizacji...",
+      "contactOptional": "Kontakt (opcjonalny)",
+      "contactPlaceholder": "E-mail lub telefon (zaszyfrowany)",
+      "cancel": "Anuluj",
+      "submit": "Wyślij zgłoszenie"
+    },
+    "export": {
+      "title": "Eksportuj widok mapy",
+      "close": "Zamknij",
+      "format": "Format",
+      "resolution": "Rozdzielczość",
+      "paperSize": "Rozmiar papieru",
+      "includeLegend": "Dołącz legendę",
+      "includeTitle": "Dołącz tytuł i metadane",
+      "cancel": "Anuluj",
+      "download": "Pobierz",
+      "exporting": "Eksportowanie..."
     }
   },
   "loading": {

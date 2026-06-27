@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-screen relative overflow-hidden bg-black" role="main" aria-label="Interactive Map Visualization">
+  <div class="w-full h-[100svh] relative overflow-hidden bg-black" role="main" aria-label="Interactive Map Visualization">
     <!-- Loading skeleton -->
     <Transition name="fade">
       <div v-if="isLoading" class="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center">
@@ -52,7 +52,7 @@
     />
 
     <!-- Vignette -->
-    <div aria-hidden="true" class="absolute inset-0 pointer-events-none" :style="{ zIndex: 'var(--z-map-overlays)', boxShadow: 'inset 0 0 100px 15px rgba(0,0,0,0.5)' }" />
+    <div aria-hidden="true" class="absolute inset-0 pointer-events-none" :style="{ zIndex: 'var(--z-map-overlays)',     boxShadow: 'inset 0 0 clamp(30px, 8vw, 100px) clamp(5px, 2vw, 15px) rgba(0,0,0,0.5)' }" />
 
     <!-- Hex grid overlay -->
     <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-20" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
@@ -70,10 +70,10 @@
 
     <!-- Earth Guardians Banner - Mobile optimized -->
     <div v-if="isMobile" class="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none px-2 sm:px-3" :style="{ zIndex: 'var(--z-map-banner)' }">
-      <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[10vh] xs:max-h-[12vh] max-w-[180px] xs:max-w-[240px] object-contain" loading="lazy" />
+      <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[10vh] xs:max-h-[12vh] max-w-[clamp(10rem,24vw,16rem)] object-contain" loading="lazy" />
     </div>
     <div v-else class="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" :style="{ zIndex: 'var(--z-map-banner)' }">
-      <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[180px] -rotate-90 origin-center" loading="lazy" />
+      <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[clamp(10rem,24vw,16rem)] -rotate-90 origin-center" loading="lazy" />
     </div>
 
     <!-- Map Container -->
@@ -181,20 +181,24 @@ import { useI18n } from '@/composables/useI18n'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
-import type { CrewRegionData } from '@/lib/crew-data'
+import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
-import { buildProjectPopupHTML, buildSpeciesPopupHTML, buildRareEarthPopupHTML, buildCrewPopupHTML, isValidCoordinate, GROUP_COLORS } from '@/lib/map-utils'
-import {
-  preloadSpeciesImages,
-} from '@/lib/image-utils'
+import { buildRareEarthPopupHTML, isValidCoordinate } from '@/lib/map-utils'
+import { preloadSpeciesImages } from '@/lib/image-utils'
 import { useMapCluster } from '@/composables/useMapCluster'
+import { useToast } from '@/composables/useToast'
 import { detectWebGLSupport } from '@/composables/useMapLibre'
+import { useMapHexGrid } from '@/composables/useMapHexGrid'
+import { useMapCore } from '@/composables/useMapCore'
+import { useSpeciesPopup, useProjectPopup, useCrewPopup } from '@/composables/useMapPopup'
+import { NATIVE_GEOJSON_THRESHOLD, MOBILE_PROJECT_LIMIT, MOBILE_SPECIES_LIMIT } from '@/lib/constants'
 import type { ClusterPoint, ClusterItem } from '@/composables/useMapCluster'
 import {
   createProjectMarkerElement,
   createSpeciesMarkerElement,
   createRareEarthMarkerElement,
   createCrewMarkerElement,
+  createCrewLocationMarkerElement,
   createClusterMarkerElement,
 } from '@/composables/useMapMarkers'
 import {
@@ -227,6 +231,7 @@ interface Props {
   speciesIndex?: SpeciesIndexItem[]  // Lightweight index for markers
   defaultDataset?: 'project-grants' | 'endangered-species' | 'observatory-of-vulcan' | 'active-crews'
   crews?: CrewRegionData[]
+  crewLocations?: CrewLocation[]
   // Rare Earth dataset (observatory-of-vulcan)
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
@@ -243,6 +248,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const projectsData = computed(() => props.projects || allProjectsData)
 const crewsData = computed(() => props.crews || [])
+const crewLocationsData = computed(() => props.crewLocations || [])
 const speciesData = computed(() => props.species || [])
 const speciesIndexData = computed(() => props.speciesIndex || [])
 const filteredProjectsList = ref<ProjectData[] | null>(null)
@@ -257,7 +263,6 @@ const mapContainerRef = ref<HTMLDivElement | null>(null)
 const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
 const speciesFilterPanelRef = ref<{ toggleTaxonomicGroup: (_group: string) => void } | null>(null)
 const selectedSpeciesGroups = ref<string[]>([])
-const showHexGrid = ref(true)
 const showFilterPanel = ref(false)
 const activeDataset = ref<'project-grants' | 'endangered-species' | 'observatory-of-vulcan' | 'active-crews'>(props.defaultDataset)
 
@@ -271,113 +276,82 @@ const hasError = ref(false)
 const errorMessage = ref('')
 const noWebglSupport = ref(false)
 const isLoading = ref(true)
-const showSpeciesOverlay = ref(false)
-const speciesOverlayHTML = ref('')
-const popupLocale = ref<string>(locale.value)
-const selectedPopupSpecies = ref<Species | SpeciesIndexItem | null>(null)
-const availablePopupLocales = computed(() => {
-  const s = selectedPopupSpecies.value
-  if (!s || !('content' in s) || !s.content) return []
-  return (Object.keys(s.content) as Array<string>).filter(l => l !== popupLocale.value)
-})
-const showProjectOverlay = ref(false)
-const projectOverlayHTML = ref('')
-const showCrewOverlay = ref(false)
-const crewOverlayHTML = ref('')
+// ── Popup composables (each handles its own state, i18n, and focus) ──
+const speciesPopup = useSpeciesPopup(baseURL)
+const projectPopup = useProjectPopup()
+const crewPopup = useCrewPopup()
 
-let map: maplibregl.Map | null = null
-let markers: maplibregl.Marker[] = []
-let isMounted = true
-let pendingVisibilityUpdate = false
-let pendingClusterRebuild = false
-const clusterer = useMapCluster()
-const geoJSONMarkers = useGeoJSONMarkers()
-let lastClusterZoom = -1
-let lastBboxCenter: { lng: number; lat: number } | null = null
+// Destructure for template binding (keeps template unchanged)
+const {
+  showOverlay: showSpeciesOverlay,
+  overlayHTML: speciesOverlayHTML,
+  popupLocale,
+  availableLocales: availablePopupLocales,
+  closeBtnRef: speciesCloseBtnRef,
+  overlayRef: speciesOverlayRef,
+  open: openSpeciesPopup,
+  close: closeSpeciesPopup,
+  rebuild: rebuildSpeciesPopup,
+} = speciesPopup
+const {
+  showOverlay: showProjectOverlay,
+  overlayHTML: projectOverlayHTML,
+  closeBtnRef: projectCloseBtnRef,
+  overlayRef: projectOverlayRef,
+  open: openProjectPopup,
+  close: closeProjectPopup,
+} = projectPopup
+const {
+  showOverlay: showCrewOverlay,
+  overlayHTML: crewOverlayHTML,
+  closeBtnRef: crewCloseBtnRef,
+  open: openCrewPopup,
+  close: closeCrewPopup,
+} = crewPopup
 
-const speciesCloseBtnRef = ref<HTMLElement | null>(null)
-const projectCloseBtnRef = ref<HTMLElement | null>(null)
-const crewCloseBtnRef = ref<HTMLElement | null>(null)
-const speciesOverlayRef = ref<HTMLElement | null>(null)
-const projectOverlayRef = ref<HTMLElement | null>(null)
-let lastFocusedEl: HTMLElement | null = null
+// ── Shared map core (i18n, species helpers, visibility, cluster logic) ──
+const mapCore = useMapCore(locale, t)
 
-const speciesOverlayActive = computed(() => showSpeciesOverlay.value)
-const projectOverlayActive = computed(() => showProjectOverlay.value)
-useFocusTrap(speciesOverlayRef, { active: speciesOverlayActive })
-useFocusTrap(projectOverlayRef, { active: projectOverlayActive })
+// ── Hex grid composable ──
+const hexGrid = useMapHexGrid(hexCanvasRef)
+const { showHexGrid } = hexGrid
 
+// Wrapper functions for template backward-compat
 function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
-  selectedPopupSpecies.value = species
-  popupLocale.value = locale.value
-  rebuildSpeciesOverlay()
-  showSpeciesOverlay.value = true
   lastFocusedEl = document.activeElement as HTMLElement
-  nextTick(() => speciesCloseBtnRef.value?.focus())
+  openSpeciesPopup(species)
 }
-
-function rebuildSpeciesOverlay() {
-  const species = selectedPopupSpecies.value
-  if (!species) return
-  const localizedSpecies = getLocalizedSpecies(species, popupLocale.value)
-  const speciesPopupTranslations = {
-    scientificName: t('species.scientificName'),
-    threatTypes: t('species.threatTypes'),
-    population: t('species.population'),
-    habitat: t('species.habitat'),
-    region: t('filter.region'),
-    ecosystem: t('filter.ecosystem'),
-    groupLabels: getTaxonomicGroupLabels()
-  }
-  speciesOverlayHTML.value = buildSpeciesPopupHTML(localizedSpecies, speciesPopupTranslations, baseURL)
-}
-
 function closeSpeciesOverlay() {
-  showSpeciesOverlay.value = false
-  speciesOverlayHTML.value = ''
-  selectedPopupSpecies.value = null
+  closeSpeciesPopup()
   nextTick(() => lastFocusedEl?.focus())
 }
-
+function rebuildSpeciesOverlay() { rebuildSpeciesPopup() }
+function openProjectOverlay(project: ProjectData) {
+  lastFocusedEl = document.activeElement as HTMLElement
+  openProjectPopup(project)
+}
+function closeProjectOverlay() {
+  closeProjectPopup()
+  nextTick(() => lastFocusedEl?.focus())
+}
+function openCrewOverlay(crew: CrewRegionData) {
+  lastFocusedEl = document.activeElement as HTMLElement
+  openCrewPopup(crew)
+}
+function closeCrewOverlay() {
+  closeCrewPopup()
+  nextTick(() => lastFocusedEl?.focus())
+}
+function openCrewLocationOverlay(crew: CrewLocation) {
+  lastFocusedEl = document.activeElement as HTMLElement
+  crewPopup.open(crew)
+}
 function handleSpeciesSelected(species: SpeciesIndexItem) {
   speciesPanel.closePanel()
   openSpeciesOverlay(species)
 }
-
-function findSpeciesAtCoord(lat: number, lng: number, source: SpeciesIndexItem[]): SpeciesIndexItem[] {
-  return source.filter(s =>
-    Math.abs(s.lat - lat) < 0.001 && Math.abs(s.lng - lng) < 0.001
-  )
-}
-
-function openProjectOverlay(project: ProjectData) {
-  const projectPopupTranslations = {
-    projectGrantee: t('stats.projectGrantees'),
-    directBeneficiaries: t('stats.directBeneficiaries'),
-    indirectBeneficiaries: t('stats.indirectBeneficiaries'),
-    location: t('project.location'),
-    status: t('project.status'),
-    unknownLocation: t('project.unknownLocation')
-  }
-  projectOverlayHTML.value = buildProjectPopupHTML(project, projectPopupTranslations)
-  showProjectOverlay.value = true
-  lastFocusedEl = document.activeElement as HTMLElement
-  nextTick(() => projectCloseBtnRef.value?.focus())
-}
-
-function openCrewOverlay(crew: CrewRegionData) {
-  const crewPopupTranslations = {
-    activeCrews: t('crews.activeCrews'),
-    inactiveCrews: t('crews.inactiveCrews'),
-    totalMembers: t('crews.totalMembers'),
-    countries: t('crews.countries'),
-    region: t('crews.region'),
-    growthSince2022: t('crews.growthSince2022'),
-  }
-  crewOverlayHTML.value = buildCrewPopupHTML(crew, crewPopupTranslations)
-  showCrewOverlay.value = true
-  lastFocusedEl = document.activeElement as HTMLElement
-  nextTick(() => crewCloseBtnRef.value?.focus())
+function findSpeciesAtCoord(lat: number, lng: number, source: SpeciesIndexItem[]) {
+  return mapCore.findSpeciesAtCoord(lat, lng, source)
 }
 
 function openRareEarthOverlay(feature: GeoJSON.Feature) {
@@ -391,56 +365,22 @@ function openRareEarthOverlay(feature: GeoJSON.Feature) {
     .addTo(map!)
 }
 
-function closeProjectOverlay() {
-  showProjectOverlay.value = false
-  projectOverlayHTML.value = ''
-  nextTick(() => lastFocusedEl?.focus())
-}
+let map: maplibregl.Map | null = null
+let markers: maplibregl.Marker[] = []
+let isMounted = true
+let pendingVisibilityUpdate = false
+let pendingClusterRebuild = false
+const clusterer = useMapCluster()
+const toast = useToast()
+const geoJSONMarkers = useGeoJSONMarkers()
+let lastClusterZoom = -1
+let lastBboxCenter: { lng: number; lat: number } | null = null
+let lastFocusedEl: HTMLElement | null = null
 
-function closeCrewOverlay() {
-  showCrewOverlay.value = false
-  crewOverlayHTML.value = ''
-  nextTick(() => lastFocusedEl?.focus())
-}
-
-function taxonomicGroupLabel(group: string) {
-  return t(`taxonomy.${group}`)
-}
-
-function getTaxonomicGroupLabels() {
-  return Object.keys(GROUP_COLORS).reduce<Record<string, string>>((labels, group) => {
-    labels[group] = taxonomicGroupLabel(group)
-    return labels
-  }, {})
-}
-
-function getLocalizedSpecies(species: Species | SpeciesIndexItem, overLocale?: string): Species {
-  if (!('content' in species)) {
-    return {
-      ...species,
-      imageUrl: species.imageUrl ?? '',
-      region: '',
-      ecosystem: '',
-      imageCredit: '',
-      ecosystemNeeds: undefined,
-      actions: undefined,
-      content: {},
-    }
-  }
-
-  const targetLocale = overLocale ?? locale.value
-  const content = species.content?.[targetLocale] ?? species.content?.en
-  if (!content) return species
-
-  return {
-    ...species,
-    description: content.description ?? species.description,
-    endangerment: content.endangerment ?? species.endangerment,
-    ecosystemNeeds: content.ecosystemNeeds ?? species.ecosystemNeeds,
-    actions: content.actions ?? species.actions,
-    region: content.region ?? species.region,
-  }
-}
+const speciesOverlayActive = computed(() => showSpeciesOverlay.value)
+const projectOverlayActive = computed(() => showProjectOverlay.value)
+useFocusTrap(speciesOverlayRef, { active: speciesOverlayActive })
+useFocusTrap(projectOverlayRef, { active: projectOverlayActive })
 
 function toggleLegendGroup(group: string | number) {
   speciesFilterPanelRef.value?.toggleTaxonomicGroup(String(group))
@@ -451,92 +391,10 @@ function handleSpeciesGroupSelection(groups: string[]) {
 }
 
 // Dynamically adjust popup size and position to show fully on screen
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-function _fitPopupToScreen(popup: maplibregl.Popup) {
-  const popupEl = popup.getElement()
-  if (!popupEl) return
-
-  // Set ultra-high z-index to be on top of everything
-  popupEl.style.zIndex = '2147483647'
-  
-  const content = popupEl.querySelector('.maplibregl-popup-content') as HTMLElement
-  if (!content) return
-
-  const margin = 16
-  const maxWidth = window.innerWidth - margin * 2
-  const maxHeight = window.innerHeight - margin * 2
-
-  // Set max dimensions
-  content.style.maxWidth = `${maxWidth}px`
-  content.style.maxHeight = `${maxHeight}px`
-  content.style.overflow = 'auto'
-  
-  // Get actual dimensions after setting max
-  requestAnimationFrame(() => {
-    const rect = content.getBoundingClientRect()
-
-    // Reposition popup to keep it fully on screen
-    let topOffset = 0
-    let leftOffset = 0
-
-    if (rect.right > window.innerWidth - margin) {
-      leftOffset = window.innerWidth - rect.width - margin - rect.left
-    }
-
-    if (rect.left < margin) {
-      leftOffset = margin - rect.left
-    }
-
-    if (rect.top < margin) {
-      topOffset = margin - rect.top
-    }
-
-    if (rect.bottom > window.innerHeight - margin) {
-      topOffset = window.innerHeight - rect.height - margin - rect.top
-    }
-
-    if (rect.height > maxHeight) {
-      topOffset = margin - rect.top
-      content.style.maxHeight = `${maxHeight}px`
-      content.style.overflowY = 'auto'
-    }
-
-    if (topOffset !== 0 || leftOffset !== 0) {
-      const tip = popupEl.querySelector('.maplibregl-popup-tip') as HTMLElement | null
-      const currentTransform = tip?.style.transform || content.style.transform || ''
-      const translateMatch = currentTransform.match(/translate\(([^)]+)\)/)
-      let baseX = 0
-      let baseY = 0
-      if (translateMatch) {
-        const parts = translateMatch[1].split(',').map(s => parseFloat(s.trim()) || 0)
-        baseX = parts[0] || 0
-        baseY = parts[1] || 0
-      }
-      const adjustedX = baseX + leftOffset
-      const adjustedY = baseY + topOffset
-      const newTransform = `translate(${adjustedX}px, ${adjustedY}px)`
-      if (translateMatch) {
-        if (tip) tip.style.transform = currentTransform.replace(translateMatch[0], newTransform)
-        else content.style.transform = newTransform
-      } else {
-        if (tip) tip.style.transform = newTransform
-        else content.style.transform = newTransform
-      }
-    }
-  })
-}
 
 // Filter species index by selected groups
 function applySpeciesFilters(speciesIndex: SpeciesIndexItem[]): SpeciesIndexItem[] {
-  // If no groups selected, return all
-  if (selectedSpeciesGroups.value.length === 0) {
-    return speciesIndex
-  }
-  
-  // Filter by selected taxonomic groups
-  return speciesIndex.filter(s => 
-    selectedSpeciesGroups.value.includes(s.taxonomicGroup)
-  )
+  return mapCore.applySpeciesFilters(speciesIndex, selectedSpeciesGroups.value)
 }
 
 function handleFilterChange(filtered: Species[]) {
@@ -575,6 +433,8 @@ let geoJSONSpeciesIndex: SpeciesIndexItem[] | null = null
 
 async function setupGeoJSONMarkers(forceReinit = false) {
   if (!map || !useNativeGeoJSON) return
+
+  if (activeDataset.value !== 'project-grants' && activeDataset.value !== 'endangered-species') return
 
   const dataset = activeDataset.value === 'project-grants' ? 'project-grants' : 'endangered-species'
 
@@ -629,6 +489,7 @@ async function setupGeoJSONMarkers(forceReinit = false) {
         speciesIndex = [...icmbio, ...iucn]
         geoJSONSpeciesIndex = speciesIndex
       } catch {
+        toast.error('Failed to load species data')
         return
       }
     }
@@ -689,6 +550,10 @@ const rareEarthController = useRareEarthController({
   map: computed(() => map),
   isActive: computed(() => activeDataset.value === 'observatory-of-vulcan'),
   getProps: () => props,
+  popup: {
+    t,
+    locale,
+  },
 })
 
 // Fallback rebuildMarkers using DOM markers (for smaller datasets or when GeoJSON isn't available)
@@ -698,11 +563,11 @@ function rebuildMarkers() {
   const currentZoom = map.getZoom()
 
   // Use native GeoJSON for large datasets (endangered species with 500+ points)
-  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500) {
+  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > NATIVE_GEOJSON_THRESHOLD) {
     setupGeoJSONMarkers()
     return
   }
-  if (useNativeGeoJSON && activeDataset.value === 'project-grants' && visibleProjects.value.length > 500) {
+  if (useNativeGeoJSON && activeDataset.value === 'project-grants' && visibleProjects.value.length > NATIVE_GEOJSON_THRESHOLD) {
     setupGeoJSONMarkers()
     return
   }
@@ -714,7 +579,7 @@ function rebuildMarkers() {
 
   if (activeDataset.value === 'project-grants') {
     const projectList = isMobile.value
-      ? visibleProjects.value.slice(0, 60)
+      ? visibleProjects.value.slice(0, MOBILE_PROJECT_LIMIT)
       : visibleProjects.value
     const validProjects = projectList.filter(p => isValidCoordinate(p.latitude, p.longitude))
 
@@ -836,11 +701,13 @@ function rebuildMarkers() {
       }
     })
   } else if (activeDataset.value === 'active-crews') {
-    const validCrews = crewsData.value.filter(c => isValidCoordinate(c.latitude, c.longitude))
+    const validCrews: (CrewLocation | CrewRegionData)[] = crewLocationsData.value.length
+      ? crewLocationsData.value.filter(c => isValidCoordinate(c.lat, c.lng))
+      : crewsData.value.filter(c => isValidCoordinate(c.latitude, c.longitude))
 
     const clusterItems = validCrews.map((c, i) => ({
-      lng: c.longitude,
-      lat: c.latitude,
+      lng: 'lng' in c ? c.lng : c.longitude,
+      lat: 'lat' in c ? c.lat : c.latitude,
       type: 'project' as const,
       index: i,
     }))
@@ -858,12 +725,15 @@ function rebuildMarkers() {
       if (cp.type === 'cluster') {
         const onItemClick = (item: ClusterItem) => {
           const crew = validCrews[item.index]
-          if (crew) openCrewOverlay(crew)
+          if (crew) {
+            if ('activeCrews' in crew) openCrewOverlay(crew as CrewRegionData)
+            else openCrewLocationOverlay(crew as CrewLocation)
+          }
         }
-        const el = createClusterMarkerElement(activeDataset.value, cp.count, cp.items, onItemClick, undefined, undefined, undefined, validCrews.map(c => ({ lng: c.longitude, lat: c.latitude })))
+        const el = createClusterMarkerElement(activeDataset.value, cp.count, cp.items, onItemClick, undefined, undefined, undefined, validCrews.map(c => ({ lng: 'lng' in c ? c.lng : c.longitude, lat: 'lat' in c ? c.lat : c.latitude })))
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
-        el.setAttribute('aria-label', `Cluster of ${cp.count} crew regions`)
+        el.setAttribute('aria-label', `Cluster of ${cp.count} crew locations`)
         el.addEventListener('click', (e) => {
           if ((e.target as HTMLElement | null)?.classList.contains('cluster-mini-hover')) return
           if (map) {
@@ -878,24 +748,34 @@ function rebuildMarkers() {
       } else {
         const crew = validCrews[cp.sourceIndex]
         if (!crew) return
-        const el = createCrewMarkerElement(crew)
+        const isLocation = 'name' in crew && 'lat' in crew && !('activeCrews' in crew)
+        const el = isLocation
+          ? createCrewLocationMarkerElement(crew as CrewLocation)
+          : createCrewMarkerElement(crew as CrewRegionData)
         el.style.cursor = 'pointer'
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
-        el.setAttribute('aria-label', `${crew.region} - ${crew.activeCrews} active crews`)
-        el.addEventListener('click', () => { openCrewOverlay(crew) })
+        el.setAttribute('aria-label', isLocation ? `${(crew as CrewLocation).name} - ${(crew as CrewLocation).city}, ${(crew as CrewLocation).country}` : `${(crew as CrewRegionData).region} - ${(crew as CrewRegionData).activeCrews} active crews`)
+        el.addEventListener('click', () => {
+          if (isLocation) openCrewLocationOverlay(crew as CrewLocation)
+          else openCrewOverlay(crew as CrewRegionData)
+        })
         el.addEventListener('keydown', (e: KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCrewOverlay(crew) }
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (isLocation) openCrewLocationOverlay(crew as CrewLocation)
+            else openCrewOverlay(crew as CrewRegionData)
+          }
         })
         const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([crew.longitude, crew.latitude])
+          .setLngLat([crew.lng ?? crew.longitude, crew.lat ?? crew.latitude])
           .addTo(map!)
         markers.push(marker)
       }
     })
   } else if (activeDataset.value === 'endangered-species' && speciesIndexData.value.length) {
     const speciesList = isMobile.value
-      ? speciesIndexData.value.slice(0, 80)
+      ? speciesIndexData.value.slice(0, MOBILE_SPECIES_LIMIT)
       : speciesIndexData.value
     const speciesToRender = speciesList.filter(s => isValidCoordinate(s.lat, s.lng))
     const imageUrls = speciesToRender.map(s => s.imageUrl).filter((url): url is string => url !== null)
@@ -969,45 +849,7 @@ function rebuildMarkers() {
 
 function updateMarkerVisibility() {
   if (!map) return
-
-  const canvas = map.getCanvas()
-  const margin = 50
-  const bounds = {
-    minX: -margin,
-    maxX: canvas.width + margin,
-    minY: -margin,
-    maxY: canvas.height + margin
-  }
-
-  // Batch DOM updates - only change what actually changed
-  markers.forEach(marker => {
-    const el = marker.getElement()
-    try {
-      const point = map!.project(marker.getLngLat())
-      if (!point || isNaN(point.x) || isNaN(point.y)) {
-        el.style.display = 'none'
-        el.style.pointerEvents = 'none'
-        return
-      }
-
-      const isVisible = (
-        point.x >= bounds.minX &&
-        point.x <= bounds.maxX &&
-        point.y >= bounds.minY &&
-        point.y <= bounds.maxY
-      )
-
-      // Only update DOM if state changed
-      const wasVisible = el.style.display !== 'none'
-      if (isVisible !== wasVisible) {
-        el.style.display = isVisible ? '' : 'none'
-        el.style.pointerEvents = isVisible ? '' : 'none'
-      }
-    } catch {
-      el.style.display = 'none'
-      el.style.pointerEvents = 'none'
-    }
-  })
+  mapCore.updateMarkerVisibility(map, markers)
 }
 
 function navigateToLocation(lat: number, lng: number) {
@@ -1016,66 +858,11 @@ function navigateToLocation(lat: number, lng: number) {
   }
 }
 
-function setupHexGrid() {
-  const canvas = hexCanvasRef.value
-  if (!canvas) return
-
-  const dpr = window.devicePixelRatio || 1
-  canvas.width = window.innerWidth * dpr
-  canvas.height = window.innerHeight * dpr
-  canvas.style.width = `${window.innerWidth}px`
-  canvas.style.height = `${window.innerHeight}px`
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-
-  const hexSize = isMobile.value ? 35 : 50
-  const hexHeight = hexSize * Math.sqrt(3)
-  const hexWidth = hexSize * 2
-  const hexVerticalOffset = hexHeight * 0.75
-  const hexHorizontalOffset = hexWidth * 0.5
-  const columns = Math.ceil(window.innerWidth / hexHorizontalOffset) + 1
-  const rows = Math.ceil(window.innerHeight / hexVerticalOffset) + 1
-
-  ctx.strokeStyle = 'rgba(6, 182, 212, 0.25)'
-  ctx.lineWidth = 1.5
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < columns; col++) {
-      const x = col * hexHorizontalOffset
-      const y = row * hexVerticalOffset + (col % 2 === 0 ? 0 : hexHeight / 2)
-      if (x < -hexWidth || x > window.innerWidth + hexWidth || y < -hexHeight || y > window.innerHeight + hexHeight) continue
-
-      ctx.beginPath()
-      for (let i = 0; i < 6; i++) {
-        const angle = (Math.PI / 3) * i
-        const hx = x + hexSize * Math.cos(angle)
-        const hy = y + hexSize * Math.sin(angle)
-        if (i === 0) ctx.moveTo(hx, hy)
-        else ctx.lineTo(hx, hy)
-      }
-      ctx.closePath()
-      ctx.stroke()
-    }
-  }
-}
-
-let hexGridDebounceTimer: ReturnType<typeof setTimeout> | null = null
-let hexGridRafId: number | null = null
-
-function debouncedSetupHexGrid() {
-  if (hexGridDebounceTimer) clearTimeout(hexGridDebounceTimer)
-  if (hexGridRafId) cancelAnimationFrame(hexGridRafId)
-  hexGridDebounceTimer = setTimeout(() => {
-    hexGridRafId = requestAnimationFrame(() => {
-      setupHexGrid()
-      hexGridRafId = null
-    })
-    hexGridDebounceTimer = null
-  }, 150)
-}
+// Hex grid is now handled by useMapHexGrid composable (hexGrid.setupHexGrid / hexGrid.debouncedSetup)
 
 function initMap() {
+  // eslint-disable-next-line no-console
+  console.debug('[UnifiedMap] initMap called', { containerRef: !!mapContainerRef.value })
   if (!mapContainerRef.value) return
 
   // Detect WebGL support before attempting to create map
@@ -1105,6 +892,8 @@ function initMap() {
 
   try {
     const isRee = activeDataset.value === 'observatory-of-vulcan'
+    // eslint-disable-next-line no-console
+    console.debug('[UnifiedMap] creating maplibregl.Map', { style: MAP_STYLE.substring(0, 80), isMobile: isMobile.value })
     map = new maplibregl.Map({
       container: mapContainerRef.value,
       style: MAP_STYLE,
@@ -1131,6 +920,8 @@ function initMap() {
     }
 
     map.on('load', () => {
+      // eslint-disable-next-line no-console
+      console.debug('[UnifiedMap] map loaded successfully')
       if (!isMounted) return
       isLoading.value = false
       if (map) emit('mapInit', map)
@@ -1142,7 +933,7 @@ function initMap() {
         connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
         connections2D.startParticles()
       }
-      setupHexGrid()
+      hexGrid.setupHexGrid()
     })
 
     map.on('move', () => {
@@ -1158,24 +949,8 @@ function initMap() {
       if (!pendingClusterRebuild && map) {
         // Skip cluster rebuilds for GeoJSON path — MapLibre handles viewport natively
         if (usingNativeGeoJSON) return
-        let needsRebuild = false
         const currentZoom = Math.floor(map.getZoom())
-        if (currentZoom !== lastClusterZoom) {
-          needsRebuild = true
-        } else {
-          const bounds = map.getBounds()
-          const center = map.getCenter()
-          const lngSpan = bounds.getEast() - bounds.getWest()
-          const latSpan = bounds.getNorth() - bounds.getSouth()
-          if (
-            !lastBboxCenter ||
-            Math.abs(center.lng - lastBboxCenter.lng) > lngSpan * 0.4 ||
-            Math.abs(center.lat - lastBboxCenter.lat) > latSpan * 0.4
-          ) {
-            needsRebuild = true
-          }
-        }
-        if (needsRebuild) {
+        if (mapCore.shouldRebuildClusters(map, currentZoom, lastClusterZoom, lastBboxCenter)) {
           pendingClusterRebuild = true
           requestAnimationFrame(() => {
             rebuildMarkers()
@@ -1188,31 +963,15 @@ function initMap() {
     map.on('moveend', () => {
       updateMarkerVisibility()
       if (map) {
-        let needsRebuild = false
         const currentZoom = Math.floor(map.getZoom())
-        if (currentZoom !== lastClusterZoom) {
-          needsRebuild = true
-        } else {
-          const bounds = map.getBounds()
-          const center = map.getCenter()
-          const lngSpan = bounds.getEast() - bounds.getWest()
-          const latSpan = bounds.getNorth() - bounds.getSouth()
-          if (
-            !lastBboxCenter ||
-            Math.abs(center.lng - lastBboxCenter.lng) > lngSpan * 0.4 ||
-            Math.abs(center.lat - lastBboxCenter.lat) > latSpan * 0.4
-          ) {
-            needsRebuild = true
-          }
-        }
-        if (needsRebuild) {
+        if (mapCore.shouldRebuildClusters(map, currentZoom, lastClusterZoom, lastBboxCenter)) {
           rebuildMarkers()
         }
       }
     })
 
     map.on('resize', () => {
-      debouncedSetupHexGrid()
+      hexGrid.debouncedSetup()
     })
 
     let errorCount = 0
@@ -1220,7 +979,7 @@ function initMap() {
 
     map.on('error', (err) => {
       // eslint-disable-next-line no-console
-      console.error('MapLibre error:', err)
+      console.error('[UnifiedMap] MapLibre error:', err)
       errorCount++
       if (!usedFallback && errorCount >= 2 && MAP_STYLE.includes('maptiler.com')) {
         usedFallback = true
@@ -1254,16 +1013,18 @@ function initMap() {
       }
     }, 20000)
 
-    window.addEventListener('resize', debouncedSetupHexGrid)
+    window.addEventListener('resize', hexGrid.debouncedSetup)
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.error('Failed to initialize map:', err)
+    console.error('[UnifiedMap] Failed to initialize map:', err)
     isLoading.value = false
     hasError.value = true
   }
 }
 
 onMounted(() => {
+  // eslint-disable-next-line no-console
+  console.debug('[UnifiedMap] onMounted', { dataset: props.defaultDataset, mapContainer: !!mapContainerRef.value })
   showFilterPanel.value = !isMobile.value
   initMap()
 })
@@ -1304,7 +1065,7 @@ watch(() => [props.rareEarthPoints, props.rareEarthPolygons], () => {
 watch(showHexGrid, async (visible) => {
   if (!visible) return
   await nextTick()
-  setupHexGrid()
+  hexGrid.setupHexGrid()
 })
 
 watch(connections2D.showConnections, () => {
@@ -1339,8 +1100,6 @@ watch(popupLocale, () => {
 
 onUnmounted(() => {
   isMounted = false
-  if (hexGridDebounceTimer) clearTimeout(hexGridDebounceTimer)
-  if (hexGridRafId) cancelAnimationFrame(hexGridRafId)
   connections2D.cleanup()
   markers.forEach(m => m.remove())
   markers = []
@@ -1350,7 +1109,7 @@ onUnmounted(() => {
   }
   geoJSONInitializedFor = null
   geoJSONSpeciesIndex = null
-  window.removeEventListener('resize', debouncedSetupHexGrid)
+  window.removeEventListener('resize', hexGrid.debouncedSetup)
   if (map) {
     map.remove()
     map = null

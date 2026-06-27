@@ -1,59 +1,67 @@
 <template>
-  <section class="border-t border-black bg-white px-[clamp(0.875rem,4vw,2.5rem)] py-[clamp(3rem,8vh,6rem)]">
-    <div class="mx-auto w-[min(100%,78rem)]">
-      <header class="mb-[clamp(1.5rem,4vw,3rem)]">
-        <h2 class="text-[clamp(1.25rem,4vw,2.5rem)] font-black leading-tight tracking-normal">
+  <section
+    v-motion
+    :initial="{ opacity: 0, y: 20 }"
+    :visibleOnce="{ opacity: 1, y: 0, transition: { duration: 400 } }"
+    class="border-t border-black dark:border-[var(--border-color)] bg-white dark:bg-[var(--bg-primary)] px-4 sm:section-padding-x py-6 sm:py-[clamp(1.5rem,4vh,3rem)]"
+  >
+    <div class="mx-auto w-container">
+      <header class="mb-4 sm:mb-fluid-lg">
+        <h2 class="text-[1.25rem] sm:text-fluid-3xl font-black leading-tight tracking-normal">
           {{ t('home.databasesTitle') }}
         </h2>
-        <p class="mt-2 xs:mt-3 max-w-[min(100%,40rem)] text-xs xs:text-sm leading-6 text-black/65">
+        <p class="mt-1.5 max-w-[min(100%,40rem)] text-[0.8rem] sm:text-fluid-xs leading-5 text-black/65 dark:text-[var(--text-secondary)]">
           {{ t('home.databasesDescSuggest') }}
         </p>
       </header>
 
-      <div v-if="loading" class="flex items-center gap-2 text-sm text-black/50">
+      <div v-if="loading" class="flex items-center gap-2 text-fluid-sm text-black/50 dark:text-[var(--text-muted)]">
         <LoadingSpinner class="h-4 w-4" />
         {{ t('general.loading') }}
       </div>
 
-      <div v-else class="grid gap-[clamp(0.875rem,2vw,1.5rem)] md:grid-cols-2">
+      <div v-else class="grid gap-2.5 sm:gap-fluid md:grid-cols-2">
         <article
-          v-for="db in databases"
+          v-for="(db, index) in databases"
           :key="db.id"
-          class="flex flex-col rounded-lg border-2 border-black bg-white p-[clamp(1rem,3vw,1.75rem)] transition-transform duration-200 hover:-translate-y-1"
+          v-motion
+          :initial="{ opacity: 0, y: 20 }"
+          :visibleOnce="{ opacity: 1, y: 0, transition: { duration: 400, delay: index * 100 } }"
+          class="flex flex-col rounded-fluid-lg border-2 border-black dark:border-[var(--border-color)] bg-white dark:bg-[var(--card)] px-3.5 py-3 sm:card-padding transition-transform duration-200 hover:-translate-y-0.5"
         >
-          <div class="mb-3 xs:mb-4 flex items-center gap-3 xs:gap-4">
-            <div class="flex h-[clamp(2.25rem,7vw,3rem)] w-[clamp(2.25rem,7vw,3rem)] shrink-0 items-center justify-center rounded-full border-2 border-black bg-black text-white">
-              <Icon :name="db.icon" class="h-4 w-4 xs:h-5 xs:w-5" />
+          <div class="mb-2 sm:mb-3 flex items-center gap-2 xs:gap-3">
+            <div class="flex h-[clamp(2rem,6vw,2.5rem)] w-[clamp(2rem,6vw,2.5rem)] shrink-0 items-center justify-center rounded-full border-2 border-black bg-black dark:bg-[var(--text-primary)] text-white dark:text-black">
+              <Icon :name="db.icon" class="h-3.5 w-3.5 xs:h-4 xs:w-4" />
             </div>
-            <span class="truncate rounded-full border border-black px-2 xs:px-3 py-0.5 xs:py-1 text-[10px] xs:text-[11px] font-black uppercase tracking-[0.16em] xs:tracking-[0.18em]">
+            <span class="truncate rounded-full border border-black dark:border-[var(--border-color)] px-2 py-0.5 sm:chip-fluid text-[10px] sm:text-[11px] font-black uppercase tracking-[0.16em]">
               {{ db.scope }}
             </span>
           </div>
 
-          <h3 class="text-[clamp(1rem,2.5vw,1.35rem)] font-black leading-tight tracking-normal">{{ db.title }}</h3>
-          <p class="mt-2 xs:mt-3 flex-1 text-xs xs:text-sm leading-6 text-black/65">{{ db.description }}</p>
+          <h3 class="text-[1.15rem] sm:text-fluid-2xl font-black leading-tight tracking-normal">{{ db.title }}</h3>
+          <p class="mt-1 xs:mt-1.5 flex-1 text-[0.8rem] sm:text-fluid-xs leading-5 text-black/65 dark:text-[var(--text-secondary)]">{{ db.description }}</p>
 
-          <div v-if="db.speciesCount" class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-black/50">
+          <div v-if="db.speciesCount" class="mt-2 flex flex-wrap gap-x-3 gap-y-0.5 text-[0.75rem] sm:text-fluid-xs text-black/50 dark:text-[var(--text-muted)]">
             <span>{{ db.speciesCount }} {{ t('home.speciesCount').toLowerCase() }}</span>
             <span v-if="db.groupCount">· {{ db.groupCount }} {{ t('home.groupsCount').toLowerCase() }}</span>
           </div>
 
-          <div class="mt-4 xs:mt-6 flex flex-wrap items-center gap-2 xs:gap-3">
+          <div class="mt-2.5 sm:mt-3 flex flex-wrap items-center gap-1.5 sm:gap-2">
             <a
               :href="`mailto:crews@earthguardians.org?subject=${encodeURIComponent(t('home.suggestDatasetSubject'))}%20-%20${encodeURIComponent(db.title)}`"
-              class="inline-flex items-center gap-1.5 xs:gap-2 rounded-md border-2 border-black bg-black px-3 xs:px-4 xs:px-5 py-2 xs:py-2.5 text-xs xs:text-sm font-black text-white transition-colors hover:bg-white hover:text-black focus:outline-none focus:ring-4 focus:ring-black/20"
+              class="inline-flex items-center gap-1.5 rounded-fluid border-2 border-black dark:border-[var(--border-color)] bg-black dark:bg-[var(--text-primary)] px-3 min-h-[40px] py-2 sm:px-3 sm:py-2 text-[0.75rem] sm:text-fluid-xs font-black text-white dark:text-black transition-colors hover:bg-white dark:hover:bg-[var(--bg-primary)] hover:text-black dark:hover:text-[var(--text-primary)] focus:outline-none focus:ring-4 focus:ring-black/20 dark:focus:ring-[var(--text-primary)]/20 active:scale-[0.97]"
             >
-              <Icon name="lucide:mail" class="h-3.5 w-3.5 xs:h-4 xs:w-4" />
+              <Icon name="lucide:mail" class="h-3.5 w-3.5 sm:h-3 sm:w-3" />
               {{ t('home.suggestDataset') }}
             </a>
             <a
               :href="db.link"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex items-center gap-1.5 xs:gap-2 rounded-md border-2 border-black px-3 xs:px-4 xs:px-5 py-2 xs:py-2.5 text-xs xs:text-sm font-black text-black transition-colors hover:bg-black hover:text-white focus:outline-none focus:ring-4 focus:ring-black/20"
+              class="inline-flex items-center gap-1.5 rounded-fluid border-2 border-black dark:border-[var(--border-color)] px-3 min-h-[40px] py-2 sm:px-3 sm:py-2 text-[0.75rem] sm:text-fluid-xs font-black text-black dark:text-[var(--text-primary)] transition-colors hover:bg-black dark:hover:bg-[var(--text-primary)] hover:text-white dark:hover:text-black focus:outline-none focus:ring-4 focus:ring-black/20 dark:focus:ring-[var(--text-primary)]/20 active:scale-[0.97]"
             >
-              <Icon name="lucide:external-link" class="h-3.5 w-3.5 xs:h-4 xs:w-4" />
-              {{ t('home.view2d') }}
+              <Icon name="lucide:external-link" class="h-3.5 w-3.5 sm:h-3 sm:w-3" />
+              {{ t('home.viewSource') }}
             </a>
           </div>
         </article>

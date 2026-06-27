@@ -2,7 +2,7 @@
   <ClientOnly>
     <UnifiedMap :species-index="speciesIndex || []" :default-dataset="'endangered-species'" />
     <template #fallback>
-      <div class="flex h-screen w-full items-center justify-center bg-black text-white">
+      <div class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
         <LoadingSpinner
           icon="svg-spinners:wind-toy"
           :message="t('loading.endangeredSpeciesMap')"
@@ -23,7 +23,5 @@ useHead({
   ],
 })
 
-// Use lightweight index for fast loading (3.2MB vs 35MB)
-// Full details are loaded on demand when user clicks a marker
 const { data: speciesIndex } = useSpeciesIndex(['icmbio-brazil', 'iucn'])
 </script>

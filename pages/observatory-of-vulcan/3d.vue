@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen w-full items-center justify-center bg-black text-white">
+  <div class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
     <LoadingSpinner :message="t('loading.observatoryOfVulcanGlobe')" :inline="true" />
   </div>
 </template>

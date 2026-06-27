@@ -4,6 +4,7 @@ import maplibregl from 'maplibre-gl'
 import {
   setupRareEarthLayers as setupRareEarthLayersInternal,
   syncRareEarthLayerVisibility as syncRareEarthLayerVisibilityInternal,
+  addPolygonLayersToMap,
 } from '@/composables/useRareEarthLayers'
 import { buildEnterpriseNetworkLines } from '@/lib/enterprise-data'
 
@@ -15,6 +16,12 @@ export interface RareEarthControllerProps {
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null
 }
 
+export interface RareEarthPopupConfig {
+  t: (_key: string, _params?: Record<string, unknown>) => string
+  locale: { value: string }
+  onSidebarOpen?: (_payload: { processo: string; nome: string; tab: string; coords: [number, number] }) => void
+}
+
 export interface RareEarthControllerOptions {
   /** Map instance (null until ready) */
   map: Ref<MapLibreMap | null>
@@ -22,6 +29,8 @@ export interface RareEarthControllerOptions {
   isActive: Ref<boolean> | (() => boolean)
   /** Reactive props getter (so watchers re-fire when upstream changes) */
   getProps: () => RareEarthControllerProps
+  /** Popup configuration for i18n-aware popup rendering */
+  popup?: RareEarthPopupConfig
 }
 
 /**
@@ -77,6 +86,7 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       polys: p.rareEarthPolygons ?? null,
       protected: p.rareEarthProtected ?? null,
       networkFeatures: buildEnterpriseNetworkLines(p.rareEarthPoints),
+      popup: options.popup,
     })
     syncRareEarthLayerVisibilityInternal(m, p.layerVisibility || {})
   }
@@ -94,17 +104,22 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
   )
 
   // Watcher: points data updates (e.g. from search filtering)
+  // Debounced to avoid rapid setData calls during fast filter changes
+  let pointsDebounceTimer: ReturnType<typeof setTimeout> | null = null
   const stopPointsWatch = watch(
     () => getProps().rareEarthPoints,
     (newVal) => {
       if (!isActiveGetter() || !newVal || !map.value || !map.value.isStyleLoaded()) return
-      try {
-        const src = map.value.getSource('ree-points') as maplibregl.GeoJSONSource
-        if (src) src.setData(newVal)
-        const netFc = buildEnterpriseNetworkLines(newVal)
-        const netSrc = map.value.getSource('ree-network') as maplibregl.GeoJSONSource | undefined
-        if (netSrc) netSrc.setData(netFc)
-      } catch { /* ignore */ }
+      if (pointsDebounceTimer) clearTimeout(pointsDebounceTimer)
+      pointsDebounceTimer = setTimeout(() => {
+        try {
+          const src = map.value?.getSource('ree-points') as maplibregl.GeoJSONSource | undefined
+          if (src && newVal) src.setData(newVal)
+          const netFc = buildEnterpriseNetworkLines(newVal)
+          const netSrc = map.value?.getSource('ree-network') as maplibregl.GeoJSONSource | undefined
+          if (netSrc) netSrc.setData(netFc)
+        } catch { /* ignore */ }
+      }, 16) // ~1 frame debounce
     },
   )
 
@@ -117,6 +132,22 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
         const src = map.value.getSource('ree-protected') as maplibregl.GeoJSONSource | undefined
         if (src) src.setData(newVal)
       } catch { /* ignore */ }
+    },
+  )
+
+  // Watcher: polygon data updates (loads after points, needs late layer setup)
+  let polyCleanup: (() => void) | null = null
+  let polysAdded = false
+  const stopPolygonsWatch = watch(
+    () => getProps().rareEarthPolygons,
+    (newVal) => {
+      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
+      if (!newVal || polysAdded) return
+      const cleanup = addPolygonLayersToMap(map.value, newVal, options.popup)
+      if (cleanup) {
+        polyCleanup = cleanup
+        polysAdded = true
+      }
     },
   )
 
@@ -136,9 +167,12 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     stopVisWatch()
     stopPointsWatch()
     stopProtectedWatch()
+    stopPolygonsWatch()
     stopFlyToWatch()
+    if (pointsDebounceTimer) clearTimeout(pointsDebounceTimer)
     if (flyToHighlightTimer) clearTimeout(flyToHighlightTimer)
     if (flyToHighlightMarker) { flyToHighlightMarker.remove(); flyToHighlightMarker = null }
+    if (polyCleanup) { polyCleanup(); polyCleanup = null }
   })
 
   return { setupLayers, addFlyToHighlight }

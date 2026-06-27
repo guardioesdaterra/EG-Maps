@@ -14,7 +14,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
   ],
 
-  plugins: ['~/plugins/iconify-icon.client.ts', '~/plugins/command-palette.client.ts'],
+  plugins: ['~/plugins/iconify-icon.client.ts', '~/plugins/command-palette.client.ts', '~/plugins/ui-init.client.ts'],
 
   // vueuse module
   vueuse: {

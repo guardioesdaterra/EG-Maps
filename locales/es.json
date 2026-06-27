@@ -24,14 +24,14 @@
     "speciesDesc": "Descubre especies en peligro crítico y sus hábitats alrededor del mundo.",
     "observatoryTitle": "Observatorio del Volcán",
     "observatoryDesc": "Reclamos mineros de tierras raras en Brasil — invasión de capital, redes corporativas, intereses militares e impacto socioambiental.",
-    "activeCrewsTitle": "Equipes Ativos",
-    "activeCrewsDesc": "Explore as equipes ativas da Earth Guardians em 7 regiões — 131 equipes, 1.241 membros, 47 países.",
+    "activeCrewsTitle": "Equipos Activos",
+    "activeCrewsDesc": "Explora los equipos activos de Earth Guardians en 7 regiones — 131 equipos, 1,241 miembros, 47 países en todo el mundo.",
     "projectsCount": "Proyectos",
     "beneficiariesCount": "Beneficiarios",
     "speciesCount": "Especies",
     "groupsCount": "Grupos",
-    "activeCrewsCount": "Equipes Ativos",
-    "crewMembersCount": "Membros das Equipes",
+    "activeCrewsCount": "Equipos Activos",
+    "crewMembersCount": "Miembros de los Equipos",
     "view2d": "Mapa 2D",
     "view3d": "Globo 3D",
     "projectGrants": "Subvenciones",
@@ -47,7 +47,8 @@
     "icmbioDesc": "El registro oficial brasileño de especies en peligro, mantenido por ICMBio e IBAMA. Documenta el estado de conservación de la rica biodiversidad del país.",
     "icmbioScope": "Brasil",
     "suggestDataset": "Sugerir Dataset",
-    "suggestDatasetSubject": "Sugerir un nuevo dataset para EG-Maps"
+    "suggestDatasetSubject": "Sugerir un nuevo dataset para EG-Maps",
+    "viewSource": "Visitar Fuente"
   },
   "mapControls": {
     "search": "Buscar",
@@ -111,7 +112,7 @@
     "close": "Cerrar"
   },
   "stats": {
-    "title": "Impacto de subvenciones 2024",
+    "title": "Impacto de Subvenciones de Proyectos",
     "projectGrantees": "Proyectos subvencionados",
     "countries": "Países",
     "directBeneficiaries": "Beneficiarios directos",
@@ -154,12 +155,12 @@
     "iucnProfile": "Perfil UICN"
   },
   "crews": {
-    "activeCrews": "Equipes Ativos",
-    "inactiveCrews": "Equipes Inativos",
-    "totalMembers": "Total de Membros",
+    "activeCrews": "Equipos Activos",
+    "inactiveCrews": "Equipos Inactivos",
+    "totalMembers": "Total de Miembros",
     "countries": "Países",
-    "region": "Região",
-    "growthSince2022": "Crescimento desde 2022"
+    "region": "Región",
+    "growthSince2022": "Crecimiento desde 2022"
   },
   "taxonomy": {
     "Mammal": "Mamíferos",
@@ -297,8 +298,8 @@
       "usMilitaryBody": "DFC $565M → Serra Verde. Departamento de Estado $5M → Aclara. Export Finance Australia $100M → Viridis/Meteoric. MOU de Ucore → óxido militar en EE.UU.",
       "cbmmTitle": "CBMM China",
       "cbmmBody": "Consorcio Baosteel/CITIC/Anshan tiene 15% (US$1.95B). REE en relaves de niobio — sin regulación específica.",
-      "relayout": "Re-layout",
-      "clickHint": "Click a node to focus · Click empty space to clear"
+      "relayout": "Reorganizar",
+      "clickHint": "Haz clic en un nodo para enfocar · Haz clic en espacio vacío para deseleccionar"
     },
     "timelinePanel": {
       "title": "Cronología de reclamos (2000–2026)",
@@ -319,7 +320,8 @@
       "hydrography": "Hidrografía",
       "conflictZones": "Zonas de conflicto",
       "corpNetwork": "Red corporativa",
-      "enterpriseHq": "Sedes empresariales"
+      "enterpriseHq": "Sedes empresariales",
+      "heatmap": "Mapa de calor de densidad"
     },
     "search": "Buscar empresa, sustancia, estado...",
     "legend": {
@@ -370,6 +372,71 @@
       "defaultLabel": "Mi territorio",
       "sharedBadge": "Compartido"
     },
+    "yearSlider": {
+      "title": "Año de presentación",
+      "minYear": "Año mínimo",
+      "maxYear": "Año máximo",
+      "play": "Reproducir",
+      "pause": "Pausar",
+      "reset": "Restablecer",
+      "claims": "reclamaciones visibles"
+    },
+    "phaseFilter": {
+      "title": "Fase Minera",
+      "all": "Seleccionar todo",
+      "none": "Limpiar todo"
+    },
+    "claimReport": {
+      "title": "Reportar Problema de Reclamación",
+      "close": "Cerrar",
+      "claimInfo": "Reclamación reportada",
+      "reportType": "Tipo de reporte",
+      "types": {
+        "newActivity": "Nueva actividad / perforación",
+        "pollution": "Contaminación de agua / suelo",
+        "conflict": "Violencia / intimidación",
+        "correction": "Corrección de datos",
+        "fieldReport": "Reporte de campo"
+      },
+      "description": "Descripción",
+      "descriptionPlaceholder": "Describe lo que observaste (mín. 10 caracteres)...",
+      "includeLocation": "Incluir mi ubicación GPS",
+      "geoPending": "Solicitando ubicación...",
+      "contactOptional": "Contacto (opcional)",
+      "contactPlaceholder": "Correo electrónico o teléfono (cifrado)",
+      "cancel": "Cancelar",
+      "submit": "Enviar Reporte"
+    },
+    "export": {
+      "title": "Exportar Vista del Mapa",
+      "close": "Cerrar",
+      "format": "Formato",
+      "resolution": "Resolución",
+      "paperSize": "Tamaño de papel",
+      "includeLegend": "Incluir leyenda superpuesta",
+      "includeTitle": "Incluir título y metadatos",
+      "cancel": "Cancelar",
+      "download": "Descargar",
+      "exporting": "Exportando..."
+    },
+    "geoLocate": {
+      "title": "¿Dónde te encuentras?",
+      "description": "Ayúdanos a mostrarte las concesiones mineras más cercanas a tu zona. Solo usamos tu ubicación para centrar el mapa.",
+      "locating": "Detectando ubicación...",
+      "useLocation": "Usar mi ubicación",
+      "or": "o",
+      "cityPlaceholder": "Escribe el nombre de una ciudad...",
+      "noResults": "No se encontraron ciudades. Intenta con otro nombre.",
+      "searchFailed": "La búsqueda falló. Por favor, intenta de nuevo.",
+      "denied": "El acceso a la ubicación fue denegado. Permite el acceso en la configuración de tu navegador o busca por ciudad.",
+      "yourArea": "Tu zona",
+      "failed": "No se pudo detectar la ubicación. Busca por ciudad.",
+      "foundTitle": "¡Te encontramos!",
+      "foundDesc": "¿Es correcto? Mostraremos las concesiones mineras cercanas a esta ubicación.",
+      "showNearby": "Mostrar concesiones cercanas",
+      "wrongPlace": "Lugar incorrecto",
+      "skip": "Omitir por ahora"
+    },
     "sync": {
       "lastSync": "Última sincronización ANM",
       "secrecyClaims": "Reclamaciones con sigilo",
@@ -397,7 +464,7 @@
     "endangeredSpeciesGlobe": "Cargando globo de especies en peligro",
     "observatoryOfVulcan": "Cargando Observatorio del Volcán",
     "observatoryOfVulcanGlobe": "Cargando Observatorio del Volcán Globo",
-    "activeCrewsMap": "Carregando Mapa de Equipes Ativos",
+    "activeCrewsMap": "Cargando Mapa de Equipos Activos",
     "initializingVisualization": "Inicializando visualización interactiva..."
   },
   "error": {

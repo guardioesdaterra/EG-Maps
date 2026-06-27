@@ -47,7 +47,8 @@
     "icmbioDesc": "ICMBio와 IBAMA가 관리하는 브라질 공식 멸종 위기 종 등록부입니다. 브라질의 풍부한 생물다양성의 보전 상태를 기록합니다.",
     "icmbioScope": "브라질",
     "suggestDataset": "데이터셋 제안",
-    "suggestDatasetSubject": "EG-Maps용 새 데이터셋 제안"
+    "suggestDatasetSubject": "EG-Maps용 새 데이터셋 제안",
+    "viewSource": "원본 방문"
   },
   "mapControls": {
     "search": "검색",
@@ -319,7 +320,8 @@
       "hydrography": "수문학",
       "conflictZones": "갈등 지대",
       "corpNetwork": "기업 네트워크",
-      "enterpriseHq": "기업 본사"
+      "enterpriseHq": "기업 본사",
+      "heatmap": "밀도 히트맵"
     },
     "myTerritory": {
       "title": "내 영토",
@@ -331,6 +333,24 @@
       "clear": "핀 지우기",
       "defaultLabel": "내 영토",
       "sharedBadge": "공유됨"
+    },
+    "geoLocate": {
+      "title": "어디에 계신가요?",
+      "description": "가장 가까운 광업 권리를 보여드리는 데 도움을 주세요. 지도 중심 표시에만 위치를 사용합니다.",
+      "locating": "위치 감지 중...",
+      "useLocation": "내 위치 사용",
+      "or": "또는",
+      "cityPlaceholder": "도시 이름 입력...",
+      "noResults": "도시를 찾을 수 없습니다. 다른 이름을 시도해 주세요.",
+      "searchFailed": "검색에 실패했습니다. 다시 시도해 주세요.",
+      "denied": "위치 접근이 거부되었습니다. 브라우저 설정에서 위치 접근을 허용하거나 도시로 검색해 주세요.",
+      "yourArea": "내 지역",
+      "failed": "위치를 감지할 수 없습니다. 도시로 검색해 주세요.",
+      "foundTitle": "찾았습니다!",
+      "foundDesc": "맞나요? 이 위치 근처의 광업 권리를 표시합니다.",
+      "showNearby": "근처 광업 권리를 표시",
+      "wrongPlace": "위치가 잘못되었습니다",
+      "skip": "건너뛰기"
     },
     "search": "기업, 물질, 주 검색...",
     "legend": {
@@ -388,6 +408,53 @@
       "heavy_mineral_associated": "중광물",
       "phosphate_associated": "인산염",
       "strategic_associated": "전략적"
+    },
+    "yearSlider": {
+      "title": "신청 연도",
+      "minYear": "최소 연도",
+      "maxYear": "최대 연도",
+      "play": "재생",
+      "pause": "일시정지",
+      "reset": "초기화",
+      "claims": "표시된 청구"
+    },
+    "phaseFilter": {
+      "title": "광업 단계",
+      "all": "전체 선택",
+      "none": "전체 해제"
+    },
+    "claimReport": {
+      "title": "claims 문제 신고",
+      "close": "닫기",
+      "claimInfo": "신고된 claims",
+      "reportType": "신고 유형",
+      "types": {
+        "newActivity": "새 활동 / 시추",
+        "pollution": "수질 / 토양 오염",
+        "conflict": "폭력 / 협박",
+        "correction": "데이터 수정",
+        "fieldReport": "현장 보고서"
+      },
+      "description": "설명",
+      "descriptionPlaceholder": "관찰한 내용을 설명하세요 (최소 10자)...",
+      "includeLocation": "GPS 위치 포함",
+      "geoPending": "위치 요청 중...",
+      "contactOptional": "연락처 (선택)",
+      "contactPlaceholder": "이메일 또는 전화 (암호화)",
+      "cancel": "취소",
+      "submit": "신고 제출"
+    },
+    "export": {
+      "title": "지도 내보내기",
+      "close": "닫기",
+      "format": "형식",
+      "resolution": "해상도",
+      "paperSize": "용지 크기",
+      "includeLegend": "범례 포함",
+      "includeTitle": "제목 및 메타데이터 포함",
+      "cancel": "취소",
+      "download": "다운로드",
+      "exporting": "내보내기 중..."
     }
   },
   "loading": {

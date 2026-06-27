@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, watch } from 'vue'
 import { RARE_EARTH_PHASES } from '@/lib/map-utils'
 
 const { t } = useI18n()
@@ -58,6 +58,12 @@ const phases = Object.entries(RARE_EARTH_PHASES).map(([key, val]) => ({
 }))
 
 const selectedPhases = reactive(new Set(props.selected))
+
+// Sync local state when parent changes the prop (e.g., reset)
+watch(() => props.selected, (newVal) => {
+  selectedPhases.clear()
+  newVal.forEach(v => selectedPhases.add(v))
+})
 
 function togglePhase(key: string) {
   if (selectedPhases.has(key)) {

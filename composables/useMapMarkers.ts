@@ -1,16 +1,16 @@
-import { shallowRef } from 'vue'
-import type { Map as MapLibreMap } from 'maplibre-gl'
-import maplibregl from 'maplibre-gl'
 import type { ProjectData } from '@/lib/types'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
 import { GROUP_COLORS, RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
 import { getMarkerImageUrl } from '@/lib/image-utils'
 import { formatCompact } from '@/lib/utils'
+import { MAX_CLUSTER_SIZE } from '@/lib/constants'
 import type { ClusterItem } from '@/composables/useMapCluster'
 
 interface MarkerItem {
   imageUrl?: string | null
   taxonomicGroup?: string
+  category?: string
+  threatTypes?: string[]
 }
 
 export interface MarkerMetrics {
@@ -121,25 +121,52 @@ export function createProjectMarkerElement(project: ProjectData): HTMLElement {
   }))
 }
 
-export function createSpeciesMarkerElement(species: { imageUrl?: string | null; taxonomicGroup?: string }): HTMLElement {
+export function createSpeciesMarkerElement(species: { imageUrl?: string | null; taxonomicGroup?: string; category?: string; threatTypes?: string[] }): HTMLElement {
   const color = GROUP_COLORS[species.taxonomicGroup ?? ''] ?? '#B64032'
+  const cat = (species.category ?? '').toUpperCase()
+  const categoryFactor = cat === 'CR' ? 5 : cat === 'EN' ? 3.5 : cat === 'VU' ? 2 : 1
+  const markerSize = 16 + categoryFactor * 5
+  const threatCount = species.threatTypes?.length ?? 0
   return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
     color,
-    size: species.imageUrl ? 26 : 20,
+    size: markerSize,
     centerScale: 0.62,
     originalImageUrl: species.imageUrl || undefined,
-    number: species.imageUrl ? undefined : (species.taxonomicGroup?.charAt(0) || '?'),
+    number: species.imageUrl ? undefined : (threatCount > 0 ? String(threatCount) : (species.taxonomicGroup?.charAt(0) || '?')),
   }))
+}
+
+function dangerColor(ds: number): string {
+  if (ds >= 8) return '#e74c3c'
+  if (ds >= 6) return '#f39c12'
+  return '#f1c40f'
 }
 
 export function createRareEarthMarkerElement(feature: GeoJSON.Feature, baseURL?: string): HTMLElement {
   const props = feature.properties as Record<string, unknown> || {}
   const cat = RARE_EARTH_CATEGORIES[props.c as string] ?? { label: 'Unknown', color: '#666' }
-  return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
+  const ds = Number(props.ds ?? props.danger_score ?? 5)
+  const color = dangerColor(ds)
+  const el = createUnifiedMarkerElement(getUnifiedMarkerMetrics({
     color: cat.color,
     size: 20,
-    number: (props.c as string)?.charAt(0) || '?',
   }), baseURL)
+
+  const inner = el.querySelector<HTMLDivElement>('div')
+  if (inner) {
+    inner.style.background = `radial-gradient(circle at 40% 35%, rgba(0,0,0,0.15), rgba(0,0,0,0.65))`
+    inner.style.border = `2px solid ${color}`
+    inner.style.boxShadow = `0 0 ${ds >= 8 ? 14 : ds >= 6 ? 10 : 7}px ${color}, 0 0 2px rgba(255,255,255,0.3)`
+
+    const emoji = document.createElement('span')
+    emoji.textContent = '⚠'
+    emoji.style.fontSize = '11px'
+    emoji.style.lineHeight = '1'
+    emoji.style.filter = ds >= 8 ? 'drop-shadow(0 0 3px #e74c3c)' : ds >= 6 ? 'drop-shadow(0 0 2px #f39c12)' : 'drop-shadow(0 0 2px #f1c40f)'
+    inner.appendChild(emoji)
+  }
+
+  return el
 }
 
 export function createCrewMarkerElement(crew: { totalMembers: number; activeCrews: number }): HTMLElement {
@@ -153,25 +180,34 @@ export function createCrewMarkerElement(crew: { totalMembers: number; activeCrew
   }))
 }
 
+export function createCrewLocationMarkerElement(_crew: { name: string; region: string }): HTMLElement {
+  return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
+    color: '#22c55e',
+    size: 18,
+    number: '',
+  }))
+}
+
 function parseColor(hex: string): [number, number, number] {
   const c = hex.replace('#', '')
   return [parseInt(c.substring(0, 2), 16), parseInt(c.substring(2, 4), 16), parseInt(c.substring(4, 6), 16)]
 }
 
-function formatColor(r: number, g: number, b: number): string {
-  return `#${[r, g, b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('')}`
-}
-
 function blendColors(colors: string[]): string {
   if (!colors.length) return '#6366f1'
-  const unique = [...new Set(colors)]
-  if (unique.length === 1) return unique[0]
-  const parsed = unique.map(c => parseColor(c))
-  const total = parsed.reduce((s, c) => [s[0] + c[0], s[1] + c[1], s[2] + c[2]], [0, 0, 0])
-  const r = Math.round(total[0] / parsed.length)
-  const g = Math.round(total[1] / parsed.length)
-  const b = Math.round(total[2] / parsed.length)
-  return formatColor(r, g, b)
+  const counts = new Map<string, number>()
+  for (const c of colors) {
+    counts.set(c, (counts.get(c) ?? 0) + 1)
+  }
+  let maxCount = 0
+  let dominant = colors[0]
+  for (const [color, count] of counts) {
+    if (count > maxCount) {
+      maxCount = count
+      dominant = color
+    }
+  }
+  return dominant
 }
 
 function getMarkerColor(dataset: string, sourceProjects?: ProjectData[], sourceSpecies?: MarkerItem[], sourceRareEarth?: GeoJSON.Feature[], sourceCrews?: { lng: number; lat: number }[]): string {
@@ -197,7 +233,7 @@ function getMarkerColor(dataset: string, sourceProjects?: ProjectData[], sourceS
 function getMiniColor(dataset: string, item: ClusterItem, sourceProjects?: ProjectData[], sourceSpecies?: MarkerItem[], sourceRareEarth?: GeoJSON.Feature[], sourceCrews?: { lng: number; lat: number }[]): string {
   if (dataset === 'endangered-species' && sourceSpecies?.length) {
     const sp = sourceSpecies[item.index]
-    if (sp) return GROUP_COLORS[sp.taxonomicGroup ?? ''] ?? '#B64030'
+    if (sp) return GROUP_COLORS[sp.taxonomicGroup ?? ''] ?? '#B64032'
   }
   if (dataset === 'project-grants' && sourceProjects?.length) {
     const pr = sourceProjects[item.index]
@@ -221,8 +257,6 @@ function getMiniImage(item: ClusterItem, dataset: string, sourceSpecies?: Marker
   if (!sp?.imageUrl) return undefined
   return getMarkerImageUrl(sp.imageUrl, baseURL) || undefined
 }
-
-export const MAX_CLUSTER_SIZE = 5
 
 export function createClusterMarkerElement(
   dataset: string,
@@ -445,90 +479,4 @@ export function createClusterMarkerElement(
   }
 
   return outer
-}
-
-export function useMapMarkers(
-  map: import('vue').Ref<MapLibreMap | null>,
-  _baseURL?: string
-) {
-  const markers = shallowRef<maplibregl.Marker[]>([])
-  const disposers: Array<() => void> = []
-  let pendingVisibilityUpdate = false
-
-  function addMarker(
-    element: HTMLElement,
-    lngLat: [number, number],
-    ariaLabel: string,
-    onClick?: () => void
-  ): maplibregl.Marker {
-    if (!map.value) throw new Error('Map not available')
-    element.style.cursor = 'pointer'
-    element.setAttribute('role', 'button')
-    element.setAttribute('tabindex', '0')
-    element.setAttribute('aria-label', ariaLabel)
-    if (onClick) {
-      element.addEventListener('click', onClick)
-      element.addEventListener('keydown', (e: KeyboardEvent) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() }
-      })
-    }
-    const marker = new maplibregl.Marker({ element, anchor: 'center' })
-      .setLngLat(lngLat)
-      .addTo(map.value)
-    markers.value.push(marker)
-    return marker
-  }
-
-  function clearMarkers() {
-    disposers.splice(0).forEach(d => d())
-    markers.value = []
-  }
-
-  function updateMarkerVisibility() {
-    if (!map.value) return
-    const canvas = map.value.getCanvas()
-    const margin = 50
-    const bounds = {
-      minX: -margin, maxX: canvas.width + margin,
-      minY: -margin, maxY: canvas.height + margin,
-    }
-    markers.value.forEach(marker => {
-      const el = marker.getElement()
-      try {
-        const point = map.value!.project(marker.getLngLat())
-        if (!point || isNaN(point.x) || isNaN(point.y)) {
-          el.style.display = 'none'
-          el.style.pointerEvents = 'none'
-          return
-        }
-        const isVisible = point.x >= bounds.minX && point.x <= bounds.maxX && point.y >= bounds.minY && point.y <= bounds.maxY
-        const wasVisible = el.style.display !== 'none'
-        if (isVisible !== wasVisible) {
-          el.style.display = isVisible ? '' : 'none'
-          el.style.pointerEvents = isVisible ? '' : 'none'
-        }
-      } catch {
-        el.style.display = 'none'
-        el.style.pointerEvents = 'none'
-      }
-    })
-  }
-
-  function scheduleVisibilityUpdate() {
-    if (!pendingVisibilityUpdate) {
-      pendingVisibilityUpdate = true
-      requestAnimationFrame(() => {
-        updateMarkerVisibility()
-        pendingVisibilityUpdate = false
-      })
-    }
-  }
-
-  return {
-    markers,
-    addMarker,
-    clearMarkers,
-    updateMarkerVisibility,
-    scheduleVisibilityUpdate,
-  }
 }

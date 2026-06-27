@@ -169,7 +169,7 @@
         <!-- Results List -->
         <div 
           ref="resultsContainerRef"
-          :class="`space-y-0.5 ${isMobile ? 'max-h-[42vh]' : 'max-h-[280px]'} overflow-y-auto cyber-scrollbar pr-1`"
+          :class="`space-y-0.5 ${isMobile ? 'max-h-[42vh]' : 'max-h-[clamp(16rem,28vh,20rem)]'} overflow-y-auto cyber-scrollbar pr-1`"
           role="listbox"
           :aria-label="t('mapControls.searchResults')"
         >

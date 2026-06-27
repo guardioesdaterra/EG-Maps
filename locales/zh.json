@@ -24,14 +24,14 @@
     "speciesDesc": "发现世界各地的极危物种及其栖息地。",
     "observatoryTitle": "火山观测站",
     "observatoryDesc": "巴西稀土采矿权 — 资本入侵、企业网络、军事利益与社会环境影响。",
-    "activeCrewsTitle": "Active Crews",
-    "activeCrewsDesc": "Explore Earth Guardians' active crews across 7 regions — 131 crews, 1,241 members, 47 countries worldwide.",
+    "activeCrewsTitle": "活跃团队",
+    "activeCrewsDesc": "探索地球守护者在7个地区的活跃团队——131个团队，1,241名成员，覆盖47个国家。",
     "projectsCount": "项目",
     "beneficiariesCount": "受益人",
     "speciesCount": "物种",
     "groupsCount": "群组",
-    "activeCrewsCount": "Active Crews",
-    "crewMembersCount": "Crew Members",
+    "activeCrewsCount": "活跃团队",
+    "crewMembersCount": "团队成员",
     "view2d": "2D地图",
     "view3d": "3D地球仪",
     "projectGrants": "项目资助",
@@ -47,13 +47,14 @@
     "icmbioDesc": "由ICMBio和IBAMA维护的巴西濒危物种官方登记处。记录该国丰富生物多样性的保护状况。",
     "icmbioScope": "巴西",
     "suggestDataset": "推荐数据集",
-    "suggestDatasetSubject": "为EG-Maps推荐新的数据集"
+    "suggestDatasetSubject": "为EG-Maps推荐新的数据集",
+    "viewSource": "访问来源"
   },
   "mapControls": {
     "search": "搜索",
     "searchProjects": "搜索项目",
     "searchSpecies": "搜索物种",
-    "searchCrews": "Search Crews",
+    "searchCrews": "搜索团队",
     "searchPlaceholder": "按名称或位置搜索...",
     "searchSpeciesPlaceholder": "按名称或地区搜索...",
     "showAll": "显示全部",
@@ -154,12 +155,12 @@
     "iucnProfile": "IUCN资料"
   },
   "crews": {
-    "activeCrews": "Active Crews",
-    "inactiveCrews": "Inactive Crews",
-    "totalMembers": "Total Members",
-    "countries": "Countries",
-    "region": "Region",
-    "growthSince2022": "Growth since 2022"
+    "activeCrews": "活跃团队",
+    "inactiveCrews": "非活跃团队",
+    "totalMembers": "总成员数",
+    "countries": "国家",
+    "region": "地区",
+    "growthSince2022": "自2022年以来的增长"
   },
   "taxonomy": {
     "Mammal": "哺乳动物",
@@ -319,7 +320,8 @@
       "hydrography": "水文",
       "conflictZones": "冲突区",
       "corpNetwork": "企业网络",
-      "enterpriseHq": "企业总部"
+      "enterpriseHq": "企业总部",
+      "heatmap": "密度热力图"
     },
     "search": "搜索企业、物质、州...",
     "legend": {
@@ -370,6 +372,71 @@
       "defaultLabel": "我的领地",
       "sharedBadge": "已分享"
     },
+    "geoLocate": {
+      "title": "您在哪里？",
+      "description": "帮助我们向您展示离您最近的采矿权。我们仅使用您的位置来居中地图。",
+      "locating": "正在检测位置...",
+      "useLocation": "使用我的位置",
+      "or": "或",
+      "cityPlaceholder": "输入城市名称...",
+      "noResults": "未找到城市。请尝试其他名称。",
+      "searchFailed": "搜索失败。请重试。",
+      "denied": "位置访问被拒绝。请在浏览器设置中允许位置访问，或按城市搜索。",
+      "yourArea": "您的区域",
+      "failed": "无法检测位置。请按城市搜索。",
+      "foundTitle": "找到您了！",
+      "foundDesc": "正确吗？我们将显示此位置附近的采矿权。",
+      "showNearby": "显示附近的采矿权",
+      "wrongPlace": "位置不正确",
+      "skip": "暂时跳过"
+    },
+    "yearSlider": {
+      "title": "申请年份",
+      "minYear": "最小年份",
+      "maxYear": "最大年份",
+      "play": "播放",
+      "pause": "暂停",
+      "reset": "重置",
+      "claims": "可见申请"
+    },
+    "phaseFilter": {
+      "title": "采矿阶段",
+      "all": "全选",
+      "none": "清除全部"
+    },
+    "claimReport": {
+      "title": "报告申请问题",
+      "close": "关闭",
+      "claimInfo": "被报告的申请",
+      "reportType": "报告类型",
+      "types": {
+        "newActivity": "新活动 / 钻探",
+        "pollution": "水 / 土壤污染",
+        "conflict": "暴力 / 恐吓",
+        "correction": "数据更正",
+        "fieldReport": "实地报告"
+      },
+      "description": "描述",
+      "descriptionPlaceholder": "描述您观察到的情况（最少10个字符）...",
+      "includeLocation": "包含我的GPS位置",
+      "geoPending": "正在请求位置...",
+      "contactOptional": "联系方式（可选）",
+      "contactPlaceholder": "邮箱或电话（加密）",
+      "cancel": "取消",
+      "submit": "发送报告"
+    },
+    "export": {
+      "title": "导出地图视图",
+      "close": "关闭",
+      "format": "格式",
+      "resolution": "分辨率",
+      "paperSize": "纸张大小",
+      "includeLegend": "包含图例覆盖",
+      "includeTitle": "包含标题和元数据",
+      "cancel": "取消",
+      "download": "下载",
+      "exporting": "正在导出..."
+    },
     "sync": {
       "lastSync": "最近 ANM 同步",
       "secrecyClaims": "保密申请",
@@ -397,7 +464,7 @@
     "endangeredSpeciesGlobe": "正在加载濒危物种地球仪",
     "observatoryOfVulcan": "正在加载火山观测站",
     "observatoryOfVulcanGlobe": "正在加载火山观测站地球仪",
-    "activeCrewsMap": "Loading Active Crews Map",
+    "activeCrewsMap": "加载活跃团队地图",
     "initializingVisualization": "正在初始化交互式可视化..."
   },
   "error": {

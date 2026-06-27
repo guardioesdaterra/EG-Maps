@@ -2,6 +2,7 @@ const MARKER_THUMB_SIZE = 64
 const POPUP_THUMB_SIZE = 560
 const MAX_CONCURRENT_LOADS = 6
 const CACHE_TTL_MS = 5 * 60 * 1000
+const MAX_CACHE_SIZE = 500
 
 const PLACEHOLDER_SVG_STRINGS: Record<string, string> = {
   Mammal: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="52" r="13" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/><circle cx="38" cy="36" r="5" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/><circle cx="62" cy="36" r="5" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/></svg>',
@@ -182,6 +183,10 @@ export async function preloadImage(url: string): Promise<string | null> {
   const promise = (async () => {
     const loadedUrl = await loadImageWithQueue(url)
     if (loadedUrl) {
+      if (imageCache.size >= MAX_CACHE_SIZE) {
+        const oldestKey = imageCache.keys().next().value
+        if (oldestKey) imageCache.delete(oldestKey)
+      }
       imageCache.set(url, { url: loadedUrl, timestamp: Date.now() })
       return loadedUrl
     }

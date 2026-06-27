@@ -91,23 +91,23 @@ onBeforeUnmount(() => {
       <div
         v-if="isOpen"
         ref="panelRef"
-        class="fixed top-0 left-0 h-full w-full max-w-[420px] z-[9999] bg-[#0f0f12] border-r border-white/10 flex flex-col shadow-2xl"
+        class="fixed top-0 left-0 h-full w-full max-w-[min(26.25rem,90vw)] z-[9999] bg-[var(--bg-primary)] border-r border-[var(--border-color)] flex flex-col shadow-2xl"
         role="dialog"
         aria-modal="true"
         :aria-label="t('species.panelTitle')"
       >
         <!-- Header -->
-        <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
+        <div class="flex items-center justify-between px-fluid-md py-fluid-sm border-b border-[var(--border-color)] shrink-0">
           <div class="min-w-0 flex-1">
-            <h2 class="text-sm font-semibold text-white/90 truncate">
+            <h2 class="text-fluid-sm font-semibold text-[var(--text-primary)] truncate">
               {{ speciesList.length }} {{ t('species.panelTitle') }}
             </h2>
-            <p v-if="coordinate" class="text-xs text-white/40 mt-0.5">
+            <p v-if="coordinate" class="text-fluid-xs text-[var(--text-muted)] mt-0.5">
               {{ coordinate.lat.toFixed(2) }}, {{ coordinate.lng.toFixed(2) }}
             </p>
           </div>
           <button
-            class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white/90 transition-colors shrink-0 ml-3"
+            class="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--input-bg)] hover:bg-[var(--tool-btn-active-bg)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors shrink-0 ml-3"
             @click="closePanel"
             :aria-label="t('general.close')"
           >
@@ -116,16 +116,16 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Species list -->
-        <div ref="listRef" class="flex-1 overflow-y-auto px-3 py-3 space-y-1.5 scrollbar-thin">
+        <div ref="listRef" class="flex-1 overflow-y-auto px-fluid-sm py-fluid-sm space-y-1.5 scrollbar-thin">
           <button
             v-for="s in speciesList"
             :key="s.id"
-            class="species-card w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-left cursor-pointer border border-transparent hover:border-white/10"
+            class="species-card w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[var(--input-bg)] hover:bg-[var(--tool-btn-active-bg)] transition-colors text-left cursor-pointer border border-transparent hover:border-[var(--border-color)]"
             @click="selectSpecies(s)"
           >
             <!-- Thumbnail -->
             <div
-              class="w-10 h-10 rounded-lg shrink-0 bg-white/5 overflow-hidden"
+              class="w-10 h-10 rounded-lg shrink-0 bg-[var(--input-bg)] overflow-hidden"
               :style="{ borderLeft: `3px solid ${GROUP_COLORS[s.taxonomicGroup] ?? '#B64032'}` }"
             >
               <img
@@ -140,8 +140,8 @@ onBeforeUnmount(() => {
 
             <!-- Info -->
             <div class="min-w-0 flex-1">
-              <div class="text-sm font-medium text-white/90 truncate">{{ s.commonName }}</div>
-              <div class="text-xs text-white/50 truncate italic">{{ s.scientificName }}</div>
+              <div class="text-fluid-sm font-medium text-[var(--text-primary)] truncate">{{ s.commonName }}</div>
+              <div class="text-fluid-xs text-[var(--text-muted)] truncate italic">{{ s.scientificName }}</div>
             </div>
 
             <!-- Badge -->
@@ -169,11 +169,11 @@ onBeforeUnmount(() => {
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-color);
   border-radius: 4px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--text-muted);
 }
 
 .panel-fade-enter-active,

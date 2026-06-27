@@ -5,7 +5,7 @@
     "projectGrants": "Projektförderungen",
     "endangeredSpecies": "Gefährdete Arten",
     "observatoryOfVulcan": "Observatorium des Vulkan",
-    "activeCrews": "Active Crews",
+    "activeCrews": "Aktive Crews",
     "crews": "Crews",
     "joinEarthGuardians": "Earth Guardians beitreten",
     "switchToLight": "Zu hellem Modus wechseln",
@@ -24,14 +24,14 @@
     "speciesDesc": "Entdecken Sie vom Aussterben bedrohte Arten und ihre Lebensräume auf der ganzen Welt.",
     "observatoryTitle": "Observatorium des Vulkan",
     "observatoryDesc": "Seltene-Erden-Abbaurechte in Brasilien — Kapitalinvasion, Unternehmensnetzwerke, militärische Interessen und sozio-ökologische Auswirkungen.",
-    "activeCrewsTitle": "Active Crews",
-    "activeCrewsDesc": "Explore Earth Guardians' active crews across 7 regions — 131 crews, 1,241 members, 47 countries worldwide.",
+    "activeCrewsTitle": "Aktive Crews",
+    "activeCrewsDesc": "Entdecke die aktiven Crews von Earth Guardians in 7 Regionen — 131 Crews, 1.241 Mitglieder, 47 Länder weltweit.",
     "projectsCount": "Projekte",
     "beneficiariesCount": "Begünstigte",
     "speciesCount": "Arten",
     "groupsCount": "Gruppen",
-    "activeCrewsCount": "Active Crews",
-    "crewMembersCount": "Crew Members",
+    "activeCrewsCount": "Aktive Crews",
+    "crewMembersCount": "Crew-Mitglieder",
     "view2d": "2D-Karte",
     "view3d": "3D-Globus",
     "projectGrants": "Projektförderungen",
@@ -47,13 +47,14 @@
     "icmbioDesc": "Das offizielle brasilianische Register gefährdeter Arten, geführt von ICMBio und IBAMA. Dokumentiert den Erhaltungszustand der reichen Artenvielfalt des Landes.",
     "icmbioScope": "Brasilien",
     "suggestDataset": "Datensatz vorschlagen",
-    "suggestDatasetSubject": "Neuen Datensatz für EG-Maps vorschlagen"
+    "suggestDatasetSubject": "Neuen Datensatz für EG-Maps vorschlagen",
+    "viewSource": "Quelle besuchen"
   },
   "mapControls": {
     "search": "Suche",
     "searchProjects": "Projekte suchen",
     "searchSpecies": "Arten suchen",
-    "searchCrews": "Search Crews",
+    "searchCrews": "Crews suchen",
     "searchPlaceholder": "Nach Name oder Ort suchen...",
     "searchSpeciesPlaceholder": "Nach Name oder Region suchen...",
     "showAll": "Alle anzeigen",
@@ -154,12 +155,12 @@
     "iucnProfile": "IUCN-Profil"
   },
   "crews": {
-    "activeCrews": "Active Crews",
-    "inactiveCrews": "Inactive Crews",
-    "totalMembers": "Total Members",
-    "countries": "Countries",
+    "activeCrews": "Aktive Crews",
+    "inactiveCrews": "Inaktive Crews",
+    "totalMembers": "Gesamtmitglieder",
+    "countries": "Länder",
     "region": "Region",
-    "growthSince2022": "Growth since 2022"
+    "growthSince2022": "Wachstum seit 2022"
   },
   "taxonomy": {
     "Mammal": "Säugetiere",
@@ -319,7 +320,8 @@
       "hydrography": "Hydrographie",
       "conflictZones": "Konfliktzonen",
       "corpNetwork": "Unternehmensnetzwerk",
-      "enterpriseHq": "Unternehmenszentralen"
+      "enterpriseHq": "Unternehmenszentralen",
+      "heatmap": "Dichte-Wärmekarte"
     },
     "myTerritory": {
       "title": "Mein Gebiet",
@@ -331,6 +333,71 @@
       "clear": "Marker löschen",
       "defaultLabel": "Mein Gebiet",
       "sharedBadge": "Geteilt"
+    },
+    "geoLocate": {
+      "title": "Wo befinden Sie sich?",
+      "description": "Helfen Sie uns, Ihnen die nächstgelegenen Bergbaukonzessionen zu zeigen. Wir verwenden Ihren Standort nur zur Kartenzentrierung.",
+      "locating": "Standort wird erkannt...",
+      "useLocation": "Meinen Standort verwenden",
+      "or": "oder",
+      "cityPlaceholder": "Stadtname eingeben...",
+      "noResults": "Keine Städte gefunden. Versuchen Sie einen anderen Namen.",
+      "searchFailed": "Suche fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "denied": "Der Standortzugriff wurde verweigert. Bitte erlauben Sie den Zugriff in den Browsereinstellungen oder suchen Sie nach einer Stadt.",
+      "yourArea": "Ihr Bereich",
+      "failed": "Standort konnte nicht erkannt werden. Bitte suchen Sie nach einer Stadt.",
+      "foundTitle": "Wir haben Sie gefunden!",
+      "foundDesc": "Ist das korrekt? Wir zeigen Bergbaukonzessionen in der Nähe dieses Standorts.",
+      "showNearby": "Konzessionen in der Nähe anzeigen",
+      "wrongPlace": "Falscher Ort",
+      "skip": "Überspringen"
+    },
+    "yearSlider": {
+      "title": "Antragsjahr",
+      "minYear": "Mindestjahr",
+      "maxYear": "Höchstjahr",
+      "play": "Abspielen",
+      "pause": "Pause",
+      "reset": "Zurücksetzen",
+      "claims": "Forderungen sichtbar"
+    },
+    "phaseFilter": {
+      "title": "Bergbauphase",
+      "all": "Alle auswählen",
+      "none": "Alle löschen"
+    },
+    "claimReport": {
+      "title": "Forderungsproblem melden",
+      "close": "Schließen",
+      "claimInfo": "Gemeldete Forderung",
+      "reportType": "Meldungsart",
+      "types": {
+        "newActivity": "Neue Aktivität / Bohrung",
+        "pollution": "Wasser- / Bodenverschmutzung",
+        "conflict": "Gewalt / Einschüchterung",
+        "correction": "Datenkorrektur",
+        "fieldReport": "Feldbericht"
+      },
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Beschreiben Sie, was Sie beobachtet haben (min. 10 Zeichen)...",
+      "includeLocation": "Meinen GPS-Standort einbeziehen",
+      "geoPending": "Standort wird angefordert...",
+      "contactOptional": "Kontakt (optional)",
+      "contactPlaceholder": "E-Mail oder Telefon (verschlüsselt)",
+      "cancel": "Abbrechen",
+      "submit": "Meldung senden"
+    },
+    "export": {
+      "title": "Kartenansicht exportieren",
+      "close": "Schließen",
+      "format": "Format",
+      "resolution": "Auflösung",
+      "paperSize": "Papiergröße",
+      "includeLegend": "Legende einbeziehen",
+      "includeTitle": "Titel & Metadaten einbeziehen",
+      "cancel": "Abbrechen",
+      "download": "Herunterladen",
+      "exporting": "Exportieren..."
     },
     "search": "Unternehmen, Substanz, UF suchen...",
     "legend": {
@@ -397,7 +464,7 @@
     "endangeredSpeciesGlobe": "Globus gefährdeter Arten wird geladen",
     "observatoryOfVulcan": "Observatorium des Vulkan wird geladen",
     "observatoryOfVulcanGlobe": "Observatorium des Vulkan Globus wird geladen",
-    "activeCrewsMap": "Loading Active Crews Map",
+    "activeCrewsMap": "Lade Aktive-Crews-Karte",
     "initializingVisualization": "Interaktive Visualisierung wird initialisiert..."
   },
   "error": {

@@ -18,6 +18,16 @@ export interface CrewRegionData {
   history: CrewRegionHistory[]
 }
 
+export interface CrewLocation {
+  name: string
+  country: string
+  city: string
+  state: string
+  region: string
+  lat: number
+  lng: number
+}
+
 export const allCrewRegionsData: CrewRegionData[] = [
   {
     id: 'north-america',

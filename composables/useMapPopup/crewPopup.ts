@@ -1,6 +1,6 @@
 import { ref, nextTick } from 'vue'
-import type { CrewRegionData } from '@/lib/crew-data'
-import { buildCrewPopupHTML } from '@/lib/map-utils'
+import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
+import { buildCrewPopupHTML, buildCrewLocationPopupHTML } from '@/lib/map-utils'
 import { useI18n } from '@/composables/useI18n'
 
 export function useCrewPopup() {
@@ -10,15 +10,24 @@ export function useCrewPopup() {
   const overlayHTML = ref('')
   const closeBtnRef = ref<HTMLElement | null>(null)
 
-  function open(crew: CrewRegionData) {
-    overlayHTML.value = buildCrewPopupHTML(crew, {
-      activeCrews: t('crews.activeCrews'),
-      inactiveCrews: t('crews.inactiveCrews'),
-      totalMembers: t('crews.totalMembers'),
-      countries: t('crews.countries'),
-      region: t('crews.region'),
-      growthSince2022: t('crews.growthSince2022'),
-    })
+  function open(crew: CrewRegionData | CrewLocation) {
+    if ('activeCrews' in crew) {
+      overlayHTML.value = buildCrewPopupHTML(crew as CrewRegionData, {
+        activeCrews: t('crews.activeCrews'),
+        inactiveCrews: t('crews.inactiveCrews'),
+        totalMembers: t('crews.totalMembers'),
+        countries: t('crews.countries'),
+        region: t('crews.region'),
+        growthSince2022: t('crews.growthSince2022'),
+      })
+    } else {
+      overlayHTML.value = buildCrewLocationPopupHTML(crew as CrewLocation, {
+        crewName: t('crews.activeCrews'),
+        country: t('crews.countries'),
+        city: t('crews.region'),
+        region: t('crews.region'),
+      })
+    }
     showOverlay.value = true
     nextTick(() => closeBtnRef.value?.focus())
   }

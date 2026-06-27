@@ -136,14 +136,37 @@ export function createSpeciesMarkerElement(species: { imageUrl?: string | null; 
   }))
 }
 
+function dangerColor(ds: number): string {
+  if (ds >= 8) return '#e74c3c'
+  if (ds >= 6) return '#f39c12'
+  return '#f1c40f'
+}
+
 export function createRareEarthMarkerElement(feature: GeoJSON.Feature, baseURL?: string): HTMLElement {
   const props = feature.properties as Record<string, unknown> || {}
   const cat = RARE_EARTH_CATEGORIES[props.c as string] ?? { label: 'Unknown', color: '#666' }
-  return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
+  const ds = Number(props.ds ?? props.danger_score ?? 5)
+  const color = dangerColor(ds)
+  const el = createUnifiedMarkerElement(getUnifiedMarkerMetrics({
     color: cat.color,
     size: 20,
-    number: (props.c as string)?.charAt(0) || '?',
   }), baseURL)
+
+  const inner = el.querySelector<HTMLDivElement>('div')
+  if (inner) {
+    inner.style.background = `radial-gradient(circle at 40% 35%, rgba(0,0,0,0.15), rgba(0,0,0,0.65))`
+    inner.style.border = `2px solid ${color}`
+    inner.style.boxShadow = `0 0 ${ds >= 8 ? 14 : ds >= 6 ? 10 : 7}px ${color}, 0 0 2px rgba(255,255,255,0.3)`
+
+    const emoji = document.createElement('span')
+    emoji.textContent = '⚠'
+    emoji.style.fontSize = '11px'
+    emoji.style.lineHeight = '1'
+    emoji.style.filter = ds >= 8 ? 'drop-shadow(0 0 3px #e74c3c)' : ds >= 6 ? 'drop-shadow(0 0 2px #f39c12)' : 'drop-shadow(0 0 2px #f1c40f)'
+    inner.appendChild(emoji)
+  }
+
+  return el
 }
 
 export function createCrewMarkerElement(crew: { totalMembers: number; activeCrews: number }): HTMLElement {
@@ -154,6 +177,14 @@ export function createCrewMarkerElement(crew: { totalMembers: number; activeCrew
     color,
     size: markerSize,
     number: formatCompact(crew.activeCrews),
+  }))
+}
+
+export function createCrewLocationMarkerElement(_crew: { name: string; region: string }): HTMLElement {
+  return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
+    color: '#22c55e',
+    size: 18,
+    number: '',
   }))
 }
 

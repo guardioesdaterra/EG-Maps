@@ -4,6 +4,7 @@ import maplibregl from 'maplibre-gl'
 import {
   setupRareEarthLayers as setupRareEarthLayersInternal,
   syncRareEarthLayerVisibility as syncRareEarthLayerVisibilityInternal,
+  addPolygonLayersToMap,
 } from '@/composables/useRareEarthLayers'
 import { buildEnterpriseNetworkLines } from '@/lib/enterprise-data'
 
@@ -134,6 +135,22 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     },
   )
 
+  // Watcher: polygon data updates (loads after points, needs late layer setup)
+  let polyCleanup: (() => void) | null = null
+  let polysAdded = false
+  const stopPolygonsWatch = watch(
+    () => getProps().rareEarthPolygons,
+    (newVal) => {
+      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
+      if (!newVal || polysAdded) return
+      const cleanup = addPolygonLayersToMap(map.value, newVal, options.popup)
+      if (cleanup) {
+        polyCleanup = cleanup
+        polysAdded = true
+      }
+    },
+  )
+
   // Watcher: fly-to target from parent
   const stopFlyToWatch = watch(
     () => getProps().flyToTarget,
@@ -150,10 +167,12 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     stopVisWatch()
     stopPointsWatch()
     stopProtectedWatch()
+    stopPolygonsWatch()
     stopFlyToWatch()
     if (pointsDebounceTimer) clearTimeout(pointsDebounceTimer)
     if (flyToHighlightTimer) clearTimeout(flyToHighlightTimer)
     if (flyToHighlightMarker) { flyToHighlightMarker.remove(); flyToHighlightMarker = null }
+    if (polyCleanup) { polyCleanup(); polyCleanup = null }
   })
 
   return { setupLayers, addFlyToHighlight }

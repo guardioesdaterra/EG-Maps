@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <UnifiedMap :default-dataset="'active-crews'" :crews="crewRegions" />
+    <UnifiedMap :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" />
     <template #fallback>
       <div class="flex flex-col h-[100svh] w-full items-center justify-center bg-black text-white">
         <div class="relative mb-[clamp(1.5rem,4vw,3rem)] flex items-center justify-center loader-ring">
@@ -20,11 +20,33 @@
 </template>
 
 <script setup lang="ts">
-import { allCrewRegionsData } from '@/lib/crew-data'
+import { allCrewRegionsData, type CrewLocation } from '@/lib/crew-data'
 
 const { t } = useI18n()
+const baseURL = useRuntimeConfig().app.baseURL
 
 const crewRegions = allCrewRegionsData
+const crewLocations = ref<CrewLocation[]>([])
+
+onMounted(async () => {
+  try {
+    const res = await fetch(`${baseURL}/data/crews-locations.json`)
+    if (res.ok) {
+      const geojson = await res.json()
+      crewLocations.value = geojson.features.map((f: GeoJSON.Feature) => ({
+        name: (f.properties?.name as string) ?? '',
+        country: (f.properties?.country as string) ?? '',
+        city: (f.properties?.city as string) ?? '',
+        state: (f.properties?.state as string) ?? '',
+        region: (f.properties?.region as string) ?? '',
+        lat: (f.geometry as GeoJSON.Point).coordinates[1],
+        lng: (f.geometry as GeoJSON.Point).coordinates[0],
+      }))
+    }
+  } catch {
+    // Silently handle crew locations fetch failure — map falls back to region-level markers
+  }
+})
 
 useHead({
   title: 'Active Crews Map (2D) | Earth Guardians',

@@ -190,6 +190,63 @@ export function buildCrewPopupHTML(crew: CrewRegionData, translations?: CrewPopu
   `
 }
 
+export interface CrewLocationPopupTranslations {
+  crewName: string
+  country: string
+  city: string
+  region: string
+}
+
+export function buildCrewLocationPopupHTML(crew: { name: string; country: string; city: string; state: string; region: string }, translations?: CrewLocationPopupTranslations): string {
+  const t = translations || {
+    crewName: 'Crew Name',
+    country: 'Country',
+    city: 'City',
+    region: 'Region',
+  }
+  const location = [crew.city, crew.state, crew.country].filter(Boolean).join(', ')
+
+  return `
+    <div class="project-popup-wrapper" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere; overflow: hidden;">
+      <div class="project-popup-header">
+        <div class="project-corner-accent top-left"></div>
+        <div class="project-corner-accent top-right"></div>
+        <div class="project-header-content">
+          <div class="project-status-bar">
+            <span class="project-badge">Earth Guardians Crew</span>
+            <span class="project-indicator" style="background: #22c55e"></span>
+          </div>
+          <h3 class="project-title" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere;">${escapeHtml(crew.name)}</h3>
+        </div>
+        <div class="project-header-line"></div>
+      </div>
+      <div class="project-popup-body">
+        <div class="project-stat-row">
+          <div class="project-stat-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="project-stat-content">
+            <span class="project-stat-label">${t.city}</span>
+            <span class="project-stat-value">${escapeHtml(location)}</span>
+          </div>
+        </div>
+        <div class="project-stat-row">
+          <div class="project-stat-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+          <div class="project-stat-content">
+            <span class="project-stat-label">${t.region}</span>
+            <span class="project-stat-value">${escapeHtml(crew.region)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="project-popup-footer">
+        <div class="project-footer-glow" style="background: #22c55e"></div>
+      </div>
+    </div>
+  `
+}
+
 export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPopupTranslations, baseURL?: string): string {
   const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64032'
   const endangerment = species.endangerment ?? 'Unknown'

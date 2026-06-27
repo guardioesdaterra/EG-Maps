@@ -181,7 +181,7 @@ import { useI18n } from '@/composables/useI18n'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
-import type { CrewRegionData } from '@/lib/crew-data'
+import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
 import { buildRareEarthPopupHTML, isValidCoordinate } from '@/lib/map-utils'
 import { preloadSpeciesImages } from '@/lib/image-utils'
@@ -198,6 +198,7 @@ import {
   createSpeciesMarkerElement,
   createRareEarthMarkerElement,
   createCrewMarkerElement,
+  createCrewLocationMarkerElement,
   createClusterMarkerElement,
 } from '@/composables/useMapMarkers'
 import {
@@ -230,6 +231,7 @@ interface Props {
   speciesIndex?: SpeciesIndexItem[]  // Lightweight index for markers
   defaultDataset?: 'project-grants' | 'endangered-species' | 'observatory-of-vulcan' | 'active-crews'
   crews?: CrewRegionData[]
+  crewLocations?: CrewLocation[]
   // Rare Earth dataset (observatory-of-vulcan)
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
@@ -246,6 +248,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const projectsData = computed(() => props.projects || allProjectsData)
 const crewsData = computed(() => props.crews || [])
+const crewLocationsData = computed(() => props.crewLocations || [])
 const speciesData = computed(() => props.species || [])
 const speciesIndexData = computed(() => props.speciesIndex || [])
 const filteredProjectsList = ref<ProjectData[] | null>(null)
@@ -338,6 +341,10 @@ function openCrewOverlay(crew: CrewRegionData) {
 function closeCrewOverlay() {
   closeCrewPopup()
   nextTick(() => lastFocusedEl?.focus())
+}
+function openCrewLocationOverlay(crew: CrewLocation) {
+  lastFocusedEl = document.activeElement as HTMLElement
+  crewPopup.open(crew)
 }
 function handleSpeciesSelected(species: SpeciesIndexItem) {
   speciesPanel.closePanel()
@@ -694,11 +701,13 @@ function rebuildMarkers() {
       }
     })
   } else if (activeDataset.value === 'active-crews') {
-    const validCrews = crewsData.value.filter(c => isValidCoordinate(c.latitude, c.longitude))
+    const validCrews: (CrewLocation | CrewRegionData)[] = crewLocationsData.value.length
+      ? crewLocationsData.value.filter(c => isValidCoordinate(c.lat, c.lng))
+      : crewsData.value.filter(c => isValidCoordinate(c.latitude, c.longitude))
 
     const clusterItems = validCrews.map((c, i) => ({
-      lng: c.longitude,
-      lat: c.latitude,
+      lng: 'lng' in c ? c.lng : c.longitude,
+      lat: 'lat' in c ? c.lat : c.latitude,
       type: 'project' as const,
       index: i,
     }))
@@ -716,12 +725,15 @@ function rebuildMarkers() {
       if (cp.type === 'cluster') {
         const onItemClick = (item: ClusterItem) => {
           const crew = validCrews[item.index]
-          if (crew) openCrewOverlay(crew)
+          if (crew) {
+            if ('activeCrews' in crew) openCrewOverlay(crew as CrewRegionData)
+            else openCrewLocationOverlay(crew as CrewLocation)
+          }
         }
-        const el = createClusterMarkerElement(activeDataset.value, cp.count, cp.items, onItemClick, undefined, undefined, undefined, validCrews.map(c => ({ lng: c.longitude, lat: c.latitude })))
+        const el = createClusterMarkerElement(activeDataset.value, cp.count, cp.items, onItemClick, undefined, undefined, undefined, validCrews.map(c => ({ lng: 'lng' in c ? c.lng : c.longitude, lat: 'lat' in c ? c.lat : c.latitude })))
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
-        el.setAttribute('aria-label', `Cluster of ${cp.count} crew regions`)
+        el.setAttribute('aria-label', `Cluster of ${cp.count} crew locations`)
         el.addEventListener('click', (e) => {
           if ((e.target as HTMLElement | null)?.classList.contains('cluster-mini-hover')) return
           if (map) {
@@ -736,17 +748,27 @@ function rebuildMarkers() {
       } else {
         const crew = validCrews[cp.sourceIndex]
         if (!crew) return
-        const el = createCrewMarkerElement(crew)
+        const isLocation = 'name' in crew && 'lat' in crew && !('activeCrews' in crew)
+        const el = isLocation
+          ? createCrewLocationMarkerElement(crew as CrewLocation)
+          : createCrewMarkerElement(crew as CrewRegionData)
         el.style.cursor = 'pointer'
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
-        el.setAttribute('aria-label', `${crew.region} - ${crew.activeCrews} active crews`)
-        el.addEventListener('click', () => { openCrewOverlay(crew) })
+        el.setAttribute('aria-label', isLocation ? `${(crew as CrewLocation).name} - ${(crew as CrewLocation).city}, ${(crew as CrewLocation).country}` : `${(crew as CrewRegionData).region} - ${(crew as CrewRegionData).activeCrews} active crews`)
+        el.addEventListener('click', () => {
+          if (isLocation) openCrewLocationOverlay(crew as CrewLocation)
+          else openCrewOverlay(crew as CrewRegionData)
+        })
         el.addEventListener('keydown', (e: KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCrewOverlay(crew) }
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            if (isLocation) openCrewLocationOverlay(crew as CrewLocation)
+            else openCrewOverlay(crew as CrewRegionData)
+          }
         })
         const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([crew.longitude, crew.latitude])
+          .setLngLat([crew.lng ?? crew.longitude, crew.lat ?? crew.latitude])
           .addTo(map!)
         markers.push(marker)
       }

@@ -1,0 +1,2470 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.9712,
+          40.7831
+        ]
+      },
+      "properties": {
+        "name": "Manhattan, NY",
+        "country": "USA",
+        "city": "New York",
+        "state": "New York",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -104.7091322,
+          40.4233142
+        ]
+      },
+      "properties": {
+        "name": "UNCO (University of Northern Colorado)",
+        "country": "USA",
+        "city": "Greeley",
+        "state": "Colorado",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.6244212,
+          41.8755616
+        ]
+      },
+      "properties": {
+        "name": "Bell Windy City \"Legacy Crew\"",
+        "country": "USA",
+        "city": "Chicago",
+        "state": "Illinois",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.9754432,
+          41.9902206
+        ]
+      },
+      "properties": {
+        "name": "Bridgewater, New Jersey",
+        "country": "USA",
+        "city": "Bridgewater",
+        "state": "New Jersey",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -98.4878,
+          45.4583
+        ]
+      },
+      "properties": {
+        "name": "Aberdeen, South Dakota",
+        "country": "USA",
+        "city": "Aberdeen",
+        "state": "South Dakota",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.1071186,
+          32.7355816
+        ]
+      },
+      "properties": {
+        "name": "Virginia Youth",
+        "country": "USA",
+        "city": "Arlington",
+        "state": "Virginia",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.242766,
+          34.0536909
+        ]
+      },
+      "properties": {
+        "name": "Pachamami Protectors",
+        "country": "USA",
+        "city": "Los Angeles",
+        "state": "CA",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.3800824,
+          30.2274645
+        ]
+      },
+      "properties": {
+        "name": "Nease",
+        "country": "USA",
+        "city": "Ponte Vedra",
+        "state": "Florida",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.4767897,
+          41.8792599
+        ]
+      },
+      "properties": {
+        "name": "350VT Youth Fellowship",
+        "country": "USA",
+        "city": "Sharon",
+        "state": "Vermont",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -100.3161,
+          25.6866
+        ]
+      },
+      "properties": {
+        "name": "Mexico",
+        "country": "Mexico",
+        "city": "Monterrey",
+        "state": "",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.7928128,
+          17.9712148
+        ]
+      },
+      "properties": {
+        "name": "CC JAM (Campion College Jamaica)",
+        "country": "Jamaica",
+        "city": "Kingston",
+        "state": "St. Andrew",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -93.4464,
+          45.0833
+        ]
+      },
+      "properties": {
+        "name": "Maple Grove",
+        "country": "USA",
+        "city": "Maple Grove",
+        "state": "Minnesota",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.628879,
+          39.393712
+        ]
+      },
+      "properties": {
+        "name": "Frederick County",
+        "country": "USA",
+        "city": "Burkittsville",
+        "state": "Maryland",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -100.3161,
+          25.6866
+        ]
+      },
+      "properties": {
+        "name": "EG Monterrey",
+        "country": "Mexico",
+        "city": "Monterrey",
+        "state": "",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -99.226,
+          18.823
+        ]
+      },
+      "properties": {
+        "name": "EG Morelos",
+        "country": "Mexico",
+        "city": "Cuernavaca",
+        "state": "",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.938456,
+          35.6876096
+        ]
+      },
+      "properties": {
+        "name": "Santa Fe, NM",
+        "country": "USA",
+        "city": "Santa Fe",
+        "state": "New Mexico",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -122.80378,
+          45.4871723
+        ]
+      },
+      "properties": {
+        "name": "Rangers",
+        "country": "USA",
+        "city": "Beaverton",
+        "state": "Oregon",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -157.8583,
+          21.3069
+        ]
+      },
+      "properties": {
+        "name": "O'ahu",
+        "country": "USA",
+        "city": "",
+        "state": "",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.9680106,
+          35.1361263
+        ]
+      },
+      "properties": {
+        "name": "Charlotter NC: Tetra",
+        "country": "USA",
+        "city": "Charlotte nc",
+        "state": "",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -72.2374238,
+          18.4268553
+        ]
+      },
+      "properties": {
+        "name": "Hayti",
+        "country": "Haiti",
+        "city": "Sourcailles",
+        "state": "Kenscoff",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.938456,
+          35.6876096
+        ]
+      },
+      "properties": {
+        "name": "Santa Fe",
+        "country": "USA",
+        "city": "Santa Fe",
+        "state": "NM",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -113.995267,
+          46.8701049
+        ]
+      },
+      "properties": {
+        "name": "Missoula",
+        "country": "USA",
+        "city": "Missoula",
+        "state": "MT",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.6244212,
+          41.8755616
+        ]
+      },
+      "properties": {
+        "name": "Mboi Nxuni",
+        "country": "USA",
+        "city": "Chicago",
+        "state": "Illinois",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -117.162772,
+          32.7174202
+        ]
+      },
+      "properties": {
+        "name": "Kumeyaay Ma'at",
+        "country": "USA",
+        "city": "San Diego",
+        "state": "CA",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97.3375448,
+          37.6922361
+        ]
+      },
+      "properties": {
+        "name": "Kitikiti'sh Kanza",
+        "country": "USA - Turtle Island",
+        "city": "Wichita",
+        "state": "Kansas",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -94.969956,
+          35.91537
+        ]
+      },
+      "properties": {
+        "name": "Tahlequah",
+        "country": "USA",
+        "city": "Tahlequah",
+        "state": "Arkansas",
+        "region": "North America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.5647928,
+          -21.7900318
+        ]
+      },
+      "properties": {
+        "name": "Poços de Caldas",
+        "country": "Brazil",
+        "city": "Poços de Caldas",
+        "state": "Minas Gerais",
+        "region": "South America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.7192121,
+          -21.9464285
+        ]
+      },
+      "properties": {
+        "name": "Águas da Prata",
+        "country": "Brazil",
+        "city": "Águas da Prata",
+        "state": "São Paulo",
+        "region": "South America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -51.1827184,
+          -30.0878685
+        ]
+      },
+      "properties": {
+        "name": "Cascata",
+        "country": "Brazil",
+        "city": "Cascata",
+        "state": "São Paulo",
+        "region": "South America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.6333824,
+          -23.5506507
+        ]
+      },
+      "properties": {
+        "name": "São Paulo",
+        "country": "Brazil",
+        "city": "São Paulo",
+        "state": "São Paulo",
+        "region": "South America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.9969666,
+          -1.4854777
+        ]
+      },
+      "properties": {
+        "name": "Puyo",
+        "country": "Ecuador",
+        "city": "Puyo",
+        "state": "Pastaza",
+        "region": "South America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -68.6601444,
+          -16.370029
+        ]
+      },
+      "properties": {
+        "name": "Yapuchiris",
+        "country": "Bolivia",
+        "city": "Cohana",
+        "state": "Los Andes",
+        "region": "South America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -90.5132836,
+          14.6416142
+        ]
+      },
+      "properties": {
+        "name": "Guatemala",
+        "country": "Guatemala",
+        "city": "Guatemala",
+        "state": "",
+        "region": "South America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.6333824,
+          -23.5506507
+        ]
+      },
+      "properties": {
+        "name": "EG Jaraguá",
+        "country": "Brazil",
+        "city": "São Paulo",
+        "state": "São Paulo",
+        "region": "South America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -48.1308,
+          -23.2569
+        ]
+      },
+      "properties": {
+        "name": "São Roque da Fartura",
+        "country": "Brazil",
+        "city": "São Roque da Fartura",
+        "state": "São Paulo",
+        "region": "South America"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.4924376,
+          37.872734
+        ]
+      },
+      "properties": {
+        "name": "Turkey",
+        "country": "Turkey",
+        "city": "Konya",
+        "state": "",
+        "region": "Europe"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          40.2363542,
+          37.9162222
+        ]
+      },
+      "properties": {
+        "name": "Diyarbakir",
+        "country": "Turkey",
+        "city": "Diyarbakır",
+        "state": "Diyarbakır",
+        "region": "Europe"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.128469,
+          38.4192537
+        ]
+      },
+      "properties": {
+        "name": "Ecovoyagers",
+        "country": "Turkey",
+        "city": "Izmir",
+        "state": "Karsıyaka",
+        "region": "Europe"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.128469,
+          38.4192537
+        ]
+      },
+      "properties": {
+        "name": "İzmir",
+        "country": "Turkey",
+        "city": "İzmir",
+        "state": "İzmir",
+        "region": "Europe"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          16.19,
+          59.675
+        ]
+      },
+      "properties": {
+        "name": "Sormland",
+        "country": "Sweden",
+        "city": "Nyköping",
+        "state": "",
+        "region": "Europe"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          147.1599504,
+          -9.4743301
+        ]
+      },
+      "properties": {
+        "name": "Earth Allies PNG",
+        "country": "Papua New Guinea",
+        "city": "Port Moresby",
+        "state": "National Capital District",
+        "region": "Europe"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          49.8328009,
+          40.3755885
+        ]
+      },
+      "properties": {
+        "name": "Azerbaijan",
+        "country": "Azerbaijan",
+        "city": "Baku",
+        "state": "Yasamal",
+        "region": "Europe"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          67.283151,
+          37.2442466
+        ]
+      },
+      "properties": {
+        "name": "Silk Road",
+        "country": "Uzbekistan",
+        "city": "Termez",
+        "state": "Surkhandarya",
+        "region": "Europe"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.3951627,
+          35.9311442
+        ]
+      },
+      "properties": {
+        "name": "Malta",
+        "country": "Malta",
+        "city": "",
+        "state": "",
+        "region": "Europe"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          25.9088474,
+          -24.6581357
+        ]
+      },
+      "properties": {
+        "name": "Botswana",
+        "country": "Botswana",
+        "city": "gaborone",
+        "state": "gaborone",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.58987,
+          -3.1450876
+        ]
+      },
+      "properties": {
+        "name": "Green Equity",
+        "country": "Burundi",
+        "city": "Cankuzo",
+        "state": "Cankuzo",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.2529634,
+          -3.3348819
+        ]
+      },
+      "properties": {
+        "name": "Alliance pour l'Equite EnvironnementalE(AEE-BURUNDI)",
+        "country": "Burundi",
+        "city": "Gatumba",
+        "state": "Bujumbura Rural",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.261662,
+          -2.8477341
+        ]
+      },
+      "properties": {
+        "name": "Trans_Eco",
+        "country": "Burundi",
+        "city": "Cibitoke",
+        "state": "Cibitoke",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.1535811,
+          4.6125522
+        ]
+      },
+      "properties": {
+        "name": "Buea",
+        "country": "Cameroun",
+        "city": "",
+        "state": "Buea",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1516505,
+          5.9614117
+        ]
+      },
+      "properties": {
+        "name": "Bamenda",
+        "country": "Cameroun",
+        "city": "Bamenda",
+        "state": "Northwest",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1516505,
+          5.9614117
+        ]
+      },
+      "properties": {
+        "name": "CEMASUD (Community Empowerment Agency for Sustainable Development)",
+        "country": "Cameroun",
+        "city": "Bamenda",
+        "state": "North West Region",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.5213344,
+          3.8689867
+        ]
+      },
+      "properties": {
+        "name": "CYGI (Cameroon Youth Green Initiative)",
+        "country": "Cameroun",
+        "city": "Yaoundé",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2315915,
+          4.1567895
+        ]
+      },
+      "properties": {
+        "name": "SWC Green Advocates",
+        "country": "Cameroun",
+        "city": "Buea",
+        "state": "South West",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.5606,
+          0.563
+        ]
+      },
+      "properties": {
+        "name": "Bungoma",
+        "country": "Kenya",
+        "city": "Bungoma",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.5606,
+          0.563
+        ]
+      },
+      "properties": {
+        "name": "Trailblazers",
+        "country": "Kenya",
+        "city": "Bungoma",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.8288509,
+          -1.302398
+        ]
+      },
+      "properties": {
+        "name": "Mviringo",
+        "country": "Kenya",
+        "city": "Nairobi",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.2967404,
+          0.1809667
+        ]
+      },
+      "properties": {
+        "name": "FutureForce",
+        "country": "Kenya",
+        "city": "Nairobi/Busia",
+        "state": "Central",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.074632,
+          0.01403
+        ]
+      },
+      "properties": {
+        "name": "Pastoralist Goals Earth Crew",
+        "country": "Kenya",
+        "city": "Nanyuki",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          57.5522,
+          -20.3484
+        ]
+      },
+      "properties": {
+        "name": "Mauritius",
+        "country": "Mauritius",
+        "city": "Port Louis",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.3015,
+          -13.7975
+        ]
+      },
+      "properties": {
+        "name": "Nkhotakota",
+        "country": "Malawi",
+        "city": "Nkhotakota",
+        "state": "Nkhotakota",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.768144,
+          -13.9875107
+        ]
+      },
+      "properties": {
+        "name": "Lilongwe",
+        "country": "Malawi",
+        "city": "Lilongwe",
+        "state": "Chilinde",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -9.5838532,
+          30.4205162
+        ]
+      },
+      "properties": {
+        "name": "Agadir",
+        "country": "Morocco",
+        "city": "Agadir",
+        "state": "Souss Massa",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.0341973,
+          5.489736
+        ]
+      },
+      "properties": {
+        "name": "Nigeria",
+        "country": "Nigeria",
+        "city": "Owerri",
+        "state": "Imo State",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.8979401,
+          9.9175125
+        ]
+      },
+      "properties": {
+        "name": "Sustainable Guardians",
+        "country": "Nigeria",
+        "city": "Jos",
+        "state": "Plateau",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.3941795,
+          6.4550575
+        ]
+      },
+      "properties": {
+        "name": "SOFA Green Guardians",
+        "country": "Nigeria",
+        "city": "Lagos",
+        "state": "Lagos",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.5219738,
+          11.9939978
+        ]
+      },
+      "properties": {
+        "name": "Climate Champions",
+        "country": "Nigeria",
+        "city": "Kano",
+        "state": "Kano",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.1140089,
+          -1.9534357
+        ]
+      },
+      "properties": {
+        "name": "Rwanda",
+        "country": "Rwanda",
+        "city": "Kigali",
+        "state": "Kigali City",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.5825,
+          0.3476
+        ]
+      },
+      "properties": {
+        "name": "Uganda",
+        "country": "Uganda",
+        "city": "Kampala",
+        "state": "Kyotera- Central",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.85,
+          -0.1164
+        ]
+      },
+      "properties": {
+        "name": "U-RCA (Uganda-Rwenzori Climate Action)",
+        "country": "Uganda",
+        "city": "Kasese",
+        "state": "Rwenzori region, Uganda",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.0898006,
+          0.1891272
+        ]
+      },
+      "properties": {
+        "name": "AFODE",
+        "country": "Uganda",
+        "city": "Kasese Municipality",
+        "state": "Western Uganda",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.5814,
+          0.3177
+        ]
+      },
+      "properties": {
+        "name": "Eco Warriors",
+        "country": "Uganda",
+        "city": "Kasese",
+        "state": "kasese",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.2779432,
+          0.6561907
+        ]
+      },
+      "properties": {
+        "name": "KCC (Kibale Conservation Club)",
+        "country": "Uganda",
+        "city": "Fort portal",
+        "state": "Western Uganda",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.0047968,
+          0.1310412
+        ]
+      },
+      "properties": {
+        "name": "FWCC (Foundation for Women And Children Conservation)",
+        "country": "Uganda",
+        "city": "Kasese",
+        "state": "Western Uganda",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.0047968,
+          0.1310412
+        ]
+      },
+      "properties": {
+        "name": "Rwenzori Conservation",
+        "country": "Uganda",
+        "city": "Kasese",
+        "state": "Western Uganda",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -11.742,
+          7.956
+        ]
+      },
+      "properties": {
+        "name": "Sierra Leone",
+        "country": "Sierra Leone",
+        "city": "Freetown",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -11.73665,
+          7.962065
+        ]
+      },
+      "properties": {
+        "name": "Green Leone",
+        "country": "Sierra Leone",
+        "city": "Bo",
+        "state": "Southern",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -13.26795,
+          8.479004
+        ]
+      },
+      "properties": {
+        "name": "SD-SL",
+        "country": "Sierra Leone",
+        "city": "Freetown",
+        "state": "Western Area",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -11.73665,
+          7.962065
+        ]
+      },
+      "properties": {
+        "name": "Eco-Revo",
+        "country": "Sierra Leone",
+        "city": "Bo",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.2729253,
+          -6.7545671
+        ]
+      },
+      "properties": {
+        "name": "SiCa Africa",
+        "country": "Tanzania",
+        "city": "Dar ea salaam",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.9538272,
+          -2.5780702
+        ]
+      },
+      "properties": {
+        "name": "Blue Planet Protectors",
+        "country": "Tanzania",
+        "city": "Nyamagana",
+        "state": "Mwanza",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.2818414,
+          -15.4163395
+        ]
+      },
+      "properties": {
+        "name": "ELIZ",
+        "country": "Zambia",
+        "city": "Lusaka",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.0887488,
+          -13.2938934
+        ]
+      },
+      "properties": {
+        "name": "Eliz Mfuwe",
+        "country": "Zambia",
+        "city": "Mambwe",
+        "state": "Eastern",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.670473,
+          -18.974656
+        ]
+      },
+      "properties": {
+        "name": "Zimbabwe",
+        "country": "Zimbabwe",
+        "city": "Mutare",
+        "state": "Manicaland",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.685,
+          -16.81
+        ]
+      },
+      "properties": {
+        "name": "Karoi, Zimbabwe",
+        "country": "Zimbabwe",
+        "city": "Karoi",
+        "state": "Mashonaland West",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.7542,
+          -0.1029
+        ]
+      },
+      "properties": {
+        "name": "KENYA",
+        "country": "Kenya",
+        "city": "Kisumu",
+        "state": "Kisumu,Nyanza",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.7542,
+          -0.1029
+        ]
+      },
+      "properties": {
+        "name": "KENYA",
+        "country": "Kenya",
+        "city": "Kisumu",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.2083,
+          -6.7924
+        ]
+      },
+      "properties": {
+        "name": "Daresalaam (Tanzania)",
+        "country": "Tanzania",
+        "city": "Dar es Salaam",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.4252507,
+          6.3676953
+        ]
+      },
+      "properties": {
+        "name": "Benin (main crew)",
+        "country": "Benin",
+        "city": "Cotonou",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.4436602,
+          6.5126364
+        ]
+      },
+      "properties": {
+        "name": "So-Ava",
+        "country": "Benin",
+        "city": "So Ava",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.354245,
+          6.4538637
+        ]
+      },
+      "properties": {
+        "name": "Abomey Calavi",
+        "country": "Benin",
+        "city": "Abomey-Calavi",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.354245,
+          6.4538637
+        ]
+      },
+      "properties": {
+        "name": "Yili Yele Energy",
+        "country": "Benin",
+        "city": "Abomey-Calavi",
+        "state": "Atlantic",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.2291358,
+          8.1681174
+        ]
+      },
+      "properties": {
+        "name": "GLAZFABA24",
+        "country": "Benin",
+        "city": "Glazoué",
+        "state": "Kabolé",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.4252507,
+          6.3676953
+        ]
+      },
+      "properties": {
+        "name": "Ecological Squads",
+        "country": "Benin",
+        "city": "Cotonou",
+        "state": "Coastline",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.5417577,
+          7.985217
+        ]
+      },
+      "properties": {
+        "name": "Savè",
+        "country": "Benin",
+        "city": "Savè",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.354245,
+          6.4538637
+        ]
+      },
+      "properties": {
+        "name": "Les Lauriers, Abomey-Calavi",
+        "country": "Benin",
+        "city": "Abomey-Calavi",
+        "state": "Atlantic",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.0695683,
+          7.1816331
+        ]
+      },
+      "properties": {
+        "name": "Zou-Bénin",
+        "country": "Benin",
+        "city": "Bohicon",
+        "state": "Zou",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.5154477,
+          6.5662073
+        ]
+      },
+      "properties": {
+        "name": "Vallée de l'Ouémé",
+        "country": "Benin",
+        "city": "Dangbo",
+        "state": "Calavi",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6880314,
+          12.0753083
+        ]
+      },
+      "properties": {
+        "name": "Burkine Faso",
+        "country": "BURKINA FASO",
+        "city": "BOBODIOULASSO",
+        "state": "BOBODIOULASSO",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6880314,
+          12.0753083
+        ]
+      },
+      "properties": {
+        "name": "Koudougou",
+        "country": "BURKINA FASO",
+        "city": "",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.6880314,
+          12.0753083
+        ]
+      },
+      "properties": {
+        "name": "Legueme Tolotama",
+        "country": "BURKINA FASO",
+        "city": "",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.5270944,
+          12.3681873
+        ]
+      },
+      "properties": {
+        "name": "Ouagadougou",
+        "country": "BURKINA FASO",
+        "city": "Ouagadougou",
+        "state": "Kadiogo",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.3592088,
+          12.0608406
+        ]
+      },
+      "properties": {
+        "name": "E-DEV (Éduquer pour Développer)",
+        "country": "BURKINA FASO",
+        "city": "Fada N'Gourma",
+        "state": "Gourma",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          18.5835913,
+          4.3635118
+        ]
+      },
+      "properties": {
+        "name": "RCA",
+        "country": "Central Africa Republic",
+        "city": "Bangui",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.225652,
+          -1.6665685
+        ]
+      },
+      "properties": {
+        "name": "GOMA",
+        "country": "DR Congo",
+        "city": "Goma",
+        "state": "Nord Kivu",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.1375509,
+          -3.4055866
+        ]
+      },
+      "properties": {
+        "name": "Arbre de Vie",
+        "country": "DR Congo",
+        "city": "Uvira",
+        "state": "South-Kivu",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.1375509,
+          -3.4055866
+        ]
+      },
+      "properties": {
+        "name": "UVIRA",
+        "country": "DR Congo",
+        "city": "Uvira",
+        "state": "South-Kivu",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.0249,
+          -2.5056
+        ]
+      },
+      "properties": {
+        "name": "Bukavu, DRC",
+        "country": "DR Congo",
+        "city": "Bukavu",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.225652,
+          -1.6665685
+        ]
+      },
+      "properties": {
+        "name": "Les Semoirs d'Espoir-GOMA",
+        "country": "DR Congo",
+        "city": "GOMA",
+        "state": "NORD-KIVU",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -3.2582479,
+          5.2318902
+        ]
+      },
+      "properties": {
+        "name": "Côte d'Ivoire",
+        "country": "Côte d'Ivoire",
+        "city": "Adiaké",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -5.2776034,
+          6.8200066
+        ]
+      },
+      "properties": {
+        "name": "RANE (Réseau des Ambassadeurs de la Nature à l'Ecole)",
+        "country": "Côte d'Ivoire",
+        "city": "Yamoussoukro",
+        "state": "Yamoussoukro",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -15.9780071,
+          18.0792379
+        ]
+      },
+      "properties": {
+        "name": "Lexème",
+        "country": "Mauritania",
+        "city": "Nouakchott",
+        "state": "Mauritania",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -7.9847391,
+          12.6132656
+        ]
+      },
+      "properties": {
+        "name": "Green Mali",
+        "country": "Mali",
+        "city": "Bamako",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0412392,
+          16.2788129
+        ]
+      },
+      "properties": {
+        "name": "GAO, Mali",
+        "country": "Mali",
+        "city": "Gao",
+        "state": "",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -7.9847391,
+          12.6132656
+        ]
+      },
+      "properties": {
+        "name": "AJDS Sangarébougou",
+        "country": "Mali",
+        "city": "Bamako",
+        "state": "Sangarabougou",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -17.447938,
+          14.693425
+        ]
+      },
+      "properties": {
+        "name": "Dakar",
+        "country": "Senegal",
+        "city": "Dakar",
+        "state": "Dakar",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -17.396413,
+          14.751544
+        ]
+      },
+      "properties": {
+        "name": "PIKINE",
+        "country": "Senegal",
+        "city": "Pikine",
+        "state": "Dakar",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.6323982,
+          6.9106565
+        ]
+      },
+      "properties": {
+        "name": "LaPHOENIX Int.",
+        "country": "Togo",
+        "city": "Kpalime",
+        "state": "Region des plateaux",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.6323982,
+          6.9106565
+        ]
+      },
+      "properties": {
+        "name": "Club Environment Lycee 30 A.",
+        "country": "Togo",
+        "city": "Kpalime",
+        "state": "Region des plateaux",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.215829,
+          6.130419
+        ]
+      },
+      "properties": {
+        "name": "AMD (Association Main du Developement)",
+        "country": "Togo",
+        "city": "LOME",
+        "state": "Region Maritime",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.215829,
+          6.130419
+        ]
+      },
+      "properties": {
+        "name": "Action Environnement",
+        "country": "Togo",
+        "city": "LOME",
+        "state": "Region Maritime",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.215829,
+          6.130419
+        ]
+      },
+      "properties": {
+        "name": "EcoChange",
+        "country": "Togo",
+        "city": "LOME",
+        "state": "Region Maritime",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.215829,
+          6.130419
+        ]
+      },
+      "properties": {
+        "name": "CJFAT (Climate Justice For All in Togo)",
+        "country": "Togo",
+        "city": "LOME",
+        "state": "Region Maritime",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.215829,
+          6.130419
+        ]
+      },
+      "properties": {
+        "name": "CPR (Climate Policy & Research) Center Togo",
+        "country": "Togo",
+        "city": "LOME",
+        "state": "Region Maritime",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          47.7408518,
+          -22.2469032
+        ]
+      },
+      "properties": {
+        "name": "FTVA, Madagascar",
+        "country": "Madagascar",
+        "city": "Ankaramalaza",
+        "state": "Fianarantsoa",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.1128,
+          13.5127
+        ]
+      },
+      "properties": {
+        "name": "Niger",
+        "country": "Niger",
+        "city": "Niamey",
+        "state": "Naimey",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.0249,
+          -2.5056
+        ]
+      },
+      "properties": {
+        "name": "CNHDP",
+        "country": "DR Congo",
+        "city": "Bukavu",
+        "state": "Bukavu/Sud-Kiv",
+        "region": "Africa"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          135.5023,
+          34.6937
+        ]
+      },
+      "properties": {
+        "name": "Japan",
+        "country": "Japan",
+        "city": "Osaka",
+        "state": "",
+        "region": "East Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.3444692,
+          36.1195513
+        ]
+      },
+      "properties": {
+        "name": "Green Generation",
+        "country": "South Korea",
+        "city": "Gumi",
+        "state": "Gumi",
+        "region": "East Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.289,
+          36.4799999
+        ]
+      },
+      "properties": {
+        "name": "Juvenearth",
+        "country": "South Korea",
+        "city": "Sejong",
+        "state": "",
+        "region": "East Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          116.3912972,
+          39.9057136
+        ]
+      },
+      "properties": {
+        "name": "Nature Corner",
+        "country": "China",
+        "city": "Beijing",
+        "state": "Beijing",
+        "region": "East Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          85.0985,
+          20.9517
+        ]
+      },
+      "properties": {
+        "name": "Odisha",
+        "country": "India",
+        "city": "Odisha",
+        "state": "Odisha",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.2090057,
+          28.6138954
+        ]
+      },
+      "properties": {
+        "name": "New Delhi",
+        "country": "India",
+        "city": "Delhi",
+        "state": "Delhi",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          84.7925,
+          19.1786
+        ]
+      },
+      "properties": {
+        "name": "Behrampur",
+        "country": "India",
+        "city": "Behrampur",
+        "state": "Odisha",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.2090057,
+          28.6138954
+        ]
+      },
+      "properties": {
+        "name": "Pine States",
+        "country": "India",
+        "city": "New Delhi",
+        "state": "New Delhi",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.3105561,
+          28.4031478
+        ]
+      },
+      "properties": {
+        "name": "Aravalli Saviours",
+        "country": "India",
+        "city": "Faridabad",
+        "state": "Haryana",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          78.4740613,
+          17.360589
+        ]
+      },
+      "properties": {
+        "name": "Hyderabad",
+        "country": "India",
+        "city": "Hyderabad",
+        "state": "Telangana",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.3672845,
+          -7.7953473
+        ]
+      },
+      "properties": {
+        "name": "Indonesia",
+        "country": "Indonesia",
+        "city": "Yogyakarta",
+        "state": "Special Region of Yogyakarta",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          79.8612,
+          6.9271
+        ]
+      },
+      "properties": {
+        "name": "Sri Lanka",
+        "country": "Sri Lanka",
+        "city": "Colombo",
+        "state": "",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          83.991402,
+          28.209538
+        ]
+      },
+      "properties": {
+        "name": "Everest",
+        "country": "Nepal",
+        "city": "Pokhara",
+        "state": "Gandaki",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          87.1378484,
+          26.6410141
+        ]
+      },
+      "properties": {
+        "name": "IWL, Nepal",
+        "country": "Nepal",
+        "city": "Sunsari",
+        "state": "Koshi",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.0651511,
+          33.6938118
+        ]
+      },
+      "properties": {
+        "name": "Islamabad",
+        "country": "Pakistan",
+        "city": "Islamabad",
+        "state": "Islamabad Capital Territory",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          89.3723971,
+          24.4308309
+        ]
+      },
+      "properties": {
+        "name": "Chalanbeel",
+        "country": "Bangladesh",
+        "city": "Tarash",
+        "state": "Sirajganj",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          68.0087199,
+          38.3671625
+        ]
+      },
+      "properties": {
+        "name": "Greenova",
+        "country": "Uzbekistan",
+        "city": "Sariasia",
+        "state": "Surkhandarya",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          77.5946,
+          12.9716
+        ]
+      },
+      "properties": {
+        "name": "Banglore",
+        "country": "India",
+        "city": "Bangalore",
+        "state": "",
+        "region": "South Asia"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          80.3217588,
+          26.4609135
+        ]
+      },
+      "properties": {
+        "name": "SSS Foundation",
+        "country": "India",
+        "city": "Kanpur",
+        "state": "Uttar pradesh",
+        "region": "South Asia"
+      }
+    }
+  ]
+}

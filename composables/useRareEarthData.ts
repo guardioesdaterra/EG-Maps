@@ -30,8 +30,10 @@ export interface DeepAnalysis {
 }
 
 export type LoadPhase = 'idle' | 'points' | 'overlaps' | 'polygons' | 'protected' | 'complete'
+export type DataRegion = 'pococaldas' | 'all'
 
-export function useRareEarthData(baseURL: string) {
+export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'all') {
+  const region = ref<DataRegion>(initialRegion)
   const pointsData = shallowRef<RareEarthFeatureCollection | undefined>(undefined)
   const polygonsData = shallowRef<RareEarthFeatureCollection | undefined>(undefined)
   const protectedData = shallowRef<RareEarthFeatureCollection | undefined>(undefined)
@@ -41,7 +43,14 @@ export function useRareEarthData(baseURL: string) {
   const loadPhase = ref<LoadPhase>('idle')
   const loadProgress = ref(0)
   const error = ref<Error | null>(null)
+  const isRegional = ref(initialRegion === 'pococaldas')
   let overlapsByProcesso: Record<string, Array<{ name: string; kind: string; distance_km: number }>> = {}
+
+  function dataDir(): string {
+    return region.value === 'pococaldas'
+      ? `${baseURL}data/rare-earth/pococaldas/`
+      : `${baseURL}data/rare-earth/`
+  }
 
   function transformPoints(pointsGJ: RareEarthFeatureCollection): RareEarthFeatureSummary[] {
     return pointsGJ.features.map((f: RareEarthFeature) => {
@@ -72,8 +81,10 @@ export function useRareEarthData(baseURL: string) {
     loadProgress.value = 0
     error.value = null
     try {
+      const dir = dataDir()
+
       // Phase 1: Load points immediately (critical for map display)
-      const pointsRes = await fetch(`${baseURL}data/rare-earth/points.geojson`)
+      const pointsRes = await fetch(`${dir}points.geojson`)
       if (!pointsRes.ok) throw new Error('Failed to load points')
       const pointsGJ = (await pointsRes.json()) as RareEarthFeatureCollection
       features.value = transformPoints(pointsGJ)
@@ -87,7 +98,10 @@ export function useRareEarthData(baseURL: string) {
       // Phase 2: Load overlaps (needed for popup enrichment)
       loadPhase.value = 'overlaps'
       loadProgress.value = 30
-      const overlapsRes = await fetch(`${baseURL}data/rare-earth/points_with_overlaps.geojson`).catch(() => null)
+      const overlapsUrl = region.value === 'pococaldas'
+        ? `${dir}points_overlaps.geojson`
+        : `${dir}points_with_overlaps.geojson`
+      const overlapsRes = await fetch(overlapsUrl).catch(() => null)
       if (overlapsRes && overlapsRes.ok) {
         const overlapsGJ = await overlapsRes.json()
         overlapsByProcesso = {}
@@ -106,7 +120,7 @@ export function useRareEarthData(baseURL: string) {
 
       // Phase 3: Load polygons (heavy, for polygon layers)
       loadProgress.value = 50
-      const polysRes = await fetch(`${baseURL}data/rare-earth/polygons.geojson`).catch(() => null)
+      const polysRes = await fetch(`${dir}polygons.geojson`).catch(() => null)
       if (polysRes && polysRes.ok) {
         polygonsData.value = await polysRes.json()
       }
@@ -117,8 +131,8 @@ export function useRareEarthData(baseURL: string) {
       loadPhase.value = 'protected'
       loadProgress.value = 70
       const [protectedRes, analysisRes] = await Promise.all([
-        fetch(`${baseURL}data/rare-earth/protected-areas.geojson`).catch(() => null),
-        fetch(`${baseURL}data/rare-earth/deep_analysis.json`).catch(() => null),
+        fetch(`${dir}protected-areas.geojson`).catch(() => null),
+        fetch(`${dir}deep_analysis.json`).catch(() => null),
       ])
       loadProgress.value = 90
 
@@ -132,6 +146,14 @@ export function useRareEarthData(baseURL: string) {
     } finally {
       isLoading.value = false
     }
+  }
+
+  /** Expand from regional to full Brazil dataset */
+  async function loadFullBrazil() {
+    if (region.value === 'all' && pointsData.value) return
+    region.value = 'all'
+    isRegional.value = false
+    await load()
   }
 
   const speculatorIndex = computed<SpeculatorIndexEntry[]>(() =>
@@ -150,5 +172,8 @@ export function useRareEarthData(baseURL: string) {
     loadProgress,
     error,
     load,
+    loadFullBrazil,
+    region,
+    isRegional,
   }
 }

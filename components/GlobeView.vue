@@ -11,7 +11,7 @@
           </div>
         </div>
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('globe.loading') }}</p>
-        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
+        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews').toLowerCase() : activeDataset === 'observatory-of-vulcan' ? t('home.observatoryOfVulcan').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
         <div class="mt-3 xs:mt-4 flex gap-1">
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
@@ -170,33 +170,19 @@ import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
-import { isValidCoordinate } from '@/lib/map-utils'
+import { buildRareEarthPopupHTML } from '@/lib/map-utils'
 import type { Species } from '@/lib/map-utils'
-import { preloadSpeciesImages } from '@/lib/image-utils'
-import { useMapCluster } from '@/composables/useMapCluster'
 import { detectWebGLSupport } from '@/composables/useMapLibre'
 import { useMapHexGrid } from '@/composables/useMapHexGrid'
-import { useMapCore } from '@/composables/useMapCore'
 import { useSpeciesPopup, useProjectPopup, useCrewPopup } from '@/composables/useMapPopup'
-import { NATIVE_GEOJSON_THRESHOLD, MOBILE_PROJECT_LIMIT, MOBILE_SPECIES_LIMIT, HEX_GRID } from '@/lib/constants'
-import type { ClusterPoint, ClusterItem } from '@/composables/useMapCluster'
-import {
-  createProjectMarkerElement,
-  createSpeciesMarkerElement,
-  createClusterMarkerElement,
-  createCrewMarkerElement,
-  createCrewLocationMarkerElement,
-} from '@/composables/useMapMarkers'
+import { HEX_GRID } from '@/lib/constants'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import { allCrewRegionsData } from '@/lib/crew-data'
-import {
-  useGeoJSONMarkers,
-  speciesIndexToGeoJSON,
-  projectsToGeoJSON,
-  type SpeciesIndexItem,
-} from '@/composables/useGeoJSONMarkers'
+import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { useMapConnections } from '@/composables/useMapConnections'
+import { useMapMarkerOrchestrator } from '@/composables/useMapMarkerOrchestrator'
+import { useRareEarthController } from '@/composables/useRareEarthController'
 
 const { t, locale, localeNames } = useI18n()
 const speciesPanel = useSpeciesPanel()
@@ -237,9 +223,6 @@ const {
   close: closeCrewPopup,
 } = crewPopup
 
-// ── Shared map core ──
-const mapCore = useMapCore(locale, t)
-
 // ── Hex grid composable (globe-specific sizes) ──
 const hexGrid = useMapHexGrid(hexCanvasRef, {
   mobileSize: HEX_GRID.mobileSizeGlobe,
@@ -278,9 +261,6 @@ function handleSpeciesSelected(species: SpeciesIndexItem) {
   speciesPanel.closePanel()
   openSpeciesOverlay(species)
 }
-function findSpeciesAtCoord(lat: number, lng: number, source: SpeciesIndexItem[]) {
-  return mapCore.findSpeciesAtCoord(lat, lng, source)
-}
 
 interface Props {
   projects?: ProjectData[]
@@ -289,7 +269,13 @@ interface Props {
   crews?: CrewRegionData[]
   crewLocations?: CrewLocation[]
   showHexGrid?: boolean
-  defaultDataset?: 'project-grants' | 'endangered-species' | 'active-crews'
+  defaultDataset?: 'project-grants' | 'endangered-species' | 'active-crews' | 'observatory-of-vulcan'
+  // Observatory (rare earth) props
+  rareEarthPoints?: GeoJSON.FeatureCollection
+  rareEarthPolygons?: GeoJSON.FeatureCollection
+  rareEarthProtected?: GeoJSON.FeatureCollection
+  layerVisibility?: Record<string, boolean>
+  flyToTarget?: { lng: number; lat: number; zoom?: number } | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -307,13 +293,12 @@ const hasError = ref(false)
 const errorMessage = ref('')
 const noWebglSupport = ref(false)
 const isLoading = ref(true)
-const activeDataset = ref<'project-grants' | 'endangered-species' | 'active-crews'>(props.defaultDataset)
+const activeDataset = ref<'project-grants' | 'endangered-species' | 'active-crews' | 'observatory-of-vulcan'>(props.defaultDataset)
 const { showHexGrid: isHexGridVisible } = hexGrid
 const selectedSpeciesGroups = ref<string[]>([])
 const showFilterPanel = ref(false)
 
 let map: maplibregl.Map | null = null
-let markers: maplibregl.Marker[] = []
 let isMounted = true
 let pendingVisibilityUpdate = false
 let pendingClusterRebuild = false
@@ -327,10 +312,39 @@ const connectionsGlobe = useMapConnections(
 )
 const { showConnections: showConnectionsGlobe, toggleConnections: toggleConnectionsGlobe } = connectionsGlobe
 let interactionTimeout: ReturnType<typeof setTimeout> | null = null
-const clusterer = useMapCluster()
-const geoJSONMarkers = useGeoJSONMarkers()
-let lastClusterZoom = -1
-let lastBboxCenter: { lng: number; lat: number } | null = null
+
+const mapRef = computed(() => map)
+
+// ── Marker orchestrator (shared composable) ──
+const orchestrator = useMapMarkerOrchestrator({
+  map: mapRef as Ref<maplibregl.Map | null>,
+  locale,
+  isMobile,
+  baseURL,
+  defaultDataset: props.defaultDataset,
+  isGlobe: true,
+  callbacks: {
+    openProjectOverlay: (project: ProjectData) => openProjectOverlay(project),
+    openSpeciesOverlay: (species: Species | SpeciesIndexItem) => openSpeciesOverlay(species),
+    openCrewOverlay: (crew: CrewRegionData | CrewLocation) => openCrewOverlay(crew),
+    openRareEarthOverlay: (feature: GeoJSON.Feature) => openRareEarthOverlay(feature),
+    findSpeciesAtCoord: (lat: number, lng: number, source: SpeciesIndexItem[]) => orchestrator.mapCore.findSpeciesAtCoord(lat, lng, source),
+  },
+})
+
+// ── Rare Earth controller (observatory) ──
+const rareEarthController = useRareEarthController({
+  map: mapRef as Ref<maplibregl.Map | null>,
+  isActive: computed(() => activeDataset.value === 'observatory-of-vulcan'),
+  getProps: () => ({
+    rareEarthPoints: props.rareEarthPoints,
+    rareEarthPolygons: props.rareEarthPolygons,
+    rareEarthProtected: props.rareEarthProtected,
+    layerVisibility: props.layerVisibility,
+    flyToTarget: props.flyToTarget,
+  }),
+  popup: { t, locale },
+})
 
 const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
 
@@ -383,11 +397,12 @@ async function initMap() {
   try {
     // eslint-disable-next-line no-console
     console.debug('[GlobeView] creating maplibregl.Map', { style: MAP_STYLE.substring(0, 80), isMobile: isMobile.value })
+    const isRee = activeDataset.value === 'observatory-of-vulcan'
     map = new maplibregl.Map({
       container: containerRef.value,
       style: MAP_STYLE,
-      zoom: isMobile.value ? 1.5 : 2.5,
-      center: [0, 20],
+      zoom: isRee ? 4.2 : isMobile.value ? 1.5 : 2.5,
+      center: isRee ? [-48, -15] : [0, 20],
       attributionControl: false,
       renderWorldCopies: false,
       fadeDuration: 100,
@@ -417,8 +432,11 @@ async function initMap() {
       // eslint-disable-next-line no-console
       console.debug('[GlobeView] map loaded successfully')
       isLoading.value = false
+      if (activeDataset.value === 'observatory-of-vulcan') {
+        rareEarthController.setupLayers()
+      }
       rebuildMarkers()
-      if (activeDataset.value !== 'active-crews') {
+      if (activeDataset.value !== 'active-crews' && activeDataset.value !== 'observatory-of-vulcan') {
         connectionsGlobe.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', projectsData.value, speciesData.value)
         connectionsGlobe.startParticles()
       }
@@ -462,7 +480,7 @@ async function initMap() {
       }
       if (!pendingClusterRebuild && map) {
         const currentZoom = Math.floor(map.getZoom())
-        if (mapCore.shouldRebuildClusters(map, currentZoom, lastClusterZoom, lastBboxCenter)) {
+        if (orchestrator.mapCore.shouldRebuildClusters(map, currentZoom, orchestrator.lastClusterZoom, orchestrator.lastBboxCenter)) {
           pendingClusterRebuild = true
           requestAnimationFrame(() => {
             rebuildMarkers()
@@ -476,7 +494,7 @@ async function initMap() {
       updateMarkerVisibility()
       if (map) {
         const currentZoom = Math.floor(map.getZoom())
-        if (mapCore.shouldRebuildClusters(map, currentZoom, lastClusterZoom, lastBboxCenter)) {
+        if (orchestrator.mapCore.shouldRebuildClusters(map, currentZoom, orchestrator.lastClusterZoom, orchestrator.lastBboxCenter)) {
           rebuildMarkers()
         }
       }
@@ -529,20 +547,11 @@ async function initMap() {
 }
 
 function updateMarkerVisibility() {
-  if (!map) return
-  mapCore.updateMarkerVisibility(map, markers)
+  orchestrator.updateMarkerVisibility()
 }
 
 
-const useNativeGeoJSON = true
-const SOURCE_ID = 'globe-species-markers'
-
-let geoJSONInitializedFor: 'project-grants' | 'endangered-species' | null = null
-let geoJSONSpeciesIndex: SpeciesIndexItem[] | null = null
-
-function applySpeciesFilters(speciesIndex: SpeciesIndexItem[]): SpeciesIndexItem[] {
-  return mapCore.applySpeciesFilters(speciesIndex, selectedSpeciesGroups.value)
-}
+const useNativeGeoJSON = orchestrator.useNativeGeoJSON
 
 function toggleLegendGroup(group: string | number) {
   const g = String(group)
@@ -554,355 +563,46 @@ function toggleLegendGroup(group: string | number) {
   }
 }
 
-function setupGeoJSONMarkers(forceReinit = false) {
-  if (!map || !useNativeGeoJSON) return
-  if (activeDataset.value === 'active-crews') return
-
-  const dataset = activeDataset.value === 'project-grants' ? 'project-grants' : 'endangered-species'
-
-  if (!forceReinit && geoJSONInitializedFor === dataset) {
-    updateGeoJSONMarkerData()
-    return
-  }
-
-  // Clean up old DOM markers
-  markers.forEach(m => m.remove())
-  markers = []
-  clusterer.destroy()
-
-  geoJSONMarkers.init(map)
-
-  if (activeDataset.value === 'project-grants') {
-    const validProjects = projectsData.value.filter(p => isValidCoordinate(p.latitude, p.longitude))
-    const geojson = projectsToGeoJSON(validProjects)
-    geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
-    geoJSONMarkers.addClusterLayers(SOURCE_ID, 'project-grants')
-
-    geoJSONMarkers.setupEventHandlers(
-      SOURCE_ID,
-      'project-grants',
-      (props, _coords) => {
-        const project = validProjects.find(p => p.project_title === props.id)
-        if (project) openProjectOverlay(project)
-      },
-      () => { /* easeTo handled inside setupEventHandlers */ }
-    )
-    geoJSONInitializedFor = 'project-grants'
-  } else if (speciesIndexData.value.length) {
-    // Use lightweight index for map markers
-    const filteredIndex = applySpeciesFilters(speciesIndexData.value)
-    geoJSONSpeciesIndex = speciesIndexData.value
-    const geojson = speciesIndexToGeoJSON(filteredIndex)
-    geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
-    geoJSONMarkers.addClusterLayers(SOURCE_ID, 'endangered-species')
-
-    geoJSONMarkers.setupEventHandlers(
-      SOURCE_ID,
-      'endangered-species',
-      (props, coords) => {
-        const [lng, lat] = coords
-        const matches = findSpeciesAtCoord(lat, lng, speciesIndexData.value)
-        if (matches.length > 1) {
-          speciesPanel.openPanel(matches, { lat, lng })
-        } else {
-          const speciesId = props.id as string
-          const indexItem = speciesIndexData.value.find(s => s.id === speciesId)
-          if (indexItem) openSpeciesOverlay(indexItem)
-        }
-      },
-      (_, coords) => {
-        const [lng, lat] = coords
-        const matches = findSpeciesAtCoord(lat, lng, speciesIndexData.value)
-        if (matches.length > 1) {
-          speciesPanel.openPanel(matches, { lat, lng })
-        }
-      }
-    )
-    geoJSONInitializedFor = 'endangered-species'
-  } else if (speciesData.value.length) {
-    // Fallback to full species data if index not available
-    const validSpecies = speciesData.value.filter(s => isValidCoordinate(s.lat, s.lng))
-    const geojson = speciesIndexToGeoJSON(validSpecies.map(s => ({
-      id: s.id,
-      commonName: s.commonName,
-      scientificName: s.scientificName,
-      taxonomicGroup: s.taxonomicGroup,
-      category: s.category,
-      lat: s.lat,
-      lng: s.lng,
-      imageUrl: s.imageUrl || null,
-      description: '',
-      endangerment: '',
-      threatTypes: s.threatTypes || [],
-    })))
-    geoJSONMarkers.addGeoJSONSource(SOURCE_ID, geojson, true)
-    geoJSONMarkers.addClusterLayers(SOURCE_ID, 'endangered-species')
-
-    geoJSONMarkers.setupEventHandlers(
-      SOURCE_ID,
-      'endangered-species',
-      async (props, _coords) => {
-        const speciesId = props.id as string
-        const species = speciesData.value.find(s => s.id === speciesId)
-        if (species) openSpeciesOverlay(species)
-      },
-      () => { /* easeTo handled inside setupEventHandlers */ }
-    )
-    geoJSONInitializedFor = 'endangered-species'
-  }
-
-  lastClusterZoom = Math.floor(map.getZoom())
-  const center = map.getCenter()
-  lastBboxCenter = { lng: center.lng, lat: center.lat }
-}
-
 function updateGeoJSONMarkerData() {
-  if (!map || !geoJSONInitializedFor) return
-  if (geoJSONInitializedFor === 'project-grants') {
-    const validProjects = projectsData.value.filter(p => isValidCoordinate(p.latitude, p.longitude))
-    geoJSONMarkers.updateData(SOURCE_ID, projectsToGeoJSON(validProjects))
-  } else if (geoJSONSpeciesIndex) {
-    const filteredIndex = applySpeciesFilters(geoJSONSpeciesIndex)
-    geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(filteredIndex))
-  } else if (speciesIndexData.value.length) {
-    geoJSONSpeciesIndex = speciesIndexData.value
-    geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(applySpeciesFilters(speciesIndexData.value)))
-  } else if (speciesData.value.length) {
-    const validSpecies = speciesData.value.filter(s => isValidCoordinate(s.lat, s.lng))
-    geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(validSpecies.map(s => ({
-      id: s.id,
-      commonName: s.commonName,
-      scientificName: s.scientificName,
-      taxonomicGroup: s.taxonomicGroup,
-      category: s.category,
-      lat: s.lat,
-      lng: s.lng,
-      imageUrl: s.imageUrl || null,
-      description: '',
-      endangerment: '',
-      threatTypes: s.threatTypes || [],
-    }))))
-  }
+  if (!map) return
+  orchestrator.updateGeoJSONMarkerData(
+    activeDataset.value,
+    projectsData.value,
+    speciesIndexData.value,
+    speciesData.value,
+    selectedSpeciesGroups.value,
+  )
 }
 
 function rebuildMarkers() {
   if (!map) return
-
-  const currentZoom = map.getZoom()
-
-  // Use native GeoJSON for large datasets (endangered species with 500+ points)
-  if (useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > NATIVE_GEOJSON_THRESHOLD) {
-    setupGeoJSONMarkers()
-    return
-  }
-
-  markers.forEach(m => m.remove())
-  markers = []
-  clusterer.destroy()
-
-  if (activeDataset.value === 'project-grants') {
-    const data = isMobile.value
-      ? projectsData.value.slice(0, MOBILE_PROJECT_LIMIT)
-      : projectsData.value
-    const validProjects = data.filter(p => isValidCoordinate(p.latitude, p.longitude))
-
-    const clusterItems = validProjects.map((p, i) => ({
-      lng: p.longitude,
-      lat: p.latitude,
-      type: 'project' as const,
-      index: i,
-    }))
-
-    clusterer.loadImmediate(clusterItems)
-
-    const bounds = map.getBounds()
-    const bbox: [number, number, number, number] = [
-      bounds.getWest(), bounds.getSouth(),
-      bounds.getEast(), bounds.getNorth(),
-    ]
-    const clusters = clusterer.getClusters(bbox, currentZoom)
-
-    clusters.forEach((cp: ClusterPoint) => {
-      if (cp.type === 'cluster') {
-        const onItemClick = (item: ClusterItem) => {
-          const project = validProjects[item.index]
-          if (project) openProjectOverlay(project)
-        }
-        const el = createClusterMarkerElement(activeDataset.value, cp.count, cp.items, onItemClick, validProjects)
-        el.setAttribute('tabindex', '0')
-        el.setAttribute('role', 'button')
-        el.setAttribute('aria-label', `Cluster of ${cp.count} projects`)
-        el.addEventListener('click', (e) => {
-          // If click was on a mini-marker the click handler there already handled it
-          if ((e.target as HTMLElement | null)?.classList.contains('cluster-mini-hover')) return
-          if (map) {
-            const zoom = Math.min(Math.max(clusterer.getClusterExpansionZoom(cp.clusterId), map.getZoom() + 1), map.getMaxZoom())
-            map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 500, essential: true })
-          }
-        })
-        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([cp.lng, cp.lat])
-          .addTo(map!)
-        markers.push(marker)
-      } else {
-        const project = validProjects[cp.sourceIndex]
-        if (!project) return
-        const el = createProjectMarkerElement(project)
-        el.style.cursor = 'pointer'
-        el.setAttribute('tabindex', '0')
-        el.setAttribute('role', 'button')
-        el.setAttribute('aria-label', project.project_title)
-        el.addEventListener('click', () => { openProjectOverlay(project) })
-        el.addEventListener('keydown', (e: KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProjectOverlay(project) }
-        })
-        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([project.longitude, project.latitude])
-          .addTo(map!)
-        markers.push(marker)
-      }
-    })
-  } else if (activeDataset.value === 'active-crews') {
-    const validCrews: (CrewLocation | CrewRegionData)[] = crewLocationsData.value.length
-      ? crewLocationsData.value.filter(c => isValidCoordinate(c.lat, c.lng))
-      : crewsData.value.filter(c => isValidCoordinate(c.latitude, c.longitude))
-
-    const clusterItems = validCrews.map((c, i) => ({
-      lng: 'lng' in c ? c.lng : c.longitude,
-      lat: 'lat' in c ? c.lat : c.latitude,
-      type: 'project' as const,
-      index: i,
-    }))
-
-    clusterer.loadImmediate(clusterItems)
-
-    const bounds = map.getBounds()
-    const bbox: [number, number, number, number] = [
-      bounds.getWest(), bounds.getSouth(),
-      bounds.getEast(), bounds.getNorth(),
-    ]
-    const clusters = clusterer.getClusters(bbox, currentZoom)
-
-    clusters.forEach((cp: ClusterPoint) => {
-      if (cp.type === 'cluster') {
-        const onItemClick = (item: ClusterItem) => {
-          const crew = validCrews[item.index]
-          if (crew) openCrewOverlay(crew)
-        }
-        const el = createClusterMarkerElement(activeDataset.value, cp.count, cp.items, onItemClick, undefined, undefined, undefined, validCrews.map(c => ({ lng: 'lng' in c ? c.lng : c.longitude, lat: 'lat' in c ? c.lat : c.latitude })))
-        el.setAttribute('tabindex', '0')
-        el.setAttribute('role', 'button')
-        el.setAttribute('aria-label', `Cluster of ${cp.count} crew locations`)
-        el.addEventListener('click', (e) => {
-          if ((e.target as HTMLElement | null)?.classList.contains('cluster-mini-hover')) return
-          if (map) {
-            const zoom = Math.min(Math.max(clusterer.getClusterExpansionZoom(cp.clusterId), map.getZoom() + 1), map.getMaxZoom())
-            map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 500, essential: true })
-          }
-        })
-        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([cp.lng, cp.lat])
-          .addTo(map!)
-        markers.push(marker)
-      } else {
-        const crew = validCrews[cp.sourceIndex]
-        if (!crew) return
-        const isLocation = 'name' in crew && 'lat' in crew && !('activeCrews' in crew)
-        const el = isLocation
-          ? createCrewLocationMarkerElement(crew as CrewLocation)
-          : createCrewMarkerElement(crew as CrewRegionData)
-        el.style.cursor = 'pointer'
-        el.setAttribute('tabindex', '0')
-        el.setAttribute('role', 'button')
-        el.setAttribute('aria-label', isLocation ? `${(crew as CrewLocation).name} - ${(crew as CrewLocation).city}, ${(crew as CrewLocation).country}` : `${(crew as CrewRegionData).region} - ${(crew as CrewRegionData).activeCrews} active crews`)
-        el.addEventListener('click', () => { openCrewOverlay(crew) })
-        el.addEventListener('keydown', (e: KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCrewOverlay(crew) }
-        })
-        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat(isLocation ? [(crew as CrewLocation).lng, (crew as CrewLocation).lat] : [(crew as CrewRegionData).longitude, (crew as CrewRegionData).latitude])
-          .addTo(map!)
-        markers.push(marker)
-      }
-    })
-  } else if (activeDataset.value === 'endangered-species' && speciesIndexData.value.length) {
-    const data = isMobile.value
-      ? speciesIndexData.value.slice(0, MOBILE_SPECIES_LIMIT)
-      : speciesIndexData.value
-    const speciesToRender = data.filter(s => isValidCoordinate(s.lat, s.lng))
-    const imageUrls = speciesToRender.map(s => s.imageUrl).filter((url): url is string => url !== null)
-
-    preloadSpeciesImages(imageUrls, true, baseURL)
-
-    const clusterItems = speciesToRender.map((s, i) => ({
-      lng: s.lng,
-      lat: s.lat,
-      type: 'species' as const,
-      index: i,
-    }))
-
-    clusterer.loadImmediate(clusterItems)
-
-    const bounds = map.getBounds()
-    const bbox: [number, number, number, number] = [
-      bounds.getWest(), bounds.getSouth(),
-      bounds.getEast(), bounds.getNorth(),
-    ]
-    const clusters = clusterer.getClusters(bbox, currentZoom)
-
-    clusters.forEach((cp: ClusterPoint) => {
-      if (cp.type === 'cluster') {
-        const onItemClick = (item: ClusterItem) => {
-          const species = speciesToRender[item.index]
-          if (species) openSpeciesOverlay(species)
-        }
-        const el = createClusterMarkerElement(activeDataset.value, cp.count, cp.items, onItemClick, undefined, speciesToRender)
-        el.setAttribute('tabindex', '0')
-        el.setAttribute('role', 'button')
-        el.setAttribute('aria-label', `Cluster of ${cp.count} species`)
-        el.addEventListener('click', (e) => {
-          if ((e.target as HTMLElement | null)?.classList.contains('cluster-mini-hover')) return
-          if (map) {
-            const zoom = Math.min(Math.max(clusterer.getClusterExpansionZoom(cp.clusterId), map.getZoom() + 1), map.getMaxZoom())
-            map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 500, essential: true })
-          }
-        })
-        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([cp.lng, cp.lat])
-          .addTo(map!)
-        markers.push(marker)
-      } else {
-        const species = speciesToRender[cp.sourceIndex]
-        if (!species) return
-        const el = createSpeciesMarkerElement(species)
-        el.style.cursor = 'pointer'
-        el.setAttribute('tabindex', '0')
-        el.setAttribute('role', 'button')
-        el.setAttribute('aria-label', species.commonName)
-        el.addEventListener('click', () => { openSpeciesOverlay(species) })
-        el.addEventListener('keydown', (e: KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSpeciesOverlay(species) }
-        })
-        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([species.lng, species.lat])
-          .addTo(map!)
-        markers.push(marker)
-      }
-    })
-  }
-
-  lastClusterZoom = Math.floor(currentZoom)
-  if (map) {
-    const c = map.getCenter()
-    lastBboxCenter = { lng: c.lng, lat: c.lat }
-  }
-  updateMarkerVisibility()
+  orchestrator.rebuildMarkers(
+    activeDataset.value,
+    projectsData.value,
+    speciesIndexData.value,
+    speciesData.value,
+    crewsData.value,
+    crewLocationsData.value,
+    selectedSpeciesGroups.value,
+    props.rareEarthPoints?.features,
+  )
 }
 
 function navigateToLocation(lat: number, lng: number) {
   if (map) {
     map.flyTo({ center: [lng, lat], zoom: isMobile.value ? 3 : 4, duration: 1500, essential: true })
   }
+}
+
+function openRareEarthOverlay(feature: GeoJSON.Feature) {
+  const props = feature.properties as Record<string, unknown> || {}
+  const html = buildRareEarthPopupHTML(props as { c?: string; ds?: number; a?: number; [key: string]: unknown })
+  const coords = (feature.geometry as GeoJSON.Point).coordinates
+  new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    .setLngLat([coords[0] as number, coords[1] as number])
+    .setHTML(html)
+    .setMaxWidth('none')
+    .addTo(map!)
 }
 
 // Hex grid is now handled by useMapHexGrid composable
@@ -1012,11 +712,22 @@ watch(speciesIndexData, () => {
     rebuildMarkers()
     return
   }
-  if (geoJSONInitializedFor) {
+  if (orchestrator.geoJSONInitializedFor) {
     updateGeoJSONMarkerData()
   } else {
     rebuildMarkers()
   }
+}, { deep: true })
+
+// Fly-to target from parent (for all datasets)
+watch(() => props.flyToTarget, (target) => {
+  if (!target || !map) return
+  map.flyTo({
+    center: [target.lng, target.lat],
+    zoom: target.zoom ?? 5,
+    duration: 1500,
+    essential: true,
+  })
 }, { deep: true })
 
 // Rebuild species overlay when popup language changes
@@ -1029,12 +740,7 @@ onUnmounted(() => {
   stopAutoRotate()
   if (interactionTimeout) clearTimeout(interactionTimeout)
   connectionsGlobe.cleanup()
-  markers.forEach(m => m.remove())
-  clusterer.destroy()
-  if (useNativeGeoJSON) {
-    geoJSONMarkers.cleanup()
-  }
-  geoJSONInitializedFor = null
+  orchestrator.cleanup()
   if (map) {
     map.remove()
     map = null

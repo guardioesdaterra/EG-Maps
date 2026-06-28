@@ -1,0 +1,46 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Quilombo da Favela (Chapéu Preto)",
+        "kind": "quilombo",
+        "category": "quilombola_territory",
+        "color": "#f39c12",
+        "overlap_warning": true,
+        "state": "MG",
+        "area_ha": 3200,
+        "people": "Quilombola community in Poços dealdas region",
+        "source_url": "http://www.incra.gov.br/quilombolas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -46.6,
+              -21.6
+            ],
+            [
+              -46.5,
+              -21.6
+            ],
+            [
+              -46.5,
+              -21.7
+            ],
+            [
+              -46.6,
+              -21.7
+            ],
+            [
+              -46.6,
+              -21.6
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

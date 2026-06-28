@@ -12,6 +12,7 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@vueuse/motion/nuxt',
     '@vueuse/nuxt',
+    '@nuxtjs/supabase',
   ],
 
   plugins: ['~/plugins/iconify-icon.client.ts', '~/plugins/command-palette.client.ts', '~/plugins/ui-init.client.ts'],
@@ -44,11 +45,23 @@ export default defineNuxtConfig({
     detectBrowserLanguage: false,
   },
 
+  // Supabase auth redirects
+  supabase: {
+    redirectOptions: {
+      login: '/eg-grants',
+      callback: '/auth/callback',
+      include: undefined,
+      exclude: [],
+    },
+  },
+
   // SSG with prerendered HTML for all routes - enables proper GitHub Pages indexing and refresh
   ssr: true,
   routeRules: {
     '/**': { prerender: true },
     '/globe': { redirect: `${baseURL}project-grants/3d` },
+    '/eg-grants': { prerender: false },
+    '/auth/callback': { prerender: false },
   },
 
   // App configuration

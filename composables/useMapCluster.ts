@@ -107,7 +107,7 @@ export function useMapCluster() {
         const count = feature.properties.point_count ?? 0
         const clusterId = feature.properties.cluster_id!
 
-        const leaves = index.getLeaves(clusterId, MAX_CLUSTER_SIZE)
+        const leaves = index.getLeaves(clusterId, count)
 
         if (count <= MAX_CLUSTER_SIZE) {
           result.push({
@@ -140,7 +140,7 @@ export function useMapCluster() {
                 type: 'cluster',
                 lng,
                 lat,
-                count: group.length,
+                count,
                 clusterId,
                 items: group.map(l => ({
                   lng: l.geometry.coordinates[0],

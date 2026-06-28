@@ -48,8 +48,6 @@ export default defineNuxtConfig({
   ssr: true,
   routeRules: {
     '/**': { prerender: true },
-    '/observatory-of-vulcan/3d': { redirect: `${baseURL}observatory-of-vulcan?mode=3d` },
-    '/active-crews/3d': { redirect: `${baseURL}active-crews?mode=3d` },
     '/globe': { redirect: `${baseURL}project-grants/3d` },
   },
 

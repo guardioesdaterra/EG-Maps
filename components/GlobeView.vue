@@ -11,7 +11,7 @@
           </div>
         </div>
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('globe.loading') }}</p>
-        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
+        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
         <div class="mt-3 xs:mt-4 flex gap-1">
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
@@ -90,6 +90,7 @@
 
     <!-- Data Bubble: species groups or project stats -->
     <DataBubble
+      v-if="activeDataset !== 'active-crews'"
       :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'"
       :selected-groups="selectedSpeciesGroups"
       :projects="projectsData"
@@ -151,6 +152,12 @@
       <div class="project-popup-content-fixed" v-html="projectOverlayHTML"></div>
     </div>
 
+    <!-- Detached fullscreen crew popup overlay -->
+    <div v-if="showCrewOverlay" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
+      <button ref="crewCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+      <div class="project-popup-content-fixed" v-html="crewOverlayHTML"></div>
+    </div>
+
     <!-- Species cluster panel -->
     <SpeciesPanel @species-selected="handleSpeciesSelected" />
   </div>
@@ -170,14 +177,18 @@ import { useMapCluster } from '@/composables/useMapCluster'
 import { detectWebGLSupport } from '@/composables/useMapLibre'
 import { useMapHexGrid } from '@/composables/useMapHexGrid'
 import { useMapCore } from '@/composables/useMapCore'
-import { useSpeciesPopup, useProjectPopup } from '@/composables/useMapPopup'
+import { useSpeciesPopup, useProjectPopup, useCrewPopup } from '@/composables/useMapPopup'
 import { NATIVE_GEOJSON_THRESHOLD, MOBILE_PROJECT_LIMIT, MOBILE_SPECIES_LIMIT, HEX_GRID } from '@/lib/constants'
 import type { ClusterPoint, ClusterItem } from '@/composables/useMapCluster'
 import {
   createProjectMarkerElement,
   createSpeciesMarkerElement,
   createClusterMarkerElement,
+  createCrewMarkerElement,
+  createCrewLocationMarkerElement,
 } from '@/composables/useMapMarkers'
+import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
+import { allCrewRegionsData } from '@/lib/crew-data'
 import {
   useGeoJSONMarkers,
   speciesIndexToGeoJSON,
@@ -217,6 +228,15 @@ const {
   close: closeProjectPopup,
 } = projectPopup
 
+const crewPopup = useCrewPopup()
+const {
+  showOverlay: showCrewOverlay,
+  overlayHTML: crewOverlayHTML,
+  closeBtnRef: crewCloseBtnRef,
+  open: openCrewPopup,
+  close: closeCrewPopup,
+} = crewPopup
+
 // ── Shared map core ──
 const mapCore = useMapCore(locale, t)
 
@@ -246,6 +266,14 @@ function closeProjectOverlay() {
   closeProjectPopup()
   nextTick(() => lastFocusedEl?.focus())
 }
+function openCrewOverlay(crew: CrewRegionData | CrewLocation) {
+  lastFocusedEl = document.activeElement as HTMLElement
+  openCrewPopup(crew)
+}
+function closeCrewOverlay() {
+  closeCrewPopup()
+  nextTick(() => lastFocusedEl?.focus())
+}
 function handleSpeciesSelected(species: SpeciesIndexItem) {
   speciesPanel.closePanel()
   openSpeciesOverlay(species)
@@ -258,8 +286,10 @@ interface Props {
   projects?: ProjectData[]
   species?: Species[]
   speciesIndex?: SpeciesIndexItem[]
+  crews?: CrewRegionData[]
+  crewLocations?: CrewLocation[]
   showHexGrid?: boolean
-  defaultDataset?: 'project-grants' | 'endangered-species'
+  defaultDataset?: 'project-grants' | 'endangered-species' | 'active-crews'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -270,12 +300,14 @@ const props = withDefaults(defineProps<Props>(), {
 const projectsData = computed(() => props.projects || allProjectsData)
 const speciesData = computed(() => props.species || [])
 const speciesIndexData = computed(() => props.speciesIndex || [])
+const crewsData = computed(() => props.crews || allCrewRegionsData)
+const crewLocationsData = computed(() => props.crewLocations || [])
 
 const hasError = ref(false)
 const errorMessage = ref('')
 const noWebglSupport = ref(false)
 const isLoading = ref(true)
-const activeDataset = ref<'project-grants' | 'endangered-species'>(props.defaultDataset)
+const activeDataset = ref<'project-grants' | 'endangered-species' | 'active-crews'>(props.defaultDataset)
 const { showHexGrid: isHexGridVisible } = hexGrid
 const selectedSpeciesGroups = ref<string[]>([])
 const showFilterPanel = ref(false)
@@ -386,8 +418,10 @@ async function initMap() {
       console.debug('[GlobeView] map loaded successfully')
       isLoading.value = false
       rebuildMarkers()
-      connectionsGlobe.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', projectsData.value, speciesData.value)
-      connectionsGlobe.startParticles()
+      if (activeDataset.value !== 'active-crews') {
+        connectionsGlobe.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', projectsData.value, speciesData.value)
+        connectionsGlobe.startParticles()
+      }
       hexGrid.setupHexGrid()
       startAutoRotate()
     })
@@ -522,6 +556,7 @@ function toggleLegendGroup(group: string | number) {
 
 function setupGeoJSONMarkers(forceReinit = false) {
   if (!map || !useNativeGeoJSON) return
+  if (activeDataset.value === 'active-crews') return
 
   const dataset = activeDataset.value === 'project-grants' ? 'project-grants' : 'endangered-species'
 
@@ -727,6 +762,69 @@ function rebuildMarkers() {
         markers.push(marker)
       }
     })
+  } else if (activeDataset.value === 'active-crews') {
+    const validCrews: (CrewLocation | CrewRegionData)[] = crewLocationsData.value.length
+      ? crewLocationsData.value.filter(c => isValidCoordinate(c.lat, c.lng))
+      : crewsData.value.filter(c => isValidCoordinate(c.latitude, c.longitude))
+
+    const clusterItems = validCrews.map((c, i) => ({
+      lng: 'lng' in c ? c.lng : c.longitude,
+      lat: 'lat' in c ? c.lat : c.latitude,
+      type: 'project' as const,
+      index: i,
+    }))
+
+    clusterer.loadImmediate(clusterItems)
+
+    const bounds = map.getBounds()
+    const bbox: [number, number, number, number] = [
+      bounds.getWest(), bounds.getSouth(),
+      bounds.getEast(), bounds.getNorth(),
+    ]
+    const clusters = clusterer.getClusters(bbox, currentZoom)
+
+    clusters.forEach((cp: ClusterPoint) => {
+      if (cp.type === 'cluster') {
+        const onItemClick = (item: ClusterItem) => {
+          const crew = validCrews[item.index]
+          if (crew) openCrewOverlay(crew)
+        }
+        const el = createClusterMarkerElement(activeDataset.value, cp.count, cp.items, onItemClick, undefined, undefined, undefined, validCrews.map(c => ({ lng: 'lng' in c ? c.lng : c.longitude, lat: 'lat' in c ? c.lat : c.latitude })))
+        el.setAttribute('tabindex', '0')
+        el.setAttribute('role', 'button')
+        el.setAttribute('aria-label', `Cluster of ${cp.count} crew locations`)
+        el.addEventListener('click', (e) => {
+          if ((e.target as HTMLElement | null)?.classList.contains('cluster-mini-hover')) return
+          if (map) {
+            const zoom = Math.min(Math.max(clusterer.getClusterExpansionZoom(cp.clusterId), map.getZoom() + 1), map.getMaxZoom())
+            map.flyTo({ center: [cp.lng, cp.lat], zoom, duration: 500, essential: true })
+          }
+        })
+        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([cp.lng, cp.lat])
+          .addTo(map!)
+        markers.push(marker)
+      } else {
+        const crew = validCrews[cp.sourceIndex]
+        if (!crew) return
+        const isLocation = 'name' in crew && 'lat' in crew && !('activeCrews' in crew)
+        const el = isLocation
+          ? createCrewLocationMarkerElement(crew as CrewLocation)
+          : createCrewMarkerElement(crew as CrewRegionData)
+        el.style.cursor = 'pointer'
+        el.setAttribute('tabindex', '0')
+        el.setAttribute('role', 'button')
+        el.setAttribute('aria-label', isLocation ? `${(crew as CrewLocation).name} - ${(crew as CrewLocation).city}, ${(crew as CrewLocation).country}` : `${(crew as CrewRegionData).region} - ${(crew as CrewRegionData).activeCrews} active crews`)
+        el.addEventListener('click', () => { openCrewOverlay(crew) })
+        el.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCrewOverlay(crew) }
+        })
+        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat(isLocation ? [(crew as CrewLocation).lng, (crew as CrewLocation).lat] : [(crew as CrewRegionData).longitude, (crew as CrewRegionData).latitude])
+          .addTo(map!)
+        markers.push(marker)
+      }
+    })
   } else if (activeDataset.value === 'endangered-species' && speciesIndexData.value.length) {
     const data = isMobile.value
       ? speciesIndexData.value.slice(0, MOBILE_SPECIES_LIMIT)
@@ -903,6 +1001,7 @@ watch(isHexGridVisible, async (visible) => {
 })
 
 watch(connectionsGlobe.showConnections, () => {
+  if (activeDataset.value === 'active-crews') return
   connectionsGlobe.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', projectsData.value, speciesData.value)
   if (connectionsGlobe.showConnections.value) connectionsGlobe.startParticles()
 })

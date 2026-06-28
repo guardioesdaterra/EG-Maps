@@ -1,6 +1,11 @@
 <template>
   <div class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
     <LoadingSpinner :message="t('loading.observatoryOfVulcanGlobe')" :inline="true" />
+    <p class="absolute bottom-8 text-xs text-gray-500">
+      <NuxtLink to="/observatory-of-vulcan" class="underline hover:text-white transition-colors">
+        {{ t('globe.view2D') }} →
+      </NuxtLink>
+    </p>
   </div>
 </template>
 
@@ -8,11 +13,11 @@
 const { t } = useI18n()
 
 useHead({
-  title: 'Observatory of Vulcan (3D) | Earth Guardians',
-  meta: [{ name: 'description', content: '3D view of Brazil rare earth mining claims and socio-environmental impact.' }],
+  title: 'Observatory of Vulcan | Earth Guardians',
+  meta: [{ name: 'description', content: 'Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.' }],
 })
 
-if (import.meta.client) {
-  navigateTo({ path: '/observatory-of-vulcan', query: { mode: '3d' } }, { replace: true })
-}
+onMounted(() => {
+  navigateTo({ path: '/observatory-of-vulcan' }, { replace: true })
+})
 </script>

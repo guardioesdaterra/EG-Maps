@@ -287,6 +287,17 @@ export function setupRareEarthLayers(
       if (!e.features?.length) return
       const p = e.features[0].properties
       const adapted = adaptPolygonProps(p)
+      if (options.popup) {
+        openRareEarthPopup(
+          map,
+          adapted,
+          [e.lngLat.lng, e.lngLat.lat],
+          { onSidebarOpen: options.popup.onSidebarOpen },
+          options.popup.t,
+          options.popup.locale,
+        )
+        return
+      }
       if (options.onClaimClick) {
         options.onClaimClick(adapted, [e.lngLat.lng, e.lngLat.lat])
         return
@@ -673,6 +684,92 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
       'circle-stroke-color': '#ff00ff', 'circle-stroke-width': 1.5, 'circle-stroke-opacity': 0.8,
     },
   })
+}
+
+/**
+ * Add polygon layers to an existing map that was already set up without polygons
+ * (e.g. when polygon data loads after initial render).
+ */
+export function addPolygonLayersToMap(
+  map: MapLibreMap,
+  polys: GeoJSON.FeatureCollection,
+  popup?: RareEarthLayerOptions['popup'],
+): (() => void) | null {
+  if (!polys?.features?.length) return null
+  if (map.getSource(REE_SOURCE_POLYS)) return null
+
+  const polyColorMatch: DataDrivenPropertyValueSpecification<string> = ['match', ['get', 'category'],
+    'direct_ree', '#e74c3c', 'carbonatite_associated', '#f39c12',
+    'pegmatite_associated', '#27ae60', 'heavy_mineral_associated', '#2980b9',
+    'phosphate_associated', '#8e44ad', 'strategic_associated', '#e91e63', '#999']
+
+  map.addSource(REE_SOURCE_POLYS, { type: 'geojson', data: polys })
+
+  map.addLayer({
+    id: 'ree-poly-fill', type: 'fill', source: REE_SOURCE_POLYS,
+    paint: { 'fill-color': polyColorMatch, 'fill-opacity': 0.08 },
+  })
+  map.addLayer({
+    id: 'ree-poly-glow', type: 'line', source: REE_SOURCE_POLYS,
+    paint: {
+      'line-color': polyColorMatch,
+      'line-width': ['interpolate', ['linear'], ['zoom'], 5, 2, 10, 4, 14, 7],
+      'line-opacity': 0.08, 'line-blur': 2,
+    },
+  })
+  map.addLayer({
+    id: 'ree-poly-line', type: 'line', source: REE_SOURCE_POLYS,
+    paint: {
+      'line-color': polyColorMatch,
+      'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.5, 10, 1, 14, 2],
+      'line-opacity': 0.4,
+    },
+  })
+  map.addLayer({
+    id: 'ree-poly-label', type: 'symbol', source: REE_SOURCE_POLYS,
+    layout: {
+      'text-field': ['coalesce', ['get', 'nome'], ['get', 'NOME'], ['get', 'enterprise'], ''],
+      'text-font': ['Open Sans Regular'],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 6, 0, 8, 8, 12, 11],
+      'text-allow-overlap': false, 'text-ignore-placement': false, 'text-anchor': 'center',
+    },
+    paint: {
+      'text-color': '#ccc', 'text-halo-color': 'rgba(0,0,0,0.85)', 'text-halo-width': 1.5,
+      'text-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 0.8],
+    },
+  })
+
+  const onPolyClick = (e: MapLayerMouseEvent) => {
+    if (!e.features?.length) return
+    const p = e.features[0].properties
+    if (popup) {
+      openRareEarthPopup(
+        map,
+        adaptPolygonProps(p),
+        [e.lngLat.lng, e.lngLat.lat],
+        { onSidebarOpen: popup.onSidebarOpen },
+        popup.t,
+        popup.locale,
+      )
+      return
+    }
+    const html = buildRareEarthPopupHTML(adaptPolygonProps(p))
+    new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+      .setLngLat(e.lngLat)
+      .setHTML(html)
+      .setMaxWidth('none')
+      .addTo(map)
+  }
+  map.on('click', 'ree-poly-fill', onPolyClick)
+
+  return () => {
+    map.off('click', 'ree-poly-fill', onPolyClick)
+    safeRemoveLayer(map, 'ree-poly-fill')
+    safeRemoveLayer(map, 'ree-poly-glow')
+    safeRemoveLayer(map, 'ree-poly-line')
+    safeRemoveLayer(map, 'ree-poly-label')
+    safeRemoveSource(map, REE_SOURCE_POLYS)
+  }
 }
 
 export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<string, boolean>) {

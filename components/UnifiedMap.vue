@@ -768,7 +768,7 @@ function rebuildMarkers() {
           }
         })
         const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([crew.lng ?? crew.longitude, crew.lat ?? crew.latitude])
+          .setLngLat(isLocation ? [(crew as CrewLocation).lng, (crew as CrewLocation).lat] : [(crew as CrewRegionData).longitude, (crew as CrewRegionData).latitude])
           .addTo(map!)
         markers.push(marker)
       }

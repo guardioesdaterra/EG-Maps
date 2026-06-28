@@ -749,13 +749,14 @@ function rebuildMarkers() {
         const crew = validCrews[cp.sourceIndex]
         if (!crew) return
         const isLocation = 'name' in crew && 'lat' in crew && !('activeCrews' in crew)
+        const crewStatus = isLocation ? (crew as CrewLocation).status : undefined
         const el = isLocation
           ? createCrewLocationMarkerElement(crew as CrewLocation)
           : createCrewMarkerElement(crew as CrewRegionData)
         el.style.cursor = 'pointer'
         el.setAttribute('tabindex', '0')
         el.setAttribute('role', 'button')
-        el.setAttribute('aria-label', isLocation ? `${(crew as CrewLocation).name} - ${(crew as CrewLocation).city}, ${(crew as CrewLocation).country}` : `${(crew as CrewRegionData).region} - ${(crew as CrewRegionData).activeCrews} active crews`)
+        el.setAttribute('aria-label', isLocation ? `${(crew as CrewLocation).name} - ${(crew as CrewLocation).city}, ${(crew as CrewLocation).country} (${crewStatus ?? 'active'})` : `${(crew as CrewRegionData).region} - ${(crew as CrewRegionData).activeCrews} active crews`)
         el.addEventListener('click', () => {
           if (isLocation) openCrewLocationOverlay(crew as CrewLocation)
           else openCrewOverlay(crew as CrewRegionData)

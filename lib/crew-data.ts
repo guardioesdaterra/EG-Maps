@@ -24,6 +24,7 @@ export interface CrewLocation {
   city: string
   state: string
   region: string
+  status: 'active' | 'inactive'
   lat: number
   lng: number
 }

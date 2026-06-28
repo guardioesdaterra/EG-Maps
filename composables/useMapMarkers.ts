@@ -180,9 +180,10 @@ export function createCrewMarkerElement(crew: { totalMembers: number; activeCrew
   }))
 }
 
-export function createCrewLocationMarkerElement(_crew: { name: string; region: string }): HTMLElement {
+export function createCrewLocationMarkerElement(crew: { name: string; region: string; status?: string }): HTMLElement {
+  const color = crew.status === 'inactive' ? '#f59e0b' : '#22c55e'
   return createUnifiedMarkerElement(getUnifiedMarkerMetrics({
-    color: '#22c55e',
+    color,
     size: 18,
     number: '',
   }))

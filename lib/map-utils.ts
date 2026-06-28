@@ -197,7 +197,7 @@ export interface CrewLocationPopupTranslations {
   region: string
 }
 
-export function buildCrewLocationPopupHTML(crew: { name: string; country: string; city: string; state: string; region: string }, translations?: CrewLocationPopupTranslations): string {
+export function buildCrewLocationPopupHTML(crew: { name: string; country: string; city: string; state: string; region: string; status?: string }, translations?: CrewLocationPopupTranslations): string {
   const t = translations || {
     crewName: 'Crew Name',
     country: 'Country',
@@ -205,6 +205,9 @@ export function buildCrewLocationPopupHTML(crew: { name: string; country: string
     region: 'Region',
   }
   const location = [crew.city, crew.state, crew.country].filter(Boolean).join(', ')
+  const isActive = crew.status !== 'inactive'
+  const statusColor = isActive ? '#22c55e' : '#f59e0b'
+  const statusLabel = isActive ? 'Active' : 'Inactive'
 
   return `
     <div class="project-popup-wrapper" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere; overflow: hidden;">
@@ -214,7 +217,8 @@ export function buildCrewLocationPopupHTML(crew: { name: string; country: string
         <div class="project-header-content">
           <div class="project-status-bar">
             <span class="project-badge">Earth Guardians Crew</span>
-            <span class="project-indicator" style="background: #22c55e"></span>
+            <span class="project-badge" style="background: ${statusColor}; color: ${isActive ? '#fff' : '#000'}; margin-left: 6px;">${statusLabel}</span>
+            <span class="project-indicator" style="background: ${statusColor}"></span>
           </div>
           <h3 class="project-title" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere;">${escapeHtml(crew.name)}</h3>
         </div>
@@ -241,7 +245,7 @@ export function buildCrewLocationPopupHTML(crew: { name: string; country: string
         </div>
       </div>
       <div class="project-popup-footer">
-        <div class="project-footer-glow" style="background: #22c55e"></div>
+        <div class="project-footer-glow" style="background: ${statusColor}"></div>
       </div>
     </div>
   `

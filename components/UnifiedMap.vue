@@ -1037,6 +1037,11 @@ watch(locale, () => {
   rebuildMarkers()
 })
 
+watch(crewLocationsData, () => {
+  if (!map || activeDataset.value !== 'active-crews') return
+  rebuildMarkers()
+})
+
 // In-place data update when filters change. Avoids the full teardown +
 // re-setup cycle (re-fetching the species index, re-installing handlers,
 // re-adding the source/layers) by calling setData on the existing source.

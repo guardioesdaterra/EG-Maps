@@ -15,7 +15,8 @@
         "country": "USA",
         "city": "New York",
         "state": "New York",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -32,7 +33,8 @@
         "country": "USA",
         "city": "Greeley",
         "state": "Colorado",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -49,7 +51,8 @@
         "country": "USA",
         "city": "Chicago",
         "state": "Illinois",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -66,7 +69,8 @@
         "country": "USA",
         "city": "Bridgewater",
         "state": "New Jersey",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -83,7 +87,8 @@
         "country": "USA",
         "city": "Aberdeen",
         "state": "South Dakota",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -100,7 +105,8 @@
         "country": "USA",
         "city": "Arlington",
         "state": "Virginia",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -117,7 +123,8 @@
         "country": "USA",
         "city": "Los Angeles",
         "state": "CA",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -134,7 +141,8 @@
         "country": "USA",
         "city": "Ponte Vedra",
         "state": "Florida",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -151,7 +159,8 @@
         "country": "USA",
         "city": "Sharon",
         "state": "Vermont",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -168,7 +177,8 @@
         "country": "Mexico",
         "city": "Monterrey",
         "state": "",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -185,7 +195,8 @@
         "country": "Jamaica",
         "city": "Kingston",
         "state": "St. Andrew",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -202,7 +213,8 @@
         "country": "USA",
         "city": "Maple Grove",
         "state": "Minnesota",
-        "region": "North America"
+        "region": "North America",
+        "status": "inactive"
       }
     },
     {
@@ -219,7 +231,8 @@
         "country": "USA",
         "city": "Burkittsville",
         "state": "Maryland",
-        "region": "North America"
+        "region": "North America",
+        "status": "inactive"
       }
     },
     {
@@ -236,7 +249,8 @@
         "country": "Mexico",
         "city": "Monterrey",
         "state": "",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -253,7 +267,8 @@
         "country": "Mexico",
         "city": "Cuernavaca",
         "state": "",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -270,7 +285,8 @@
         "country": "USA",
         "city": "Santa Fe",
         "state": "New Mexico",
-        "region": "North America"
+        "region": "North America",
+        "status": "inactive"
       }
     },
     {
@@ -287,7 +303,8 @@
         "country": "USA",
         "city": "Beaverton",
         "state": "Oregon",
-        "region": "North America"
+        "region": "North America",
+        "status": "inactive"
       }
     },
     {
@@ -304,7 +321,8 @@
         "country": "USA",
         "city": "",
         "state": "",
-        "region": "North America"
+        "region": "North America",
+        "status": "inactive"
       }
     },
     {
@@ -321,7 +339,8 @@
         "country": "USA",
         "city": "Charlotte nc",
         "state": "",
-        "region": "North America"
+        "region": "North America",
+        "status": "inactive"
       }
     },
     {
@@ -338,7 +357,8 @@
         "country": "Haiti",
         "city": "Sourcailles",
         "state": "Kenscoff",
-        "region": "North America"
+        "region": "North America",
+        "status": "inactive"
       }
     },
     {
@@ -355,7 +375,8 @@
         "country": "USA",
         "city": "Santa Fe",
         "state": "NM",
-        "region": "North America"
+        "region": "North America",
+        "status": "inactive"
       }
     },
     {
@@ -372,7 +393,8 @@
         "country": "USA",
         "city": "Missoula",
         "state": "MT",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -389,7 +411,8 @@
         "country": "USA",
         "city": "Chicago",
         "state": "Illinois",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -406,7 +429,8 @@
         "country": "USA",
         "city": "San Diego",
         "state": "CA",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -423,7 +447,8 @@
         "country": "USA - Turtle Island",
         "city": "Wichita",
         "state": "Kansas",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -440,7 +465,8 @@
         "country": "USA",
         "city": "Tahlequah",
         "state": "Arkansas",
-        "region": "North America"
+        "region": "North America",
+        "status": "active"
       }
     },
     {
@@ -457,7 +483,8 @@
         "country": "Brazil",
         "city": "Poços de Caldas",
         "state": "Minas Gerais",
-        "region": "South America"
+        "region": "South America",
+        "status": "active"
       }
     },
     {
@@ -474,7 +501,8 @@
         "country": "Brazil",
         "city": "Águas da Prata",
         "state": "São Paulo",
-        "region": "South America"
+        "region": "South America",
+        "status": "active"
       }
     },
     {
@@ -491,7 +519,8 @@
         "country": "Brazil",
         "city": "Cascata",
         "state": "São Paulo",
-        "region": "South America"
+        "region": "South America",
+        "status": "active"
       }
     },
     {
@@ -508,7 +537,8 @@
         "country": "Brazil",
         "city": "São Paulo",
         "state": "São Paulo",
-        "region": "South America"
+        "region": "South America",
+        "status": "active"
       }
     },
     {
@@ -525,7 +555,8 @@
         "country": "Ecuador",
         "city": "Puyo",
         "state": "Pastaza",
-        "region": "South America"
+        "region": "South America",
+        "status": "active"
       }
     },
     {
@@ -542,7 +573,8 @@
         "country": "Bolivia",
         "city": "Cohana",
         "state": "Los Andes",
-        "region": "South America"
+        "region": "South America",
+        "status": "active"
       }
     },
     {
@@ -559,7 +591,8 @@
         "country": "Guatemala",
         "city": "Guatemala",
         "state": "",
-        "region": "South America"
+        "region": "South America",
+        "status": "active"
       }
     },
     {
@@ -576,7 +609,8 @@
         "country": "Brazil",
         "city": "São Paulo",
         "state": "São Paulo",
-        "region": "South America"
+        "region": "South America",
+        "status": "inactive"
       }
     },
     {
@@ -593,7 +627,8 @@
         "country": "Brazil",
         "city": "São Roque da Fartura",
         "state": "São Paulo",
-        "region": "South America"
+        "region": "South America",
+        "status": "inactive"
       }
     },
     {
@@ -610,7 +645,8 @@
         "country": "Turkey",
         "city": "Konya",
         "state": "",
-        "region": "Europe"
+        "region": "Europe",
+        "status": "active"
       }
     },
     {
@@ -627,7 +663,8 @@
         "country": "Turkey",
         "city": "Diyarbakır",
         "state": "Diyarbakır",
-        "region": "Europe"
+        "region": "Europe",
+        "status": "active"
       }
     },
     {
@@ -644,7 +681,8 @@
         "country": "Turkey",
         "city": "Izmir",
         "state": "Karsıyaka",
-        "region": "Europe"
+        "region": "Europe",
+        "status": "active"
       }
     },
     {
@@ -661,7 +699,8 @@
         "country": "Turkey",
         "city": "İzmir",
         "state": "İzmir",
-        "region": "Europe"
+        "region": "Europe",
+        "status": "active"
       }
     },
     {
@@ -678,7 +717,8 @@
         "country": "Sweden",
         "city": "Nyköping",
         "state": "",
-        "region": "Europe"
+        "region": "Europe",
+        "status": "active"
       }
     },
     {
@@ -695,7 +735,8 @@
         "country": "Papua New Guinea",
         "city": "Port Moresby",
         "state": "National Capital District",
-        "region": "Europe"
+        "region": "Europe",
+        "status": "active"
       }
     },
     {
@@ -712,7 +753,8 @@
         "country": "Azerbaijan",
         "city": "Baku",
         "state": "Yasamal",
-        "region": "Europe"
+        "region": "Europe",
+        "status": "active"
       }
     },
     {
@@ -729,7 +771,8 @@
         "country": "Uzbekistan",
         "city": "Termez",
         "state": "Surkhandarya",
-        "region": "Europe"
+        "region": "Europe",
+        "status": "active"
       }
     },
     {
@@ -746,7 +789,8 @@
         "country": "Malta",
         "city": "",
         "state": "",
-        "region": "Europe"
+        "region": "Europe",
+        "status": "inactive"
       }
     },
     {
@@ -763,7 +807,8 @@
         "country": "Botswana",
         "city": "gaborone",
         "state": "gaborone",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -780,7 +825,8 @@
         "country": "Burundi",
         "city": "Cankuzo",
         "state": "Cankuzo",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -797,7 +843,8 @@
         "country": "Burundi",
         "city": "Gatumba",
         "state": "Bujumbura Rural",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -814,7 +861,8 @@
         "country": "Burundi",
         "city": "Cibitoke",
         "state": "Cibitoke",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -831,7 +879,8 @@
         "country": "Cameroun",
         "city": "",
         "state": "Buea",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -848,7 +897,8 @@
         "country": "Cameroun",
         "city": "Bamenda",
         "state": "Northwest",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -865,7 +915,8 @@
         "country": "Cameroun",
         "city": "Bamenda",
         "state": "North West Region",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -882,7 +933,8 @@
         "country": "Cameroun",
         "city": "Yaoundé",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -899,7 +951,8 @@
         "country": "Cameroun",
         "city": "Buea",
         "state": "South West",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -916,7 +969,8 @@
         "country": "Kenya",
         "city": "Bungoma",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -933,7 +987,8 @@
         "country": "Kenya",
         "city": "Bungoma",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -950,7 +1005,8 @@
         "country": "Kenya",
         "city": "Nairobi",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -967,7 +1023,8 @@
         "country": "Kenya",
         "city": "Nairobi/Busia",
         "state": "Central",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -984,7 +1041,8 @@
         "country": "Kenya",
         "city": "Nanyuki",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1001,7 +1059,8 @@
         "country": "Mauritius",
         "city": "Port Louis",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1018,7 +1077,8 @@
         "country": "Malawi",
         "city": "Nkhotakota",
         "state": "Nkhotakota",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1035,7 +1095,8 @@
         "country": "Malawi",
         "city": "Lilongwe",
         "state": "Chilinde",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1052,7 +1113,8 @@
         "country": "Morocco",
         "city": "Agadir",
         "state": "Souss Massa",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1069,7 +1131,8 @@
         "country": "Nigeria",
         "city": "Owerri",
         "state": "Imo State",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1086,7 +1149,8 @@
         "country": "Nigeria",
         "city": "Jos",
         "state": "Plateau",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1103,7 +1167,8 @@
         "country": "Nigeria",
         "city": "Lagos",
         "state": "Lagos",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1120,7 +1185,8 @@
         "country": "Nigeria",
         "city": "Kano",
         "state": "Kano",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1137,7 +1203,8 @@
         "country": "Rwanda",
         "city": "Kigali",
         "state": "Kigali City",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1154,7 +1221,8 @@
         "country": "Uganda",
         "city": "Kampala",
         "state": "Kyotera- Central",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1171,7 +1239,8 @@
         "country": "Uganda",
         "city": "Kasese",
         "state": "Rwenzori region, Uganda",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1188,7 +1257,8 @@
         "country": "Uganda",
         "city": "Kasese Municipality",
         "state": "Western Uganda",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1205,7 +1275,8 @@
         "country": "Uganda",
         "city": "Kasese",
         "state": "kasese",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1222,7 +1293,8 @@
         "country": "Uganda",
         "city": "Fort portal",
         "state": "Western Uganda",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1239,7 +1311,8 @@
         "country": "Uganda",
         "city": "Kasese",
         "state": "Western Uganda",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1256,7 +1329,8 @@
         "country": "Uganda",
         "city": "Kasese",
         "state": "Western Uganda",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1273,7 +1347,8 @@
         "country": "Sierra Leone",
         "city": "Freetown",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1290,7 +1365,8 @@
         "country": "Sierra Leone",
         "city": "Bo",
         "state": "Southern",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1307,7 +1383,8 @@
         "country": "Sierra Leone",
         "city": "Freetown",
         "state": "Western Area",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1324,7 +1401,8 @@
         "country": "Sierra Leone",
         "city": "Bo",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1341,7 +1419,8 @@
         "country": "Tanzania",
         "city": "Dar ea salaam",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1358,7 +1437,8 @@
         "country": "Tanzania",
         "city": "Nyamagana",
         "state": "Mwanza",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1375,7 +1455,8 @@
         "country": "Zambia",
         "city": "Lusaka",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1392,7 +1473,8 @@
         "country": "Zambia",
         "city": "Mambwe",
         "state": "Eastern",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1409,7 +1491,8 @@
         "country": "Zimbabwe",
         "city": "Mutare",
         "state": "Manicaland",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1426,7 +1509,8 @@
         "country": "Zimbabwe",
         "city": "Karoi",
         "state": "Mashonaland West",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1443,7 +1527,8 @@
         "country": "Kenya",
         "city": "Kisumu",
         "state": "Kisumu,Nyanza",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "inactive"
       }
     },
     {
@@ -1460,7 +1545,8 @@
         "country": "Kenya",
         "city": "Kisumu",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "inactive"
       }
     },
     {
@@ -1477,7 +1563,8 @@
         "country": "Tanzania",
         "city": "Dar es Salaam",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "inactive"
       }
     },
     {
@@ -1494,7 +1581,8 @@
         "country": "Benin",
         "city": "Cotonou",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1511,7 +1599,8 @@
         "country": "Benin",
         "city": "So Ava",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1528,7 +1617,8 @@
         "country": "Benin",
         "city": "Abomey-Calavi",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1545,7 +1635,8 @@
         "country": "Benin",
         "city": "Abomey-Calavi",
         "state": "Atlantic",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1562,7 +1653,8 @@
         "country": "Benin",
         "city": "Glazoué",
         "state": "Kabolé",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1579,7 +1671,8 @@
         "country": "Benin",
         "city": "Cotonou",
         "state": "Coastline",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1596,7 +1689,8 @@
         "country": "Benin",
         "city": "Savè",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1613,7 +1707,8 @@
         "country": "Benin",
         "city": "Abomey-Calavi",
         "state": "Atlantic",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1630,7 +1725,8 @@
         "country": "Benin",
         "city": "Bohicon",
         "state": "Zou",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1647,7 +1743,8 @@
         "country": "Benin",
         "city": "Dangbo",
         "state": "Calavi",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1664,7 +1761,8 @@
         "country": "BURKINA FASO",
         "city": "BOBODIOULASSO",
         "state": "BOBODIOULASSO",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1681,7 +1779,8 @@
         "country": "BURKINA FASO",
         "city": "",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1698,7 +1797,8 @@
         "country": "BURKINA FASO",
         "city": "",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1715,7 +1815,8 @@
         "country": "BURKINA FASO",
         "city": "Ouagadougou",
         "state": "Kadiogo",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1732,7 +1833,8 @@
         "country": "BURKINA FASO",
         "city": "Fada N'Gourma",
         "state": "Gourma",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1749,7 +1851,8 @@
         "country": "Central Africa Republic",
         "city": "Bangui",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1766,7 +1869,8 @@
         "country": "DR Congo",
         "city": "Goma",
         "state": "Nord Kivu",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1783,7 +1887,8 @@
         "country": "DR Congo",
         "city": "Uvira",
         "state": "South-Kivu",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1800,7 +1905,8 @@
         "country": "DR Congo",
         "city": "Uvira",
         "state": "South-Kivu",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1817,7 +1923,8 @@
         "country": "DR Congo",
         "city": "Bukavu",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1834,7 +1941,8 @@
         "country": "DR Congo",
         "city": "GOMA",
         "state": "NORD-KIVU",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1851,7 +1959,8 @@
         "country": "Côte d'Ivoire",
         "city": "Adiaké",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1868,7 +1977,8 @@
         "country": "Côte d'Ivoire",
         "city": "Yamoussoukro",
         "state": "Yamoussoukro",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1885,7 +1995,8 @@
         "country": "Mauritania",
         "city": "Nouakchott",
         "state": "Mauritania",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1902,7 +2013,8 @@
         "country": "Mali",
         "city": "Bamako",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1919,7 +2031,8 @@
         "country": "Mali",
         "city": "Gao",
         "state": "",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1936,7 +2049,8 @@
         "country": "Mali",
         "city": "Bamako",
         "state": "Sangarabougou",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1953,7 +2067,8 @@
         "country": "Senegal",
         "city": "Dakar",
         "state": "Dakar",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1970,7 +2085,8 @@
         "country": "Senegal",
         "city": "Pikine",
         "state": "Dakar",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -1987,7 +2103,8 @@
         "country": "Togo",
         "city": "Kpalime",
         "state": "Region des plateaux",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -2004,7 +2121,8 @@
         "country": "Togo",
         "city": "Kpalime",
         "state": "Region des plateaux",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -2021,7 +2139,8 @@
         "country": "Togo",
         "city": "LOME",
         "state": "Region Maritime",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -2038,7 +2157,8 @@
         "country": "Togo",
         "city": "LOME",
         "state": "Region Maritime",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -2055,7 +2175,8 @@
         "country": "Togo",
         "city": "LOME",
         "state": "Region Maritime",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -2072,7 +2193,8 @@
         "country": "Togo",
         "city": "LOME",
         "state": "Region Maritime",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -2089,7 +2211,8 @@
         "country": "Togo",
         "city": "LOME",
         "state": "Region Maritime",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -2106,7 +2229,8 @@
         "country": "Madagascar",
         "city": "Ankaramalaza",
         "state": "Fianarantsoa",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -2123,7 +2247,8 @@
         "country": "Niger",
         "city": "Niamey",
         "state": "Naimey",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "active"
       }
     },
     {
@@ -2140,7 +2265,8 @@
         "country": "DR Congo",
         "city": "Bukavu",
         "state": "Bukavu/Sud-Kiv",
-        "region": "Africa"
+        "region": "Africa",
+        "status": "inactive"
       }
     },
     {
@@ -2157,7 +2283,8 @@
         "country": "Japan",
         "city": "Osaka",
         "state": "",
-        "region": "East Asia"
+        "region": "East Asia",
+        "status": "active"
       }
     },
     {
@@ -2174,7 +2301,8 @@
         "country": "South Korea",
         "city": "Gumi",
         "state": "Gumi",
-        "region": "East Asia"
+        "region": "East Asia",
+        "status": "active"
       }
     },
     {
@@ -2191,7 +2319,8 @@
         "country": "South Korea",
         "city": "Sejong",
         "state": "",
-        "region": "East Asia"
+        "region": "East Asia",
+        "status": "active"
       }
     },
     {
@@ -2208,7 +2337,8 @@
         "country": "China",
         "city": "Beijing",
         "state": "Beijing",
-        "region": "East Asia"
+        "region": "East Asia",
+        "status": "active"
       }
     },
     {
@@ -2225,7 +2355,8 @@
         "country": "India",
         "city": "Odisha",
         "state": "Odisha",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2242,7 +2373,8 @@
         "country": "India",
         "city": "Delhi",
         "state": "Delhi",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2259,7 +2391,8 @@
         "country": "India",
         "city": "Behrampur",
         "state": "Odisha",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2276,7 +2409,8 @@
         "country": "India",
         "city": "New Delhi",
         "state": "New Delhi",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2293,7 +2427,8 @@
         "country": "India",
         "city": "Faridabad",
         "state": "Haryana",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2310,7 +2445,8 @@
         "country": "India",
         "city": "Hyderabad",
         "state": "Telangana",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2327,7 +2463,8 @@
         "country": "Indonesia",
         "city": "Yogyakarta",
         "state": "Special Region of Yogyakarta",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2344,7 +2481,8 @@
         "country": "Sri Lanka",
         "city": "Colombo",
         "state": "",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2361,7 +2499,8 @@
         "country": "Nepal",
         "city": "Pokhara",
         "state": "Gandaki",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2378,7 +2517,8 @@
         "country": "Nepal",
         "city": "Sunsari",
         "state": "Koshi",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2395,7 +2535,8 @@
         "country": "Pakistan",
         "city": "Islamabad",
         "state": "Islamabad Capital Territory",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2412,7 +2553,8 @@
         "country": "Bangladesh",
         "city": "Tarash",
         "state": "Sirajganj",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2429,7 +2571,8 @@
         "country": "Uzbekistan",
         "city": "Sariasia",
         "state": "Surkhandarya",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "active"
       }
     },
     {
@@ -2446,7 +2589,8 @@
         "country": "India",
         "city": "Bangalore",
         "state": "",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "inactive"
       }
     },
     {
@@ -2463,7 +2607,8 @@
         "country": "India",
         "city": "Kanpur",
         "state": "Uttar pradesh",
-        "region": "South Asia"
+        "region": "South Asia",
+        "status": "inactive"
       }
     }
   ]

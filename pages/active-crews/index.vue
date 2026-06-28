@@ -39,6 +39,7 @@ onMounted(async () => {
         city: (f.properties?.city as string) ?? '',
         state: (f.properties?.state as string) ?? '',
         region: (f.properties?.region as string) ?? '',
+        status: ((f.properties?.status as string) === 'inactive' ? 'inactive' : 'active') as 'active' | 'inactive',
         lat: (f.geometry as GeoJSON.Point).coordinates[1],
         lng: (f.geometry as GeoJSON.Point).coordinates[0],
       }))

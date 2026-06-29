@@ -3,7 +3,7 @@ import type { Map as MapLibreMap } from 'maplibre-gl'
 import { useOfflineTiles } from './useOfflineTiles'
 
 export function getMapStyle(apiKey?: string): string {
-  if (apiKey) return `https://api.maptiler.com/maps/satellite/style.json?key=${apiKey}`
+  if (apiKey) return `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${apiKey}`
   return 'https://demotiles.maplibre.org/style.json'
 }
 
@@ -62,7 +62,7 @@ export function useMapLibre(
   function createTransformRequest() {
     return (url: string, resourceType?: string) => {
       if (resourceType === 'Tile' && !navigator.onLine) {
-        const match = url.match(/\/satellite\/(\d+)\/(\d+)\/(\d+)\./)
+        const match = url.match(/\/(?:satellite|hybrid[^/]*)\/(\d+)\/(\d+)\/(\d+)\./)
         if (match) {
           const [, z, x, y] = match
           const localUrl = `/tiles/${z}/${x}/${y}.jpg`
@@ -132,7 +132,7 @@ export function useMapLibre(
               const tiles = (source as { tiles?: string[] }).tiles
               if (tiles && tiles.length > 0) {
                 const tileUrl = tiles[0]
-                if (tileUrl.includes('maptiler.com/tiles/satellite/')) {
+                if (tileUrl.includes('maptiler.com/tiles/satellite/') || tileUrl.includes('maptiler.com/tiles/hybrid')) {
                   const z = Math.floor(m.getZoom())
                   const center = m.getCenter()
                   const x = Math.floor((center.lng + 180) / 360 * Math.pow(2, z))

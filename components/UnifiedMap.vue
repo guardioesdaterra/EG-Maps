@@ -99,8 +99,9 @@
       @close="showFilterPanel = false"
     />
 
-    <!-- Data Bubble: species groups or project stats -->
+    <!-- Data Bubble: species groups or project stats (hidden for observatory) -->
     <DataBubble
+      v-if="activeDataset !== 'observatory-of-vulcan'"
       :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'"
       :selected-groups="selectedSpeciesGroups"
       :projects="visibleProjects"
@@ -108,8 +109,9 @@
       @toggle-group="toggleLegendGroup"
     />
 
-    <!-- Map Controls -->
+    <!-- Map Controls (hidden for observatory — uses custom overlays slot) -->
     <MapControls
+      v-if="activeDataset !== 'observatory-of-vulcan'"
       :is-globe-view="false"
       :show-hex-grid="showHexGrid"
       :show-connections="showConnections2D"
@@ -200,7 +202,7 @@ const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
 const baseURL = useRuntimeConfig().app.baseURL
 
 const MAP_STYLE = MAPTILER_API_KEY
-  ? `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_API_KEY}`
+  ? `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${MAPTILER_API_KEY}`
   : 'https://demotiles.maplibre.org/style.json'
 
 function transformRequest(url: string, _resourceType?: string) {

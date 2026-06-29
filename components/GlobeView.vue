@@ -88,9 +88,9 @@
       <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[clamp(10rem,24vw,16rem)] -rotate-90 origin-center" loading="lazy" />
     </div>
 
-    <!-- Data Bubble: species groups or project stats -->
+    <!-- Data Bubble: species groups or project stats (hidden for observatory) -->
     <DataBubble
-      v-if="activeDataset !== 'active-crews'"
+      v-if="activeDataset !== 'active-crews' && activeDataset !== 'observatory-of-vulcan'"
       :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'"
       :selected-groups="selectedSpeciesGroups"
       :projects="projectsData"
@@ -98,8 +98,9 @@
       @toggle-group="toggleLegendGroup"
     />
 
-    <!-- Map Controls -->
+    <!-- Map Controls (hidden for observatory) -->
     <MapControls
+      v-if="activeDataset !== 'observatory-of-vulcan'"
       :is-globe-view="true"
       :show-hex-grid="isHexGridVisible"
       :show-connections="showConnectionsGlobe"
@@ -349,7 +350,7 @@ const rareEarthController = useRareEarthController({
 const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
 
 const MAP_STYLE = MAPTILER_API_KEY
-  ? `https://api.maptiler.com/maps/satellite/style.json?key=${MAPTILER_API_KEY}`
+  ? `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${MAPTILER_API_KEY}`
   : 'https://demotiles.maplibre.org/style.json'
 
 function transformRequest(url: string, _resourceType?: string) {

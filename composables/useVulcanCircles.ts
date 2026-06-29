@@ -135,11 +135,11 @@ export function cleanupVulcanCircles(map: maplibregl.Map) {
     const fillId = `${LAYER_PREFIX}-fill-${i}`
     const lineId = `${LAYER_PREFIX}-line-${i}`
     const labelId = `${LAYER_PREFIX}-label-${i}`
-    try { if (map.getLayer(fillId)) map.removeLayer(fillId) } catch {}
-    try { if (map.getLayer(lineId)) map.removeLayer(lineId) } catch {}
-    try { if (map.getLayer(labelId)) map.removeLayer(labelId) } catch {}
+    try { if (map.getLayer(fillId)) map.removeLayer(fillId) } catch { /* layer may not exist */ }
+    try { if (map.getLayer(lineId)) map.removeLayer(lineId) } catch { /* layer may not exist */ }
+    try { if (map.getLayer(labelId)) map.removeLayer(labelId) } catch { /* layer may not exist */ }
   }
-  try { if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID) } catch {}
+  try { if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID) } catch { /* source may not exist */ }
 }
 
 export function setVulcanCirclesVisibility(map: maplibregl.Map, visible: boolean) {
@@ -148,8 +148,8 @@ export function setVulcanCirclesVisibility(map: maplibregl.Map, visible: boolean
     const fillId = `${LAYER_PREFIX}-fill-${i}`
     const lineId = `${LAYER_PREFIX}-line-${i}`
     const labelId = `${LAYER_PREFIX}-label-${i}`
-    try { if (map.getLayer(fillId)) map.setLayoutProperty(fillId, 'visibility', visibility) } catch {}
-    try { if (map.getLayer(lineId)) map.setLayoutProperty(lineId, 'visibility', visibility) } catch {}
-    try { if (map.getLayer(labelId)) map.setLayoutProperty(labelId, 'visibility', visibility) } catch {}
+    try { if (map.getLayer(fillId)) map.setLayoutProperty(fillId, 'visibility', visibility) } catch { /* ignore */ }
+    try { if (map.getLayer(lineId)) map.setLayoutProperty(lineId, 'visibility', visibility) } catch { /* ignore */ }
+    try { if (map.getLayer(labelId)) map.setLayoutProperty(labelId, 'visibility', visibility) } catch { /* ignore */ }
   }
 }

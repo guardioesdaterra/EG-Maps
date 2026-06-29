@@ -154,14 +154,14 @@ export function setupWaterLayers(
 
 export function cleanupWaterLayers(map: MapLibreMap) {
   for (const id of WATER_LAYER_IDS) {
-    try { if (map.getLayer(id)) map.removeLayer(id) } catch {}
+    try { if (map.getLayer(id)) map.removeLayer(id) } catch { /* layer may not exist */ }
   }
-  try { if (map.getSource(WATER_SOURCE)) map.removeSource(WATER_SOURCE) } catch {}
+  try { if (map.getSource(WATER_SOURCE)) map.removeSource(WATER_SOURCE) } catch { /* source may not exist */ }
 }
 
 export function setWaterLayersVisibility(map: MapLibreMap, visible: boolean) {
   const visibility = visible ? 'visible' : 'none'
   for (const id of WATER_LAYER_IDS) {
-    try { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visibility) } catch {}
+    try { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visibility) } catch { /* ignore */ }
   }
 }

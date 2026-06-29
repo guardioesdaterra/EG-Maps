@@ -361,15 +361,15 @@ export function setupCulturalLayers(
 
 export function cleanupCulturalLayers(map: MapLibreMap) {
   for (const id of CULTURAL_LAYER_IDS) {
-    try { if (map.getLayer(id)) map.removeLayer(id) } catch {}
+    try { if (map.getLayer(id)) map.removeLayer(id) } catch { /* layer may not exist */ }
   }
-  try { if (map.getSource(CULTURAL_SOURCE)) map.removeSource(CULTURAL_SOURCE) } catch {}
+  try { if (map.getSource(CULTURAL_SOURCE)) map.removeSource(CULTURAL_SOURCE) } catch { /* source may not exist */ }
 }
 
 export function setCulturalLayersVisibility(map: MapLibreMap, visible: boolean) {
   const visibility = visible ? 'visible' : 'none'
   for (const id of CULTURAL_LAYER_IDS) {
-    try { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visibility) } catch {}
+    try { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visibility) } catch { /* ignore */ }
   }
 }
 

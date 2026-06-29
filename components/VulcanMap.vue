@@ -39,14 +39,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import maplibregl from 'maplibre-gl'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import { useRareEarthController } from '@/composables/useRareEarthController'
-import { setupRareEarthLayers, cleanupRareEarthLayers, syncRareEarthLayerVisibility } from '@/composables/useRareEarthLayers'
-import { setupWaterLayers, cleanupWaterLayers } from '@/composables/useWaterLayers'
-import { setupVulcanCircles, cleanupVulcanCircles, setVulcanCirclesVisibility, VULCAN_CENTER } from '@/composables/useVulcanCircles'
+import { syncRareEarthLayerVisibility } from '@/composables/useRareEarthLayers'
+import { setupWaterLayers } from '@/composables/useWaterLayers'
+import { setupVulcanCircles, setVulcanCirclesVisibility, VULCAN_CENTER } from '@/composables/useVulcanCircles'
 import type { RareEarthFeatureCollection } from '@/lib/observatory-analysis'
 import { buildRareEarthPopupHTML } from '@/lib/map-utils'
 
@@ -226,7 +226,7 @@ watch(() => props.layerVisibility, (vis) => {
         if (map.getLayer('ree-water-poly-label')) map.setLayoutProperty('ree-water-poly-label', 'visibility', waterVis)
         if (map.getLayer('ree-water-river-line')) map.setLayoutProperty('ree-water-river-line', 'visibility', waterVis)
         if (map.getLayer('ree-water-river-label')) map.setLayoutProperty('ree-water-river-label', 'visibility', waterVis)
-      } catch {}
+      } catch { /* ignore */ }
     }
   }
 }, { deep: true })
@@ -242,7 +242,7 @@ watch(() => props.protectedData, (newVal) => {
   try {
     const src = map.getSource('ree-protected') as maplibregl.GeoJSONSource | undefined
     if (src) src.setData(newVal)
-  } catch {}
+  } catch { /* ignore */ }
 }, { deep: true })
 
 watch(() => props.waterData, (newVal) => {

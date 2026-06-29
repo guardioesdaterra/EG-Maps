@@ -53,20 +53,21 @@ jobs:
 
       - name: Verify secrets
         run: |
-          echo "SUPABASE_URL=${{ secrets.NUXT_PUBLIC_SUPABASE_PROJECT_URL }}"
-          echo "SUPABASE_KEY length=${#NUXT_SUPABASE_KEY}"
+          echo "SUPABASE_URL=${SUPABASE_URL:0:30}..."
+          echo "SUPABASE_KEY length=${#SUPABASE_KEY}"
         env:
-          NUXT_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_SECRET_KEYS }}
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
 
       - name: Build static site
         run: pnpm generate
         env:
           NUXT_APP_BASE_URL: /EG-Maps/
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_PROJECT_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_SECRET_KEYS }}
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_PROJECT_URL }}
-          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_SECRET_KEYS }}
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
 
       - name: Copy 200.html as 404.html for SPA fallback
         run: |

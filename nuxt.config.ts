@@ -50,8 +50,8 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/eg-grants',
       callback: '/auth/callback',
-      include: undefined,
-      exclude: [],
+      include: ['/eg-grants', '/auth/callback'],
+      exclude: ['/', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/observatory-of-vulcan', '/observatory-of-vulcan/3d', '/active-crews', '/active-crews/3d'],
     },
   },
 

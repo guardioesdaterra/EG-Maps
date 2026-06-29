@@ -26,24 +26,46 @@ const error = ref('')
 
 onMounted(async () => {
   const code = route.query.code as string | undefined
+
+  // Clean URL params immediately to prevent re-exchange on refresh
+  if (code || route.query.state) {
+    const cleanUrl = window.location.pathname
+    window.history.replaceState({}, '', cleanUrl)
+  }
+
   if (code) {
     const { error: authError } = await client.auth.exchangeCodeForSession(code)
     if (authError) {
+      // PKCE verifier may be missing if storage was cleared — check for existing session
+      const { data: { session } } = await client.auth.getSession()
+      if (session) {
+        navigateTo('/eg-grants')
+        return
+      }
       error.value = authError.message
     } else {
-      // Sync crew member to database
-      try {
-        const { data: { user } } = await client.auth.getUser()
-        if (user) {
-          await client.functions.invoke('crew-sync', {
-            body: { email: user.email, name: user.user_metadata?.full_name || user.email },
-          })
-        }
-      } catch { /* crew-sync failed, non-critical */ }
+      await syncCrewMember()
       navigateTo('/eg-grants')
     }
   } else {
-    error.value = 'No authorization code received.'
+    // No code param — check if user already has a valid session (e.g. page refresh)
+    const { data: { session } } = await client.auth.getSession()
+    if (session) {
+      navigateTo('/eg-grants')
+    } else {
+      error.value = 'No authorization code received.'
+    }
   }
 })
+
+async function syncCrewMember() {
+  try {
+    const { data: { user } } = await client.auth.getUser()
+    if (user) {
+      await client.functions.invoke('crew-sync', {
+        body: { email: user.email, name: user.user_metadata?.full_name || user.email },
+      })
+    }
+  } catch { /* crew-sync failed, non-critical */ }
+}
 </script>

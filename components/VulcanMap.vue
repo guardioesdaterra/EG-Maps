@@ -48,10 +48,8 @@ import { syncRareEarthLayerVisibility } from '@/composables/useRareEarthLayers'
 import { setupWaterLayers } from '@/composables/useWaterLayers'
 import { setupVulcanCircles, setVulcanCirclesVisibility, VULCAN_CENTER } from '@/composables/useVulcanCircles'
 import type { RareEarthFeatureCollection } from '@/lib/observatory-analysis'
-import { buildRareEarthPopupHTML } from '@/lib/map-utils'
 
 const { t } = useI18n()
-const baseURL = useRuntimeConfig().app.baseURL
 const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
 
 const MAP_STYLE = MAPTILER_API_KEY
@@ -182,6 +180,7 @@ function initMap() {
     })
 
     map.on('error', (err) => {
+      // eslint-disable-next-line no-console
       console.error('[VulcanMap] MapLibre error:', err)
       if (!map?.loaded()) {
         isLoading.value = false
@@ -201,6 +200,7 @@ function initMap() {
       }
     }, 20000)
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error('[VulcanMap] Init error:', err)
     isLoading.value = false
     hasError.value = true

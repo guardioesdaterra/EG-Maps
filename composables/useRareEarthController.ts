@@ -6,8 +6,8 @@ import {
   syncRareEarthLayerVisibility as syncRareEarthLayerVisibilityInternal,
   addPolygonLayersToMap,
 } from '@/composables/useRareEarthLayers'
-import { setupWaterLayers, setWaterLayersVisibility, cleanupWaterLayers } from '@/composables/useWaterLayers'
-import { setupCulturalLayers, setCulturalLayersVisibility, cleanupCulturalLayers } from '@/composables/useCulturalLayers'
+import { setupWaterLayers } from '@/composables/useWaterLayers'
+import { setupCulturalLayers } from '@/composables/useCulturalLayers'
 import { buildEnterpriseNetworkLines } from '@/lib/enterprise-data'
 
 export interface RareEarthControllerProps {
@@ -84,6 +84,7 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
   function setupLayers() {
     const m = map.value
     if (!m) return
+    if (!m.isStyleLoaded()) return
     const p = getProps()
     if (!p.rareEarthPoints) return
 

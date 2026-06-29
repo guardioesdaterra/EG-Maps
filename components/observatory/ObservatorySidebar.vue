@@ -93,7 +93,6 @@ import { OBSERVATORY_TABS, type ObservatoryTab } from '@/lib/observatory-tabs'
 import type { SpeculatorIndexEntry } from '@/lib/observatory-analysis'
 import { useUrlState } from '@/composables/useUrlState'
 import { useFocusTrap } from '@/composables/useFocusTrap'
-import { useMediaQuery } from '@/composables/useMediaQuery'
 
 import DangerTab from '@/components/observatory/tabs/DangerTab.vue'
 import MilitaryTab from '@/components/observatory/tabs/MilitaryTab.vue'
@@ -120,8 +119,7 @@ const emit = defineEmits<{
 }>()
 
 const tabs: ObservatoryTab[] = OBSERVATORY_TABS
-const isMobile = useMediaQuery('(max-width: 768px)')
-const collapsed = ref(isMobile.value)
+const collapsed = ref(true)
 
 // URL state sync for active tab + selected feature
 const urlState = useUrlState<{ tab: string; feature: string | null; showAll: string | null }>('obs', {
@@ -137,10 +135,7 @@ onMounted(() => {
   }
 })
 
-// Sync collapsed state with screen size changes
-watch(isMobile, (mobile) => {
-  collapsed.value = mobile
-}, { immediate: true })
+// Sidebar starts collapsed on all screen sizes
 
 watch(() => props.activeTab, (v) => {
   if (v) urlState.set('tab', v)

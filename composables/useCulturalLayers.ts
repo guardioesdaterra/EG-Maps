@@ -174,6 +174,7 @@ export function setupCulturalLayers(
   culturalData: GeoJSON.FeatureCollection,
 ): () => void {
   if (!culturalData?.features?.length) return () => {}
+  if (!map.isStyleLoaded()) return () => {}
   if (map.getSource(CULTURAL_SOURCE)) return () => {}
 
   const cleanups: Array<() => void> = []

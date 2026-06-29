@@ -87,13 +87,15 @@
             <div class="flex border-t-2 border-black dark:border-[var(--border-color)]">
               <NuxtLink
                 :to="dataset.path"
-                class="flex flex-1 items-center justify-center gap-1.5 border-r border-white/25 dark:border-[var(--border-color)] min-h-[44px] px-3 py-2.5 sm:py-2 text-xs sm:text-xs font-black transition-colors bg-black dark:bg-[var(--text-primary)] text-white dark:text-black hover:bg-white dark:hover:bg-[var(--bg-primary)] hover:text-black dark:hover:text-[var(--text-primary)] focus:outline-none focus:ring-4 focus:ring-black/20 dark:focus:ring-[var(--text-primary)]/20 active:scale-[0.97]"
+                class="flex flex-1 items-center justify-center gap-1.5 min-h-[44px] px-3 py-2.5 sm:py-2 text-xs sm:text-xs font-black transition-colors bg-black dark:bg-[var(--text-primary)] text-white dark:text-black hover:bg-white dark:hover:bg-[var(--bg-primary)] hover:text-black dark:hover:text-[var(--text-primary)] focus:outline-none focus:ring-4 focus:ring-black/20 dark:focus:ring-[var(--text-primary)]/20 active:scale-[0.97]"
+                :class="!dataset.single && 'border-r border-white/25 dark:border-[var(--border-color)]'"
                 :aria-label="dataset.ariaLabel"
               >
-                <Icon name="lucide:map" class="h-3.5 w-3.5 sm:h-3 sm:w-3" />
-                <span>{{ t('home.2d') || '2D' }}</span>
+                <Icon :name="dataset.single ? 'lucide:arrow-right' : 'lucide:map'" class="h-3.5 w-3.5 sm:h-3 sm:w-3" />
+                <span>{{ dataset.single ? 'Open' : (t('home.2d') || '2D') }}</span>
               </NuxtLink>
               <NuxtLink
+                v-if="!dataset.single"
                 :to="`${dataset.path}/3d`"
                 class="flex flex-1 items-center justify-center gap-1.5 min-h-[44px] px-3 py-2.5 sm:py-2 text-xs sm:text-xs font-black transition-colors bg-black dark:bg-[var(--text-primary)] text-white dark:text-black hover:bg-white dark:hover:bg-[var(--bg-primary)] hover:text-black dark:hover:text-[var(--text-primary)] focus:outline-none focus:ring-4 focus:ring-black/20 dark:focus:ring-[var(--text-primary)]/20 active:scale-[0.97]"
               >
@@ -215,6 +217,16 @@ const datasets = computed(() => [
       `${crewOverallStats.totalActiveCrews} ${t('home.activeCrewsCount')}`,
       `${crewOverallStats.totalMembers.toLocaleString()}+ ${t('home.crewMembersCount')}`,
     ],
+  },
+  {
+    path: '/eg-grants',
+    icon: 'lucide:hand-heart',
+    label: 'EG Grants',
+    title: 'EG Grants',
+    description: 'Worldwide socio-environmental grants. Sign in to submit or review.',
+    ariaLabel: 'Open EG Grants app',
+    stats: ['Submit & Review', 'Crew Access'],
+    single: true,
   },
 ])
 </script>

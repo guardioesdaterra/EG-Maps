@@ -12,6 +12,7 @@ export function setupWaterLayers(
   waterData: GeoJSON.FeatureCollection,
 ): () => void {
   if (!waterData?.features?.length) return () => {}
+  if (!map.isStyleLoaded()) return () => {}
   if (map.getSource(WATER_SOURCE)) return () => {}
 
   const cleanups: Array<() => void> = []

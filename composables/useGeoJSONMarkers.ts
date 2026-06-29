@@ -101,6 +101,7 @@ export function useGeoJSONMarkers() {
 
   function addGeoJSONSource(sourceId: string, data: GeoJSON.FeatureCollection, clustering: boolean = true) {
     if (!map) return
+    if (!map.isStyleLoaded()) return
 
     if (currentSourceId && currentSourceId !== sourceId) {
       removeLayersAndSource()

@@ -1,4 +1,3 @@
-import type { Map as MapLibreMap } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 
 export interface VulcanCircle {
@@ -35,6 +34,7 @@ function generateCirclePolygon(center: [number, number], radiusKm: number, point
 }
 
 export function setupVulcanCircles(map: maplibregl.Map): () => void {
+  if (!map.isStyleLoaded()) return () => {}
   if (map.getSource(SOURCE_ID)) return () => {}
 
   const features = VULCAN_CIRCLES.map((circle, i) => ({

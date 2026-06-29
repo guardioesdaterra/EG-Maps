@@ -1,4 +1,5 @@
 #!/usr/bin/env npx tsx
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 /**
  * Build regional data subsets for Poços de Caldas Vulcan Alkaline Plateau.
  *

@@ -65,6 +65,7 @@ export function setupRareEarthLayers(
   const { points, polys, protected: protectedAreas } = options
   const cleanups: Array<() => void> = []
   if (!points) return () => {}
+  if (!map.isStyleLoaded()) return () => {}
 
   cleanupRareEarthLayers(map)
 

@@ -31,6 +31,15 @@ onMounted(async () => {
     if (authError) {
       error.value = authError.message
     } else {
+      // Sync crew member to database
+      try {
+        const { data: { user } } = await client.auth.getUser()
+        if (user) {
+          await client.functions.invoke('crew-sync', {
+            body: { email: user.email, name: user.user_metadata?.full_name || user.email },
+          })
+        }
+      } catch { /* crew-sync failed, non-critical */ }
       navigateTo('/eg-grants')
     }
   } else {

@@ -56,6 +56,8 @@ jobs:
         env:
           NUXT_APP_BASE_URL: /EG-Maps/
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_PROJECT_URL }}
+          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_SECRET_KEYS }}
 
       - name: Copy 200.html as 404.html for SPA fallback
         run: |

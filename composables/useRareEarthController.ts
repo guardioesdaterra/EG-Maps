@@ -6,12 +6,16 @@ import {
   syncRareEarthLayerVisibility as syncRareEarthLayerVisibilityInternal,
   addPolygonLayersToMap,
 } from '@/composables/useRareEarthLayers'
+import { setupWaterLayers, setWaterLayersVisibility, cleanupWaterLayers } from '@/composables/useWaterLayers'
+import { setupCulturalLayers, setCulturalLayersVisibility, cleanupCulturalLayers } from '@/composables/useCulturalLayers'
 import { buildEnterpriseNetworkLines } from '@/lib/enterprise-data'
 
 export interface RareEarthControllerProps {
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
   rareEarthProtected?: GeoJSON.FeatureCollection
+  rareEarthWater?: GeoJSON.FeatureCollection
+  rareEarthCultural?: GeoJSON.FeatureCollection
   layerVisibility?: Record<string, boolean>
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null
 }
@@ -48,6 +52,8 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
 
   let flyToHighlightMarker: maplibregl.Marker | null = null
   let flyToHighlightTimer: ReturnType<typeof setTimeout> | null = null
+  let waterCleanup: (() => void) | null = null
+  let culturalCleanup: (() => void) | null = null
 
   function addFlyToHighlight(lng: number, lat: number) {
     const m = map.value
@@ -88,6 +94,17 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       networkFeatures: buildEnterpriseNetworkLines(p.rareEarthPoints),
       popup: options.popup,
     })
+
+    // Setup water layers if data is available
+    if (p.rareEarthWater?.features?.length && !waterCleanup) {
+      waterCleanup = setupWaterLayers(m, p.rareEarthWater)
+    }
+
+    // Setup cultural layers if data is available
+    if (p.rareEarthCultural?.features?.length && !culturalCleanup) {
+      culturalCleanup = setupCulturalLayers(m, p.rareEarthCultural)
+    }
+
     syncRareEarthLayerVisibilityInternal(m, p.layerVisibility || {})
   }
 
@@ -163,16 +180,42 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     },
   )
 
+  // Watcher: water data updates
+  const stopWaterWatch = watch(
+    () => getProps().rareEarthWater,
+    (newVal) => {
+      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
+      if (!newVal?.features?.length) return
+      if (waterCleanup) return // already set up
+      waterCleanup = setupWaterLayers(map.value, newVal)
+    },
+  )
+
+  // Watcher: cultural data updates
+  const stopCulturalWatch = watch(
+    () => getProps().rareEarthCultural,
+    (newVal) => {
+      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
+      if (!newVal?.features?.length) return
+      if (culturalCleanup) return // already set up
+      culturalCleanup = setupCulturalLayers(map.value, newVal)
+    },
+  )
+
   onScopeDispose(() => {
     stopVisWatch()
     stopPointsWatch()
     stopProtectedWatch()
     stopPolygonsWatch()
     stopFlyToWatch()
+    stopWaterWatch()
+    stopCulturalWatch()
     if (pointsDebounceTimer) clearTimeout(pointsDebounceTimer)
     if (flyToHighlightTimer) clearTimeout(flyToHighlightTimer)
     if (flyToHighlightMarker) { flyToHighlightMarker.remove(); flyToHighlightMarker = null }
     if (polyCleanup) { polyCleanup(); polyCleanup = null }
+    if (waterCleanup) { waterCleanup(); waterCleanup = null }
+    if (culturalCleanup) { culturalCleanup(); culturalCleanup = null }
   })
 
   return { setupLayers, addFlyToHighlight }

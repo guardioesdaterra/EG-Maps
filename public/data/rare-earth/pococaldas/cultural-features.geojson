@@ -1,0 +1,383 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Municipal Pedro Lessa", "type": "school", "description": "Public school in central Poços de Caldas", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.557, -21.794] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Estadual Newton de Mello", "type": "school", "description": "State high school", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.562, -21.788] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Municipal Tiradentes", "type": "school", "description": "Public elementary school", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.545, -21.801] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "UEMG Poços de Caldas", "type": "school", "description": "State university campus", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.570, -21.782] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "PUC Minas Poços de Caldas", "type": "school", "description": "Catholic university campus", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.580, -21.790] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Hospital Municipal de Poços de Caldas", "type": "health", "description": "Main public hospital serving the region", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.553, -21.790] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "UBS Centro", "type": "health", "description": "Basic health unit — primary care", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.560, -21.795] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "UPA 24h Poços de Caldas", "type": "health", "description": "Emergency care unit", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.575, -21.800] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Igreja Matriz de Nossa Senhora do Rosário", "type": "cultural", "description": "Historic colonial church, built 1780s", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "heritage" },
+      "geometry": { "type": "Point", "coordinates": [-46.558, -21.792] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Museu Municipal de Poços de Caldas", "type": "cultural", "description": "Municipal museum with regional history and indigenous artifacts", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.555, -21.793] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Teatro Municipal", "type": "cultural", "description": "Municipal theater, cultural events venue", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.559, -21.791] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Parque Municipal das Águas", "type": "cultural", "description": "Historic thermal waters park, tourist attraction", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.550, -21.788] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Bairro Caldas Velhas", "type": "cultural", "description": "Historic quarter with colonial architecture, threatened by mining speculation", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "at_risk" },
+      "geometry": { "type": "Point", "coordinates": [-46.562, -21.796] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Captação de Água Municipal", "type": "water_access", "description": "Municipal water intake for drinking water supply", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "critical" },
+      "geometry": { "type": "Point", "coordinates": [-46.530, -21.810] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Estação de Tratamento de Água", "type": "water_access", "description": "Water treatment plant serving 170k+ residents", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.545, -21.805] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Nascente do Ribeirão Caldas", "type": "water_access", "description": "Critical water source spring, upstream of mining claims", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "threatened" },
+      "geometry": { "type": "Point", "coordinates": [-46.510, -21.860] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Ponto de Monitoramento — Rio Caldas", "type": "water_access", "description": "Water quality monitoring station on Rio Caldas", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.535, -21.820] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Comunidade Quilombola da Favela", "type": "community", "description": "Quilombola community with ongoing land rights struggle", "community": "Quilombo da Favela", "municipality": "Poços de Caldas", "status": "at_risk" },
+      "geometry": { "type": "Point", "coordinates": [-46.550, -21.650] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Comunidade Rural do Bairro Gouvêa", "type": "community", "description": "Rural community affected by mining proximity", "community": "Gouvêa", "municipality": "Poços de Caldas", "status": "monitoring" },
+      "geometry": { "type": "Point", "coordinates": [-46.480, -21.850] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Comunitária da Serra", "type": "school", "description": "Rural school in mining-affected area", "community": "Serra da Mantiqueira", "municipality": "Poços de Caldas", "status": "at_risk" },
+      "geometry": { "type": "Point", "coordinates": [-46.490, -21.880] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Posto de Saúde da Zona Rural", "type": "health", "description": "Rural health post serving farming communities", "community": "Zona Rural", "municipality": "Poços de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.500, -21.840] }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Indígena Xucuru Kariri Warkana de Aruana", "type": "school", "description": "Indigenous school at Fazenda Boa Vista, serving Xucuru Kariri community since 2001. EJA, Ensino Fundamental, Pré-escola.", "community": "Aldeia Xucuru Kariri", "municipality": "Caldas", "status": "active", "indigenous": true },
+      "geometry": { "type": "Point", "coordinates": [-46.355, -21.865] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Posto de Saúde Indígena Xucuru Kariri", "type": "health", "description": "Health post for indigenous community at Fazenda Boa Vista", "community": "Aldeia Xucuru Kariri", "municipality": "Caldas", "status": "active", "indigenous": true },
+      "geometry": { "type": "Point", "coordinates": [-46.358, -21.868] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Quadra Poliesportiva Indígena", "type": "cultural", "description": "Sports court built for Xucuru Kariri community cultural activities", "community": "Aldeia Xucuru Kariri", "municipality": "Caldas", "status": "active", "indigenous": true },
+      "geometry": { "type": "Point", "coordinates": [-46.352, -21.862] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Municipal de Caldas", "type": "school", "description": "Public school in Caldas town center", "community": "Caldas", "municipality": "Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.386, -21.924] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "UBS Centro de Caldas", "type": "health", "description": "Basic health unit in Caldas center", "community": "Caldas", "municipality": "Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.384, -21.922] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Igreja Matriz de Caldas", "type": "cultural", "description": "Main church of Caldas municipality", "community": "Caldas", "municipality": "Caldas", "status": "heritage" },
+      "geometry": { "type": "Point", "coordinates": [-46.388, -21.925] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Ponto de Captação — Rio Verde", "type": "water_access", "description": "Water intake on Rio Verde, near indigenous territories", "community": "Caldas", "municipality": "Caldas", "status": "critical" },
+      "geometry": { "type": "Point", "coordinates": [-46.370, -21.910] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Comunidade Rural Rio Verde", "type": "community", "description": "Rural community near indigenous territories, site of Kiriri settlement", "community": "Rio Verde", "municipality": "Caldas", "status": "monitoring" },
+      "geometry": { "type": "Point", "coordinates": [-46.375, -21.915] }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Municipal de Águas da Prata", "type": "school", "description": "Public school in Águas da Prata center", "community": "Águas da Prata", "municipality": "Águas da Prata", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.739, -21.933] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Hospital Municipal de Águas da Prata", "type": "health", "description": "Municipal hospital", "community": "Águas da Prata", "municipality": "Águas da Prata", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.735, -21.930] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Estância Hidromineral de Águas da Prata", "type": "cultural", "description": "Historic spa town, thermal waters tourism, cultural heritage", "community": "Águas da Prata", "municipality": "Águas da Prata", "status": "heritage" },
+      "geometry": { "type": "Point", "coordinates": [-46.742, -21.935] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Captação Sabesp — Fonte Paiol", "type": "water_access", "description": "Main water supply source, Sabesp infrastructure expansion planned 2026-2029", "community": "Águas da Prata", "municipality": "Águas da Prata", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.720, -21.940] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Comunidade Rural de Campestrinho", "type": "community", "description": "Rural district of Águas da Prata, agricultural community", "community": "Campestrinho", "municipality": "Águas da Prata", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.760, -21.960] }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Municipal Dr. Delvo Stivanin", "type": "school", "description": "Newest and largest school in Andradas, inaugurated 2024, capacity 600 students. Built with R$7.2M from mining damage compensation.", "community": "Andradas", "municipality": "Andradas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.568, -22.069] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Municipal Centro", "type": "school", "description": "Public school in Andradas center", "community": "Andradas", "municipality": "Andradas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.565, -22.065] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Hospital de Andradas", "type": "health", "description": "Municipal hospital", "community": "Andradas", "municipality": "Andradas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.570, -22.072] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "UBS Jardim das Palmeiras", "type": "health", "description": "Basic health unit", "community": "Andradas", "municipality": "Andradas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.558, -22.060] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Museu Municipal de Andradas", "type": "cultural", "description": "Municipal museum documenting Andradas history and culture. OSM-mapped.", "community": "Andradas", "municipality": "Andradas", "status": "active", "subtype": "cultural_center" },
+      "geometry": { "type": "Point", "coordinates": [-46.5724, -22.0701] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Igreja Matriz de Andradas", "type": "cultural", "description": "Main church, cultural landmark", "community": "Andradas", "municipality": "Andradas", "status": "heritage" },
+      "geometry": { "type": "Point", "coordinates": [-46.567, -22.068] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Distrito de Campestrinho", "type": "community", "description": "District of Andradas, rural agricultural community", "community": "Campestrinho", "municipality": "Andradas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.540, -22.090] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Captação de Água — Andradas", "type": "water_access", "description": "Municipal water supply intake", "community": "Andradas", "municipality": "Andradas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.555, -22.055] }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Municipal de Santa Rita de Caldas", "type": "school", "description": "Public school in Santa Rita de Caldas center", "community": "Santa Rita de Caldas", "municipality": "Santa Rita de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.337, -22.029] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Polo UAB Santa Rita de Caldas", "type": "school", "description": "University at a distance center (UAB) — higher education access", "community": "Santa Rita de Caldas", "municipality": "Santa Rita de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.335, -22.027] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "UBS Santa Rita de Caldas", "type": "health", "description": "Basic health unit", "community": "Santa Rita de Caldas", "municipality": "Santa Rita de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.339, -22.031] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Igreja Matriz de Santa Rita", "type": "cultural", "description": "Main church, 'Capital Espiritual do Sul de Minas'", "community": "Santa Rita de Caldas", "municipality": "Santa Rita de Caldas", "status": "heritage" },
+      "geometry": { "type": "Point", "coordinates": [-46.336, -22.028] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Captação de Água — Santa Rita", "type": "water_access", "description": "Municipal water supply", "community": "Santa Rita de Caldas", "municipality": "Santa Rita de Caldas", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.320, -22.015] }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Municipal de Caconde", "type": "school", "description": "Public school in Caconde center", "community": "Caconde", "municipality": "Caconde", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.688, -21.528] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Estadual de Caconde", "type": "school", "description": "State high school", "community": "Caconde", "municipality": "Caconde", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.690, -21.530] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Hospital Municipal de Caconde", "type": "health", "description": "Municipal hospital", "community": "Caconde", "municipality": "Caconde", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.685, -21.525] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Coreto de Caconde", "type": "cultural", "description": "Historic bandstand in the main square, community gathering point. OSM-mapped.", "community": "Caconde", "municipality": "Caconde", "status": "heritage", "subtype": "cultural_center" },
+      "geometry": { "type": "Point", "coordinates": [-46.6447, -21.5311] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Igreja Matriz de Caconde", "type": "cultural", "description": "Historic church, cultural heritage", "community": "Caconde", "municipality": "Caconde", "status": "heritage" },
+      "geometry": { "type": "Point", "coordinates": [-46.687, -21.527] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Represa de Caconde", "type": "water_access", "description": "Municipal reservoir, water supply for the region", "community": "Caconde", "municipality": "Caconde", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.670, -21.515] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Comunidade Rural de Itaipu", "type": "community", "description": "Rural farming community", "community": "Itaipu", "municipality": "Caconde", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.710, -21.540] }
+    },
+
+    {
+      "type": "Feature",
+      "properties": { "name": "Escola Municipal de Divinolândia", "type": "school", "description": "Public school in Divinolândia center", "community": "Divinolândia", "municipality": "Divinolândia", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.736, -21.664] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "UBS Divinolândia", "type": "health", "description": "Basic health unit", "community": "Divinolândia", "municipality": "Divinolândia", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.734, -21.662] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Igreja Matriz de Divinolândia", "type": "cultural", "description": "Main church", "community": "Divinolândia", "municipality": "Divinolândia", "status": "heritage" },
+      "geometry": { "type": "Point", "coordinates": [-46.738, -21.665] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Captação de Água — Divinolândia", "type": "water_access", "description": "Municipal water supply", "community": "Divinolândia", "municipality": "Divinolândia", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.720, -21.670] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Distrito de Campestrinho (Divinolândia)", "type": "community", "description": "Rural district, agricultural community", "community": "Campestrinho", "municipality": "Divinolândia", "status": "active" },
+      "geometry": { "type": "Point", "coordinates": [-46.750, -21.680] }
+    },
+
+    { "type": "Feature", "properties": { "name": "Instituto Moreira Salles (IMS)", "type": "cultural", "description": "Major cultural institution with photography, literature, and music collections. Opened 2002 in a modernist building by Lina Bo Bardi.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5622, -21.7825] } },
+    { "type": "Feature", "properties": { "name": "Cooperativa Eita — Centro de Artes", "type": "cultural", "description": "Arts cooperative in the Urca district, offering workshops and exhibitions. OSM-mapped arts centre.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5772, -21.7818] } },
+    { "type": "Feature", "properties": { "name": "Espaço Cultural da Urca", "type": "cultural", "description": "Former Cassino da Urca (1938), restored cultural space. Hosts art exhibitions, concerts, and cultural events.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5772, -21.7818] } },
+    { "type": "Feature", "properties": { "name": "CEU — Centro de Artes e Esportes Unificados", "type": "cultural", "description": "Municipal arts and sports center offering workshops in music, dance, theater, and visual arts.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5720, -21.7950] } },
+    { "type": "Feature", "properties": { "name": "Box Cultural", "type": "cultural", "description": "Alternative cultural space for art exhibitions, theater, and community events in central Poços.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5650, -21.7880] } },
+    { "type": "Feature", "properties": { "name": "Coreto da Praça Pedro Sanches", "type": "cultural", "description": "Historic bandstand in the main square, used for live music and cultural gatherings since early 1900s. OSM-mapped.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "heritage", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5681, -21.7864] } },
+    { "type": "Feature", "properties": { "name": "Museu Histórico e Geográfico de Poços de Caldas", "type": "cultural", "description": "Historical and geographic museum documenting the region's colonial and industrial heritage. OSM-mapped.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5727, -21.7850] } },
+    { "type": "Feature", "properties": { "name": "Biblioteca Pública Centenário", "type": "cultural", "description": "Main public library of Poços de Caldas, with extensive regional history collection.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5722, -21.7850] } },
+    { "type": "Feature", "properties": { "name": "Termas Antônio Carlos — Museu do Termalismo", "type": "cultural", "description": "Historic thermal baths museum, documenting Poços de Caldas' thermal water heritage since 19th century.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "heritage", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5600, -21.7870] } },
+    { "type": "Feature", "properties": { "name": "Lavanda Cultural", "type": "cultural", "description": "Cultural space offering workshops in arts, crafts, and community activities.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5600, -21.7850] } },
+    { "type": "Feature", "properties": { "name": "Biblioteca Pública Julio Bonazzi", "type": "cultural", "description": "Public library named after Julio Bonazzi, serving the community with books and cultural activities.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5650, -21.7930] } },
+    { "type": "Feature", "properties": { "name": "Biblioteca Pública COHAB", "type": "cultural", "description": "Community library in the COHAB neighborhood, serving lower-income residents.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5750, -21.8000] } },
+    { "type": "Feature", "properties": { "name": "Biblioteca Pública Vila Nova", "type": "cultural", "description": "Public library in Vila Nova neighborhood.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5680, -21.7980] } },
+    { "type": "Feature", "properties": { "name": "Mirante São José", "type": "cultural", "description": "Scenic overlook with panoramic views of Poços de Caldas, popular for sunset viewing and cultural gatherings.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center" }, "geometry": { "type": "Point", "coordinates": [-46.5550, -21.7820] } },
+    { "type": "Feature", "properties": { "name": "Festival de Inverno de Poços de Caldas", "type": "cultural", "description": "30th edition (2026). Major winter cultural festival with concerts, theater, and art exhibitions.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "event" }, "geometry": { "type": "Point", "coordinates": [-46.5670, -21.7860] } },
+
+    { "type": "Feature", "properties": { "name": "Grupo de Catira Poços-caldense", "type": "cultural", "description": "Traditional folk dance group founded 1983 (42 years). Preserves gaucho culture through catira and other traditional dances.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "artist_group" }, "geometry": { "type": "Point", "coordinates": [-46.5650, -21.7880] } },
+    { "type": "Feature", "properties": { "name": "Associação Grupo Entre Nós", "type": "cultural", "description": "Community association led by Angélica Vianna, promoting local culture and social inclusion.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "artist_group" }, "geometry": { "type": "Point", "coordinates": [-46.5700, -21.7900] } },
+    { "type": "Feature", "properties": { "name": "Associação dos Artesãos e Artistas Plásticos (Armazém das Artes)", "type": "cultural", "description": "Artists and artisans association organizing the annual Expo-Arte de Rua (since 1993) with 24 art stalls and 40 craft stalls.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "artist_group" }, "geometry": { "type": "Point", "coordinates": [-46.5600, -21.7860] } },
+    { "type": "Feature", "properties": { "name": "Associação Ternos de Congos e Caiapós", "type": "cultural", "description": "Afro-Brazilian cultural association preserving Congos and Caiapós traditions, music, and dance.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "artist_group" }, "geometry": { "type": "Point", "coordinates": [-46.5640, -21.7870] } },
+    { "type": "Feature", "properties": { "name": "Associação dos Violeiros de Poços de Caldas", "type": "cultural", "description": "Association of viola caipira players, promoting traditional string music of southern Minas.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "artist_group" }, "geometry": { "type": "Point", "coordinates": [-46.5650, -21.7920] } },
+    { "type": "Feature", "properties": { "name": "ONG Trilhos", "type": "cultural", "description": "NGO promoting social inclusion through music and arts in Poços de Caldas.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "artist_group" }, "geometry": { "type": "Point", "coordinates": [-46.5600, -21.8020] } },
+    { "type": "Feature", "properties": { "name": "Associação Afro Ancestral de Poços de Caldas", "type": "cultural", "description": "Afro-Brazilian cultural association preserving African heritage traditions and community support.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "artist_group" }, "geometry": { "type": "Point", "coordinates": [-46.5620, -21.7880] } },
+    { "type": "Feature", "properties": { "name": "Grupo Dança pra Criança", "type": "cultural", "description": "Community dance group offering free dance workshops for children in Poços de Caldas.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "artist_group" }, "geometry": { "type": "Point", "coordinates": [-46.5570, -21.7860] } },
+
+    { "type": "Feature", "properties": { "name": "Jardim Popular — Zona Sul", "type": "community", "description": "Low-income housing zone in southern Poços. Social and spatial fragmentation: lack of schools, healthcare, transportation, and sanitation infrastructure.", "community": "Jardim Popular", "municipality": "Poços de Caldas", "status": "at_risk", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5645, -21.8481] } },
+    { "type": "Feature", "properties": { "name": "Jardim Kennedy I", "type": "community", "description": "Low-income neighborhood at high risk of flooding and dam rupture from Alcoa's mining tailings.", "community": "Jardim Kennedy", "municipality": "Poços de Caldas", "status": "critical", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5758, -21.8491] } },
+    { "type": "Feature", "properties": { "name": "Jardim Kennedy II", "type": "community", "description": "Low-income neighborhood at high risk of flooding and dam rupture from Alcoa's mining tailings. Site of 2019 dam incident.", "community": "Jardim Kennedy", "municipality": "Poços de Caldas", "status": "critical", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5770, -21.8416] } },
+    { "type": "Feature", "properties": { "name": "Jardim São Paulo — Zona Leste", "type": "community", "description": "PMCMV (Minha Casa Minha Vida) settlement on eastern edge. Socioeconomic vulnerability and limited access to basic services.", "community": "Jardim São Paulo", "municipality": "Poços de Caldas", "status": "at_risk", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5498, -21.7952] } },
+    { "type": "Feature", "properties": { "name": "Vila São José — Zona Leste", "type": "community", "description": "PMCMV settlement adjacent to Jardim São Paulo. Limited healthcare and education access.", "community": "Vila São José", "municipality": "Poços de Caldas", "status": "at_risk", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5480, -21.7930] } },
+    { "type": "Feature", "properties": { "name": "Parque das Nações", "type": "community", "description": "Suburb in southern Poços de Caldas, part of the peripheral expansion zone.", "community": "Parque das Nações", "municipality": "Poços de Caldas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5645, -21.8481] } },
+    { "type": "Feature", "properties": { "name": "Vila Matilde", "type": "community", "description": "Suburb on the southern edge, peripheral neighborhood with limited infrastructure.", "community": "Vila Matilde", "municipality": "Poços de Caldas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5721, -21.8555] } },
+    { "type": "Feature", "properties": { "name": "Parque Sebastião I", "type": "community", "description": "Suburb in southern Poços, peripheral neighborhood ~7km from center.", "community": "Parque Sebastião", "municipality": "Poços de Caldas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5664, -21.8576] } },
+
+    { "type": "Feature", "properties": { "name": "Comunidade Rural de Gouvêa", "type": "community", "description": "Rural community on Serra da Mantiqueira, affected by mining proximity. Limited healthcare and school access.", "community": "Gouvêa", "municipality": "Poços de Caldas", "status": "at_risk", "subtype": "rural" }, "geometry": { "type": "Point", "coordinates": [-46.480, -21.850] } },
+    { "type": "Feature", "properties": { "name": "Comunidade Rural — Serra da Mantiqueira", "type": "community", "description": "Farming communities on the Mantiqueira mountains, facing water contamination risks from upstream mining.", "community": "Serra da Mantiqueira", "municipality": "Poços de Caldas", "status": "monitoring", "subtype": "rural" }, "geometry": { "type": "Point", "coordinates": [-46.490, -21.880] } },
+    { "type": "Feature", "properties": { "name": "Comunidade Rural de Campestrinho — Andradas", "type": "community", "description": "Rural agricultural community in Andradas, with traditional farming culture and limited infrastructure.", "community": "Campestrinho", "municipality": "Andradas", "status": "active", "subtype": "rural" }, "geometry": { "type": "Point", "coordinates": [-46.540, -22.090] } },
+    { "type": "Feature", "properties": { "name": "Comunidade Rural de Itaipu — Caconde", "type": "community", "description": "Rural farming community near Caconde, with strong agricultural traditions.", "community": "Itaipu", "municipality": "Caconde", "status": "active", "subtype": "rural" }, "geometry": { "type": "Point", "coordinates": [-46.710, -21.540] } },
+
+    { "type": "Feature", "properties": { "name": "Escola Indígena Xucuru-Kariri Wakonã (Caldas)", "type": "school", "description": "Indigenous school at Rio Verde settlement, serving Kiriri community children.", "community": "Aldeia Xucuru-Kariri", "municipality": "Caldas", "status": "active", "indigenous": true, "subtype": "indigenous" }, "geometry": { "type": "Point", "coordinates": [-46.375, -21.915] } },
+    { "type": "Feature", "properties": { "name": "Igreja Comunitária Xucuru-Kariri (Fazenda Boa Vista)", "type": "cultural", "description": "Community church serving the Xucuru-Kariri and Kiriri indigenous groups at Fazenda Boa Vista.", "community": "Aldeia Xucuru-Kariri", "municipality": "Caldas", "status": "active", "indigenous": true, "subtype": "indigenous" }, "geometry": { "type": "Point", "coordinates": [-46.353, -21.866] } },
+
+    { "type": "Feature", "properties": { "name": "Aldeia Kiriri Caldas-MG", "type": "community", "description": "Indigenous village (Aldeia Indígena Kiriri), established 13/03/2017. Place=village, population=indígenas. OSM-mapped.", "community": "Aldeia Kiriri", "municipality": "Caldas", "status": "active", "indigenous": true, "subtype": "indigenous", "osm_id": "1247185633" }, "geometry": { "type": "Point", "coordinates": [-46.4100, -21.8924] } },
+
+    { "type": "Feature", "properties": { "name": "Complexo Cultural da Urca", "type": "cultural", "description": "Cultural complex in the Urca district of Poços de Caldas. Multi-purpose arts venue hosting exhibitions, performances, and community events.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center", "osm_id": "11350975975" }, "geometry": { "type": "Point", "coordinates": [-46.5722, -21.7853] } },
+    { "type": "Feature", "properties": { "name": "Estação das Artes", "type": "cultural", "description": "Historic arts centre in São João da Boa Vista. Restored railway station repurposed as cultural venue for exhibitions, workshops, and performances.", "community": "São João da Boa Vista", "municipality": "São João da Boa Vista", "status": "active", "subtype": "cultural_center", "osm_id": "11348031989" }, "geometry": { "type": "Point", "coordinates": [-46.8005, -21.9648] } },
+    { "type": "Feature", "properties": { "name": "Espaço Cultural Boca do Leão", "type": "cultural", "description": "Cultural space and municipal museum in Casa Branca. Hosts art exhibitions, cultural events, and educational programs. Free entry, open Sat/Sun 09:00-17:00.", "community": "Casa Branca", "municipality": "Casa Branca", "status": "active", "subtype": "cultural_center", "osm_id": "11348031990" }, "geometry": { "type": "Point", "coordinates": [-46.6833, -21.9466] } },
+    { "type": "Feature", "properties": { "name": "Casa da Cultura — Vargem Grande do Sul", "type": "cultural", "description": "Arts and cultural centre on Rua Major Correia in Vargem Grande do Sul. Offers workshops, exhibitions, and community cultural activities.", "community": "Vargem Grande do Sul", "municipality": "Vargem Grande do Sul", "status": "active", "subtype": "cultural_center", "osm_id": "11348031991" }, "geometry": { "type": "Point", "coordinates": [-46.8953, -21.8302] } },
+
+    { "type": "Feature", "properties": { "name": "Museu da Revolução de 1932", "type": "cultural", "description": "History museum documenting the 1932 Constitutionalist Revolution in São Paulo state. Houses artifacts, photographs, and documents from the conflict.", "community": "São João da Boa Vista", "municipality": "São João da Boa Vista", "status": "active", "subtype": "cultural_center", "osm_id": "11348031992" }, "geometry": { "type": "Point", "coordinates": [-46.6981, -21.8942] } },
+    { "type": "Feature", "properties": { "name": "Museu Boca do Leão", "type": "cultural", "description": "Municipal museum in Casa Branca. Free entry, open Sat/Sun 09:00-17:00. Features regional history, indigenous artifacts, and cultural exhibitions.", "community": "Casa Branca", "municipality": "Casa Branca", "status": "active", "subtype": "cultural_center", "osm_id": "11348031993" }, "geometry": { "type": "Point", "coordinates": [-46.6830, -21.9465] } },
+    { "type": "Feature", "properties": { "name": "Museu de Botelhos — Museu do Café", "type": "cultural", "description": "Coffee museum documenting the history of coffee cultivation and trade in the southern Minas Gerais region. Located in the historic Botelhos district.", "community": "Botelhos", "municipality": "Botelhos", "status": "active", "subtype": "cultural_center", "osm_id": "11348031994" }, "geometry": { "type": "Point", "coordinates": [-46.3953, -21.6491] } },
+    { "type": "Feature", "properties": { "name": "Museu Prefeito Araken Cruz", "type": "cultural", "description": "Municipal museum on Rua Nove de Julho, Centro. Named after former mayor, documents local history and cultural heritage of the region.", "community": "Águas da Prata", "municipality": "Águas da Prata", "status": "active", "subtype": "cultural_center", "osm_id": "11348031995" }, "geometry": { "type": "Point", "coordinates": [-46.8246, -21.7099] } },
+
+    { "type": "Feature", "properties": { "name": "Centro Municipal de Saúde — Andradas", "type": "health", "description": "Municipal health center providing primary care, vaccinations, and basic diagnostics for the Andradas community.", "community": "Andradas", "municipality": "Andradas", "status": "active", "osm_id": "11348031996" }, "geometry": { "type": "Point", "coordinates": [-46.5691, -22.0677] } },
+
+    { "type": "Feature", "properties": { "name": "Biblioteca Universitária — UNIFAL-MG", "type": "cultural", "description": "University library at UNIFAL-MG campus in Poços de Caldas. Provides internet access and academic resources to students and the public.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "active", "subtype": "cultural_center", "osm_id": "11348031997" }, "geometry": { "type": "Point", "coordinates": [-46.6623, -21.8199] } },
+    { "type": "Feature", "properties": { "name": "Biblioteca Comunitária Wolgran Junqueira Ferreira", "type": "cultural", "description": "Community library in São João da Boa Vista serving local residents with books, reading programs, and cultural activities.", "community": "São João da Boa Vista", "municipality": "São João da Boa Vista", "status": "active", "subtype": "cultural_center", "osm_id": "11348031998" }, "geometry": { "type": "Point", "coordinates": [-46.8130, -21.9680] } },
+
+    { "type": "Feature", "properties": { "name": "Capela Santa Rita", "type": "cultural", "description": "Historic Catholic chapel on Rua Castro Alves 380, Poços de Caldas. Community religious heritage site.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "heritage", "osm_id": "11348031999" }, "geometry": { "type": "Point", "coordinates": [-46.5590, -21.7931] } },
+    { "type": "Feature", "properties": { "name": "Gruta Nossa Senhora de Lourdes", "type": "cultural", "description": "Religious shrine and pilgrimage site in the Poços de Caldas region. Popular for spiritual visits and cultural gatherings.", "community": "Poços de Caldas", "municipality": "Poços de Caldas", "status": "heritage", "osm_id": "11348032000" }, "geometry": { "type": "Point", "coordinates": [-46.7447, -21.4662] } },
+
+    { "type": "Feature", "properties": { "name": "Vila Samambaia", "type": "community", "description": "Residential neighbourhood in Andradas. Working-class community with limited public services infrastructure.", "community": "Vila Samambaia", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5666, -22.0591] } },
+    { "type": "Feature", "properties": { "name": "Jardim Panorama", "type": "community", "description": "Residential neighbourhood in Andradas. Peripheral expansion zone with socioeconomic vulnerability.", "community": "Jardim Panorama", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5645, -22.0729] } },
+    { "type": "Feature", "properties": { "name": "Vila Graziani", "type": "community", "description": "Residential neighbourhood in Andradas. Working-class area with limited healthcare and education access.", "community": "Vila Graziani", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5706, -22.0639] } },
+    { "type": "Feature", "properties": { "name": "Vila Mosconi", "type": "community", "description": "Residential neighbourhood in Andradas. Peripheral area facing infrastructure challenges.", "community": "Vila Mosconi", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5690, -22.0716] } },
+    { "type": "Feature", "properties": { "name": "Jardim Nova Andradas", "type": "community", "description": "Residential neighbourhood in Andradas. Newer expansion area with growing population but limited public services.", "community": "Jardim Nova Andradas", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5797, -22.0773] } },
+    { "type": "Feature", "properties": { "name": "Vila Garibaldi", "type": "community", "description": "Residential neighbourhood in Andradas. Traditional working-class community with cultural heritage.", "community": "Vila Garibaldi", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5767, -22.0738] } },
+    { "type": "Feature", "properties": { "name": "Jardim Bela Vista", "type": "community", "description": "Residential neighbourhood in Andradas. Mid-peripheral area with mixed socioeconomic profiles.", "community": "Jardim Bela Vista", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5722, -22.0610] } },
+    { "type": "Feature", "properties": { "name": "Jardim Portal do Sol", "type": "community", "description": "Residential neighbourhood in Andradas. Peripheral expansion zone facing urbanization challenges.", "community": "Jardim Portal do Sol", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5864, -22.0722] } },
+    { "type": "Feature", "properties": { "name": "Vila Santa Cruz", "type": "community", "description": "Residential neighbourhood in Andradas. Working-class community with limited access to basic services.", "community": "Vila Santa Cruz", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5816, -22.0746] } },
+    { "type": "Feature", "properties": { "name": "Vila Buzato", "type": "community", "description": "Residential neighbourhood in Andradas. Traditional Italian-heritage community, facing socioeconomic challenges.", "community": "Vila Buzato", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5645, -22.0640] } },
+    { "type": "Feature", "properties": { "name": "Vila Martinelli", "type": "community", "description": "Residential neighbourhood in Andradas. Peripheral community with limited infrastructure and services.", "community": "Vila Martinelli", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5748, -22.0765] } },
+    { "type": "Feature", "properties": { "name": "Jardim Mantiqueira", "type": "community", "description": "Residential neighbourhood in Andradas. Named after Serra da Mantiqueira, peripheral area with growing population.", "community": "Jardim Mantiqueira", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5798, -22.0714] } },
+    { "type": "Feature", "properties": { "name": "Vila Caracol", "type": "community", "description": "Residential neighbourhood in Andradas. Peripheral expansion zone with socioeconomic vulnerability.", "community": "Vila Caracol", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5834, -22.0742] } },
+    { "type": "Feature", "properties": { "name": "Vila Santo Afonso", "type": "community", "description": "Residential neighbourhood in Andradas. Working-class community near the city center with mixed infrastructure.", "community": "Vila Santo Afonso", "municipality": "Andradas", "status": "monitoring", "subtype": "marginalized" }, "geometry": { "type": "Point", "coordinates": [-46.5690, -22.0613] } }
+  ]
+}

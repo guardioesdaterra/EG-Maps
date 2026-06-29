@@ -238,6 +238,7 @@ const navItems: NavItem[] = [
 
 const headerItems: NavItem[] = [
   { path: '/', labelKey: 'nav.home', icon: 'lucide:home', variant: 'cyan' },
+  { path: '/eg-grants', labelKey: 'nav.egGrants', icon: 'lucide:hand-coins', variant: 'purple' },
   { path: '/info', labelKey: 'nav.info', icon: 'lucide:info', variant: 'cyan' },
 ]
 

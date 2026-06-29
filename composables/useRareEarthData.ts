@@ -30,18 +30,29 @@ export interface DeepAnalysis {
 }
 
 export type LoadPhase = 'idle' | 'points' | 'overlaps' | 'polygons' | 'protected' | 'complete'
+export type DataRegion = 'pococaldas' | 'all'
 
-export function useRareEarthData(baseURL: string) {
+export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'pococaldas') {
+  const region = ref<DataRegion>(initialRegion)
   const pointsData = shallowRef<RareEarthFeatureCollection | undefined>(undefined)
   const polygonsData = shallowRef<RareEarthFeatureCollection | undefined>(undefined)
   const protectedData = shallowRef<RareEarthFeatureCollection | undefined>(undefined)
+  const waterData = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  const culturalData = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
   const features = ref<RareEarthFeatureSummary[]>([])
   const deepAnalysis = shallowRef<DeepAnalysis | undefined>(undefined)
   const isLoading = ref(false)
   const loadPhase = ref<LoadPhase>('idle')
   const loadProgress = ref(0)
   const error = ref<Error | null>(null)
+  const isRegional = ref(initialRegion === 'pococaldas')
   let overlapsByProcesso: Record<string, Array<{ name: string; kind: string; distance_km: number }>> = {}
+
+  function dataDir(): string {
+    return region.value === 'pococaldas'
+      ? `${baseURL}data/rare-earth/pococaldas/`
+      : `${baseURL}data/rare-earth/`
+  }
 
   function transformPoints(pointsGJ: RareEarthFeatureCollection): RareEarthFeatureSummary[] {
     return pointsGJ.features.map((f: RareEarthFeature) => {
@@ -72,8 +83,10 @@ export function useRareEarthData(baseURL: string) {
     loadProgress.value = 0
     error.value = null
     try {
+      const dir = dataDir()
+
       // Phase 1: Load points immediately (critical for map display)
-      const pointsRes = await fetch(`${baseURL}data/rare-earth/points.geojson`)
+      const pointsRes = await fetch(`${dir}points.geojson`)
       if (!pointsRes.ok) throw new Error('Failed to load points')
       const pointsGJ = (await pointsRes.json()) as RareEarthFeatureCollection
       features.value = transformPoints(pointsGJ)
@@ -87,7 +100,10 @@ export function useRareEarthData(baseURL: string) {
       // Phase 2: Load overlaps (needed for popup enrichment)
       loadPhase.value = 'overlaps'
       loadProgress.value = 30
-      const overlapsRes = await fetch(`${baseURL}data/rare-earth/points_with_overlaps.geojson`).catch(() => null)
+      const overlapsUrl = region.value === 'pococaldas'
+        ? `${dir}points_overlaps.geojson`
+        : `${dir}points_with_overlaps.geojson`
+      const overlapsRes = await fetch(overlapsUrl).catch(() => null)
       if (overlapsRes && overlapsRes.ok) {
         const overlapsGJ = await overlapsRes.json()
         overlapsByProcesso = {}
@@ -106,24 +122,28 @@ export function useRareEarthData(baseURL: string) {
 
       // Phase 3: Load polygons (heavy, for polygon layers)
       loadProgress.value = 50
-      const polysRes = await fetch(`${baseURL}data/rare-earth/polygons.geojson`).catch(() => null)
+      const polysRes = await fetch(`${dir}polygons.geojson`).catch(() => null)
       if (polysRes && polysRes.ok) {
         polygonsData.value = await polysRes.json()
       }
 
       await new Promise(resolve => setTimeout(resolve, 0))
 
-      // Phase 4: Load protected areas + deep analysis
+      // Phase 4: Load protected areas + deep analysis + waterbodies + cultural features
       loadPhase.value = 'protected'
-      loadProgress.value = 70
-      const [protectedRes, analysisRes] = await Promise.all([
-        fetch(`${baseURL}data/rare-earth/protected-areas.geojson`).catch(() => null),
-        fetch(`${baseURL}data/rare-earth/deep_analysis.json`).catch(() => null),
+      loadProgress.value = 60
+      const [protectedRes, analysisRes, waterRes, culturalRes] = await Promise.all([
+        fetch(`${dir}protected-areas.geojson`).catch(() => null),
+        fetch(`${dir}deep_analysis.json`).catch(() => null),
+        fetch(`${dir}waterbodies.geojson`).catch(() => null),
+        fetch(`${dir}cultural-features.geojson`).catch(() => null),
       ])
-      loadProgress.value = 90
+      loadProgress.value = 80
 
       if (protectedRes && protectedRes.ok) protectedData.value = await protectedRes.json()
       if (analysisRes && analysisRes.ok) deepAnalysis.value = await analysisRes.json()
+      if (waterRes && waterRes.ok) waterData.value = await waterRes.json()
+      if (culturalRes && culturalRes.ok) culturalData.value = await culturalRes.json()
 
       loadPhase.value = 'complete'
       loadProgress.value = 100
@@ -134,6 +154,14 @@ export function useRareEarthData(baseURL: string) {
     }
   }
 
+  /** Expand from regional to full Brazil dataset */
+  async function loadFullBrazil() {
+    if (region.value === 'all' && pointsData.value) return
+    region.value = 'all'
+    isRegional.value = false
+    await load()
+  }
+
   const speculatorIndex = computed<SpeculatorIndexEntry[]>(() =>
     pointsData.value ? computeSpeculatorIndex(pointsData.value) : [],
   )
@@ -142,6 +170,8 @@ export function useRareEarthData(baseURL: string) {
     pointsData,
     polygonsData,
     protectedData,
+    waterData,
+    culturalData,
     features,
     speculatorIndex,
     deepAnalysis,
@@ -150,5 +180,8 @@ export function useRareEarthData(baseURL: string) {
     loadProgress,
     error,
     load,
+    loadFullBrazil,
+    region,
+    isRegional,
   }
 }

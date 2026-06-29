@@ -44,6 +44,8 @@
         :rare-earth-points="pointsData"
         :rare-earth-polygons="polygonsData"
         :rare-earth-protected="protectedData"
+        :rare-earth-water="waterData"
+        :rare-earth-cultural="culturalData"
         :layer-visibility="layerVis"
         :fly-to-target="flyToTarget"
         @map-init="onMapInit"
@@ -138,11 +140,26 @@
               <span>📊</span> Table
             </button>
             <button
-@click="showGeoLocate = true"
+              @click="showGeoLocate = true"
               class="obs-action-btn"
               title="Find claims near you"
               style="--accent:#27ae60">
               <span>📍</span> <span class="hidden sm:inline">Near Me</span><span class="sm:hidden">Near</span>
+            </button>
+            <button
+              v-if="isRegional"
+              @click="expandToFullBrazil"
+              class="obs-action-btn"
+              title="Expand to view all Brazil mining claims"
+              style="--accent:#e67e22">
+              <span>🌎</span> <span class="hidden sm:inline">Full Brazil</span><span class="sm:hidden">Brazil</span>
+            </button>
+            <button
+              @click="showUserContribution = true"
+              class="obs-action-btn"
+              title="Add monitoring updates, photos & community reports"
+              style="--accent:#2ecc71">
+              <span>📝</span> <span class="hidden sm:inline">Monitor</span>
             </button>
           </div>
 
@@ -387,6 +404,9 @@ v-model="searchTerm" @input="debouncedFilter" :placeholder="t('observatory.searc
       <!-- Geo Locate -->
       <GeoLocateModal :visible="showGeoLocate" @close="showGeoLocate = false" @locate="onGeoLocate" />
 
+      <!-- User Contribution Modal -->
+      <UserContributionModal :visible="showUserContribution" @close="showUserContribution = false" />
+
       <!-- Claims Data Table -->
       <ClaimsDataTable :visible="showDataTable" :data="allFeatures" @close="showDataTable = false" @fly-to="(coords) => flyToTarget = { lng: coords[0], lat: coords[1], zoom: 8 }" />
 
@@ -416,6 +436,7 @@ import { useStateHash } from '@/composables/useStateHash'
 import KeyboardShortcuts from '@/components/observatory/KeyboardShortcuts.vue'
 import ClaimsDataTable from '@/components/observatory/ClaimsDataTable.vue'
 import GeoLocateModal from '@/components/observatory/GeoLocateModal.vue'
+import UserContributionModal from '@/components/observatory/UserContributionModal.vue'
 
 type ObservatoryTabKey = 'danger' | 'military' | 'illegal' | 'env' | 'network' | 'timeline'
 
@@ -452,7 +473,7 @@ useHead({
   meta: [{ name: 'description', content: 'Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.' }],
 })
 
-const { pointsData, polygonsData, protectedData, features: allFeatures, speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData } = useRareEarthData(baseURL)
+const { pointsData, polygonsData, protectedData, waterData, culturalData, features: allFeatures, speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL, 'pococaldas')
 const { restoredState, updateHash } = useStateHash()
 const searchTerm = ref('')
 const flyToTarget = ref<{ lng: number; lat: number; zoom?: number } | null>(null)
@@ -500,11 +521,12 @@ onUnmounted(() => { if (counterRaf) cancelAnimationFrame(counterRaf) })
 
 // Loading message based on phase
 const loadingMessage = computed(() => {
+  const regionLabel = isRegional.value ? 'Poços de Caldas region' : 'Brazil'
   switch (loadPhase.value) {
-    case 'points': return 'Loading mining claims...'
+    case 'points': return `Loading mining claims (${regionLabel})...`
     case 'overlaps': return 'Loading territory overlaps...'
     case 'polygons': return 'Loading claim boundaries...'
-    case 'protected': return 'Loading protected areas & analysis...'
+    case 'protected': return 'Loading protected areas, waterbodies & analysis...'
     case 'complete': return 'Ready'
     default: return 'Initializing...'
   }
@@ -524,6 +546,7 @@ const showShortcuts = ref(false)
 const showDataTable = ref(false)
 const showGeoLocate = ref(false)
 const userLocationRadius = ref(0)
+const showUserContribution = ref(false)
 
 // Year & Phase filters
 const yearMin = ref(1935)
@@ -634,6 +657,7 @@ const extraLayers = [
   { key: 'sites', labelKey: 'observatory.layers.conflictZones', color: '#c0392b' },
   { key: 'network', labelKey: 'observatory.layers.corpNetwork', color: '#5dade2' },
   { key: 'heatmap', labelKey: 'observatory.layers.heatmap', color: '#f39c12' },
+  { key: 'cultural', labelKey: 'observatory.layers.cultural', color: '#9b59b6' },
 ]
 
 const layerVis = ref<Record<string, boolean>>({})
@@ -644,6 +668,7 @@ layerVis.value['protected_ti'] = true
 layerVis.value['protected_quilombo'] = true
 layerVis.value['overlaps'] = true
 layerVis.value['heatmap'] = false
+layerVis.value['cultural'] = true
 
 const activeTab = ref<ObservatoryTabKey>('danger')
 
@@ -720,6 +745,11 @@ function onGeoLocate(lat: number, lng: number, _city: string) {
   // Fly to the detected location with a good zoom for nearby claims
   flyToTarget.value = { lng, lat, zoom: 7 }
   userLocationRadius.value = 1 // marker that we have a user location
+}
+
+async function expandToFullBrazil() {
+  await loadFullBrazil()
+  flyToTarget.value = { lng: -48, lat: -15, zoom: 4.2 }
 }
 
 function zoomToDanger(name: string) {
@@ -827,6 +857,7 @@ function handleKeydown(e: KeyboardEvent) {
     if (showDownload.value) { showDownload.value = false; return }
     if (showExport.value) { showExport.value = false; return }
     if (showClaimReport.value) { showClaimReport.value = false; return }
+    if (showUserContribution.value) { showUserContribution.value = false; return }
     if (searchTerm.value) { searchTerm.value = ''; debouncedFilter(); return }
     return
   }
@@ -862,6 +893,12 @@ function handleKeydown(e: KeyboardEvent) {
   const num = parseInt(e.key, 10)
   if (num >= 1 && num <= 6) {
     activeTab.value = tabKeys[num - 1]
+  }
+
+  // M — open community monitor
+  if (e.key === 'm' || e.key === 'M') {
+    showUserContribution.value = !showUserContribution.value
+    return
   }
 }
 

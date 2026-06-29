@@ -374,7 +374,7 @@ export function createClusterMarkerElement(
   } else {
     const miniSize = 14
     const cols = 4
-    const rows = Math.ceil(Math.min(count, 12) / cols)
+    const rows = Math.ceil(Math.min(items.length, 12) / cols)
     const gap = 2
     const pad = 5
     const gridW = cols * (miniSize + gap) - gap + pad * 2
@@ -447,10 +447,10 @@ export function createClusterMarkerElement(
       gridInner.appendChild(mini)
     })
 
-    if (count > maxShow) {
+    if (items.length > maxShow) {
       const more = document.createElement('div')
       more.className = 'cluster-mini-hover'
-      more.textContent = `+${count - maxShow}`
+      more.textContent = `+${items.length - maxShow}`
       more.style.width = `${miniSize}px`
       more.style.height = `${miniSize}px`
       more.style.borderRadius = '50%'

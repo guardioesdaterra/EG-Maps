@@ -32,11 +32,13 @@ export interface DeepAnalysis {
 export type LoadPhase = 'idle' | 'points' | 'overlaps' | 'polygons' | 'protected' | 'complete'
 export type DataRegion = 'pococaldas' | 'all'
 
-export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'all') {
+export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'pococaldas') {
   const region = ref<DataRegion>(initialRegion)
   const pointsData = shallowRef<RareEarthFeatureCollection | undefined>(undefined)
   const polygonsData = shallowRef<RareEarthFeatureCollection | undefined>(undefined)
   const protectedData = shallowRef<RareEarthFeatureCollection | undefined>(undefined)
+  const waterData = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  const culturalData = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
   const features = ref<RareEarthFeatureSummary[]>([])
   const deepAnalysis = shallowRef<DeepAnalysis | undefined>(undefined)
   const isLoading = ref(false)
@@ -127,17 +129,21 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'a
 
       await new Promise(resolve => setTimeout(resolve, 0))
 
-      // Phase 4: Load protected areas + deep analysis
+      // Phase 4: Load protected areas + deep analysis + waterbodies + cultural features
       loadPhase.value = 'protected'
-      loadProgress.value = 70
-      const [protectedRes, analysisRes] = await Promise.all([
+      loadProgress.value = 60
+      const [protectedRes, analysisRes, waterRes, culturalRes] = await Promise.all([
         fetch(`${dir}protected-areas.geojson`).catch(() => null),
         fetch(`${dir}deep_analysis.json`).catch(() => null),
+        fetch(`${dir}waterbodies.geojson`).catch(() => null),
+        fetch(`${dir}cultural-features.geojson`).catch(() => null),
       ])
-      loadProgress.value = 90
+      loadProgress.value = 80
 
       if (protectedRes && protectedRes.ok) protectedData.value = await protectedRes.json()
       if (analysisRes && analysisRes.ok) deepAnalysis.value = await analysisRes.json()
+      if (waterRes && waterRes.ok) waterData.value = await waterRes.json()
+      if (culturalRes && culturalRes.ok) culturalData.value = await culturalRes.json()
 
       loadPhase.value = 'complete'
       loadProgress.value = 100
@@ -164,6 +170,8 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'a
     pointsData,
     polygonsData,
     protectedData,
+    waterData,
+    culturalData,
     features,
     speculatorIndex,
     deepAnalysis,

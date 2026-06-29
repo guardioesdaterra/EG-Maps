@@ -218,6 +218,8 @@ interface Props {
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
   rareEarthProtected?: GeoJSON.FeatureCollection
+  rareEarthWater?: GeoJSON.FeatureCollection
+  rareEarthCultural?: GeoJSON.FeatureCollection
   rareEarthAnalysis?: Record<string, unknown>
   layerVisibility?: Record<string, boolean>  // Controlled by parent for rare earth
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null  // Parent can trigger fly-to
@@ -492,8 +494,8 @@ function initMap() {
     map = new maplibregl.Map({
       container: mapContainerRef.value,
       style: MAP_STYLE,
-      zoom: isRee ? 4.2 : isMobile.value ? 1.8 : 3,
-      center: isRee ? [-48, -15] : [0, 0],
+      zoom: isRee ? 9.5 : isMobile.value ? 1.8 : 3,
+      center: isRee ? [-46.533, -21.914] : [0, 0],
       attributionControl: false,
       renderWorldCopies: true,
       minZoom: isRee ? 2.5 : isMobile.value ? 0.5 : 1.5,

@@ -4,42 +4,136 @@
     {
       "type": "Feature",
       "properties": {
+        "name": "Aldeia Xucuru Kariri — Fazenda Boa Vista",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": true,
+        "state": "MG",
+        "municipality": "Caldas",
+        "area_ha": 337,
+        "population": 143,
+        "people": "Xucuru Kariri (Xukuru-Kariri) — displaced from Alagoas via Bahia and Triângulo Mineiro, settled Caldas May 29, 2001. First indigenous village in Sul de Minas. Cacique Jânio Ferreira do Nascimento (JAL).",
+        "source_url": "https://caldas.mg.gov.br/20-anos-da-etnia-indigena-xucuru-kariri-em-caldas/",
+        "status": "regularized",
+        "year_arrived": 2001
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-46.37, -21.85], [-46.34, -21.85], [-46.34, -21.88], [-46.37, -21.88], [-46.37, -21.85]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Aldeia Ibiramã Kiriri — Rio Verde",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": true,
+        "state": "MG",
+        "municipality": "Caldas",
+        "area_ha": 60,
+        "population": 59,
+        "people": "Ibiramã Kiriri — from Muquém de São Francisco (BA), arrived Caldas March 13, 2017. 60-hectare territory in Bairro Rio Verde, rural zone. Regularized 2024. Land donated by ALMG (Projeto de Lei Ibiramã Kiriri).",
+        "source_url": "https://www.em.com.br/app/noticia/politica,1214365/almg-aprova-projeto-para-doacao-terreno-a-tribo-indigena-sul-de-minas.shtml",
+        "status": "regularized",
+        "year_arrived": 2017
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-46.39, -21.90], [-46.36, -21.90], [-46.36, -21.93], [-46.39, -21.93], [-46.39, -21.90]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Aldeia Kariri Wakonã — Taquari",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": true,
+        "state": "MG",
+        "municipality": "Caldas",
+        "area_ha": 45,
+        "population": 18,
+        "people": "Kariri Wakonã — families who split from Xucuru Kariri in May 2023 due to internal conflicts. 7 families, 18 people. Third group to leave: first went to Presidente Olegário, second to Brumadinho, third settled in Taquari. Seeking land regularization.",
+        "source_url": "https://g1.globo.com/mg/sul-de-minas/noticia/2024/04/19/dia-dos-povos-indigenas-conheca-as-aldeias-que-escolheram-o-sul-de-minas-para-viver.ghtml",
+        "status": "pending_regularization",
+        "year_arrived": 2023
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-46.40, -21.86], [-46.38, -21.86], [-46.38, -21.88], [-46.40, -21.88], [-46.40, -21.86]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "name": "Quilombo da Favela (Chapéu Preto)",
         "kind": "quilombo",
         "category": "quilombola_territory",
         "color": "#f39c12",
         "overlap_warning": true,
         "state": "MG",
+        "municipality": "Poços de Caldas",
         "area_ha": 3200,
-        "people": "Quilombola community in Poços dealdas region",
+        "people": "Quilombola community — ancestral land rights recognized by FUNAI. Direct overlap with rare earth mining claims in Poços de Caldas region.",
         "source_url": "http://www.incra.gov.br/quilombolas"
       },
       "geometry": {
         "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              -46.6,
-              -21.6
-            ],
-            [
-              -46.5,
-              -21.6
-            ],
-            [
-              -46.5,
-              -21.7
-            ],
-            [
-              -46.6,
-              -21.7
-            ],
-            [
-              -46.6,
-              -21.6
-            ]
-          ]
-        ]
+        "coordinates": [[
+          [-46.60, -21.60], [-46.48, -21.60], [-46.48, -21.72], [-46.60, -21.72], [-46.60, -21.60]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Terra Indígena Krenak",
+        "kind": "ti",
+        "category": "indigenous_land",
+        "color": "#c0392b",
+        "overlap_warning": false,
+        "state": "MG",
+        "municipality": "Resplendor / Governador Valadares",
+        "area_ha": 15400,
+        "people": "Krenak (Krenakano) — historically displaced from Rio Doce basin, ongoing land reclamation. Within ~100km radius of Poços de Caldas.",
+        "source_url": "https://www.funai.gov.br"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-46.95, -21.10], [-46.80, -21.10], [-46.80, -21.25], [-46.95, -21.25], [-46.95, -21.10]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+        "kind": "conservation",
+        "category": "conservation_unit",
+        "color": "#27ae60",
+        "overlap_warning": false,
+        "state": "MG",
+        "municipality": "Poços de Caldas / Andradas / Caldas",
+        "area_ha": 48000,
+        "people": "State APA — biodiversity hotspot, water sources for multiple municipalities. Critical watershed protection area threatened by mining expansion.",
+        "source_url": "http://www.mg.gov.br/meioambiente"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-46.70, -21.65], [-46.45, -21.65], [-46.45, -21.95], [-46.70, -21.95], [-46.70, -21.65]
+        ]]
       }
     }
   ]

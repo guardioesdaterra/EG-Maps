@@ -802,6 +802,15 @@ export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<strin
   quilomboLayers.forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis['protected_quilombo'] !== false ? 'visible' : 'none') })
   if (map.getLayer('ree-overlap-glow')) map.setLayoutProperty('ree-overlap-glow', 'visibility', vis['overlaps'] !== false ? 'visible' : 'none')
   if (map.getLayer('ree-cities-label')) map.setLayoutProperty('ree-cities-label', 'visibility', vis['cities'] !== false ? 'visible' : 'none')
+
+  // Water body layers (ree-water source)
+  const waterLayers = ['ree-water-poly-fill', 'ree-water-poly-line', 'ree-water-poly-label', 'ree-water-river-line', 'ree-water-river-label']
+  waterLayers.forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', showWater ? 'visible' : 'none') })
+
+  // Cultural layers
+  const culturalLayers = ['ree-cultural-point', 'ree-cultural-label', 'ree-cultural-cluster', 'ree-cultural-cluster-count']
+  const showCultural = vis['cultural'] !== false
+  culturalLayers.forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', showCultural ? 'visible' : 'none') })
 }
 
 export function buildNetworkLinesFromClaims(points: GeoJSON.FeatureCollection, maxPerGroup = 200): GeoJSON.FeatureCollection {

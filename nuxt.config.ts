@@ -47,11 +47,12 @@ export default defineNuxtConfig({
 
   // Supabase auth redirects
   supabase: {
+    useSsrCookies: false,
     redirectOptions: {
       login: '/eg-grants',
       callback: '/auth/callback',
       include: ['/eg-grants', '/auth/callback'],
-      exclude: ['/', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d'],
+      exclude: ['/', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d', '/vulcan-observatory', '/vulcan-observatory/3d'],
     },
   },
 
@@ -60,7 +61,6 @@ export default defineNuxtConfig({
   routeRules: {
     '/**': { prerender: true },
     '/globe': { redirect: `${baseURL}project-grants/3d` },
-    '/eg-grants': { prerender: false },
     '/auth/callback': { prerender: false },
     '/vulcan-observatory': { prerender: false },
     '/vulcan-observatory/3d': { prerender: false },

@@ -128,53 +128,56 @@ function updateMouseSpeed() {
   mouse.prevY = mouse.y;
 }
 
+let ctx: CanvasRenderingContext2D | null = null
+let dpr = 1
+
+function doResize() {
+  if (!root.value || !canvas.value || !ctx) return;
+
+  const rect = root.value.getBoundingClientRect();
+
+  const w = rect.width;
+  const h = rect.height;
+
+  canvas.value.width = w * dpr;
+  canvas.value.height = h * dpr;
+
+  canvas.value.style.width = `${w}px`;
+  canvas.value.style.height = `${h}px`;
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  size = {
+    w,
+    h,
+    offsetX: rect.left + window.scrollX,
+    offsetY: rect.top + window.scrollY
+  };
+
+  buildDots(w, h);
+}
+
+const onWindowResize = () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(doResize, 100);
+}
+const onWindowMouseMove = (e: MouseEvent) => {
+  mouse.x = e.pageX - size.offsetX;
+  mouse.y = e.pageY - size.offsetY;
+}
+
 function setupCanvas() {
   if (!root.value || !canvas.value) return;
 
-  const ctx = canvas.value.getContext('2d', {
+  ctx = canvas.value.getContext('2d', {
     alpha: true
   });
 
   if (!ctx) return;
 
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-  function doResize() {
-    if (!root.value || !canvas.value || !ctx) return;
-
-    const rect = root.value.getBoundingClientRect();
-
-    const w = rect.width;
-    const h = rect.height;
-
-    canvas.value.width = w * dpr;
-    canvas.value.height = h * dpr;
-
-    canvas.value.style.width = `${w}px`;
-    canvas.value.style.height = `${h}px`;
-
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    size = {
-      w,
-      h,
-      offsetX: rect.left + window.scrollX,
-      offsetY: rect.top + window.scrollY
-    };
-
-    buildDots(w, h);
-  }
-
-  function resize() {
-    clearTimeout(resizeTimer);
-
-    resizeTimer = setTimeout(doResize, 100);
-  }
-
-  function onMouseMove(e: MouseEvent) {
-    mouse.x = e.pageX - size.offsetX;
-    mouse.y = e.pageY - size.offsetY;
-  }
+  doResize();
 
   function tick() {
     if (!ctx) return;
@@ -292,9 +295,9 @@ function setupCanvas() {
 
   doResize();
 
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', onWindowResize);
 
-  window.addEventListener('mousemove', onMouseMove, {
+  window.addEventListener('mousemove', onWindowMouseMove, {
     passive: true
   });
 
@@ -305,14 +308,10 @@ function setupCanvas() {
 
 function cleanup() {
   cancelAnimationFrame(raf);
-
   clearInterval(speedInterval);
-
   clearTimeout(resizeTimer);
-
-  window.removeEventListener('resize', () => {});
-
-  window.removeEventListener('mousemove', () => {});
+  window.removeEventListener('resize', onWindowResize);
+  window.removeEventListener('mousemove', onWindowMouseMove);
 }
 
 watch(

@@ -314,7 +314,6 @@ onMounted(() => {
         recentSearches.value = JSON.parse(saved)
       }
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error('Error loading recent searches:', e)
     }
     window.addEventListener('keydown', handleKeyboardShortcut)
@@ -328,7 +327,6 @@ function saveRecentSearch(query: string) {
     recentSearches.value = [query, ...filtered].slice(0, 5)
     localStorage.setItem('eg-maps-recent-searches', JSON.stringify(recentSearches.value))
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error('Error saving recent search:', e)
   }
 }
@@ -567,13 +565,11 @@ function toggleFullscreen() {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen()
       .then(() => { fullscreen.value = true })
-      // eslint-disable-next-line no-console
-      .catch((err) => { console.error(`Error attempting to enable fullscreen: ${err.message}`) })
+      .catch((err: Error) => { console.error(`Error attempting to enable fullscreen: ${err.message}`) })
   } else {
     document.exitFullscreen()
       .then(() => { fullscreen.value = false })
-      // eslint-disable-next-line no-console
-      .catch((err) => { console.error(`Error attempting to exit fullscreen: ${err.message}`) })
+      .catch((err: Error) => { console.error(`Error attempting to exit fullscreen: ${err.message}`) })
   }
 }
 

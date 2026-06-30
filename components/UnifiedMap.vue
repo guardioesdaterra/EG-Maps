@@ -343,6 +343,7 @@ function openRareEarthOverlay(feature: GeoJSON.Feature) {
 
 let map: maplibregl.Map | null = null
 let isMounted = true
+let loadingTimeout: ReturnType<typeof setTimeout> | null = null
 let pendingVisibilityUpdate = false
 let pendingRebuildRAF: number | null = null
 let lastFocusedEl: HTMLElement | null = null
@@ -467,8 +468,7 @@ function navigateToLocation(lat: number, lng: number) {
 // Hex grid is now handled by useMapHexGrid composable (hexGrid.setupHexGrid / hexGrid.debouncedSetup)
 
 function initMap() {
-  // eslint-disable-next-line no-console
-  console.debug('[UnifiedMap] initMap called', { containerRef: !!mapContainerRef.value })
+
   if (!mapContainerRef.value) return
 
   // Detect WebGL support before attempting to create map
@@ -497,8 +497,7 @@ function initMap() {
 
   try {
     const isRee = activeDataset.value === 'observatory-of-vulcan'
-    // eslint-disable-next-line no-console
-    console.debug('[UnifiedMap] creating maplibregl.Map', { style: MAP_STYLE.substring(0, 80), isMobile: isMobile.value })
+
     map = new maplibregl.Map({
       container: mapContainerRef.value,
       style: MAP_STYLE,
@@ -525,8 +524,7 @@ function initMap() {
     }
 
     map.on('load', () => {
-      // eslint-disable-next-line no-console
-      console.debug('[UnifiedMap] map loaded successfully')
+
       if (!isMounted) return
       isLoading.value = false
       if (map) emit('mapInit', map)
@@ -575,12 +573,10 @@ function initMap() {
     let usedFallback = false
 
     map.on('error', (err) => {
-      // eslint-disable-next-line no-console
       console.error('[UnifiedMap] MapLibre error:', err)
       errorCount++
       if (!usedFallback && errorCount >= 2 && MAP_STYLE.includes('maptiler.com')) {
         usedFallback = true
-        // eslint-disable-next-line no-console
         console.warn('MapTiler style failed, falling back to demotiles style')
         map!.setStyle('https://demotiles.maplibre.org/style.json')
         return
@@ -600,7 +596,7 @@ function initMap() {
     })
 
     // Timeout fallback — show error instead of silently hiding loading
-    setTimeout(() => {
+    loadingTimeout = setTimeout(() => {
       if (isLoading.value) {
         isLoading.value = false
         if (!hasError.value) {
@@ -612,7 +608,6 @@ function initMap() {
 
     window.addEventListener('resize', onResize)
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('[UnifiedMap] Failed to initialize map:', err)
     isLoading.value = false
     hasError.value = true
@@ -620,8 +615,7 @@ function initMap() {
 }
 
 onMounted(() => {
-  // eslint-disable-next-line no-console
-  console.debug('[UnifiedMap] onMounted', { dataset: props.defaultDataset, mapContainer: !!mapContainerRef.value })
+
   showFilterPanel.value = !isMobile.value
   initMap()
 })
@@ -702,6 +696,7 @@ watch(popupLocale, () => {
 
 onUnmounted(() => {
   isMounted = false
+  if (loadingTimeout) clearTimeout(loadingTimeout)
   connections2D.cleanup()
   orchestrator.cleanup()
   window.removeEventListener('resize', onResize)

@@ -81,6 +81,7 @@ const isMobile = useMediaQuery('(max-width: 768px)')
 
 let map: maplibregl.Map | null = null
 let isMounted = true
+let loadingTimeout: ReturnType<typeof setTimeout> | null = null
 let waterCleanup: (() => void) | null = null
 let circleCleanup: (() => void) | null = null
 
@@ -180,7 +181,6 @@ function initMap() {
     })
 
     map.on('error', (err) => {
-      // eslint-disable-next-line no-console
       console.error('[VulcanMap] MapLibre error:', err)
       if (!map?.loaded()) {
         isLoading.value = false
@@ -190,7 +190,7 @@ function initMap() {
     })
 
     // Timeout fallback
-    setTimeout(() => {
+    loadingTimeout = setTimeout(() => {
       if (isLoading.value) {
         isLoading.value = false
         if (!hasError.value) {
@@ -200,7 +200,6 @@ function initMap() {
       }
     }, 20000)
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('[VulcanMap] Init error:', err)
     isLoading.value = false
     hasError.value = true
@@ -268,6 +267,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   isMounted = false
+  if (loadingTimeout) clearTimeout(loadingTimeout)
   if (waterCleanup) waterCleanup()
   if (circleCleanup) circleCleanup()
   if (map) {

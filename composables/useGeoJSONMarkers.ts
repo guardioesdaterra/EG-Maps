@@ -5,7 +5,7 @@
  * which can handle 10,000+ points smoothly compared to the 100-200 limit of DOM markers.
  */
 
-import type { Map as MapLibreMap, GeoJSONSource, MapLayerMouseEvent, MapLayerEventType } from 'maplibre-gl'
+import type { Map as MapLibreMap, GeoJSONSource, MapLayerEventType } from 'maplibre-gl'
 import { GROUP_COLORS } from '@/lib/map-utils'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
 
@@ -112,10 +112,11 @@ export function useGeoJSONMarkers() {
   let currentSourceId: string | null = null
 
   // Track installed event handlers so they can be removed on re-setup/cleanup
+  type MapEventHandler = (_e: maplibregl.MapLayerMouseEvent | maplibregl.MapLayerTouchEvent) => void | Promise<void>
   type InstalledHandler = {
     id: string
     evt: keyof MapLayerEventType
-    handler: (..._args: unknown[]) => void
+    handler: MapEventHandler
   }
   const installedHandlers: InstalledHandler[] = []
 
@@ -284,7 +285,7 @@ export function useGeoJSONMarkers() {
     const clusterRingId = `${sourceId}-clusters-ring`
     const pointsLayerId = `${sourceId}-points`
 
-    const clusterClick = async (e: MapLayerMouseEvent) => {
+    const clusterClick: MapEventHandler = async (e) => {
       if (!map || !e.features?.[0]) return
 
       const feature = e.features[0]
@@ -308,7 +309,7 @@ export function useGeoJSONMarkers() {
       }
     }
 
-    const pointClick = (e: MapLayerMouseEvent) => {
+    const pointClick: MapEventHandler = (e) => {
       if (!e.features?.[0]) return
 
       const feature = e.features[0]
@@ -318,11 +319,10 @@ export function useGeoJSONMarkers() {
       onFeatureClick(properties, coords)
     }
 
-    const enterPointer = () => { if (map) map.getCanvas().style.cursor = 'pointer' }
-    const leavePointer = () => { if (map) map.getCanvas().style.cursor = '' }
+    const enterPointer: MapEventHandler = () => { if (map) map.getCanvas().style.cursor = 'pointer' }
+    const leavePointer: MapEventHandler = () => { if (map) map.getCanvas().style.cursor = '' }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const register = (id: string, evt: keyof MapLayerEventType, handler: any) => {
+    const register = (id: string, evt: keyof MapLayerEventType, handler: MapEventHandler) => {
       map!.on(evt, id, handler)
       installedHandlers.push({ id, evt, handler })
     }

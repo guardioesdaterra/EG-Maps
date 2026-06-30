@@ -9,7 +9,7 @@ export default withNuxt(
       'vue/require-default-prop': 'off',
       'vue/html-self-closing': 'off',
       'vue/attributes-order': 'off',
-      'no-console': 'warn',
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
       'prefer-const': 'error',
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],

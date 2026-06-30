@@ -148,8 +148,7 @@ export type CulturalTypeFilter = {
 
 let activeFilter: CulturalTypeFilter = {}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type FilterExpr = any[]
+type FilterExpr = (string | number | boolean | FilterExpr)[]
 
 function buildFilterExpression(filter: CulturalTypeFilter): FilterExpr {
   const conditions: FilterExpr[] = []

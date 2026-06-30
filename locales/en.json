@@ -565,6 +565,21 @@
     "goHome": "Go Home",
     "tryAgain": "Try Again"
   },
+  "info": {
+    "title": "Info & Feedback | Earth Guardians",
+    "description": "Learn about Earth Guardians data visualization platforms and submit feedback",
+    "subtitle": "The app brings Earth Guardians project grant locations, endangered species habitats, and real-world data to life through interactive maps and globes.",
+    "tabs": {
+      "overview": "Overview",
+      "grants": "Grants",
+      "species": "Species",
+      "mains": "Mains",
+      "feedback": "Feedback"
+    },
+    "feedbackSubmitted": "Thank you for your feedback!",
+    "shareCorrections": "Share corrections, missing data, or interaction ideas to help us improve the maps.",
+    "homeLink": "Home"
+  },
   "a11y": {
     "skipToContent": "Skip to main content"
   },

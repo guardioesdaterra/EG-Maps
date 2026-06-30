@@ -302,6 +302,7 @@ const showFilterPanel = ref(false)
 
 let map: maplibregl.Map | null = null
 let isMounted = true
+let loadingTimeout: ReturnType<typeof setTimeout> | null = null
 let pendingVisibilityUpdate = false
 let pendingRebuildRAF: number | null = null
 let lastFocusedEl: HTMLElement | null = null
@@ -379,8 +380,7 @@ function stopAutoRotate() {
 }
 
 async function initMap() {
-  // eslint-disable-next-line no-console
-  console.debug('[GlobeView] initMap called', { windowDefined: typeof window !== 'undefined', containerRef: !!containerRef.value })
+
   if (typeof window === 'undefined' || !containerRef.value) return
 
   // Detect WebGL support before attempting to create map
@@ -409,8 +409,7 @@ async function initMap() {
   }
 
   try {
-    // eslint-disable-next-line no-console
-    console.debug('[GlobeView] creating maplibregl.Map', { style: MAP_STYLE.substring(0, 80), isMobile: isMobile.value })
+
     const isRee = activeDataset.value === 'observatory-of-vulcan'
     map = new maplibregl.Map({
       container: containerRef.value,
@@ -436,15 +435,13 @@ async function initMap() {
         try {
           map.setProjection({ type: 'globe' })
         } catch (e) {
-          // eslint-disable-next-line no-console
-          console.error('Error setting globe projection:', e)
+      console.error('Error setting globe projection:', e)
         }
       }
     })
 
     map.on('load', () => {
-      // eslint-disable-next-line no-console
-      console.debug('[GlobeView] map loaded successfully')
+
       isLoading.value = false
       if (activeDataset.value === 'observatory-of-vulcan') {
         rareEarthController.setupLayers()
@@ -512,12 +509,10 @@ async function initMap() {
     let usedFallback = false
 
     map.on('error', (err) => {
-      // eslint-disable-next-line no-console
       console.error('[GlobeView] MapLibre error:', err)
       errorCount++
       if (!usedFallback && errorCount >= 2 && MAP_STYLE.includes('maptiler.com')) {
         usedFallback = true
-        // eslint-disable-next-line no-console
         console.warn('MapTiler style failed, falling back to demotiles style')
         map!.setStyle('https://demotiles.maplibre.org/style.json')
         return
@@ -537,7 +532,7 @@ async function initMap() {
     })
 
     // Timeout fallback — show error instead of silently hiding loading
-    setTimeout(() => {
+    loadingTimeout = setTimeout(() => {
       if (isLoading.value) {
         isLoading.value = false
         if (!hasError.value) {
@@ -547,7 +542,6 @@ async function initMap() {
       }
     }, 20000)
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('[GlobeView] Failed to initialize map:', err)
     isLoading.value = false
     hasError.value = true
@@ -611,8 +605,7 @@ function openRareEarthOverlay(feature: GeoJSON.Feature) {
 // Globe-specific inline styles removed — moved to scoped <style> block below
 
 onMounted(() => {
-  // eslint-disable-next-line no-console
-  console.debug('[GlobeView] onMounted', { dataset: props.defaultDataset, containerRef: !!containerRef.value })
+
   initMap()
   window.addEventListener('resize', onResize)
 })
@@ -666,6 +659,7 @@ onUnmounted(() => {
   isMounted = false
   stopAutoRotate()
   if (interactionTimeout) clearTimeout(interactionTimeout)
+  if (loadingTimeout) clearTimeout(loadingTimeout)
   connectionsGlobe.cleanup()
   orchestrator.cleanup()
   if (map) {

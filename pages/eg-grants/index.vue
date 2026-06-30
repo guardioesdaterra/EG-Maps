@@ -365,13 +365,14 @@ onMounted(async () => {
 
   await nextTick()
 
+  const win = window as unknown as { THREE: unknown; gsap: unknown; ScrollTrigger: unknown }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const THREE: any = (window as any).THREE
+  const THREE: any = win.THREE
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const gsap: any = (window as any).gsap
+  const gsap: any = win.gsap
   if (!THREE || !gsap) return
 
-  gsap.registerPlugin((window as any).ScrollTrigger)
+  gsap.registerPlugin(win.ScrollTrigger)
 
   const canvas = globeCanvas.value
   if (!canvas) return
@@ -502,13 +503,14 @@ onMounted(async () => {
   window.addEventListener('resize', resizeHandler)
 
   // Reset
-  setTimeout(() => {
+  const resetTimeout = setTimeout(() => {
     globe.position.set(0, 0, 0)
     globe.scale.set(1, 1, 1)
     camera.position.z = 6
   }, 100)
 
   cleanupThree = () => {
+    clearTimeout(resetTimeout)
     cancelAnimationFrame(rafId)
     window.removeEventListener('mousemove', mouseHandler)
     window.removeEventListener('resize', resizeHandler)

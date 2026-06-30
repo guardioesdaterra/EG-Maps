@@ -203,8 +203,6 @@ export function syncMapConnectionLayers(map: MapLibreMap, features: MapConnectio
     },
   })
 
-  const connZF = ['interpolate', ['linear'], ['zoom'], 5, 0.7, 12, 1.4] as unknown as number
-
   map.addLayer({
     id: CONNECTION_GLOW_LAYER_ID,
     type: 'line',
@@ -212,9 +210,15 @@ export function syncMapConnectionLayers(map: MapLibreMap, features: MapConnectio
     layout: { 'line-join': 'round', 'line-cap': 'round' },
     paint: {
       'line-color': ['get', 'color'],
-      'line-width': ['*', ['*', ['get', 'weight'], 4], connZF],
+      'line-width': ['interpolate', ['linear'], ['zoom'],
+        5, ['*', ['*', ['get', 'weight'], 4], 0.7],
+        12, ['*', ['*', ['get', 'weight'], 4], 1.4],
+      ],
       'line-opacity': ['*', ['get', 'opacity'], 0.55],
-      'line-blur': ['*', 4, connZF],
+      'line-blur': ['interpolate', ['linear'], ['zoom'],
+        5, 2.8,
+        12, 5.6,
+      ],
     },
   })
 
@@ -225,7 +229,10 @@ export function syncMapConnectionLayers(map: MapLibreMap, features: MapConnectio
     layout: { 'line-join': 'round', 'line-cap': 'round' },
     paint: {
       'line-color': ['get', 'color'],
-      'line-width': ['*', ['get', 'weight'], connZF],
+      'line-width': ['interpolate', ['linear'], ['zoom'],
+        5, ['*', ['get', 'weight'], 0.7],
+        12, ['*', ['get', 'weight'], 1.4],
+      ],
       'line-opacity': ['get', 'opacity'],
       'line-dasharray': [0.75, 2.5],
     },

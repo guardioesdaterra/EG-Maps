@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '0 */2 * * *'  # Every 2 hours — refresh grants radar
 
 permissions:
   contents: read
@@ -50,6 +52,12 @@ jobs:
 
       - name: Compute overlap indicators (P1.7)
         run: node scripts/compute-overlaps.mjs
+
+      - name: Run Grants Radar scraper
+        run: pip install aiohttp aiofiles feedparser beautifulsoup4 python-dateutil rich click lxml && python scripts/grants.py --min-score 10
+        env:
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          GRANTS_INGEST_TOKEN: ${{ secrets.GRANTS_INGEST_TOKEN }}
 
       - name: Verify secrets
         run: |

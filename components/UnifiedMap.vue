@@ -186,7 +186,7 @@ import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
 import { openRareEarthOverlayPopup } from '@/lib/map-utils'
-import { detectWebGLSupport } from '@/composables/useMapLibre'
+import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
 import { useMapHexGrid } from '@/composables/useMapHexGrid'
 import { useSpeciesPopup, useProjectPopup, useCrewPopup } from '@/composables/useMapPopup'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
@@ -201,13 +201,7 @@ const speciesPanel = useSpeciesPanel()
 const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
 const baseURL = useRuntimeConfig().app.baseURL
 
-const MAP_STYLE = MAPTILER_API_KEY
-  ? `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${MAPTILER_API_KEY}`
-  : 'https://demotiles.maplibre.org/style.json'
-
-function transformRequest(url: string, _resourceType?: string) {
-  return { url }
-}
+const MAP_STYLE = getMapStyle(MAPTILER_API_KEY)
 
 interface Props {
   projects?: ProjectData[]
@@ -510,7 +504,6 @@ function initMap() {
       fadeDuration: 100,
       maxTileCacheSize: 200,
       maxTileCacheZoomLevels: 5,
-      transformRequest,
     })
 
     map.addControl(

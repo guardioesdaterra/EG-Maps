@@ -34,6 +34,7 @@ import aiofiles
 import json
 import csv
 import hashlib
+import os
 import re
 import time
 import logging
@@ -1236,6 +1237,31 @@ def save_markdown(grants, path, title="Grants Radar"):
             ]
     path.write_text("\n".join(lines), encoding="utf-8")
 
+def push_to_supabase(grants, supabase_url, ingest_token):
+    """POST grants to the grants-ingest edge function."""
+    if not supabase_url or not ingest_token:
+        console.print("[yellow]Supabase push skipped: missing URL or token[/]")
+        return False
+    import urllib.request
+    endpoint = f"{supabase_url.rstrip('/')}/functions/v1/grants-ingest"
+    payload = json.dumps({"grants": grants}).encode("utf-8")
+    req = urllib.request.Request(
+        endpoint, data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "X-Ingest-Token": ingest_token,
+        },
+        method="POST"
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            result = json.loads(resp.read().decode())
+            console.print(f"[green]Supabase push: {result.get('inserted',0)} inserted, {result.get('skipped',0)} skipped[/]")
+            return True
+    except Exception as e:
+        console.print(f"[red]Supabase push failed: {e}[/]")
+        return False
+
 def print_table(grants):
     t = Table(title="🌱 Grants Radar — Results", show_header=True, header_style="bold green", min_width=90)
     t.add_column("Score",   style="cyan",   width=6)
@@ -1312,6 +1338,11 @@ async def run_radar(sources_filter, country_filter, keywords,
 
     console.print(f"[bold]Saved:[/] {prefix}.json / .csv / .md")
     print_table(filtered)
+
+    supabase_url = os.environ.get("SUPABASE_URL") or ""
+    ingest_token = os.environ.get("GRANTS_INGEST_TOKEN") or ""
+    push_to_supabase(filtered, supabase_url, ingest_token)
+
     return filtered
 
 

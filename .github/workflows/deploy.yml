@@ -54,7 +54,7 @@ jobs:
         run: node scripts/compute-overlaps.mjs
 
       - name: Run Grants Radar scraper
-        run: pip install aiohttp aiofiles feedparser beautifulsoup4 python-dateutil rich click lxml && python scripts/grants.py --min-score 10
+        run: pip install aiohttp aiofiles feedparser beautifulsoup4 python-dateutil rich click lxml && python scripts/grants.py --min-score 5
         env:
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           GRANTS_INGEST_TOKEN: ${{ secrets.GRANTS_INGEST_TOKEN }}

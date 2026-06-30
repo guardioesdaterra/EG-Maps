@@ -93,6 +93,9 @@ CORE_KEYWORDS = [
     # Climate
     "climate change","mudanças climáticas","climate adaptation","climate resilience",
     "green transition","just transition","transição justa",
+    # English env/conservation (core)
+    "environmental","conservation","wildlife","forest conservation","ocean conservation",
+    "environmental protection","ecosystem","habitat restoration",
 ]
 
 SECONDARY_KEYWORDS = [
@@ -102,6 +105,10 @@ SECONDARY_KEYWORDS = [
     "development","desenvolvimento","green","verde",
     "youth","juventude","women","mulheres","gender","gênero",
     "africa","asia","latin america","global south","sul global",
+    "grant","funding","fellowship","open call","call for",
+    "restoration","protect","preserve","climate action",
+    "education","health","food security","water","energy",
+    "livelihood","resilience","adaptation","regenerative",
 ]
 
 # ──────────────────────────────────────────────────────────────
@@ -682,7 +689,7 @@ async def fetch_fundsforngos(session):
             title   = clean_html(p.get("title",{}).get("rendered",""))
             content = clean_html(p.get("content",{}).get("rendered",""))
             url     = p.get("link","")
-            if score_relevance(f"{title} {content}") < 5: continue
+            if score_relevance(f"{title} {content}") < 4: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=content[:600], country="GLOBAL", language="en",
                 deadline=extract_deadline(content),
@@ -716,7 +723,7 @@ async def fetch_opportunity_desk(session):
             title = e.get("title","")
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
-            if score_relevance(f"{title} {desc}") < 5: continue
+            if score_relevance(f"{title} {desc}") < 4: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:500], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc),
@@ -737,7 +744,7 @@ async def fetch_opportunities_for_youth(session):
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
             tags  = [t.get("term","") for t in e.get("tags",[])]
-            if score_relevance(f"{title} {desc} {' '.join(tags)}") < 5: continue
+            if score_relevance(f"{title} {desc} {' '.join(tags)}") < 4: continue
             # Infer country from tags
             country = "GLOBAL"
             tag_str = " ".join(tags).lower()
@@ -764,7 +771,7 @@ async def fetch_eflux(session):
             title = e.get("title","")
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
-            if score_relevance(f"{title} {desc}") < 4: continue
+            if score_relevance(f"{title} {desc}") < 3: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:500], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc), amount_max=extract_amount(desc),
@@ -805,7 +812,7 @@ async def fetch_impactfunding_substack(session):
             title = e.get("title","")
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
-            if score_relevance(f"{title} {desc}") < 5: continue
+            if score_relevance(f"{title} {desc}") < 4: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:800], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc),
@@ -825,7 +832,7 @@ async def fetch_global_south_opportunities(session):
             title = e.get("title","")
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
-            if score_relevance(f"{title} {desc}") < 5: continue
+            if score_relevance(f"{title} {desc}") < 4: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:500], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc), amount_max=extract_amount(desc),
@@ -856,7 +863,7 @@ async def fetch_latam(session):
                 for e in feed.entries[:25]:
                     t = e.get("title",""); l = e.get("link","")
                     d = clean_html(e.get("summary",""))
-                    if score_relevance(f"{t} {d}") < 4: continue
+                    if score_relevance(f"{t} {d}") < 3: continue
                     grants.append(make_grant(title=t, source_name=f"latam:{name}", url=l,
                         description=d[:400], country=country, language=lang,
                         funder=funder, deadline=extract_deadline(d)))
@@ -871,7 +878,7 @@ async def fetch_latam(session):
                 if len(title) < 8: continue
                 link  = urljoin(url, a["href"]) if a else url
                 text  = art.get_text(" ")
-                if score_relevance(f"{title} {text}") < 4: continue
+                if score_relevance(f"{title} {text}") < 3: continue
                 grants.append(make_grant(title=title, source_name=f"latam:{name}", url=link,
                     description=text[:400], country=country, language=lang,
                     funder=funder, deadline=extract_deadline(text),
@@ -902,7 +909,7 @@ async def fetch_africa_asia(session):
             for e in feed.entries[:30]:
                 t = e.get("title",""); l = e.get("link","")
                 d = clean_html(e.get("summary",""))
-                if score_relevance(f"{t} {d}") < 5: continue
+                if score_relevance(f"{t} {d}") < 4: continue
                 grants.append(make_grant(title=t, source_name=f"africa-asia:{name}",
                     url=l, description=d[:400], country=country, language=lang,
                     funder=funder, deadline=extract_deadline(d)))
@@ -917,7 +924,7 @@ async def fetch_africa_asia(session):
                 if len(title) < 8: continue
                 link = urljoin(url, a["href"]) if a else url
                 text = art.get_text(" ")
-                if score_relevance(f"{title} {text}") < 5: continue
+                if score_relevance(f"{title} {text}") < 4: continue
                 grants.append(make_grant(title=title, source_name=f"africa-asia:{name}",
                     url=link, description=text[:400], country=country, language=lang,
                     funder=funder, deadline=extract_deadline(text)))
@@ -1000,7 +1007,7 @@ async def fetch_rss(session):
                 desc  = clean_html(e.get("summary") or e.get("description",""))
                 pub   = e.get("published") or e.get("updated","")
                 blob  = f"{title} {desc}".lower()
-                if score_relevance(blob) < 5: continue
+                if score_relevance(blob) < 4: continue
                 result.append(make_grant(title=title, source_name=f"rss:{name}",
                     url=link, description=desc[:500], country=country,
                     language=lang, deadline=parse_date(pub),
@@ -1045,7 +1052,7 @@ async def fetch_global_greengrants(session):
             title   = clean_html(p.get("title",{}).get("rendered",""))
             content = clean_html(p.get("content",{}).get("rendered",""))
             url     = p.get("link","")
-            if score_relevance(f"{title} {content}") < 4: continue
+            if score_relevance(f"{title} {content}") < 3: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=content[:500], country="GLOBAL",
                 funder="Global Green Grants Fund", deadline=extract_deadline(content)))
@@ -1092,7 +1099,7 @@ async def fetch_ashoka(session):
             if len(title) < 6: continue
             url  = urljoin("https://www.changemakers.com", a["href"]) if a else "https://www.changemakers.com"
             text = art.get_text(" ")
-            if score_relevance(f"{title} {text}") < 4: continue
+            if score_relevance(f"{title} {text}") < 3: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=text[:400], country="GLOBAL",
                 funder="Ashoka / Changemakers",

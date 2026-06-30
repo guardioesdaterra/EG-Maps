@@ -22,8 +22,8 @@ test.describe('Page loads', () => {
     { path: '/project-grants/3d', name: 'project-grants 3D' },
     { path: '/endangered-species', name: 'endangered-species 2D' },
     { path: '/endangered-species/3d', name: 'endangered-species 3D' },
-    { path: '/observatory-of-vulcan', name: 'observatory 2D' },
-    { path: '/observatory-of-vulcan/3d', name: 'observatory 3D' },
+    { path: '/vulcan-observatory', name: 'observatory 2D' },
+    { path: '/vulcan-observatory/3d', name: 'observatory 3D' },
     { path: '/info', name: 'info' },
   ]
 

@@ -1,9 +1,6 @@
 <template>
   <div class="relative min-h-screen overflow-hidden bg-[#08080a]">
-    <!-- Three.js Globe Canvas (layer 0) -->
     <canvas ref="globeCanvas" class="fixed inset-0 z-0 pointer-events-none" />
-
-    <!-- DotField overlay (layer 1) -->
     <DotField
       class="absolute inset-0 z-[1]"
       :dot-radius="1"
@@ -15,13 +12,8 @@
       gradient-to="rgba(160, 255, 188, 0.03)"
       glow-color="#08080a"
     />
-
-    <!-- Scroll indicator -->
     <div class="scroll-indicator">SCROLL TO EXPLORE</div>
-
-    <!-- Content overlay (layer 10) -->
     <div id="ui-overlay" class="relative z-10">
-      <!-- Hero Section -->
       <section id="hero" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
         <span class="data-label">SINCE 2014 / GLOBAL GRANT INITIATIVES</span>
         <h1>Earth Guardians<br/>GRANTS</h1>
@@ -29,35 +21,33 @@
           Socio-environmental grants empowering youth-led climate action worldwide. Submit, review, and fund transformative projects.
         </p>
       </section>
-
-      <!-- Stats Section -->
       <section id="details" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
         <span class="data-label">REAL IMPACT / REAL TIME</span>
         <div class="stats-grid">
           <div class="stat-card">
             <span class="data-label">TOTAL GRANTS</span>
-            <span class="stat-value">{{ stats.total || '—' }}</span>
+            <span class="stat-value">{{ approvedGrantsCount }}</span>
           </div>
           <div class="stat-card">
-            <span class="data-label">APPROVED</span>
-            <span class="stat-value" style="color: var(--accent);">{{ stats.approved || '—' }}</span>
+            <span class="data-label">PENDING</span>
+            <span class="stat-value" style="color: var(--accent);">{{ pendingGrantsCount }}</span>
           </div>
           <div class="stat-card">
             <span class="data-label">BENEFICIARIES</span>
-            <span class="stat-value">10K+</span>
+            <span class="stat-value">{{ beneficiaryCount }}</span>
           </div>
           <div class="stat-card">
             <span class="data-label">COUNTRIES</span>
-            <span class="stat-value">47+</span>
+            <span class="stat-value">{{ countryCount }}</span>
           </div>
         </div>
+        <div class="mt-4">
+          <button class="px-4 py-2 bg-[var(--tool-btn-active-bg)] text-white rounded" @click="openRegistryModal">Open Grants Registry</button>
+        </div>
       </section>
-
-      <!-- Features Section -->
       <section class="join-section" id="join">
         <span class="data-label">HOW IT WORKS // GRANTS PROCESS</span>
         <h2 style="margin-top: 1rem; text-align: center;">GRANTS PROGRAM</h2>
-
         <div class="join-grid">
           <div class="join-card">
             <div class="join-card-content">
@@ -77,7 +67,6 @@
               </NuxtLink>
             </div>
           </div>
-
           <div class="join-card">
             <div class="join-card-content">
               <div class="preview-tooltip">
@@ -93,7 +82,6 @@
             </div>
           </div>
         </div>
-
         <div class="contact-info">
           <p class="contact-text">
             QUESTIONS? EMAIL <a href="mailto:GRANTS@EARTHGUARDIANS.ORG">GRANTS@EARTHGUARDIANS.ORG</a>
@@ -103,17 +91,13 @@
           </p>
         </div>
       </section>
-
-      <!-- Grants Portal Section -->
       <section class="projects-section" id="grants-portal">
         <div class="projects-header">
           <span class="data-label">GRANTS PORTAL // SUBMIT & REVIEW</span>
           <h2>GRANTS DASHBOARD</h2>
           <p class="projects-subtitle">Manage grant proposals and track funding decisions</p>
         </div>
-
         <div class="portal-container">
-          <!-- Sign in prompt -->
           <div v-if="!user" class="portal-card signin-card">
             <div class="portal-card-inner">
               <svg class="portal-icon-big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
@@ -125,13 +109,9 @@
               </button>
             </div>
           </div>
-
-          <!-- Logged in header -->
           <div v-else class="portal-card user-card">
             <div class="user-info">
-              <div class="user-avatar" :class="isManager ? 'manager' : 'member'">
-                {{ isManager ? 'M' : 'C' }}
-              </div>
+              <div class="user-avatar" :class="isManager ? 'manager' : 'member'">{{ isManager ? 'M' : 'C' }}</div>
               <div>
                 <p class="user-role">{{ isManager ? 'Manager' : 'Crew Member' }}</p>
                 <p class="user-email">{{ user.email }}</p>
@@ -139,29 +119,15 @@
             </div>
             <button @click="signOut" class="signout-btn">Sign out</button>
           </div>
-
-          <!-- Stats row (logged in) -->
           <div v-if="user" class="stats-row">
             <div v-for="s in statCards" :key="s.label" class="stat-mini">
               <span class="stat-mini-value" :style="{ color: s.color }">{{ s.value }}</span>
               <span class="stat-mini-label">{{ s.label }}</span>
             </div>
           </div>
-
-          <!-- Manager tabs -->
           <div v-if="isManager" class="tabs-row">
-            <button
-              v-for="tab in managerTabs"
-              :key="tab"
-              @click="activeTab = tab"
-              class="tab-btn"
-              :class="activeTab === tab ? 'active' : ''"
-            >
-              {{ tab }}
-            </button>
+            <button v-for="tab in managerTabs" :key="tab" @click="activeTab = tab" class="tab-btn" :class="activeTab === tab ? 'active' : ''">{{ tab }}</button>
           </div>
-
-          <!-- Submit form (members) -->
           <div v-if="user && !isManager" class="portal-card">
             <h3 class="portal-card-title">Submit a Grant</h3>
             <form @submit.prevent="handleSubmitGrant" class="grant-form">
@@ -179,14 +145,10 @@
                 <option value="education">Education</option>
                 <option value="health">Health</option>
               </select>
-              <button type="submit" :disabled="submitting" class="submit-btn">
-                {{ submitting ? 'Submitting...' : 'Submit Grant' }}
-              </button>
+              <button type="submit" :disabled="submitting" class="submit-btn">{{ submitting ? 'Submitting...' : 'Submit Grant' }}</button>
               <p v-if="submitMsg" class="submit-msg" :class="submitOk ? 'ok' : 'err'">{{ submitMsg }}</p>
             </form>
           </div>
-
-          <!-- Grants list -->
           <div v-if="user" class="grants-list">
             <div v-if="loading" class="list-status">Loading grants...</div>
             <div v-else-if="grants.length === 0" class="list-status">No grants found.</div>
@@ -209,13 +171,83 @@
         </div>
       </section>
 
-      <!-- Footer -->
+      <!-- Full-screen registry modal -->
+      <Teleport to="body">
+        <div v-if="showRegistry" class="fixed inset-0 z-[9000] bg-black/90 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Approved grants registry">
+          <div class="mx-auto max-w-6xl w-full">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-bold text-white">Approved Grants</h2>
+              <button class="text-white/70 hover:text-white" aria-label="Close" @click="closeRegistryModal">Close</button>
+            </div>
+            <div v-if="registryLoading" class="text-white/70">Loading registry...</div>
+            <div v-else-if="!registry.length" class="text-white/70">No approved grants yet.</div>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div v-for="grant in registry" :key="String(grant.id)" class="rounded border border-white/10 bg-white/5 p-3 text-white">
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="text-sm font-semibold leading-snug">{{ grant.title }}</h3>
+                  <span v-if="grant.relevante" class="text-[10px] font-bold uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded">Public</span>
+                </div>
+                <p class="mt-2 text-xs text-white/70 line-clamp-3">{{ grant.description }}</p>
+                <div class="mt-3 flex items-center justify-between text-[11px] text-white/60">
+                  <span>{{ grant.location_name }}</span>
+                  <span>{{ new Date(grant.created_at).toLocaleDateString() }}</span>
+                </div>
+                <button class="mt-3 w-full rounded bg-white/10 py-2 text-xs font-semibold text-white hover:bg-white/20" @click="openGrantDetail(grant)">View details</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Teleport>
+
+      <!-- Full-screen grant detail -->
+      <Teleport to="body">
+        <div v-if="selectedGrant" class="fixed inset-0 z-[9100] bg-black/95 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Grant detail">
+          <div class="mx-auto max-w-4xl w-full">
+            <div class="flex items-center justify-between mb-4">
+              <div class="text-white">
+                <h2 class="text-lg font-bold">{{ selectedGrant.title }}</h2>
+                <p class="text-xs text-white/60">{{ selectedGrant.location_name }} • {{ new Date(selectedGrant.created_at).toLocaleString() }}</p>
+              </div>
+              <button class="text-white/70 hover:text-white" aria-label="Close" @click="closeGrantDetail">Close</button>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-3">
+              <div class="sm:col-span-2 space-y-3">
+                <div class="rounded border border-white/10 bg-white/5 p-4 text-white">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-white/60">Description</h3>
+                  <p class="mt-2 text-sm leading-relaxed">{{ selectedGrant.description }}</p>
+                </div>
+                <div class="rounded border border-white/10 bg-white/5 p-4 text-white">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-white/60">Status</h3>
+                  <p class="mt-2 text-sm capitalize">{{ selectedGrant.status }}</p>
+                </div>
+                <div class="rounded border border-white/10 bg-white/5 p-4 text-white">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-white/60">Location</h3>
+                  <p class="mt-2 text-sm">Lat: {{ selectedGrant.latitude }} • Lng: {{ selectedGrant.longitude }}</p>
+                  <p class="text-sm">{{ selectedGrant.location_name }}</p>
+                </div>
+              </div>
+              <div class="space-y-3">
+                <div class="rounded border border-white/10 bg-white/5 p-4 text-white">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-white/60">Submitted by</h3>
+                  <p class="mt-2 text-sm">{{ selectedGrant.submitted_by }}</p>
+                </div>
+                <div class="rounded border border-white/10 bg-white/5 p-4 text-white">
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-white/60">Review</h3>
+                  <p class="mt-2 text-sm">{{ selectedGrant.reviewed_by || 'Pending review' }}</p>
+                  <p class="text-xs text-white/60">{{ selectedGrant.reviewed_at || '' }}</p>
+                </div>
+                <button class="w-full rounded bg-white/10 py-2 text-xs font-semibold text-white hover:bg-white/20" @click="closeGrantDetail">Back to registry</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Teleport>
+
       <section id="footer" class="footer-section">
         <div class="footer-glow" />
         <div class="footer-content">
           <span class="data-label">EARTH GUARDIANS GRANTS</span>
           <h1 class="footer-title">FUNDING<br/>IMPACT</h1>
-
           <div class="footer-links">
             <a href="https://www.earthguardians.org/" target="_blank" class="footer-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -226,18 +258,14 @@
               <span>@earthguardians_br</span>
             </a>
           </div>
-
           <div class="tectonic-line" />
-
           <div class="footer-stats-grid">
             <div><h4>SINCE</h4><p class="footer-stat-value">2014</p><p class="footer-stat-label">OVER A DECADE</p></div>
             <div><h4>GRANTS</h4><p class="footer-stat-value">{{ stats.total || '—' }}</p><p class="footer-stat-label">PROPOSALS SUBMITTED</p></div>
             <div><h4>APPROVED</h4><p class="footer-stat-value">{{ stats.approved || '—' }}</p><p class="footer-stat-label">FUNDED PROJECTS</p></div>
-            <div><h4>COUNTRIES</h4><p class="footer-stat-value">47+</p><p class="footer-stat-label">GLOBAL REACH</p></div>
+            <div><h4>COUNTRIES</h4><p class="footer-stat-value">{{ countryCount }}</p><p class="footer-stat-label">GLOBAL REACH</p></div>
           </div>
-
           <div class="tectonic-line" />
-
           <p class="footer-copy">
             © 2014-2024 EARTH GUARDIANS // SOCIO-ENVIRONMENTAL GRANTS PROGRAM<br/>
             <span>BUILT FOR PURPOSE</span>
@@ -268,6 +296,7 @@ const { user, isManager, signIn, signOut } = useSupabaseAuth()
 const { listGrants, submitGrant: apiSubmitGrant, reviewGrant: apiReviewGrant, getStats } = useGrants()
 
 const grants = ref<GrantRecord[]>([])
+const registry = ref<Array<GrantRecord & { relevante?: boolean }>>([])
 const stats = reactive({ pending: 0, approved: 0, rejected: 0, total: 0 })
 const loading = ref(true)
 const submitting = ref(false)
@@ -275,6 +304,10 @@ const submitMsg = ref('')
 const submitOk = ref(false)
 const activeTab = ref<'pending' | 'approved' | 'rejected'>('pending')
 const managerTabs = ['pending', 'approved', 'rejected'] as const
+
+const showRegistry = ref(false)
+const registryLoading = ref(false)
+const selectedGrant = ref<GrantRecord | null>(null)
 
 const statCards = computed(() => [
   { label: 'Pending', value: stats.pending, color: '#eab308' },
@@ -291,6 +324,36 @@ const form = reactive({
   longitude: null as number | null,
   category: 'environment' as string,
 })
+
+const approvedGrantsCount = computed(() => stats.approved)
+const pendingGrantsCount = computed(() => stats.pending)
+const beneficiaryCount = computed(() => '10K+')
+const countryCount = computed(() => '47+')
+
+async function loadRegistry() {
+  registryLoading.value = true
+  const result = await listGrants('approved')
+  registry.value = (result.grants ?? []).slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  registryLoading.value = false
+}
+
+function openRegistryModal() {
+  showRegistry.value = true
+  loadRegistry()
+}
+
+function closeRegistryModal() {
+  showRegistry.value = false
+  selectedGrant.value = null
+}
+
+function openGrantDetail(grant: GrantRecord) {
+  selectedGrant.value = grant
+}
+
+function closeGrantDetail() {
+  selectedGrant.value = null
+}
 
 async function loadGrants() {
   loading.value = true
@@ -331,6 +394,7 @@ async function handleReview(grantId: string, decision: 'approved' | 'rejected') 
   await apiReviewGrant(grantId, decision)
   loadGrants()
   loadStats()
+  if (showRegistry.value) loadRegistry()
 }
 
 function scrollToPortal() {
@@ -339,7 +403,6 @@ function scrollToPortal() {
 
 watch(activeTab, () => loadGrants())
 
-// --- Three.js Globe + GSAP ---
 const globeCanvas = ref<HTMLCanvasElement | null>(null)
 
 function loadScript(src: string): Promise<void> {
@@ -355,20 +418,14 @@ function loadScript(src: string): Promise<void> {
 let cleanupThree: (() => void) | null = null
 
 onMounted(async () => {
-  // Load grants data
   await Promise.all([loadGrants(), loadStats()])
-
-  // Load external libs
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js')
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js')
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js')
-
   await nextTick()
 
   const win = window as unknown as { THREE: unknown; gsap: unknown; ScrollTrigger: unknown }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const THREE: any = win.THREE
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const gsap: any = win.gsap
   if (!THREE || !gsap) return
 
@@ -377,7 +434,6 @@ onMounted(async () => {
   const canvas = globeCanvas.value
   if (!canvas) return
 
-  // Scene
   const scene = new THREE.Scene()
   scene.background = new THREE.Color(0x08080a)
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000)
@@ -386,34 +442,24 @@ onMounted(async () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   renderer.setClearColor(0x08080a, 1)
 
-  // Textures
   const loader = new THREE.TextureLoader()
   const earthMap = loader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg')
   earthMap.anisotropy = renderer.capabilities.getMaxAnisotropy()
   earthMap.minFilter = THREE.LinearMipmapLinearFilter
   earthMap.magFilter = THREE.LinearFilter
 
-  // Globe
   const geo = new THREE.SphereGeometry(2, 96, 96)
-  const mat = new THREE.MeshPhongMaterial({
-    map: earthMap,
-    specular: new THREE.Color('#111111'),
-    shininess: 10,
-  })
+  const mat = new THREE.MeshPhongMaterial({ map: earthMap, specular: new THREE.Color('#111111'), shininess: 10 })
   const globe = new THREE.Mesh(geo, mat)
   scene.add(globe)
 
-  // Stars
   const starGeo = new THREE.BufferGeometry()
   const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.015 })
   const starVerts: number[] = []
-  for (let i = 0; i < 6000; i++) {
-    starVerts.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000)
-  }
+  for (let i = 0; i < 6000; i++) starVerts.push((Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000, (Math.random() - 0.5) * 2000)
   starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starVerts, 3))
   scene.add(new THREE.Points(starGeo, starMat))
 
-  // Lighting
   scene.add(new THREE.AmbientLight(0xffffff, 0.3))
   const mainLight = new THREE.DirectionalLight(0xffffff, 1.5)
   mainLight.position.set(5, 3, 5)
@@ -424,10 +470,8 @@ onMounted(async () => {
   const fillLight = new THREE.DirectionalLight(0xffffff, 0.4)
   fillLight.position.set(-3, 1, 2)
   scene.add(fillLight)
-
   camera.position.z = 6
 
-  // Mouse parallax
   let mouseX = 0, mouseY = 0
   const mouseHandler = (e: MouseEvent) => {
     mouseX = (e.clientX / window.innerWidth - 0.5) * 0.2
@@ -435,56 +479,18 @@ onMounted(async () => {
   }
   window.addEventListener('mousemove', mouseHandler)
 
-  // GSAP scroll animations
-  gsap.to(globe.rotation, {
-    y: Math.PI * 2,
-    scrollTrigger: {
-      trigger: '#ui-overlay',
-      start: 'top top',
-      end: 'bottom bottom',
-      scrub: 1.5,
-    },
-  })
-
-  gsap.to(globe.position, {
-    x: 1.5,
-    scrollTrigger: {
-      trigger: '#hero',
-      start: 'bottom center',
-      end: 'center center',
-      scrub: 1.5,
-    },
-  })
-
+  gsap.to(globe.rotation, { y: Math.PI * 2, scrollTrigger: { trigger: '#ui-overlay', start: 'top top', end: 'bottom bottom', scrub: 1.5 } })
+  gsap.to(globe.position, { x: 1.5, scrollTrigger: { trigger: '#hero', start: 'bottom center', end: 'center center', scrub: 1.5 } })
   const footerTL = gsap.timeline({
-    scrollTrigger: {
-      trigger: '#footer',
-      start: 'top bottom',
-      end: 'bottom top',
-      scrub: 3,
-      invalidateOnRefresh: true,
-    },
+    scrollTrigger: { trigger: '#footer', start: 'top bottom', end: 'bottom top', scrub: 3, invalidateOnRefresh: true },
   })
-  footerTL.to(globe.position, { x: 0, ease: 'power2.inOut', duration: 2 })
-    .to(globe.scale, { x: 2.5, y: 2.5, z: 2.5, ease: 'power2.out', duration: 1.5 }, '-=0.5')
-    .to(camera.position, { z: 2.8, ease: 'power2.out', duration: 1.5 }, '-=1.5')
+  footerTL.to(globe.position, { x: 0, ease: 'power2.inOut', duration: 2 }).to(globe.scale, { x: 2.5, y: 2.5, z: 2.5, ease: 'power2.out', duration: 1.5 }, '-=0.5').to(camera.position, { z: 2.8, ease: 'power2.out', duration: 1.5 }, '-=1.5')
 
-  // Reveal animations
   gsap.from('#hero h1', { opacity: 0, y: 100, duration: 1.5, stagger: 0.2, ease: 'power4.out' })
-  gsap.from('.stat-card', {
-    opacity: 0, x: -50, duration: 1, stagger: 0.1,
-    scrollTrigger: { trigger: '#details', start: 'top center' },
-  })
-  gsap.from('.join-card', {
-    opacity: 0, y: 80, duration: 1.2, stagger: 0.3, force3D: true,
-    scrollTrigger: { trigger: '.join-section', start: 'top 75%', toggleActions: 'play none none none' },
-  })
-  gsap.from('.portal-card', {
-    opacity: 0, y: 60, duration: 1, stagger: 0.1, force3D: true,
-    scrollTrigger: { trigger: '#grants-portal', start: 'top 75%', toggleActions: 'play none none none' },
-  })
+  gsap.from('.stat-card', { opacity: 0, x: -50, duration: 1, stagger: 0.1, scrollTrigger: { trigger: '#details', start: 'top center' } })
+  gsap.from('.join-card', { opacity: 0, y: 80, duration: 1.2, stagger: 0.3, force3D: true, scrollTrigger: { trigger: '.join-section', start: 'top 75%', toggleActions: 'play none none none' } })
+  gsap.from('.portal-card', { opacity: 0, y: 60, duration: 1, stagger: 0.1, force3D: true, scrollTrigger: { trigger: '#grants-portal', start: 'top 75%', toggleActions: 'play none none none' } })
 
-  // Animate
   const animate = () => {
     rafId = requestAnimationFrame(animate)
     globe.rotation.y += 0.001
@@ -494,7 +500,6 @@ onMounted(async () => {
   }
   let rafId = requestAnimationFrame(animate)
 
-  // Resize
   const resizeHandler = () => {
     camera.aspect = window.innerWidth / window.innerHeight
     camera.updateProjectionMatrix()
@@ -502,790 +507,13 @@ onMounted(async () => {
   }
   window.addEventListener('resize', resizeHandler)
 
-  // Reset
-  const resetTimeout = setTimeout(() => {
-    globe.position.set(0, 0, 0)
-    globe.scale.set(1, 1, 1)
-    camera.position.z = 6
-  }, 100)
-
   cleanupThree = () => {
-    clearTimeout(resetTimeout)
-    cancelAnimationFrame(rafId)
-    window.removeEventListener('mousemove', mouseHandler)
     window.removeEventListener('resize', resizeHandler)
+    window.removeEventListener('mousemove', mouseHandler)
+    cancelAnimationFrame(rafId)
     renderer.dispose()
   }
 })
 
-onBeforeUnmount(() => {
-  cleanupThree?.()
-})
+onBeforeUnmount(() => cleanupThree?.())
 </script>
-
-<style scoped>
-div {
-  --obsidian: #08080a;
-  --tectonic-white: #f0f0f0;
-  --glass: rgba(255, 255, 255, 0.03);
-  --border: rgba(255, 255, 255, 0.1);
-  --accent: #00ff85;
-}
-
-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-color: transparent;
-}
-
-#ui-overlay {
-  position: relative;
-  z-index: 10;
-}
-
-section {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 0 10%;
-  pointer-events: auto;
-}
-
-.data-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.3em;
-  color: rgba(255, 255, 255, 0.4);
-  margin-bottom: 1rem;
-  display: block;
-}
-
-h1 {
-  font-size: clamp(3rem, 10vw, 8rem);
-  line-height: 0.9;
-  text-transform: uppercase;
-  letter-spacing: -0.05em;
-  max-width: 800px;
-  color: var(--tectonic-white);
-}
-
-h2 {
-  font-size: clamp(2rem, 6vw, 4rem);
-  line-height: 1;
-  text-transform: uppercase;
-  letter-spacing: -0.03em;
-  margin-bottom: 2rem;
-  color: var(--tectonic-white);
-}
-
-.hero-desc {
-  margin-top: 2rem;
-  max-width: 600px;
-  line-height: 1.8;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 1rem;
-}
-
-/* Stats */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-  margin-top: 3rem;
-}
-
-.stat-card {
-  background: var(--glass);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
-  padding: 2rem;
-  transition: border-color 0.3s ease;
-}
-.stat-card:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.stat-value {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 2rem;
-  display: block;
-  color: var(--accent);
-}
-
-/* Join/Features Section */
-.join-section {
-  padding: 8rem 10%;
-  border-top: 1px solid var(--border);
-  position: relative;
-}
-.join-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at 50% 50%, rgba(0, 255, 133, 0.03) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.join-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 3rem;
-  margin-top: 4rem;
-  width: 100%;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.join-card {
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  padding: 4rem 3rem;
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  position: relative;
-  min-height: 450px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  overflow: visible;
-}
-
-.join-card::after {
-  content: '';
-  position: absolute;
-  inset: 2px;
-  background: linear-gradient(135deg, rgba(8, 8, 10, 0.95) 0%, rgba(8, 8, 10, 0.8) 100%);
-  z-index: 0;
-}
-
-.join-card-content {
-  position: relative;
-  z-index: 10;
-  width: 100%;
-}
-
-.join-card h3 {
-  font-size: 1.8rem;
-  text-transform: uppercase;
-  margin-bottom: 1.5rem;
-  font-family: 'JetBrains Mono', monospace;
-  letter-spacing: 0.05em;
-  background: linear-gradient(135deg, var(--tectonic-white) 0%, rgba(255, 255, 255, 0.6) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.join-card p {
-  line-height: 1.8;
-  color: rgba(255,255,255,0.6);
-  font-size: 0.95rem;
-  margin-bottom: 2rem;
-}
-
-.join-card-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding: 1.25rem 2.5rem;
-  background: linear-gradient(135deg, rgba(0, 255, 133, 0.1) 0%, rgba(0, 255, 133, 0.05) 100%);
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-  border-radius: 4px;
-}
-
-.join-card-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 133, 0.3), transparent);
-  transition: left 0.6s ease;
-  z-index: -1;
-}
-.join-card-btn:hover::before { left: 100%; }
-
-.join-card-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--accent);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  z-index: -1;
-}
-.join-card-btn:hover::after { opacity: 1; }
-
-.join-card-btn:hover {
-  color: var(--obsidian);
-  box-shadow: 0 0 40px rgba(0, 255, 133, 0.6), 0 0 80px rgba(0, 255, 133, 0.3);
-  transform: translateY(-3px);
-  border-color: var(--accent);
-}
-
-.join-card-btn svg {
-  width: 20px;
-  height: 20px;
-  transition: transform 0.4s ease;
-}
-.join-card-btn:hover svg { transform: translateX(5px); }
-
-.preview-tooltip {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-15px);
-  background: var(--obsidian);
-  border: 1px solid var(--accent);
-  padding: 1.5rem;
-  min-width: 320px;
-  max-width: 400px;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  font-size: 0.75rem;
-  line-height: 1.6;
-  z-index: 1000;
-  pointer-events: none;
-  box-shadow: 0 10px 40px rgba(0, 255, 133, 0.3), 0 0 20px rgba(0, 255, 133, 0.2);
-}
-.join-card:hover .preview-tooltip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(-25px);
-}
-.preview-tooltip strong {
-  display: block;
-  margin-bottom: 0.75rem;
-  font-size: 0.85rem;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-  text-transform: uppercase;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.contact-info {
-  margin-top: 4rem;
-  padding: 2rem;
-  border: 1px solid var(--border);
-  text-align: center;
-}
-.contact-text {
-  margin-bottom: 0.5rem;
-  color: rgba(255,255,255,0.7);
-  font-size: 0.9rem;
-}
-.contact-text a {
-  color: var(--accent);
-  text-decoration: none;
-}
-.contact-text a:hover { text-decoration: underline; }
-
-/* Portal Section */
-.projects-section {
-  padding: 8rem 10%;
-  border-top: 1px solid var(--border);
-  position: relative;
-}
-.projects-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at 30% 50%, rgba(0, 255, 133, 0.04) 0%, transparent 60%);
-  pointer-events: none;
-}
-
-.projects-header {
-  text-align: center;
-  margin-bottom: 4rem;
-  position: relative;
-  z-index: 1;
-}
-.projects-header h2 {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  background: linear-gradient(135deg, var(--tectonic-white) 0%, var(--accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 1rem;
-}
-.projects-subtitle {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-
-.portal-container {
-  max-width: 700px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-
-.portal-card {
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  padding: 2.5rem;
-  margin-bottom: 2rem;
-  transition: all 0.3s;
-}
-.portal-card:hover { border-color: rgba(255,255,255,0.15); }
-
-.signin-card {
-  text-align: center;
-  padding: 4rem 2.5rem;
-}
-.portal-icon-big {
-  width: 48px;
-  height: 48px;
-  stroke: var(--accent);
-  margin: 0 auto 1.5rem;
-}
-.portal-card-inner h3 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--tectonic-white);
-  margin-bottom: 0.75rem;
-  font-family: 'JetBrains Mono', monospace;
-}
-.portal-card-inner p {
-  color: rgba(255,255,255,0.5);
-  font-size: 0.9rem;
-  margin-bottom: 2rem;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.6;
-}
-
-.signin-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0.85rem 2rem;
-  background: #fff;
-  color: #000;
-  font-weight: 700;
-  font-size: 0.9rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.25s;
-  border: none;
-}
-.signin-btn:hover { transform: scale(1.03); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-
-.user-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 2rem;
-}
-.user-info { display: flex; align-items: center; gap: 12px; }
-.user-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 900;
-}
-.user-avatar.manager { background: rgba(0,255,133,0.2); color: var(--accent); }
-.user-avatar.member { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
-.user-role { font-size: 0.8rem; font-weight: 700; color: var(--tectonic-white); }
-.user-email { font-size: 0.7rem; color: rgba(255,255,255,0.3); }
-.signout-btn {
-  background: none;
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.4);
-  padding: 0.4rem 1rem;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.signout-btn:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
-
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-.stat-mini {
-  background: var(--glass);
-  border: 1px solid var(--border);
-  padding: 1rem;
-  text-align: center;
-}
-.stat-mini-value {
-  display: block;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-.stat-mini-label {
-  display: block;
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgba(255,255,255,0.3);
-  margin-top: 2px;
-}
-
-.tabs-row {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 1.5rem;
-  padding: 4px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-.tab-btn {
-  flex: 1;
-  padding: 0.5rem;
-  border-radius: 6px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: none;
-  border: none;
-  color: rgba(255,255,255,0.3);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.tab-btn.active {
-  background: var(--accent);
-  color: #000;
-  box-shadow: 0 4px 12px rgba(0,255,133,0.2);
-}
-.tab-btn:hover:not(.active) { color: rgba(255,255,255,0.6); }
-
-.portal-card-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--tectonic-white);
-  font-family: 'JetBrains Mono', monospace;
-  margin-bottom: 1.5rem;
-}
-
-.grant-form { display: flex; flex-direction: column; gap: 0.75rem; }
-
-.form-input {
-  width: 100%;
-  padding: 0.7rem 1rem;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  color: var(--tectonic-white);
-  font-size: 0.85rem;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.form-input:focus { border-color: rgba(0,255,133,0.4); }
-.form-input::placeholder { color: rgba(255,255,255,0.2); }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-select.form-input option { background: #000; }
-
-.submit-btn {
-  width: 100%;
-  padding: 0.85rem;
-  background: var(--accent);
-  color: #000;
-  font-weight: 800;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.submit-btn:hover { opacity: 0.9; transform: scale(1.01); }
-.submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.submit-msg {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-align: center;
-}
-.submit-msg.ok { color: var(--accent); }
-.submit-msg.err { color: #ef4444; }
-
-.grants-list { display: flex; flex-direction: column; gap: 0.75rem; }
-.list-status {
-  text-align: center;
-  color: rgba(255,255,255,0.2);
-  padding: 2rem 0;
-  font-size: 0.85rem;
-}
-
-.grant-item {
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  padding: 1.25rem;
-  transition: border-color 0.2s;
-}
-.grant-item:hover { border-color: rgba(255,255,255,0.15); }
-
-.grant-item-body { flex: 1; }
-.grant-item-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.5rem;
-}
-.grant-item-header h4 {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--tectonic-white);
-}
-.grant-status {
-  font-size: 0.55rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 2px 8px;
-  border-radius: 20px;
-}
-.grant-status.pending { background: rgba(234,179,8,0.15); color: #eab308; }
-.grant-status.approved { background: rgba(0,255,133,0.15); color: var(--accent); }
-.grant-status.rejected { background: rgba(239,68,68,0.15); color: #ef4444; }
-.grant-category {
-  font-size: 0.55rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 2px 8px;
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.4);
-  border-radius: 20px;
-}
-.grant-desc {
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.4);
-  line-height: 1.5;
-  margin-bottom: 0.25rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.grant-location { font-size: 0.65rem; color: rgba(255,255,255,0.2); }
-
-.grant-actions {
-  display: flex;
-  gap: 6px;
-  margin-top: 0.75rem;
-}
-.action-btn {
-  padding: 0.4rem 1rem;
-  border-radius: 6px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.action-btn.approve { background: rgba(0,255,133,0.15); color: var(--accent); }
-.action-btn.approve:hover { background: rgba(0,255,133,0.25); }
-.action-btn.reject { background: rgba(239,68,68,0.15); color: #ef4444; }
-.action-btn.reject:hover { background: rgba(239,68,68,0.25); }
-
-/* Footer */
-.footer-section {
-  min-height: 60vh;
-  justify-content: flex-end;
-  padding-bottom: 4rem;
-  position: relative;
-}
-.footer-glow {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at 50% 30%, rgba(0, 255, 133, 0.05) 0%, transparent 70%);
-  pointer-events: none;
-}
-.footer-content {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-}
-.footer-title {
-  font-size: clamp(2.5rem, 8vw, 6rem);
-  margin-bottom: 1rem;
-}
-
-.footer-links {
-  margin: 3rem 0;
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-}
-
-.footer-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 2rem;
-  background: var(--glass);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--tectonic-white);
-  text-decoration: none;
-  transition: all 0.3s ease;
-}
-.footer-link:hover {
-  border-color: var(--accent);
-  background: rgba(0, 255, 133, 0.1);
-}
-.footer-link svg { width: 20px; height: 20px; }
-.footer-link span {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-}
-
-.tectonic-line {
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border), transparent);
-  margin: 4rem 0;
-}
-
-.footer-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-  margin: 2rem 0;
-}
-.footer-stats-grid h4 {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--accent);
-  margin-bottom: 1rem;
-}
-.footer-stat-value {
-  font-size: 2rem;
-  font-weight: 900;
-  color: var(--tectonic-white);
-}
-.footer-stat-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  color: rgba(255,255,255,0.5);
-  margin-top: 0.5rem;
-}
-
-.footer-copy {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  color: rgba(255,255,255,0.4);
-  text-align: center;
-  margin-top: 3rem;
-  line-height: 1.8;
-}
-.footer-copy span {
-  opacity: 0.6;
-  display: block;
-  margin-top: 0.5rem;
-}
-
-.scroll-indicator {
-  position: fixed;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  opacity: 0.5;
-  z-index: 10;
-  animation: bounce 2s infinite;
-  color: rgba(255,255,255,0.5);
-}
-@keyframes bounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(10px); }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  section, .join-section, .projects-section {
-    padding: 4rem 5%;
-  }
-  .join-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-  .join-card {
-    min-height: 400px;
-    padding: 3rem 2rem;
-  }
-  .preview-tooltip {
-    min-width: 280px;
-    max-width: 320px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-10px);
-  }
-  .join-card:hover .preview-tooltip {
-    transform: translateX(-50%) translateY(-20px);
-  }
-  .stats-grid,
-  .stats-row {
-    grid-template-columns: 1fr 1fr;
-  }
-  .footer-stats-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-  .footer-links {
-    flex-direction: column;
-  }
-}
-</style>

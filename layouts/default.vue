@@ -160,7 +160,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { path: '/project-grants', labelKey: 'nav.projectGrants', icon: 'lucide:hand-heart', variant: 'purple' },
   { path: '/endangered-species', labelKey: 'nav.endangeredSpecies', icon: 'lucide:bird', variant: 'green' },
-  { path: '/observatory-of-vulcan', labelKey: 'nav.observatoryOfVulcan', icon: 'lucide:microscope', variant: 'orange' },
+  { path: '/vulcan-observatory', labelKey: 'nav.observatoryOfVulcan', icon: 'lucide:microscope', variant: 'orange' },
   { path: '/active-crews', labelKey: 'nav.activeCrews', icon: 'lucide:users-round', variant: 'cyan' },
   { path: '/eg-grants', labelKey: 'nav.egGrants', icon: 'lucide:hand-coins', variant: 'purple' },
   { path: 'https://www.earthguardians.org/crews', labelKey: 'nav.joinEarthGuardians', icon: 'lucide:users', variant: 'cyan', external: true },
@@ -175,7 +175,7 @@ const headerItems: NavItem[] = [
 const { isDark, toggle: toggleDarkMode } = useDarkMode()
 
 const isMapRoute = computed(() =>
-  route.path.startsWith('/project-grants') || route.path.startsWith('/endangered-species') || route.path.startsWith('/observatory-of-vulcan') || route.path.startsWith('/active-crews')
+  route.path.startsWith('/project-grants') || route.path.startsWith('/endangered-species') || route.path.startsWith('/vulcan-observatory') || route.path.startsWith('/active-crews')
 )
 const is3DRoute = computed(() => route.path.endsWith('/3d'))
 const showUnifiedHeader = computed(() => isMapRoute.value || route.path === '/info')

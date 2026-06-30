@@ -195,7 +195,7 @@ const datasets = computed(() => [
     ],
   },
   {
-    path: '/observatory-of-vulcan',
+    path: '/vulcan-observatory',
     icon: 'lucide:microscope',
     label: 'Vulcan',
     title: t('home.observatoryTitle'),

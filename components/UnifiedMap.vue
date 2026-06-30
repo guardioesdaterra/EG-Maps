@@ -79,7 +79,7 @@
     <!-- Map Container -->
     <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" :style="{ zIndex: 'var(--z-map-base)' }" />
 
-    <!-- Custom overlays slot (used by observatory-of-vulcan) -->
+    <!-- Custom overlays slot (used by vulcan-observatory) -->
     <slot name="overlays" />
 
     <!-- Project filter panel -->
@@ -101,7 +101,7 @@
 
     <!-- Data Bubble: species groups or project stats (hidden for observatory) -->
     <DataBubble
-      v-if="activeDataset !== 'observatory-of-vulcan'"
+      v-if="activeDataset !== 'vulcan-observatory'"
       :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'"
       :selected-groups="selectedSpeciesGroups"
       :projects="visibleProjects"
@@ -111,7 +111,7 @@
 
     <!-- Map Controls (hidden for observatory — uses custom overlays slot) -->
     <MapControls
-      v-if="activeDataset !== 'observatory-of-vulcan'"
+      v-if="activeDataset !== 'vulcan-observatory'"
       :is-globe-view="false"
       :show-hex-grid="showHexGrid"
       :show-connections="showConnections2D"
@@ -213,10 +213,10 @@ interface Props {
   projects?: ProjectData[]
   species?: Species[]
   speciesIndex?: SpeciesIndexItem[]  // Lightweight index for markers
-  defaultDataset?: 'project-grants' | 'endangered-species' | 'observatory-of-vulcan' | 'active-crews'
+  defaultDataset?: 'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'
   crews?: CrewRegionData[]
   crewLocations?: CrewLocation[]
-  // Rare Earth dataset (observatory-of-vulcan)
+  // Rare Earth dataset (vulcan-observatory)
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
   rareEarthProtected?: GeoJSON.FeatureCollection
@@ -250,7 +250,7 @@ const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
 const speciesFilterPanelRef = ref<{ toggleTaxonomicGroup: (_group: string) => void } | null>(null)
 const selectedSpeciesGroups = ref<string[]>([])
 const showFilterPanel = ref(false)
-const activeDataset = ref<'project-grants' | 'endangered-species' | 'observatory-of-vulcan' | 'active-crews'>(props.defaultDataset)
+const activeDataset = ref<'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'>(props.defaultDataset)
 
 const connections2D = useMapConnections(
   () => map,
@@ -430,7 +430,7 @@ function setupRareEarthLayers() {
 
 const rareEarthController = useRareEarthController({
   map: mapRef as Ref<maplibregl.Map | null>,
-  isActive: computed(() => activeDataset.value === 'observatory-of-vulcan'),
+  isActive: computed(() => activeDataset.value === 'vulcan-observatory'),
   getProps: () => props,
   popup: {
     t,
@@ -496,7 +496,7 @@ function initMap() {
   isLoading.value = true
 
   try {
-    const isRee = activeDataset.value === 'observatory-of-vulcan'
+    const isRee = activeDataset.value === 'vulcan-observatory'
 
     map = new maplibregl.Map({
       container: mapContainerRef.value,
@@ -528,11 +528,11 @@ function initMap() {
       if (!isMounted) return
       isLoading.value = false
       if (map) emit('mapInit', map)
-      if (activeDataset.value === 'observatory-of-vulcan') {
+      if (activeDataset.value === 'vulcan-observatory') {
         setupRareEarthLayers()
       }
       rebuildMarkers()
-      if (activeDataset.value !== 'observatory-of-vulcan') {
+      if (activeDataset.value !== 'vulcan-observatory') {
         connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
         connections2D.startParticles()
       }
@@ -651,9 +651,9 @@ watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData]
   }
 })
 
-// Watch rare earth data changes (observatory-of-vulcan) to rebuild markers
+// Watch rare earth data changes (vulcan-observatory) to rebuild markers
 watch(() => [props.rareEarthPoints, props.rareEarthPolygons], () => {
-  if (!map || activeDataset.value !== 'observatory-of-vulcan') return
+  if (!map || activeDataset.value !== 'vulcan-observatory') return
   setupRareEarthLayers()
   rebuildMarkers()
 })

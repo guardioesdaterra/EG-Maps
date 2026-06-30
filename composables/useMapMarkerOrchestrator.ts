@@ -304,7 +304,7 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
           markers.push(marker)
         }
       })
-    } else if (activeDataset === 'observatory-of-vulcan' && rareEarthFeatures?.length) {
+    } else if (activeDataset === 'vulcan-observatory' && rareEarthFeatures?.length) {
       const features = rareEarthFeatures
 
       const clusterItems = features.map((f, i) => {

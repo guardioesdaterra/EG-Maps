@@ -113,7 +113,7 @@ export const DOWNLOADABLE_DATASETS: DownloadableDataset[] = [
     id: 'full-report',
     label: 'Relatório Completo (Full Report)',
     description: 'All curated observatory data + timeline + corporate network in one file',
-    filename: 'observatory-of-vulcan-curated',
+    filename: 'vulcan-observatory-curated',
     format: 'json',
     getData: () => ({
       reportTitle: 'Observatory of Vulcan — Curated Data Bundle',

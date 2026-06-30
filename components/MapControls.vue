@@ -16,7 +16,7 @@
             <span v-if="recentSearches.length > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-white rounded-full" />
           </UiButton>
         </template>
-        <p>{{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'observatory-of-vulcan' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }} <span class="text-gray-500 ml-1">{{ t('mapControls.keyboardShortcut') }}</span></p>
+        <p>{{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'vulcan-observatory' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }} <span class="text-gray-500 ml-1">{{ t('mapControls.keyboardShortcut') }}</span></p>
       </UiTooltip>
 
       <!-- Filter Panel Toggle -->
@@ -97,7 +97,7 @@
         <div class="flex justify-between items-center mb-2 xs:mb-3">
           <h3 class="text-xs xs:text-sm font-bold text-[var(--tool-btn-text)] flex items-center gap-1.5 xs:gap-2">
             <iconify-icon icon="lucide:search" class="h-3.5 w-3.5 xs:h-4 xs:w-4" />
-            {{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'observatory-of-vulcan' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }}
+            {{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'vulcan-observatory' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }}
           </h3>
           <div class="flex items-center gap-1">
             <span class="text-[10px] text-[var(--text-muted)] hidden sm:inline">ESC</span>
@@ -112,7 +112,7 @@
             <UiInput
               ref="searchInputRef"
               type="text"
-              :placeholder="dataset === 'project-grants' ? t('mapControls.searchPlaceholder') : dataset === 'observatory-of-vulcan' ? 'Search Brazilian cities...' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpeciesPlaceholder')"
+              :placeholder="dataset === 'project-grants' ? t('mapControls.searchPlaceholder') : dataset === 'vulcan-observatory' ? 'Search Brazilian cities...' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpeciesPlaceholder')"
               v-model="searchQuery"
               class="pr-8"
               :style="{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }"
@@ -268,7 +268,7 @@ interface Props {
   isGlobeView?: boolean
   showHexGrid?: boolean
   showConnections?: boolean
-  dataset?: 'project-grants' | 'endangered-species' | 'observatory-of-vulcan' | 'active-crews'
+  dataset?: 'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'
   projects?: ProjectData[]
   species?: (Species | SpeciesIndexItem)[]
   filterOpen?: boolean
@@ -484,7 +484,7 @@ watch([debouncedSearch, showAllItems, () => props.dataset], () => {
     } else {
       searchResults.value = []
     }
-  } else if (props.dataset === 'observatory-of-vulcan') {
+  } else if (props.dataset === 'vulcan-observatory') {
     // City search
     if (q.length > 1) {
       searchResults.value = searchCities(q)

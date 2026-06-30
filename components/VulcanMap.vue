@@ -33,7 +33,7 @@
     <!-- Map Container -->
     <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" style="z-index: 1" />
 
-    <!-- Custom overlays slot (used by observatory-of-vulcan) -->
+    <!-- Custom overlays slot (used by vulcan-observatory) -->
     <slot name="overlays" />
   </div>
 </template>

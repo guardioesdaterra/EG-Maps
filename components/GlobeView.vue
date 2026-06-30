@@ -11,7 +11,7 @@
           </div>
         </div>
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('globe.loading') }}</p>
-        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews').toLowerCase() : activeDataset === 'observatory-of-vulcan' ? t('home.observatoryOfVulcan').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
+        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews').toLowerCase() : activeDataset === 'vulcan-observatory' ? t('home.observatoryOfVulcan').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
         <div class="mt-3 xs:mt-4 flex gap-1">
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
@@ -90,7 +90,7 @@
 
     <!-- Data Bubble: species groups or project stats (hidden for observatory) -->
     <DataBubble
-      v-if="activeDataset !== 'active-crews' && activeDataset !== 'observatory-of-vulcan'"
+      v-if="activeDataset !== 'active-crews' && activeDataset !== 'vulcan-observatory'"
       :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'"
       :selected-groups="selectedSpeciesGroups"
       :projects="projectsData"
@@ -100,7 +100,7 @@
 
     <!-- Map Controls (hidden for observatory) -->
     <MapControls
-      v-if="activeDataset !== 'observatory-of-vulcan'"
+      v-if="activeDataset !== 'vulcan-observatory'"
       :is-globe-view="true"
       :show-hex-grid="isHexGridVisible"
       :show-connections="showConnectionsGlobe"
@@ -271,7 +271,7 @@ interface Props {
   crews?: CrewRegionData[]
   crewLocations?: CrewLocation[]
   showHexGrid?: boolean
-  defaultDataset?: 'project-grants' | 'endangered-species' | 'active-crews' | 'observatory-of-vulcan'
+  defaultDataset?: 'project-grants' | 'endangered-species' | 'active-crews' | 'vulcan-observatory'
   // Observatory (rare earth) props
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
@@ -295,7 +295,7 @@ const hasError = ref(false)
 const errorMessage = ref('')
 const noWebglSupport = ref(false)
 const isLoading = ref(true)
-const activeDataset = ref<'project-grants' | 'endangered-species' | 'active-crews' | 'observatory-of-vulcan'>(props.defaultDataset)
+const activeDataset = ref<'project-grants' | 'endangered-species' | 'active-crews' | 'vulcan-observatory'>(props.defaultDataset)
 const { showHexGrid: isHexGridVisible } = hexGrid
 const selectedSpeciesGroups = ref<string[]>([])
 const showFilterPanel = ref(false)
@@ -337,7 +337,7 @@ const orchestrator = useMapMarkerOrchestrator({
 // ── Rare Earth controller (observatory) ──
 const rareEarthController = useRareEarthController({
   map: mapRef as Ref<maplibregl.Map | null>,
-  isActive: computed(() => activeDataset.value === 'observatory-of-vulcan'),
+  isActive: computed(() => activeDataset.value === 'vulcan-observatory'),
   getProps: () => ({
     rareEarthPoints: props.rareEarthPoints,
     rareEarthPolygons: props.rareEarthPolygons,
@@ -410,7 +410,7 @@ async function initMap() {
 
   try {
 
-    const isRee = activeDataset.value === 'observatory-of-vulcan'
+    const isRee = activeDataset.value === 'vulcan-observatory'
     map = new maplibregl.Map({
       container: containerRef.value,
       style: MAP_STYLE,
@@ -443,11 +443,11 @@ async function initMap() {
     map.on('load', () => {
 
       isLoading.value = false
-      if (activeDataset.value === 'observatory-of-vulcan') {
+      if (activeDataset.value === 'vulcan-observatory') {
         rareEarthController.setupLayers()
       }
       rebuildMarkers()
-      if (activeDataset.value !== 'active-crews' && activeDataset.value !== 'observatory-of-vulcan') {
+      if (activeDataset.value !== 'active-crews' && activeDataset.value !== 'vulcan-observatory') {
         connectionsGlobe.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', projectsData.value, speciesData.value)
         connectionsGlobe.startParticles()
       }

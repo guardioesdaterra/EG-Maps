@@ -2,7 +2,7 @@
 export const DatasetKey = {
   PROJECT_GRANTS: 'project-grants',
   ENDANGERED_SPECIES: 'endangered-species',
-  OBSERVATORY_OF_VULCAN: 'observatory-of-vulcan',
+  OBSERVATORY_OF_VULCAN: 'vulcan-observatory',
   ACTIVE_CREWS: 'active-crews',
 } as const
 
@@ -19,8 +19,8 @@ export const RoutePath = {
   PROJECT_GRANTS_3D: '/project-grants/3d',
   ENDANGERED_SPECIES: '/endangered-species',
   ENDANGERED_SPECIES_3D: '/endangered-species/3d',
-  OBSERVATORY_OF_VULCAN: '/observatory-of-vulcan',
-  OBSERVATORY_OF_VULCAN_3D: '/observatory-of-vulcan/3d',
+  OBSERVATORY_OF_VULCAN: '/vulcan-observatory',
+  OBSERVATORY_OF_VULCAN_3D: '/vulcan-observatory/3d',
   ACTIVE_CREWS: '/active-crews',
   ACTIVE_CREWS_3D: '/active-crews/3d',
   HOME: '/',

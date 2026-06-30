@@ -218,7 +218,7 @@ function getMarkerColor(dataset: string, sourceProjects?: ProjectData[], sourceS
   if (dataset === 'endangered-species' && sourceSpecies?.length) {
     return blendColors(sourceSpecies.map(s => GROUP_COLORS[s.taxonomicGroup ?? ''] ?? '#B64032'))
   }
-  if (dataset === 'observatory-of-vulcan' && sourceRareEarth?.length) {
+  if (dataset === 'vulcan-observatory' && sourceRareEarth?.length) {
     return blendColors(sourceRareEarth.map(f => {
       const props = f.properties as Record<string, unknown> || {}
       const cat = RARE_EARTH_CATEGORIES[props.c as string] ?? { label: 'Unknown', color: '#666' }
@@ -240,7 +240,7 @@ function getMiniColor(dataset: string, item: ClusterItem, sourceProjects?: Proje
     const pr = sourceProjects[item.index]
     if (pr) return getProjectColorByBeneficiaries(pr.direct_beneficiaries, pr.indirect_beneficiaries)
   }
-  if (dataset === 'observatory-of-vulcan' && sourceRareEarth?.length) {
+  if (dataset === 'vulcan-observatory' && sourceRareEarth?.length) {
     const feature = sourceRareEarth[item.index]
     const props = feature?.properties as Record<string, unknown> || {}
     const cat = RARE_EARTH_CATEGORIES[props.c as string] ?? { label: 'Unknown', color: '#666' }
@@ -327,7 +327,7 @@ export function createClusterMarkerElement(
   outer.style.pointerEvents = 'auto'
   outer.style.zIndex = '20'
   outer.style.position = 'relative'
-  outer.title = dataset === 'observatory-of-vulcan' && aggDanger.maxDs
+  outer.title = dataset === 'vulcan-observatory' && aggDanger.maxDs
     ? `${count} items · ⚠ ${aggDanger.maxDs.toFixed(1)} max danger`
     : dataset === 'endangered-species' && aggThreats
       ? `${count} items · ${aggThreats} threats`
@@ -415,7 +415,7 @@ export function createClusterMarkerElement(
     countBadge.style.zIndex = '5'
     clusterInner.appendChild(countBadge)
 
-    const dangerBadge = dataset === 'observatory-of-vulcan'
+    const dangerBadge = dataset === 'vulcan-observatory'
       ? createClusterDangerBadge(aggDanger.maxDs, count)
       : dataset === 'endangered-species' && aggThreats > 0
         ? (() => {
@@ -544,7 +544,7 @@ export function createClusterMarkerElement(
       gridInner.appendChild(more)
     }
 
-    const gridDangerBadge = dataset === 'observatory-of-vulcan'
+    const gridDangerBadge = dataset === 'vulcan-observatory'
       ? createClusterDangerBadge(aggDanger.maxDs, count)
       : dataset === 'endangered-species' && aggThreats > 0
         ? (() => {

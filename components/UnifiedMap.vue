@@ -392,6 +392,8 @@ function handleProjectFilterChange(filtered: ProjectData[]) {
   syncAfterFilter()
 }
 
+let filterDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
 function syncAfterFilter() {
   if (filterDebounceTimer) clearTimeout(filterDebounceTimer)
   filterDebounceTimer = setTimeout(() => {

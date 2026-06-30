@@ -336,7 +336,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="root" class="relative w-full h-full overflow-hidden" :class="className">
-    <canvas ref="canvas" class="absolute inset-0 w-full h-full" />
+    <canvas ref="canvas" class="absolute inset-0 w-full h-full" aria-hidden="true" />
 
     <svg class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true">
       <defs>

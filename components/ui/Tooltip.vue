@@ -1,6 +1,8 @@
 <template>
   <div class="relative inline-block">
-    <slot name="trigger" />
+    <div ref="triggerWrapperRef" @focusin="onTriggerFocus" @focusout="onTriggerBlur">
+      <slot name="trigger" />
+    </div>
     <Teleport to="body">
       <Transition
         enter-active-class="transition ease-out duration-200"
@@ -13,6 +15,8 @@
         <div
           v-if="visible"
           ref="tooltipRef"
+          role="tooltip"
+          :id="tooltipId"
           :class="tooltipClasses"
           :style="tooltipStyle"
         >
@@ -46,6 +50,8 @@ const visible = ref(props.modelValue)
 const tooltipRef = ref<HTMLElement | null>(null)
 const tooltipStyle = ref({})
 const triggerEl = ref<HTMLElement | null>(null)
+const triggerWrapperRef = ref<HTMLElement | null>(null)
+const tooltipId = `tooltip-${Math.random().toString(36).slice(2, 9)}`
 
 const tooltipClasses = computed(() => {
   return cn(
@@ -65,6 +71,14 @@ function show() {
 function hide() {
   visible.value = false
   emit('update:modelValue', false)
+}
+
+function onTriggerFocus() {
+  show()
+}
+
+function onTriggerBlur() {
+  hide()
 }
 
 function updatePosition() {
@@ -111,18 +125,11 @@ function updatePosition() {
 }
 
 function findTriggerEl() {
-  // Look for the trigger element in the named slot
-  const parent = tooltipRef.value?.closest('.relative')
-  if (parent) {
-    // Prefer elements with data-tooltip-trigger attribute for reliability
-    const explicitTrigger = parent.querySelector('[data-tooltip-trigger]')
-    if (explicitTrigger) {
-      triggerEl.value = explicitTrigger as HTMLElement
-      return
-    }
-    // Fallback to first button, link, or role=button element
-    const btn = parent.querySelector('button, [role="button"], a')
-    if (btn) triggerEl.value = btn as HTMLElement
+  if (!triggerWrapperRef.value) return
+  const el = triggerWrapperRef.value.querySelector('button, [role="button"], a, input, [tabindex]') as HTMLElement | null
+  if (el) {
+    triggerEl.value = el
+    el.setAttribute('aria-describedby', tooltipId)
   }
 }
 

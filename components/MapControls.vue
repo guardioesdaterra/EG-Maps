@@ -456,11 +456,22 @@ function getCityPopulation(result: SearchResult): number | null {
   return isCityResult(result) ? result.population : null
 }
 
+// Debounce search to avoid filtering 4000+ items on every keystroke
+const debouncedSearch = ref('')
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, (val) => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(() => {
+    debouncedSearch.value = val
+  }, 150)
+})
+
 // Search logic
-watch([searchQuery, showAllItems, () => props.dataset], () => {
+watch([debouncedSearch, showAllItems, () => props.dataset], () => {
+  const q = debouncedSearch.value
   if (props.dataset === 'project-grants') {
-    if (searchQuery.value.length > 1) {
-      const query = searchQuery.value.toLowerCase().trim()
+    if (q.length > 1) {
+      const query = q.toLowerCase().trim()
       searchResults.value = currentProjects.value.filter(project =>
         project.project_title.toLowerCase().includes(query) ||
         (project.country_province || '').toLowerCase().includes(query)
@@ -475,8 +486,8 @@ watch([searchQuery, showAllItems, () => props.dataset], () => {
     }
   } else if (props.dataset === 'observatory-of-vulcan') {
     // City search
-    if (searchQuery.value.length > 1) {
-      searchResults.value = searchCities(searchQuery.value)
+    if (q.length > 1) {
+      searchResults.value = searchCities(q)
       showAllItems.value = false
     } else if (showAllItems.value) {
       searchResults.value = [...BRAZILIAN_CITIES].sort((a, b) =>
@@ -488,8 +499,8 @@ watch([searchQuery, showAllItems, () => props.dataset], () => {
   } else if (props.dataset === 'active-crews') {
     // Crew region search
     const crewList = currentProjects.value as unknown as CrewRegionData[]
-    if (searchQuery.value.length > 1) {
-      const query = searchQuery.value.toLowerCase().trim()
+    if (q.length > 1) {
+      const query = q.toLowerCase().trim()
       searchResults.value = crewList.filter((c: CrewRegionData) =>
         c.region?.toLowerCase().includes(query)
       )
@@ -504,8 +515,8 @@ watch([searchQuery, showAllItems, () => props.dataset], () => {
   } else {
     // Species search
     const speciesList = (props.species || []) as Species[]
-    if (searchQuery.value.length > 1) {
-      const query = searchQuery.value.toLowerCase().trim()
+    if (q.length > 1) {
+      const query = q.toLowerCase().trim()
       searchResults.value = speciesList.filter(species =>
         species.commonName.toLowerCase().includes(query) ||
         species.scientificName.toLowerCase().includes(query) ||

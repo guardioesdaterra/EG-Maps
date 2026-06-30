@@ -1,5 +1,5 @@
 <template>
-  <div class="skeleton-map animate-pulse bg-zinc-900 rounded-xl overflow-hidden" :style="{ height: height }">
+  <div class="skeleton-map animate-pulse bg-zinc-900 rounded-xl overflow-hidden" role="status" aria-label="Loading" :style="{ height: height }">
     <div class="relative w-full h-full">
       <!-- Map grid lines -->
       <div class="absolute inset-0 opacity-10">

@@ -14,6 +14,7 @@
             :to="item.path"
             :target="item.external ? '_blank' : undefined"
             :rel="item.external ? 'noopener noreferrer' : undefined"
+            :aria-current="activeIndex === index ? 'page' : undefined"
             @click="e => handleClick(e, index)"
             class="group relative flex flex-col items-center outline-none px-2.5 py-1.5"
           >

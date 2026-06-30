@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { Species } from '@/lib/types'
 import { GROUP_COLORS } from '@/lib/map-utils'
 

@@ -1,13 +1,17 @@
 <template>
-  <div :class="wrapperClass">
-    <iconify-icon :icon="icon" :class="iconClass" />
-    <p v-if="message" :class="messageClass">{{ message }}</p>
-    <slot />
+  <div role="status" aria-live="polite">
+    <div :class="wrapperClass">
+      <iconify-icon :icon="icon" :class="iconClass" />
+      <p v-if="message" :class="messageClass">{{ message }}</p>
+      <slot />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+
+const SPINNING_ICONS = ['svg-spinners:eclipse', 'svg-spinners:wind-toy', 'svg-spinners:blocks-shuffle-2', 'svg-spinners:3-dots-move']
 
 interface Props {
   icon?: string
@@ -36,11 +40,10 @@ const wrapperClass = computed(() => {
 })
 
 const iconClass = computed(() => {
-  const spinningIcons = ['svg-spinners:eclipse', 'svg-spinners:wind-toy', 'svg-spinners:blocks-shuffle-2', 'svg-spinners:3-dots-move']
   return {
     'text-white/70': true,
     [sizeClasses[props.size]]: true,
-    'animate-[spin_1.2s_linear_infinite]': spinningIcons.includes(props.icon),
+    'animate-[spin_1.2s_linear_infinite]': SPINNING_ICONS.includes(props.icon),
   }
 })
 

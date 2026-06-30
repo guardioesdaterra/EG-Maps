@@ -96,6 +96,14 @@ CORE_KEYWORDS = [
     # English env/conservation (core)
     "environmental","conservation","wildlife","forest conservation","ocean conservation",
     "environmental protection","ecosystem","habitat restoration",
+    # Français
+    "environnement","justice climatique","autochtone","biodiversité",
+    "droits humains","défenseurs","changement climatique","transition écologique",
+    "artivisme","communauté","peuples autochtones","déforestation","climat",
+    # Español
+    "ambiente","justicia climática","indígena","biodiversidad",
+    "derechos humanos","defensores","cambio climático","transición ecológica",
+    "arte activismo","comunitario","pueblos originarios","desmatamiento",
 ]
 
 SECONDARY_KEYWORDS = [
@@ -109,6 +117,14 @@ SECONDARY_KEYWORDS = [
     "restoration","protect","preserve","climate action",
     "education","health","food security","water","energy",
     "livelihood","resilience","adaptation","regenerative",
+    # Français
+    "subvention","financement","bourse","appel à","appel à projets",
+    "développement","jeunesse","femmes","durable","résilience",
+    "adaptation","transition","solidaire","inclusion","territoire",
+    # Español
+    "subvención","financiamiento","beca","convocatoria","desarrollo",
+    "juventud","mujeres","sostenible","resiliencia","adaptación",
+    "transición","solidario","inclusión","territorio","comunitarias",
 ]
 
 # ──────────────────────────────────────────────────────────────
@@ -240,6 +256,13 @@ def extract_deadline(text):
         r'[Dd]ata.limite[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Ii]nscrições até[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Cc]losing[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
+        r'[Dd]ate.limite[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Ff]echa.límite[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Cc]ierre[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Hh]asta.el[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Dd]ate.limite[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
+        r'[Cc]lôture[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Aa]vant.le[:\s]+(\d{2}/\d{2}/\d{4})',
         r'(\d{4}-\d{2}-\d{2})',
         r'(\d{2}/\d{2}/\d{4})',
     ]
@@ -247,6 +270,32 @@ def extract_deadline(text):
         m = re.search(pat, text)
         if m: return parse_date(m.group(1))
     return ""
+
+def infer_country(text, lang):
+    """Infer country/region from content text and language."""
+    text_lower = text.lower()
+    regions = {
+        "FR": ["france","paris","marseille","lyon","toulouse","hexagone","outre-mer","république française"],
+        "ES": ["españa","madrid","barcelona","valencia","andalucía","reino de españa"],
+        "MX": ["méxico","méjico","ciudad de méxico"],
+        "AR": ["argentina","buenos aires"],
+        "CO": ["colombia","bogotá"],
+        "PE": ["perú","lima"],
+        "CL": ["chile","santiago"],
+        "EC": ["ecuador","quito"],
+        "AFRICA": ["áfrica","afrique","africa","kenya","nigeria","senegal","ghana","tanzania","ethiopia","mozambique","angola"],
+        "ASIA": ["asia","india","indonésia","indonesia","philippines","vietnam","thailand"],
+        "EU": ["europe","europa","european union","union européenne","unión europea","portugal","spain","france","italy","germany","netherlands","sweden"],
+        "LATAM": ["américa latina","latin america","amérique latine","latinoamérica","brasil","brazil"],
+    }
+    if lang == "pt": return "BR"
+    if lang == "fr": return "FR" if "france" in text_lower else "EU"
+    if lang == "es":
+        for country, hints in regions.items():
+            if any(h in text_lower for h in hints):
+                return country
+        return "LATAM"
+    return "GLOBAL"
 
 
 # ══════════════════════════════════════════════════════════════
@@ -257,30 +306,18 @@ async def fetch_capta(session):
     """ISPN/Capta — primary Brazilian socio-environmental grants hub."""
     grants = []
     SOURCE, BASE = "capta.org.br", "https://capta.org.br"
-    for api in [
-        f"{BASE}/wp-json/wp/v2/posts?per_page=100&_embed=true&search=edital",
-        f"{BASE}/wp-json/wp/v2/posts?per_page=100&_embed=true",
-    ]:
+    # Fetch all pages from WP API (36 total posts, 100 per page = 1 page)
+    for page in range(1, 2):
+        api = f"{BASE}/wp-json/wp/v2/posts?per_page=100&page={page}"
         data = await fetch_json(session, api)
-        if data and isinstance(data, list):
-            for p in data:
-                title   = clean_html(p.get("title", {}).get("rendered", ""))
-                content = clean_html(p.get("content", {}).get("rendered", ""))
-                url     = p.get("link", "")
-                grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                    description=content[:600], country="BR", language="pt",
-                    deadline=extract_deadline(content)))
-            break
-    # HTML fallback
-    if not grants:
-        html = await fetch(session, f"{BASE}/fontes-de-financiamento/oportunidades/")
-        if html:
-            soup = BeautifulSoup(html, "lxml")
-            for a in soup.select("article h2 a, article h3 a, .entry-title a"):
-                title = a.get_text(strip=True)
-                url   = urljoin(BASE, a.get("href",""))
-                grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                    country="BR", language="pt"))
+        if not data or not isinstance(data, list): break
+        for p in data:
+            title   = clean_html(p.get("title", {}).get("rendered", ""))
+            content = clean_html(p.get("content", {}).get("rendered", ""))
+            url     = p.get("link", "")
+            grants.append(make_grant(title=title, source_name=SOURCE, url=url,
+                description=content[:600], country="BR", language="pt",
+                deadline=extract_deadline(content)))
     console.print(f"  [cyan]capta.org.br[/] → {len(grants)}")
     return grants
 
@@ -289,19 +326,31 @@ async def fetch_prosas(session):
     """Prosas.com.br — largest Brazilian CSO grants aggregator."""
     grants = []
     SOURCE = "prosas.com.br"
-    html = await fetch(session, "https://prosas.com.br/editais")
-    if html:
+    urls = [
+        "https://prosas.com.br/editais",
+        "https://prosas.com.br/editais?abertos=1",
+        "https://prosas.com.br/",
+    ]
+    for url in urls:
+        html = await fetch(session, url, use_cache=False)
+        if not html: continue
         soup = BeautifulSoup(html, "lxml")
-        for card in soup.select("[class*='edital'], [class*='card'], article"):
-            a = card.find("a", href=True)
-            t = card.find(["h2","h3","h4","h5"])
-            if not t: continue
-            title = t.get_text(strip=True)
-            url   = urljoin("https://prosas.com.br", a["href"]) if a else ""
-            text  = card.get_text(" ")
-            grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                description=text[:400], country="BR", language="pt",
-                deadline=extract_deadline(text), amount_max=extract_amount(text)))
+        found = 0
+        for selector in ["[class*='edital']", "[class*='card']", "article", "[class*='oportunidade']", "[class*='chamada']", "[class*='item']"]:
+            for card in soup.select(selector):
+                a = card.find("a", href=True)
+                t = card.find(["h2","h3","h4","h5"])
+                if not t: continue
+                title = t.get_text(strip=True)
+                if len(title) < 10: continue
+                link = urljoin("https://prosas.com.br", a["href"]) if a else ""
+                text = card.get_text(" ")
+                grants.append(make_grant(title=title, source_name=SOURCE, url=link,
+                    description=text[:400], country="BR", language="pt",
+                    deadline=extract_deadline(text), amount_max=extract_amount(text)))
+                found += 1
+            if found: break
+        if found: break
     console.print(f"  [cyan]prosas.com.br[/] → {len(grants)}")
     return grants
 
@@ -348,7 +397,7 @@ async def fetch_ispn(session):
             title   = clean_html(p.get("title",{}).get("rendered",""))
             content = clean_html(p.get("content",{}).get("rendered",""))
             url     = p.get("link","")
-            if score_relevance(f"{title} {content}") < 4: continue
+            if score_relevance(f"{title} {content}") < 2: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=content[:500], country="BR", language="pt",
                 funder="ISPN", deadline=extract_deadline(content)))
@@ -360,17 +409,24 @@ async def fetch_fundobrasil(session):
     """Fundo Brasil de Direitos Humanos."""
     grants = []
     SOURCE, BASE = "fundobrasil.org.br", "https://www.fundobrasil.org.br"
-    data = await fetch_json(session, f"{BASE}/wp-json/wp/v2/posts?per_page=60&_embed=true")
-    if data and isinstance(data, list):
-        for p in data:
-            title   = clean_html(p.get("title",{}).get("rendered",""))
-            content = clean_html(p.get("content",{}).get("rendered",""))
-            url     = p.get("link","")
-            if score_relevance(f"{title} {content}") < 3: continue
-            grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                description=content[:500], country="BR", language="pt",
+    for path in ["/editais/", "/chamadas/", "/"]:
+        html = await fetch(session, BASE + path, use_cache=False)
+        if not html: continue
+        soup = BeautifulSoup(html, "lxml")
+        found = 0
+        for art in soup.select("article, .card, .edital, [class*='card'], [class*='edital'], .post, li"):
+            t = art.find(["h2","h3","h4"]); a = art.find("a",href=True)
+            if not t: continue
+            title = t.get_text(strip=True)
+            if len(title) < 10: continue
+            link = urljoin(BASE, a["href"]) if a else BASE
+            text = art.get_text(" ")
+            grants.append(make_grant(title=title, source_name=SOURCE, url=link,
+                description=text[:500], country="BR", language="pt",
                 funder="Fundo Brasil de Direitos Humanos",
-                deadline=extract_deadline(content)))
+                deadline=extract_deadline(text)))
+            found += 1
+        if found: break
     console.print(f"  [cyan]fundobrasil.org.br[/] → {len(grants)}")
     return grants
 
@@ -449,7 +505,7 @@ async def fetch_gulbenkian(session):
             title = t.get_text(strip=True)
             url   = urljoin(base, a["href"]) if a else base
             text  = art.get_text(" ")
-            if score_relevance(f"{title} {text}") < 4: continue
+            if score_relevance(f"{title} {text}") < 2: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=text[:400], country="EU", language=lang,
                 funder="Calouste Gulbenkian Foundation",
@@ -460,47 +516,45 @@ async def fetch_gulbenkian(session):
 
 
 async def fetch_doen(session):
-    """Doen Foundation (Netherlands) — arts + fair/green economy."""
+    """Doen Foundation (Netherlands) — arts + fair/green economy (standing entry)."""
     grants = []
     SOURCE = "doen.nl"
-    for url in [
-        "https://www.doen.nl/en/applications/applications.htm",
-        "https://www.doen.nl/en/open-calls/",
-    ]:
-        html = await fetch(session, url)
-        if not html: continue
-        soup = BeautifulSoup(html, "lxml")
-        for art in soup.select("article, .call, .grant, [class*='fund']"):
-            t = art.find(["h2","h3","h4"]); a = art.find("a",href=True)
-            if not t: continue
-            title = t.get_text(strip=True)
-            link  = urljoin("https://www.doen.nl", a["href"]) if a else url
-            text  = art.get_text(" ")
-            grants.append(make_grant(title=title, source_name=SOURCE, url=link,
-                description=text[:400], country="EU",
-                funder="Doen Foundation", deadline=extract_deadline(text),
-                currency="EUR", categories=["culture","green economy","arts"]))
+    grants.append(make_grant(
+        title="Doen Foundation — Open Calls",
+        source_name=SOURCE,
+        url="https://www.doen.nl/en/open-calls/",
+        description=(
+            "Doen Foundation supports cultural, green-economy, and social initiatives "
+            "in the Netherlands and abroad. Focus areas: culture, environment, social "
+            "cohesion, and fair economy. Open calls for projects and organisations."
+        ),
+        funder="Doen Foundation",
+        country="EU", language="en",
+        currency="EUR",
+        categories=["culture","green economy","arts","social cohesion"],
+    ))
     console.print(f"  [cyan]doen.nl[/] → {len(grants)}")
     return grants
 
 
 async def fetch_porticus(session):
-    """Porticus Foundation — social, cultural, environmental."""
+    """Porticus Foundation — social, cultural, environmental (standing entry)."""
     grants = []
     SOURCE = "porticus.com"
-    html = await fetch(session, "https://www.porticus.com/what-we-fund/")
-    if html:
-        soup = BeautifulSoup(html, "lxml")
-        for art in soup.select("article, .program, .fund-area"):
-            t = art.find(["h2","h3","h4"]); a = art.find("a",href=True)
-            if not t: continue
-            title = t.get_text(strip=True)
-            url   = urljoin("https://www.porticus.com", a["href"]) if a else "https://www.porticus.com"
-            text  = art.get_text(" ")
-            grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                description=text[:400], country="EU",
-                funder="Porticus Foundation", deadline=extract_deadline(text),
-                currency="EUR"))
+    grants.append(make_grant(
+        title="Porticus Foundation — Programme Grants",
+        source_name=SOURCE,
+        url="https://www.porticus.com/en/what-we-fund/",
+        description=(
+            "Porticus funds organisations that strengthen the social and emotional "
+            "well-being of children and young people, foster climate and environmental "
+            "justice, and support meaningful education in Europe, Africa, Latin America, "
+            "Asia, and the Middle East. Multi-year core and programme grants."
+        ),
+        funder="Porticus Foundation",
+        country="GLOBAL", language="en",
+        categories=["education","environment","climate justice","youth","global"],
+    ))
     console.print(f"  [cyan]porticus.com[/] → {len(grants)}")
     return grants
 
@@ -509,21 +563,29 @@ async def fetch_commonwealth_foundation(session):
     """Commonwealth Foundation — civil society, arts, governance."""
     grants = []
     SOURCE = "commonwealthfoundation.com"
-    html = await fetch(session, "https://commonwealthfoundation.com/grants/annual/")
-    if html:
+    urls = [
+        "https://commonwealthfoundation.com/grants/annual/",
+        "https://commonwealthfoundation.com/what-we-fund/",
+        "https://commonwealthfoundation.com/",
+    ]
+    for url in urls:
+        html = await fetch(session, url, use_cache=False)
+        if not html: continue
         soup = BeautifulSoup(html, "lxml")
-        text_full = soup.get_text(" ")
-        # Extract headline + key details
-        for h in soup.select("h1,h2,h3"):
-            title = h.get_text(strip=True)
+        found = 0
+        for art in soup.select("article, .entry, .grant, section, [class*='grant'], [class*='fund'], li"):
+            t = art.find(["h2","h3","h4"]); a = art.find("a",href=True)
+            if not t: continue
+            title = t.get_text(strip=True)
             if len(title) < 10: continue
-            a = h.find("a",href=True)
-            url = urljoin("https://commonwealthfoundation.com", a["href"]) if a else "https://commonwealthfoundation.com/grants/annual/"
-            text = h.find_next(["p","div"]).get_text(" ") if h.find_next(["p","div"]) else ""
-            grants.append(make_grant(title=title, source_name=SOURCE, url=url,
+            link = urljoin("https://commonwealthfoundation.com", a["href"]) if a else url
+            text = art.get_text(" ")
+            grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=text[:400], country="GLOBAL",
-                funder="Commonwealth Foundation", deadline=extract_deadline(text_full),
+                funder="Commonwealth Foundation", deadline=extract_deadline(text),
                 categories=["civil society","arts","governance","commonwealth"]))
+            found += 1
+        if found: break
     console.print(f"  [cyan]commonwealth foundation[/] → {len(grants)}")
     return grants
 
@@ -648,25 +710,26 @@ async def fetch_moleskine_pioneers(session):
     grants = []
     SOURCE = "creativitypioneersfund.org"
     html = await fetch(session, "https://creativitypioneersfund.org/opencall")
+    text_extra = ""
     if html:
         soup = BeautifulSoup(html, "lxml")
-        text = soup.get_text(" ")
-        grants.append(make_grant(
-            title="Creativity Pioneers Fund Open Call — Moleskine Foundation",
-            source_name=SOURCE,
-            url="https://creativitypioneersfund.org/opencall",
-            description=(
-                "€5,000 unrestricted grants for nonprofits using creativity for social "
-                "transformation. Open globally. Focus: youth 16-27, marginalized communities, "
-                "social + environmental challenges, intersectional approach. "
-                + clean_html(text)[:300]
-            ),
-            funder="Moleskine Foundation",
-            amount_max="5000", currency="EUR",
-            country="GLOBAL", language="en",
-            deadline=extract_deadline(text),
-            categories=["arts","creativity","social change","youth","global"],
-        ))
+        text_extra = soup.get_text(" ")[:300]
+    grants.append(make_grant(
+        title="Creativity Pioneers Fund Open Call — Moleskine Foundation",
+        source_name=SOURCE,
+        url="https://creativitypioneersfund.org/opencall",
+        description=(
+            "€5,000 unrestricted grants for nonprofits using creativity for social "
+            "transformation. Open globally. Focus: youth 16-27, marginalized communities, "
+            "social + environmental challenges, intersectional approach. "
+            + text_extra
+        ),
+        funder="Moleskine Foundation",
+        amount_max="5000", currency="EUR",
+        country="GLOBAL", language="en",
+        deadline=extract_deadline(text_extra),
+        categories=["arts","creativity","social change","youth","global"],
+    ))
     console.print(f"  [cyan]creativity pioneers fund[/] → {len(grants)}")
     return grants
 
@@ -723,7 +786,7 @@ async def fetch_opportunity_desk(session):
             title = e.get("title","")
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
-            if score_relevance(f"{title} {desc}") < 4: continue
+            if score_relevance(f"{title} {desc}") < 2: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:500], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc),
@@ -744,7 +807,7 @@ async def fetch_opportunities_for_youth(session):
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
             tags  = [t.get("term","") for t in e.get("tags",[])]
-            if score_relevance(f"{title} {desc} {' '.join(tags)}") < 4: continue
+            if score_relevance(f"{title} {desc} {' '.join(tags)}") < 2: continue
             # Infer country from tags
             country = "GLOBAL"
             tag_str = " ".join(tags).lower()
@@ -764,17 +827,20 @@ async def fetch_eflux(session):
     """e-flux — art + activism grants, open calls, residencies."""
     grants = []
     SOURCE = "e-flux.com"
-    rss = await fetch(session, "https://www.e-flux.com/announcements/rss/")
-    if rss:
-        feed = feedparser.parse(rss)
-        for e in feed.entries[:60]:
-            title = e.get("title","")
-            link  = e.get("link","")
-            desc  = clean_html(e.get("summary",""))
-            if score_relevance(f"{title} {desc}") < 3: continue
+    # RSS feed broke after Next.js migration; scrape announcements page
+    html = await fetch(session, "https://www.e-flux.com/announcements/")
+    if html:
+        soup = BeautifulSoup(html, "lxml")
+        for art in soup.select("article, .announcement, .card, [class*='announcement'], [class*='item'], li.announcement"):
+            t = art.find(["h2","h3","h4"]); a = art.find("a",href=True)
+            if not t: continue
+            title = t.get_text(strip=True)
+            if len(title) < 10: continue
+            link = urljoin("https://www.e-flux.com", a["href"]) if a else ""
+            text = art.get_text(" ")
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
-                description=desc[:500], country="GLOBAL", language="en",
-                deadline=extract_deadline(desc), amount_max=extract_amount(desc),
+                description=text[:500], country="GLOBAL", language="en",
+                deadline=extract_deadline(text), amount_max=extract_amount(text),
                 categories=["art","culture","open call","residency"]))
     console.print(f"  [cyan]e-flux.com[/] → {len(grants)}")
     return grants
@@ -812,7 +878,7 @@ async def fetch_impactfunding_substack(session):
             title = e.get("title","")
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
-            if score_relevance(f"{title} {desc}") < 4: continue
+            if score_relevance(f"{title} {desc}") < 2: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:800], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc),
@@ -832,7 +898,7 @@ async def fetch_global_south_opportunities(session):
             title = e.get("title","")
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
-            if score_relevance(f"{title} {desc}") < 4: continue
+            if score_relevance(f"{title} {desc}") < 2: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:500], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc), amount_max=extract_amount(desc),
@@ -849,11 +915,11 @@ async def fetch_latam(session):
     """LATAM foundations: Avina, IAF, Skoll, Amazon Conservation, FAU."""
     grants = []
     sources = [
-        ("avina.net",          "https://www.avina.net/convocatorias/",               "LATAM","es","Fundación Avina"),
-        ("iaf.gov",            "https://www.iaf.gov/grants/",                         "LATAM","en","Inter-American Foundation"),
-        ("amazonconservation", "https://www.amazonconservation.org/grants/",          "LATAM","en","Amazon Conservation Association"),
         ("fondoaccionurgente", "https://fondoaccionurgente.org.co/feed/",             "LATAM","es","Fondo Acción Urgente"),
         ("iica.int",           "https://www.iica.int/es/content/convocatorias/feed",  "LATAM","es","IICA"),
+        ("avina",              "https://www.avina.net/convocatorias/",                "LATAM","es","Fundación Avina"),
+        ("amazonconservation", "https://www.amazonconservation.org/grants/",          "LATAM","en","Amazon Conservation Team"),
+        ("wcs-latam",          "https://www.wcs.org/our-work/regions/latin-america",  "LATAM","en","Wildlife Conservation Society"),
     ]
     for name, url, country, lang, funder in sources:
         if url.endswith("/feed") or "feed" in url:
@@ -896,10 +962,12 @@ async def fetch_africa_asia(session):
     grants = []
     sources = [
         # Africa
-        ("acfid.asn.au",  "https://www.acfid.asn.au/",                              "AFRICA","en","ACFID"),
-        ("toyotafound",   "https://www.toyotafoundation.or.jp/en/grant/index.html", "ASIA",  "en","Toyota Foundation"),
-        ("wellbeing-econ","https://weall.org/get-involved/funding",                  "GLOBAL","en","Wellbeing Economy Alliance"),
+        ("africanwf",     "https://africanwomeninfund.org/",                         "AFRICA","en","African Women in Fund"),
+        ("toyotafound",   "https://www.toyotafoundation.or.jp/en/grant/",            "ASIA",  "en","Toyota Foundation"),
+        ("wellbeing-econ","https://weall.org/funding",                               "GLOBAL","en","Wellbeing Economy Alliance"),
         ("gsopport",      "https://www.globalsouthopportunities.com/category/grants/feed/","AFRICA","en","Global South Opportunities"),
+        ("southernaf",    "https://www.southernafricatrust.org/grants/",              "AFRICA","en","Southern Africa Trust"),
+        ("ecoafrica",     "https://www.ecoafrica.org/grants/",                        "AFRICA","en","EcoAfrica"),
     ]
     for name, url, country, lang, funder in sources:
         if "feed" in url:
@@ -909,7 +977,7 @@ async def fetch_africa_asia(session):
             for e in feed.entries[:30]:
                 t = e.get("title",""); l = e.get("link","")
                 d = clean_html(e.get("summary",""))
-                if score_relevance(f"{t} {d}") < 4: continue
+                if score_relevance(f"{t} {d}") < 2: continue
                 grants.append(make_grant(title=t, source_name=f"africa-asia:{name}",
                     url=l, description=d[:400], country=country, language=lang,
                     funder=funder, deadline=extract_deadline(d)))
@@ -924,7 +992,7 @@ async def fetch_africa_asia(session):
                 if len(title) < 8: continue
                 link = urljoin(url, a["href"]) if a else url
                 text = art.get_text(" ")
-                if score_relevance(f"{title} {text}") < 4: continue
+                if score_relevance(f"{title} {text}") < 2: continue
                 grants.append(make_grant(title=title, source_name=f"africa-asia:{name}",
                     url=link, description=text[:400], country=country, language=lang,
                     funder=funder, deadline=extract_deadline(text)))
@@ -988,6 +1056,29 @@ RSS_FEEDS = [
     # ── Indigenous/environment
     ("Green Grants",               "https://www.greengrants.org/feed/",                               "GLOBAL","en"),
     ("IUCN",                       "https://www.iucn.org/feeds/news",                                 "GLOBAL","en"),
+
+    # ── Francophone
+    ("AFD Appels à projets",       "https://www.afd.fr/fr/appels-projets/rss",                        "FR",    "fr"),
+    ("Fondation de France RSS",    "https://www.fondationdefrance.org/fr/appels-projets/rss",         "FR",    "fr"),
+    ("France Volontaires",         "https://www.france-volontaires.org/feed/",                        "FR",    "fr"),
+    ("Le Média Social",            "https://www.lemediasocial.fr/feed/",                              "FR",    "fr"),
+    ("Carenews",                   "https://www.carenews.com/feed",                                   "FR",    "fr"),
+
+    # ── Hispanophone
+    ("AECID Convocatorias",        "https://www.aecid.es/ES/convocatorios/rss",                       "ES",    "es"),
+    ("Fundación Carolina",         "https://www.fundacioncarolina.es/feed/",                          "ES",    "es"),
+    ("Cooperación Española",       "https://www.cooperacionespanola.es/feed/",                        "ES",    "es"),
+    ("Agenda Pública",             "https://agendapublica.elpais.com/feed/",                          "ES",    "es"),
+
+    # ── Global env
+    ("UNEP Funding",               "https://www.unep.org/grants-funding/rss",                         "GLOBAL","en"),
+    ("CEPF News",                  "https://www.cepf.net/rss.xml",                                    "GLOBAL","en"),
+    ("Rainforest Foundation",      "https://rainforestfoundation.org/feed/",                          "GLOBAL","en"),
+    ("World Resources Institute",  "https://www.wri.org/feed",                                        "GLOBAL","en"),
+    ("Biodiversity International", "https://www.biodiversityinternational.org/feed/",                 "GLOBAL","en"),
+    ("Global Greengrants RSS",     "https://www.greengrants.org/feed/",                               "GLOBAL","en"),
+    ("The Conversation Env",       "https://theconversation.com/us/environment/articles/feed",        "GLOBAL","en"),
+    ("Mongabay",                   "https://feeds.feedburner.com/mongabay",                           "GLOBAL","en"),
 ]
 
 
@@ -1007,7 +1098,7 @@ async def fetch_rss(session):
                 desc  = clean_html(e.get("summary") or e.get("description",""))
                 pub   = e.get("published") or e.get("updated","")
                 blob  = f"{title} {desc}".lower()
-                if score_relevance(blob) < 4: continue
+                if score_relevance(blob) < 3: continue
                 result.append(make_grant(title=title, source_name=f"rss:{name}",
                     url=link, description=desc[:500], country=country,
                     language=lang, deadline=parse_date(pub),
@@ -1064,7 +1155,7 @@ async def fetch_wellbeing_economy(session):
     """Wellbeing Economy Alliance — post-growth economics + community."""
     grants = []
     SOURCE = "weall.org"
-    html = await fetch(session, "https://weall.org/get-involved/funding")
+    html = await fetch(session, "https://weall.org/funding")
     if html:
         soup = BeautifulSoup(html, "lxml")
         for art in soup.select("article, .fund-item, .opportunity, section"):
@@ -1133,6 +1224,119 @@ async def fetch_emerging_climate_champions(session):
 
 
 # ══════════════════════════════════════════════════════════════
+#  ── FRANCOPHONE ────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════
+
+async def fetch_francophone(session):
+    """Francophone grant sources: AFD, Fondation de France, French Ministry."""
+    grants = []
+    sources = [
+        ("afd.fr",       "https://www.afd.fr/fr/appels-projets",                           "FR","fr","Agence Française de Développement"),
+        ("fondationdef", "https://www.fondationdefrance.org/fr/appels-projets",            "FR","fr","Fondation de France"),
+        ("france-volont","https://www.france-volontaires.org/appels-a-candidatures/",      "FR","fr","France Volontaires"),
+        ("afd-ssa",      "https://www.afd.fr/fr/appels-projets?field_region=afrique",     "AFRICA","fr","AFD Afrique"),
+    ]
+    for name, url, country, lang, funder in sources:
+        html = await fetch(session, url)
+        if not html: continue
+        soup = BeautifulSoup(html, "lxml")
+        for art in soup.select("article, .card, .call, .project, [class*='card'], [class*='call'], li"):
+            t = art.find(["h2","h3","h4"]); a = art.find("a",href=True)
+            if not t: continue
+            title = t.get_text(strip=True)
+            if len(title) < 10: continue
+            link = urljoin(url, a["href"]) if a else url
+            text = art.get_text(" ")
+            cty = infer_country(text, lang)
+            grants.append(make_grant(title=title, source_name=f"fr:{name}", url=link,
+                description=text[:400], country=cty, language=lang,
+                funder=funder, deadline=extract_deadline(text)))
+    # Fondation de France RSS
+    rss = await fetch(session, "https://www.fondationdefrance.org/fr/appels-projets/rss")
+    if rss:
+        feed = feedparser.parse(rss)
+        for e in feed.entries[:20]:
+            title = e.get("title",""); link = e.get("link","")
+            desc = clean_html(e.get("summary",""))
+            grants.append(make_grant(title=title, source_name="fr:fondationdef-rss", url=link,
+                description=desc[:400], country="FR", language="fr",
+                funder="Fondation de France", deadline=extract_deadline(desc)))
+    console.print(f"  [cyan]Francophone sources[/] → {len(grants)}")
+    return grants
+
+
+# ══════════════════════════════════════════════════════════════
+#  ── HISPANOPHONE ───────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════
+
+async def fetch_hispanophone(session):
+    """Hispanophone grant sources: AECID, Spanish co-operation, etc."""
+    grants = []
+    sources = [
+        ("aecid",        "https://www.aecid.es/ES/convocatorios",                            "ES","es","AECID"),
+        ("cooperacion",  "https://www.cooperacionespanola.es/convocatorias/",                "ES","es","Cooperación Española"),
+        ("fundacioncaro","https://www.fundacioncarolina.es/convocatorias/",                  "ES","es","Fundación Carolina"),
+        ("lacajacanaria","https://www.lacajacanaria.es/proyectos-sociales/convocatorias/",   "ES","es","La Caja Canaria"),
+    ]
+    for name, url, country, lang, funder in sources:
+        html = await fetch(session, url)
+        if not html: continue
+        soup = BeautifulSoup(html, "lxml")
+        for art in soup.select("article, .card, .call, [class*='card'], [class*='call'], [class*='convocatoria'], li"):
+            t = art.find(["h2","h3","h4"]); a = art.find("a",href=True)
+            if not t: continue
+            title = t.get_text(strip=True)
+            if len(title) < 10: continue
+            link = urljoin(url, a["href"]) if a else url
+            text = art.get_text(" ")
+            cty = infer_country(text, lang)
+            grants.append(make_grant(title=title, source_name=f"es:{name}", url=link,
+                description=text[:400], country=cty, language=lang,
+                funder=funder, deadline=extract_deadline(text)))
+    console.print(f"  [cyan]Hispanophone sources[/] → {len(grants)}")
+    return grants
+
+
+# ══════════════════════════════════════════════════════════════
+#  ── GLOBAL ENVIRONMENTAL GRANTS ─────────────────────────────
+# ══════════════════════════════════════════════════════════════
+
+async def fetch_global_env(session):
+    """Additional global environmental grant sources."""
+    grants = []
+    sources = [
+        ("gef",          "https://www.thegef.org/programs-funds",                       "GLOBAL","en","Global Environment Facility"),
+        ("unep-eco",     "https://www.unep.org/grants-funding",                          "GLOBAL","en","UNEP"),
+        ("undp-grants",  "https://www.undp.org/grants",                                  "GLOBAL","en","UNDP"),
+        ("cepf",         "https://www.cepf.net/grants",                                  "GLOBAL","en","Critical Ecosystem Partnership Fund"),
+        ("oceanfdn",     "https://oceanfdn.org/grants/",                                 "GLOBAL","en","Ocean Foundation"),
+        ("rainforest",   "https://rainforestfoundation.org/grants/",                     "GLOBAL","en","Rainforest Foundation"),
+        ("wwf-grants",   "https://www.wwf.org.uk/what-we-do/grants",                     "GLOBAL","en","WWF"),
+        ("birdlife",     "https://www.birdlife.org/grants/",                             "GLOBAL","en","BirdLife International"),
+    ]
+    for name, url, country, lang, funder in sources:
+        html = await fetch(session, url)
+        if not html: continue
+        soup = BeautifulSoup(html, "lxml")
+        found = 0
+        for art in soup.select("article, .card, .grant, [class*='grant'], [class*='fund'], section, li"):
+            t = art.find(["h2","h3","h4"]); a = art.find("a",href=True)
+            if not t: continue
+            title = t.get_text(strip=True)
+            if len(title) < 10: continue
+            link = urljoin(url, a["href"]) if a else url
+            text = art.get_text(" ")
+            grants.append(make_grant(title=title, source_name=f"env:{name}", url=link,
+                description=text[:400], country=country, language=lang,
+                funder=funder, deadline=extract_deadline(text)))
+            found += 1
+        if found:
+            console.print(f"    [dim]{name}: {found} grants[/]")
+    console.print(f"  [cyan]Global env sources[/] → {len(grants)}")
+    return grants
+
+
+# ══════════════════════════════════════════════════════════════
 #  SOURCE REGISTRY
 # ══════════════════════════════════════════════════════════════
 
@@ -1169,11 +1373,15 @@ ALL_SOURCES = {
     "latam":          fetch_latam,
     # Africa / Asia
     "africa-asia":    fetch_africa_asia,
+    # Francophone
+    "francophone":    fetch_francophone,
+    "hispanophone":   fetch_hispanophone,
     # Global env foundations
     "greengrants":    fetch_global_greengrants,
     "wellbeing":      fetch_wellbeing_economy,
     "ashoka":         fetch_ashoka,
-    # RSS mega-sweep (covers 35 feeds)
+    "globalenv":      fetch_global_env,
+    # RSS mega-sweep (covers 35+ feeds)
     "rss":            fetch_rss,
 }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ObservatoryControls as ObservatoryControlsState, ObservatoryStats, ObservatoryFilters, ObservatoryLayers } from '@/composables/useObservatoryControls'
+import type { ObservatoryControls as ObservatoryControlsState, ObservatoryStats, ObservatoryFilters, ObservatoryLayers, ObservatoryAnimations } from '@/composables/useObservatoryControls'
 import type { EnterpriseHQ } from '@/lib/enterprise-data'
 import YearSlider from './YearSlider.vue'
 import PhaseFilter from './PhaseFilter.vue'
@@ -32,7 +32,6 @@ const categoryStats = computed(() => props.stats.categoryStats.value)
 const totalCount = computed(() => props.stats.totalCount.value)
 const filteredCount = computed(() => props.stats.filteredCount.value)
 const activeFilterSummary = computed(() => props.stats.activeFilterSummary.value)
-const enterpriseLayerVisible = computed(() => props.state.enterpriseLayerVisible.value)
 
 const layerVis = computed<Record<string, boolean>>({
   get: () => props.state.layerVis.value,
@@ -137,7 +136,7 @@ function updatePhases(value: Set<string>) {
 
     <!-- Actions row -->
     <div class="absolute top-[clamp(3.5rem,10vh,5rem)] left-[clamp(0.75rem,2vw,1rem)] z-[500] flex flex-wrap gap-1.5 max-w-[clamp(16rem,40vw,22rem)]">
-      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-red)' }" @click="() => { filters.showTimeline = !filters.showTimeline }">
+      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-red)' }" @click="() => { filters.showTimeline.value = !filters.showTimeline.value }">
         <span>📖</span> <span class="hidden sm:inline">Geopolitical Timeline</span><span class="sm:hidden">Timeline</span>
       </button>
       <button v-if="onRedeCorporativa" type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-blue-light)' }" @click="onRedeCorporativa()">
@@ -146,22 +145,22 @@ function updatePhases(value: Set<string>) {
       <button v-if="onDataDownload" type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-green)' }" @click="onDataDownload()">
         <span>⬇️</span> <span class="hidden sm:inline">Download Data</span><span class="sm:hidden">Download</span>
       </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-purple-soft)' }" @click="() => { filters.showExport = !filters.showExport }">
+      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-purple-soft)' }" @click="() => { filters.showExport.value = !filters.showExport.value }">
         <span>📄</span> Export
       </button>
       <button type="button" class="obs-action-btn" :class="enterpriseLayerVisible ? 'obs-action-btn--active' : ''" :style="{ '--accent': 'var(--obs-purple-soft)' }" @click="emit('toggle-enterprise')">
         <span>🏢</span> <span class="hidden sm:inline">{{ t('observatory.layers.enterpriseHq') }}</span><span class="sm:hidden">HQ</span>
       </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-gray)' }" @click="() => { filters.showShortcuts = !filters.showShortcuts }">
+      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-gray)' }" @click="() => { filters.showShortcuts.value = !filters.showShortcuts.value }">
         <span>⌨️</span> ?
       </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': '#3498db' }" @click="() => { filters.showDataTable = !filters.showDataTable }">
+      <button type="button" class="obs-action-btn" :style="{ '--accent': '#3498db' }" @click="() => { filters.showDataTable.value = !filters.showDataTable.value }">
         <span>📊</span> Table
       </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': '#27ae60' }" @click="() => { filters.showGeoLocate = !filters.showGeoLocate }">
+      <button type="button" class="obs-action-btn" :style="{ '--accent': '#27ae60' }" @click="() => { filters.showGeoLocate.value = !filters.showGeoLocate.value }">
         <span>📍</span> <span class="hidden sm:inline">Near Me</span><span class="sm:hidden">Near</span>
       </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': '#e67e22' }" @click="() => { filters.filtersExpanded = !filters.filtersExpanded }">
+      <button type="button" class="obs-action-btn" :style="{ '--accent': '#e67e22' }" @click="() => { filters.filtersExpanded.value = !filters.filtersExpanded.value }">
         <span>🌍</span> Layers
       </button>
       <button v-if="onUserContribution" type="button" class="obs-action-btn" :style="{ '--accent': '#2ecc71' }" @click="onUserContribution">
@@ -171,19 +170,19 @@ function updatePhases(value: Set<string>) {
 
     <!-- Filters -->
     <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] left-[clamp(0.75rem,2vw,1rem)] z-[500] obs-filter-panel">
-      <button type="button" class="obs-filter-toggle" @click="filters.filtersExpanded = !filters.filtersExpanded">
+      <button type="button" class="obs-filter-toggle" @click="filters.filtersExpanded.value = !filters.filtersExpanded.value">
         <span class="obs-filter-toggle__icon">⚙</span>
         <span class="obs-filter-toggle__label">{{ t('observatory.layers.title') }}</span>
         <span v-if="activeFilterCount > 0" class="obs-filter-toggle__badge">{{ activeFilterCount }}</span>
-        <span class="obs-filter-toggle__chevron" :class="{ 'obs-filter-toggle__chevron--open': filters.filtersExpanded }">›</span>
+        <span class="obs-filter-toggle__chevron" :class="{ 'obs-filter-toggle__chevron--open': filters.filtersExpanded.value }">›</span>
       </button>
 
       <Transition name="obs-filter-expand">
-        <div v-if="filters.filtersExpanded" class="obs-filter-body">
-          <YearSlider :year-min="filters.yearMin" :year-max="filters.yearMax" :filtered-count="filteredCount" @update:year-min="updateYearMin" @update:year-max="updateYearMax" />
+        <div v-if="filters.filtersExpanded.value" class="obs-filter-body">
+          <YearSlider :year-min="filters.yearMin.value" :year-max="filters.yearMax.value" :filtered-count="filteredCount" @update:year-min="updateYearMin" @update:year-max="updateYearMax" />
           <hr class="border-zinc-800 my-2" />
 
-          <PhaseFilter :selected="filters.selectedPhases" @update:selected="updatePhases" />
+          <PhaseFilter :selected="filters.selectedPhases.value" @update:selected="updatePhases" />
           <hr class="border-zinc-800 my-2" />
 
           <h3 class="obs-filter-section-title">{{ t('observatory.layers.title') }}</h3>
@@ -192,15 +191,15 @@ function updatePhases(value: Set<string>) {
             :key="c.key"
             class="obs-filter-checkbox"
             role="checkbox"
-            :aria-checked="layers.layerVis[c.key]"
+            :aria-checked="layers.layerVis.value[c.key]"
             :aria-label="c.label"
             tabindex="0"
             @click="layers.toggleLayer(c.key)"
             @keydown.enter="layers.toggleLayer(c.key)"
             @keydown.space.prevent="layers.toggleLayer(c.key)"
           >
-            <div :class="['obs-filter-checkbox__box', layers.layerVis[c.key] ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': c.color }">
-              <svg v-if="layers.layerVis[c.key]" class="obs-filter-checkbox__check" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div :class="['obs-filter-checkbox__box', layers.layerVis.value[c.key] ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': c.color }">
+              <svg v-if="layers.layerVis.value[c.key]" class="obs-filter-checkbox__check" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
             <span class="obs-filter-checkbox__label">{{ c.label }}</span>
           </div>
@@ -211,15 +210,15 @@ function updatePhases(value: Set<string>) {
             :key="ex.key"
             class="obs-filter-checkbox"
             role="checkbox"
-            :aria-checked="layers.layerVis[ex.key]"
+            :aria-checked="layers.layerVis.value[ex.key]"
             :aria-label="t(ex.labelKey)"
             tabindex="0"
             @click="layers.toggleLayer(ex.key)"
             @keydown.enter="layers.toggleLayer(ex.key)"
             @keydown.space.prevent="layers.toggleLayer(ex.key)"
           >
-            <div :class="['obs-filter-checkbox__box', layers.layerVis[ex.key] ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': ex.color }">
-              <svg v-if="layers.layerVis[ex.key]" class="obs-filter-checkbox__check" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div :class="['obs-filter-checkbox__box', layers.layerVis.value[ex.key] ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': ex.color }">
+              <svg v-if="layers.layerVis.value[ex.key]" class="obs-filter-checkbox__check" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
             <span class="obs-filter-checkbox__label">{{ t(ex.labelKey) }}</span>
           </div>
@@ -230,8 +229,8 @@ function updatePhases(value: Set<string>) {
     <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] left-1/2 -translate-x-1/2 z-[500] hidden sm:block">
       <div class="obs-search">
         <span class="obs-search__icon">🔍</span>
-        <input v-model="filters.searchTerm" @input="filters.debouncedFilter" :placeholder="t('observatory.search')" class="obs-search__input" />
-        <span v-if="filters.searchTerm" class="obs-search__clear" @click="filters.searchTerm = ''; filters.debouncedFilter()">×</span>
+        <input v-model="filters.searchTerm.value" @input="filters.debouncedFilter" :placeholder="t('observatory.search')" class="obs-search__input" />
+        <span v-if="filters.searchTerm.value" class="obs-search__clear" @click="filters.searchTerm.value = ''; filters.debouncedFilter()">×</span>
       </div>
     </div>
 

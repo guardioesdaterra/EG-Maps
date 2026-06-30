@@ -323,7 +323,7 @@
               <div class="sticky top-0 z-10 flex items-start justify-between gap-4 p-4 sm:p-6 md:p-8 border-b border-white/5 bg-[#0c0c0e]/95 backdrop-blur-sm">
                 <div class="min-w-0 flex-1">
                   <h2 class="text-base sm:text-lg md:text-xl font-bold text-white leading-snug">{{ detailGrant.title }}</h2>
-                  <p class="text-xs sm:text-sm text-white/50 mt-1 truncate">{{ detailGrant.funder || detailGrant.location_name || detailGrant.country }} • {{ new Date(detailGrant.created_at || detailGrant.fetched_at).toLocaleDateString() }}</p>
+                  <p class="text-xs sm:text-sm text-white/50 mt-1 truncate">{{ detailGrant.funder || detailGrant.location_name || detailGrant.country }} • {{ new Date(detailGrant.created_at || detailGrant.fetched_at || '').toLocaleDateString() }}</p>
                 </div>
                 <button class="shrink-0 rounded-full p-2 text-white/50 hover:text-white hover:bg-white/10 transition-colors" aria-label="Close" @click="closeGrantDetail">
                   <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -469,11 +469,36 @@ const scrapedUserVotes = reactive<Record<string, number>>({})
 const leaderboard = ref<LeaderboardEntry[]>([])
 const leaderboardLoading = ref(false)
 
+interface DetailGrantData {
+  id: string
+  title: string
+  description: string
+  status: string
+  created_at: string
+  location_name?: string
+  latitude?: number
+  longitude?: number
+  source_type?: string
+  source_id?: string
+  url?: string
+  funder?: string
+  source?: string
+  country?: string
+  submitted_by?: string | null
+  reviewed_by?: string | null
+  reviewed_at?: string | null
+  amount_max?: string
+  currency?: string
+  deadline?: string
+  categories?: string[]
+  fetched_at?: string
+}
+
 // UI state
 const activePortalTab = ref('submit')
 const showRegistry = ref(false)
 const registryLoading = ref(false)
-const detailGrant = ref<Record<string, any> | null>(null)
+const detailGrant = ref<DetailGrantData | null>(null)
 const detailUserVote = ref(0)
 
 const portalTabs = computed(() => {
@@ -532,12 +557,12 @@ function closeRegistryModal() {
 }
 
 function openGrantDetail(grant: GrantRecord) {
-  detailGrant.value = grant as any
+  detailGrant.value = grant
   detailUserVote.value = 0
 }
 
 function openLeaderboardDetail(entry: LeaderboardEntry) {
-  detailGrant.value = entry as any
+  detailGrant.value = entry
   detailUserVote.value = 0
 }
 
@@ -587,7 +612,7 @@ async function loadLeaderboardData() {
 async function handleSubmitGrant() {
   submitting.value = true
   submitMsg.value = ''
-  const result: any = await apiSubmitGrant(form)
+  const result: { error?: string; grant?: GrantRecord } = await apiSubmitGrant(form)
   submitting.value = false
   if (result.error) {
     submitMsg.value = result.error
@@ -614,7 +639,7 @@ async function handleReview(grantId: string, decision: string) {
 }
 
 async function handleReviewScraped(grantId: string, decision: 'approved' | 'pending') {
-  await apiReviewScraped(grantId, decision as any)
+  await apiReviewScraped(grantId, decision)
   loadScrapedGrants()
 }
 
@@ -696,7 +721,9 @@ onMounted(async () => {
   await nextTick()
 
   const win = window as unknown as { THREE: unknown; gsap: unknown; ScrollTrigger: unknown }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const THREE: any = win.THREE
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const gsap: any = win.gsap
   if (!THREE || !gsap) return
 

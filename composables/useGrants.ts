@@ -102,7 +102,7 @@ export function useGrants() {
     return data as { grant: GrantRecord }
   }
 
-  async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden') {
+  async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending') {
     const { data, error } = await supabase.functions.invoke('grants-scraped-review', {
       method: 'POST',
       body: { grant_id: grantId, decision },

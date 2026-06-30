@@ -23,8 +23,12 @@
     <!-- Error state -->
     <Transition name="fade">
       <div v-if="hasError" class="absolute inset-0 bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center text-white z-[200]">
+        <div class="relative mb-6">
+          <div class="w-16 h-16 rounded-full bg-white/10 animate-pulse" />
+          <iconify-icon icon="lucide:alert-triangle" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-white" />
+        </div>
         <p class="text-gray-400 mb-4 text-center px-4 max-w-md">{{ errorMessage }}</p>
-        <button @click="retryLoad" class="px-6 py-2.5 bg-red-500 text-white rounded-lg font-medium hover:opacity-80 transition-all">
+        <button v-if="!noWebglSupport" @click="retryLoad" class="px-6 py-2.5 bg-red-500 text-white rounded-lg font-medium hover:opacity-80 transition-all">
           Try Again
         </button>
       </div>
@@ -33,7 +37,7 @@
     <!-- Map Container -->
     <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" style="z-index: 1" />
 
-    <!-- Custom overlays slot (used by observatory-of-vulcan) -->
+    <!-- Custom overlays slot (used by vulcan-observatory) -->
     <slot name="overlays" />
   </div>
 </template>
@@ -48,13 +52,12 @@ import { syncRareEarthLayerVisibility } from '@/composables/useRareEarthLayers'
 import { setupWaterLayers } from '@/composables/useWaterLayers'
 import { setupVulcanCircles, setVulcanCirclesVisibility, VULCAN_CENTER } from '@/composables/useVulcanCircles'
 import type { RareEarthFeatureCollection } from '@/lib/observatory-analysis'
+import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
 
 const { t } = useI18n()
 const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
 
-const MAP_STYLE = MAPTILER_API_KEY
-  ? `https://api.maptiler.com/maps/019f0fee-56db-7efd-a73d-2bd1b646bc72/style.json?key=${MAPTILER_API_KEY}`
-  : 'https://demotiles.maplibre.org/style.json'
+const MAP_STYLE = getMapStyle(MAPTILER_API_KEY)
 
 interface Props {
   pointsData?: RareEarthFeatureCollection
@@ -77,10 +80,12 @@ const mapContainerRef = ref<HTMLDivElement | null>(null)
 const isLoading = ref(true)
 const hasError = ref(false)
 const errorMessage = ref('')
+const noWebglSupport = ref(false)
 const isMobile = useMediaQuery('(max-width: 768px)')
 
 let map: maplibregl.Map | null = null
 let isMounted = true
+let loadingTimeout: ReturnType<typeof setTimeout> | null = null
 let waterCleanup: (() => void) | null = null
 let circleCleanup: (() => void) | null = null
 
@@ -128,6 +133,16 @@ function initMap() {
     map.remove()
     map = null
   }
+
+  if (!detectWebGLSupport()) {
+    noWebglSupport.value = true
+    isLoading.value = false
+    hasError.value = true
+    errorMessage.value = 'Your browser does not support WebGL, which is required to render the map.'
+    return
+  }
+  noWebglSupport.value = false
+
   isLoading.value = true
   hasError.value = false
   loadProgress.value = 0
@@ -179,18 +194,34 @@ function initMap() {
       }
     })
 
+    let errorCount = 0
+    let usedFallback = false
+
     map.on('error', (err) => {
-      // eslint-disable-next-line no-console
       console.error('[VulcanMap] MapLibre error:', err)
+      errorCount++
+      if (!usedFallback && errorCount >= 2 && MAP_STYLE.includes('maptiler.com')) {
+        usedFallback = true
+        console.warn('MapTiler style failed, falling back to demotiles style')
+        map!.setStyle('https://demotiles.maplibre.org/style.json')
+        return
+      }
       if (!map?.loaded()) {
         isLoading.value = false
         hasError.value = true
-        errorMessage.value = 'Failed to load map tiles. Please check your network connection.'
+        const errObj = err as { error?: { status?: number; message?: string } }
+        if (errObj?.error?.status === 403) {
+          errorMessage.value = 'MapTiler API key is invalid or restricted. Please update your API key in the .env file.'
+        } else if (errObj?.error?.message) {
+          errorMessage.value = errObj.error.message
+        } else {
+          errorMessage.value = 'Failed to load map tiles. Please check your network connection and try again.'
+        }
       }
     })
 
     // Timeout fallback
-    setTimeout(() => {
+    loadingTimeout = setTimeout(() => {
       if (isLoading.value) {
         isLoading.value = false
         if (!hasError.value) {
@@ -200,7 +231,6 @@ function initMap() {
       }
     }, 20000)
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('[VulcanMap] Init error:', err)
     isLoading.value = false
     hasError.value = true
@@ -268,6 +298,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   isMounted = false
+  if (loadingTimeout) clearTimeout(loadingTimeout)
   if (waterCleanup) waterCleanup()
   if (circleCleanup) circleCleanup()
   if (map) {

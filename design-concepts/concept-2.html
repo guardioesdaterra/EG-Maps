@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Concept 2 — Editorial</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #f8f7f4; color: #1a1a1a; }
+.hero { min-height: 100svh; padding: 40px 48px; display: flex; flex-direction: column; }
+.content { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 1400px; margin: 0 auto; width: 100%; }
+h1 { font-family: 'Playfair Display', serif; }
+.dataset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 48px; }
+.card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: all 0.3s; cursor: pointer; border: 1px solid #eee; }
+.card:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.06); transform: translateY(-4px); }
+.card-media { height: 120px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.card-body { padding: 18px 20px 20px; }
+.cta-outline { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border: 1.5px solid #1a1a1a; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.2s; }
+.cta-outline:hover { background: #1a1a1a; color: #fff; }
+.card.grid-span-2 { grid-column: span 2; }
+.card.tall .card-media { height: 200px; }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="content">
+    <!-- top bar -->
+    <div class="flex items-center justify-between mb-12">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-black"></div>
+        <span class="text-sm font-bold tracking-tight">Earth Guardians</span>
+      </div>
+      <span class="text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">Data Visualization Platform</span>
+    </div>
+
+    <!-- headline -->
+    <div class="max-w-3xl">
+      <div class="inline-block px-3 py-1 bg-black text-white text-[10px] font-bold uppercase tracking-[0.15em] rounded-full mb-5">Explore the data</div>
+      <h1 class="text-6xl sm:text-7xl lg:text-8xl font-black leading-[1.05] tracking-tight">
+        Mapping<br/>
+        <span class="italic font-normal text-gray-400">the</span> Impact
+      </h1>
+      <p class="mt-4 text-lg text-gray-500 max-w-xl leading-relaxed">
+        From global grant initiatives to critically endangered species — explore Earth Guardians' work through interactive maps and 3D globes.
+      </p>
+    </div>
+
+    <!-- card grid -->
+    <div class="dataset-grid">
+      <!-- Project Grants — spans 2 cols -->
+      <div class="card grid-span-2">
+        <div class="card-media" style="background: linear-gradient(135deg, #0c4a6e, #0369a1);">
+          <svg class="w-10 h-10 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-1">
+            <h2 class="text-lg font-black">Project Grants</h2>
+            <span class="text-[10px] font-bold uppercase text-gray-400">Grants</span>
+          </div>
+          <p class="text-sm text-gray-500">48 projects · 86K+ beneficiaries worldwide</p>
+          <div class="flex gap-2 mt-3">
+            <span class="cta-outline">2D Map</span>
+            <span class="cta-outline">3D Globe</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Endangered Species -->
+      <div class="card tall">
+        <div class="card-media" style="background: linear-gradient(135deg, #065f46, #047857);">
+          <svg class="w-10 h-10 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-1">
+            <h2 class="text-lg font-black">Endangered Species</h2>
+            <span class="text-[10px] font-bold uppercase text-gray-400">Species</span>
+          </div>
+          <p class="text-sm text-gray-500">4.2K species · 12 taxonomic groups</p>
+          <div class="flex gap-2 mt-3">
+            <span class="cta-outline">2D Map</span>
+            <span class="cta-outline">3D Globe</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Observatory of Vulcan -->
+      <div class="card">
+        <div class="card-media" style="background: linear-gradient(135deg, #581c87, #7e22ce);">
+          <svg class="w-10 h-10 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-1">
+            <h2 class="text-base font-black">Observatory of Vulcan</h2>
+            <span class="text-[10px] font-bold uppercase text-gray-400">Vulcan</span>
+          </div>
+          <p class="text-sm text-gray-500">20K+ mining processes</p>
+          <div class="flex gap-2 mt-3">
+            <span class="cta-outline">2D</span>
+            <span class="cta-outline">3D</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Crews -->
+      <div class="card">
+        <div class="card-media" style="background: linear-gradient(135deg, #92400e, #d97706);">
+          <svg class="w-10 h-10 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-1">
+            <h2 class="text-base font-black">Active Crews</h2>
+            <span class="text-[10px] font-bold uppercase text-gray-400">Crews</span>
+          </div>
+          <p class="text-sm text-gray-500">131 crews · 1.2K members</p>
+          <div class="flex gap-2 mt-3">
+            <span class="cta-outline">2D</span>
+            <span class="cta-outline">3D</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- EG Grants -->
+      <div class="card">
+        <div class="card-media" style="background: linear-gradient(135deg, #9f1239, #e11d48);">
+          <svg class="w-10 h-10 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </div>
+        <div class="card-body">
+          <div class="flex items-center justify-between mb-1">
+            <h2 class="text-base font-black">EG Grants</h2>
+            <span class="text-[10px] font-bold uppercase text-gray-400">Portal</span>
+          </div>
+          <p class="text-sm text-gray-500">Submit & review grants</p>
+          <div class="flex gap-2 mt-3">
+            <span class="cta-outline">Open</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

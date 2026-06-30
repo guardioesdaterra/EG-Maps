@@ -13,6 +13,7 @@
           :key="toast.id"
           :class="['toast', `toast--${toast.kind}`]"
           role="status"
+          :aria-live="toast.kind === 'error' ? 'assertive' : 'polite'"
         >
           <div class="toast__icon" aria-hidden="true">
             <span v-if="toast.kind === 'success'">✓</span>

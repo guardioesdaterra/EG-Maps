@@ -51,7 +51,7 @@ export default defineNuxtConfig({
       login: '/eg-grants',
       callback: '/auth/callback',
       include: ['/eg-grants', '/auth/callback'],
-      exclude: ['/', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/observatory-of-vulcan', '/observatory-of-vulcan/3d', '/active-crews', '/active-crews/3d'],
+      exclude: ['/', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/vulcan-observatory', '/vulcan-observatory/3d', '/active-crews', '/active-crews/3d'],
     },
   },
 
@@ -126,7 +126,7 @@ export default defineNuxtConfig({
     preset: 'static',
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/observatory-of-vulcan', '/observatory-of-vulcan/3d', '/active-crews', '/active-crews/3d'],
+      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/vulcan-observatory', '/vulcan-observatory/3d', '/active-crews', '/active-crews/3d'],
       ignore: ['/EG-Maps/manifest.json'],
     },
     compressPublicAssets: true,

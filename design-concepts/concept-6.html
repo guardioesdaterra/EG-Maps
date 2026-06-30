@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Concept 6 — Carousel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; overflow: hidden; }
+.hero { height: 100svh; position: relative; overflow: hidden; }
+
+.slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.8s ease, transform 0.8s ease; transform: scale(1.05); }
+.slide.active { opacity: 1; transform: scale(1); }
+
+.overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.6) 100%); }
+
+.slide-content { position: relative; z-index: 2; text-align: center; color: #fff; max-width: 700px; padding: 24px; }
+
+.slide-content .icon-circle { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.2); backdrop-filter: blur(12px); }
+.slide-content .icon-circle svg { width: 32px; height: 32px; }
+.slide-content h2 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.05; }
+.slide-content .label { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; padding: 4px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 16px; backdrop-filter: blur(8px); }
+.slide-content p { font-size: 1.1rem; color: rgba(255,255,255,0.7); margin-top: 12px; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+.slide-content .stats { display: flex; gap: 24px; justify-content: center; margin-top: 20px; }
+.slide-content .stats span { font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.6); }
+.slide-content .stats strong { color: #fff; font-weight: 800; }
+
+.cta-row { display: flex; gap: 12px; justify-content: center; margin-top: 28px; }
+.cta-lg { padding: 12px 32px; border-radius: 12px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.25s; cursor: pointer; border: none; }
+.cta-lg.primary { background: #fff; color: #000; }
+.cta-lg.primary:hover { transform: scale(1.04); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.cta-lg.secondary { background: rgba(255,255,255,0.1); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
+.cta-lg.secondary:hover { background: rgba(255,255,255,0.2); }
+
+/* nav dots */
+.nav-dots { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 12px; }
+.nav-dot { width: 40px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.2); cursor: pointer; transition: all 0.4s; border: none; }
+.nav-dot.active { background: #fff; width: 52px; }
+.nav-dot:hover { background: rgba(255,255,255,0.4); }
+
+/* progress bar */
+.progress { position: absolute; top: 0; left: 0; height: 3px; background: #fff; z-index: 20; transition: width 0.1s linear; }
+
+/* brand top-left */
+.brand { position: absolute; top: 24px; left: 32px; z-index: 10; color: #fff; display: flex; align-items: center; gap: 10px; }
+.brand span { font-size: 13px; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="hero" id="hero">
+  <div class="brand">
+    <div class="w-8 h-8 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+      <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <span>Earth Guardians</span>
+  </div>
+
+  <!-- progress bar -->
+  <div class="progress" id="progress" style="width: 0%;"></div>
+
+  <!-- Slide 1: Project Grants -->
+  <div class="slide active" data-index="0" style="background: linear-gradient(135deg, #0c4a6e, #0369a1, #0284c7);">
+    <div class="overlay"></div>
+    <div class="slide-content">
+      <div class="label">Grants</div>
+      <div class="icon-circle"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div>
+      <h2>Project Grants</h2>
+      <p>Explore global grant initiatives and their impact on communities worldwide.</p>
+      <div class="stats">
+        <span><strong>48</strong> Projects</span>
+        <span><strong>86K+</strong> Beneficiaries</span>
+      </div>
+      <div class="cta-row">
+        <button class="cta-lg primary">2D Map</button>
+        <button class="cta-lg secondary">3D Globe</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2: Endangered Species -->
+  <div class="slide" data-index="1" style="background: linear-gradient(135deg, #065f46, #047857, #059669);">
+    <div class="overlay"></div>
+    <div class="slide-content">
+      <div class="label">Species</div>
+      <div class="icon-circle"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg></div>
+      <h2>Endangered Species</h2>
+      <p>Discover critically endangered species and their habitats around the world.</p>
+      <div class="stats">
+        <span><strong>4,283</strong> Species</span>
+        <span><strong>12</strong> Groups</span>
+      </div>
+      <div class="cta-row">
+        <button class="cta-lg primary">2D Map</button>
+        <button class="cta-lg secondary">3D Globe</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3: Observatory of Vulcan -->
+  <div class="slide" data-index="2" style="background: linear-gradient(135deg, #581c87, #7e22ce, #9333ea);">
+    <div class="overlay"></div>
+    <div class="slide-content">
+      <div class="label">Vulcan</div>
+      <div class="icon-circle"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+      <h2>Observatory of&nbsp;Vulcan</h2>
+      <p>Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.</p>
+      <div class="stats">
+        <span><strong>20K+</strong> Mining processes</span>
+        <span><strong>6</strong> Categories</span>
+      </div>
+      <div class="cta-row">
+        <button class="cta-lg primary">2D Map</button>
+        <button class="cta-lg secondary">3D Globe</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: Active Crews -->
+  <div class="slide" data-index="3" style="background: linear-gradient(135deg, #92400e, #d97706, #f59e0b);">
+    <div class="overlay"></div>
+    <div class="slide-content">
+      <div class="label">Crews</div>
+      <div class="icon-circle"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+      <h2>Active Crews</h2>
+      <p>Explore Earth Guardians' active crews across 7 regions worldwide.</p>
+      <div class="stats">
+        <span><strong>131</strong> Crews</span>
+        <span><strong>1,241</strong> Members</span>
+        <span><strong>47</strong> Countries</span>
+      </div>
+      <div class="cta-row">
+        <button class="cta-lg primary">2D Map</button>
+        <button class="cta-lg secondary">3D Globe</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: EG Grants -->
+  <div class="slide" data-index="4" style="background: linear-gradient(135deg, #9f1239, #e11d48, #f43f5e);">
+    <div class="overlay"></div>
+    <div class="slide-content">
+      <div class="label">Portal</div>
+      <div class="icon-circle"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div>
+      <h2>EG Grants</h2>
+      <p>Worldwide socio-environmental grants platform. Sign in to submit or review.</p>
+      <div class="stats">
+        <span><strong>Submit</strong> & Review</span>
+        <span><strong>Crew</strong> Access</span>
+      </div>
+      <div class="cta-row">
+        <button class="cta-lg primary">Open App</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- progress dots -->
+  <div class="nav-dots" id="dots">
+    <button class="nav-dot active" data-index="0"></button>
+    <button class="nav-dot" data-index="1"></button>
+    <button class="nav-dot" data-index="2"></button>
+    <button class="nav-dot" data-index="3"></button>
+    <button class="nav-dot" data-index="4"></button>
+  </div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const dots = document.querySelectorAll('.nav-dot');
+const progress = document.getElementById('progress');
+let current = 0;
+let interval;
+const DURATION = 5000; // 5s per slide
+
+function goTo(index) {
+  slides.forEach(s => s.classList.remove('active'));
+  dots.forEach(d => d.classList.remove('active'));
+  slides[index].classList.add('active');
+  dots[index].classList.add('active');
+  current = index;
+  progress.style.width = '0%';
+  clearInterval(interval);
+  startAutoPlay();
+}
+
+function startAutoPlay() {
+  let start = Date.now();
+  interval = setInterval(() => {
+    const elapsed = Date.now() - start;
+    const pct = Math.min((elapsed / DURATION) * 100, 100);
+    progress.style.width = pct + '%';
+    if (pct >= 100) {
+      goTo((current + 1) % slides.length);
+    }
+  }, 50);
+}
+
+dots.forEach(dot => {
+  dot.addEventListener('click', () => goTo(parseInt(dot.dataset.index)));
+});
+
+startAutoPlay();
+</script>
+</body>
+</html>

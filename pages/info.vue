@@ -4,7 +4,7 @@
       <header class="border-b-2 border-black card-padding-lg">
         <div class="flex flex-col gap-fluid sm:flex-row sm:items-start sm:justify-between">
           <div class="min-w-0 flex-1">
-            <p class="text-[10px] xs:text-xs font-black uppercase tracking-[0.24em] text-black/55">Earth Guardians</p>
+            <p class="text-[10px] xs:text-xs font-black uppercase tracking-[0.24em] text-black/55">{{ t('home.title') }}</p>
             <h1 class="mt-1.5 xs:mt-2 text-fluid-4xl font-black leading-tight tracking-normal">{{ t('home.title') }}</h1>
             <p class="mt-1.5 xs:mt-2 max-w-[min(100%,44rem)] text-fluid-sm leading-6 text-black/65">{{ t('home.subtitle') }}</p>
           </div>
@@ -13,7 +13,7 @@
             class="inline-flex h-10 xs:h-11 shrink-0 items-center justify-center gap-1.5 xs:gap-2 rounded-fluid border-2 border-black px-3 xs:px-4 text-xs xs:text-sm font-black transition-colors hover:bg-black hover:text-white"
           >
             <Icon name="lucide:arrow-left" class="h-4 w-4" />
-            <span class="hidden xs:inline">Home</span>
+            <span class="hidden xs:inline">{{ t('info.homeLink') }}</span>
           </NuxtLink>
         </div>
       </header>
@@ -201,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { allProjectsData } from '@/lib/project-data'
 import { formatCompact } from '@/lib/utils'
 
@@ -209,24 +209,24 @@ const { t } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
 
 useHead({
-  title: 'Info & Feedback | Earth Guardians',
+  title: computed(() => t('info.title')),
   meta: [
-    { name: 'description', content: 'Learn about Earth Guardians data visualization platforms and submit feedback' },
-    { property: 'og:title', content: 'Info & Feedback | Earth Guardians' },
-    { property: 'og:description', content: 'Learn about Earth Guardians data visualization platforms and submit feedback' },
+    { name: 'description', content: computed(() => t('info.description')) },
+    { property: 'og:title', content: computed(() => t('info.title')) },
+    { property: 'og:description', content: computed(() => t('info.description')) },
   ],
 })
 
 type InfoTab = 'overview' | 'grants' | 'species' | 'mains' | 'feedback'
 
 const activeTab = ref<InfoTab>('overview')
-const tabs: Array<{ id: InfoTab; label: string; icon: string }> = [
-  { id: 'overview', label: 'Overview', icon: 'lucide:layout-dashboard' },
-  { id: 'grants', label: 'Grants', icon: 'lucide:hand-heart' },
-  { id: 'species', label: 'Species', icon: 'lucide:bird' },
-  { id: 'mains', label: 'Mains', icon: 'lucide:crown' },
-  { id: 'feedback', label: 'Feedback', icon: 'lucide:message-square' },
-]
+const tabs = computed<Array<{ id: InfoTab; label: string; icon: string }>>(() => [
+  { id: 'overview', label: t('info.tabs.overview'), icon: 'lucide:layout-dashboard' },
+  { id: 'grants', label: t('info.tabs.grants'), icon: 'lucide:hand-heart' },
+  { id: 'species', label: t('info.tabs.species'), icon: 'lucide:bird' },
+  { id: 'mains', label: t('info.tabs.mains'), icon: 'lucide:crown' },
+  { id: 'feedback', label: t('info.tabs.feedback'), icon: 'lucide:message-square' },
+])
 
 const speciesCount = ref(0)
 const taxonomicGroups = ref<string[]>([])
@@ -269,6 +269,11 @@ const feedback = ref({
 })
 
 const feedbackSubmitted = ref(false)
+let feedbackTimeout: ReturnType<typeof setTimeout> | null = null
+
+onBeforeUnmount(() => {
+  if (feedbackTimeout) clearTimeout(feedbackTimeout)
+})
 
 function submitFeedback() {
   feedback.value.name = feedback.value.name.trim()
@@ -287,7 +292,7 @@ function submitFeedback() {
   }
 
   feedbackSubmitted.value = true
-  setTimeout(() => {
+  feedbackTimeout = setTimeout(() => {
     feedbackSubmitted.value = false
     feedback.value = { name: '', type: 'general', message: '' }
   }, 5000)

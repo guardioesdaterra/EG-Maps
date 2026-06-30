@@ -43,7 +43,8 @@ export function useToast() {
 
   function dismiss(id: string) {
     if (timers.has(id)) {
-      clearTimeout(timers.get(id)!)
+      const timer = timers.get(id)
+      if (timer) clearTimeout(timer)
       timers.delete(id)
     }
     state.value.toasts = state.value.toasts.filter(t => t.id !== id)

@@ -51,7 +51,7 @@ export default defineNuxtPlugin(() => {
     label: t('nav.observatoryOfVulcan'),
     icon: 'mdi:volcano',
     keywords: ['observatory', 'vulcan', 'ree', 'mining'],
-    onSelect: () => { void navigateTo('/observatory-of-vulcan') },
+    onSelect: () => { void navigateTo('/vulcan-observatory') },
   })
 
   // Theme toggle

@@ -1,5 +1,5 @@
 <template>
-  <div class="skeleton-panel animate-pulse space-y-3 p-4">
+  <div class="skeleton-panel animate-pulse space-y-3 p-4" role="status" aria-label="Loading">
     <!-- Header -->
     <div class="flex items-center gap-2">
       <div class="w-2 h-2 rounded-full bg-zinc-700" />

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Concept 4 — Mosaic</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #0b0b12; color: #fff; overflow-x: hidden; }
+.hero { min-height: 100svh; padding: 32px; display: flex; flex-direction: column; }
+
+.masonry { max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr; grid-auto-rows: minmax(160px, auto); gap: 16px; align-content: center; }
+
+.tile { border-radius: 20px; padding: 28px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.35s cubic-bezier(0.2, 0, 0, 1); cursor: pointer; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); }
+.tile:hover { transform: scale(1.02); border-color: rgba(255,255,255,0.15); }
+.tile::before { content: ''; position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.06) 0%, transparent 60%); transition: opacity 0.4s; }
+.tile:hover::before { opacity: 1; }
+
+.tile-wide { grid-column: span 2; }
+.tile-tall { grid-row: span 2; }
+.tile-full { grid-column: span 2; grid-row: span 2; }
+
+.tile-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.tile h2 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; margin-top: auto; padding-top: 16px; }
+.tile .desc { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 4px; line-height: 1.4; }
+.tile .stats { display: flex; gap: 12px; margin-top: 12px; }
+.tile .stat { font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.6); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
+.tile .ctas { display: flex; gap: 8px; margin-top: 14px; }
+.tile .cta-pill { padding: 5px 14px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); }
+.tile .cta-pill:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+.badge { position: absolute; top: 16px; right: 16px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; padding: 3px 10px; border-radius: 20px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="max-w-1400 mx-auto w-full mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-black tracking-tight">Earth Guardians</h1>
+      <p class="text-sm text-gray-500">Data Visualization Platform</p>
+    </div>
+    <div class="flex gap-2 text-xs text-gray-600">
+      <span class="px-3 py-1.5 rounded-full border border-gray-800">2D Maps</span>
+      <span class="px-3 py-1.5 rounded-full border border-gray-800">3D Globes</span>
+    </div>
+  </div>
+
+  <div class="masonry">
+    <!-- Project Grants — hero tile, full -->
+    <div class="tile tile-full" style="background: linear-gradient(145deg, #0a2a3a, #0d3b4a);">
+      <div>
+        <div class="tile-icon" style="background: rgba(56, 189, 248, 0.2);">
+          <svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </div>
+        <span class="badge" style="background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.2); color: #7dd3fc;">Featured</span>
+      </div>
+      <div>
+        <h2 style="font-size: 2rem;">Project Grants</h2>
+        <p class="desc" style="max-width: 400px;">Explore global grant initiatives and their impact on communities worldwide.</p>
+        <div class="stats">
+          <span class="stat">48 Projects</span>
+          <span class="stat">86K+ Beneficiaries</span>
+        </div>
+        <div class="ctas">
+          <span class="cta-pill" style="background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.3); color: #7dd3fc;">2D Map</span>
+          <span class="cta-pill" style="background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.3); color: #7dd3fc;">3D Globe</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Endangered Species — tall -->
+    <div class="tile tile-tall" style="background: linear-gradient(145deg, #0a2e1a, #0d3a22);">
+      <div>
+        <div class="tile-icon" style="background: rgba(74, 222, 128, 0.2);">
+          <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+        </div>
+      </div>
+      <div>
+        <h2>Species</h2>
+        <p class="desc">4.2K species · 12 groups</p>
+        <div class="ctas">
+          <span class="cta-pill">2D</span>
+          <span class="cta-pill">3D</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Observatory — wide -->
+    <div class="tile tile-wide" style="background: linear-gradient(145deg, #1e0a2e, #2a0d3a);">
+      <div>
+        <div class="tile-icon" style="background: rgba(192, 132, 252, 0.2);">
+          <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+      </div>
+      <div>
+        <h2>Observatory of Vulcan</h2>
+        <p class="desc">20K+ mining processes · 6 categories</p>
+        <div class="ctas">
+          <span class="cta-pill">2D</span>
+          <span class="cta-pill">3D</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Crews -->
+    <div class="tile" style="background: linear-gradient(145deg, #2a1a0a, #3a220d);">
+      <div>
+        <div class="tile-icon" style="background: rgba(251, 191, 36, 0.2);">
+          <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+      </div>
+      <div>
+        <h2>Crews</h2>
+        <p class="desc">131 crews · 1.2K members</p>
+        <div class="ctas">
+          <span class="cta-pill">2D</span>
+          <span class="cta-pill">3D</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- EG Grants -->
+    <div class="tile" style="background: linear-gradient(145deg, #2a0a14, #3a0d1a);">
+      <div>
+        <div class="tile-icon" style="background: rgba(251, 113, 133, 0.2);">
+          <svg class="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </div>
+      </div>
+      <div>
+        <h2>EG Grants</h2>
+        <p class="desc">Submit & review grants</p>
+        <div class="ctas">
+          <span class="cta-pill">Open</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

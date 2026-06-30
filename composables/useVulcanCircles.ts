@@ -82,8 +82,8 @@ export function setupVulcanCircles(map: maplibregl.Map): () => void {
       filter: ['==', 'radiusKm', circle.radiusKm],
       paint: {
         'line-color': circle.color,
-        'line-width': i === 0 ? 2 : 1.5,
-        'line-opacity': 0.6,
+        'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 10, 1.5, 14, 2.5],
+        'line-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0.4, 14, 0.7],
         'line-dasharray': i === 2 ? [4, 2] : [8, 2],
       },
     })
@@ -99,16 +99,16 @@ export function setupVulcanCircles(map: maplibregl.Map): () => void {
       filter: ['==', 'radiusKm', circle.radiusKm],
       layout: {
         'text-field': `${circle.radiusKm}km — ${circle.label}`,
-        'text-size': 10,
+        'text-size': ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 9, 12, 11],
         'text-anchor': 'top',
         'text-offset': [0, 0.5],
         'symbol-placement': 'point',
       },
       paint: {
         'text-color': circle.color,
-        'text-opacity': 0.7,
+        'text-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 0.6, 14, 0.8],
         'text-halo-color': 'rgba(0,0,0,0.8)',
-        'text-halo-width': 1,
+        'text-halo-width': ['interpolate', ['linear'], ['zoom'], 6, 0.5, 14, 1.5],
       },
     })
   }

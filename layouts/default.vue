@@ -68,76 +68,11 @@
       </div>
     </header>
 
-    <!-- Map-focused Dock Navigation -->
+    <!-- Map-focused Dock Navigation with GooeyNav -->
     <nav v-if="showDock" class="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] xs:bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
       <div :class="dockShellClass">
-        <div class="flex items-end gap-1" ref="dockRef">
-          <template v-for="(item, index) in navItems" :key="item.path || item.external">
-            <!-- External link (Join Earth Guardians) -->
-            <a
-              v-if="item.external"
-              :href="item.path"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="group relative flex flex-col items-center"
-              :ref="(el: any) => { if (el?.nodeType === 1) dockItemRefs.set(index, el as Element); else dockItemRefs.delete(index) }"
-              @mouseenter="onDockHover(index)"
-              @mouseleave="onDockLeave()"
-            >
-              <!-- Tooltip -->
-              <div
-                :class="[tooltipClass, { 'opacity-100': hoveredIndex === index }]"
-              >
-                {{ t(item.labelKey) }}
-                <div :class="tooltipArrowClass" />
-              </div>
-
-              <!-- Icon -->
-              <div
-                :class="utilityIconClass"
-                :style="getItemStyle(index)"
-              >
-                <Icon :name="item.icon" class="transition-all duration-150" :class="getItemIconClass(index)" />
-              </div>
-            </a>
-
-            <!-- Internal link -->
-            <NuxtLink
-              v-else
-              :to="item.path"
-              class="group relative flex flex-col items-center"
-              :ref="(el: any) => { if (el?.nodeType === 1) dockItemRefs.set(index, el as Element); else dockItemRefs.delete(index) }"
-              @mouseenter="onDockHover(index)"
-              @mouseleave="onDockLeave()"
-            >
-              <!-- Tooltip -->
-              <div
-                :class="[tooltipClass, { 'opacity-100': hoveredIndex === index }]"
-              >
-                {{ t(item.labelKey) }}
-                <div :class="tooltipArrowClass" />
-              </div>
-
-              <!-- Icon -->
-              <div
-                class="flex items-center justify-center rounded-xl transition-all duration-150 ease-out"
-                :class="isActive(item.path)
-                  ? getActiveStyle(item.variant)
-                  : inactiveIconClass
-                "
-                :style="getItemStyle(index)"
-              >
-                <Icon :name="item.icon" class="transition-all duration-150" :class="getItemIconClass(index)" />
-              </div>
-
-              <!-- Active indicator -->
-              <div
-                v-if="isActive(item.path)"
-                class="mt-1 h-1 w-1 rounded-full"
-                :class="getActiveIndicatorClass(item.variant)"
-              />
-            </NuxtLink>
-          </template>
+        <div class="flex items-center gap-1">
+          <GooeyNav :items="navItems" />
 
           <!-- Separator -->
           <div :class="separatorClass" />
@@ -147,23 +82,16 @@
             <button
               @click="showLangMenu = !showLangMenu"
               class="group relative flex flex-col items-center"
-              :ref="(el: any) => { if (el?.nodeType === 1) dockItemRefs.set(navItems.length, el as Element); else dockItemRefs.delete(navItems.length) }"
-              @mouseenter="onDockHover(navItems.length)"
-              @mouseleave="onDockLeave()"
             >
-              <!-- Tooltip -->
               <div
-                :class="[tooltipClass, { 'opacity-100': hoveredIndex === navItems.length }]"
+                :class="[tooltipClass, 'opacity-0 group-hover:opacity-100 transition-opacity duration-150']"
               >
                 {{ t('nav.language') }}
                 <div :class="tooltipArrowClass" />
               </div>
 
-              <div
-                :class="utilityIconClass"
-                :style="getItemStyle(navItems.length)"
-              >
-                <Icon name="lucide:languages" class="transition-all duration-150" :class="getItemIconClass(navItems.length)" />
+              <div :class="utilityIconClass">
+                <Icon name="lucide:languages" class="h-4 w-4" />
               </div>
             </button>
 
@@ -192,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n as useAppI18n } from '@/composables/useI18n'
 
 const route = useRoute()
@@ -232,8 +160,10 @@ interface NavItem {
 const navItems: NavItem[] = [
   { path: '/project-grants', labelKey: 'nav.projectGrants', icon: 'lucide:hand-heart', variant: 'purple' },
   { path: '/endangered-species', labelKey: 'nav.endangeredSpecies', icon: 'lucide:bird', variant: 'green' },
-  { path: '/observatory-of-vulcan', labelKey: 'nav.observatoryOfVulcan', icon: 'lucide:microscope', variant: 'orange' },
+  { path: '/vulcan-observatory', labelKey: 'nav.observatoryOfVulcan', icon: 'lucide:microscope', variant: 'orange' },
   { path: '/active-crews', labelKey: 'nav.activeCrews', icon: 'lucide:users-round', variant: 'cyan' },
+  { path: '/eg-grants', labelKey: 'nav.egGrants', icon: 'lucide:hand-coins', variant: 'purple' },
+  { path: 'https://www.earthguardians.org/crews', labelKey: 'nav.joinEarthGuardians', icon: 'lucide:users', variant: 'cyan', external: true },
 ]
 
 const headerItems: NavItem[] = [
@@ -245,7 +175,7 @@ const headerItems: NavItem[] = [
 const { isDark, toggle: toggleDarkMode } = useDarkMode()
 
 const isMapRoute = computed(() =>
-  route.path.startsWith('/project-grants') || route.path.startsWith('/endangered-species') || route.path.startsWith('/observatory-of-vulcan') || route.path.startsWith('/active-crews')
+  route.path.startsWith('/project-grants') || route.path.startsWith('/endangered-species') || route.path.startsWith('/vulcan-observatory') || route.path.startsWith('/active-crews')
 )
 const is3DRoute = computed(() => route.path.endsWith('/3d'))
 const showUnifiedHeader = computed(() => isMapRoute.value || route.path === '/info')
@@ -271,46 +201,20 @@ const headerSeparatorClass = computed(() => [
   'mx-0.5 h-5 w-px self-center',
   isLightTheme.value ? 'bg-black/30' : 'bg-white/20',
 ])
-const dockShellClass = computed(() => [
-  'max-w-full px-2 py-2 rounded-2xl border shadow-xl backdrop-blur-xl transition-colors duration-200',
-  isLightTheme.value
-    ? 'bg-white/95 border-black text-black shadow-[var(--panel-shadow)]'
-    : 'bg-black/90 border-white/20 text-white shadow-[var(--panel-shadow)]',
-])
+const dockShellClass = 'max-w-full px-1.5 py-1.5 rounded-xl shadow-lg backdrop-blur-2xl bg-black/80 text-white'
 const headerUtilityClass = computed(() => [
   'inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-semibold transition-colors max-sm:h-8 max-sm:w-8 max-sm:justify-center max-sm:px-0',
   isLightTheme.value
     ? 'text-black hover:bg-black hover:text-white'
     : 'text-white/70 hover:bg-white/10 hover:text-white',
 ])
-const tooltipClass = computed(() => [
-  'absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 text-xs font-medium rounded-lg opacity-0 transition-all duration-150 pointer-events-none shadow-lg whitespace-nowrap',
-  isLightTheme.value
-    ? 'text-white bg-black border border-black'
-    : 'text-white bg-gray-900/95 backdrop-blur border border-white/10',
-])
-const tooltipArrowClass = computed(() => [
-  'absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent',
-  isLightTheme.value ? 'border-t-black' : 'border-t-gray-900/95',
-])
-const inactiveIconClass = computed(() =>
-  isLightTheme.value
-    ? 'bg-white text-black border border-black hover:bg-black hover:text-white'
-    : 'bg-[var(--tool-btn-bg)] text-[var(--tool-btn-text)] hover:bg-white hover:text-black'
-)
-const utilityIconClass = computed(() => [
-  'flex items-center justify-center rounded-xl transition-all duration-150 ease-out',
-  inactiveIconClass.value,
-])
-const separatorClass = computed(() => [
-  'mx-1 h-8 w-px self-center',
-  isLightTheme.value ? 'bg-black' : 'bg-white/20',
-])
+const tooltipClass = 'absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[10px] font-medium rounded-md opacity-0 transition-all duration-150 pointer-events-none shadow-lg whitespace-nowrap z-10 text-white bg-gray-900 border border-white/10'
+const tooltipArrowClass = 'absolute top-full left-1/2 -translate-x-1/2 border-[4px] border-transparent border-t-gray-900'
+const utilityIconClass = 'flex items-center justify-center rounded-lg transition-all duration-150 ease-out text-white/70 hover:bg-white/10 hover:text-white w-7 h-7'
+const separatorClass = 'mx-1 h-6 w-px self-center bg-white/15'
 const dropdownClass = computed(() => [
   'absolute bottom-full left-1/2 -translate-x-1/2 mb-2 overflow-hidden rounded-lg shadow-xl min-w-[clamp(8rem,15vw,9rem)]',
-  isLightTheme.value
-    ? 'bg-white border-2 border-black'
-    : 'bg-gray-900/95 backdrop-blur border border-white/10',
+  'bg-gray-900/95 backdrop-blur border border-white/10',
 ])
 
 // Language dropdown state
@@ -332,28 +236,9 @@ const isActive = (path: string) => {
   return route.path.startsWith(path)
 }
 
-function getActiveStyle(_variant: string = 'cyan') {
-  if (isLightTheme.value) {
-    return 'bg-black text-white shadow-none'
-  }
-
-  return 'bg-white text-black shadow-none'
-}
-
-function getActiveIndicatorClass(_variant: string = 'cyan') {
-  if (isLightTheme.value) {
-    return 'bg-black'
-  }
-
-  return 'bg-white'
-}
-
 function getDropdownItemClass(loc: string) {
   const base = 'w-full px-3 py-2 text-xs text-left transition-colors flex items-center justify-between'
-  if (isLightTheme.value) {
-    return `${base} ${locale.value === loc ? 'text-white bg-black' : 'text-black hover:bg-black/10'}`
-  }
-  return `${base} hover:bg-gray-700/50 ${locale.value === loc ? 'text-white bg-white/20' : 'text-gray-300'}`
+  return `${base} hover:bg-white/10 ${locale.value === loc ? 'text-white bg-white/20' : 'text-gray-300'}`
 }
 
 function getHeaderItemClass(path: string) {
@@ -362,55 +247,6 @@ function getHeaderItemClass(path: string) {
     return `${base} ${isActive(path) ? 'bg-black text-white' : 'text-black hover:bg-black/10'}`
   }
   return `${base} ${isActive(path) ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'}`
-}
-
-// Dock magnification logic
-const dockRef = ref<HTMLElement | null>(null)
-const dockItemRefs = shallowRef(new Map<number, Element>())
-const hoveredIndex = ref<number | null>(null)
-
-const baseSize = 44
-const maxSize = 58
-const neighborSize = 50
-
-// +1 for language switcher (dark mode moved to header)
-const totalDockItems = computed(() => navItems.length + 1)
-const itemSizes = shallowRef<number[]>(Array(totalDockItems.value).fill(baseSize))
-
-function onDockHover(index: number) {
-  hoveredIndex.value = index
-  const newSizes = new Array(itemSizes.value.length)
-  for (let i = 0; i < newSizes.length; i++) {
-    const distance = Math.abs(i - index)
-    if (distance === 0) {
-      newSizes[i] = maxSize
-    } else if (distance === 1) {
-      newSizes[i] = neighborSize
-    } else {
-      newSizes[i] = baseSize
-    }
-  }
-  itemSizes.value = newSizes
-}
-
-function onDockLeave() {
-  hoveredIndex.value = null
-  itemSizes.value = Array(totalDockItems.value).fill(baseSize)
-}
-
-function getItemStyle(index: number) {
-  const size = itemSizes.value[index] || baseSize
-  return {
-    width: `${size}px`,
-    height: `${size}px`,
-  }
-}
-
-function getItemIconClass(index: number) {
-  const size = itemSizes.value[index] || baseSize
-  if (size >= maxSize) return 'h-7 w-7'
-  if (size >= neighborSize) return 'h-6 w-6'
-  return 'h-5 w-5'
 }
 </script>
 

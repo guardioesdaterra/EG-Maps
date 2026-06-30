@@ -26,7 +26,6 @@ async function loadMapping(baseURL?: string): Promise<SpeciesIconMapping> {
     cachedMapping = await res.json() as SpeciesIconMapping
     return cachedMapping
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.warn('[useSpeciesIcons] Failed to load mapping:', err)
     return {}
   }

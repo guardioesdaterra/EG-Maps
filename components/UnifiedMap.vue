@@ -79,7 +79,7 @@
     <!-- Map Container -->
     <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" :style="{ zIndex: 'var(--z-map-base)' }" />
 
-    <!-- Custom overlays slot (used by observatory-of-vulcan) -->
+    <!-- Custom overlays slot (used by vulcan-observatory) -->
     <slot name="overlays" />
 
     <!-- Project filter panel -->
@@ -101,7 +101,7 @@
 
     <!-- Data Bubble: species groups or project stats (hidden for observatory) -->
     <DataBubble
-      v-if="activeDataset !== 'observatory-of-vulcan'"
+      v-if="activeDataset !== 'vulcan-observatory'"
       :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'"
       :selected-groups="selectedSpeciesGroups"
       :projects="visibleProjects"
@@ -111,7 +111,7 @@
 
     <!-- Map Controls (hidden for observatory — uses custom overlays slot) -->
     <MapControls
-      v-if="activeDataset !== 'observatory-of-vulcan'"
+      v-if="activeDataset !== 'vulcan-observatory'"
       :is-globe-view="false"
       :show-hex-grid="showHexGrid"
       :show-connections="showConnections2D"
@@ -185,8 +185,8 @@ import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
-import { buildRareEarthPopupHTML } from '@/lib/map-utils'
-import { detectWebGLSupport } from '@/composables/useMapLibre'
+import { openRareEarthOverlayPopup } from '@/lib/map-utils'
+import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
 import { useMapHexGrid } from '@/composables/useMapHexGrid'
 import { useSpeciesPopup, useProjectPopup, useCrewPopup } from '@/composables/useMapPopup'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
@@ -201,22 +201,16 @@ const speciesPanel = useSpeciesPanel()
 const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
 const baseURL = useRuntimeConfig().app.baseURL
 
-const MAP_STYLE = MAPTILER_API_KEY
-  ? `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${MAPTILER_API_KEY}`
-  : 'https://demotiles.maplibre.org/style.json'
-
-function transformRequest(url: string, _resourceType?: string) {
-  return { url }
-}
+const MAP_STYLE = getMapStyle(MAPTILER_API_KEY)
 
 interface Props {
   projects?: ProjectData[]
   species?: Species[]
   speciesIndex?: SpeciesIndexItem[]  // Lightweight index for markers
-  defaultDataset?: 'project-grants' | 'endangered-species' | 'observatory-of-vulcan' | 'active-crews'
+  defaultDataset?: 'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'
   crews?: CrewRegionData[]
   crewLocations?: CrewLocation[]
-  // Rare Earth dataset (observatory-of-vulcan)
+  // Rare Earth dataset (vulcan-observatory)
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
   rareEarthProtected?: GeoJSON.FeatureCollection
@@ -250,7 +244,7 @@ const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
 const speciesFilterPanelRef = ref<{ toggleTaxonomicGroup: (_group: string) => void } | null>(null)
 const selectedSpeciesGroups = ref<string[]>([])
 const showFilterPanel = ref(false)
-const activeDataset = ref<'project-grants' | 'endangered-species' | 'observatory-of-vulcan' | 'active-crews'>(props.defaultDataset)
+const activeDataset = ref<'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'>(props.defaultDataset)
 
 const connections2D = useMapConnections(
   () => map,
@@ -300,6 +294,7 @@ const {
 // ── Hex grid composable ──
 const hexGrid = useMapHexGrid(hexCanvasRef)
 const { showHexGrid } = hexGrid
+const onResize = hexGrid.debouncedSetup
 
 // Wrapper functions for template backward-compat
 function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
@@ -337,20 +332,14 @@ function handleSpeciesSelected(species: SpeciesIndexItem) {
 }
 
 function openRareEarthOverlay(feature: GeoJSON.Feature) {
-  const props = feature.properties as Record<string, unknown> || {}
-  const html = buildRareEarthPopupHTML(props as { c?: string; ds?: number; a?: number; [key: string]: unknown })
-  const coords = (feature.geometry as GeoJSON.Point).coordinates
-  new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
-    .setLngLat([coords[0] as number, coords[1] as number])
-    .setHTML(html)
-    .setMaxWidth('none')
-    .addTo(map!)
+  openRareEarthOverlayPopup(map!, feature)
 }
 
 let map: maplibregl.Map | null = null
 let isMounted = true
+let loadingTimeout: ReturnType<typeof setTimeout> | null = null
 let pendingVisibilityUpdate = false
-let pendingClusterRebuild = false
+let pendingRebuildRAF: number | null = null
 let lastFocusedEl: HTMLElement | null = null
 
 const speciesOverlayActive = computed(() => showSpeciesOverlay.value)
@@ -383,7 +372,6 @@ const orchestrator = useMapMarkerOrchestrator({
     openCrewOverlay: (crew: CrewRegionData | CrewLocation) => openCrewOverlay(crew as CrewRegionData),
     openCrewLocationOverlay: (crew: CrewLocation) => openCrewLocationOverlay(crew),
     openRareEarthOverlay: (feature: GeoJSON.Feature) => openRareEarthOverlay(feature),
-    findSpeciesAtCoord: (lat: number, lng: number, source: SpeciesIndexItem[]) => orchestrator.mapCore.findSpeciesAtCoord(lat, lng, source),
   },
 })
 
@@ -391,16 +379,24 @@ const useNativeGeoJSON = orchestrator.useNativeGeoJSON
 
 function handleFilterChange(filtered: Species[]) {
   filteredSpeciesList.value = filtered
-  rebuildMarkers()
-  connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
-  if (connections2D.showConnections.value) connections2D.startParticles()
+  syncAfterFilter()
 }
 
 function handleProjectFilterChange(filtered: ProjectData[]) {
   filteredProjectsList.value = filtered
-  rebuildMarkers()
-  connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
-  if (connections2D.showConnections.value) connections2D.startParticles()
+  syncAfterFilter()
+}
+
+let filterDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+function syncAfterFilter() {
+  if (filterDebounceTimer) clearTimeout(filterDebounceTimer)
+  filterDebounceTimer = setTimeout(() => {
+    filterDebounceTimer = null
+    rebuildMarkers()
+    connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+    if (connections2D.showConnections.value) connections2D.startParticles()
+  }, 16)
 }
 
 function handleSearchOpenChange(open: boolean) {
@@ -428,7 +424,7 @@ function setupRareEarthLayers() {
 
 const rareEarthController = useRareEarthController({
   map: mapRef as Ref<maplibregl.Map | null>,
-  isActive: computed(() => activeDataset.value === 'observatory-of-vulcan'),
+  isActive: computed(() => activeDataset.value === 'vulcan-observatory'),
   getProps: () => props,
   popup: {
     t,
@@ -466,8 +462,7 @@ function navigateToLocation(lat: number, lng: number) {
 // Hex grid is now handled by useMapHexGrid composable (hexGrid.setupHexGrid / hexGrid.debouncedSetup)
 
 function initMap() {
-  // eslint-disable-next-line no-console
-  console.debug('[UnifiedMap] initMap called', { containerRef: !!mapContainerRef.value })
+
   if (!mapContainerRef.value) return
 
   // Detect WebGL support before attempting to create map
@@ -479,7 +474,12 @@ function initMap() {
     return
   }
 
+  // Cancel pending RAFs from previous map lifecycle
+  if (pendingRebuildRAF) { cancelAnimationFrame(pendingRebuildRAF); pendingRebuildRAF = null }
+  pendingVisibilityUpdate = false
+
   // Clean up existing map if retry
+  window.removeEventListener('resize', onResize)
   if (map) {
     orchestrator.cleanup()
     map.remove()
@@ -490,9 +490,8 @@ function initMap() {
   isLoading.value = true
 
   try {
-    const isRee = activeDataset.value === 'observatory-of-vulcan'
-    // eslint-disable-next-line no-console
-    console.debug('[UnifiedMap] creating maplibregl.Map', { style: MAP_STYLE.substring(0, 80), isMobile: isMobile.value })
+    const isRee = activeDataset.value === 'vulcan-observatory'
+
     map = new maplibregl.Map({
       container: mapContainerRef.value,
       style: MAP_STYLE,
@@ -505,7 +504,6 @@ function initMap() {
       fadeDuration: 100,
       maxTileCacheSize: 200,
       maxTileCacheZoomLevels: 5,
-      transformRequest,
     })
 
     map.addControl(
@@ -519,16 +517,15 @@ function initMap() {
     }
 
     map.on('load', () => {
-      // eslint-disable-next-line no-console
-      console.debug('[UnifiedMap] map loaded successfully')
+
       if (!isMounted) return
       isLoading.value = false
       if (map) emit('mapInit', map)
-      if (activeDataset.value === 'observatory-of-vulcan') {
+      if (activeDataset.value === 'vulcan-observatory') {
         setupRareEarthLayers()
       }
       rebuildMarkers()
-      if (activeDataset.value !== 'observatory-of-vulcan') {
+      if (activeDataset.value !== 'vulcan-observatory') {
         connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
         connections2D.startParticles()
       }
@@ -536,37 +533,29 @@ function initMap() {
     })
 
     map.on('move', () => {
-      // Only run visibility update for DOM markers (not native GeoJSON)
-      const usingNativeGeoJSON = useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500
-      if (!usingNativeGeoJSON && !pendingVisibilityUpdate) {
+      if (!pendingVisibilityUpdate) {
         pendingVisibilityUpdate = true
         requestAnimationFrame(() => {
           updateMarkerVisibility()
           pendingVisibilityUpdate = false
         })
       }
-      if (!pendingClusterRebuild && map) {
-        // Skip cluster rebuilds for GeoJSON path — MapLibre handles viewport natively
-        if (usingNativeGeoJSON) return
-        const currentZoom = Math.floor(map.getZoom())
-        if (orchestrator.mapCore.shouldRebuildClusters(map, currentZoom, orchestrator.lastClusterZoom, orchestrator.lastBboxCenter)) {
-          pendingClusterRebuild = true
-          requestAnimationFrame(() => {
-            rebuildMarkers()
-            pendingClusterRebuild = false
-          })
-        }
-      }
     })
 
     map.on('moveend', () => {
       updateMarkerVisibility()
-      if (map) {
+      if (!map) return
+      const usingNativeGeoJSON = useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500
+      if (usingNativeGeoJSON) return
+      if (pendingRebuildRAF) { cancelAnimationFrame(pendingRebuildRAF); pendingRebuildRAF = null }
+      pendingRebuildRAF = requestAnimationFrame(() => {
+        pendingRebuildRAF = null
+        if (!map) return
         const currentZoom = Math.floor(map.getZoom())
         if (orchestrator.mapCore.shouldRebuildClusters(map, currentZoom, orchestrator.lastClusterZoom, orchestrator.lastBboxCenter)) {
           rebuildMarkers()
         }
-      }
+      })
     })
 
     map.on('resize', () => {
@@ -577,12 +566,10 @@ function initMap() {
     let usedFallback = false
 
     map.on('error', (err) => {
-      // eslint-disable-next-line no-console
       console.error('[UnifiedMap] MapLibre error:', err)
       errorCount++
       if (!usedFallback && errorCount >= 2 && MAP_STYLE.includes('maptiler.com')) {
         usedFallback = true
-        // eslint-disable-next-line no-console
         console.warn('MapTiler style failed, falling back to demotiles style')
         map!.setStyle('https://demotiles.maplibre.org/style.json')
         return
@@ -602,7 +589,7 @@ function initMap() {
     })
 
     // Timeout fallback — show error instead of silently hiding loading
-    setTimeout(() => {
+    loadingTimeout = setTimeout(() => {
       if (isLoading.value) {
         isLoading.value = false
         if (!hasError.value) {
@@ -612,9 +599,8 @@ function initMap() {
       }
     }, 20000)
 
-    window.addEventListener('resize', hexGrid.debouncedSetup)
+    window.addEventListener('resize', onResize)
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('[UnifiedMap] Failed to initialize map:', err)
     isLoading.value = false
     hasError.value = true
@@ -622,8 +608,7 @@ function initMap() {
 }
 
 onMounted(() => {
-  // eslint-disable-next-line no-console
-  console.debug('[UnifiedMap] onMounted', { dataset: props.defaultDataset, mapContainer: !!mapContainerRef.value })
+
   showFilterPanel.value = !isMobile.value
   initMap()
 })
@@ -657,14 +642,14 @@ watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData]
   } else {
     rebuildMarkers()
   }
-}, { deep: true })
+})
 
-// Watch rare earth data changes (observatory-of-vulcan) to rebuild markers
+// Watch rare earth data changes (vulcan-observatory) to rebuild markers
 watch(() => [props.rareEarthPoints, props.rareEarthPolygons], () => {
-  if (!map || activeDataset.value !== 'observatory-of-vulcan') return
+  if (!map || activeDataset.value !== 'vulcan-observatory') return
   setupRareEarthLayers()
   rebuildMarkers()
-}, { deep: true })
+})
 
 watch(showHexGrid, async (visible) => {
   if (!visible) return
@@ -704,9 +689,10 @@ watch(popupLocale, () => {
 
 onUnmounted(() => {
   isMounted = false
+  if (loadingTimeout) clearTimeout(loadingTimeout)
   connections2D.cleanup()
   orchestrator.cleanup()
-  window.removeEventListener('resize', hexGrid.debouncedSetup)
+  window.removeEventListener('resize', onResize)
   if (map) {
     map.remove()
     map = null

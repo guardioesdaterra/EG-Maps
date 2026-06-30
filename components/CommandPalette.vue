@@ -63,7 +63,6 @@ async function select(item: CommandPaletteItem) {
   try {
     await Promise.resolve(item.onSelect())
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error('Command palette action failed', e)
   } finally {
     closePalette()

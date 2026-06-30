@@ -46,7 +46,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(d, i) in pagedItems" :key="d.normalizedName" class="obs-table-row" @click="emit('flyToEnterprise', d.displayName)">
+              <tr v-for="(d, i) in pagedItems" :key="d.normalizedName" class="obs-table-row" tabindex="0" role="button" @click="emit('flyToEnterprise', d.displayName)" @keydown.enter.prevent="emit('flyToEnterprise', d.displayName)" @keydown.space.prevent="emit('flyToEnterprise', d.displayName)">
                 <td class="obs-table-num">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td class="obs-table-name" :title="d.displayName">{{ d.displayName }}</td>
                 <td class="obs-table-num" :style="{ color: dangerColor(d.suspicionScore) }">{{ d.suspicionScore.toFixed(1) }}</td>

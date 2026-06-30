@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Concept 1 — Nebula</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; overflow-x: hidden; background: #05050a; }
+
+.hero { min-height: 100svh; position: relative; display: flex; flex-direction: column; background: radial-gradient(ellipse 80% 60% at 50% 40%, #0a1628 0%, #05050a 70%); overflow: hidden; }
+
+/* animated grid bg */
+.grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 60px 60px; mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 70%); -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 70%); }
+
+/* CSS 3D globe */
+.globe-container { perspective: 1200px; }
+.globe { width: 280px; height: 280px; position: relative; border-radius: 50%; background: linear-gradient(135deg, #0a3a5c, #0d6b4a); box-shadow: 0 0 80px rgba(16, 185, 129, 0.15), inset -20px 0 40px rgba(0,0,0,0.5); animation: spin 20s linear infinite; overflow: hidden; }
+.globe::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-linear-gradient(0deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 2px, transparent 2px, transparent 8px), repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 8px); }
+.globe::after { content: ''; position: absolute; inset: -2px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 50%); }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.shine { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.15) 0%, transparent 40%); }
+
+/* floating dots */
+.dot { position: absolute; border-radius: 50%; background: rgba(16, 185, 129, 0.4); animation: float 6s ease-in-out infinite; }
+@keyframes float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-20px) scale(1.2); } }
+
+/* glass card strip */
+.carousel { display: flex; gap: 12px; overflow-x: auto; padding: 8px 4px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+.carousel::-webkit-scrollbar { height: 4px; }
+.carousel::-webkit-scrollbar-track { background: transparent; }
+.carousel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+.glass-card { flex: 0 0 240px; scroll-snap-align: start; background: rgba(255,255,255,0.04); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; transition: all 0.3s; cursor: pointer; }
+.glass-card:hover { background: rgba(255,255,255,0.08); border-color: rgba(16, 185, 129, 0.3); transform: translateY(-4px); }
+.cta-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.2s; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="grid-bg"></div>
+
+  <!-- floating dots -->
+  <div class="dot" style="width:6px;height:6px;top:15%;left:12%;animation-delay:0s;"></div>
+  <div class="dot" style="width:4px;height:4px;top:30%;left:85%;animation-delay:1.5s;"></div>
+  <div class="dot" style="width:5px;height:5px;top:70%;left:8%;animation-delay:3s;"></div>
+  <div class="dot" style="width:3px;height:3px;top:55%;left:92%;animation-delay:0.8s;"></div>
+  <div class="dot" style="width:7px;height:7px;top:80%;left:75%;animation-delay:2.2s;"></div>
+
+  <!-- main content -->
+  <div class="flex-1 flex items-center justify-center px-6 relative z-10">
+    <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 max-w-6xl w-full">
+
+      <!-- left: text -->
+      <div class="text-center lg:text-left max-w-lg">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-6">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          Interactive Data Platform
+        </div>
+        <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.05]">
+          Earth<br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Guardians</span>
+        </h1>
+        <p class="mt-4 text-lg text-gray-400 max-w-md leading-relaxed">
+          Explore global grant initiatives, endangered species habitats, and environmental impact through interactive maps and 3D globes.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-6">
+          <div><span class="text-2xl font-black text-white">48</span><span class="block text-xs text-gray-500 font-semibold uppercase tracking-wider">Projects</span></div>
+          <div><span class="text-2xl font-black text-white">4.2K+</span><span class="block text-xs text-gray-500 font-semibold uppercase tracking-wider">Species</span></div>
+          <div><span class="text-2xl font-black text-white">12</span><span class="block text-xs text-gray-500 font-semibold uppercase tracking-wider">Groups</span></div>
+          <div><span class="text-2xl font-black text-white">131</span><span class="block text-xs text-gray-500 font-semibold uppercase tracking-wider">Crews</span></div>
+        </div>
+      </div>
+
+      <!-- right: CSS globe -->
+      <div class="globe-container shrink-0">
+        <div class="globe"><div class="shine"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- bottom glass carousel -->
+  <div class="relative z-10 pb-8 px-6 max-w-6xl mx-auto w-full">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">Explore datasets</span>
+      <span class="text-[10px] text-gray-600">scroll →</span>
+    </div>
+    <div class="carousel">
+      <div class="glass-card">
+        <div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center mb-3"><svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div>
+        <h3 class="text-sm font-bold text-white">Project Grants</h3>
+        <p class="text-xs text-gray-500 mt-1 mb-3">48 projects · 86K+ beneficiaries</p>
+        <div class="flex gap-1.5">
+          <span class="cta-btn bg-white/10 text-white hover:bg-white/20">2D</span>
+          <span class="cta-btn bg-white/10 text-white hover:bg-white/20">3D</span>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="w-10 h-10 rounded-full bg-sky-500/20 flex items-center justify-center mb-3"><svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg></div>
+        <h3 class="text-sm font-bold text-white">Endangered Species</h3>
+        <p class="text-xs text-gray-500 mt-1 mb-3">4.2K species · 12 groups</p>
+        <div class="flex gap-1.5">
+          <span class="cta-btn bg-white/10 text-white hover:bg-white/20">2D</span>
+          <span class="cta-btn bg-white/10 text-white hover:bg-white/20">3D</span>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center mb-3"><svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+        <h3 class="text-sm font-bold text-white">Observatory of Vulcan</h3>
+        <p class="text-xs text-gray-500 mt-1 mb-3">20K+ mining processes</p>
+        <div class="flex gap-1.5">
+          <span class="cta-btn bg-white/10 text-white hover:bg-white/20">2D</span>
+          <span class="cta-btn bg-white/10 text-white hover:bg-white/20">3D</span>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center mb-3"><svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+        <h3 class="text-sm font-bold text-white">Active Crews</h3>
+        <p class="text-xs text-gray-500 mt-1 mb-3">131 crews · 1.2K members</p>
+        <div class="flex gap-1.5">
+          <span class="cta-btn bg-white/10 text-white hover:bg-white/20">2D</span>
+          <span class="cta-btn bg-white/10 text-white hover:bg-white/20">3D</span>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center mb-3"><svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div>
+        <h3 class="text-sm font-bold text-white">EG Grants</h3>
+        <p class="text-xs text-gray-500 mt-1 mb-3">Submit & review</p>
+        <span class="cta-btn bg-white/10 text-white hover:bg-white/20">Open</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -16,7 +16,7 @@
             <span v-if="recentSearches.length > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-white rounded-full" />
           </UiButton>
         </template>
-        <p>{{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'observatory-of-vulcan' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }} <span class="text-gray-500 ml-1">{{ t('mapControls.keyboardShortcut') }}</span></p>
+        <p>{{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'vulcan-observatory' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }} <span class="text-gray-500 ml-1">{{ t('mapControls.keyboardShortcut') }}</span></p>
       </UiTooltip>
 
       <!-- Filter Panel Toggle -->
@@ -97,7 +97,7 @@
         <div class="flex justify-between items-center mb-2 xs:mb-3">
           <h3 class="text-xs xs:text-sm font-bold text-[var(--tool-btn-text)] flex items-center gap-1.5 xs:gap-2">
             <iconify-icon icon="lucide:search" class="h-3.5 w-3.5 xs:h-4 xs:w-4" />
-            {{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'observatory-of-vulcan' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }}
+            {{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'vulcan-observatory' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }}
           </h3>
           <div class="flex items-center gap-1">
             <span class="text-[10px] text-[var(--text-muted)] hidden sm:inline">ESC</span>
@@ -112,7 +112,7 @@
             <UiInput
               ref="searchInputRef"
               type="text"
-              :placeholder="dataset === 'project-grants' ? t('mapControls.searchPlaceholder') : dataset === 'observatory-of-vulcan' ? 'Search Brazilian cities...' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpeciesPlaceholder')"
+              :placeholder="dataset === 'project-grants' ? t('mapControls.searchPlaceholder') : dataset === 'vulcan-observatory' ? 'Search Brazilian cities...' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpeciesPlaceholder')"
               v-model="searchQuery"
               class="pr-8"
               :style="{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }"
@@ -268,7 +268,7 @@ interface Props {
   isGlobeView?: boolean
   showHexGrid?: boolean
   showConnections?: boolean
-  dataset?: 'project-grants' | 'endangered-species' | 'observatory-of-vulcan' | 'active-crews'
+  dataset?: 'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'
   projects?: ProjectData[]
   species?: (Species | SpeciesIndexItem)[]
   filterOpen?: boolean
@@ -314,7 +314,6 @@ onMounted(() => {
         recentSearches.value = JSON.parse(saved)
       }
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error('Error loading recent searches:', e)
     }
     window.addEventListener('keydown', handleKeyboardShortcut)
@@ -328,7 +327,6 @@ function saveRecentSearch(query: string) {
     recentSearches.value = [query, ...filtered].slice(0, 5)
     localStorage.setItem('eg-maps-recent-searches', JSON.stringify(recentSearches.value))
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error('Error saving recent search:', e)
   }
 }
@@ -458,11 +456,22 @@ function getCityPopulation(result: SearchResult): number | null {
   return isCityResult(result) ? result.population : null
 }
 
+// Debounce search to avoid filtering 4000+ items on every keystroke
+const debouncedSearch = ref('')
+let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, (val) => {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(() => {
+    debouncedSearch.value = val
+  }, 150)
+})
+
 // Search logic
-watch([searchQuery, showAllItems, () => props.dataset], () => {
+watch([debouncedSearch, showAllItems, () => props.dataset], () => {
+  const q = debouncedSearch.value
   if (props.dataset === 'project-grants') {
-    if (searchQuery.value.length > 1) {
-      const query = searchQuery.value.toLowerCase().trim()
+    if (q.length > 1) {
+      const query = q.toLowerCase().trim()
       searchResults.value = currentProjects.value.filter(project =>
         project.project_title.toLowerCase().includes(query) ||
         (project.country_province || '').toLowerCase().includes(query)
@@ -475,10 +484,10 @@ watch([searchQuery, showAllItems, () => props.dataset], () => {
     } else {
       searchResults.value = []
     }
-  } else if (props.dataset === 'observatory-of-vulcan') {
+  } else if (props.dataset === 'vulcan-observatory') {
     // City search
-    if (searchQuery.value.length > 1) {
-      searchResults.value = searchCities(searchQuery.value)
+    if (q.length > 1) {
+      searchResults.value = searchCities(q)
       showAllItems.value = false
     } else if (showAllItems.value) {
       searchResults.value = [...BRAZILIAN_CITIES].sort((a, b) =>
@@ -490,8 +499,8 @@ watch([searchQuery, showAllItems, () => props.dataset], () => {
   } else if (props.dataset === 'active-crews') {
     // Crew region search
     const crewList = currentProjects.value as unknown as CrewRegionData[]
-    if (searchQuery.value.length > 1) {
-      const query = searchQuery.value.toLowerCase().trim()
+    if (q.length > 1) {
+      const query = q.toLowerCase().trim()
       searchResults.value = crewList.filter((c: CrewRegionData) =>
         c.region?.toLowerCase().includes(query)
       )
@@ -506,8 +515,8 @@ watch([searchQuery, showAllItems, () => props.dataset], () => {
   } else {
     // Species search
     const speciesList = (props.species || []) as Species[]
-    if (searchQuery.value.length > 1) {
-      const query = searchQuery.value.toLowerCase().trim()
+    if (q.length > 1) {
+      const query = q.toLowerCase().trim()
       searchResults.value = speciesList.filter(species =>
         species.commonName.toLowerCase().includes(query) ||
         species.scientificName.toLowerCase().includes(query) ||
@@ -567,13 +576,11 @@ function toggleFullscreen() {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen()
       .then(() => { fullscreen.value = true })
-      // eslint-disable-next-line no-console
-      .catch((err) => { console.error(`Error attempting to enable fullscreen: ${err.message}`) })
+      .catch((err: Error) => { console.error(`Error attempting to enable fullscreen: ${err.message}`) })
   } else {
     document.exitFullscreen()
       .then(() => { fullscreen.value = false })
-      // eslint-disable-next-line no-console
-      .catch((err) => { console.error(`Error attempting to exit fullscreen: ${err.message}`) })
+      .catch((err: Error) => { console.error(`Error attempting to exit fullscreen: ${err.message}`) })
   }
 }
 

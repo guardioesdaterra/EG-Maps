@@ -41,7 +41,7 @@ export function useMapConnections(
   let visibilityHandler: (() => void) | null = null
 
   function setupVisibilityTracking() {
-    if (!containerRef.value) return
+    if (!containerRef.value || intersectionObserver) return
 
     intersectionObserver = new IntersectionObserver(
       (entries) => {

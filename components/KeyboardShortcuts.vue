@@ -37,19 +37,26 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 const { t } = useI18n()
 const open = ref(false)
 
+const SHORTCUT_DEFS = [
+  { id: 'palette', keys: ['K'], labelKey: 'shortcuts.openPalette' },
+  { id: 'theme', keys: ['Shift', 'D'], labelKey: 'shortcuts.toggleTheme' },
+  { id: 'fullscreen', keys: ['F'], labelKey: 'shortcuts.toggleFullscreen' },
+  { id: 'shortcuts', keys: ['?'], labelKey: 'shortcuts.showShortcuts' },
+  { id: 'escape', keys: ['Esc'], labelKey: 'shortcuts.closeOverlay' },
+] as const
+
 const isMac = computed(() =>
   typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform),
 )
 
 const mod = computed(() => isMac.value ? '⌘' : 'Ctrl')
 
-const shortcuts = computed(() => [
-  { id: 'palette', keys: [mod.value, 'K'], labelKey: 'shortcuts.openPalette' },
-  { id: 'theme', keys: [mod.value, 'Shift', 'D'], labelKey: 'shortcuts.toggleTheme' },
-  { id: 'fullscreen', keys: ['F'], labelKey: 'shortcuts.toggleFullscreen' },
-  { id: 'shortcuts', keys: ['?'], labelKey: 'shortcuts.showShortcuts' },
-  { id: 'escape', keys: ['Esc'], labelKey: 'shortcuts.closeOverlay' },
-])
+const shortcuts = computed(() =>
+  SHORTCUT_DEFS.map(s => ({
+    ...s,
+    keys: s.id === 'palette' || s.id === 'theme' ? [mod.value, ...s.keys] : s.keys,
+  }))
+)
 
 function open_() { open.value = true }
 function close() { open.value = false }

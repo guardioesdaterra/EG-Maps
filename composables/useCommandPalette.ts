@@ -77,7 +77,7 @@ export function groupPaletteItems(items: CommandPaletteItem[]): Array<{ group: s
   for (const item of items) {
     const g = item.group
     if (!groups.has(g)) groups.set(g, [])
-    groups.get(g)!.push(item)
+    groups.get(g)?.push(item)
   }
   return Array.from(groups.entries()).map(([group, list]) => ({ group, items: list }))
 }

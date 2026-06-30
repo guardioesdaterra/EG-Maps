@@ -1,5 +1,5 @@
-import { ref, computed, onMounted, onUnmounted, watch, type Ref } from 'vue'
-import maplibregl, { type MapOptions } from 'maplibre-gl'
+import { ref, shallowRef, computed, onMounted, onUnmounted, watch, type Ref } from 'vue'
+import type { Map as MapInstance, MapOptions } from 'maplibre-gl'
 import type { EnterpriseHQ } from '@/lib/enterprise-data'
 import { ENTERPRISES } from '@/lib/enterprise-data'
 import { setupEnterpriseLayer, cleanupEnterpriseLayer } from '@/composables/useEnterpriseMarkers'
@@ -38,8 +38,8 @@ export interface ObservatoryLayers {
 
 export interface ObservatoryMap {
   flyToTarget: Ref<{ lng: number; lat: number; zoom?: number } | null>
-  mapRef: Ref<maplibregl.Map | null>
-  onMapInit: (map: maplibregl.Map) => void
+  mapRef: Ref<MapInstance | null>
+  onMapInit: (map: MapInstance) => void
   flyToCoord: (coord: [number, number]) => void
   onGeoLocate: (lat: number, lng: number, _city: string) => void
   expandToFullBrazil: (loadFullBrazil: () => Promise<void> | void) => Promise<void> | void
@@ -72,6 +72,23 @@ export interface ObservatoryData {
   loadRareEarthData: () => Promise<void> | void
   loadFullBrazil: () => Promise<void> | void
   isRegional: Ref<boolean>
+  setupObservatory: (data: {
+    allFeatures: Ref<unknown[]>
+    pointsData: Ref<GeoJSON.FeatureCollection>
+    polygonsData: Ref<unknown>
+    protectedData: Ref<unknown>
+    waterData: Ref<unknown>
+    culturalData: Ref<unknown>
+    speculatorIndex: Ref<unknown[]>
+    deepAnalysis: Ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null>
+    isLoading: Ref<boolean>
+    loadPhase: Ref<string>
+    loadProgress: Ref<number>
+    error: Ref<{ message?: string } | null>
+    loadRareEarthData: () => Promise<void> | void
+    loadFullBrazil: () => Promise<void> | void
+    isRegional: Ref<boolean>
+  }) => void
 }
 
 export interface ObservatoryStats {
@@ -146,11 +163,12 @@ export function useObservatoryControls(): ObservatoryControls {
     layerVis.value[key] = !layerVis.value[key]
     if (key === 'enterprise_hq') {
       enterpriseLayerVisible.value = layerVis.value[key]
-      if (mapRef && mapRef.value) {
+      const m = mapRef.value
+      if (m) {
         if (enterpriseLayerVisible.value) {
-          setupEnterpriseLayer(mapRef.value, onEnterpriseClick, speculatorIndex.value)
+          setupEnterpriseLayer(m, onEnterpriseClick, speculatorIndex.value as { normalizedName: string; centroid: { lng: number; lat: number } | null }[])
         } else {
-          cleanupEnterpriseLayer(mapRef.value)
+          cleanupEnterpriseLayer(m)
         }
       }
     }
@@ -166,9 +184,9 @@ export function useObservatoryControls(): ObservatoryControls {
 
   // ---- map ----
   const flyToTarget = ref<{ lng: number; lat: number; zoom?: number } | null>(null)
-  const mapRef = ref<maplibregl.Map | null>(null)
+  const mapRef = shallowRef<MapInstance | null>(null)
 
-  function onMapInit(map: maplibregl.Map) {
+  function onMapInit(map: MapInstance) {
     mapRef.value = map
   }
 
@@ -177,7 +195,7 @@ export function useObservatoryControls(): ObservatoryControls {
   }
 
   function onGeoLocate(_lat: number, _lng: number, _city: string) {
-    flyToTarget.value = { lng, lat, zoom: 7 }
+    flyToTarget.value = { lng: _lng, lat: _lat, zoom: 7 }
     userLocationRadius.value = 1
   }
 
@@ -186,7 +204,8 @@ export function useObservatoryControls(): ObservatoryControls {
   }
 
   function zoomToDanger(name: string, _speculatorIndex: Ref<{ normalizedName: string; displayName: string; centroid?: { lng: number; lat: number } | null }[]>) {
-    const target = speculatorIndex.value.find(s =>
+    const idx = speculatorIndex.value as { normalizedName: string; displayName: string; centroid?: { lng: number; lat: number } | null }[]
+    const target = idx.find(s =>
       s.normalizedName === name ||
       s.displayName.toLowerCase().split('/')[0].trim() === name.toLowerCase().split('/')[0].trim()
     )
@@ -198,7 +217,8 @@ export function useObservatoryControls(): ObservatoryControls {
 
   function flyToEnterprise(name: string) {
     const normalized = name.toUpperCase().split(' ')[0]
-    const specEntry = speculatorIndex.value.find(s =>
+    const idx = speculatorIndex.value as { normalizedName: string; displayName: string; centroid?: { lng: number; lat: number } | null }[]
+    const specEntry = idx.find(s =>
       s.normalizedName.includes(normalized) ||
       name.toUpperCase().includes(s.displayName.split('/')[0].trim().split(' ')[0])
     )
@@ -226,8 +246,8 @@ export function useObservatoryControls(): ObservatoryControls {
   let loadPhase = ref('idle')
   let loadProgress = ref(0)
   let error = ref<{ message?: string } | null>(null)
-  let loadRareEarthData = () => Promise.resolve()
-  let loadFullBrazil = () => Promise.resolve()
+  let loadRareEarthData: () => Promise<void> | void = () => Promise.resolve()
+  let loadFullBrazil: () => Promise<void> | void = () => Promise.resolve()
   let isRegional = ref(true)
 
   function setupObservatory(data: {
@@ -303,9 +323,9 @@ export function useObservatoryControls(): ObservatoryControls {
   // ---- stats ----
   const categoryStats = computed(() => {
     const counts: Record<string, number> = {}
-    categories.forEach((c) => { counts[c.key] = 0 })
+    categories.forEach(([key]) => { counts[key] = 0 })
     ;(allFeatures.value as Array<{ c?: string }>).forEach((d) => { const k = d.c; if (k && counts[k] !== undefined) counts[k]++ })
-    return categories.map((c) => ({ key: c.key, label: c.label.split(' ')[0], color: c.color, count: counts[c.key] || 0 }))
+    return categories.map(([key, val]) => ({ key, label: val.label.split(' ')[0], color: val.color, count: counts[key] || 0 }))
   })
 
   const totalCount = computed(() => allFeatures.value.length)
@@ -385,7 +405,8 @@ export function useObservatoryControls(): ObservatoryControls {
     const term = searchTerm.value.toLowerCase().trim()
     const catKeys = Object.keys(RARE_EARTH_CATEGORIES) as string[]
     const visKeys = Object.entries(layerVis.value).filter(([k, v]) => v && catKeys.includes(k)).map(([k]) => k)
-    const filtered = allFeatures.value.filter((d: { c: string; n: string; s: string; u: string; p: string; f: string; net?: string; y?: number; dsprocesso?: string }, _i: number) => {
+    const allFeaturesTyped = allFeatures.value as Array<{ c: string; n: string; s: string; u: string; p: string; f: string; lo: number; la: number; net?: string; y?: number; dsprocesso?: string }>
+    const filtered = allFeaturesTyped.filter((d) => {
       if (!visKeys.includes(d.c)) return false
       if (term) {
         const fields = `${d.n} ${d.s} ${d.u} ${d.p} ${d.f} ${d.net || ''} ${d.dsprocesso || ''}`.toLowerCase()
@@ -402,7 +423,7 @@ export function useObservatoryControls(): ObservatoryControls {
     filteredCount.value = filtered.length
     filteredPoints.value = {
       type: 'FeatureCollection',
-      features: filtered.map((d: { lo: number; la: number; [key: string]: unknown }, i: number) => ({
+      features: filtered.map((d, i) => ({
         type: 'Feature',
         id: `${d.c}-${i}`,
         properties: { ...d, id: `${d.c}-${i}` },

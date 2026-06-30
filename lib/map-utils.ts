@@ -1,9 +1,12 @@
+import maplibregl from 'maplibre-gl'
 import { getProjectColorByBeneficiaries, COLOR_MAMMAL } from './colors'
 import type { ProjectData, Species } from './types'
 import type { CrewRegionData } from './crew-data'
 import { isMilitaryInterest as _isMilitaryInterest, isHighEnvRisk as _isHighEnvRisk, isSuspiciousBasic, buildAnmVerifyUrl, buildClaimReportMailtoUrl, type SpeculatorIndexEntry } from './observatory-analysis'
+import { escapeHtml as _escapeHtml } from './utils'
 
 export type { Species }
+export const escapeHtml = _escapeHtml
 
 export const GROUP_COLORS: Record<string, string> = {
   Mammal: COLOR_MAMMAL,
@@ -406,12 +409,12 @@ export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2
 
 // ── Rare Earth popup constants ──
 export const RARE_EARTH_CATEGORIES: Record<string, { label: string; color: string }> = {
-  direct_ree: { label: 'Terras Raras Diretas', color: '#e74c3c' },
-  carbonatite_associated: { label: 'Carbonatito/Alcalino', color: '#f39c12' },
-  pegmatite_associated: { label: 'Pegmatito', color: '#27ae60' },
-  heavy_mineral_associated: { label: 'Minerais Pesados', color: '#2980b9' },
-  phosphate_associated: { label: 'Fosfato', color: '#8e44ad' },
-  strategic_associated: { label: 'Estratégicos', color: '#e91e63' },
+  direct_ree: { label: 'Terras Raras Diretas', color: '#ef4444' },
+  carbonatite_associated: { label: 'Carbonatito/Alcalino', color: '#f97316' },
+  pegmatite_associated: { label: 'Pegmatito', color: '#22c55e' },
+  heavy_mineral_associated: { label: 'Minerais Pesados', color: '#3b82f6' },
+  phosphate_associated: { label: 'Fosfato', color: '#a855f7' },
+  strategic_associated: { label: 'Estratégicos', color: '#ec4899' },
 }
 
 export const RARE_EARTH_PHASES: Record<string, { label: string; shortLabel: string; color: string }> = {
@@ -563,7 +566,19 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
     </div>`
 }
 
-export function escapeHtml(text: string): string {
-  const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
-  return text.replace(/[&<>"']/g, c => map[c])
+let reeOverlayPopup: maplibregl.Popup | null = null
+
+export function openRareEarthOverlayPopup(map: maplibregl.Map, feature: GeoJSON.Feature) {
+  reeOverlayPopup?.remove()
+  reeOverlayPopup = null
+  const featureProps = (feature.properties ?? {}) as Record<string, unknown>
+  const html = buildRareEarthPopupHTML(featureProps as { c?: string; ds?: number; a?: number; [key: string]: unknown })
+  const coords = (feature.geometry as GeoJSON.Point).coordinates
+  reeOverlayPopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    .setLngLat([coords[0] as number, coords[1] as number])
+    .setHTML(html)
+    .setMaxWidth('none')
+    .addTo(map)
 }
+
+

@@ -29,7 +29,6 @@ export interface OrchestratorCallbacks {
   openCrewOverlay: (_crew: CrewRegionData | CrewLocation) => void
   openCrewLocationOverlay?: (_crew: CrewLocation) => void
   openRareEarthOverlay?: (_feature: GeoJSON.Feature) => void
-  findSpeciesAtCoord: (_lat: number, _lng: number, _source: SpeciesIndexItem[]) => SpeciesIndexItem[]
 }
 
 export interface OrchestratorOptions {
@@ -40,10 +39,12 @@ export interface OrchestratorOptions {
   defaultDataset: string
   callbacks: OrchestratorCallbacks
   isGlobe?: boolean
+  /** Set to false to disable native GeoJSON clustering (default: true) */
+  useNativeGeoJSON?: boolean
 }
 
 export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
-  const { locale, isMobile, baseURL, callbacks, isGlobe = false } = options
+  const { locale, isMobile, baseURL, callbacks, isGlobe = false, useNativeGeoJSON = true } = options
   const t = (_k: string) => _k
 
   const mapCore = useMapCore(locale, t)
@@ -53,7 +54,6 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
   const markers: maplibregl.Marker[] = []
   let lastClusterZoom = -1
   let lastBboxCenter: { lng: number; lat: number } | null = null
-  const useNativeGeoJSON = true
   const SOURCE_ID = isGlobe ? 'globe-species-markers' : 'species-markers'
   let geoJSONInitializedFor: 'project-grants' | 'endangered-species' | null = null
   let geoJSONSpeciesIndex: SpeciesIndexItem[] | null = null
@@ -83,6 +83,7 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
   ) {
     const m = getMap()
     if (!m || !useNativeGeoJSON) return
+    if (!m.isStyleLoaded()) return
     if (activeDataset !== 'project-grants' && activeDataset !== 'endangered-species') return
 
     const dataset = activeDataset === 'project-grants' ? 'project-grants' : 'endangered-species'
@@ -151,10 +152,10 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
         SOURCE_ID,
         'endangered-species',
         (props, coords) => {
-          const [lng, lat] = coords
-          const matches = callbacks.findSpeciesAtCoord(lat, lng, speciesIndex)
+          const [, lat] = coords
+          const matches = mapCore.findSpeciesAtCoord(lat, coords[0], speciesIndex)
           if (matches.length > 1) {
-            callbacks.openSpeciesOverlay(matches[0]) // Open panel will be handled by parent
+            callbacks.openSpeciesOverlay(matches[0])
           } else {
             const speciesId = props.id as string
             const indexItem = speciesIndex.find(s => s.id === speciesId)
@@ -162,8 +163,7 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
           }
         },
         (_, coords) => {
-          const [lng, lat] = coords
-          const matches = callbacks.findSpeciesAtCoord(lat, lng, speciesIndex)
+          const matches = mapCore.findSpeciesAtCoord(coords[1], coords[0], speciesIndex)
           if (matches.length > 1) {
             callbacks.openSpeciesOverlay(matches[0])
           }

@@ -171,7 +171,7 @@ import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
-import { buildRareEarthPopupHTML } from '@/lib/map-utils'
+import { openRareEarthOverlayPopup } from '@/lib/map-utils'
 import type { Species } from '@/lib/map-utils'
 import { detectWebGLSupport } from '@/composables/useMapLibre'
 import { useMapHexGrid } from '@/composables/useMapHexGrid'
@@ -231,6 +231,7 @@ const hexGrid = useMapHexGrid(hexCanvasRef, {
   strokeColor: HEX_GRID.strokeColorGlobe,
   lineWidth: HEX_GRID.lineWidthGlobe,
 })
+const onResize = hexGrid.debouncedSetup
 
 // Template backward-compat wrappers
 function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
@@ -302,7 +303,7 @@ const showFilterPanel = ref(false)
 let map: maplibregl.Map | null = null
 let isMounted = true
 let pendingVisibilityUpdate = false
-let pendingClusterRebuild = false
+let pendingRebuildRAF: number | null = null
 let lastFocusedEl: HTMLElement | null = null
 let rotationAnimationId: number | null = null
 let isUserInteracting = false
@@ -329,7 +330,6 @@ const orchestrator = useMapMarkerOrchestrator({
     openSpeciesOverlay: (species: Species | SpeciesIndexItem) => openSpeciesOverlay(species),
     openCrewOverlay: (crew: CrewRegionData | CrewLocation) => openCrewOverlay(crew),
     openRareEarthOverlay: (feature: GeoJSON.Feature) => openRareEarthOverlay(feature),
-    findSpeciesAtCoord: (lat: number, lng: number, source: SpeciesIndexItem[]) => orchestrator.mapCore.findSpeciesAtCoord(lat, lng, source),
   },
 })
 
@@ -394,6 +394,19 @@ async function initMap() {
 
   noWebglSupport.value = false
   isLoading.value = true
+
+  // Cancel pending RAFs from previous map lifecycle
+  if (pendingRebuildRAF) { cancelAnimationFrame(pendingRebuildRAF); pendingRebuildRAF = null }
+  pendingVisibilityUpdate = false
+  // Clean up existing map if retry
+  window.removeEventListener('resize', onResize)
+  if (map) {
+    stopAutoRotate()
+    if (interactionTimeout) clearTimeout(interactionTimeout)
+    orchestrator.cleanup()
+    map.remove()
+    map = null
+  }
 
   try {
     // eslint-disable-next-line no-console
@@ -479,26 +492,20 @@ async function initMap() {
           pendingVisibilityUpdate = false
         })
       }
-      if (!pendingClusterRebuild && map) {
-        const currentZoom = Math.floor(map.getZoom())
-        if (orchestrator.mapCore.shouldRebuildClusters(map, currentZoom, orchestrator.lastClusterZoom, orchestrator.lastBboxCenter)) {
-          pendingClusterRebuild = true
-          requestAnimationFrame(() => {
-            rebuildMarkers()
-            pendingClusterRebuild = false
-          })
-        }
-      }
     })
 
     map.on('moveend', () => {
       updateMarkerVisibility()
-      if (map) {
+      if (!map) return
+      if (pendingRebuildRAF) { cancelAnimationFrame(pendingRebuildRAF); pendingRebuildRAF = null }
+      pendingRebuildRAF = requestAnimationFrame(() => {
+        pendingRebuildRAF = null
+        if (!map) return
         const currentZoom = Math.floor(map.getZoom())
         if (orchestrator.mapCore.shouldRebuildClusters(map, currentZoom, orchestrator.lastClusterZoom, orchestrator.lastBboxCenter)) {
           rebuildMarkers()
         }
-      }
+      })
     })
 
     let errorCount = 0
@@ -596,99 +603,18 @@ function navigateToLocation(lat: number, lng: number) {
 }
 
 function openRareEarthOverlay(feature: GeoJSON.Feature) {
-  const props = feature.properties as Record<string, unknown> || {}
-  const html = buildRareEarthPopupHTML(props as { c?: string; ds?: number; a?: number; [key: string]: unknown })
-  const coords = (feature.geometry as GeoJSON.Point).coordinates
-  new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
-    .setLngLat([coords[0] as number, coords[1] as number])
-    .setHTML(html)
-    .setMaxWidth('none')
-    .addTo(map!)
+  openRareEarthOverlayPopup(map!, feature)
 }
 
 // Hex grid is now handled by useMapHexGrid composable
 
-// Globe-specific global styles only — all shared popup/overlay styles are in main.css and UnifiedMap.vue
-if (typeof document !== 'undefined' && !document.getElementById('globe-styles')) {
-  const style = document.createElement('style')
-  style.id = 'globe-styles'
-  style.textContent = `
-    @keyframes pulse {
-      0% { transform: scale(0.95); opacity: 0; }
-      50% { transform: scale(1.1); opacity: 0.4; }
-      100% { transform: scale(0.95); opacity: 0; }
-    }
-    .maplibregl-map {
-      background-color: transparent !important;
-    }
-    .globe-marker-item {
-      transform: translateZ(0);
-      backface-visibility: hidden;
-    }
-    @keyframes cluster-float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-3px); }
-    }
-    @keyframes mini-pop {
-      0% { transform: scale(0); opacity: 0; }
-      60% { transform: scale(1.15); }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    @keyframes cluster-rainbow-spin {
-      from { --a: 0deg; }
-      to { --a: 360deg; }
-    }
-    @property --a {
-      syntax: '<angle>';
-      initial-value: 0deg;
-      inherits: false;
-    }
-    .species-popup-lang-bar {
-      position: absolute; top: 68px; right: 16px;
-      z-index: 2147483647; display: flex; flex-wrap: wrap; gap: 4px; max-width: 180px;
-    }
-    .species-popup-lang-btn {
-      padding: 3px 8px; font-size: 10px; font-weight: 700; line-height: 1.3;
-      border-radius: 4px; border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6);
-      cursor: pointer; transition: all 0.15s ease; letter-spacing: 0.02em; text-transform: uppercase;
-    }
-    .species-popup-lang-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
-    .species-popup-lang-btn.active {
-      background: rgba(6,182,212,0.25); border-color: rgba(6,182,212,0.5); color: #67e8f9;
-    }
-    @keyframes flyto-pulse {
-      0% { transform: scale(0.3); opacity: 1; }
-      50% { transform: scale(1.2); opacity: 0.6; }
-      100% { transform: scale(1); opacity: 0; }
-    }
-  `
-  document.head.appendChild(style)
-}
-
-// Add fade transition
-if (typeof document !== 'undefined' && !document.getElementById('globe-transition-styles')) {
-  const styleSheet = document.createElement('style')
-  styleSheet.id = 'globe-transition-styles'
-  styleSheet.textContent = `
-    .fade-enter-active,
-    .fade-leave-active {
-      transition: opacity 0.3s ease;
-    }
-    .fade-enter-from,
-    .fade-leave-to {
-      opacity: 0;
-    }
-
-  `
-  document.head.appendChild(styleSheet)
-}
+// Globe-specific inline styles removed — moved to scoped <style> block below
 
 onMounted(() => {
   // eslint-disable-next-line no-console
   console.debug('[GlobeView] onMounted', { dataset: props.defaultDataset, containerRef: !!containerRef.value })
   initMap()
-  window.addEventListener('resize', hexGrid.debouncedSetup)
+  window.addEventListener('resize', onResize)
 })
 
 watch(locale, () => {
@@ -718,7 +644,7 @@ watch(speciesIndexData, () => {
   } else {
     rebuildMarkers()
   }
-}, { deep: true })
+})
 
 // Fly-to target from parent (for all datasets)
 watch(() => props.flyToTarget, (target) => {
@@ -746,8 +672,28 @@ onUnmounted(() => {
     map.remove()
     map = null
   }
-  window.removeEventListener('resize', hexGrid.debouncedSetup)
+  window.removeEventListener('resize', onResize)
 })
 
 defineExpose({ initMap })
 </script>
+
+<style>
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0; }
+  50% { transform: scale(1.1); opacity: 0.4; }
+  100% { transform: scale(0.95); opacity: 0; }
+}
+.maplibregl-map {
+  background-color: transparent !important;
+}
+@keyframes cluster-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes mini-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+</style>

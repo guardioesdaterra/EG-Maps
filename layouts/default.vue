@@ -91,7 +91,7 @@
               </div>
 
               <div :class="utilityIconClass">
-                <Icon name="lucide:languages" class="h-5 w-5" />
+                <Icon name="lucide:languages" class="h-4 w-4" />
               </div>
             </button>
 
@@ -201,46 +201,20 @@ const headerSeparatorClass = computed(() => [
   'mx-0.5 h-5 w-px self-center',
   isLightTheme.value ? 'bg-black/30' : 'bg-white/20',
 ])
-const dockShellClass = computed(() => [
-  'max-w-full px-2 py-2 rounded-2xl border shadow-xl backdrop-blur-xl transition-colors duration-200',
-  isLightTheme.value
-    ? 'bg-white/95 border-black text-black shadow-[var(--panel-shadow)]'
-    : 'bg-black/90 border-white/20 text-white shadow-[var(--panel-shadow)]',
-])
+const dockShellClass = 'max-w-full px-1.5 py-1.5 rounded-xl shadow-lg backdrop-blur-2xl bg-black/80 text-white'
 const headerUtilityClass = computed(() => [
   'inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-semibold transition-colors max-sm:h-8 max-sm:w-8 max-sm:justify-center max-sm:px-0',
   isLightTheme.value
     ? 'text-black hover:bg-black hover:text-white'
     : 'text-white/70 hover:bg-white/10 hover:text-white',
 ])
-const tooltipClass = computed(() => [
-  'absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 text-xs font-medium rounded-lg opacity-0 transition-all duration-150 pointer-events-none shadow-lg whitespace-nowrap',
-  isLightTheme.value
-    ? 'text-white bg-black border border-black'
-    : 'text-white bg-gray-900/95 backdrop-blur border border-white/10',
-])
-const tooltipArrowClass = computed(() => [
-  'absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent',
-  isLightTheme.value ? 'border-t-black' : 'border-t-gray-900/95',
-])
-const inactiveIconClass = computed(() =>
-  isLightTheme.value
-    ? 'bg-white text-black border border-black hover:bg-black hover:text-white'
-    : 'bg-[var(--tool-btn-bg)] text-[var(--tool-btn-text)] hover:bg-white hover:text-black'
-)
-const utilityIconClass = computed(() => [
-  'flex items-center justify-center rounded-xl transition-all duration-150 ease-out',
-  inactiveIconClass.value,
-])
-const separatorClass = computed(() => [
-  'mx-1 h-8 w-px self-center',
-  isLightTheme.value ? 'bg-black' : 'bg-white/20',
-])
+const tooltipClass = 'absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[10px] font-medium rounded-md opacity-0 transition-all duration-150 pointer-events-none shadow-lg whitespace-nowrap z-10 text-white bg-gray-900 border border-white/10'
+const tooltipArrowClass = 'absolute top-full left-1/2 -translate-x-1/2 border-[4px] border-transparent border-t-gray-900'
+const utilityIconClass = 'flex items-center justify-center rounded-lg transition-all duration-150 ease-out text-white/70 hover:bg-white/10 hover:text-white w-7 h-7'
+const separatorClass = 'mx-1 h-6 w-px self-center bg-white/15'
 const dropdownClass = computed(() => [
   'absolute bottom-full left-1/2 -translate-x-1/2 mb-2 overflow-hidden rounded-lg shadow-xl min-w-[clamp(8rem,15vw,9rem)]',
-  isLightTheme.value
-    ? 'bg-white border-2 border-black'
-    : 'bg-gray-900/95 backdrop-blur border border-white/10',
+  'bg-gray-900/95 backdrop-blur border border-white/10',
 ])
 
 // Language dropdown state
@@ -264,10 +238,7 @@ const isActive = (path: string) => {
 
 function getDropdownItemClass(loc: string) {
   const base = 'w-full px-3 py-2 text-xs text-left transition-colors flex items-center justify-between'
-  if (isLightTheme.value) {
-    return `${base} ${locale.value === loc ? 'text-white bg-black' : 'text-black hover:bg-black/10'}`
-  }
-  return `${base} hover:bg-gray-700/50 ${locale.value === loc ? 'text-white bg-white/20' : 'text-gray-300'}`
+  return `${base} hover:bg-white/10 ${locale.value === loc ? 'text-white bg-white/20' : 'text-gray-300'}`
 }
 
 function getHeaderItemClass(path: string) {

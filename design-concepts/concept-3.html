@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Concept 3 — Terminal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'JetBrains Mono', monospace; background: #0c0c0c; color: #d4d4d4; }
+.hero { min-height: 100svh; padding: 32px; display: flex; flex-direction: column; background: radial-gradient(ellipse at 50% 30%, #141414 0%, #0c0c0c 70%); }
+.terminal-border { border: 1px solid #2a2a2a; border-radius: 12px; background: #0e0e0e; }
+.terminal-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid #2a2a2a; }
+.dot-group { display: flex; gap: 6px; }
+.dot-d { width: 10px; height: 10px; border-radius: 50%; }
+.scanline { position: relative; overflow: hidden; }
+.scanline::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: rgba(16, 185, 129, 0.08); animation: scan 4s linear infinite; }
+@keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+.window-card { border: 1px solid #1f1f1f; border-radius: 8px; background: #0d0d0d; transition: all 0.2s; }
+.window-card:hover { border-color: #3a3a3a; background: #111; }
+.key { display: inline-block; padding: 1px 6px; border: 1px solid #333; border-radius: 4px; font-size: 10px; background: #1a1a1a; }
+.blink { animation: blink 1.2s step-end infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.data-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #161616; font-size: 12px; }
+.cta-term { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border: 1px solid #333; border-radius: 6px; font-size: 11px; font-family: 'JetBrains Mono', monospace; font-weight: 600; transition: all 0.2s; cursor: pointer; color: #d4d4d4; }
+.cta-term:hover { border-color: #16a34a; color: #16a34a; background: rgba(22, 163, 74, 0.08); }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="flex-1 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-6 items-stretch">
+
+    <!-- left panel: main terminal -->
+    <div class="flex-1 terminal-border scanline flex flex-col">
+      <div class="terminal-header">
+        <div class="dot-group"><div class="dot-d bg-red-500/60"></div><div class="dot-d bg-yellow-500/60"></div><div class="dot-d bg-green-500/60"></div></div>
+        <span class="text-[10px] text-gray-600 font-medium ml-2">~/eg-maps — bash — 80×24</span>
+        <span class="ml-auto text-[10px] text-green-600 font-semibold">● ONLINE</span>
+      </div>
+      <div class="flex-1 p-5 flex flex-col justify-center">
+        <div class="mb-4">
+          <p class="text-green-400 text-xs mb-1">$ <span class="text-gray-400">cat</span> README.md</p>
+          <h1 class="text-3xl sm:text-4xl font-black text-white leading-tight tracking-tight mt-2">
+            <span class="text-green-400">earth-guardians</span>/data-platform
+          </h1>
+          <p class="text-gray-500 text-sm mt-2 max-w-lg leading-relaxed">
+            /* Interactive data visualization platform for environmental impact.
+             * Explore grants, species, crews, and mining data via 2D maps & 3D globes. */
+          </p>
+        </div>
+
+        <!-- live stats feed -->
+        <div class="grid grid-cols-2 gap-x-8 gap-y-1 mt-2 max-w-md">
+          <div class="data-row"><span class="text-gray-500">PROJECTS</span><span class="text-white font-semibold">48</span></div>
+          <div class="data-row"><span class="text-gray-500">SPECIES</span><span class="text-white font-semibold">4,283</span></div>
+          <div class="data-row"><span class="text-gray-500">BENEFICIARIES</span><span class="text-white font-semibold">86.2K</span></div>
+          <div class="data-row"><span class="text-gray-500">GROUPS</span><span class="text-white font-semibold">12</span></div>
+          <div class="data-row"><span class="text-gray-500">CREWS</span><span class="text-white font-semibold">131</span></div>
+          <div class="data-row"><span class="text-gray-500">COUNTRIES</span><span class="text-white font-semibold">47</span></div>
+        </div>
+
+        <p class="text-xs text-gray-600 mt-5">
+          <span class="text-green-500">></span> SELECT <span class="text-cyan-400">dataset</span> FROM <span class="text-cyan-400">maps</span> WHERE <span class="text-cyan-400">active</span> = true <span class="blink">▌</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- right panel: dataset windows -->
+    <div class="w-full lg:w-[400px] flex flex-col gap-3 overflow-y-auto">
+      <div class="text-[10px] text-gray-600 font-semibold uppercase tracking-[0.15em] flex items-center gap-2">
+        <span>── available datasets ──</span>
+        <span class="text-green-600">(5)</span>
+      </div>
+
+      <div class="window-card p-3 group hover:border-green-900">
+        <div class="flex items-start justify-between">
+          <div><span class="status-dot bg-green-500 mr-2"></span><span class="text-sm font-bold text-white">project-grants</span></div>
+          <span class="text-[10px] text-gray-600 group-hover:text-green-500 transition-colors">$ Open</span>
+        </div>
+        <p class="text-xs text-gray-500 mt-1 ml-[14px]">48 projects · 86K+ beneficiaries</p>
+        <div class="flex gap-1.5 mt-2 ml-[14px]">
+          <span class="cta-term text-[10px] py-1 px-2.5">2D</span>
+          <span class="cta-term text-[10px] py-1 px-2.5">3D</span>
+        </div>
+      </div>
+
+      <div class="window-card p-3 group hover:border-green-900">
+        <div class="flex items-start justify-between">
+          <div><span class="status-dot bg-green-500 mr-2"></span><span class="text-sm font-bold text-white">endangered-species</span></div>
+          <span class="text-[10px] text-gray-600 group-hover:text-green-500 transition-colors">$ Open</span>
+        </div>
+        <p class="text-xs text-gray-500 mt-1 ml-[14px]">4.2K species · 12 taxonomic groups</p>
+        <div class="flex gap-1.5 mt-2 ml-[14px]">
+          <span class="cta-term text-[10px] py-1 px-2.5">2D</span>
+          <span class="cta-term text-[10px] py-1 px-2.5">3D</span>
+        </div>
+      </div>
+
+      <div class="window-card p-3 group hover:border-green-900">
+        <div class="flex items-start justify-between">
+          <div><span class="status-dot bg-yellow-500 mr-2"></span><span class="text-sm font-bold text-white">observatory-of-vulcan</span></div>
+          <span class="text-[10px] text-gray-600 group-hover:text-green-500 transition-colors">$ Open</span>
+        </div>
+        <p class="text-xs text-gray-500 mt-1 ml-[14px]">20K+ mining processes · 6 categories</p>
+        <div class="flex gap-1.5 mt-2 ml-[14px]">
+          <span class="cta-term text-[10px] py-1 px-2.5">2D</span>
+          <span class="cta-term text-[10px] py-1 px-2.5">3D</span>
+        </div>
+      </div>
+
+      <div class="window-card p-3 group hover:border-green-900">
+        <div class="flex items-start justify-between">
+          <div><span class="status-dot bg-green-500 mr-2"></span><span class="text-sm font-bold text-white">active-crews</span></div>
+          <span class="text-[10px] text-gray-600 group-hover:text-green-500 transition-colors">$ Open</span>
+        </div>
+        <p class="text-xs text-gray-500 mt-1 ml-[14px]">131 crews · 1.2K members · 47 countries</p>
+        <div class="flex gap-1.5 mt-2 ml-[14px]">
+          <span class="cta-term text-[10px] py-1 px-2.5">2D</span>
+          <span class="cta-term text-[10px] py-1 px-2.5">3D</span>
+        </div>
+      </div>
+
+      <div class="window-card p-3 group hover:border-green-900">
+        <div class="flex items-start justify-between">
+          <div><span class="status-dot bg-blue-500 mr-2"></span><span class="text-sm font-bold text-white">eg-grants</span></div>
+          <span class="text-[10px] text-gray-600 group-hover:text-green-500 transition-colors">$ Open</span>
+        </div>
+        <p class="text-xs text-gray-500 mt-1 ml-[14px]">Submit & review · Crew access</p>
+        <div class="flex gap-1.5 mt-2 ml-[14px]">
+          <span class="cta-term text-[10px] py-1 px-2.5">Open</span>
+        </div>
+      </div>
+
+      <div class="text-[10px] text-gray-700 mt-1 text-center">
+        <span class="key">Tab</span> navigate · <span class="key">Enter</span> open · <span class="key">Ctrl+P</span> search
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

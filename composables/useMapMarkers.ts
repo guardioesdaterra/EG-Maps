@@ -259,6 +259,51 @@ function getMiniImage(item: ClusterItem, dataset: string, sourceSpecies?: Marker
   return getMarkerImageUrl(sp.imageUrl, baseURL) || undefined
 }
 
+function getClusterAggregateDanger(items: ClusterItem[], sourceRareEarth?: GeoJSON.Feature[]): { maxDs: number; avgDs: number } {
+  if (!sourceRareEarth?.length) return { maxDs: 0, avgDs: 0 }
+  let sum = 0; let max = 0; let n = 0
+  for (const item of items) {
+    const f = sourceRareEarth[item.index]
+    if (!f) continue
+    const props = (f.properties as Record<string, unknown>) || {}
+    const ds = Number(props.ds ?? props.danger_score ?? 5)
+    sum += ds; n++; if (ds > max) max = ds
+  }
+  return { maxDs: max, avgDs: n ? sum / n : 0 }
+}
+
+function getClusterAggregateThreatCount(items: ClusterItem[], sourceSpecies?: MarkerItem[]): number {
+  if (!sourceSpecies?.length) return 0
+  let total = 0
+  for (const item of items) {
+    const sp = sourceSpecies[item.index]
+    if (sp?.threatTypes?.length) total += sp.threatTypes.length
+  }
+  return total
+}
+
+function createClusterDangerBadge(dangerScore: number, _count: number): HTMLDivElement | null {
+  if (!dangerScore) return null
+  const color = dangerScore >= 8 ? '#e74c3c' : dangerScore >= 6 ? '#f39c12' : '#27ae60'
+  const badge = document.createElement('div')
+  badge.textContent = `⚠ ${dangerScore.toFixed(1)}`
+  badge.style.position = 'absolute'
+  badge.style.top = '-4px'
+  badge.style.left = '-4px'
+  badge.style.background = color
+  badge.style.color = '#fff'
+  badge.style.fontSize = '7px'
+  badge.style.fontWeight = '800'
+  badge.style.lineHeight = '1'
+  badge.style.padding = '2px 4px'
+  badge.style.borderRadius = '6px'
+  badge.style.border = '1px solid rgba(0,0,0,0.5)'
+  badge.style.boxShadow = `0 0 6px ${color}`
+  badge.style.zIndex = '6'
+  badge.style.whiteSpace = 'nowrap'
+  return badge
+}
+
 export function createClusterMarkerElement(
   dataset: string,
   count: number,
@@ -273,13 +318,20 @@ export function createClusterMarkerElement(
   const dominant = getMarkerColor(dataset, sourceProjects, sourceSpecies, sourceRareEarth, sourceCrews)
   const [dr, dg, db] = parseColor(dominant)
 
+  const aggDanger = getClusterAggregateDanger(items, sourceRareEarth)
+  const aggThreats = getClusterAggregateThreatCount(items, sourceSpecies)
+
   const outer = document.createElement('div')
   outer.className = 'globe-marker-item'
   outer.style.cursor = 'pointer'
   outer.style.pointerEvents = 'auto'
   outer.style.zIndex = '20'
   outer.style.position = 'relative'
-  outer.title = `${count} items`
+  outer.title = dataset === 'observatory-of-vulcan' && aggDanger.maxDs
+    ? `${count} items · ⚠ ${aggDanger.maxDs.toFixed(1)} max danger`
+    : dataset === 'endangered-species' && aggThreats
+      ? `${count} items · ${aggThreats} threats`
+      : `${count} items`
 
   if (items.length <= MAX_CLUSTER_SIZE) {
     const miniSize = items.length <= 3 ? 24 : 20
@@ -362,6 +414,31 @@ export function createClusterMarkerElement(
     countBadge.style.boxShadow = `0 0 8px ${dominant}`
     countBadge.style.zIndex = '5'
     clusterInner.appendChild(countBadge)
+
+    const dangerBadge = dataset === 'observatory-of-vulcan'
+      ? createClusterDangerBadge(aggDanger.maxDs, count)
+      : dataset === 'endangered-species' && aggThreats > 0
+        ? (() => {
+            const b = document.createElement('div')
+            b.textContent = `${aggThreats}`
+            b.style.position = 'absolute'
+            b.style.top = '-4px'
+            b.style.left = '-4px'
+            b.style.background = aggThreats >= 5 ? '#e74c3c' : aggThreats >= 3 ? '#f39c12' : '#f1c40f'
+            b.style.color = '#fff'
+            b.style.fontSize = '7px'
+            b.style.fontWeight = '800'
+            b.style.lineHeight = '1'
+            b.style.padding = '2px 4px'
+            b.style.borderRadius = '6px'
+            b.style.border = '1px solid rgba(0,0,0,0.5)'
+            b.style.boxShadow = `0 0 6px ${b.style.background}`
+            b.style.zIndex = '6'
+            b.style.whiteSpace = 'nowrap'
+            return b
+          })()
+        : null
+    if (dangerBadge) clusterInner.appendChild(dangerBadge)
 
     outer.appendChild(clusterInner)
 
@@ -466,6 +543,31 @@ export function createClusterMarkerElement(
       more.style.flexShrink = '0'
       gridInner.appendChild(more)
     }
+
+    const gridDangerBadge = dataset === 'observatory-of-vulcan'
+      ? createClusterDangerBadge(aggDanger.maxDs, count)
+      : dataset === 'endangered-species' && aggThreats > 0
+        ? (() => {
+            const b = document.createElement('div')
+            b.textContent = `${aggThreats}`
+            b.style.position = 'absolute'
+            b.style.top = '-2px'
+            b.style.left = '-2px'
+            b.style.background = aggThreats >= 5 ? '#e74c3c' : aggThreats >= 3 ? '#f39c12' : '#f1c40f'
+            b.style.color = '#fff'
+            b.style.fontSize = '6px'
+            b.style.fontWeight = '800'
+            b.style.lineHeight = '1'
+            b.style.padding = '1px 3px'
+            b.style.borderRadius = '5px'
+            b.style.border = '1px solid rgba(0,0,0,0.5)'
+            b.style.boxShadow = `0 0 5px ${b.style.background}`
+            b.style.zIndex = '6'
+            b.style.whiteSpace = 'nowrap'
+            return b
+          })()
+        : null
+    if (gridDangerBadge) grid.appendChild(gridDangerBadge)
 
     grid.appendChild(gridInner)
 

@@ -2,73 +2,24 @@ import type { Ref } from 'vue'
 import type { Map as MapLibreMap, Marker } from 'maplibre-gl'
 import type { Species } from '@/lib/types'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
-import { GROUP_COLORS } from '@/lib/map-utils'
 import { MARKER_VISIBILITY_MARGIN, CLUSTER_REBUILD_THRESHOLD, SPECIES_COORD_TOLERANCE } from '@/lib/constants'
+import { findSpeciesAtCoord as _findSpeciesAtCoord, getLocalizedSpecies as _getLocalizedSpecies, getTaxonomicGroupLabels as _getTaxonomicGroupLabels } from '@/lib/species-utils'
 
-/**
- * Shared map logic extracted from UnifiedMap and GlobeView.
- * Eliminates ~200 lines of duplicated code across both components.
- */
 export function useMapCore(locale: Ref<string>, t: (_key: string) => string) {
 
-  // ── i18n helpers ──
-
-  function taxonomicGroupLabel(group: string) {
-    return t(`taxonomy.${group}`)
-  }
-
   function getTaxonomicGroupLabels(): Record<string, string> {
-    return Object.keys(GROUP_COLORS).reduce<Record<string, string>>((labels, group) => {
-      labels[group] = taxonomicGroupLabel(group)
-      return labels
-    }, {})
+    return _getTaxonomicGroupLabels(t)
   }
 
   function getLocalizedSpecies(species: Species | SpeciesIndexItem, overLocale?: string): Species {
-    if (!('content' in species)) {
-      return {
-        ...species,
-        imageUrl: species.imageUrl ?? '',
-        region: '',
-        ecosystem: '',
-        imageCredit: '',
-        ecosystemNeeds: undefined,
-        actions: undefined,
-        content: {},
-      }
-    }
-
-    const targetLocale = overLocale ?? locale.value
-    const content = species.content?.[targetLocale] ?? species.content?.en
-    if (!content) return species
-
-    return {
-      ...species,
-      description: content.description ?? species.description,
-      endangerment: content.endangerment ?? species.endangerment,
-      ecosystemNeeds: content.ecosystemNeeds ?? species.ecosystemNeeds,
-      actions: content.actions ?? species.actions,
-      region: content.region ?? species.region,
-    }
+    return _getLocalizedSpecies(species, overLocale ?? locale.value, 'en')
   }
 
-  // ── Species data helpers ──
-
-  function findSpeciesAtCoord(
-    lat: number,
-    lng: number,
-    source: SpeciesIndexItem[],
-  ): SpeciesIndexItem[] {
-    return source.filter(s =>
-      Math.abs(s.lat - lat) < SPECIES_COORD_TOLERANCE &&
-      Math.abs(s.lng - lng) < SPECIES_COORD_TOLERANCE
-    )
+  function findSpeciesAtCoord(lat: number, lng: number, source: SpeciesIndexItem[]): SpeciesIndexItem[] {
+    return _findSpeciesAtCoord(lat, lng, source, SPECIES_COORD_TOLERANCE)
   }
 
-  function applySpeciesFilters(
-    speciesIndex: SpeciesIndexItem[],
-    selectedGroups: string[],
-  ): SpeciesIndexItem[] {
+  function applySpeciesFilters(speciesIndex: SpeciesIndexItem[], selectedGroups: string[]): SpeciesIndexItem[] {
     if (selectedGroups.length === 0) return speciesIndex
     return speciesIndex.filter(s => selectedGroups.includes(s.taxonomicGroup))
   }

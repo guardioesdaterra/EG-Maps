@@ -99,9 +99,10 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
   async function getTile(z: number, x: number, y: number): Promise<ArrayBuffer | null> {
     const key = tileKey(z, x, y)
     if (memCache.has(key)) {
+      const value = memCache.get(key)!
       memCache.delete(key)
-      memCache.set(key, memCache.get(key)!)
-      return memCache.get(key)!
+      memCache.set(key, value)
+      return value
     }
     try {
       const db = await openDB()

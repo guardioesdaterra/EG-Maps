@@ -4,10 +4,6 @@ import type { ProjectData, Species } from './types'
 import { getProjectColorByBeneficiaries } from './colors'
 import { GROUP_COLORS, generateCurvedPath, isValidCoordinate } from './map-utils'
 
-function pickRandomIndex(length: number): number {
-  return Math.floor(Math.random() * length)
-}
-
 export type DatasetKey = 'project-grants' | 'endangered-species' | 'observatory-of-vulcan'
 
 export interface ConnectionProperties {
@@ -43,59 +39,75 @@ export function buildMapConnectionFeatures({
 }
 
 function buildProjectConnectionFeatures(projects: ProjectData[], isMobile: boolean): MapConnectionFeature[] {
-  const maxConnectionsPerProject = 1
   const projectsToProcess = isMobile ? projects.slice(0, Math.min(15, projects.length)) : projects
   const incomingCountByProject = new Map<string, number>()
   const edgeKeys = new Set<string>()
   const features: MapConnectionFeature[] = []
 
+  // Pre-compute colors to avoid repeated calls
+  const colorCache = new Map<ProjectData, string>()
+  for (const p of projectsToProcess) {
+    colorCache.set(p, getProjectColorByBeneficiaries(p.direct_beneficiaries, p.indirect_beneficiaries))
+  }
+
+  // Group valid projects by color for O(N) target lookup
+  const byColor = new Map<string, string[]>()
+  for (const p of projectsToProcess) {
+    if (!isValidCoordinate(p.latitude, p.longitude)) continue
+    const c = colorCache.get(p)!
+    if (!byColor.has(c)) byColor.set(c, [])
+    byColor.get(c)!.push(p.project_title)
+  }
+
   projectsToProcess.forEach((project) => {
     if (!isValidCoordinate(project.latitude, project.longitude)) return
 
     const projectKey = project.project_title
-    const color = getProjectColorByBeneficiaries(project.direct_beneficiaries, project.indirect_beneficiaries)
+    const color = colorCache.get(project)!
 
-    const availableTargets = projectsToProcess
-      .filter(p =>
-        p.project_title !== project.project_title &&
-        isValidCoordinate(p.latitude, p.longitude) &&
-        !edgeKeys.has([projectKey, p.project_title].sort().join('::')) &&
-        (incomingCountByProject.get(p.project_title) ?? 0) < 1 &&
-        getProjectColorByBeneficiaries(p.direct_beneficiaries, p.indirect_beneficiaries) === color
-      )
+    const sameColorKeys = byColor.get(color) ?? []
+    const availableTargetNames = sameColorKeys.filter(k =>
+      k !== projectKey &&
+      !edgeKeys.has([projectKey, k].sort().join('::')) &&
+      (incomingCountByProject.get(k) ?? 0) < 1
+    )
 
-    const connectionsToMake = Math.min(maxConnectionsPerProject, availableTargets.length)
+    if (!availableTargetNames.length) return
 
-    for (let i = 0; i < connectionsToMake; i++) {
-      if (!availableTargets.length) continue
-      const targetIndex = pickRandomIndex(availableTargets.length)
-      const target = availableTargets.splice(targetIndex, 1)[0]
-      if (!target) continue
+    const targetName = availableTargetNames[Math.floor(Math.random() * availableTargetNames.length)]
+    const target = projectsToProcess.find(p => p.project_title === targetName)!
+    if (!target) return
 
-      features.push(createConnectionFeature({
-        from: [project.longitude, project.latitude],
-        to: [target.longitude, target.latitude],
-        color,
-        opacity: 0.2,
-        weight: 1.55,
-        dataset: 'project-grants',
-      }))
+    features.push(createConnectionFeature({
+      from: [project.longitude, project.latitude],
+      to: [target.longitude, target.latitude],
+      color,
+      opacity: 0.2,
+      weight: 1.55,
+      dataset: 'project-grants',
+    }))
 
-      const targetKey = target.project_title
-      edgeKeys.add([projectKey, targetKey].sort().join('::'))
-      incomingCountByProject.set(targetKey, (incomingCountByProject.get(targetKey) ?? 0) + 1)
-    }
+    edgeKeys.add([projectKey, targetName].sort().join('::'))
+    incomingCountByProject.set(targetName, (incomingCountByProject.get(targetName) ?? 0) + 1)
   })
 
   return features
 }
 
 function buildSpeciesConnectionFeatures(species: Species[], isMobile: boolean): MapConnectionFeature[] {
-  const maxConnectionsPerSpecies = 1
   const speciesToProcess = isMobile ? species.slice(0, Math.min(50, species.length)) : species
   const incomingCountByGroup = new Map<string, Map<string, number>>()
   const edgeKeys = new Set<string>()
   const features: MapConnectionFeature[] = []
+
+  // Group species by taxonomic group for O(N) lookup per group
+  const byGroup = new Map<string, string[]>()
+  for (const s of speciesToProcess) {
+    if (!isValidCoordinate(s.lat, s.lng)) continue
+    const key = s.id || s.commonName
+    if (!byGroup.has(s.taxonomicGroup)) byGroup.set(s.taxonomicGroup, [])
+    byGroup.get(s.taxonomicGroup)!.push(key)
+  }
 
   speciesToProcess.forEach((source) => {
     if (!isValidCoordinate(source.lat, source.lng)) return
@@ -108,39 +120,32 @@ function buildSpeciesConnectionFeatures(species: Species[], isMobile: boolean): 
     const sourceKey = source.id || source.commonName
     const color = GROUP_COLORS[group] ?? '#B64032'
 
-    const availableTargets = speciesToProcess
-      .filter(target => {
-        const targetKey = target.id || target.commonName
-        const normalizedEdgeKey = [sourceKey, targetKey].sort().join('::')
-        return targetKey !== sourceKey &&
-          target.taxonomicGroup === group &&
-          isValidCoordinate(target.lat, target.lng) &&
-          !edgeKeys.has(normalizedEdgeKey) &&
-          (incomingCount.get(targetKey) ?? 0) < (isMobile ? 1 : 2)
-      })
+    const sameGroupKeys = byGroup.get(group) ?? []
+    const availableTargetKeys = sameGroupKeys.filter(k => {
+      const normalizedEdgeKey = [sourceKey, k].sort().join('::')
+      return k !== sourceKey &&
+        !edgeKeys.has(normalizedEdgeKey) &&
+        (incomingCount.get(k) ?? 0) < (isMobile ? 1 : 2)
+    })
 
-    const connectionsToMake = Math.min(maxConnectionsPerSpecies, availableTargets.length)
+    if (!availableTargetKeys.length) return
 
-    for (let i = 0; i < connectionsToMake; i++) {
-      if (!availableTargets.length) continue
-      const targetIndex = pickRandomIndex(availableTargets.length)
-      const target = availableTargets.splice(targetIndex, 1)[0]
-      if (!target) continue
+    const targetKey = availableTargetKeys[Math.floor(Math.random() * availableTargetKeys.length)]
+    const target = speciesToProcess.find(s => (s.id || s.commonName) === targetKey)!
+    if (!target) return
 
-      features.push(createConnectionFeature({
-        from: [source.lng, source.lat],
-        to: [target.lng, target.lat],
-        color,
-        opacity: 0.2,
-        weight: 1.55,
-        dataset: 'endangered-species',
-        group,
-      }))
+    features.push(createConnectionFeature({
+      from: [source.lng, source.lat],
+      to: [target.lng, target.lat],
+      color,
+      opacity: 0.2,
+      weight: 1.55,
+      dataset: 'endangered-species',
+      group,
+    }))
 
-      const targetKey = target.id || target.commonName
-      edgeKeys.add([sourceKey, targetKey].sort().join('::'))
-      incomingCount.set(targetKey, (incomingCount.get(targetKey) ?? 0) + 1)
-    }
+    edgeKeys.add([sourceKey, targetKey].sort().join('::'))
+    incomingCount.set(targetKey, (incomingCount.get(targetKey) ?? 0) + 1)
   })
 
   return features
@@ -198,6 +203,8 @@ export function syncMapConnectionLayers(map: MapLibreMap, features: MapConnectio
     },
   })
 
+  const connZF = ['interpolate', ['linear'], ['zoom'], 5, 0.7, 12, 1.4] as unknown as number
+
   map.addLayer({
     id: CONNECTION_GLOW_LAYER_ID,
     type: 'line',
@@ -205,9 +212,9 @@ export function syncMapConnectionLayers(map: MapLibreMap, features: MapConnectio
     layout: { 'line-join': 'round', 'line-cap': 'round' },
     paint: {
       'line-color': ['get', 'color'],
-      'line-width': ['*', ['get', 'weight'], 4],
+      'line-width': ['*', ['*', ['get', 'weight'], 4], connZF],
       'line-opacity': ['*', ['get', 'opacity'], 0.55],
-      'line-blur': 4,
+      'line-blur': ['*', 4, connZF],
     },
   })
 
@@ -218,7 +225,7 @@ export function syncMapConnectionLayers(map: MapLibreMap, features: MapConnectio
     layout: { 'line-join': 'round', 'line-cap': 'round' },
     paint: {
       'line-color': ['get', 'color'],
-      'line-width': ['get', 'weight'],
+      'line-width': ['*', ['get', 'weight'], connZF],
       'line-opacity': ['get', 'opacity'],
       'line-dasharray': [0.75, 2.5],
     },
@@ -369,13 +376,19 @@ export function createMapParticleSystem({
     let lastFrame = 0
     const frameInterval = isMobile() ? 1000 / 24 : 1000 / 36
 
+    let lastRectW = 0; let lastRectH = 0; let lastDpr = 1
+
     const resizeCanvas = () => {
       if (!particleCanvas) return
       const dpr = window.devicePixelRatio || 1
       const rect = container.getBoundingClientRect()
-      particleCanvas.width = Math.max(1, Math.floor(rect.width * dpr))
-      particleCanvas.height = Math.max(1, Math.floor(rect.height * dpr))
+      const w = Math.max(1, Math.floor(rect.width * dpr))
+      const h = Math.max(1, Math.floor(rect.height * dpr))
+      if (particleCanvas.width === w && particleCanvas.height === h) return
+      particleCanvas.width = w
+      particleCanvas.height = h
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      lastRectW = rect.width; lastRectH = rect.height; lastDpr = dpr
     }
 
     resizeCanvas()
@@ -386,13 +399,12 @@ export function createMapParticleSystem({
       if (timestamp - lastFrame < frameInterval) return
       lastFrame = timestamp
 
-      const rect = container.getBoundingClientRect()
       const dpr = window.devicePixelRatio || 1
-      if (particleCanvas.width !== Math.floor(rect.width * dpr) || particleCanvas.height !== Math.floor(rect.height * dpr)) {
+      if (dpr !== lastDpr) {
         resizeCanvas()
       }
 
-      ctx.clearRect(0, 0, rect.width, rect.height)
+      ctx.clearRect(0, 0, lastRectW, lastRectH)
 
       const mobile = isMobile()
       const spawnAttempts = mobile ? 1 : 2
@@ -412,7 +424,7 @@ export function createMapParticleSystem({
           return false
         }
 
-        const visible = point.x > -40 && point.x < rect.width + 40 && point.y > -40 && point.y < rect.height + 40
+        const visible = point.x > -40 && point.x < lastRectW + 40 && point.y > -40 && point.y < lastRectH + 40
         if (!visible) return true
 
         particle.trail.push({ x: point.x, y: point.y })

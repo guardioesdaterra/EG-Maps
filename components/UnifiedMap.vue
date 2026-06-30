@@ -185,7 +185,7 @@ import { allProjectsData } from '@/lib/project-data'
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
-import { buildRareEarthPopupHTML } from '@/lib/map-utils'
+import { openRareEarthOverlayPopup } from '@/lib/map-utils'
 import { detectWebGLSupport } from '@/composables/useMapLibre'
 import { useMapHexGrid } from '@/composables/useMapHexGrid'
 import { useSpeciesPopup, useProjectPopup, useCrewPopup } from '@/composables/useMapPopup'
@@ -300,6 +300,7 @@ const {
 // ── Hex grid composable ──
 const hexGrid = useMapHexGrid(hexCanvasRef)
 const { showHexGrid } = hexGrid
+const onResize = hexGrid.debouncedSetup
 
 // Wrapper functions for template backward-compat
 function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
@@ -337,20 +338,13 @@ function handleSpeciesSelected(species: SpeciesIndexItem) {
 }
 
 function openRareEarthOverlay(feature: GeoJSON.Feature) {
-  const props = feature.properties as Record<string, unknown> || {}
-  const html = buildRareEarthPopupHTML(props as { c?: string; ds?: number; a?: number; [key: string]: unknown })
-  const coords = (feature.geometry as GeoJSON.Point).coordinates
-  new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
-    .setLngLat([coords[0] as number, coords[1] as number])
-    .setHTML(html)
-    .setMaxWidth('none')
-    .addTo(map!)
+  openRareEarthOverlayPopup(map!, feature)
 }
 
 let map: maplibregl.Map | null = null
 let isMounted = true
 let pendingVisibilityUpdate = false
-let pendingClusterRebuild = false
+let pendingRebuildRAF: number | null = null
 let lastFocusedEl: HTMLElement | null = null
 
 const speciesOverlayActive = computed(() => showSpeciesOverlay.value)
@@ -383,7 +377,6 @@ const orchestrator = useMapMarkerOrchestrator({
     openCrewOverlay: (crew: CrewRegionData | CrewLocation) => openCrewOverlay(crew as CrewRegionData),
     openCrewLocationOverlay: (crew: CrewLocation) => openCrewLocationOverlay(crew),
     openRareEarthOverlay: (feature: GeoJSON.Feature) => openRareEarthOverlay(feature),
-    findSpeciesAtCoord: (lat: number, lng: number, source: SpeciesIndexItem[]) => orchestrator.mapCore.findSpeciesAtCoord(lat, lng, source),
   },
 })
 
@@ -391,16 +384,22 @@ const useNativeGeoJSON = orchestrator.useNativeGeoJSON
 
 function handleFilterChange(filtered: Species[]) {
   filteredSpeciesList.value = filtered
-  rebuildMarkers()
-  connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
-  if (connections2D.showConnections.value) connections2D.startParticles()
+  syncAfterFilter()
 }
 
 function handleProjectFilterChange(filtered: ProjectData[]) {
   filteredProjectsList.value = filtered
-  rebuildMarkers()
-  connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
-  if (connections2D.showConnections.value) connections2D.startParticles()
+  syncAfterFilter()
+}
+
+function syncAfterFilter() {
+  if (filterDebounceTimer) clearTimeout(filterDebounceTimer)
+  filterDebounceTimer = setTimeout(() => {
+    filterDebounceTimer = null
+    rebuildMarkers()
+    connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+    if (connections2D.showConnections.value) connections2D.startParticles()
+  }, 16)
 }
 
 function handleSearchOpenChange(open: boolean) {
@@ -479,7 +478,12 @@ function initMap() {
     return
   }
 
+  // Cancel pending RAFs from previous map lifecycle
+  if (pendingRebuildRAF) { cancelAnimationFrame(pendingRebuildRAF); pendingRebuildRAF = null }
+  pendingVisibilityUpdate = false
+
   // Clean up existing map if retry
+  window.removeEventListener('resize', onResize)
   if (map) {
     orchestrator.cleanup()
     map.remove()
@@ -536,37 +540,29 @@ function initMap() {
     })
 
     map.on('move', () => {
-      // Only run visibility update for DOM markers (not native GeoJSON)
-      const usingNativeGeoJSON = useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500
-      if (!usingNativeGeoJSON && !pendingVisibilityUpdate) {
+      if (!pendingVisibilityUpdate) {
         pendingVisibilityUpdate = true
         requestAnimationFrame(() => {
           updateMarkerVisibility()
           pendingVisibilityUpdate = false
         })
       }
-      if (!pendingClusterRebuild && map) {
-        // Skip cluster rebuilds for GeoJSON path — MapLibre handles viewport natively
-        if (usingNativeGeoJSON) return
-        const currentZoom = Math.floor(map.getZoom())
-        if (orchestrator.mapCore.shouldRebuildClusters(map, currentZoom, orchestrator.lastClusterZoom, orchestrator.lastBboxCenter)) {
-          pendingClusterRebuild = true
-          requestAnimationFrame(() => {
-            rebuildMarkers()
-            pendingClusterRebuild = false
-          })
-        }
-      }
     })
 
     map.on('moveend', () => {
       updateMarkerVisibility()
-      if (map) {
+      if (!map) return
+      const usingNativeGeoJSON = useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500
+      if (usingNativeGeoJSON) return
+      if (pendingRebuildRAF) { cancelAnimationFrame(pendingRebuildRAF); pendingRebuildRAF = null }
+      pendingRebuildRAF = requestAnimationFrame(() => {
+        pendingRebuildRAF = null
+        if (!map) return
         const currentZoom = Math.floor(map.getZoom())
         if (orchestrator.mapCore.shouldRebuildClusters(map, currentZoom, orchestrator.lastClusterZoom, orchestrator.lastBboxCenter)) {
           rebuildMarkers()
         }
-      }
+      })
     })
 
     map.on('resize', () => {
@@ -612,7 +608,7 @@ function initMap() {
       }
     }, 20000)
 
-    window.addEventListener('resize', hexGrid.debouncedSetup)
+    window.addEventListener('resize', onResize)
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('[UnifiedMap] Failed to initialize map:', err)
@@ -657,14 +653,14 @@ watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData]
   } else {
     rebuildMarkers()
   }
-}, { deep: true })
+})
 
 // Watch rare earth data changes (observatory-of-vulcan) to rebuild markers
 watch(() => [props.rareEarthPoints, props.rareEarthPolygons], () => {
   if (!map || activeDataset.value !== 'observatory-of-vulcan') return
   setupRareEarthLayers()
   rebuildMarkers()
-}, { deep: true })
+})
 
 watch(showHexGrid, async (visible) => {
   if (!visible) return
@@ -706,7 +702,7 @@ onUnmounted(() => {
   isMounted = false
   connections2D.cleanup()
   orchestrator.cleanup()
-  window.removeEventListener('resize', hexGrid.debouncedSetup)
+  window.removeEventListener('resize', onResize)
   if (map) {
     map.remove()
     map = null

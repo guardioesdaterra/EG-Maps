@@ -1,0 +1,1127 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earth Guardians BR // 12 ANOS DE ATIVISMO</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --obsidian: #08080a;
+            --tectonic-white: #f0f0f0;
+            --magma-dim: #2a100a;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #00ff85;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            background-color: var(--obsidian);
+        }
+
+        body {
+            background-color: var(--obsidian);
+            color: var(--tectonic-white);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-color: transparent;
+        }
+
+        #ui-overlay {
+            position: relative;
+            z-index: 10;
+        }
+
+        .noise-overlay {
+            display: none;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 10%;
+            pointer-events: auto;
+        }
+
+        .data-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 10vw, 8rem);
+            line-height: 0.9;
+            text-transform: uppercase;
+            letter-spacing: -0.05em;
+            max-width: 800px;
+        }
+
+        h2 {
+            font-size: clamp(2rem, 6vw, 4rem);
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: -0.03em;
+            margin-bottom: 2rem;
+        }
+
+        /* Join Section */
+        .join-section {
+            padding: 8rem 10%;
+            border-top: 1px solid var(--border);
+            position: relative;
+        }
+
+        .join-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 133, 0.03) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .join-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 3rem;
+            margin-top: 4rem;
+            width: 100%;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .join-card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            padding: 4rem 3rem;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            opacity: 1 !important;
+            min-height: 450px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: visible;
+        }
+
+        .join-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(0, 255, 133, 0) 60deg, transparent 120deg);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .join-card:hover::before {
+            opacity: 0;
+        }
+
+        .join-card::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            background: linear-gradient(135deg, rgba(8, 8, 10, 0.95) 0%, rgba(8, 8, 10, 0.8) 100%);
+            border-radius: 0;
+            z-index: 0;
+        }
+
+        .join-card:hover {
+            border-color: var(--border);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .join-card-content {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+        }
+
+        .join-card h3 {
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.05em;
+            background: linear-gradient(135deg, var(--tectonic-white) 0%, rgba(255, 255, 255, 0.6) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .join-card p {
+            line-height: 1.8;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        .join-card-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding: 1.25rem 2.5rem;
+            background: linear-gradient(135deg, rgba(0, 255, 133, 0.1) 0%, rgba(0, 255, 133, 0.05) 100%);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            border-radius: 4px;
+        }
+
+        .join-card-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 133, 0.3), transparent);
+            transition: left 0.6s ease;
+            z-index: -1;
+        }
+
+        .join-card-btn:hover::before {
+            left: 100%;
+        }
+
+        .join-card-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+
+        .join-card-btn:hover::after {
+            opacity: 1;
+        }
+
+        .join-card-btn:hover {
+            color: var(--obsidian);
+            box-shadow: 0 0 40px rgba(0, 255, 133, 0.6), 0 0 80px rgba(0, 255, 133, 0.3);
+            transform: translateY(-3px);
+            border-color: var(--accent);
+        }
+
+        .join-card-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.4s ease;
+        }
+
+        .join-card-btn:hover svg {
+            transform: translateX(5px);
+        }
+
+        .preview-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-15px);
+            background: var(--obsidian);
+            border: 1px solid var(--accent);
+            padding: 1.5rem;
+            min-width: 320px;
+            max-width: 400px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            font-size: 0.75rem;
+            line-height: 1.6;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 0 10px 40px rgba(0, 255, 133, 0.3), 0 0 20px rgba(0, 255, 133, 0.2);
+        }
+
+        .join-card:hover .preview-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-25px);
+        }
+
+        .preview-tooltip strong {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .contact-info {
+            margin-top: 4rem;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .contact-info a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+
+        /* Projects Section */
+        .projects-section {
+            padding: 8rem 10%;
+            border-top: 1px solid var(--border);
+            position: relative;
+        }
+
+        .projects-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 50%, rgba(0, 255, 133, 0.04) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .projects-header {
+            text-align: center;
+            margin-bottom: 4rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .projects-header h2 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            background: linear-gradient(135deg, var(--tectonic-white) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .projects-subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .project-item {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            padding: 3rem;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            opacity: 1 !important;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .project-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), transparent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s ease;
+        }
+
+        .project-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .project-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(0, 255, 133, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .project-item:hover::after {
+            opacity: 1;
+        }
+
+        .project-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-10px);
+            box-shadow: 0 25px 60px rgba(0, 255, 133, 0.15), 0 0 40px rgba(0, 255, 133, 0.1);
+        }
+
+        .project-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, rgba(0, 255, 133, 0.1) 0%, rgba(0, 255, 133, 0.05) 100%);
+            border: 1px solid rgba(0, 255, 133, 0.3);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            transition: all 0.4s ease;
+        }
+
+        .project-item:hover .project-icon {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .project-icon svg {
+            width: 32px;
+            height: 32px;
+            stroke: var(--accent);
+            transition: stroke 0.4s ease;
+        }
+
+        .project-item:hover .project-icon svg {
+            stroke: var(--obsidian);
+        }
+
+        .project-item h3 {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.05em;
+            color: var(--tectonic-white);
+        }
+
+        .project-item p {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.6);
+            flex-grow: 1;
+            margin-bottom: 2rem;
+        }
+
+        .ods-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .ods-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 255, 133, 0.08);
+            border: 1px solid rgba(0, 255, 133, 0.2);
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .ods-tag svg {
+            width: 16px;
+            height: 16px;
+            display: inline;
+            vertical-align: middle;
+        }
+
+        .project-item:hover .ods-tag {
+            background: rgba(0, 255, 133, 0.15);
+            border-color: var(--accent);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .stat-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            display: block;
+            color: var(--accent);
+        }
+
+        .tectonic-line {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 4rem 0;
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            opacity: 0.5;
+            z-index: 10;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        .tectonic-flare {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            section, .join-section, .projects-section {
+                padding: 4rem 5%;
+            }
+
+            .join-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .join-card {
+                min-height: 400px;
+                padding: 3rem 2rem;
+            }
+
+            .preview-tooltip {
+                min-width: 280px;
+                max-width: 320px;
+                left: 50%;
+                transform: translateX(-50%) translateY(-10px);
+            }
+
+            .join-card:hover .preview-tooltip {
+                transform: translateX(-50%) translateY(-20px);
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    <div class="tectonic-flare"></div>
+    <div class="scroll-indicator">SCROLL TO EXPLORE</div>
+
+    <canvas id="globe-canvas"></canvas>
+
+    <div id="ui-overlay">
+        <!-- Hero Section -->
+        <section id="hero">
+            <span class="data-label">DESDE 2014 / 12 ANOS DE ATIVIDADES</span>
+            <h1>Earth Guardians<br/>BRAZIL</h1>
+            <p style="margin-top: 2rem; max-width: 600px; line-height: 1.8; color: rgba(255,255,255,0.7);">
+                Ativismo climático, arte e ação direta. Junte-se ao movimento pela justiça ambiental e social no Brasil.
+            </p>
+        </section>
+
+        <!-- Details Section -->
+        <section id="details">
+            <span class="data-label">IMPACTO REAL / EM TEMPO REAL</span>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="data-label">ANOS DE ATIVISMO</span>
+                    <span class="stat-value">12+</span>
+                </div>
+                <div class="stat-card">
+                    <span class="data-label">PROJETOS</span>
+                    <span class="stat-value">50+</span>
+                </div>
+                <div class="stat-card">
+                    <span class="data-label">COMUNIDADES</span>
+                    <span class="stat-value">100+</span>
+                </div>
+                <div class="stat-card">
+                    <span class="data-label">VIDAS IMPACTADAS</span>
+                    <span class="stat-value">10k+</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Join Section -->
+        <section class="join-section" id="join">
+            <span class="data-label">PARTICIPE // JOIN THE MOVEMENT</span>
+            <h2 style="margin-top: 1rem; text-align: center;">JUNTE-SE A NÓS</h2>
+            
+            <div class="join-grid">
+                <div class="join-card">
+                    <div class="join-card-content">
+                        <div class="preview-tooltip">
+                            <strong>CONHEÇA AS EQUIPES</strong>
+                            Descubra equipes atuantes no Brasil e no mundo. Encontre seu grupo e multiplique o impacto.
+                        </div>
+                        <h3>Saiba Mais Sobre as Equipes</h3>
+                        <p>Explore a rede global de Earth Guardians e conheça as equipes que estão liderando ações climáticas em diferentes regiões.</p>
+                        <a href="https://www.earthguardians.org/crews" target="_blank" class="join-card-btn">
+                            <span>EXPLORAR EQUIPES</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="join-card">
+                    <div class="join-card-content">
+                        <div class="preview-tooltip">
+                            <strong>FAÇA PARTE</strong>
+                            Junte-se a uma equipe existente ou crie a sua própria. O movimento precisa de você.
+                        </div>
+                        <h3>Junte-se ou Crie uma Equipe</h3>
+                        <p>Conecte-se com outros guardiões, participe de atividades presenciais e digitais, ou lidere iniciativas na sua comunidade.</p>
+                        <a href="https://www.earthguardians.org/crews-sign-up-1" target="_blank" class="join-card-btn">
+                            <span>JUNTE-SE AGORA</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-info">
+                <p style="margin-bottom: 1rem; color: rgba(255,255,255,0.7);">
+                    ENVIE UM EMAIL PARA <a href="mailto:TUPA@EARTHGUARDIANS.ORG">TUPA@EARTHGUARDIANS.ORG</a> PARA MAIS INFORMAÇÕES
+                </p>
+                <p style="color: rgba(255,255,255,0.7);">
+                    OU ACESSE O SITE OFICIAL <a href="https://www.earthguardians.org/crews" target="_blank">EARTHGUARDIANS.ORG/CREWS</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section class="projects-section" id="projects">
+            <div class="projects-header">
+                <span class="data-label">NOSSOS PROJETOS // INITIATIVES</span>
+                <h2>INICIATIVAS EM AÇÃO</h2>
+                <p class="projects-subtitle">8 projetos transformando comunidades e o meio ambiente</p>
+            </div>
+            
+            <div class="project-grid">
+                <div class="project-item">
+                    <div class="project-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <path d="M8 11h8"/>
+                            <path d="M12 7v8"/>
+                        </svg>
+                    </div>
+                    <h3>Jardim Medicinal</h3>
+                    <p>Cultivo e preservação de plantas medicinais tradicionais, conectando saberes ancestrais com práticas sustentáveis modernas.</p>
+                    <div class="ods-tags">
+                        <span class="ods-tag">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v20"/></svg>
+                            ODS 3
+                        </span>
+                        <span class="ods-tag">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v20"/></svg>
+                            ODS 15
+                        </span>
+                    </div>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <h3>Meliponário</h3>
+                    <p>Proteção e cultivo de abelhas nativas sem ferrão, essenciais para a polinização e biodiversidade da Mata Atlântica.</p>
+                    <div class="ods-tags">
+                        <span class="ods-tag">ODS 15</span>
+                        <span class="ods-tag">ODS 14</span>
+                    </div>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                    </div>
+                    <h3>Educação Climática</h3>
+                    <p>Workshops e palestras em escolas e comunidades sobre mudanças climáticas, justiça ambiental e ação prática.</p>
+                    <div class="ods-tags">
+                        <span class="ods-tag">ODS 4</span>
+                        <span class="ods-tag">ODS 13</span>
+                    </div>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                            <line x1="9" y1="9" x2="9.01" y2="9"/>
+                            <line x1="15" y1="9" x2="15.01" y2="9"/>
+                        </svg>
+                    </div>
+                    <h3>Arte Ativista</h3>
+                    <p>Intervenções artísticas urbanas que conscientizam sobre questões ambientais através de grafite, música e performance.</p>
+                    <div class="ods-tags">
+                        <span class="ods-tag">ODS 11</span>
+                        <span class="ods-tag">ODS 13</span>
+                    </div>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                        </svg>
+                    </div>
+                    <h3>Agricultura Urbana</h3>
+                    <p>Hortas comunitárias em áreas urbanas, promovendo segurança alimentar e conexão com a natureza nas cidades.</p>
+                    <div class="ods-tags">
+                        <span class="ods-tag">ODS 2</span>
+                        <span class="ods-tag">ODS 11</span>
+                    </div>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                    </div>
+                    <h3>Guardiões das Abelhas</h3>
+                    <p>Meliponário colaborativo para proteção de espécies nativas e educação sobre importância dos polinizadores na região de Águas da Prata.</p>
+                    <div class="ods-tags">
+                        <span class="ods-tag">ODS 15</span>
+                        <span class="ods-tag">ODS 4</span>
+                    </div>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                    </div>
+                    <h3>Educação Ambiental Integrada</h3>
+                    <p>Programas educativos que conectam Earth Guardians e comunidades locais para formação de ativistas climáticos.</p>
+                    <div class="ods-tags">
+                        <span class="ods-tag">ODS 4</span>
+                        <span class="ods-tag">ODS 13</span>
+                    </div>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </div>
+                    <h3>Ação Climática Regional</h3>
+                    <p>Iniciativas conjuntas de mitigação e adaptação às mudanças climáticas em nível local e regional.</p>
+                    <div class="ods-tags">
+                        <span class="ods-tag">ODS 13</span>
+                        <span class="ods-tag">ODS 17</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="tectonic-line"></div>
+
+        <!-- Footer -->
+        <section id="footer" style="min-height: 60vh; justify-content: flex-end; padding-bottom: 4rem; position: relative;">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 30%, rgba(0, 255, 133, 0.05) 0%, transparent 70%); pointer-events: none;"></div>
+            
+            <div style="position: relative; z-index: 1; width: 100%;">
+                <span class="data-label">EARTH GUARDIANS BRAZIL</span>
+                <h1 style="font-size: clamp(2.5rem, 8vw, 6rem); margin-bottom: 1rem;">ATIVISMO<br/>CLIMÁTICO</h1>
+                
+                <div style="margin: 3rem 0; display: flex; gap: 2rem; flex-wrap: wrap; justify-content: flex-start;">
+                    <a href="https://www.instagram.com/earthguardians_br/" target="_blank" style="display: inline-flex; align-items: center; gap: 0.75rem; padding: 1rem 2rem; background: var(--glass); border: 1px solid var(--border); border-radius: 8px; color: var(--tectonic-white); text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--accent)'; this.style.background='rgba(0, 255, 133, 0.1)'" onmouseout="this.style.borderColor='var(--border)'; this.style.background='var(--glass)')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                        </svg>
+                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-transform: uppercase;">@earthguardians_br</span>
+                    </a>
+                    
+                    <a href="https://www.earthguardians.org/" target="_blank" style="display: inline-flex; align-items: center; gap: 0.75rem; padding: 1rem 2rem; background: var(--glass); border: 1px solid var(--border); border-radius: 8px; color: var(--tectonic-white); text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--accent)'; this.style.background='rgba(0, 255, 133, 0.1)'" onmouseout="this.style.borderColor='var(--border)'; this.style.background='var(--glass)')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                        <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-transform: uppercase;">earthguardians.org</span>
+                    </a>
+                </div>
+                
+                <div class="tectonic-line"></div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                    <div>
+                        <h4 style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 1rem;">DESDE</h4>
+                        <p style="font-size: 2rem; font-weight: 900; color: var(--tectonic-white);">2014</p>
+                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem;">12 ANOS DE ATIVISMO</p>
+                    </div>
+                    <div>
+                        <h4 style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 1rem;">IMPACTO</h4>
+                        <p style="font-size: 2rem; font-weight: 900; color: var(--tectonic-white);">10K+</p>
+                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem;">VIDAS IMPACTADAS</p>
+                    </div>
+                    <div>
+                        <h4 style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 1rem;">PROJETOS</h4>
+                        <p style="font-size: 2rem; font-weight: 900; color: var(--tectonic-white);">50+</p>
+                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem;">INICIATIVAS REALIZADAS</p>
+                    </div>
+                    <div>
+                        <h4 style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 1rem;">COMUNIDADES</h4>
+                        <p style="font-size: 2rem; font-weight: 900; color: var(--tectonic-white);">100+</p>
+                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem;">COMUNIDADES ATENDIDAS</p>
+                    </div>
+                </div>
+                
+                <div class="tectonic-line"></div>
+                
+                <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.4); text-align: center; margin-top: 3rem;">
+                    © 2014-2024 EARTH GUARDIANS BRAZIL // TODOS OS DIREITOS RESERVADOS<br>
+                    <span style="opacity: 0.6; margin-top: 0.5rem; display: block;">CONSTRUÍDO COM PROPÓSITO // BUILT FOR PURPOSE</span>
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Three.js Setup
+        const canvas = document.querySelector('#globe-canvas');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x08080a); // Set scene background to obsidian
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: true,
+            alpha: true
+        });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setClearColor(0x08080a, 1); // Force solid black background
+
+        // Textures - Higher quality settings
+        const textureLoader = new THREE.TextureLoader();
+        const earthMap = textureLoader.load('/public/textures/earth-blue-marble.jpg');
+        const earthBump = textureLoader.load('/public/textures/earth-topology.png');
+        const earthSpec = textureLoader.load('/public/textures/earth-waterbodies.png');
+
+        // Improve texture quality
+        [earthMap, earthBump, earthSpec].forEach(texture => {
+            texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+            texture.minFilter = THREE.LinearMipmapLinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+        });
+
+        // Geometry
+        const geometry = new THREE.SphereGeometry(2, 128, 128); // Higher polygon count
+        const material = new THREE.MeshPhongMaterial({
+            map: earthMap,
+            bumpMap: earthBump,
+            bumpScale: 0.15, // Increased bump for more definition
+            specularMap: earthSpec,
+            specular: new THREE.Color('#000'), // Brighter specular highlights
+            shininess: 0 // Increased shininess
+        });
+
+        const globe = new THREE.Mesh(geometry, material);
+        scene.add(globe);
+
+        // Stars
+        const starGeometry = new THREE.BufferGeometry();
+        const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.015 });
+        const starVertices = [];
+        for (let i = 0; i < 6000; i++) {
+            const x = (Math.random() - 0.5) * 2000;
+            const y = (Math.random() - 0.5) * 2000;
+            const z = (Math.random() - 0.5) * 2000;
+            starVertices.push(x, y, z);
+        }
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+
+        // Lighting - Enhanced for better contrast
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); // Brighter ambient
+        scene.add(ambientLight);
+
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1.5); // Stronger main light
+        mainLight.position.set(5, 3, 5);
+        scene.add(mainLight);
+
+        const rimLight = new THREE.PointLight(0x00ff85, 0.8); // Green accent rim light
+        rimLight.position.set(-5, -3, -5);
+        scene.add(rimLight);
+
+        // Add fill light for depth
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        fillLight.position.set(-3, 1, 2);
+        scene.add(fillLight);
+
+        camera.position.z = 6;
+
+        // Mouse Responsiveness
+        let mouseX = 0;
+        let mouseY = 0;
+        window.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth - 0.5) * 0.2;
+            mouseY = (e.clientY / window.innerHeight - 0.5) * 0.2;
+        });
+
+        // Scroll Animation - Earth rotates through entire page
+        gsap.to(globe.rotation, {
+            y: Math.PI * 2,
+            scrollTrigger: {
+                trigger: "#ui-overlay",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1.5,
+            }
+        });
+
+        // Move earth to right after hero section (only once)
+        gsap.to(globe.position, {
+            x: 1.5,
+            scrollTrigger: {
+                trigger: "#hero",
+                start: "bottom center",
+                end: "center center",
+                scrub: 1.5
+            }
+        });
+
+        // Footer - FIRST center the earth, THEN zoom (sequential timeline)
+        const footerTL = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#footer",
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 3,
+                invalidateOnRefresh: true
+            }
+        });
+        
+        // Phase 1: Move earth to center while rotating
+        footerTL.to(globe.position, {
+            x: 0,
+            ease: "power2.inOut",
+            duration: 2
+        })
+        // Phase 2: Then zoom in (scale and camera)
+        .to(globe.scale, {
+            x: 2.5,
+            y: 2.5,
+            z: 2.5,
+            ease: "power2.out",
+            duration: 1.5
+        }, "-=0.5")
+        .to(camera.position, {
+            z: 2.8,
+            ease: "power2.out",
+            duration: 1.5
+        }, "-=1.5");
+
+        const animate = () => {
+            requestAnimationFrame(animate);
+
+            // Natural spin (constant)
+            globe.rotation.y += 0.001;
+
+            // Mouse parallax
+            scene.rotation.y += (mouseX - scene.rotation.y) * 0.05;
+            scene.rotation.x += (mouseY - scene.rotation.x) * 0.05;
+
+            renderer.render(scene, camera);
+        };
+
+        animate();
+
+        // Resize Handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Reset earth position on page refresh/load
+        setTimeout(() => {
+            globe.position.set(0, 0, 0);
+            globe.scale.set(1, 1, 1);
+            camera.position.z = 6;
+        }, 100);
+
+        // Reveal animations
+        gsap.from("#hero h1", {
+            opacity: 0,
+            y: 100,
+            duration: 1.5,
+            stagger: 0.2,
+            ease: "power4.out"
+        });
+
+        gsap.from(".stat-card", {
+            opacity: 0,
+            x: -50,
+            duration: 1,
+            stagger: 0.1,
+            scrollTrigger: {
+                trigger: "#details",
+                start: "top center"
+            }
+        });
+
+        gsap.from(".join-card", {
+            opacity: 0,
+            y: 80,
+            duration: 1.2,
+            stagger: 0.3,
+            force3D: true,
+            scrollTrigger: {
+                trigger: ".join-section",
+                start: "top 75%",
+                toggleActions: "play none none none"
+            }
+        });
+
+        gsap.from(".project-item", {
+            opacity: 0,
+            y: 60,
+            duration: 1,
+            stagger: 0.08,
+            force3D: true,
+            scrollTrigger: {
+                trigger: ".projects-section",
+                start: "top 75%",
+                toggleActions: "play none none none"
+            }
+        });
+
+        // Smooth scroll to sections
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

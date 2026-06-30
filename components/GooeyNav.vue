@@ -1,40 +1,35 @@
 <template>
   <div class="gooey-nav relative overflow-visible" ref="containerRef">
-    <nav class="flex overflow-visible relative" :style="{ transform: 'translate3d(0,0,0.01px)' }">
+    <nav class="flex overflow-visible relative">
       <ul
         ref="navRef"
-        class="flex items-end gap-1 list-none p-0 m-0 relative z-[3] overflow-visible"
+        class="flex items-center gap-0.5 list-none p-0 m-0 relative z-[3] overflow-visible"
       >
         <li
           v-for="(item, index) in items"
           :key="index"
-          :class="[
-            'rounded-full relative cursor-pointer overflow-visible transition-[background-color_color] duration-300',
-            activeIndex === index ? 'gooey-active' : ''
-          ]"
+          :class="['relative cursor-pointer', activeIndex === index ? 'gooey-active' : '']"
         >
           <NuxtLink
             :to="item.path"
             :target="item.external ? '_blank' : undefined"
             :rel="item.external ? 'noopener noreferrer' : undefined"
             @click="e => handleClick(e, index)"
-            class="group relative flex flex-col items-center outline-none py-[0.6em] px-[1em]"
+            class="group relative flex flex-col items-center outline-none px-2.5 py-1.5"
           >
             <div
-              class="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-lg whitespace-nowrap z-10 bg-black text-white dark:bg-gray-900/95 dark:backdrop-blur dark:border dark:border-white/10"
+              class="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[10px] font-medium rounded-md opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-lg whitespace-nowrap z-10 bg-gray-900 text-white border border-white/10"
             >
               {{ t(item.labelKey) }}
-              <div class="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-black dark:border-t-gray-900/95" />
+              <div class="absolute top-full left-1/2 -translate-x-1/2 border-[4px] border-transparent border-t-gray-900" />
             </div>
-            <Icon :name="item.icon" class="h-5 w-5 transition-all duration-150" />
-            <span class="text-[10px] mt-0.5 font-medium leading-tight whitespace-nowrap">{{ t(item.labelKey) }}</span>
+            <Icon :name="item.icon" class="h-4 w-4 transition-all duration-150" />
           </NuxtLink>
         </li>
       </ul>
     </nav>
 
-    <span class="effect filter" ref="filterRef" />
-    <span class="effect text" ref="textRef" />
+    <span class="effect" ref="filterRef" />
   </div>
 </template>
 
@@ -75,7 +70,6 @@ const { t } = useI18n()
 const containerRef = useTemplateRef<HTMLDivElement>('containerRef')
 const navRef = useTemplateRef<HTMLUListElement>('navRef')
 const filterRef = useTemplateRef<HTMLSpanElement>('filterRef')
-const textRef = useTemplateRef<HTMLSpanElement>('textRef')
 
 const activeIndex = ref(0)
 
@@ -97,16 +91,6 @@ watch(() => route.path, () => {
   const idx = computeActiveIndex()
   if (idx !== activeIndex.value) {
     activeIndex.value = idx
-  }
-})
-
-watch(activeIndex, (newIdx) => {
-  if (!navRef.value || !containerRef.value) return
-  const lis = navRef.value.querySelectorAll('li')
-  const activeLi = lis[newIdx] as HTMLElement | undefined
-  if (activeLi) {
-    updateEffectPosition(activeLi)
-    textRef.value?.classList.add('active')
   }
 })
 
@@ -167,21 +151,6 @@ const makeParticles = (element: HTMLElement) => {
   }
 }
 
-const updateEffectPosition = (element: HTMLElement) => {
-  if (!containerRef.value || !filterRef.value || !textRef.value) return
-  const containerRect = containerRef.value.getBoundingClientRect()
-  const pos = element.getBoundingClientRect()
-  const styles = {
-    left: `${pos.x - containerRect.x}px`,
-    top: `${pos.y - containerRect.y}px`,
-    width: `${pos.width}px`,
-    height: `${pos.height}px`,
-  }
-  Object.assign(filterRef.value.style, styles)
-  Object.assign(textRef.value.style, styles)
-  textRef.value.innerText = element.innerText
-}
-
 const handleClick = (e: Event, index: number) => {
   const item = props.items[index]
   if (item?.external) return
@@ -190,38 +159,29 @@ const handleClick = (e: Event, index: number) => {
   const liEl = target.parentElement as HTMLElement
   if (activeIndex.value === index) return
   activeIndex.value = index
-  updateEffectPosition(liEl)
+
   if (filterRef.value) {
+    const containerRect = containerRef.value!.getBoundingClientRect()
+    const pos = liEl.getBoundingClientRect()
+    const styles = {
+      left: `${pos.x - containerRect.x}px`,
+      top: `${pos.y - containerRect.y}px`,
+      width: `${pos.width}px`,
+      height: `${pos.height}px`,
+    }
+    Object.assign(filterRef.value.style, styles)
+
     const particles = filterRef.value.querySelectorAll('.particle')
     particles.forEach(p => filterRef.value!.removeChild(p))
-  }
-  if (textRef.value) {
-    textRef.value.classList.remove('active')
-    void textRef.value.offsetWidth
-    textRef.value.classList.add('active')
-  }
-  if (filterRef.value) {
     makeParticles(filterRef.value)
   }
 }
 
 onMounted(() => {
-  const idx = computeActiveIndex()
-  activeIndex.value = idx
-  if (!navRef.value || !containerRef.value) return
-  const lis = navRef.value.querySelectorAll('li')
-  const activeLi = lis[idx] as HTMLElement | undefined
-  if (activeLi) {
-    updateEffectPosition(activeLi)
-    textRef.value?.classList.add('active')
-  }
+  activeIndex.value = computeActiveIndex()
+
   resizeObserver = new ResizeObserver(() => {
-    if (!navRef.value) return
-    const lis = navRef.value.querySelectorAll('li')
-    const currentActiveLi = lis[activeIndex.value] as HTMLElement | undefined
-    if (currentActiveLi) {
-      updateEffectPosition(currentActiveLi)
-    }
+    // nothing to update — effect only shows during click animation
   })
   if (containerRef.value) {
     resizeObserver.observe(containerRef.value)
@@ -236,94 +196,22 @@ onUnmounted(() => {
 </script>
 
 <style>
-:root {
-  --linear-ease: linear(
-    0,
-    0.068,
-    0.19 2.7%,
-    0.804 8.1%,
-    1.037,
-    1.199 13.2%,
-    1.245,
-    1.27 15.8%,
-    1.274,
-    1.272 17.4%,
-    1.249 19.1%,
-    0.996 28%,
-    0.949,
-    0.928 33.3%,
-    0.926,
-    0.933 36.8%,
-    1.001 45.6%,
-    1.013,
-    1.019 50.8%,
-    1.018 54.4%,
-    1 63.1%,
-    0.995 68%,
-    1.001 85%,
-    1
-  );
-}
-
 .gooey-nav .effect {
   position: absolute;
-  opacity: 1;
   pointer-events: none;
-  display: grid;
-  place-items: center;
   z-index: 1;
-}
-
-.gooey-nav .effect.text {
-  color: white;
-  transition: color 0.3s ease;
-}
-
-.gooey-nav .effect.text.active {
-  color: black;
-}
-
-.gooey-nav .effect.filter {
-  filter: blur(7px) contrast(100) blur(0);
-  mix-blend-mode: lighten;
-}
-
-.gooey-nav .effect.filter::before {
-  content: '';
-  position: absolute;
-  inset: -75px;
-  z-index: -2;
-  background: black;
-}
-
-.gooey-nav .effect.filter::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: white;
-  transform: scale(0);
   opacity: 0;
-  z-index: -1;
-  border-radius: 9999px;
 }
 
-.gooey-nav .effect.active::after {
-  animation: gooey-pill 0.3s ease both;
-}
-
-@keyframes gooey-pill {
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+.gooey-nav .effect.active {
+  opacity: 1;
 }
 
 .gooey-nav .particle,
 .gooey-nav .point {
   display: block;
-  opacity: 0;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-radius: 9999px;
   transform-origin: center;
 }
@@ -338,7 +226,7 @@ onUnmounted(() => {
 
 .gooey-nav .point {
   background: var(--color);
-  opacity: 1;
+  opacity: 0;
   animation: gooey-point calc(var(--time)) ease 1 -350ms;
 }
 
@@ -390,25 +278,16 @@ onUnmounted(() => {
   }
 }
 
-.gooey-nav li.gooey-active {
-  color: black;
-  text-shadow: none;
-}
-
+/* macOS-style active dot indicator */
 .gooey-nav li.gooey-active::after {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.gooey-nav li::after {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: 8px;
-  background: white;
-  opacity: 0;
-  transform: scale(0);
-  transition: all 0.3s ease;
-  z-index: -1;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.8);
 }
 </style>

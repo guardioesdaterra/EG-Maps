@@ -2,6 +2,12 @@ import type { Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 import { escapeHtml } from '@/lib/map-utils'
 
+let activePopup: maplibregl.Popup | null = null
+
+function closeActivePopup() {
+  if (activePopup) { activePopup.remove(); activePopup = null }
+}
+
 export const CULTURAL_SOURCE = 'ree-cultural'
 export const CULTURAL_LAYER_IDS = [
   'ree-cultural-point',
@@ -317,9 +323,10 @@ export function setupCulturalLayers(
   const onCulturalClick = (e: MapLayerMouseEvent) => {
     if (!e.features?.length) return
     const p = e.features[0].properties
+    closeActivePopup()
     const html = getPopupContent(p)
 
-    new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    activePopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
       .setLngLat(e.lngLat)
       .setHTML(html)
       .setMaxWidth('none')

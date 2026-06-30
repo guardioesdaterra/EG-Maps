@@ -81,29 +81,29 @@ function addEnterpriseConnections(map: MapLibreMap) {
     data: { type: 'FeatureCollection', features },
   })
 
-  map.addLayer({
-    id: ENTERPRISE_CONN_GLOW,
-    type: 'line',
-    source: ENTERPRISE_CONN_SOURCE,
-    paint: {
-      'line-color': ['get', 'color'],
-      'line-width': 3,
-      'line-opacity': 0.15,
-      'line-blur': 3,
-    },
-  })
+    map.addLayer({
+      id: ENTERPRISE_CONN_GLOW,
+      type: 'line',
+      source: ENTERPRISE_CONN_SOURCE,
+      paint: {
+        'line-color': ['get', 'color'],
+        'line-width': ['interpolate', ['linear'], ['zoom'], 6, 2, 10, 3, 14, 4],
+        'line-opacity': 0.15,
+        'line-blur': ['interpolate', ['linear'], ['zoom'], 6, 2, 14, 4],
+      },
+    })
 
-  map.addLayer({
-    id: ENTERPRISE_CONN_LAYER,
-    type: 'line',
-    source: ENTERPRISE_CONN_SOURCE,
-    paint: {
-      'line-color': ['get', 'color'],
-      'line-width': 0.8,
-      'line-opacity': 0.3,
-      'line-dasharray': [1, 3],
-    },
-  })
+    map.addLayer({
+      id: ENTERPRISE_CONN_LAYER,
+      type: 'line',
+      source: ENTERPRISE_CONN_SOURCE,
+      paint: {
+        'line-color': ['get', 'color'],
+        'line-width': ['interpolate', ['linear'], ['zoom'], 6, 0.5, 10, 0.8, 14, 1.2],
+        'line-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0.2, 14, 0.4],
+        'line-dasharray': [1, 3],
+      },
+    })
 }
 
 export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (_enterprise: EnterpriseHQ) => void, speculatorIndex?: Array<{ normalizedName: string; centroid: { lng: number; lat: number } | null }>) {
@@ -129,9 +129,9 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (_enterprise: E
       source: ENTERPRISE_SOURCE,
       paint: {
         'circle-color': ['get', 'color'],
-        'circle-radius': 18,
-        'circle-opacity': 0.12,
-        'circle-blur': 3,
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 12, 10, 16, 14, 22],
+        'circle-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0.08, 14, 0.15],
+        'circle-blur': ['interpolate', ['linear'], ['zoom'], 6, 2, 14, 4],
       },
     })
 
@@ -141,9 +141,9 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (_enterprise: E
       source: ENTERPRISE_SOURCE,
       paint: {
         'circle-color': ['get', 'color'],
-        'circle-radius': 9,
-        'circle-opacity': 0.85,
-        'circle-stroke-width': 2,
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 6, 10, 8, 14, 11],
+        'circle-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0.7, 14, 0.95],
+        'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1.5, 14, 2.5],
         'circle-stroke-color': 'rgba(255,255,255,0.3)',
       },
     })
@@ -155,7 +155,7 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (_enterprise: E
       layout: {
         'text-field': ['get', 'name'],
         'text-font': ['Open Sans Regular'],
-        'text-size': 9,
+        'text-size': ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 8, 12, 10, 16, 12],
         'text-offset': [0, 1.8],
         'text-anchor': 'top',
         'text-allow-overlap': false,
@@ -163,7 +163,7 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (_enterprise: E
       paint: {
         'text-color': '#ddd',
         'text-halo-color': 'rgba(0,0,0,0.85)',
-        'text-halo-width': 1.5,
+        'text-halo-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 2],
       },
     })
 

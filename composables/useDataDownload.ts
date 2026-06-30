@@ -193,7 +193,6 @@ export async function downloadData(dataset: DownloadableDataset) {
     data = isPromiseLike(result) ? await result : result
   } catch (err) {
     throw new Error(`[downloadData] ${dataset.id} failed: ${err instanceof Error ? err.message : String(err)}`)
-    throw err
   }
 
   let content: string

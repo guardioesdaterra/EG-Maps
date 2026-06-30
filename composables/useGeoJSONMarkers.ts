@@ -25,8 +25,16 @@ export interface SpeciesIndexItem {
 
 const GROUP_COLORS_HEX: Record<string, string> = GROUP_COLORS
 
+// Simple inline cache for unfiltered GeoJSON conversions
+let cachedSpeciesKey: SpeciesIndexItem[] | null = null
+let cachedSpeciesResult: GeoJSON.FeatureCollection | null = null
+let cachedProjectsKey: object[] | null = null
+let cachedProjectsResult: GeoJSON.FeatureCollection | null = null
+
 // Lightweight index for markers - only 3.2MB vs 35MB full data
 export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.FeatureCollection {
+
+  if (cachedSpeciesKey === species && cachedSpeciesResult) return cachedSpeciesResult
 
   const result: GeoJSON.FeatureCollection = {
     type: 'FeatureCollection',
@@ -51,12 +59,16 @@ export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.Feat
       }))
   }
 
+  cachedSpeciesKey = species
+  cachedSpeciesResult = result
   return result
 }
 
 // Convert project data to GeoJSON FeatureCollection
 export function projectsToGeoJSON(projects: { latitude: number; longitude: number; project_title: string; country_province: string; direct_beneficiaries: number; indirect_beneficiaries: number }[]): GeoJSON.FeatureCollection {
-  return {
+  if (cachedProjectsKey === projects && cachedProjectsResult) return cachedProjectsResult
+
+  const result: GeoJSON.FeatureCollection = {
     type: 'FeatureCollection',
     features: projects
       .filter(p => p.latitude != null && p.longitude != null && isFinite(p.latitude) && isFinite(p.longitude))
@@ -81,6 +93,18 @@ export function projectsToGeoJSON(projects: { latitude: number; longitude: numbe
         }
       })
   }
+
+  cachedProjectsKey = projects
+  cachedProjectsResult = result
+  return result
+}
+
+// Clear caches when data changes
+export function clearGeoJSONCache() {
+  cachedSpeciesKey = null
+  cachedSpeciesResult = null
+  cachedProjectsKey = null
+  cachedProjectsResult = null
 }
 
 export function useGeoJSONMarkers() {
@@ -130,10 +154,15 @@ export function useGeoJSONMarkers() {
 
   function addClusterLayers(sourceId: string, dataset: 'project-grants' | 'endangered-species') {
     if (!map) return
+    if (!map.isStyleLoaded()) return
 
     const clusterColors = dataset === 'endangered-species'
       ? ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']
       : ['#06b6d4', '#22c55e', '#eab308', '#ef4444']
+
+    const zf = ['interpolate', ['linear'], ['zoom'], 6, 0.7, 10, 0.9, 14, 1.15] as unknown as number
+    const zfGlow = ['interpolate', ['linear'], ['zoom'], 6, 0.6, 10, 0.85, 14, 1.2] as unknown as number
+    const zfLabel = ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 10, 14, 13] as unknown as number
 
     // Cluster glow — soft halo behind the main circle
     map.addLayer({
@@ -144,7 +173,7 @@ export function useGeoJSONMarkers() {
       paint: {
         'circle-color': ['step', ['get', 'point_count'],
           clusterColors[0], 10, clusterColors[1], 50, clusterColors[2], 100, clusterColors[3]],
-        'circle-radius': ['step', ['get', 'point_count'], 28, 10, 36, 50, 44, 100, 54],
+        'circle-radius': ['*', ['step', ['get', 'point_count'], 28, 10, 36, 50, 44, 100, 54], zfGlow],
         'circle-blur': 0.9,
         'circle-opacity': 0.25,
       }
@@ -159,8 +188,8 @@ export function useGeoJSONMarkers() {
       paint: {
         'circle-color': ['step', ['get', 'point_count'],
           clusterColors[0], 10, clusterColors[1], 50, clusterColors[2], 100, clusterColors[3]],
-        'circle-radius': ['step', ['get', 'point_count'], 16, 10, 22, 50, 28, 100, 36],
-        'circle-stroke-width': 2.5,
+        'circle-radius': ['*', ['step', ['get', 'point_count'], 16, 10, 22, 50, 28, 100, 36], zf],
+        'circle-stroke-width': ['*', 2.5, zf],
         'circle-stroke-color': 'rgba(255, 255, 255, 0.85)',
         'circle-opacity': 0.92,
       }
@@ -174,7 +203,7 @@ export function useGeoJSONMarkers() {
       filter: ['has', 'point_count'],
       paint: {
         'circle-color': 'rgba(255, 255, 255, 0.18)',
-        'circle-radius': ['step', ['get', 'point_count'], 8, 10, 10, 50, 12, 100, 14],
+        'circle-radius': ['*', ['step', ['get', 'point_count'], 8, 10, 10, 50, 12, 100, 14], zf],
         'circle-opacity': 0.6,
       }
     })
@@ -188,12 +217,12 @@ export function useGeoJSONMarkers() {
       layout: {
         'text-field': ['get', 'point_count_abbreviated'],
         'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
-        'text-size': 12,
+        'text-size': zfLabel,
       },
       paint: {
         'text-color': '#ffffff',
         'text-halo-color': 'rgba(0, 0, 0, 0.35)',
-        'text-halo-width': 1.5,
+        'text-halo-width': ['*', 1.5, zf],
       }
     })
 
@@ -205,10 +234,10 @@ export function useGeoJSONMarkers() {
       filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-color': ['get', 'color'],
-        'circle-radius': ['case',
+        'circle-radius': ['*', ['case',
           ['get', 'hasImage'], 13,
           ['step', ['get', 'threatCount'], 7, 2, 10, 4, 13]
-        ],
+        ], zfGlow],
         'circle-blur': 0.8,
         'circle-opacity': 0.2,
       }
@@ -222,11 +251,11 @@ export function useGeoJSONMarkers() {
       filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-color': ['get', 'color'],
-        'circle-radius': ['case',
+        'circle-radius': ['*', ['case',
           ['get', 'hasImage'], 7,
           ['step', ['get', 'threatCount'], 5, 2, 7, 4, 9]
-        ],
-        'circle-stroke-width': 1.5,
+        ], zf],
+        'circle-stroke-width': ['*', 1.5, zf],
         'circle-stroke-color': 'rgba(255, 255, 255, 0.85)',
         'circle-opacity': 0.95,
       }
@@ -365,5 +394,6 @@ export function useGeoJSONMarkers() {
     updateData,
     removeLayersAndSource,
     cleanup,
+    clearCache: clearGeoJSONCache,
   }
 }

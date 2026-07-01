@@ -60,37 +60,53 @@
       <section id="hero" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
         <span class="data-label">{{ t('grantsPortal.heroLabel') }}</span>
         <h1>{{ t('grantsPortal.heroTitle1') }}<br/>{{ t('grantsPortal.heroTitle2') }}</h1>
-        <p class="hero-desc" v-html="t('grantsPortal.heroDesc', { strong1: '<strong>', strong2: '</strong>', strong3: '<strong>', strong4: '</strong>' })" />
+        <p class="hero-desc" v-html="t('grantsPortal.heroDesc', { strong1: '<strong>', strong2: '</strong>', strong3: '<strong>', strong4: '</strong>', strong5: '<strong>', strong6: '</strong>' })" />
       </section>
       <section id="details" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
         <span class="data-label">{{ t('grantsPortal.statsLabel') }}</span>
         <div class="stats-grid">
           <div class="stat-card">
-            <span class="data-label">{{ t('grantsPortal.crewGrants') }}</span>
-            <span class="stat-value">{{ approvedGrantsCount }}</span>
+            <span class="data-label">PROJECT GRANTS</span>
+            <span class="stat-value">{{ projectStats.total }}</span>
           </div>
           <div class="stat-card">
-            <span class="data-label">{{ t('grantsPortal.openGrants') }}</span>
-            <span class="stat-value" style="color: var(--accent);">{{ scrapedGrantsCount }}</span>
+            <span class="data-label">COUNTRIES</span>
+            <span class="stat-value">{{ projectStats.countries }}+</span>
           </div>
           <div class="stat-card">
-            <span class="data-label">{{ t('grantsPortal.pendingReview') }}</span>
-            <span class="stat-value" style="color: #eab308;">{{ pendingGrantsCount }}</span>
-          </div>
-          <div class="stat-card">
-            <span class="data-label">{{ t('grantsPortal.countries') }}</span>
-            <span class="stat-value">{{ countryCount }}</span>
+            <span class="data-label">BENEFICIARIES</span>
+            <span class="stat-value">{{ beneficiaryCount }}</span>
           </div>
         </div>
-        <div class="mt-4 flex gap-3 flex-wrap">
-          <button class="px-4 py-2 bg-[var(--tool-btn-active-bg)] text-white rounded" @click="openRegistryModal">{{ t('grantsPortal.viewRegistry') }}</button>
-          <NuxtLink to="/project-grants" class="px-4 py-2 bg-white/10 text-white rounded hover:bg-white/20 transition-colors">{{ t('grantsPortal.exploreMap') }}</NuxtLink>
+        <div class="mt-8"></div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="data-label">OPEN</span>
+            <span class="stat-value" style="color: var(--stat-open);">{{ scrapedOpenCount }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="data-label">APPROVED</span>
+            <span class="stat-value" style="color: var(--stat-approved);">{{ scrapedApprovedCount }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="data-label">CLOSED</span>
+            <span class="stat-value" style="color: var(--stat-closed);">{{ scrapedClosedCount }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="data-label">DECLINED</span>
+            <span class="stat-value" style="color: var(--stat-declined);">{{ scrapedDeclinedCount }}</span>
+          </div>
+        </div>
+        <div class="mt-6 flex gap-3 flex-wrap items-center">
+          <span class="text-[10px] uppercase tracking-widest text-white/30 mr-2">COMMUNITY OPEN GRANTS</span>
+          <button class="px-4 py-2 bg-[var(--tool-btn-active-bg)] text-white rounded text-xs font-semibold hover:opacity-90 transition-all" @click="openRegistryModal">{{ t('grantsPortal.viewRegistry') }}</button>
+          <NuxtLink to="/project-grants" class="px-4 py-2 border border-white/20 text-white rounded text-xs font-semibold hover:bg-white/10 transition-all">{{ t('grantsPortal.exploreMap') }}</NuxtLink>
         </div>
       </section>
       <section class="join-section" id="join">
         <span class="data-label">{{ t('grantsPortal.twoProgramsLabel') }}</span>
-        <h2 style="margin-top: 1rem; text-align: center;">{{ t('grantsPortal.howGrantsWork') }}</h2>
-        <div class="join-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+        <h2>{{ t('grantsPortal.howGrantsWork') }}</h2>
+        <div class="join-grid">
           <div class="join-card">
             <div class="join-card-content">
               <div class="preview-tooltip">
@@ -157,10 +173,13 @@
               <svg class="portal-icon-big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
               <h3>{{ t('grantsPortal.signInTitle') }}</h3>
               <p>{{ t('grantsPortal.signInDesc') }}</p>
-              <button @click="signIn" class="signin-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                {{ t('grantsPortal.signInBtn') }}
-              </button>
+              <div class="flex flex-col gap-2 mt-2">
+                <button @click="signIn" class="signin-btn">
+                  <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                  {{ t('grantsPortal.signInBtn') }}
+                </button>
+                <a href="https://www.earthguardians.org/" target="_blank" class="text-[11px] text-center text-white/40 hover:text-white/70 transition-colors underline underline-offset-2">Not a member? Join Earth Guardians →</a>
+              </div>
             </div>
           </div>
           <div v-else class="portal-card user-card">
@@ -174,14 +193,31 @@
             <button @click="signOut" class="signout-btn">{{ t('grantsPortal.signOut') }}</button>
           </div>
           <div v-if="user" class="stats-row">
-            <div v-for="s in statCards" :key="s.label" class="stat-mini">
-              <span class="stat-mini-value" :style="{ color: s.color }">{{ s.value }}</span>
-              <span class="stat-mini-label">{{ t(`grantsPortal.${s.labelKey}`) }}</span>
+            <div class="stat-mini">
+              <span class="stat-mini-value" style="color: var(--stat-open);">{{ scrapedOpenCount }}</span>
+              <span class="stat-mini-label">Open</span>
+            </div>
+            <div class="stat-mini">
+              <span class="stat-mini-value" style="color: var(--stat-approved);">{{ scrapedApprovedCount }}</span>
+              <span class="stat-mini-label">Approved</span>
+            </div>
+            <div class="stat-mini">
+              <span class="stat-mini-value" style="color: var(--stat-closed);">{{ scrapedClosedCount }}</span>
+              <span class="stat-mini-label">Closed</span>
+            </div>
+            <div class="stat-mini">
+              <span class="stat-mini-value" style="color: var(--stat-declined);">{{ scrapedDeclinedCount }}</span>
+              <span class="stat-mini-label">Declined</span>
+            </div>
+            <div class="stat-mini">
+              <span class="stat-mini-value" style="color: var(--tectonic-white);">{{ projectStats.total }}</span>
+              <span class="stat-mini-label">Projects</span>
             </div>
           </div>
           <div v-if="user" class="tabs-row">
             <button v-for="tab in portalTabs" :key="tab.key" @click="activePortalTab = tab.key" class="tab-btn" :class="activePortalTab === tab.key ? 'active' : ''">{{ t(`grantsPortal.${tab.key}`) }}</button>
           </div>
+          <p v-if="!user" class="text-xs text-white/40 text-center mt-3">Sign in with Google to access your dashboard, submit projects, and explore funding opportunities.</p>
 
           <!-- Tab: Submit / My Grants -->
           <div v-if="activePortalTab === 'tabSubmit'" class="portal-card">
@@ -243,17 +279,14 @@
             </div>
           </div>
 
-          <!-- Tab: Worldwide Open Grants (from grants.py scraper) -->
-          <div v-if="activePortalTab === 'tabOpenGrants'" v-show="user">
+          <!-- Tab: Open (pending) -->
+          <div v-if="activePortalTab === 'tabOpen'" v-show="user">
             <div class="portal-card">
-              <h3 class="portal-card-title">{{ t('grantsPortal.worldwideOpenGrants') }}</h3>
+              <h3 class="portal-card-title">🌍 Open Grants <span class="text-xs text-white/40 font-normal">({{ scrapedOpenCount }} available)</span></h3>
               <p class="text-sm text-white/60 mb-4">{{ t('grantsPortal.openGrantsDashboardDesc') }}</p>
-              <div class="flex flex-wrap gap-2 mb-4">
-                <button v-for="s in ['pending', 'approved', 'closed', 'all']" :key="s" @click="scrapedFilter = s" class="tab-btn text-xs px-3 py-1" :class="scrapedFilter === s ? 'active' : ''">{{ s === 'all' ? t('grantsPortal.all') : t(`grantsPortal.${s}`) }}</button>
-              </div>
               <div v-if="scrapedLoading" class="list-status">{{ t('grantsPortal.loadingOpenGrants') }}</div>
-              <div v-else-if="scrapedGrants.length === 0" class="list-status">{{ t('grantsPortal.noOpenGrants') }}</div>
-              <div v-for="g in scrapedGrants" :key="g.id" class="grant-item">
+              <div v-else-if="filteredScrapedGrants.length === 0" class="list-status">{{ t('grantsPortal.noOpenGrants') }}</div>
+              <div v-for="g in filteredScrapedGrants" :key="g.id" class="grant-item">
                 <div class="grant-item-body">
                   <div class="grant-item-header">
                     <div class="flex items-center gap-2 flex-wrap">
@@ -262,16 +295,14 @@
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <span v-if="g.priority_score != null" class="priority-score" :class="priorityClass(g.priority_score)">{{ g.priority_score }}</span>
-                      <span class="grant-status" :class="g.status">{{ t(`grantsPortal.${g.status === 'pending' ? 'open' : g.status}`) }}</span>
+                      <span class="grant-status pending">OPEN</span>
                     </div>
                   </div>
 
-                  <!-- Highlights row -->
                   <div v-if="g.highlights?.length" class="flex flex-wrap gap-1.5 mt-2">
                     <span v-for="hl in g.highlights.slice(0, 5)" :key="hl" class="highlight-badge" :class="hl.toLowerCase().replace(/\s+/g, '_')">{{ hl }}</span>
                   </div>
 
-                  <!-- Urgency warning -->
                   <div v-if="g.urgency === 'urgent'" class="mt-1.5 text-[11px] text-red-400 font-semibold flex items-center gap-1">
                     ⚠️ {{ t('grantsPortal.urgencyUrgent') }}
                   </div>
@@ -304,11 +335,103 @@
                     </div>
                     <button @click="openScrapedDetail(g)" class="text-[11px] text-blue-400 hover:text-blue-300">{{ t('grantsPortal.details') }}</button>
                     <a :href="g.url" target="_blank" class="text-[11px] text-green-400 hover:text-green-300" rel="noopener">{{ t('grantsPortal.apply') }} ↗</a>
-                    <button v-if="isManager && g.status === 'pending'" @click="handleReviewScraped(g.id, 'approved')" class="action-btn approve text-[11px] py-0.5">✓ {{ t('grantsPortal.approve') }}</button>
-                    <button v-if="isManager && g.status === 'approved'" @click="handleReviewScraped(g.id, 'pending')" class="action-btn restore text-[11px] py-0.5">↩</button>
-                    <button v-if="isManager" @click="openEditScraped(g)" class="action-btn edit text-[11px] py-0.5" :title="t('grantsPortal.editGrant')">
-                      <Icon name="lucide:pencil" class="w-3 h-3" />
-                    </button>
+                    <button v-if="isManager" @click="handleReviewScraped(g.id, 'approved')" class="action-btn approve text-[11px] py-0.5">✓ {{ t('grantsPortal.approve') }}</button>
+                    <button v-if="isManager" @click="handleReviewScraped(g.id, 'hidden')" class="action-btn reject text-[11px] py-0.5">✗ {{ t('grantsPortal.reject') }}</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab: Approved -->
+          <div v-if="activePortalTab === 'tabApproved'" v-show="user">
+            <div class="portal-card">
+              <h3 class="portal-card-title">✅ Approved Grants <span class="text-xs text-white/40 font-normal">({{ scrapedApprovedCount }} approved)</span></h3>
+              <p class="text-sm text-white/60 mb-4">Approved open grant opportunities from worldwide sources.</p>
+              <div v-if="scrapedLoading" class="list-status">{{ t('grantsPortal.loadingOpenGrants') }}</div>
+              <div v-else-if="filteredScrapedGrants.length === 0" class="list-status">No approved grants yet.</div>
+              <div v-for="g in filteredScrapedGrants" :key="g.id" class="grant-item">
+                <div class="grant-item-body">
+                  <div class="grant-item-header">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="grant-type-badge" :class="g.grant_type || 'general'">{{ typeEmoji(g.grant_type) }} {{ g.grant_type || 'general' }}</span>
+                      <h4>{{ g.title }}</h4>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      <span v-if="g.priority_score != null" class="priority-score" :class="priorityClass(g.priority_score)">{{ g.priority_score }}</span>
+                      <span class="grant-status approved">APPROVED</span>
+                    </div>
+                  </div>
+
+                  <p class="grant-desc text-xs mt-2">{{ g.description?.slice(0, 200) }}{{ g.description?.length > 200 ? '...' : '' }}</p>
+
+                  <div class="flex flex-wrap gap-2 mt-2 text-xs text-white/50">
+                    <span v-if="g.funder">🏛 {{ t('grantsPortal.funder') }}: {{ g.funder }}</span>
+                    <span v-if="g.country">📍 {{ t('grantsPortal.country') }}: {{ g.country }}</span>
+                    <span v-if="g.deadline">📅 {{ t('grantsPortal.deadline') }}: {{ g.deadline }}</span>
+                    <span v-if="g.amount_max">💰 {{ t('grantsPortal.amount') }}: {{ g.amount_max }} {{ g.currency }}</span>
+                    <span v-if="g.amount_usd != null" class="text-green-400/70">≈ ${{ formatAmount(g.amount_usd) }} USD</span>
+                  </div>
+
+                  <div class="mt-3 flex items-center gap-3">
+                    <div class="star-voter">
+                      <button v-for="n in 8" :key="n" @click="handleVoteScraped(g.id, n)" class="star-btn" :class="getStarClass(g.id, n, true)" :title="n + ' ' + t('grantsPortal.stars')">★</button>
+                      <span class="text-[10px] text-white/40 ml-2">{{ getVoteCount(g.id, true) }} {{ t('grantsPortal.votes') }}</span>
+                    </div>
+                    <button @click="openScrapedDetail(g)" class="text-[11px] text-blue-400 hover:text-blue-300">{{ t('grantsPortal.details') }}</button>
+                    <a :href="g.url" target="_blank" class="text-[11px] text-green-400 hover:text-green-300" rel="noopener">{{ t('grantsPortal.apply') }} ↗</a>
+                    <button v-if="isManager" @click="handleReviewScraped(g.id, 'pending')" class="action-btn restore text-[11px] py-0.5">↩ {{ t('grantsPortal.restore') }}</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab: Closed -->
+          <div v-if="activePortalTab === 'tabClosed'" v-show="user">
+            <div class="portal-card">
+              <h3 class="portal-card-title">🔒 Closed Grants <span class="text-xs text-white/40 font-normal">({{ scrapedClosedCount }} closed)</span></h3>
+              <p class="text-sm text-white/60 mb-4">Grants that have passed their deadline or been closed.</p>
+              <div v-if="scrapedLoading" class="list-status">{{ t('grantsPortal.loadingOpenGrants') }}</div>
+              <div v-else-if="filteredScrapedGrants.length === 0" class="list-status">No closed grants.</div>
+              <div v-for="g in filteredScrapedGrants" :key="g.id" class="grant-item opacity-60">
+                <div class="grant-item-body">
+                  <div class="grant-item-header">
+                    <h4>{{ g.title }}</h4>
+                    <span class="grant-status closed">CLOSED</span>
+                  </div>
+                  <p class="grant-desc text-xs mt-2">{{ g.description?.slice(0, 200) }}{{ g.description?.length > 200 ? '...' : '' }}</p>
+                  <div class="flex flex-wrap gap-2 mt-2 text-xs text-white/50">
+                    <span v-if="g.funder">🏛 {{ t('grantsPortal.funder') }}: {{ g.funder }}</span>
+                    <span v-if="g.country">📍 {{ t('grantsPortal.country') }}: {{ g.country }}</span>
+                    <span v-if="g.deadline">📅 {{ t('grantsPortal.deadline') }}: {{ g.deadline }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab: Declined -->
+          <div v-if="activePortalTab === 'tabDeclined'" v-show="user">
+            <div class="portal-card">
+              <h3 class="portal-card-title">🚫 Declined Grants <span class="text-xs text-white/40 font-normal">({{ scrapedDeclinedCount }} declined)</span></h3>
+              <p class="text-sm text-white/60 mb-4">Grants that were rejected or hidden by managers.</p>
+              <div v-if="scrapedLoading" class="list-status">{{ t('grantsPortal.loadingOpenGrants') }}</div>
+              <div v-else-if="filteredScrapedGrants.length === 0" class="list-status">No declined grants.</div>
+              <div v-for="g in filteredScrapedGrants" :key="g.id" class="grant-item opacity-50">
+                <div class="grant-item-body">
+                  <div class="grant-item-header">
+                    <h4>{{ g.title }}</h4>
+                    <span class="grant-status" :class="g.status === 'rejected' ? 'rejected' : 'hidden'">{{ g.status === 'rejected' ? 'REJECTED' : 'HIDDEN' }}</span>
+                  </div>
+                  <p class="grant-desc text-xs mt-2">{{ g.description?.slice(0, 200) }}{{ g.description?.length > 200 ? '...' : '' }}</p>
+                  <div class="flex flex-wrap gap-2 mt-2 text-xs text-white/50">
+                    <span v-if="g.funder">🏛 {{ t('grantsPortal.funder') }}: {{ g.funder }}</span>
+                    <span v-if="g.country">📍 {{ t('grantsPortal.country') }}: {{ g.country }}</span>
+                    <span v-if="g.deadline">📅 {{ t('grantsPortal.deadline') }}: {{ g.deadline }}</span>
+                  </div>
+                  <div class="mt-2">
+                    <button v-if="isManager" @click="handleReviewScraped(g.id, 'pending')" class="action-btn restore text-[11px] py-0.5">↩ {{ t('grantsPortal.restore') }}</button>
                   </div>
                 </div>
               </div>
@@ -577,17 +700,19 @@
           <div class="tectonic-line" />
           <div class="footer-stats-grid">
             <div><h4>{{ t('grantsPortal.since') }}</h4><p class="footer-stat-value">2014</p><p class="footer-stat-label">{{ t('grantsPortal.overADecade') }}</p></div>
-            <div><h4>{{ t('grantsPortal.crewGrants') }}</h4><p class="footer-stat-value">{{ stats.approved || '—' }}</p><p class="footer-stat-label">{{ t('grantsPortal.fundedProjects') }}</p></div>
-            <div><h4>{{ t('grantsPortal.openGrants') }}</h4><p class="footer-stat-value">{{ scrapedGrantsCount }}</p><p class="footer-stat-label">{{ t('grantsPortal.worldwideOpportunities') }}</p></div>
+            <div><h4>PROJECT GRANTS</h4><p class="footer-stat-value">{{ projectStats.total }}</p><p class="footer-stat-label">{{ t('grantsPortal.fundedProjects') }}</p></div>
+            <div><h4>OPEN GRANTS</h4><p class="footer-stat-value">{{ scrapedOpenCount + scrapedApprovedCount + scrapedClosedCount + scrapedDeclinedCount }}</p><p class="footer-stat-label">{{ t('grantsPortal.worldwideOpportunities') }}</p></div>
             <div><h4>{{ t('grantsPortal.countries') }}</h4><p class="footer-stat-value">{{ countryCount }}</p><p class="footer-stat-label">{{ t('grantsPortal.globalReach') }}</p></div>
           </div>
           <div class="tectonic-line" />
-          <p class="footer-copy">
-            {{ t('grantsPortal.footerCopyright') }}<br/>
+          <p class="footer-copy">{{ t('grantsPortal.footerCopyright') }}</p>
+          <p class="footer-copy footer-copy-dim">
             <span>{{ t('grantsPortal.builtForPurpose') }}</span>
           </p>
-          <div class="mt-8 text-center">
-            <a href="https://www.earthguardians.org/privacy-policy" target="_blank" class="text-[11px] text-white/30 hover:text-white/60 transition-colors underline underline-offset-2">Privacy Policy</a>
+          <div class="mt-6 flex items-center justify-center gap-6 text-[10px] text-white/25">
+            <span>PO Box 1561 Laurel, MD 20725</span>
+            <span>Tax ID/EIN: 84-1397083</span>
+            <a href="https://www.earthguardians.org/privacy-policy" target="_blank" class="hover:text-white/50 transition-colors underline underline-offset-2">Privacy Policy</a>
           </div>
         </div>
       </section>
@@ -641,8 +766,16 @@ const showHistory = ref(false)
 // Scraped (open) grants
 const scrapedGrants = ref<ScrapedGrant[]>([])
 const scrapedLoading = ref(false)
-const scrapedFilter = ref('pending')
 const scrapedUserVotes = reactive<Record<string, number>>({})
+
+const filteredScrapedGrants = computed(() => {
+  const tab = activePortalTab.value
+  if (tab === 'tabOpen') return scrapedGrants.value.filter(g => g.status === 'pending')
+  if (tab === 'tabApproved') return scrapedGrants.value.filter(g => g.status === 'approved')
+  if (tab === 'tabClosed') return scrapedGrants.value.filter(g => g.status === 'closed')
+  if (tab === 'tabDeclined') return scrapedGrants.value.filter(g => g.status === 'rejected' || g.status === 'hidden')
+  return scrapedGrants.value
+})
 
 // Leaderboard
 const leaderboard = ref<LeaderboardEntry[]>([])
@@ -708,20 +841,18 @@ const detailUserVote = ref(0)
 const portalTabs = computed(() => {
   const tabs = [
     { key: 'tabSubmit', label: '📝 Submit' },
-    { key: 'tabSubmitted', label: '📋 Submitted' },
-    { key: 'tabOpenGrants', label: '🌍 Open Grants' },
+    { key: 'tabOpen', label: '🌍 Open' },
+    { key: 'tabApproved', label: '✅ Approved' },
+    { key: 'tabClosed', label: '🔒 Closed' },
+    { key: 'tabDeclined', label: '🚫 Declined' },
     { key: 'tabLeaderboard', label: '🏆 Leaderboard' },
   ]
+  if (isManager.value) {
+    tabs.splice(1, 0, { key: 'tabSubmitted', label: '📋 Submitted' })
+  }
   if (!user.value) return tabs.filter(t => t.key === 'tabSubmit')
   return tabs
 })
-
-const statCards = computed(() => [
-  { labelKey: 'pending', label: 'Pending', value: stats.pending, color: '#eab308' },
-  { labelKey: 'approved', label: 'Approved', value: stats.approved, color: '#00ff85' },
-  { labelKey: 'rejected', label: 'Rejected', value: stats.rejected, color: '#ef4444' },
-  { labelKey: 'total', label: 'Total', value: stats.total, color: '#ffffff' },
-])
 
 const form = reactive({
   title: '',
@@ -737,6 +868,10 @@ const filteredGrants = computed(() => {
   return grants.value.filter(g => g.status === activeTab.value)
 })
 
+const scrapedOpenCount = computed(() => scrapedGrants.value.filter(g => g.status === 'pending').length)
+const scrapedApprovedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'approved').length)
+const scrapedClosedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'closed').length)
+const scrapedDeclinedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'rejected' || g.status === 'hidden').length)
 const approvedGrantsCount = computed(() => Math.max(stats.approved, projectStats.value.total))
 const pendingGrantsCount = computed(() => stats.pending)
 const scrapedGrantsCount = computed(() => Math.max(scrapedGrants.value.length, projectStats.value.total))
@@ -895,8 +1030,7 @@ function projectToScrapedGrant(p: ProjectData, i: number): ScrapedGrant {
 async function loadScrapedGrants() {
   scrapedLoading.value = true
   if (user.value) {
-    const status = scrapedFilter.value === 'all' ? undefined : scrapedFilter.value
-    const result = await listScrapedGrants(status)
+    const result = await listScrapedGrants()
     scrapedGrants.value = result.grants ?? []
   }
   if (scrapedGrants.value.length === 0) {
@@ -941,7 +1075,7 @@ async function handleReview(grantId: string, decision: string) {
   if (showRegistry.value) loadRegistry()
 }
 
-async function handleReviewScraped(grantId: string, decision: 'approved' | 'pending') {
+async function handleReviewScraped(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending') {
   await apiReviewScraped(grantId, decision)
   loadScrapedGrants()
 }
@@ -1044,9 +1178,8 @@ function scrollToPortal() {
 }
 
 watch(activeTab, () => loadGrants())
-watch(scrapedFilter, () => loadScrapedGrants())
 watch(activePortalTab, (tab) => {
-  if (tab === 'tabOpenGrants') loadScrapedGrants()
+  if (['tabOpen', 'tabApproved', 'tabClosed', 'tabDeclined'].includes(tab)) loadScrapedGrants()
   if (tab === 'tabLeaderboard') loadLeaderboardData()
 })
 
@@ -1174,6 +1307,10 @@ div {
   --glass: rgba(255, 255, 255, 0.03);
   --border: rgba(255, 255, 255, 0.1);
   --accent: #00ff85;
+  --stat-open: #eab308;
+  --stat-approved: var(--accent);
+  --stat-closed: rgba(255, 255, 255, 0.4);
+  --stat-declined: #ef4444;
 }
 
 canvas {
@@ -1267,6 +1404,10 @@ h2 {
   border-top: 1px solid var(--border);
   position: relative;
 }
+.join-section h2 {
+  margin-top: 1rem;
+  text-align: center;
+}
 .join-section::before {
   content: '';
   position: absolute;
@@ -1280,8 +1421,8 @@ h2 {
 
 .join-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
   margin-top: 4rem;
   width: 100%;
   max-width: 1200px;
@@ -1620,6 +1761,83 @@ h2 {
   margin-bottom: 1.5rem;
 }
 
+/* Tabs row */
+.tabs-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Grant items */
+.grant-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: border-color 0.2s;
+}
+.grant-item:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.grant-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.grant-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.grant-item-header h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--tectonic-white);
+  margin: 0;
+}
+
+.grant-desc {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.grant-location {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.grant-category {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.grant-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.list-status {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
 .grant-form { display: flex; flex-direction: column; gap: 0.75rem; }
 
 .form-input {
@@ -1767,6 +1985,11 @@ select.form-input option { background: #000; }
   opacity: 0.6;
   display: block;
   margin-top: 0.5rem;
+}
+.footer-copy-dim {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
 }
 
 .scroll-indicator {
@@ -2037,6 +2260,24 @@ select.form-input option { background: #000; }
 .grant-type-badge.youth            { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
 .grant-type-badge.general          { background: rgba(255, 255, 255, 0.08); color: rgba(255,255,255,0.6); }
 
+/* ── Grant status badge ───────────────────────────────── */
+.grant-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.grant-status.pending    { background: rgba(234, 179, 8, 0.12); color: #eab308; }
+.grant-status.approved   { background: rgba(0, 200, 83, 0.12); color: #00c853; }
+.grant-status.rejected   { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+.grant-status.hidden     { background: rgba(255, 255, 255, 0.05); color: rgba(255,255,255,0.4); }
+.grant-status.closed     { background: rgba(255, 255, 255, 0.05); color: rgba(255,255,255,0.4); }
+
 /* ── Highlight badge ──────────────────────────────────── */
 .highlight-badge {
   display: inline-block;
@@ -2060,6 +2301,27 @@ select.form-input option { background: #000; }
 .highlight-badge.scholarship   { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
 .highlight-badge.open          { background: rgba(34, 197, 94, 0.1);  color: #4ade80; }
 .highlight-badge.closed        { background: rgba(255, 255, 255, 0.05); color: rgba(255,255,255,0.4); }
+
+/* ── Tab buttons ───────────────────────────────────────── */
+.tab-btn {
+  border: none;
+  cursor: pointer;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+  background: transparent;
+  transition: all 0.15s;
+}
+.tab-btn:hover {
+  color: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.06);
+}
+.tab-btn.active {
+  color: #fff;
+  background: rgba(255,255,255,0.1);
+}
 
 /* ── Priority score ───────────────────────────────────── */
 .priority-score {
@@ -2113,6 +2375,34 @@ textarea.edit-input {
 }
 
 /* ── Action button variants ────────────────────────────── */
+.action-btn {
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.action-btn.approve {
+  background: rgba(0, 200, 83, 0.15);
+  color: #00c853;
+}
+.action-btn.approve:hover {
+  background: rgba(0, 200, 83, 0.25);
+}
+.action-btn.reject {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+.action-btn.reject:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+.action-btn.restore {
+  background: rgba(250, 204, 21, 0.15);
+  color: #facc15;
+}
+.action-btn.restore:hover {
+  background: rgba(250, 204, 21, 0.25);
+}
 .action-btn.edit {
   background: rgba(59, 130, 246, 0.15);
   color: #60a5fa;

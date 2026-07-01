@@ -16,7 +16,6 @@ export function useSupabaseAuth() {
       provider: 'google',
       options: {
         redirectTo,
-        queryParams: { hd: 'earthguardians.org' },
       },
     })
   }

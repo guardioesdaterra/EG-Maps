@@ -12,17 +12,17 @@
       gradient-to="rgba(160, 255, 188, 0.03)"
       glow-color="#08080a"
     />
-    <div class="scroll-indicator">SCROLL TO EXPLORE</div>
+    <div class="scroll-indicator">{{ t('grantsPortal.scrollToExplore') }}</div>
     <div class="top-right-auth">
       <div v-if="user" class="relative">
-        <button class="auth-avatar" :class="isManager ? 'manager' : ''" @click="showAuthDropdown = !showAuthDropdown" :title="isManager ? 'Manager — click for options' : 'Crew Member — click for options'">
+        <button class="auth-avatar" :class="isManager ? 'manager' : ''" @click="showAuthDropdown = !showAuthDropdown" :title="isManager ? t('grantsPortal.manager') + ' — ' + t('grantsPortal.viewDashboard') : t('grantsPortal.crewMember') + ' — ' + t('grantsPortal.viewDashboard')">
           <span class="auth-avatar-letter">{{ isManager ? 'M' : 'C' }}</span>
           <span class="auth-avatar-email">{{ user.email?.split('@')[0] }}</span>
         </button>
         <Transition name="modal-fade">
           <div v-if="showAuthDropdown" class="auth-dropdown" @click.stop>
             <div class="auth-dropdown-header">
-              <span class="auth-dropdown-role">{{ isManager ? 'Manager' : 'Crew Member' }}</span>
+              <span class="auth-dropdown-role">{{ isManager ? t('grantsPortal.manager') : t('grantsPortal.crewMember') }}</span>
               <span class="auth-dropdown-email">{{ user.email }}</span>
             </div>
             <hr class="border-white/10 my-1" />
@@ -34,7 +34,7 @@
       </div>
       <button v-else class="auth-signin" @click="signIn">
         <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-        Sign in
+        {{ t('grantsPortal.signInBtn') }}
       </button>
     </div>
 
@@ -47,66 +47,64 @@
     <Transition name="modal-fade">
       <div v-if="confirmSignOut" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="confirmSignOut = false">
         <div class="bg-[#111] border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-          <h3 class="text-white font-bold text-sm mb-2">Sign out?</h3>
-          <p class="text-white/50 text-xs mb-5">You'll need to sign in again with Google to access crew features.</p>
+          <h3 class="text-white font-bold text-sm mb-2">{{ t('grantsPortal.signOutConfirmTitle') }}</h3>
+          <p class="text-white/50 text-xs mb-5">{{ t('grantsPortal.signOutConfirmDesc') }}</p>
           <div class="flex gap-2 justify-end">
-            <button class="px-3 py-1.5 text-xs font-semibold text-white/60 hover:text-white rounded-lg transition-colors" @click="confirmSignOut = false">Cancel</button>
-            <button class="px-3 py-1.5 text-xs font-bold bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition-colors" @click="signOut(); confirmSignOut = false">Sign out</button>
+            <button class="px-3 py-1.5 text-xs font-semibold text-white/60 hover:text-white rounded-lg transition-colors" @click="confirmSignOut = false">{{ t('grantsPortal.cancel') }}</button>
+            <button class="px-3 py-1.5 text-xs font-bold bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition-colors" @click="signOut(); confirmSignOut = false">{{ t('grantsPortal.signOut') }}</button>
           </div>
         </div>
       </div>
     </Transition>
     <div id="ui-overlay" class="relative z-10">
       <section id="hero" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
-        <span class="data-label">SINCE 2014 / TWO GRANT PROGRAMS</span>
-        <h1>Earth Guardians<br/>GRANTS</h1>
-        <p class="hero-desc">
-          Two transformative funding streams: <strong>Community Collaborative Worldwide Open Grants</strong> — crew-submitted, staff-reviewed socio-environmental opportunities, and <strong>Earth Guardians Project Grants</strong> — distributed impact data from global grantee projects.
-        </p>
+        <span class="data-label">{{ t('grantsPortal.heroLabel') }}</span>
+        <h1>{{ t('grantsPortal.heroTitle1') }}<br/>{{ t('grantsPortal.heroTitle2') }}</h1>
+        <p class="hero-desc" v-html="t('grantsPortal.heroDesc', { strong1: '<strong>', strong2: '</strong>', strong3: '<strong>', strong4: '</strong>' })" />
       </section>
       <section id="details" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
-        <span class="data-label">REAL IMPACT / REAL TIME</span>
+        <span class="data-label">{{ t('grantsPortal.statsLabel') }}</span>
         <div class="stats-grid">
           <div class="stat-card">
-            <span class="data-label">CREW GRANTS</span>
+            <span class="data-label">{{ t('grantsPortal.crewGrants') }}</span>
             <span class="stat-value">{{ approvedGrantsCount }}</span>
           </div>
           <div class="stat-card">
-            <span class="data-label">OPEN GRANTS</span>
+            <span class="data-label">{{ t('grantsPortal.openGrants') }}</span>
             <span class="stat-value" style="color: var(--accent);">{{ scrapedGrantsCount }}</span>
           </div>
           <div class="stat-card">
-            <span class="data-label">PENDING REVIEW</span>
+            <span class="data-label">{{ t('grantsPortal.pendingReview') }}</span>
             <span class="stat-value" style="color: #eab308;">{{ pendingGrantsCount }}</span>
           </div>
           <div class="stat-card">
-            <span class="data-label">COUNTRIES</span>
+            <span class="data-label">{{ t('grantsPortal.countries') }}</span>
             <span class="stat-value">{{ countryCount }}</span>
           </div>
         </div>
         <div class="mt-4 flex gap-3 flex-wrap">
-          <button class="px-4 py-2 bg-[var(--tool-btn-active-bg)] text-white rounded" @click="openRegistryModal">View Approved Registry</button>
-          <NuxtLink to="/project-grants" class="px-4 py-2 bg-white/10 text-white rounded hover:bg-white/20 transition-colors">Explore Project Grants Map</NuxtLink>
+          <button class="px-4 py-2 bg-[var(--tool-btn-active-bg)] text-white rounded" @click="openRegistryModal">{{ t('grantsPortal.viewRegistry') }}</button>
+          <NuxtLink to="/project-grants" class="px-4 py-2 bg-white/10 text-white rounded hover:bg-white/20 transition-colors">{{ t('grantsPortal.exploreMap') }}</NuxtLink>
         </div>
       </section>
       <section class="join-section" id="join">
-        <span class="data-label">TWO GRANT PROGRAMS</span>
-        <h2 style="margin-top: 1rem; text-align: center;">HOW GRANTS WORK</h2>
+        <span class="data-label">{{ t('grantsPortal.twoProgramsLabel') }}</span>
+        <h2 style="margin-top: 1rem; text-align: center;">{{ t('grantsPortal.howGrantsWork') }}</h2>
         <div class="join-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
           <div class="join-card">
             <div class="join-card-content">
               <div class="preview-tooltip">
-                <strong>COMMUNITY COLLABORATIVE WORLDWIDE OPEN GRANTS</strong>
-                Socio-environmental, artistic, sociocultural opportunities submitted by any crew member, reviewed & approved by Earth Guardians Staff & RCC.
+                <strong>{{ t('grantsPortal.openGrantsTooltipTitle') }}</strong>
+                {{ t('grantsPortal.openGrantsTooltipDesc') }}
               </div>
-              <h3>🌍 Open Grants</h3>
-              <p>Worldwide open grants for socioenvironmental, artistic, sociocultural and related opportunities. Submitted by any crew member, reviewed & approved by Earth Guardians Staff & RCC. Plus automatically aggregated grants from 30+ global sources.</p>
+              <h3>{{ t('grantsPortal.openGrantsTitle') }}</h3>
+              <p>{{ t('grantsPortal.openGrantsDesc') }}</p>
               <NuxtLink v-if="!user" to="#" @click.prevent="scrollToPortal" class="join-card-btn">
-                <span>SIGN IN TO SUBMIT</span>
+                <span>{{ t('grantsPortal.signInToSubmit') }}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
               </NuxtLink>
               <NuxtLink v-else to="#" @click.prevent="scrollToPortal" class="join-card-btn">
-                <span>SUBMIT A GRANT</span>
+                <span>{{ t('grantsPortal.submitGrant') }}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
               </NuxtLink>
             </div>
@@ -114,13 +112,13 @@
           <div class="join-card">
             <div class="join-card-content">
               <div class="preview-tooltip">
-                <strong>EARTH GUARDIANS PROJECT GRANTS</strong>
-                Data of grantees crew members and their measurable impact worldwide. View on the interactive 3D globe.
+                <strong>{{ t('grantsPortal.projectGrantsTooltipTitle') }}</strong>
+                {{ t('grantsPortal.projectGrantsTooltipDesc') }}
               </div>
-              <h3>📊 Project Grants</h3>
-              <p>Earth Guardians distributed project grants — real data from grantees and crew members showing direct & indirect beneficiaries worldwide. Explore on the interactive MapLibre 3D globe with satellite-v2 tiles and project markers.</p>
+              <h3>{{ t('grantsPortal.projectGrantsTitle') }}</h3>
+              <p>{{ t('grantsPortal.projectGrantsDesc') }}</p>
               <NuxtLink to="/project-grants/3d" class="join-card-btn">
-                <span>VIEW ON 3D GLOBE</span>
+                <span>{{ t('grantsPortal.viewOn3DGlobe') }}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               </NuxtLink>
             </div>
@@ -128,42 +126,40 @@
           <div class="join-card">
             <div class="join-card-content">
               <div class="preview-tooltip">
-                <strong>REVIEW & APPROVE</strong>
-                Managers review crew submissions, approve funding, and manage open grants from worldwide sources.
+                <strong>{{ t('grantsPortal.reviewTooltipTitle') }}</strong>
+                {{ t('grantsPortal.reviewTooltipDesc') }}
               </div>
-              <h3>✅ Review & Approve</h3>
-              <p>Staff and RCC members review community-submitted grants, evaluate impact potential, and approve funding. Any @earthguardians.org user can highlight, organize, and curate open grants.</p>
+              <h3>{{ t('grantsPortal.reviewTitle') }}</h3>
+              <p>{{ t('grantsPortal.reviewDesc') }}</p>
               <NuxtLink to="#" @click.prevent="scrollToPortal" class="join-card-btn">
-                <span>VIEW DASHBOARD</span>
+                <span>{{ t('grantsPortal.viewDashboard') }}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </NuxtLink>
             </div>
           </div>
         </div>
         <div class="contact-info">
+          <p class="contact-text" v-html="contactEmailHtml" />
           <p class="contact-text">
-            QUESTIONS? EMAIL <a href="mailto:GRANTS@EARTHGUARDIANS.ORG">GRANTS@EARTHGUARDIANS.ORG</a>
-          </p>
-          <p class="contact-text">
-            VISIT <a href="https://www.earthguardians.org/" target="_blank">EARTHGUARDIANS.ORG</a>
+            <a href="https://www.earthguardians.org/" target="_blank">{{ t('grantsPortal.visitEarthGuardians') }}</a>
           </p>
         </div>
       </section>
       <section class="projects-section" id="grants-portal">
         <div class="projects-header">
-          <span class="data-label">GRANTS PORTAL // SUBMIT & REVIEW</span>
-          <h2>GRANTS DASHBOARD</h2>
-          <p class="projects-subtitle">Manage grant proposals and track funding decisions</p>
+          <span class="data-label">{{ t('grantsPortal.portalLabel') }}</span>
+          <h2>{{ t('grantsPortal.portalTitle') }}</h2>
+          <p class="projects-subtitle">{{ t('grantsPortal.portalSubtitle') }}</p>
         </div>
         <div class="portal-container">
           <div v-if="!user" class="portal-card signin-card">
             <div class="portal-card-inner">
               <svg class="portal-icon-big" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-              <h3>Sign in with Google</h3>
-              <p>Only registered Earth Guardians crew members can access the grants portal.</p>
+              <h3>{{ t('grantsPortal.signInTitle') }}</h3>
+              <p>{{ t('grantsPortal.signInDesc') }}</p>
               <button @click="signIn" class="signin-btn">
                 <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                Sign in with Google
+                {{ t('grantsPortal.signInBtn') }}
               </button>
             </div>
           </div>
@@ -171,61 +167,61 @@
             <div class="user-info">
               <div class="user-avatar" :class="isManager ? 'manager' : 'member'">{{ isManager ? 'M' : 'C' }}</div>
               <div>
-                <p class="user-role">{{ isManager ? 'Manager' : 'Crew Member' }}</p>
+                <p class="user-role">{{ isManager ? t('grantsPortal.manager') : t('grantsPortal.crewMember') }}</p>
                 <p class="user-email">{{ user.email }}</p>
               </div>
             </div>
-            <button @click="signOut" class="signout-btn">Sign out</button>
+            <button @click="signOut" class="signout-btn">{{ t('grantsPortal.signOut') }}</button>
           </div>
           <div v-if="user" class="stats-row">
             <div v-for="s in statCards" :key="s.label" class="stat-mini">
               <span class="stat-mini-value" :style="{ color: s.color }">{{ s.value }}</span>
-              <span class="stat-mini-label">{{ s.label }}</span>
+              <span class="stat-mini-label">{{ t(`grantsPortal.${s.labelKey}`) }}</span>
             </div>
           </div>
           <div v-if="user" class="tabs-row">
-            <button v-for="tab in portalTabs" :key="tab.key" @click="activePortalTab = tab.key" class="tab-btn" :class="activePortalTab === tab.key ? 'active' : ''">{{ tab.label }}</button>
+            <button v-for="tab in portalTabs" :key="tab.key" @click="activePortalTab = tab.key" class="tab-btn" :class="activePortalTab === tab.key ? 'active' : ''">{{ t(`grantsPortal.${tab.key}`) }}</button>
           </div>
 
           <!-- Tab: Submit / My Grants -->
-          <div v-if="activePortalTab === 'submit'" class="portal-card">
-            <h3 class="portal-card-title">Submit a Grant</h3>
+          <div v-if="activePortalTab === 'tabSubmit'" class="portal-card">
+            <h3 class="portal-card-title">{{ t('grantsPortal.submitGrantTitle') }}</h3>
             <form @submit.prevent="handleSubmitGrant" class="grant-form">
-              <input v-model="form.title" placeholder="Title" required class="form-input" />
-              <textarea v-model="form.description" placeholder="Description" required rows="3" class="form-input" />
-              <input v-model="form.location_name" placeholder="Location (e.g. Nairobi, Kenya)" required class="form-input" />
+              <input v-model="form.title" :placeholder="t('grantsPortal.formTitle')" required class="form-input" />
+              <textarea v-model="form.description" :placeholder="t('grantsPortal.formDescription')" required rows="3" class="form-input" />
+              <input v-model="form.location_name" :placeholder="t('grantsPortal.formLocation')" required class="form-input" />
               <div class="form-row">
-                <input v-model.number="form.latitude" type="number" step="any" placeholder="Latitude" required class="form-input" />
-                <input v-model.number="form.longitude" type="number" step="any" placeholder="Longitude" required class="form-input" />
+                <input v-model.number="form.latitude" type="number" step="any" :placeholder="t('grantsPortal.formLatitude')" required class="form-input" />
+                <input v-model.number="form.longitude" type="number" step="any" :placeholder="t('grantsPortal.formLongitude')" required class="form-input" />
               </div>
               <select v-model="form.category" class="form-input">
-                <option value="environment">Environment</option>
-                <option value="social">Social</option>
-                <option value="art">Art</option>
-                <option value="education">Education</option>
-                <option value="health">Health</option>
-                <option value="socioenvironmental">Socio-environmental</option>
-                <option value="sociocultural">Sociocultural</option>
-                <option value="artistic">Artistic</option>
-                <option value="community">Community</option>
+                <option value="environment">{{ t('grantsPortal.categoryEnvironment') }}</option>
+                <option value="social">{{ t('grantsPortal.categorySocial') }}</option>
+                <option value="art">{{ t('grantsPortal.categoryArt') }}</option>
+                <option value="education">{{ t('grantsPortal.categoryEducation') }}</option>
+                <option value="health">{{ t('grantsPortal.categoryHealth') }}</option>
+                <option value="socioenvironmental">{{ t('grantsPortal.categorySocioenvironmental') }}</option>
+                <option value="sociocultural">{{ t('grantsPortal.categorySociocultural') }}</option>
+                <option value="artistic">{{ t('grantsPortal.categoryArtistic') }}</option>
+                <option value="community">{{ t('grantsPortal.categoryCommunity') }}</option>
               </select>
-              <button type="submit" :disabled="submitting" class="submit-btn">{{ submitting ? 'Submitting...' : 'Submit Grant' }}</button>
-              <p v-if="submitMsg" class="submit-msg" :class="submitOk ? 'ok' : 'err'">{{ submitMsg }}</p>
+              <button type="submit" :disabled="submitting" class="submit-btn">{{ submitting ? t('grantsPortal.submitting') : t('grantsPortal.submitBtn') }}</button>
+              <p v-if="submitMsg" class="submit-msg" :class="submitOk ? 'ok' : 'err'">{{ submitOk ? t('grantsPortal.submittedSuccess') : submitMsg }}</p>
             </form>
           </div>
 
           <!-- Tab: Submitted Grants (managers can filter by status + see history) -->
-          <div v-if="activePortalTab === 'submitted'" v-show="user">
+          <div v-if="activePortalTab === 'tabSubmitted'" v-show="user">
             <div v-if="isManager" class="flex flex-wrap gap-2 mb-4">
-              <button v-for="s in (['pending', 'approved', 'rejected'] as const)" :key="s" @click="activeTab = s" class="tab-btn text-xs px-3 py-1" :class="activeTab === s ? 'active' : ''">{{ s }}</button>
+              <button v-for="s in (['pending', 'approved', 'rejected'] as const)" :key="s" @click="activeTab = s" class="tab-btn text-xs px-3 py-1" :class="activeTab === s ? 'active' : ''">{{ t(`grantsPortal.${s}`) }}</button>
               <button @click="showHistory = !showHistory" class="tab-btn text-xs px-3 py-1 ml-auto" :class="showHistory ? 'active' : ''">
                 <svg class="inline-block w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                History
+                {{ t('grantsPortal.history') }}
               </button>
             </div>
             <div class="grants-list">
-              <div v-if="loading" class="list-status">Loading grants...</div>
-              <div v-else-if="filteredGrants.length === 0" class="list-status">No grants found.</div>
+              <div v-if="loading" class="list-status">{{ t('grantsPortal.loadingGrants') }}</div>
+              <div v-else-if="filteredGrants.length === 0" class="list-status">{{ t('grantsPortal.noGrants') }}</div>
               <div v-for="grant in filteredGrants" :key="String(grant.id)" class="grant-item" :class="{ 'opacity-60': grant.status !== 'pending' }">
                 <div class="grant-item-body">
                   <div class="grant-item-header">
@@ -237,26 +233,26 @@
                   <p class="grant-location">{{ grant.location_name }}</p>
                 </div>
                 <div v-if="isManager && grant.status === 'pending'" class="grant-actions">
-                  <button @click="handleReview(String(grant.id), 'approved')" class="action-btn approve">Approve</button>
-                  <button @click="handleReview(String(grant.id), 'rejected')" class="action-btn reject">Reject</button>
+                  <button @click="handleReview(String(grant.id), 'approved')" class="action-btn approve">{{ t('grantsPortal.approve') }}</button>
+                  <button @click="handleReview(String(grant.id), 'rejected')" class="action-btn reject">{{ t('grantsPortal.reject') }}</button>
                 </div>
                 <div v-if="isManager && showHistory && grant.status !== 'pending'" class="grant-actions">
-                  <button @click="handleReview(String(grant.id), 'pending')" class="action-btn restore">↩ Restore</button>
+                  <button @click="handleReview(String(grant.id), 'pending')" class="action-btn restore">↩ {{ t('grantsPortal.restore') }}</button>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Tab: Worldwide Open Grants (from grants.py scraper) -->
-          <div v-if="activePortalTab === 'open'" v-show="user">
+          <div v-if="activePortalTab === 'tabOpenGrants'" v-show="user">
             <div class="portal-card">
-              <h3 class="portal-card-title">Worldwide Open Grants</h3>
-              <p class="text-sm text-white/60 mb-4">Automatically aggregated from 30+ global sources. Updated every 2 hours. Vote on grants to build the leaderboard.</p>
+              <h3 class="portal-card-title">{{ t('grantsPortal.worldwideOpenGrants') }}</h3>
+              <p class="text-sm text-white/60 mb-4">{{ t('grantsPortal.openGrantsDashboardDesc') }}</p>
               <div class="flex flex-wrap gap-2 mb-4">
-                <button v-for="s in ['pending', 'approved', 'closed', 'all']" :key="s" @click="scrapedFilter = s" class="tab-btn text-xs px-3 py-1" :class="scrapedFilter === s ? 'active' : ''">{{ s === 'all' ? 'All' : s }}</button>
+                <button v-for="s in ['pending', 'approved', 'closed', 'all']" :key="s" @click="scrapedFilter = s" class="tab-btn text-xs px-3 py-1" :class="scrapedFilter === s ? 'active' : ''">{{ s === 'all' ? t('grantsPortal.all') : t(`grantsPortal.${s}`) }}</button>
               </div>
-              <div v-if="scrapedLoading" class="list-status">Loading open grants...</div>
-              <div v-else-if="scrapedGrants.length === 0" class="list-status">No open grants available yet. The scraper runs every 2 hours.</div>
+              <div v-if="scrapedLoading" class="list-status">{{ t('grantsPortal.loadingOpenGrants') }}</div>
+              <div v-else-if="scrapedGrants.length === 0" class="list-status">{{ t('grantsPortal.noOpenGrants') }}</div>
               <div v-for="g in scrapedGrants" :key="g.id" class="grant-item">
                 <div class="grant-item-body">
                   <div class="grant-item-header">
@@ -266,7 +262,7 @@
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                       <span v-if="g.priority_score != null" class="priority-score" :class="priorityClass(g.priority_score)">{{ g.priority_score }}</span>
-                      <span class="grant-status" :class="g.status">{{ g.status === 'pending' ? 'open' : g.status }}</span>
+                      <span class="grant-status" :class="g.status">{{ t(`grantsPortal.${g.status === 'pending' ? 'open' : g.status}`) }}</span>
                     </div>
                   </div>
 
@@ -277,24 +273,24 @@
 
                   <!-- Urgency warning -->
                   <div v-if="g.urgency === 'urgent'" class="mt-1.5 text-[11px] text-red-400 font-semibold flex items-center gap-1">
-                    ⚠️ Closing within 30 days
+                    ⚠️ {{ t('grantsPortal.urgencyUrgent') }}
                   </div>
                   <div v-else-if="g.urgency === 'soon'" class="mt-1.5 text-[11px] text-yellow-400 flex items-center gap-1">
-                    ⏰ Closing within 90 days
+                    ⏰ {{ t('grantsPortal.urgencySoon') }}
                   </div>
                   <div v-else-if="g.urgency === 'expired'" class="mt-1.5 text-[11px] text-red-600 flex items-center gap-1">
-                    🔴 Deadline passed
+                    🔴 {{ t('grantsPortal.urgencyExpired') }}
                   </div>
 
                   <p class="grant-desc text-xs mt-2">{{ g.description?.slice(0, 200) }}{{ g.description?.length > 200 ? '...' : '' }}</p>
 
                   <div class="flex flex-wrap gap-2 mt-2 text-xs text-white/50">
-                    <span v-if="g.funder">🏛 {{ g.funder }}</span>
-                    <span v-if="g.country">📍 {{ g.country }}</span>
-                    <span v-if="g.deadline">📅 {{ g.deadline }}</span>
-                    <span v-if="g.amount_max">💰 {{ g.amount_max }} {{ g.currency }}</span>
+                    <span v-if="g.funder">🏛 {{ t('grantsPortal.funder') }}: {{ g.funder }}</span>
+                    <span v-if="g.country">📍 {{ t('grantsPortal.country') }}: {{ g.country }}</span>
+                    <span v-if="g.deadline">📅 {{ t('grantsPortal.deadline') }}: {{ g.deadline }}</span>
+                    <span v-if="g.amount_max">💰 {{ t('grantsPortal.amount') }}: {{ g.amount_max }} {{ g.currency }}</span>
                     <span v-if="g.amount_usd != null" class="text-green-400/70">≈ ${{ formatAmount(g.amount_usd) }} USD</span>
-                    <span v-if="g.source">📡 {{ g.source }}</span>
+                    <span v-if="g.source">📡 {{ t('grantsPortal.source') }}: {{ g.source }}</span>
                   </div>
 
                   <div v-if="g.categories?.length" class="flex flex-wrap gap-1 mt-2">
@@ -303,14 +299,14 @@
 
                   <div class="mt-3 flex items-center gap-3">
                     <div class="star-voter">
-                      <button v-for="n in 8" :key="n" @click="handleVoteScraped(g.id, n)" class="star-btn" :class="getStarClass(g.id, n, true)" :title="n + ' stars'">★</button>
-                      <span class="text-[10px] text-white/40 ml-2">{{ getVoteCount(g.id, true) }} votes</span>
+                      <button v-for="n in 8" :key="n" @click="handleVoteScraped(g.id, n)" class="star-btn" :class="getStarClass(g.id, n, true)" :title="n + ' ' + t('grantsPortal.stars')">★</button>
+                      <span class="text-[10px] text-white/40 ml-2">{{ getVoteCount(g.id, true) }} {{ t('grantsPortal.votes') }}</span>
                     </div>
-                    <button @click="openScrapedDetail(g)" class="text-[11px] text-blue-400 hover:text-blue-300">Details</button>
-                    <a :href="g.url" target="_blank" class="text-[11px] text-green-400 hover:text-green-300" rel="noopener">Apply ↗</a>
-                    <button v-if="isManager && g.status === 'pending'" @click="handleReviewScraped(g.id, 'approved')" class="action-btn approve text-[11px] py-0.5">✓ Approve</button>
+                    <button @click="openScrapedDetail(g)" class="text-[11px] text-blue-400 hover:text-blue-300">{{ t('grantsPortal.details') }}</button>
+                    <a :href="g.url" target="_blank" class="text-[11px] text-green-400 hover:text-green-300" rel="noopener">{{ t('grantsPortal.apply') }} ↗</a>
+                    <button v-if="isManager && g.status === 'pending'" @click="handleReviewScraped(g.id, 'approved')" class="action-btn approve text-[11px] py-0.5">✓ {{ t('grantsPortal.approve') }}</button>
                     <button v-if="isManager && g.status === 'approved'" @click="handleReviewScraped(g.id, 'pending')" class="action-btn restore text-[11px] py-0.5">↩</button>
-                    <button v-if="isManager" @click="openEditScraped(g)" class="action-btn edit text-[11px] py-0.5" title="Edit grant info">
+                    <button v-if="isManager" @click="openEditScraped(g)" class="action-btn edit text-[11px] py-0.5" :title="t('grantsPortal.editGrant')">
                       <Icon name="lucide:pencil" class="w-3 h-3" />
                     </button>
                   </div>
@@ -320,12 +316,12 @@
           </div>
 
           <!-- Tab: Leaderboard -->
-          <div v-if="activePortalTab === 'leaderboard'" v-show="user">
+          <div v-if="activePortalTab === 'tabLeaderboard'" v-show="user">
             <div class="portal-card">
-              <h3 class="portal-card-title">🏆 Grants Leaderboard</h3>
-              <p class="text-sm text-white/60 mb-4">Top-rated grants by community votes (⭐ 1-8 stars). Any crew member can vote; @earthguardians.org users can curate.</p>
-              <div v-if="leaderboardLoading" class="list-status">Loading leaderboard...</div>
-              <div v-else-if="leaderboard.length === 0" class="list-status">No grants rated yet. Be the first to vote!</div>
+              <h3 class="portal-card-title">{{ t('grantsPortal.grantsLeaderboard') }}</h3>
+              <p class="text-sm text-white/60 mb-4">{{ t('grantsPortal.leaderboardDesc') }}</p>
+              <div v-if="leaderboardLoading" class="list-status">{{ t('grantsPortal.loadingLeaderboard') }}</div>
+              <div v-else-if="leaderboard.length === 0" class="list-status">{{ t('grantsPortal.noLeaderboard') }}</div>
               <div v-for="(entry, i) in leaderboard" :key="entry.id" class="grant-item">
                 <div class="grant-item-body">
                   <div class="flex items-center gap-3">
@@ -340,7 +336,7 @@
                         <span v-else class="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-300">Crew</span>
                       </div>
                     </div>
-                    <button @click="openLeaderboardDetail(entry)" class="text-[11px] text-white/60 hover:text-white">Details</button>
+                    <button @click="openLeaderboardDetail(entry)" class="text-[11px] text-white/60 hover:text-white">{{ t('grantsPortal.details') }}</button>
                   </div>
                 </div>
               </div>
@@ -351,26 +347,26 @@
 
       <!-- Full-screen registry modal -->
       <Teleport to="body">
-        <div v-if="showRegistry" class="fixed inset-0 z-[9000] bg-black/90 p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Approved grants registry">
+        <div v-if="showRegistry" class="fixed inset-0 z-[9000] bg-black/90 p-4 overflow-y-auto" role="dialog" aria-modal="true" :aria-label="t('grantsPortal.approvedGrants')">
           <div class="mx-auto max-w-6xl w-full">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-bold text-white">Approved Grants</h2>
-              <button class="text-white/70 hover:text-white" aria-label="Close" @click="closeRegistryModal">Close</button>
+              <h2 class="text-lg font-bold text-white">{{ t('grantsPortal.approvedGrants') }}</h2>
+              <button class="text-white/70 hover:text-white" :aria-label="t('grantsPortal.close')" @click="closeRegistryModal">{{ t('grantsPortal.close') }}</button>
             </div>
-            <div v-if="registryLoading" class="text-white/70">Loading registry...</div>
-            <div v-else-if="!registry.length" class="text-white/70">No approved grants yet.</div>
+            <div v-if="registryLoading" class="text-white/70">{{ t('grantsPortal.loadingRegistry') }}</div>
+            <div v-else-if="!registry.length" class="text-white/70">{{ t('grantsPortal.noApprovedGrants') }}</div>
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div v-for="grant in registry" :key="String(grant.id)" class="rounded border border-white/10 bg-white/5 p-3 text-white">
                 <div class="flex items-start justify-between gap-2">
                   <h3 class="text-sm font-semibold leading-snug">{{ grant.title }}</h3>
-                  <span v-if="grant.relevante" class="text-[10px] font-bold uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded">Public</span>
+                  <span v-if="grant.relevante" class="text-[10px] font-bold uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded">{{ t('grantsPortal.public') }}</span>
                 </div>
                 <p class="mt-2 text-xs text-white/70 line-clamp-3">{{ grant.description }}</p>
                 <div class="mt-3 flex items-center justify-between text-[11px] text-white/60">
                   <span>{{ grant.location_name }}</span>
                   <span>{{ new Date(grant.created_at).toLocaleDateString() }}</span>
                 </div>
-                <button class="mt-3 w-full rounded bg-white/10 py-2 text-xs font-semibold text-white hover:bg-white/20" @click="openGrantDetail(grant)">View details</button>
+                <button class="mt-3 w-full rounded bg-white/10 py-2 text-xs font-semibold text-white hover:bg-white/20" @click="openGrantDetail(grant)">{{ t('grantsPortal.viewDetails') }}</button>
               </div>
             </div>
           </div>
@@ -399,20 +395,20 @@
                   <!-- Main info -->
                   <div class="md:col-span-2 space-y-4">
                     <div class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
-                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Description</h3>
+                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.descDescription') }}</h3>
                       <p class="mt-2 sm:mt-3 text-xs sm:text-sm leading-relaxed text-white/80">{{ detailGrant.description }}</p>
                     </div>
                     <div class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
-                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Status</h3>
-                      <span class="mt-2 inline-block px-3 py-1 rounded-full text-xs font-medium capitalize" :class="statusClass(detailGrant.status)">{{ detailGrant.status }}</span>
+                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.descStatus') }}</h3>
+                      <span class="mt-2 inline-block px-3 py-1 rounded-full text-xs font-medium capitalize" :class="statusClass(detailGrant.status)">{{ t(`grantsPortal.${detailGrant.status === 'pending' ? 'open' : detailGrant.status}`) }}</span>
                     </div>
                     <div v-if="detailGrant.location_name || (detailGrant.latitude != null)" class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
-                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Location</h3>
+                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.descLocation') }}</h3>
                       <p class="mt-2 text-xs sm:text-sm text-white/70">{{ detailGrant.location_name || '' }}{{ detailGrant.latitude != null ? ` (${detailGrant.latitude}, ${detailGrant.longitude})` : '' }}</p>
                     </div>
                     <div v-if="detailGrant.source_type === 'scraped' && detailGrant.url" class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
-                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Apply</h3>
-                      <a :href="detailGrant.url" target="_blank" rel="noopener" class="mt-2 inline-flex items-center gap-2 text-xs sm:text-sm text-green-400 hover:text-green-300">Visit source ↗</a>
+                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.descApply') }}</h3>
+                      <a :href="detailGrant.url" target="_blank" rel="noopener" class="mt-2 inline-flex items-center gap-2 text-xs sm:text-sm text-green-400 hover:text-green-300">{{ t('grantsPortal.visitSource') }} ↗</a>
                     </div>
                   </div>
                   <!-- Sidebar -->
@@ -420,18 +416,18 @@
                     <!-- Priority + Type -->
                     <div class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
                       <div class="flex items-center justify-between">
-                        <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Priority</h3>
+                        <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.descPriority') }}</h3>
                         <span v-if="detailGrant.priority_score != null" class="priority-score text-sm" :class="priorityClass(detailGrant.priority_score)">{{ detailGrant.priority_score }}</span>
                       </div>
                       <div v-if="detailGrant.grant_type" class="mt-2">
                         <span class="grant-type-badge text-xs" :class="detailGrant.grant_type">{{ typeEmoji(detailGrant.grant_type) }} {{ detailGrant.grant_type }}</span>
                       </div>
-                      <div v-if="detailGrant.relevance != null" class="mt-1 text-[11px] text-white/40">Relevance: {{ detailGrant.relevance }}/100</div>
+                      <div v-if="detailGrant.relevance != null" class="mt-1 text-[11px] text-white/40">{{ t('grantsPortal.relevance', { score: detailGrant.relevance }) }}</div>
                     </div>
 
                     <!-- Highlights -->
                     <div v-if="detailGrant.highlights?.length" class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
-                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Highlights</h3>
+                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.descHighlights') }}</h3>
                       <div class="mt-2 flex flex-wrap gap-1.5">
                         <span v-for="hl in detailGrant.highlights" :key="hl" class="highlight-badge" :class="hl.toLowerCase().replace(/\s+/g, '_')">{{ hl }}</span>
                       </div>
@@ -439,44 +435,44 @@
 
                     <!-- Urgency -->
                     <div v-if="detailGrant.urgency && detailGrant.urgency !== 'unknown'" class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
-                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Deadline</h3>
-                      <div v-if="detailGrant.urgency === 'urgent'" class="mt-2 text-xs text-red-400 font-semibold">⚠️ Urgent — closing within 30 days</div>
-                      <div v-else-if="detailGrant.urgency === 'soon'" class="mt-2 text-xs text-yellow-400">⏰ Closing within 90 days</div>
-                      <div v-else-if="detailGrant.urgency === 'expired'" class="mt-2 text-xs text-red-600">🔴 Deadline passed</div>
+                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.descDeadline') }}</h3>
+                      <div v-if="detailGrant.urgency === 'urgent'" class="mt-2 text-xs text-red-400 font-semibold">⚠️ {{ t('grantsPortal.urgencyUrgent') }}</div>
+                      <div v-else-if="detailGrant.urgency === 'soon'" class="mt-2 text-xs text-yellow-400">⏰ {{ t('grantsPortal.urgencySoon') }}</div>
+                      <div v-else-if="detailGrant.urgency === 'expired'" class="mt-2 text-xs text-red-600">🔴 {{ t('grantsPortal.urgencyExpired') }}</div>
                       <div v-if="detailGrant.deadline_days != null" class="mt-1 text-[11px] text-white/40">{{ detailGrant.deadline_days >= 0 ? `${detailGrant.deadline_days} days remaining` : `${Math.abs(detailGrant.deadline_days)} days ago` }}</div>
                     </div>
 
                     <!-- Funding -->
                     <div class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
-                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Funding</h3>
-                      <p class="mt-2 text-xs sm:text-sm text-white/70">{{ detailGrant.amount_max ? `${detailGrant.amount_max} ${detailGrant.currency || ''}` : 'Not specified' }}</p>
+                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.descFunding') }}</h3>
+                      <p class="mt-2 text-xs sm:text-sm text-white/70">{{ detailGrant.amount_max ? `${detailGrant.amount_max} ${detailGrant.currency || ''}` : t('grantsPortal.notSpecified') }}</p>
                       <p v-if="detailGrant.amount_usd != null" class="mt-1 text-[11px] text-green-400/70">≈ ${{ formatAmount(detailGrant.amount_usd) }} USD</p>
                       <p v-if="detailGrant.deadline" class="mt-1 text-xs text-white/50">Deadline: {{ detailGrant.deadline }}</p>
                     </div>
 
                     <div v-if="detailGrant.funder || detailGrant.source" class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
-                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Source</h3>
+                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.descSource') }}</h3>
                       <p class="mt-2 text-xs sm:text-sm text-white/70">{{ detailGrant.funder || detailGrant.source }}</p>
                     </div>
                     <div v-if="detailGrant.submitted_by" class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
-                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Submitted by</h3>
+                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.submittedBy') }}</h3>
                       <p class="mt-2 text-xs sm:text-sm text-white/70">{{ detailGrant.submitted_by }}</p>
                     </div>
                     <div v-if="detailGrant.reviewed_by" class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
-                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Review</h3>
+                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.review') }}</h3>
                       <p class="mt-2 text-xs sm:text-sm text-white/70">{{ detailGrant.reviewed_by }}</p>
                       <p class="text-xs text-white/40">{{ detailGrant.reviewed_at ? new Date(detailGrant.reviewed_at).toLocaleString() : '' }}</p>
                     </div>
                     <!-- Star voting -->
                     <div class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
-                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Vote (1-8 stars)</h3>
+                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.voteLabel') }}</h3>
                       <div class="mt-3 flex gap-1">
-                        <button v-for="n in 8" :key="n" @click="handleVoteDetail(n)" class="star-btn text-lg sm:text-xl" :class="n <= detailUserVote ? 'active' : ''" :title="n + ' stars'">★</button>
+                        <button v-for="n in 8" :key="n" @click="handleVoteDetail(n)" class="star-btn text-lg sm:text-xl" :class="n <= detailUserVote ? 'active' : ''" :title="n + ' ' + t('grantsPortal.stars')">★</button>
                       </div>
-                      <p class="mt-2 text-[11px] text-white/40">Your vote: {{ detailUserVote || 'none' }}/8</p>
+                      <p class="mt-2 text-[11px] text-white/40">{{ t('grantsPortal.yourVote', { count: detailUserVote || t('grantsPortal.noVotes') }) }}</p>
                     </div>
                     <div v-if="detailGrant.categories?.length" class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
-                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">Categories</h3>
+                      <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.categories') }}</h3>
                       <div class="mt-2 flex flex-wrap gap-1.5">
                         <span v-for="cat in detailGrant.categories" :key="cat" class="text-[10px] sm:text-xs px-2 py-1 rounded-md bg-white/5 text-white/60">{{ cat }}</span>
                       </div>
@@ -484,7 +480,7 @@
                   </div>
                 </div>
                 <div class="flex justify-end pt-2 border-t border-white/5">
-                  <button class="px-4 py-2 rounded-lg bg-white/5 text-xs sm:text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors" @click="closeGrantDetail">Close</button>
+                  <button class="px-4 py-2 rounded-lg bg-white/5 text-xs sm:text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors" @click="closeGrantDetail">{{ t('grantsPortal.close') }}</button>
                 </div>
               </div>
             </div>
@@ -500,7 +496,7 @@
             <div class="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl">
               <div class="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-white/5 bg-[#0c0c0e]/95 backdrop-blur-sm">
                 <div class="min-w-0 flex-1 mr-3">
-                  <h2 class="text-sm font-bold text-white truncate">{{ editForm.title || 'Edit Grant' }}</h2>
+                  <h2 class="text-sm font-bold text-white truncate">{{ editForm.title || t('grantsPortal.editGrant') }}</h2>
                   <p class="text-[10px] text-white/40 truncate mt-0.5">{{ editGrant?.source || editGrant?.id }}</p>
                 </div>
                 <button class="rounded-full p-1.5 text-white/50 hover:text-white hover:bg-white/10 transition-colors" aria-label="Close" @click="closeEditScraped">
@@ -552,9 +548,9 @@
                 </label>
                 <div v-if="editErr" class="text-[11px] text-red-400">{{ editErr }}</div>
                 <div class="flex justify-end gap-2 pt-2">
-                  <button class="px-3 py-1.5 rounded-lg bg-white/5 text-xs text-white/70 hover:bg-white/10 transition-colors" @click="closeEditScraped">Cancel</button>
+                  <button class="px-3 py-1.5 rounded-lg bg-white/5 text-xs text-white/70 hover:bg-white/10 transition-colors" @click="closeEditScraped">{{ t('grantsPortal.cancel') }}</button>
                   <button class="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-semibold hover:bg-blue-500/30 transition-colors" :disabled="editSaving" @click="handleSaveEdit">
-                    {{ editSaving ? 'Saving...' : 'Save Changes' }}
+                    {{ editSaving ? t('grantsPortal.saving') : t('grantsPortal.saveChanges') }}
                   </button>
                 </div>
               </div>
@@ -566,8 +562,8 @@
       <section id="footer" class="footer-section">
         <div class="footer-glow" />
         <div class="footer-content">
-          <span class="data-label">EARTH GUARDIANS GRANTS</span>
-          <h1 class="footer-title">FUNDING<br/>IMPACT</h1>
+          <span class="data-label">{{ t('grantsPortal.footerLabel') }}</span>
+          <h1 class="footer-title">{{ t('grantsPortal.footerTitle1') }}<br/>{{ t('grantsPortal.footerTitle2') }}</h1>
           <div class="footer-links">
             <a href="https://www.earthguardians.org/" target="_blank" class="footer-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -580,16 +576,19 @@
           </div>
           <div class="tectonic-line" />
           <div class="footer-stats-grid">
-            <div><h4>SINCE</h4><p class="footer-stat-value">2014</p><p class="footer-stat-label">OVER A DECADE</p></div>
-            <div><h4>CREW GRANTS</h4><p class="footer-stat-value">{{ stats.approved || '—' }}</p><p class="footer-stat-label">FUNDED PROJECTS</p></div>
-            <div><h4>OPEN GRANTS</h4><p class="footer-stat-value">{{ scrapedGrantsCount }}</p><p class="footer-stat-label">WORLDWIDE OPPORTUNITIES</p></div>
-            <div><h4>COUNTRIES</h4><p class="footer-stat-value">{{ countryCount }}</p><p class="footer-stat-label">GLOBAL REACH</p></div>
+            <div><h4>{{ t('grantsPortal.since') }}</h4><p class="footer-stat-value">2014</p><p class="footer-stat-label">{{ t('grantsPortal.overADecade') }}</p></div>
+            <div><h4>{{ t('grantsPortal.crewGrants') }}</h4><p class="footer-stat-value">{{ stats.approved || '—' }}</p><p class="footer-stat-label">{{ t('grantsPortal.fundedProjects') }}</p></div>
+            <div><h4>{{ t('grantsPortal.openGrants') }}</h4><p class="footer-stat-value">{{ scrapedGrantsCount }}</p><p class="footer-stat-label">{{ t('grantsPortal.worldwideOpportunities') }}</p></div>
+            <div><h4>{{ t('grantsPortal.countries') }}</h4><p class="footer-stat-value">{{ countryCount }}</p><p class="footer-stat-label">{{ t('grantsPortal.globalReach') }}</p></div>
           </div>
           <div class="tectonic-line" />
           <p class="footer-copy">
-            © 2014-2024 EARTH GUARDIANS // SOCIO-ENVIRONMENTAL GRANTS PROGRAM<br/>
-            <span>BUILT FOR PURPOSE</span>
+            {{ t('grantsPortal.footerCopyright') }}<br/>
+            <span>{{ t('grantsPortal.builtForPurpose') }}</span>
           </p>
+          <div class="mt-8 text-center">
+            <a href="https://www.earthguardians.org/privacy-policy" target="_blank" class="text-[11px] text-white/30 hover:text-white/60 transition-colors underline underline-offset-2">Privacy Policy</a>
+          </div>
         </div>
       </section>
     </div>
@@ -599,6 +598,8 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
+import { allProjectsData } from '~/lib/project-data'
+import type { ProjectData } from '~/lib/types'
 
 useHead({
   title: 'EG Grants | Earth Guardians',
@@ -612,6 +613,7 @@ useHead({
   ],
 })
 
+const { t } = useI18n()
 const { user, isManager, signIn, signOut } = useSupabaseAuth()
 const showAuthDropdown = ref(false)
 const confirmSignOut = ref(false)
@@ -622,6 +624,14 @@ const grants = ref<GrantRecord[]>([])
 const registry = ref<Array<GrantRecord & { relevante?: boolean }>>([])
 const stats = reactive({ pending: 0, approved: 0, rejected: 0, total: 0 })
 const loading = ref(true)
+
+// Static project data fallback
+const projectStats = computed(() => {
+  const countries = new Set(allProjectsData.map(p => p.country_province.split(',').pop()?.trim()).filter(Boolean))
+  const direct = allProjectsData.reduce((s, p) => s + (p.direct_beneficiaries || 0), 0)
+  const indirect = allProjectsData.reduce((s, p) => s + (p.indirect_beneficiaries || 0), 0)
+  return { total: allProjectsData.length, countries: countries.size, beneficiaries: direct + indirect }
+})
 const submitting = ref(false)
 const submitMsg = ref('')
 const submitOk = ref(false)
@@ -689,7 +699,7 @@ const editForm = reactive({
 })
 
 // UI state
-const activePortalTab = ref('submit')
+const activePortalTab = ref('tabSubmit')
 const showRegistry = ref(false)
 const registryLoading = ref(false)
 const detailGrant = ref<DetailGrantData | null>(null)
@@ -697,20 +707,20 @@ const detailUserVote = ref(0)
 
 const portalTabs = computed(() => {
   const tabs = [
-    { key: 'submit', label: '📝 Submit' },
-    { key: 'submitted', label: '📋 Submitted' },
-    { key: 'open', label: '🌍 Open Grants' },
-    { key: 'leaderboard', label: '🏆 Leaderboard' },
+    { key: 'tabSubmit', label: '📝 Submit' },
+    { key: 'tabSubmitted', label: '📋 Submitted' },
+    { key: 'tabOpenGrants', label: '🌍 Open Grants' },
+    { key: 'tabLeaderboard', label: '🏆 Leaderboard' },
   ]
-  if (!user.value) return tabs.filter(t => t.key === 'submit')
+  if (!user.value) return tabs.filter(t => t.key === 'tabSubmit')
   return tabs
 })
 
 const statCards = computed(() => [
-  { label: 'Pending', value: stats.pending, color: '#eab308' },
-  { label: 'Approved', value: stats.approved, color: '#00ff85' },
-  { label: 'Rejected', value: stats.rejected, color: '#ef4444' },
-  { label: 'Total', value: stats.total, color: '#ffffff' },
+  { labelKey: 'pending', label: 'Pending', value: stats.pending, color: '#eab308' },
+  { labelKey: 'approved', label: 'Approved', value: stats.approved, color: '#00ff85' },
+  { labelKey: 'rejected', label: 'Rejected', value: stats.rejected, color: '#ef4444' },
+  { labelKey: 'total', label: 'Total', value: stats.total, color: '#ffffff' },
 ])
 
 const form = reactive({
@@ -727,11 +737,21 @@ const filteredGrants = computed(() => {
   return grants.value.filter(g => g.status === activeTab.value)
 })
 
-const approvedGrantsCount = computed(() => stats.approved)
+const approvedGrantsCount = computed(() => Math.max(stats.approved, projectStats.value.total))
 const pendingGrantsCount = computed(() => stats.pending)
-const scrapedGrantsCount = computed(() => scrapedGrants.value.length)
-const beneficiaryCount = computed(() => '10K+')
-const countryCount = computed(() => '47+')
+const scrapedGrantsCount = computed(() => Math.max(scrapedGrants.value.length, projectStats.value.total))
+const beneficiaryCount = computed(() => {
+  const b = projectStats.value.beneficiaries
+  if (b >= 1000000) return (b / 1000000).toFixed(1) + 'M+'
+  if (b >= 1000) return (b / 1000).toFixed(0) + 'K+'
+  return b + '+'
+})
+const countryCount = computed(() => Math.max(stats.approved > 0 ? 47 : 0, projectStats.value.countries) + '+')
+
+const contactEmailHtml = computed(() => {
+  const emailLink = '<a href="mailto:GRANTS@EARTHGUARDIANS.ORG">GRANTS@EARTHGUARDIANS.ORG</a>'
+  return t('grantsPortal.contactLabel', { email: emailLink })
+})
 
 async function loadRegistry() {
   registryLoading.value = true
@@ -837,15 +857,51 @@ async function loadGrants() {
 
 async function loadStats() {
   const s = await getStats()
-  Object.assign(stats, s)
+  if (s.total > 0) {
+    Object.assign(stats, s)
+  } else {
+    Object.assign(stats, { pending: 0, approved: projectStats.value.total, rejected: 0, total: projectStats.value.total })
+  }
+}
+
+function projectToScrapedGrant(p: ProjectData, i: number): ScrapedGrant {
+  return {
+    id: `project-${i}`,
+    source_id: `project-${i}`,
+    title: p.project_title,
+    funder: 'Earth Guardians',
+    source: 'project-grants',
+    url: '',
+    description: `Project in ${p.country_province} with ${p.direct_beneficiaries} direct and ${p.indirect_beneficiaries} indirect beneficiaries.`,
+    deadline: '',
+    amount_max: '',
+    amount_min: '',
+    currency: '',
+    country: p.country_province.split(',').pop()?.trim() || p.country_province,
+    region: p.country_province,
+    categories: ['environment', 'community'],
+    language: 'en',
+    status: 'approved',
+    fetched_at: new Date().toISOString(),
+    created_at: new Date('2024-01-01').toISOString(),
+    grant_type: 'conservation',
+    highlights: ['eg_core', 'high_value'],
+    urgency: 'unknown',
+    amount_usd: null,
+    priority_score: 50,
+  }
 }
 
 async function loadScrapedGrants() {
-  if (!user.value) return
   scrapedLoading.value = true
-  const status = scrapedFilter.value === 'all' ? undefined : scrapedFilter.value
-  const result = await listScrapedGrants(status)
-  scrapedGrants.value = result.grants ?? []
+  if (user.value) {
+    const status = scrapedFilter.value === 'all' ? undefined : scrapedFilter.value
+    const result = await listScrapedGrants(status)
+    scrapedGrants.value = result.grants ?? []
+  }
+  if (scrapedGrants.value.length === 0) {
+    scrapedGrants.value = allProjectsData.map(projectToScrapedGrant)
+  }
   scrapedLoading.value = false
 }
 
@@ -990,8 +1046,8 @@ function scrollToPortal() {
 watch(activeTab, () => loadGrants())
 watch(scrapedFilter, () => loadScrapedGrants())
 watch(activePortalTab, (tab) => {
-  if (tab === 'open') loadScrapedGrants()
-  if (tab === 'leaderboard') loadLeaderboardData()
+  if (tab === 'tabOpenGrants') loadScrapedGrants()
+  if (tab === 'tabLeaderboard') loadLeaderboardData()
 })
 
 const globeCanvas = ref<HTMLCanvasElement | null>(null)

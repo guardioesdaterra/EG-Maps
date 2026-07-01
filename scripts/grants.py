@@ -527,7 +527,12 @@ def parse_date(s):
 
 def extract_amount(text):
     """Extract first currency amount from text."""
-    m = re.search(r'(€|USD?|EUR?|GBP?|R\$|BRL?|£|¥|JPY|CNY?|₹|INR?|₩|KRW|฿|THB?|Rp|IDR?|RM|MYR?|PHP?|SGD?)'
+    # Brazilian Real: "R$ 150.000,00" or "até R$ 150.000" or "R$ 50.000,00 a R$ 200.000,00"
+    m_brl = re.search(r'R\$\s*([\d\.]+(?:,\d{2})?)', text)
+    if m_brl:
+        return f"R$ {m_brl.group(1)}"
+    # Standard currencies
+    m = re.search(r'(€|USD?|EUR?|GBP?|BRL?|£|¥|JPY|CNY?|₹|INR?|₩|KRW|฿|THB?|Rp|IDR?|RM|MYR?|PHP?|SGD?)'
                   r'\s*([\d,\.]+(?:\s*(?:million|mil|thousand|万|億|lakh|crore))?)', text, re.I)
     if m: return m.group(0).strip()
     m2 = re.search(r'\$\s*([\d,\.]+)', text)
@@ -538,8 +543,12 @@ def extract_deadline(text):
     patterns = [
         r'[Dd]eadline[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
         r'[Dd]eadline[:\s]+(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
+        # Brazilian Portuguese deadline patterns
         r'[Dd]ata.limite[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Ii]nscrições até[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Pp]razo[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Ee]ncerramento[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Cc]onclusão[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Cc]losing[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
         r'[Dd]ate.limite[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Ff]echa.límite[:\s]+(\d{2}/\d{2}/\d{4})',
@@ -548,6 +557,8 @@ def extract_deadline(text):
         r'[Dd]ate.limite[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
         r'[Cc]lôture[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Aa]vant.le[:\s]+(\d{2}/\d{2}/\d{4})',
+        # Brazilian date with month name: "24 de abril de 2025"
+        r'[Dd]ia\s+(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})',
         # 日本語 (Japanese)
         r'[Ss]himekiri[:\s]+(\d{4}/\d{2}/\d{2})',
         r'応募締切[:\s]*(\d{4}年\d{1,2}月\d{1,2}日)',
@@ -580,6 +591,17 @@ def extract_deadline(text):
             cjk = re.search(r'(\d{4})[年년]\s*(\d{1,2})[月월]\s*(\d{1,2})[日일]', d)
             if cjk:
                 return f"{cjk.group(1)}-{int(cjk.group(2)):02d}-{int(cjk.group(3)):02d}"
+            # Handle "dia 24 de abril de 2025" pattern
+            br_month = re.search(r'(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})', d)
+            if br_month:
+                month_map = {
+                    "janeiro":1,"fevereiro":2,"março":3,"abril":4,"maio":5,"junho":6,
+                    "julho":7,"agosto":8,"setembro":9,"outubro":10,"novembro":11,"dezembro":12,
+                }
+                day, month_name, year = br_month.group(1), br_month.group(2).lower(), br_month.group(3)
+                mo = month_map.get(month_name, 0)
+                if mo:
+                    return f"{year}-{mo:02d}-{int(day):02d}"
             return parse_date(m.group(1) if m.lastindex else m.group(0))
     return ""
 
@@ -657,10 +679,21 @@ async def fetch_capta(session):
             title   = clean_html(p.get("title", {}).get("rendered", ""))
             content = clean_html(p.get("content", {}).get("rendered", ""))
             url     = p.get("link", "")
+            # Relevance filter — skip generic blog posts, keep grant/opportunity content
+            if score_relevance(f"{title} {content}") < 2: continue
+            # Detect open/closed from WP post content
+            raw_content = p.get("content", {}).get("rendered", "").lower()
+            if any(w in raw_content for w in ["encerrad", "finalizada", "concluída"]):
+                status = "closed"
+            elif any(w in raw_content for w in ["inscri", "prazo", "abert", "submissão", "proposta"]):
+                status = "pending"
+            else:
+                status = "pending"
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=content[:600], country="BR", language="pt",
-                deadline=extract_deadline(content)))
-    console.print(f"  [cyan]capta.org.br[/] → {len(grants)}")
+                deadline=extract_deadline(content), status=status,
+                amount_max=extract_amount(content)))
+    console.print(f"  [cyan]capta.org.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='pending')} open)")
     return grants
 
 
@@ -685,47 +718,145 @@ async def fetch_prosas(session):
                 if not t: continue
                 title = t.get_text(strip=True)
                 if len(title) < 10: continue
+                # Relevance filter
+                if score_relevance(title) < 1: continue
                 link = urljoin("https://prosas.com.br", a["href"]) if a else ""
                 text = card.get_text(" ")
+                # Detect open/closed from card text and URL
+                card_lower = text.lower()
+                url_has_abertos = "abertos=1" in url
+                if "encerrad" in card_lower or "finalizada" in card_lower:
+                    status = "closed"
+                elif url_has_abertos or any(w in card_lower for w in ["abert", "inscri", "prazo", "submissão"]):
+                    status = "pending"
+                else:
+                    status = "pending"
                 grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                     description=text[:400], country="BR", language="pt",
-                    deadline=extract_deadline(text), amount_max=extract_amount(text)))
+                    deadline=extract_deadline(text), amount_max=extract_amount(text),
+                    status=status))
                 found += 1
             if found: break
         if found: break
-    console.print(f"  [cyan]prosas.com.br[/] → {len(grants)}")
+    console.print(f"  [cyan]prosas.com.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='pending')} open)")
     return grants
 
 
 async def fetch_casa(session):
-    """Fundo Casa Socioambiental — key Brazilian env/indigenous fund."""
+    """Fundo Casa Socioambiental — key Brazilian env/indigenous fund.
+
+    Strategy: Parse the /chamadas/ archive page which lists ALL chamadas
+    (open + closed) in one page. Each card is an <a class="grid-item chamada">
+    with a <span class="grid-note"> badge showing "Abertas" or "Encerradas".
+    Also fetches individual chamada pages to extract deadlines and amounts.
+    """
     grants = []
     SOURCE, BASE = "casa.org.br", "https://casa.org.br"
-    data = await fetch_json(session, f"{BASE}/wp-json/wp/v2/posts?per_page=80&_embed=true")
-    if data and isinstance(data, list):
-        for p in data:
-            title   = clean_html(p.get("title",{}).get("rendered",""))
-            content = clean_html(p.get("content",{}).get("rendered",""))
-            url     = p.get("link","")
-            if score_relevance(f"{title} {content}") < 3: continue
+
+    # --- Primary: parse /chamadas/ archive page ---
+    html = await fetch(session, f"{BASE}/chamadas/")
+    if html:
+        soup = BeautifulSoup(html, "lxml")
+        cards = soup.select("a.grid-item.chamada")
+        # Determine status from parent container or badge
+        open_section = None
+        closed_section = None
+        for div in soup.select("div.row.flexbox.chamadas"):
+            classes = div.get("class", [])
+            if "encerradas" in classes:
+                closed_section = div
+            else:
+                open_section = div
+
+        for card in cards:
+            title = (card.get("title") or "").strip()
+            if not title:
+                h2 = card.select_one("h2.listHeader")
+                title = h2.get_text(strip=True) if h2 else ""
+            if not title:
+                continue
+            url = urljoin(BASE, card.get("href", ""))
+
+            # Determine status from badge
+            badge = card.select_one("span.grid-note")
+            badge_text = badge.get_text(strip=True).lower() if badge else ""
+            if "aberta" in badge_text:
+                status = "pending"  # open
+            elif "encerrad" in badge_text:
+                status = "closed"
+            else:
+                # Fallback: check which section the card is in
+                parent = card.parent
+                parent_classes = parent.get("class", []) if parent else []
+                status = "closed" if "encerradas" in parent_classes else "pending"
+
+            # Skip fully closed grants (old ones with no relevance boost)
+            # but keep recently closed ones (might still have active deadlines)
+            # We keep all for now and let the pipeline filter them
+
+            text = card.get_text(" ")
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                description=content[:500], country="BR", language="pt",
-                funder="Fundo Casa Socioambiental", deadline=extract_deadline(content)))
+                description=text[:500], country="BR", language="pt",
+                funder="Fundo Casa Socioambiental",
+                deadline=extract_deadline(text), status=status))
+
+        # Fetch detail pages for open chamadas to get deadlines + amounts
+        for g in grants:
+            if g["status"] == "pending" and g["url"]:
+                detail = await fetch(session, g["url"])
+                if detail:
+                    dsoup = BeautifulSoup(detail, "lxml")
+                    body = dsoup.select_one(".entry-content, .post-content, article, .et_pb_section")
+                    if body:
+                        detail_text = body.get_text(" ")
+                    else:
+                        detail_text = dsoup.get_text(" ")
+                    # Extract deadline from detail page
+                    dl = extract_deadline(detail_text)
+                    if dl:
+                        g["deadline"] = dl
+                    # Extract amount from detail page
+                    amt = extract_amount(detail_text)
+                    if amt:
+                        g["amount_max"] = amt
+                    # Update description with richer content
+                    content_parts = []
+                    for p in dsoup.select("p, li"):
+                        pt = p.get_text(strip=True)
+                        if len(pt) > 30 and any(kw in pt.lower() for kw in [
+                            "prazo", "inscri", "valor", "limite", "data", "edital",
+                            "requisit", "elegib", "critéri", "seleção", "etapa",
+                            "document", "comprovant", "camp", "área", "temática",
+                            "finalidade", "objetivo", "apoio", "fundo", "recurso",
+                        ]):
+                            content_parts.append(pt)
+                    if content_parts:
+                        enriched = " | ".join(content_parts[:8])
+                        g["description"] = enriched[:1200]
+
+    # --- Fallback: WP REST API (only if HTML scraping returned nothing) ---
     if not grants:
-        for path in ["/chamadas/", "/chamadas/aberta/"]:
-            html = await fetch(session, BASE + path)
-            if not html: continue
-            soup = BeautifulSoup(html, "lxml")
-            for art in soup.select("article, .chamada-card"):
-                t = art.find(["h2","h3"]); a = art.find("a",href=True)
-                if not t: continue
-                title = t.get_text(strip=True)
-                url   = urljoin(BASE, a["href"]) if a else BASE
-                text  = art.get_text(" ")
+        data = await fetch_json(session, f"{BASE}/wp-json/wp/v2/posts?per_page=80&_embed=true")
+        if data and isinstance(data, list):
+            for p in data:
+                title   = clean_html(p.get("title",{}).get("rendered",""))
+                content = clean_html(p.get("content",{}).get("rendered",""))
+                url     = p.get("link","")
+                if score_relevance(f"{title} {content}") < 3: continue
+                # Try to detect status from WP post content
+                raw_content = p.get("content",{}).get("rendered","").lower()
+                if any(w in raw_content for w in ["encerrad", "finalizada", "concluída", "selecionad"]):
+                    status = "closed"
+                elif any(w in raw_content for w in ["aberta", "inscri", "prazo"]):
+                    status = "pending"
+                else:
+                    status = "pending"
                 grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                    description=text[:400], country="BR", language="pt",
-                    funder="Fundo Casa Socioambiental", deadline=extract_deadline(text)))
-    console.print(f"  [cyan]casa.org.br[/] → {len(grants)}")
+                    description=content[:500], country="BR", language="pt",
+                    funder="Fundo Casa Socioambiental",
+                    deadline=extract_deadline(content), status=status))
+
+    console.print(f"  [cyan]casa.org.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='pending')} open, {sum(1 for g in grants if g['status']=='closed')} closed)")
     return grants
 
 
@@ -740,10 +871,19 @@ async def fetch_ispn(session):
             content = clean_html(p.get("content",{}).get("rendered",""))
             url     = p.get("link","")
             if score_relevance(f"{title} {content}") < 2: continue
+            # Detect open/closed from WP post content
+            raw_content = p.get("content",{}).get("rendered","").lower()
+            if any(w in raw_content for w in ["encerrad", "finalizada", "concluída", "resultado"]):
+                status = "closed"
+            elif any(w in raw_content for w in ["inscri", "prazo", "abert", "submissão", "proposta", "chamada"]):
+                status = "pending"
+            else:
+                status = "pending"
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=content[:500], country="BR", language="pt",
-                funder="ISPN", deadline=extract_deadline(content)))
-    console.print(f"  [cyan]ispn.org.br[/] → {len(grants)}")
+                funder="ISPN", deadline=extract_deadline(content), status=status,
+                amount_max=extract_amount(content)))
+    console.print(f"  [cyan]ispn.org.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='pending')} open)")
     return grants
 
 

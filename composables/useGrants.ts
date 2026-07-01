@@ -74,7 +74,7 @@ export interface LeaderboardEntry {
   created_at: string
 }
 
-async function invoke(fnName: string, options?: { method?: string; body?: unknown }) {
+async function invoke(fnName: string, options?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT'; body?: Record<string, unknown> }) {
   const { client } = useSupabase()
   const { data, error } = await client.functions.invoke(fnName, {
     method: options?.method || 'GET',

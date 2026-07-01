@@ -30,7 +30,11 @@ function jsonResponse(data: Record<string, unknown>, status = 200, origin?: stri
 
 function sanitize(val: unknown, maxLen = 2000): string {
   if (typeof val !== "string") return "";
-  return val.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").replace(/\s+/g, " ").trim().slice(0, maxLen);
+  const cleaned = val.split("").filter((ch) => {
+    const code = ch.charCodeAt(0);
+    return !((code <= 0x08) || (code === 0x0B) || (code === 0x0C) || (code >= 0x0E && code <= 0x1F) || (code === 0x7F));
+  }).join("");
+  return cleaned.replace(/\s+/g, " ").trim().slice(0, maxLen);
 }
 
 function parseNumber(val: unknown): number {

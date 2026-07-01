@@ -2220,7 +2220,8 @@ def save_markdown(grants, path, title="Grants Radar"):
     path.write_text("\n".join(lines), encoding="utf-8")
 
 def fetch_existing_grant_ids(supabase_url, supabase_key):
-    """Fetch existing grant IDs from Supabase via REST API to pre-filter duplicates."""
+    """Fetch existing grant IDs from Supabase via REST API.
+    Returns set of IDs on success (possibly empty), None if query failed."""
     import urllib.request
     for table in ("grants", "grant_opportunities", "grants_radar"):
         url = f"{supabase_url.rstrip('/')}/rest/v1/{table}?select=id"
@@ -2233,11 +2234,10 @@ def fetch_existing_grant_ids(supabase_url, supabase_key):
             with urllib.request.urlopen(req, timeout=15) as resp:
                 rows = json.loads(resp.read().decode())
                 if isinstance(rows, list):
-                    return {r["id"] for r in rows}
+                    return {r["id"] for r in rows if isinstance(r, dict) and "id" in r}
         except Exception:
             continue
-    console.print("[yellow]Could not find existing grants table — will push all grants[/]")
-    return set()
+    return None
 
 
 def push_to_supabase(grants, supabase_url, ingest_token, batch_size=100):
@@ -2247,16 +2247,19 @@ def push_to_supabase(grants, supabase_url, ingest_token, batch_size=100):
         return False
 
     supabase_key = os.environ.get("SUPABASE_KEY") or os.environ.get("NUXT_PUBLIC_SUPABASE_KEY") or ""
-    existing_ids = fetch_existing_grant_ids(supabase_url, supabase_key) if supabase_key else set()
+    existing_ids = fetch_existing_grant_ids(supabase_url, supabase_key) if supabase_key else None
 
-    new_grants = [g for g in grants if g["id"] not in existing_ids] if existing_ids else grants
-    skipped = len(grants) - len(new_grants)
-    if skipped:
-        console.print(f"[dim]Pre-filtered {skipped} existing grants, pushing {len(new_grants)} new[/]")
-
-    if not new_grants:
-        console.print("[green]All grants already exist — nothing to push[/]")
-        return True
+    if existing_ids is not None:
+        new_grants = [g for g in grants if g["id"] not in existing_ids]
+        skipped = len(grants) - len(new_grants)
+        if skipped:
+            console.print(f"[dim]Pre-filtered {skipped} existing grants, pushing {len(new_grants)} new[/]")
+        if not new_grants:
+            console.print("[green]All grants already exist — nothing to push[/]")
+            return True
+    else:
+        console.print("[yellow]Could not fetch existing grants — pushing all (edge function will skip duplicates)[/]")
+        new_grants = grants
 
     import urllib.request
     endpoint = f"{supabase_url.rstrip('/')}/functions/v1/grants-ingest"
@@ -2273,7 +2276,7 @@ def push_to_supabase(grants, supabase_url, ingest_token, batch_size=100):
             method="POST"
         )
         try:
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with urllib.request.urlopen(req, timeout=120) as resp:
                 result = json.loads(resp.read().decode())
                 console.print(f"[green]Batch {i//batch_size+1}: {result.get('inserted',0)} inserted, {result.get('skipped',0)} skipped[/]")
         except Exception as e:

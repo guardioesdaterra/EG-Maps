@@ -23,22 +23,26 @@ Deno.serve(async (req) => {
 
     const admin = getAdminClient();
 
-    // GET — return existing scraped_grants IDs so the client can pre-filter
+    // GET — return existing scraped_grants IDs + URLs so the client can pre-filter
     if (req.method === "GET") {
       const { data: rows, error } = await admin
         .from("scraped_grants")
-        .select("id");
+        .select("id, url");
 
       if (error) {
         return jsonResponse({ error: error.message }, 500, origin);
       }
 
-      const ids = (rows || []).map((r: { id: string }) => {
+      const ids: string[] = [];
+      const urls: Record<string, string> = {};
+      for (const r of (rows || [])) {
         const short = r.id.replace(/^00000000-0000-0000-0000-/, "");
-        return short.length === 12 ? short : r.id;
-      });
+        const sid = short.length === 12 ? short : r.id;
+        ids.push(sid);
+        if (r.url) urls[r.url] = sid;
+      }
 
-      return jsonResponse({ ids }, 200, origin);
+      return jsonResponse({ ids, urls }, 200, origin);
     }
 
     // POST — ingest grants

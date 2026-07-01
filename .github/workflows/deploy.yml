@@ -229,7 +229,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
-          SUPABASE_SYNC_SECRET: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+          SUPABASE_SYNC_SECRET: ${{ secrets.GRANTS_INGEST_TOKEN }}
 
   deploy:
     needs: build

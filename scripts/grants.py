@@ -2219,16 +2219,50 @@ def save_markdown(grants, path, title="Grants Radar"):
             ]
     path.write_text("\n".join(lines), encoding="utf-8")
 
-def push_to_supabase(grants, supabase_url, ingest_token, batch_size=200):
-    """POST grants to the grants-ingest edge function in batches to avoid 413 Payload Too Large."""
+def fetch_existing_grant_ids(supabase_url, supabase_key):
+    """Fetch existing grant IDs from Supabase via REST API to pre-filter duplicates."""
+    import urllib.request
+    for table in ("grants", "grant_opportunities", "grants_radar"):
+        url = f"{supabase_url.rstrip('/')}/rest/v1/{table}?select=id"
+        req = urllib.request.Request(url, headers={
+            "apikey": supabase_key,
+            "Authorization": f"Bearer {supabase_key}",
+            "Accept": "application/json",
+        })
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                rows = json.loads(resp.read().decode())
+                if isinstance(rows, list):
+                    return {r["id"] for r in rows}
+        except Exception:
+            continue
+    console.print("[yellow]Could not find existing grants table — will push all grants[/]")
+    return set()
+
+
+def push_to_supabase(grants, supabase_url, ingest_token, batch_size=100):
+    """POST grants to the grants-ingest edge function in batches, pre-filtering duplicates."""
     if not supabase_url or not ingest_token:
         console.print("[yellow]Supabase push skipped: missing URL or token[/]")
         return False
+
+    supabase_key = os.environ.get("SUPABASE_KEY") or os.environ.get("NUXT_PUBLIC_SUPABASE_KEY") or ""
+    existing_ids = fetch_existing_grant_ids(supabase_url, supabase_key) if supabase_key else set()
+
+    new_grants = [g for g in grants if g["id"] not in existing_ids] if existing_ids else grants
+    skipped = len(grants) - len(new_grants)
+    if skipped:
+        console.print(f"[dim]Pre-filtered {skipped} existing grants, pushing {len(new_grants)} new[/]")
+
+    if not new_grants:
+        console.print("[green]All grants already exist — nothing to push[/]")
+        return True
+
     import urllib.request
     endpoint = f"{supabase_url.rstrip('/')}/functions/v1/grants-ingest"
     total_ok = True
-    for i in range(0, len(grants), batch_size):
-        batch = grants[i:i+batch_size]
+    for i in range(0, len(new_grants), batch_size):
+        batch = new_grants[i:i+batch_size]
         payload = json.dumps({"grants": batch}).encode("utf-8")
         req = urllib.request.Request(
             endpoint, data=payload,

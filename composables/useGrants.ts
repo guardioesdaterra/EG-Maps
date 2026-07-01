@@ -39,10 +39,18 @@ export interface ScrapedGrant {
   region: string
   categories: string[]
   language: string
-  relevance: number
+  relevance?: number
   status: string
   fetched_at: string
   created_at: string
+  // Enhanced fields from grants.py v2
+  grant_type?: string
+  grant_types?: string[]
+  highlights?: string[]
+  urgency?: string
+  deadline_days?: number | null
+  amount_usd?: number | null
+  priority_score?: number
 }
 
 export interface LeaderboardEntry {

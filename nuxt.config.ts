@@ -8,7 +8,6 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     '@nuxt/eslint',
-    '@pinia/nuxt',
     '@nuxtjs/i18n',
     '@vueuse/motion/nuxt',
     '@vueuse/nuxt',
@@ -61,7 +60,6 @@ export default defineNuxtConfig({
   routeRules: {
     '/**': { prerender: true },
     '/globe': { redirect: `${baseURL}project-grants/3d` },
-    '/auth/callback': { prerender: false },
     '/vulcan-observatory': { prerender: false },
     '/vulcan-observatory/3d': { prerender: false },
   },

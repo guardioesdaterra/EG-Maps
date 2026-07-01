@@ -2,10 +2,11 @@ import type { Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 import { escapeHtml } from '@/lib/map-utils'
 
-let activePopup: maplibregl.Popup | null = null
+const activePopups = new WeakMap<MapLibreMap, maplibregl.Popup>()
 
-function closeActivePopup() {
-  if (activePopup) { activePopup.remove(); activePopup = null }
+function closeActivePopup(map: MapLibreMap) {
+  const popup = activePopups.get(map)
+  if (popup) { popup.remove(); activePopups.delete(map) }
 }
 
 export const CULTURAL_SOURCE = 'ree-cultural'
@@ -322,14 +323,14 @@ export function setupCulturalLayers(
   const onCulturalClick = (e: MapLayerMouseEvent) => {
     if (!e.features?.length) return
     const p = e.features[0].properties
-    closeActivePopup()
+    closeActivePopup(map)
     const html = getPopupContent(p)
 
-    activePopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
       .setLngLat(e.lngLat)
       .setHTML(html)
       .setMaxWidth('none')
-      .addTo(map)
+      .addTo(map))
   }
 
   const onCulturalEnter = () => { map.getCanvas().style.cursor = 'pointer' }

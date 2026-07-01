@@ -1,12 +1,21 @@
-import { defineStore } from 'pinia'
+import { ref, watch } from 'vue'
 
 const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'pt', 'ar', 'hi', 'ja', 'zh', 'nl', 'de'] as const
 export type SupportedLocale = typeof SUPPORTED_LOCALES[number]
 
-export const useUiStore = defineStore('ui', () => {
-  // ── Dark mode ──────────────────────────────────────────────────────────────
-  const isDark = ref(true)
-  const isDarkInitialized = ref(false)
+let _isDark: ReturnType<typeof ref<boolean>> | null = null
+let _isDarkInitialized: ReturnType<typeof ref<boolean>> | null = null
+let _locale: ReturnType<typeof ref<SupportedLocale>> | null = null
+let _watchInstalled = false
+
+export function useUiStore() {
+  if (!_isDark) _isDark = ref<boolean>(true)
+  if (!_isDarkInitialized) _isDarkInitialized = ref<boolean>(false)
+  if (!_locale) _locale = ref<SupportedLocale>('en')
+
+  const isDark = _isDark
+  const isDarkInitialized = _isDarkInitialized
+  const locale = _locale
 
   function applyDarkClass(value: boolean) {
     if (import.meta.client) {
@@ -38,16 +47,15 @@ export const useUiStore = defineStore('ui', () => {
     applyDarkClass(value)
   }
 
-  // Persist on change
-  if (import.meta.client) {
+  if (import.meta.client && !_watchInstalled) {
+    _watchInstalled = true
     watch(isDark, (value) => {
       localStorage.setItem('darkMode', String(value))
-      applyDarkClass(value)
+      applyDarkClass(!!value)
     })
   }
 
   // ── Locale ────────────────────────────────────────────────────────────────
-  const locale = ref<SupportedLocale>('en')
   const locales = SUPPORTED_LOCALES
 
   function getInitialLocale(): SupportedLocale {
@@ -76,16 +84,14 @@ export const useUiStore = defineStore('ui', () => {
   }
 
   return {
-    // dark mode
     isDark,
     isDarkInitialized,
     initDarkMode,
     toggleDarkMode,
     setDarkMode,
-    // locale
     locale,
     locales,
     initLocale,
     setLocale,
   }
-})
+}

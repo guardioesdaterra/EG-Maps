@@ -32,8 +32,10 @@ export interface ObservatoryFilters {
 export interface ObservatoryLayers {
   layerVis: Ref<Record<string, boolean>>
   enterpriseLayerVisible: Ref<boolean>
+  extraLayers: Array<{ key: string; labelKey: string; color: string }>
   toggleLayer: (key: string) => void
   toggleEnterpriseLayer: () => void
+  onEnterpriseClick: (enterprise: EnterpriseHQ) => void
 }
 
 export interface ObservatoryMap {
@@ -42,8 +44,8 @@ export interface ObservatoryMap {
   onMapInit: (map: MapInstance) => void
   flyToCoord: (coord: [number, number]) => void
   onGeoLocate: (lat: number, lng: number, _city: string) => void
-  expandToFullBrazil: (loadFullBrazil: () => Promise<void> | void) => Promise<void> | void
-  zoomToDanger: (name: string, speculatorIndex: Ref<{ normalizedName: string; displayName: string; centroid?: { lng: number; lat: number } }[]>) => void
+  expandToFullBrazil: (loadFn?: () => Promise<void> | void) => Promise<void> | void
+  zoomToDanger: (name: string, speculatorIndex?: Ref<{ normalizedName: string; displayName: string; centroid?: { lng: number; lat: number } }[]>) => void
   flyToEnterprise: (name: string) => void
   onEnterpriseClick: (enterprise: EnterpriseHQ) => void
 }
@@ -64,11 +66,11 @@ export interface ObservatoryData {
   waterData: Ref<unknown>
   culturalData: Ref<unknown>
   speculatorIndex: Ref<unknown[]>
-  deepAnalysis: Ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null>
+  deepAnalysis: Ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null | undefined>
   isLoading: Ref<boolean>
   loadPhase: Ref<string>
   loadProgress: Ref<number>
-  error: Ref<{ message?: string } | null>
+  error: Ref<{ message?: string } | null | undefined>
   loadRareEarthData: () => Promise<void> | void
   loadFullBrazil: () => Promise<void> | void
   isRegional: Ref<boolean>
@@ -80,11 +82,11 @@ export interface ObservatoryData {
     waterData: Ref<unknown>
     culturalData: Ref<unknown>
     speculatorIndex: Ref<unknown[]>
-    deepAnalysis: Ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null>
+    deepAnalysis: Ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null | undefined>
     isLoading: Ref<boolean>
     loadPhase: Ref<string>
     loadProgress: Ref<number>
-    error: Ref<{ message?: string } | null>
+    error: Ref<{ message?: string } | null | undefined>
     loadRareEarthData: () => Promise<void> | void
     loadFullBrazil: () => Promise<void> | void
     isRegional: Ref<boolean>
@@ -157,6 +159,15 @@ export function useObservatoryControls(): ObservatoryControls {
   layerVis.value['cultural'] = false
   layerVis.value['sites'] = false
 
+  const extraLayers = [
+    { key: 'polygons', labelKey: 'observatory.layers.polygons', color: '#e74c3c' },
+    { key: 'water', labelKey: 'observatory.layers.hydrography', color: '#3498db' },
+    { key: 'sites', labelKey: 'observatory.layers.conflictZones', color: '#c0392b' },
+    { key: 'network', labelKey: 'observatory.layers.corpNetwork', color: '#5dade2' },
+    { key: 'heatmap', labelKey: 'observatory.layers.heatmap', color: '#f39c12' },
+    { key: 'cultural', labelKey: 'observatory.layers.cultural', color: '#9b59b6' },
+  ]
+
   const enterpriseLayerVisible = ref(false)
 
   function toggleLayer(key: string) {
@@ -199,12 +210,13 @@ export function useObservatoryControls(): ObservatoryControls {
     userLocationRadius.value = 1
   }
 
-  async function expandToFullBrazil(_loadFullBrazil: () => Promise<void> | void) {
+  async function expandToFullBrazil(loadFn?: () => Promise<void> | void) {
+    if (loadFn) await loadFn()
     flyToTarget.value = { lng: -48, lat: -15, zoom: 4.2 }
   }
 
-  function zoomToDanger(name: string, _speculatorIndex: Ref<{ normalizedName: string; displayName: string; centroid?: { lng: number; lat: number } | null }[]>) {
-    const idx = speculatorIndex.value as { normalizedName: string; displayName: string; centroid?: { lng: number; lat: number } | null }[]
+  function zoomToDanger(name: string, _speculatorIndex?: Ref<{ normalizedName: string; displayName: string; centroid?: { lng: number; lat: number } }[]>) {
+    const idx = (_speculatorIndex ?? speculatorIndex).value as { normalizedName: string; displayName: string; centroid?: { lng: number; lat: number } | null }[]
     const target = idx.find(s =>
       s.normalizedName === name ||
       s.displayName.toLowerCase().split('/')[0].trim() === name.toLowerCase().split('/')[0].trim()
@@ -241,11 +253,11 @@ export function useObservatoryControls(): ObservatoryControls {
   let waterData = ref<unknown>(null)
   let culturalData = ref<unknown>(null)
   let speculatorIndex = ref<unknown[]>([])
-  let deepAnalysis = ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null>(null)
+  let deepAnalysis = ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null | undefined>(null)
   let isLoading = ref(false)
   let loadPhase = ref('idle')
   let loadProgress = ref(0)
-  let error = ref<{ message?: string } | null>(null)
+  let error = ref<{ message?: string } | null | undefined>(null)
   let loadRareEarthData: () => Promise<void> | void = () => Promise.resolve()
   let loadFullBrazil: () => Promise<void> | void = () => Promise.resolve()
   let isRegional = ref(true)
@@ -258,11 +270,11 @@ export function useObservatoryControls(): ObservatoryControls {
     waterData: Ref<unknown>
     culturalData: Ref<unknown>
     speculatorIndex: Ref<unknown[]>
-    deepAnalysis: Ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null>
+    deepAnalysis: Ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null | undefined>
     isLoading: Ref<boolean>
     loadPhase: Ref<string>
     loadProgress: Ref<number>
-    error: Ref<{ message?: string } | null>
+    error: Ref<{ message?: string } | null | undefined>
     loadRareEarthData: () => Promise<void> | void
     loadFullBrazil: () => Promise<void> | void
     isRegional: Ref<boolean>
@@ -479,7 +491,7 @@ export function useObservatoryControls(): ObservatoryControls {
     showShortcuts, showDataTable, showTimeline, showExport, showGeoLocate, showClaimReport,
     reportClaim, userLocationRadius, mapContainerRef, filteredCount,
     // layers
-    layerVis, enterpriseLayerVisible, toggleLayer, toggleEnterpriseLayer, onEnterpriseClick,
+    layerVis, enterpriseLayerVisible, extraLayers, toggleLayer, toggleEnterpriseLayer, onEnterpriseClick,
     // map
     flyToTarget, mapRef, onMapInit, flyToCoord, onGeoLocate, expandToFullBrazil, zoomToDanger, flyToEnterprise,
     // data

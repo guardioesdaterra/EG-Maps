@@ -1,10 +1,11 @@
 import type { Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 
-let activePopup: maplibregl.Popup | null = null
+const activePopups = new WeakMap<MapLibreMap, maplibregl.Popup>()
 
-function closeActivePopup() {
-  if (activePopup) { activePopup.remove(); activePopup = null }
+function closeActivePopup(map: MapLibreMap) {
+  const popup = activePopups.get(map)
+  if (popup) { popup.remove(); activePopups.delete(map) }
 }
 
 export const WATER_SOURCE = 'ree-water'
@@ -114,7 +115,7 @@ export function setupWaterLayers(
   const onWaterClick = (e: MapLayerMouseEvent) => {
     if (!e.features?.length) return
     const p = e.features[0].properties
-    closeActivePopup()
+    closeActivePopup(map)
     const waterType = p.water_type || p.water || p.waterway || 'water'
     const name = p.name || 'Unnamed water body'
     const typeLabel = waterType.charAt(0).toUpperCase() + waterType.slice(1)
@@ -133,11 +134,11 @@ export function setupWaterLayers(
       ${p.osm_id ? `<a href="https://www.openstreetmap.org/${p.osm_id ? 'way' : 'relation'}/${p.osm_id}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:10px;color:#60a5fa">View on OSM &rarr;</a>` : ''}
     </div>`
 
-    activePopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
       .setLngLat(e.lngLat)
       .setHTML(html)
       .setMaxWidth('none')
-      .addTo(map)
+      .addTo(map))
   }
 
   const onWaterEnter = () => { map.getCanvas().style.cursor = 'pointer' }

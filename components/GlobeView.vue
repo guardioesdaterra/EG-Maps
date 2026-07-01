@@ -276,6 +276,8 @@ interface Props {
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
   rareEarthProtected?: GeoJSON.FeatureCollection
+  rareEarthWater?: GeoJSON.FeatureCollection | null
+  rareEarthCultural?: GeoJSON.FeatureCollection | null
   layerVisibility?: Record<string, boolean>
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null
 }
@@ -342,6 +344,8 @@ const rareEarthController = useRareEarthController({
     rareEarthPoints: props.rareEarthPoints,
     rareEarthPolygons: props.rareEarthPolygons,
     rareEarthProtected: props.rareEarthProtected,
+    rareEarthWater: props.rareEarthWater ?? undefined,
+    rareEarthCultural: props.rareEarthCultural ?? undefined,
     layerVisibility: props.layerVisibility,
     flyToTarget: props.flyToTarget,
   }),

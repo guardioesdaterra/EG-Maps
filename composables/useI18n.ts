@@ -52,17 +52,17 @@ export function useI18n() {
   })
   const vLocale = i18n?.locale ?? ref<Locale>('en')
 
-  // Sync vue-i18n locale with Pinia UI store
+  // Sync vue-i18n locale with UI store
   watch(
-    () => ui.locale,
+    ui.locale,
     (val) => {
-      if (vLocale.value !== val) vLocale.value = val
+      if (val && vLocale.value !== val) vLocale.value = val
     },
     { immediate: true },
   )
   if (i18n) {
     watch(vLocale, (val) => {
-      if (ui.locale !== val) ui.setLocale(val as Locale)
+      if (ui.locale.value !== val) ui.setLocale(val as Locale)
     })
   }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ObservatoryControls as ObservatoryControlsState, ObservatoryStats, ObservatoryFilters, ObservatoryLayers, ObservatoryAnimations } from '@/composables/useObservatoryControls'
+import type { ObservatoryControls as ObservatoryControlsState, ObservatoryStats, ObservatoryFilters, ObservatoryLayers, ObservatoryAnimations, ObservatoryData } from '@/composables/useObservatoryControls'
 import type { EnterpriseHQ } from '@/lib/enterprise-data'
 import YearSlider from './YearSlider.vue'
 import PhaseFilter from './PhaseFilter.vue'
@@ -8,15 +8,18 @@ import PhaseFilter from './PhaseFilter.vue'
 type Props = {
   state: ObservatoryControlsState
   stats: ObservatoryStats
+  data: ObservatoryData
   onRedeCorporativa?: () => void
   onDataDownload?: () => void
   onUserContribution?: () => void
+  onExpandToFullBrazil?: () => void
 }
 
 const props = withDefaults(defineProps<Props>(), {
   onRedeCorporativa: undefined,
   onDataDownload: undefined,
   onUserContribution: undefined,
+  onExpandToFullBrazil: undefined,
 })
 
 const emit = defineEmits<{
@@ -32,6 +35,8 @@ const categoryStats = computed(() => props.stats.categoryStats.value)
 const totalCount = computed(() => props.stats.totalCount.value)
 const filteredCount = computed(() => props.stats.filteredCount.value)
 const activeFilterSummary = computed(() => props.stats.activeFilterSummary.value)
+const deepAnalysis = computed(() => props.data.deepAnalysis.value)
+const isRegional = computed(() => props.data.isRegional.value)
 
 const layerVis = computed<Record<string, boolean>>({
   get: () => props.state.layerVis.value,
@@ -41,9 +46,10 @@ const enterpriseLayerVisible = computed({
   get: () => props.state.enterpriseLayerVisible.value,
   set: (value) => { props.state.enterpriseLayerVisible.value = value }
 })
-const layers = computed<ObservatoryLayers>(() => ({
+const layers = computed(() => ({
   layerVis,
   enterpriseLayerVisible,
+  extraLayers: props.state.extraLayers,
   toggleLayer: props.state.toggleLayer,
   toggleEnterpriseLayer: props.state.toggleEnterpriseLayer,
   onEnterpriseClick: props.state.onEnterpriseClick,
@@ -79,13 +85,7 @@ const animations = computed<ObservatoryAnimations>(() => ({
 }))
 
 const categories = computed(() => categoryStats.value.map(s => ({ key: s.key, label: s.label, color: s.color })))
-
-const extraLayers = computed(() => [
-  { key: 'heatmap', labelKey: 'observatory.layers.heatmap', color: '#f59e0b' },
-  { key: 'cultural', labelKey: 'observatory.layers.cultural', color: '#8b5cf6' },
-  { key: 'sites', labelKey: 'observatory.layers.sites', color: '#0ea5e9' },
-  { key: 'network', labelKey: 'observatory.layers.network', color: '#10b981' },
-])
+const extraLayers = computed(() => props.state.extraLayers)
 
 function onEnterpriseClick(enterprise: EnterpriseHQ) {
   props.state.flyToEnterprise(enterprise.name)
@@ -109,21 +109,22 @@ function updatePhases(value: Set<string>) {
 
 <template>
   <div>
-    <!-- Top row: stats + sync -->
+    <!-- Stats panel top-left -->
     <div class="absolute top-[clamp(0.75rem,2vh,1rem)] left-[clamp(0.75rem,2vw,1rem)] z-[500] obs-stats-panel">
       <div class="flex items-center gap-2 mb-1.5">
         <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
         <h1 class="text-fluid-sm font-black text-red-400 uppercase tracking-tight">Terras Raras Brasil</h1>
       </div>
       <p class="text-[9px] text-zinc-400 leading-tight hidden sm:block">
-        <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-red);color:#fff">MIL</span>
-        <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-green);color:#fff">AMB</span>
-        <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-purple);color:#fff">ILL</span>
-        <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-blue-dark);color:#fff">FOR</span>
-        <span>Rare Earth Mining Claims</span>
+        <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-red);color:#fff">{{ t('observatory.badges.mil') }}</span>
+        <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-green);color:#fff">{{ t('observatory.badges.amb') }}</span>
+        <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-purple);color:#fff">{{ t('observatory.badges.ill') }}</span>
+        <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-blue-dark);color:#fff">{{ t('observatory.badges.for') }}</span>
+        {{ t('home.observatoryDesc') }}
       </p>
     </div>
 
+    <!-- Animated stats counts top-center -->
     <div class="absolute top-[clamp(0.75rem,2vh,1rem)] left-1/2 -translate-x-1/2 z-[500] hidden md:flex gap-2 bg-[var(--obs-panel-bg)] backdrop-blur border border-[var(--obs-panel-border)] rounded-xl px-3 py-1.5 shadow-lg">
       <div v-for="s in categoryStats" :key="s.key" class="flex items-center gap-1.5 text-[9px] group cursor-default" :title="s.label">
         <span class="w-2 h-2 rounded-full transition-transform group-hover:scale-150" :style="{ background: s.color }" />
@@ -134,9 +135,24 @@ function updatePhases(value: Set<string>) {
       <span class="text-[9px] font-bold text-zinc-300 tabular-nums" aria-live="polite" aria-atomic="true">{{ animations.animatedCount('__total', totalCount) }} total</span>
     </div>
 
+    <!-- Sync + Secrecy panel top-right -->
+    <div v-if="deepAnalysis" class="absolute top-[clamp(0.75rem,2vh,1rem)] right-[clamp(0.75rem,2vw,1rem)] z-[500] hidden lg:flex flex-col gap-1 bg-[var(--obs-panel-bg)] backdrop-blur border border-[var(--obs-panel-border)] rounded-xl px-3 py-2 shadow-lg max-w-[clamp(10rem,20vw,14rem)]">
+      <div class="flex items-center gap-1.5 text-[8.5px]" :title="t('observatory.sync.syncNote')">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <span class="text-zinc-500 uppercase tracking-wider font-bold">{{ t('observatory.sync.lastSync') }}</span>
+        <span class="text-zinc-300 font-mono ml-auto">{{ stats.formatSyncDate(deepAnalysis.last_sync) }}</span>
+      </div>
+      <div v-if="deepAnalysis.sigilo_stats" class="flex items-center gap-1.5 text-[8.5px] pt-1 border-t border-zinc-800">
+        <span class="text-zinc-500 uppercase tracking-wider font-bold">🔒</span>
+        <span class="text-zinc-500">{{ t('observatory.sync.secrecyClaims') }}:</span>
+        <span class="text-amber-400 font-bold">{{ deepAnalysis.sigilo_stats.total }}</span>
+        <span class="text-zinc-400 font-mono ml-auto">{{ stats.formatHa(deepAnalysis.sigilo_stats.total_area_ha) }} {{ t('observatory.sync.secrecyArea') }}</span>
+      </div>
+    </div>
+
     <!-- Actions row -->
     <div class="absolute top-[clamp(3.5rem,10vh,5rem)] left-[clamp(0.75rem,2vw,1rem)] z-[500] flex flex-wrap gap-1.5 max-w-[clamp(16rem,40vw,22rem)]">
-      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-red)' }" @click="() => { filters.showTimeline.value = !filters.showTimeline.value }">
+      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-red)' }" @click="filters.showTimeline.value = !filters.showTimeline.value">
         <span>📖</span> <span class="hidden sm:inline">Geopolitical Timeline</span><span class="sm:hidden">Timeline</span>
       </button>
       <button v-if="onRedeCorporativa" type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-blue-light)' }" @click="onRedeCorporativa()">
@@ -145,30 +161,30 @@ function updatePhases(value: Set<string>) {
       <button v-if="onDataDownload" type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-green)' }" @click="onDataDownload()">
         <span>⬇️</span> <span class="hidden sm:inline">Download Data</span><span class="sm:hidden">Download</span>
       </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-purple-soft)' }" @click="() => { filters.showExport.value = !filters.showExport.value }">
+      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-purple-soft)' }" @click="filters.showExport.value = !filters.showExport.value">
         <span>📄</span> Export
       </button>
       <button type="button" class="obs-action-btn" :class="enterpriseLayerVisible ? 'obs-action-btn--active' : ''" :style="{ '--accent': 'var(--obs-purple-soft)' }" @click="emit('toggle-enterprise')">
         <span>🏢</span> <span class="hidden sm:inline">{{ t('observatory.layers.enterpriseHq') }}</span><span class="sm:hidden">HQ</span>
       </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-gray)' }" @click="() => { filters.showShortcuts.value = !filters.showShortcuts.value }">
+      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-gray)' }" @click="filters.showShortcuts.value = !filters.showShortcuts.value">
         <span>⌨️</span> ?
       </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': '#3498db' }" @click="() => { filters.showDataTable.value = !filters.showDataTable.value }">
+      <button type="button" class="obs-action-btn" :style="{ '--accent': '#3498db' }" @click="filters.showDataTable.value = !filters.showDataTable.value">
         <span>📊</span> Table
       </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': '#27ae60' }" @click="() => { filters.showGeoLocate.value = !filters.showGeoLocate.value }">
+      <button type="button" class="obs-action-btn" :style="{ '--accent': '#27ae60' }" @click="filters.showGeoLocate.value = !filters.showGeoLocate.value">
         <span>📍</span> <span class="hidden sm:inline">Near Me</span><span class="sm:hidden">Near</span>
       </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': '#e67e22' }" @click="() => { filters.filtersExpanded.value = !filters.filtersExpanded.value }">
-        <span>🌍</span> Layers
+      <button v-if="isRegional && onExpandToFullBrazil" type="button" class="obs-action-btn" :style="{ '--accent': '#e67e22' }" @click="onExpandToFullBrazil">
+        <span>🌎</span> <span class="hidden sm:inline">Full Brazil</span><span class="sm:hidden">Brazil</span>
       </button>
       <button v-if="onUserContribution" type="button" class="obs-action-btn" :style="{ '--accent': '#2ecc71' }" @click="onUserContribution">
         <span>📝</span> <span class="hidden sm:inline">Monitor</span>
       </button>
     </div>
 
-    <!-- Filters -->
+    <!-- Filters panel bottom-left -->
     <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] left-[clamp(0.75rem,2vw,1rem)] z-[500] obs-filter-panel">
       <button type="button" class="obs-filter-toggle" @click="filters.filtersExpanded.value = !filters.filtersExpanded.value">
         <span class="obs-filter-toggle__icon">⚙</span>
@@ -222,10 +238,88 @@ function updatePhases(value: Set<string>) {
             </div>
             <span class="obs-filter-checkbox__label">{{ t(ex.labelKey) }}</span>
           </div>
+
+          <hr class="border-zinc-800 my-1.5" />
+
+          <!-- Protected areas -->
+          <div
+            class="obs-filter-checkbox"
+            role="checkbox"
+            :aria-checked="layers.layerVis.value['protected_ti'] !== false"
+            :aria-label="t('observatory.layers.indigenousLands')"
+            tabindex="0"
+            @click="layers.toggleLayer('protected_ti')"
+            @keydown.enter="layers.toggleLayer('protected_ti')"
+            @keydown.space.prevent="layers.toggleLayer('protected_ti')"
+          >
+            <div :class="['obs-filter-checkbox__box', layers.layerVis.value['protected_ti'] !== false ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': 'var(--obs-red-dark)' }">
+              <svg v-if="layers.layerVis.value['protected_ti'] !== false" class="obs-filter-checkbox__check" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="obs-filter-checkbox__label">{{ t('observatory.layers.indigenousLands') }}</span>
+          </div>
+          <div
+            class="obs-filter-checkbox"
+            role="checkbox"
+            :aria-checked="layers.layerVis.value['protected_quilombo'] !== false"
+            :aria-label="t('observatory.layers.quilombolaTerritories')"
+            tabindex="0"
+            @click="layers.toggleLayer('protected_quilombo')"
+            @keydown.enter="layers.toggleLayer('protected_quilombo')"
+            @keydown.space.prevent="layers.toggleLayer('protected_quilombo')"
+          >
+            <div :class="['obs-filter-checkbox__box', layers.layerVis.value['protected_quilombo'] !== false ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': 'var(--obs-amber)' }">
+              <svg v-if="layers.layerVis.value['protected_quilombo'] !== false" class="obs-filter-checkbox__check" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="obs-filter-checkbox__label">{{ t('observatory.layers.quilombolaTerritories') }}</span>
+          </div>
+          <div
+            class="obs-filter-checkbox"
+            role="checkbox"
+            :aria-checked="layers.layerVis.value['overlaps'] !== false"
+            :aria-label="t('observatory.layers.overlaps')"
+            tabindex="0"
+            @click="layers.toggleLayer('overlaps')"
+            @keydown.enter="layers.toggleLayer('overlaps')"
+            @keydown.space.prevent="layers.toggleLayer('overlaps')"
+          >
+            <div :class="['obs-filter-checkbox__box', layers.layerVis.value['overlaps'] !== false ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': 'var(--obs-magenta)' }">
+              <svg v-if="layers.layerVis.value['overlaps'] !== false" class="obs-filter-checkbox__check" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="obs-filter-checkbox__label">{{ t('observatory.layers.overlaps') }}</span>
+          </div>
+          <div
+            class="obs-filter-checkbox"
+            role="checkbox"
+            :aria-checked="layers.layerVis.value['enterprise_hq'] !== false"
+            :aria-label="t('observatory.layers.enterpriseHq')"
+            tabindex="0"
+            @click="layers.toggleLayer('enterprise_hq')"
+            @keydown.enter="layers.toggleLayer('enterprise_hq')"
+            @keydown.space.prevent="layers.toggleLayer('enterprise_hq')"
+          >
+            <div :class="['obs-filter-checkbox__box', layers.layerVis.value['enterprise_hq'] !== false ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': 'var(--obs-purple-light)' }">
+              <svg v-if="layers.layerVis.value['enterprise_hq'] !== false" class="obs-filter-checkbox__check" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="obs-filter-checkbox__label">{{ t('observatory.layers.enterpriseHq') }}</span>
+          </div>
+
+          <hr class="border-zinc-800 my-1.5" />
+
+          <!-- Sob Demanda toggle -->
+          <label
+            class="obs-filter-checkbox"
+            @click.stop="filters.sobDemandaOnly.value = !filters.sobDemandaOnly.value; filters.debouncedFilter()"
+          >
+            <div :class="['obs-filter-checkbox__box', filters.sobDemandaOnly.value ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': 'var(--obs-purple-deep)' }">
+              <svg v-if="filters.sobDemandaOnly.value" class="obs-filter-checkbox__check" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="obs-filter-checkbox__label">Sob Demanda</span>
+          </label>
         </div>
       </Transition>
     </div>
 
+    <!-- Search bottom-center -->
     <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] left-1/2 -translate-x-1/2 z-[500] hidden sm:block">
       <div class="obs-search">
         <span class="obs-search__icon">🔍</span>
@@ -234,6 +328,7 @@ function updatePhases(value: Set<string>) {
       </div>
     </div>
 
+    <!-- Water legend bottom-right -->
     <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] right-[clamp(0.75rem,2vw,1rem)] z-[500] obs-legend-panel hidden md:block">
       <h3 class="obs-legend-title">{{ t('observatory.legend.hydrography') }}</h3>
       <div class="obs-legend-item"><div class="obs-legend-line" :style="{ background: 'var(--obs-blue)' }" /><span>{{ t('observatory.legend.basins') }}</span></div>
@@ -242,5 +337,3 @@ function updatePhases(value: Set<string>) {
     </div>
   </div>
 </template>
-
-<style>

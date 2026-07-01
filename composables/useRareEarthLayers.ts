@@ -4,10 +4,11 @@ import { buildRareEarthPopupHTML, escapeHtml } from '@/lib/map-utils'
 import { openRareEarthPopup } from '@/composables/useObservatoryPopup'
 import { citiesToGeoJSON } from '@/lib/brazilian-cities'
 
-let activePopup: maplibregl.Popup | null = null
+const activePopups = new WeakMap<MapLibreMap, maplibregl.Popup>()
 
-function closeActivePopup() {
-  if (activePopup) { activePopup.remove(); activePopup = null }
+function closeActivePopup(map: MapLibreMap) {
+  const popup = activePopups.get(map)
+  if (popup) { popup.remove(); activePopups.delete(map) }
 }
 
 export const REE_SOURCE_POINTS = 'ree-points'
@@ -326,16 +327,16 @@ export function setupRareEarthLayers(
       if (!e.features?.length) return
       const p = e.features[0].properties
       const adapted = adaptPolygonProps(p)
-      closeActivePopup()
+      closeActivePopup(map)
       if (options.popup) {
-        activePopup = openRareEarthPopup(
+        activePopups.set(map, openRareEarthPopup(
           map,
           adapted,
           [e.lngLat.lng, e.lngLat.lat],
           { onSidebarOpen: options.popup.onSidebarOpen },
           options.popup.t,
           options.popup.locale,
-        )
+        ))
         return
       }
       if (options.onClaimClick) {
@@ -343,11 +344,11 @@ export function setupRareEarthLayers(
         return
       }
       const html = buildRareEarthPopupHTML(adapted)
-      activePopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+      activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
         .setLngLat(e.lngLat)
         .setHTML(html)
         .setMaxWidth('none')
-        .addTo(map)
+        .addTo(map))
     }
     map.on('click', 'ree-poly-fill', onPolyClick)
     cleanups.push(() => { map.off('click', 'ree-poly-fill', onPolyClick) })
@@ -357,28 +358,28 @@ export function setupRareEarthLayers(
   const onPointClick = (e: MapLayerMouseEvent) => {
     if (!e.features?.length) return
     const p = e.features[0].properties as Record<string, unknown>
-    closeActivePopup()
+    closeActivePopup(map)
     if (options.onClaimClick) {
       options.onClaimClick(p, [e.lngLat.lng, e.lngLat.lat])
       return
     }
     if (options.popup) {
-      activePopup = openRareEarthPopup(
+      activePopups.set(map, openRareEarthPopup(
         map,
         p,
         [e.lngLat.lng, e.lngLat.lat],
         { onSidebarOpen: options.popup.onSidebarOpen },
         options.popup.t,
         options.popup.locale,
-      )
+      ))
       return
     }
     const html = buildRareEarthPopupHTML(p)
-    activePopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
       .setLngLat(e.lngLat)
       .setHTML(html)
       .setMaxWidth('none')
-      .addTo(map)
+      .addTo(map))
   }
 
   // Click handler for clusters — zoom in
@@ -447,7 +448,7 @@ export function setupRareEarthLayers(
     const p = e.features[0].properties
     const dangerScore = p.danger ?? 5
     const dColor = dangerScore >= 9 ? '#ef4444' : dangerScore >= 7 ? '#f97316' : '#22c55e'
-    closeActivePopup()
+    closeActivePopup(map)
     const siteHtml = `<div class="ree-popup-wrapper" style="padding:14px;min-width:200px;position:relative">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
         <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${dColor};color:#fff">${dangerScore.toFixed(1)} Danger</span>
@@ -456,11 +457,11 @@ export function setupRareEarthLayers(
       <h3 style="margin:0;font-size:13px;font-weight:700;color:#e8e8e8">${escapeHtml(p.name || 'Unknown')}</h3>
       <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px">${escapeHtml(p.tag || '')}</div>
     </div>`
-    activePopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
       .setLngLat(e.lngLat)
       .setHTML(siteHtml)
       .setMaxWidth('none')
-      .addTo(map)
+      .addTo(map))
   }
   const onSiteEnter = () => { map.getCanvas().style.cursor = 'pointer' }
   const onSiteLeave = () => { map.getCanvas().style.cursor = '' }
@@ -479,7 +480,7 @@ export function setupRareEarthLayers(
       if (!e.features?.length) return
       const p = e.features[0].properties
       const kind = p.kind === 'ti' ? 'Indigenous Land (Terra Indígena)' : 'Quilombola Territory'
-      closeActivePopup()
+      closeActivePopup(map)
       const protColor = p.kind === 'ti' ? '#dc2626' : '#d97706'
       const html = `<div class="ree-popup-wrapper" style="padding:14px;min-width:220px;position:relative">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
@@ -490,11 +491,11 @@ export function setupRareEarthLayers(
         <p style="font-size:10px;color:#888;margin:6px 0 0;line-height:1.45">Mining claims overlapping this territory may violate Free, Prior and Informed Consent (FPIC) under ILO Convention 169.</p>
         ${p.source_url ? `<a href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:10px;color:#5dade2">Source &rarr;</a>` : ''}
       </div>`
-      activePopup = new maplibregl.Popup({ offset: 8, closeButton: true, className: 'cyberpunk-popup' })
+      activePopups.set(map, new maplibregl.Popup({ offset: 8, closeButton: true, className: 'cyberpunk-popup' })
         .setLngLat(e.lngLat)
         .setHTML(html)
         .setMaxWidth('none')
-        .addTo(map)
+        .addTo(map))
     }
     const onProtEnter = () => { map.getCanvas().style.cursor = 'pointer' }
     const onProtLeave = () => { map.getCanvas().style.cursor = '' }
@@ -794,24 +795,24 @@ export function addPolygonLayersToMap(
   const onPolyClick = (e: MapLayerMouseEvent) => {
     if (!e.features?.length) return
     const p = e.features[0].properties
-    closeActivePopup()
+    closeActivePopup(map)
     if (popup) {
-      activePopup = openRareEarthPopup(
+      activePopups.set(map, openRareEarthPopup(
         map,
         adaptPolygonProps(p),
         [e.lngLat.lng, e.lngLat.lat],
         { onSidebarOpen: popup.onSidebarOpen },
         popup.t,
         popup.locale,
-      )
+      ))
       return
     }
     const html = buildRareEarthPopupHTML(adaptPolygonProps(p))
-    activePopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
       .setLngLat(e.lngLat)
       .setHTML(html)
       .setMaxWidth('none')
-      .addTo(map)
+      .addTo(map))
   }
   map.on('click', 'ree-poly-fill', onPolyClick)
 

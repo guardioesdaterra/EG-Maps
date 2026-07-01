@@ -1,17 +1,18 @@
 <template>
   <div id="main-content" class="relative">
+    <!-- Loading overlay -->
     <Transition name="fade">
       <div v-if="isLoading || error" class="fixed inset-0 z-[9998] bg-zinc-950/90 backdrop-blur-md flex flex-col items-center justify-center gap-4">
         <template v-if="error && !isLoading">
           <div class="text-center">
             <span class="text-4xl mb-3 block">⚠️</span>
-            <h2 class="text-fluid-sm font-bold text-red-400 uppercase tracking-wider mb-1">Failed to load data</h2>
+            <h2 class="text-fluid-sm font-bold text-red-400 uppercase tracking-wider mb-1">{{ t('observatory.error.loadFailed') }}</h2>
             <p class="text-fluid-xs text-zinc-500 mb-4">{{ error.message }}</p>
             <button
               type="button"
               class="px-fluid-md py-fluid-xs text-fluid-xs font-bold rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
               @click="loadRareEarthData()">
-              Retry
+              {{ t('observatory.error.retry') }}
             </button>
           </div>
         </template>
@@ -43,6 +44,8 @@
         :rare-earth-points="pointsData"
         :rare-earth-polygons="polygonsData"
         :rare-earth-protected="protectedData"
+        :rare-earth-water="waterData"
+        :rare-earth-cultural="culturalData"
         :layer-visibility="layerVis"
         :fly-to-target="flyToTarget"
       />
@@ -57,8 +60,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
+import { ref, computed, onMounted, type Ref } from 'vue'
+import { useObservatoryControls } from '@/composables/useObservatoryControls'
 import { useRareEarthData } from '@/composables/useRareEarthData'
 
 const { t } = useI18n()
@@ -69,31 +72,81 @@ useHead({
   meta: [{ name: 'description', content: 'Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.' }],
 })
 
-const { pointsData, polygonsData, protectedData, isLoading, loadProgress, error, load: loadRareEarthData } = useRareEarthData(baseURL)
+// ---- Composable ----
+const controls = useObservatoryControls()
+const {
+  layerVis, flyToTarget,
+  startCounterAnimation,
+  restoredState, debouncedFilter,
+  yearMin, yearMax, selectedPhases, activeTab,
+} = controls
 
-const flyToTarget = ref<{ lng: number; lat: number; zoom?: number } | null>(null)
+// ---- Data ----
+const { pointsData: _rawPointsData, polygonsData: _rawPolygonsData, protectedData: _rawProtectedData, waterData: _rawWaterData, culturalData: _rawCulturalData, features: allFeatures, speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL)
 
-// Layer visibility state
-const layerVis = ref<Record<string, boolean>>({})
-const categories = Object.entries(RARE_EARTH_CATEGORIES) as [string, { label: string; color: string }][]
-categories.forEach(([key]) => { layerVis.value[key] = true })
-layerVis.value['enterprise_hq'] = false
-layerVis.value['protected_ti'] = true
-layerVis.value['protected_quilombo'] = true
-layerVis.value['overlaps'] = true
-layerVis.value['heatmap'] = false
+// Cast data to match component prop types
+const pointsData = computed(() => (_rawPointsData.value ?? { type: 'FeatureCollection', features: [] } as GeoJSON.FeatureCollection))
+const polygonsData = computed<GeoJSON.FeatureCollection | undefined>(() => _rawPolygonsData.value != null ? _rawPolygonsData.value as GeoJSON.FeatureCollection : undefined)
+const protectedData = computed<GeoJSON.FeatureCollection | undefined>(() => _rawProtectedData.value != null ? _rawProtectedData.value as GeoJSON.FeatureCollection : undefined)
+const waterData = computed(() => _rawWaterData.value ?? null)
+const culturalData = computed(() => _rawCulturalData.value ?? null)
 
-// Extra layers
-const extraLayers = ['polygons', 'water', 'sites', 'network', 'heatmap']
-extraLayers.forEach(k => { layerVis.value[k] = true })
+// Wire data into composable
+controls.setupObservatory({
+  allFeatures: allFeatures as unknown as Ref<unknown[]>,
+  pointsData: _rawPointsData as unknown as Ref<GeoJSON.FeatureCollection>,
+  polygonsData: _rawPolygonsData as unknown as Ref<unknown>,
+  protectedData: _rawProtectedData as unknown as Ref<unknown>,
+  waterData: _rawWaterData as unknown as Ref<unknown>,
+  culturalData: _rawCulturalData as unknown as Ref<unknown>,
+  speculatorIndex: speculatorIndex as unknown as Ref<unknown[]>,
+  deepAnalysis: deepAnalysis as unknown as Ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null>,
+  isLoading,
+  loadPhase,
+  loadProgress,
+  error: error as unknown as Ref<{ message?: string } | null>,
+  loadRareEarthData,
+  loadFullBrazil,
+  isRegional,
+})
 
-// Loading message based on phase
+// ---- Loading message ----
 const loadingMessage = computed(() => {
-  if (isLoading.value) return 'Loading mining claims data...'
-  return 'Ready'
+  const regionLabel = isRegional.value ? 'Poços de Caldas region' : 'Brazil'
+  switch (loadPhase.value) {
+    case 'points': return `Loading mining claims (${regionLabel})...`
+    case 'overlaps': return 'Loading territory overlaps...'
+    case 'polygons': return 'Loading claim boundaries...'
+    case 'protected': return 'Loading protected areas, waterbodies & analysis...'
+    case 'complete': return 'Ready'
+    default: return 'Initializing...'
+  }
 })
 
 onMounted(async () => {
+  startCounterAnimation()
   await loadRareEarthData()
+
+  // Restore state from URL hash
+  if (restoredState.value) {
+    const s = restoredState.value as Record<string, unknown>
+    if (s.center) flyToTarget.value = { lng: (s.center as number[])[0], lat: (s.center as number[])[1], zoom: (s.zoom as number) ?? 6 }
+    if (s.yearMin) yearMin.value = s.yearMin as number
+    if (s.yearMax) yearMax.value = s.yearMax as number
+    if (s.phases) selectedPhases.value = new Set(s.phases as string[])
+    if (s.tab) activeTab.value = s.tab as 'danger' | 'military' | 'illegal' | 'env' | 'network' | 'timeline'
+    debouncedFilter()
+  }
 })
 </script>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

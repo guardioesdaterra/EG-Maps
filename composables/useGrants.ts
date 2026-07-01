@@ -1,3 +1,5 @@
+import { useSupabase } from './useSupabase'
+
 export interface GrantInput {
   title: string
   description: string
@@ -43,7 +45,6 @@ export interface ScrapedGrant {
   status: string
   fetched_at: string
   created_at: string
-  // Enhanced fields from grants.py v2
   grant_type?: string
   grant_types?: string[]
   highlights?: string[]
@@ -73,101 +74,139 @@ export interface LeaderboardEntry {
   created_at: string
 }
 
-export function useGrants() {
-  const supabase = useSupabaseClient()
+async function invoke(fnName: string, options?: { method?: string; body?: unknown }) {
+  const { client } = useSupabase()
+  const { data, error } = await client.functions.invoke(fnName, {
+    method: options?.method || 'GET',
+    body: options?.body,
+  })
+  if (error) throw error
+  return data
+}
 
+export function useGrants() {
   async function listGrants(status?: string) {
-    const params = new URLSearchParams()
-    if (status) params.set('status', status)
-    const { data, error } = await supabase.functions.invoke(`grants-list?${params}`, { method: 'GET' })
-    if (error) return { error: error.message, grants: [] }
-    return data as { grants: GrantRecord[]; total: number }
+    try {
+      const params = new URLSearchParams()
+      if (status) params.set('status', status)
+      const data = await invoke(`grants-list?${params}`)
+      return data as { grants: GrantRecord[]; total: number }
+    } catch (e) {
+      return { error: (e as Error).message, grants: [] as GrantRecord[], total: 0 }
+    }
   }
 
   async function listScrapedGrants(status?: string) {
-    const params = new URLSearchParams()
-    if (status) params.set('status', status)
-    const { data, error } = await supabase.functions.invoke(`grants-scraped-list?${params}`, { method: 'GET' })
-    if (error) return { error: error.message, grants: [] }
-    return data as { grants: ScrapedGrant[]; total: number }
+    try {
+      const params = new URLSearchParams()
+      if (status) params.set('status', status)
+      const data = await invoke(`grants-scraped-list?${params}`)
+      return data as { grants: ScrapedGrant[]; total: number }
+    } catch (e) {
+      return { error: (e as Error).message, grants: [] as ScrapedGrant[], total: 0 }
+    }
   }
 
   async function submitGrant(input: GrantInput) {
-    const { data, error } = await supabase.functions.invoke('grants-submit', {
-      method: 'POST',
-      body: input,
-    })
-    if (error) return { error: error.message }
-    return data as { grant: GrantRecord }
+    try {
+      const data = await invoke('grants-submit', { method: 'POST', body: input })
+      return data as { grant: GrantRecord }
+    } catch (e) {
+      return { error: (e as Error).message }
+    }
   }
 
   async function reviewGrant(grantId: string, decision: 'approved' | 'rejected', notes?: string) {
-    const { data, error } = await supabase.functions.invoke('grants-review', {
-      method: 'POST',
-      body: { grant_id: grantId, decision, notes },
-    })
-    if (error) return { error: error.message }
-    return data as { grant: GrantRecord }
+    try {
+      const data = await invoke('grants-review', {
+        method: 'POST',
+        body: { grant_id: grantId, decision, notes },
+      })
+      return data as { grant: GrantRecord }
+    } catch (e) {
+      return { error: (e as Error).message }
+    }
   }
 
   async function updateScrapedGrant(grantId: string, updates: Record<string, unknown>) {
-    const { data, error } = await supabase.functions.invoke('grants-scraped-update', {
-      method: 'POST',
-      body: { grant_id: grantId, ...updates },
-    })
-    if (error) return { error: error.message }
-    return data as { grant: ScrapedGrant }
+    try {
+      const data = await invoke('grants-scraped-update', {
+        method: 'POST',
+        body: { grant_id: grantId, ...updates },
+      })
+      return data as { grant: ScrapedGrant }
+    } catch (e) {
+      return { error: (e as Error).message }
+    }
   }
 
   async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending', notes?: string) {
-    const { data, error } = await supabase.functions.invoke('grants-approve', {
-      method: 'POST',
-      body: { grant_id: grantId, decision, notes },
-    })
-    if (error) return { error: error.message }
-    return data as { grant_id: string; decision: string }
+    try {
+      const data = await invoke('grants-approve', {
+        method: 'POST',
+        body: { grant_id: grantId, decision, notes },
+      })
+      return data as { grant_id: string; decision: string }
+    } catch (e) {
+      return { error: (e as Error).message }
+    }
   }
 
   async function getStats() {
-    const { data, error } = await supabase.functions.invoke('grants-stats', { method: 'GET' })
-    if (error) return { pending: 0, approved: 0, rejected: 0, total: 0 }
-    return data as { pending: number; approved: number; rejected: number; total: number }
+    try {
+      const data = await invoke('grants-stats')
+      return data as { pending: number; approved: number; rejected: number; total: number }
+    } catch {
+      return { pending: 0, approved: 0, rejected: 0, total: 0 }
+    }
   }
 
   async function voteGrant(grantId: string, stars: number) {
-    const { data, error } = await supabase.functions.invoke('grants-vote', {
-      method: 'POST',
-      body: { grant_id: grantId, stars },
-    })
-    if (error) return { error: error.message }
-    return data as { vote: { id: string; stars: number } }
+    try {
+      const data = await invoke('grants-vote', {
+        method: 'POST',
+        body: { grant_id: grantId, stars },
+      })
+      return data as { vote: { id: string; stars: number } }
+    } catch (e) {
+      return { error: (e as Error).message }
+    }
   }
 
   async function voteScrapedGrant(scrapedId: string, stars: number) {
-    const { data, error } = await supabase.functions.invoke('grants-vote', {
-      method: 'POST',
-      body: { scraped_id: scrapedId, stars },
-    })
-    if (error) return { error: error.message }
-    return data as { vote: { id: string; stars: number } }
+    try {
+      const data = await invoke('grants-vote', {
+        method: 'POST',
+        body: { scraped_id: scrapedId, stars },
+      })
+      return data as { vote: { id: string; stars: number } }
+    } catch (e) {
+      return { error: (e as Error).message }
+    }
   }
 
   async function deleteVote(grantId: string, scrapedId?: string) {
-    const params = new URLSearchParams({ method: 'delete' })
-    if (scrapedId) params.set('scraped_id', scrapedId)
-    else params.set('grant_id', grantId)
-    const { data, error } = await supabase.functions.invoke(`grants-vote?${params}`, { method: 'DELETE' })
-    if (error) return { error: error.message }
-    return data as { deleted: boolean }
+    try {
+      const params = new URLSearchParams({ method: 'delete' })
+      if (scrapedId) params.set('scraped_id', scrapedId)
+      else params.set('grant_id', grantId)
+      const data = await invoke(`grants-vote?${params}`, { method: 'DELETE' })
+      return data as { deleted: boolean }
+    } catch (e) {
+      return { error: (e as Error).message }
+    }
   }
 
   async function getLeaderboard(type?: string, status?: string) {
-    const params = new URLSearchParams()
-    if (type) params.set('type', type)
-    if (status) params.set('status', status)
-    const { data, error } = await supabase.functions.invoke(`grants-leaderboard?${params}`, { method: 'GET' })
-    if (error) return { error: error.message, grants: [] }
-    return data as { grants: LeaderboardEntry[]; total: number }
+    try {
+      const params = new URLSearchParams()
+      if (type) params.set('type', type)
+      if (status) params.set('status', status)
+      const data = await invoke(`grants-leaderboard?${params}`)
+      return data as { grants: LeaderboardEntry[]; total: number }
+    } catch (e) {
+      return { error: (e as Error).message, grants: [] as LeaderboardEntry[], total: 0 }
+    }
   }
 
   return {

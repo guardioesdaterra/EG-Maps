@@ -1,3 +1,6 @@
+import { ref, readonly } from 'vue'
+import { useSupabase } from './useSupabase'
+
 export interface ObservatoryUpdate {
   id: string
   user_id: string | null
@@ -24,8 +27,7 @@ export interface ObservatoryUpdateInput {
 const LOCAL_STORAGE_KEY = 'obs-community-contributions'
 
 export function useObservatoryUpdates() {
-  const client = useSupabaseClient()
-  const user = useSupabaseUser()
+  const { client, user } = useSupabase()
 
   const updates = ref<ObservatoryUpdate[]>([])
   const loading = ref(false)
@@ -58,11 +60,10 @@ export function useObservatoryUpdates() {
   }
 
   async function submitUpdate(input: ObservatoryUpdateInput): Promise<{ update?: ObservatoryUpdate; error?: string; synced?: boolean }> {
-    // Always save to localStorage first (offline-first)
     const localUpdate: ObservatoryUpdate = {
       id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       user_id: user.value?.id || null,
-      user_name: user.value?.user_metadata?.full_name as string || user.value?.email || null,
+      user_name: (user.value?.user_metadata as Record<string, string>)?.full_name || user.value?.email || null,
       update_type: input.update_type,
       description: input.description,
       location_name: input.location_name || null,
@@ -74,7 +75,6 @@ export function useObservatoryUpdates() {
     }
     addLocal(localUpdate)
 
-    // If user is logged in, also sync to Supabase
     if (user.value) {
       try {
         const { data, error: fnError } = await client.functions.invoke('observatory-submit', {
@@ -89,7 +89,6 @@ export function useObservatoryUpdates() {
         })
 
         if (fnError) {
-          // Local save succeeded, cloud sync failed — return with synced=false
           return { update: localUpdate, error: fnError.message, synced: false }
         }
 
@@ -99,7 +98,6 @@ export function useObservatoryUpdates() {
         }
 
         if (result.update) {
-          // Replace local entry with server entry (has real UUID)
           removeLocal(localUpdate.id)
           const existing = loadLocal()
           existing.unshift(result.update)
@@ -107,12 +105,10 @@ export function useObservatoryUpdates() {
           return { update: result.update, synced: true }
         }
       } catch (e) {
-        // Network error — local save already succeeded
         return { update: localUpdate, error: e instanceof Error ? e.message : 'Network error', synced: false }
       }
     }
 
-    // Not logged in — local only
     return { update: localUpdate, synced: false }
   }
 
@@ -153,10 +149,8 @@ export function useObservatoryUpdates() {
   }
 
   async function deleteUpdate(updateId: string): Promise<{ error?: string }> {
-    // Remove from local storage
     removeLocal(updateId)
 
-    // If logged in, also delete from Supabase
     if (user.value) {
       try {
         const { error: fnError } = await client.functions.invoke('observatory-delete', {

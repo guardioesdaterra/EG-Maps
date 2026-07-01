@@ -116,3 +116,36 @@ export interface CommandPaletteItem {
   /** Optional keywords to match against in addition to label/hint */
   keywords?: string[]
 }
+
+export interface DetailGrantData {
+  id: string
+  title: string
+  description: string
+  status: string
+  created_at: string
+  location_name?: string
+  latitude?: number
+  longitude?: number
+  source_type?: string
+  source_id?: string
+  url?: string
+  funder?: string
+  source?: string
+  country?: string
+  submitted_by?: string | null
+  reviewed_by?: string | null
+  reviewed_at?: string | null
+  amount_max?: string
+  currency?: string
+  deadline?: string
+  categories?: string[]
+  fetched_at?: string
+  grant_type?: string
+  grant_types?: string[]
+  highlights?: string[]
+  urgency?: string
+  deadline_days?: number | null
+  amount_usd?: number | null
+  priority_score?: number
+  relevance?: number
+}

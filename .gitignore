@@ -1,7 +1,3 @@
-supabase/.temp/
-supabase/.branches/
-supabase/.env
-
 # Nuxt
 .nuxt/
 .output/

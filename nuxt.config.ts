@@ -11,7 +11,6 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@vueuse/motion/nuxt',
     '@vueuse/nuxt',
-    '@nuxtjs/supabase',
   ],
 
   plugins: ['~/plugins/iconify-icon.client.ts', '~/plugins/command-palette.client.ts', '~/plugins/ui-init.client.ts'],
@@ -42,17 +41,6 @@ export default defineNuxtConfig({
       { code: 'de', language: 'de-DE', name: 'Deutsch', file: 'de.json' },
     ],
     detectBrowserLanguage: false,
-  },
-
-  // Supabase auth redirects
-  supabase: {
-    useSsrCookies: false,
-    redirectOptions: {
-      login: '/eg-grants',
-      callback: '/auth/callback',
-      include: ['/eg-grants', '/auth/callback'],
-      exclude: ['/', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d', '/vulcan-observatory', '/vulcan-observatory/3d'],
-    },
   },
 
   // SSG with prerendered HTML for all routes - enables proper GitHub Pages indexing and refresh

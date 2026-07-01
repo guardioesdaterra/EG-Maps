@@ -3,10 +3,9 @@ import {
   jsonResponse,
   clampPagination,
 } from "../_shared/auth.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const MAX_FETCH = 200;
-
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -29,7 +28,7 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    let results: Record<string, unknown>[] = [];
+    const results: Record<string, unknown>[] = [];
 
     if (type === "scraped" || type === "all") {
       const { data: scraped, error: sErr } = await supabase

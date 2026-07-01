@@ -246,8 +246,8 @@ export function useObservatoryControls(): ObservatoryControls {
 
   // ---- data placeholders ----
   // Pages MUST provide these via setupObservatory(dataBindings)
-  const allFeatures = ref<unknown[]>([])
-  const pointsData = ref<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] })
+  let allFeatures = ref<unknown[]>([])
+  let pointsData = ref<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] })
   let polygonsData = ref<unknown>(null)
   let protectedData = ref<unknown>(null)
   let waterData = ref<unknown>(null)

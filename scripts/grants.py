@@ -2219,36 +2219,23 @@ def save_markdown(grants, path, title="Grants Radar"):
             ]
     path.write_text("\n".join(lines), encoding="utf-8")
 
-def _grant_id_to_uuid(short_id):
-    """Convert a 12-char hex grant ID to the UUID format used in Supabase."""
-    return f"00000000-0000-0000-0000-{short_id}" if len(short_id) == 12 else short_id
-
-
-def fetch_existing_grant_ids(supabase_url, supabase_key):
-    """Fetch existing scraped_grants UUIDs from Supabase via REST API.
+def fetch_existing_grant_ids(supabase_url, ingest_token):
+    """Fetch existing scraped_grants IDs from the grants-ingest edge function (GET).
     Returns set of short (12-char) IDs on success (possibly empty), None if query failed."""
     import urllib.request
-    url = f"{supabase_url.rstrip('/')}/rest/v1/scraped_grants?select=id"
-    req = urllib.request.Request(url, headers={
-        "apikey": supabase_key,
-        "Authorization": f"Bearer {supabase_key}",
+    endpoint = f"{supabase_url.rstrip('/')}/functions/v1/grants-ingest"
+    req = urllib.request.Request(endpoint, headers={
+        "X-Ingest-Token": ingest_token,
         "Accept": "application/json",
-    })
+    }, method="GET")
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
-            rows = json.loads(resp.read().decode())
-            if isinstance(rows, list):
-                # Strip the UUID prefix to get back the 12-char short ID
-                existing = set()
-                for r in rows:
-                    uid = r.get("id", "")
-                    if uid.startswith("00000000-0000-0000-0000-"):
-                        existing.add(uid.split("-")[-1])
-                    elif uid:
-                        existing.add(uid)
-                return existing
+            result = json.loads(resp.read().decode())
+            ids = result.get("ids")
+            if isinstance(ids, list):
+                return set(ids)
     except Exception as e:
-        console.print(f"[dim]REST query failed: {e}[/]")
+        console.print(f"[dim]Failed to fetch existing grant IDs: {e}[/]")
     return None
 
 
@@ -2258,8 +2245,7 @@ def push_to_supabase(grants, supabase_url, ingest_token, batch_size=100):
         console.print("[yellow]Supabase push skipped: missing URL or token[/]")
         return False
 
-    supabase_key = os.environ.get("SUPABASE_KEY") or os.environ.get("NUXT_PUBLIC_SUPABASE_KEY") or ""
-    existing_ids = fetch_existing_grant_ids(supabase_url, supabase_key) if supabase_key else None
+    existing_ids = fetch_existing_grant_ids(supabase_url, ingest_token)
 
     if existing_ids is not None:
         new_grants = [g for g in grants if g["id"] not in existing_ids]

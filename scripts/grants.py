@@ -2257,7 +2257,7 @@ def push_to_supabase(grants, supabase_url, ingest_token, batch_size=100):
         ]
         skipped = len(grants) - len(new_grants)
         if skipped:
-            console.print(f"[dim]Pre-filtered {skipped} existing grants, pushing {len(new_grants)} new[/]")
+            console.print(f"[dim]Pre-filtered {skipped} existing grants (by ID: {len(existing_ids)}, by URL: {len(existing_urls)}), pushing {len(new_grants)} new[/]")
         if not new_grants:
             console.print("[green]All grants already exist — nothing to push[/]")
             return True

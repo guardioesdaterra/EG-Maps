@@ -2220,8 +2220,8 @@ def save_markdown(grants, path, title="Grants Radar"):
     path.write_text("\n".join(lines), encoding="utf-8")
 
 def fetch_existing_grant_ids(supabase_url, ingest_token):
-    """Fetch existing scraped_grants IDs from the grants-ingest edge function (GET).
-    Returns set of short (12-char) IDs on success (possibly empty), None if query failed."""
+    """Fetch existing scraped_grants IDs + URLs from the grants-ingest edge function (GET).
+    Returns dict with 'ids' (set) and 'urls' (dict of url->id), or None on failure."""
     import urllib.request
     endpoint = f"{supabase_url.rstrip('/')}/functions/v1/grants-ingest"
     req = urllib.request.Request(endpoint, headers={
@@ -2232,8 +2232,9 @@ def fetch_existing_grant_ids(supabase_url, ingest_token):
         with urllib.request.urlopen(req, timeout=15) as resp:
             result = json.loads(resp.read().decode())
             ids = result.get("ids")
+            urls = result.get("urls")
             if isinstance(ids, list):
-                return set(ids)
+                return {"ids": set(ids), "urls": urls or {}}
     except Exception as e:
         console.print(f"[dim]Failed to fetch existing grant IDs: {e}[/]")
     return None
@@ -2245,10 +2246,15 @@ def push_to_supabase(grants, supabase_url, ingest_token, batch_size=100):
         console.print("[yellow]Supabase push skipped: missing URL or token[/]")
         return False
 
-    existing_ids = fetch_existing_grant_ids(supabase_url, ingest_token)
+    existing = fetch_existing_grant_ids(supabase_url, ingest_token)
 
-    if existing_ids is not None:
-        new_grants = [g for g in grants if g["id"] not in existing_ids]
+    if existing is not None:
+        existing_ids = existing["ids"]
+        existing_urls = existing["urls"]
+        new_grants = [
+            g for g in grants
+            if g["id"] not in existing_ids and g.get("url") not in existing_urls
+        ]
         skipped = len(grants) - len(new_grants)
         if skipped:
             console.print(f"[dim]Pre-filtered {skipped} existing grants, pushing {len(new_grants)} new[/]")

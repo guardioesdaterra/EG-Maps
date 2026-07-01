@@ -67,3 +67,47 @@ export function isEarthGuardiansEmail(email: string | undefined | null): boolean
   if (!email) return false;
   return email.toLowerCase().endsWith(`@${EG_EMAIL_DOMAIN}`);
 }
+
+export function clampPagination(
+  pageRaw: string | null,
+  limitRaw: string | null,
+  defaultLimit = 50,
+): { page: number; limit: number; offset: number } {
+  const page = Math.max(1, parseInt(pageRaw || "1", 10) || 1);
+  const limit = Math.min(200, Math.max(1, parseInt(String(defaultLimit), 10) || defaultLimit));
+  const offset = (page - 1) * limit;
+  return { page, limit, offset };
+}
+
+export function isValidUUID(value: string | null | undefined): boolean {
+  if (!value) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
+export function isValidCoordinate(lat: unknown, lng: unknown): boolean {
+  const la = Number(lat);
+  const lo = Number(lng);
+  return Number.isFinite(la) && Number.isFinite(lo) && la >= -90 && la <= 90 && lo >= -180 && lo <= 180;
+}
+
+export async function getManagerUser(
+  authHeader: string | null,
+): Promise<{ user: { id: string; email?: string } | null; error: string | null; status: number }> {
+  const { user, error } = await getUser(authHeader);
+  if (error || !user) {
+    return { user: null, error: error || "Unauthorized", status: 401 };
+  }
+
+  const admin = getAdminClient();
+  const { data: crew, error: crewError } = await admin
+    .from("crews")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (crewError || !crew || crew.role !== "manager") {
+    return { user: null, error: "Manager access required", status: 403 };
+  }
+
+  return { user, error: null, status: 200 };
+}

@@ -119,13 +119,13 @@ export function useGrants() {
     return data as { grant: ScrapedGrant }
   }
 
-  async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending') {
-    const { data, error } = await supabase.functions.invoke('grants-scraped-review', {
+  async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending', notes?: string) {
+    const { data, error } = await supabase.functions.invoke('grants-approve', {
       method: 'POST',
-      body: { grant_id: grantId, decision },
+      body: { grant_id: grantId, decision, notes },
     })
     if (error) return { error: error.message }
-    return data as { grant: ScrapedGrant }
+    return data as { grant_id: string; decision: string }
   }
 
   async function getStats() {

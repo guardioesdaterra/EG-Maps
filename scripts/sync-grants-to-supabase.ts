@@ -117,7 +117,7 @@ async function syncBatch(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-sync-secret": syncSecret,
+          "X-Ingest-Token": syncSecret,
         },
         body: JSON.stringify({ grants: batch }),
       });
@@ -187,7 +187,7 @@ async function main() {
   }
 
   const edgeUrl = process.env.SUPABASE_EDGE_FUNCTION_URL ||
-    `${supabaseUrl.replace(/\/$/, "")}/functions/v1/grants-catalog-sync`;
+    `${supabaseUrl.replace(/\/$/, "")}/functions/v1/grants-ingest`;
 
   if (!syncSecret) {
     console.error("ERROR: SUPABASE_SYNC_SECRET environment variable is required");

@@ -2219,24 +2219,36 @@ def save_markdown(grants, path, title="Grants Radar"):
             ]
     path.write_text("\n".join(lines), encoding="utf-8")
 
+def _grant_id_to_uuid(short_id):
+    """Convert a 12-char hex grant ID to the UUID format used in Supabase."""
+    return f"00000000-0000-0000-0000-{short_id}" if len(short_id) == 12 else short_id
+
+
 def fetch_existing_grant_ids(supabase_url, supabase_key):
-    """Fetch existing grant IDs from Supabase via REST API.
-    Returns set of IDs on success (possibly empty), None if query failed."""
+    """Fetch existing scraped_grants UUIDs from Supabase via REST API.
+    Returns set of short (12-char) IDs on success (possibly empty), None if query failed."""
     import urllib.request
-    for table in ("grants", "grant_opportunities", "grants_radar"):
-        url = f"{supabase_url.rstrip('/')}/rest/v1/{table}?select=id"
-        req = urllib.request.Request(url, headers={
-            "apikey": supabase_key,
-            "Authorization": f"Bearer {supabase_key}",
-            "Accept": "application/json",
-        })
-        try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                rows = json.loads(resp.read().decode())
-                if isinstance(rows, list):
-                    return {r["id"] for r in rows if isinstance(r, dict) and "id" in r}
-        except Exception:
-            continue
+    url = f"{supabase_url.rstrip('/')}/rest/v1/scraped_grants?select=id"
+    req = urllib.request.Request(url, headers={
+        "apikey": supabase_key,
+        "Authorization": f"Bearer {supabase_key}",
+        "Accept": "application/json",
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            rows = json.loads(resp.read().decode())
+            if isinstance(rows, list):
+                # Strip the UUID prefix to get back the 12-char short ID
+                existing = set()
+                for r in rows:
+                    uid = r.get("id", "")
+                    if uid.startswith("00000000-0000-0000-0000-"):
+                        existing.add(uid.split("-")[-1])
+                    elif uid:
+                        existing.add(uid)
+                return existing
+    except Exception as e:
+        console.print(f"[dim]REST query failed: {e}[/]")
     return None
 
 

@@ -311,7 +311,7 @@
                     <button v-if="isManager && g.status === 'pending'" @click="handleReviewScraped(g.id, 'approved')" class="action-btn approve text-[11px] py-0.5">✓ Approve</button>
                     <button v-if="isManager && g.status === 'approved'" @click="handleReviewScraped(g.id, 'pending')" class="action-btn restore text-[11px] py-0.5">↩</button>
                     <button v-if="isManager" @click="openEditScraped(g)" class="action-btn edit text-[11px] py-0.5" title="Edit grant info">
-                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                      <Icon name="lucide:pencil" class="w-3 h-3" />
                     </button>
                   </div>
                 </div>

@@ -196,6 +196,41 @@ jobs:
           SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
 
+  grants-sync:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install feedparser aiohttp aiofiles beautifulsoup4 lxml python-dateutil rich click
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Scrape grants
+        run: python scripts/grants.py -o scripts/output/grants_export
+        continue-on-error: true
+
+      - name: Sync grants to Supabase
+        run: |
+          # Find the most recent grants export file
+          EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1)
+          if [ -n "$EXPORT_FILE" ]; then
+            npx tsx scripts/sync-grants-to-supabase.ts "$EXPORT_FILE"
+          else
+            echo "No grants export file found, skipping sync"
+          fi
+        env:
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+          SUPABASE_SYNC_SECRET: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+
   deploy:
     needs: build
     runs-on: ubuntu-latest

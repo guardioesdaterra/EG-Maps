@@ -1537,27 +1537,20 @@ RSS_FEEDS = [
     ("MinC Brasil",                "https://www.gov.br/cultura/pt-br/assuntos/noticias/RSS",          "BR",    "pt"),
     ("BNDES Amazônia",             "https://www.bndes.gov.br/rss",                                    "BR",    "pt"),
 
-    # ── LatAm
-    ("Fondo Acción Urgente",       "https://fondoaccionurgente.org.co/feed/",                         "LATAM", "es"),
-    ("IICA",                       "https://www.iica.int/es/content/convocatorias/feed",              "LATAM", "es"),
+    # ── LatAm (Fondo Acción Urgente and IICA are covered by `latam` scraper)
 
     # ── EU programmes
     ("EEA Grants",                 "https://www.eeagrants.org/news/rss.xml",                          "EU",    "en"),
     ("Creative Europe news",       "https://culture.ec.europa.eu/news/rss",                           "EU",    "en"),
     ("Sida Sweden",                "https://www.sida.se/en/feed/rss",                                 "EU",    "en"),
 
-    # ── Grant aggregators (Substack feeds — free posts only)
-    ("Impact Funding newsletter",  "https://impactfunding.substack.com/feed",                        "GLOBAL","en"),
-    ("Opportunity Desk",           "https://opportunitydesk.org/feed/",                               "GLOBAL","en"),
-    ("Opportunities for Youth",    "https://opportunitiesforyouth.org/feed/",                         "GLOBAL","en"),
-    ("Global South Opportunities", "https://www.globalsouthopportunities.com/feed/",                  "GLOBAL","en"),
-    ("fundsforNGOs RSS",           "https://www2.fundsforngos.org/feed/",                             "GLOBAL","en"),
-
     # ── Colossal (arts open calls — curated monthly lists)
     ("Colossal open calls",        "https://www.thisiscolossal.com/feed/",                            "GLOBAL","en"),
 
-    # ── Indigenous/environment
-    ("Green Grants",               "https://www.greengrants.org/feed/",                               "GLOBAL","en"),
+    # NOTE: Impact Funding, Opportunity Desk, Opportunities for Youth,
+    # Global South Opportunities, fundsforNGOs, and Green Grants are NOT here
+    # because they have dedicated scrapers above (impactfunding, opdesk, ofy,
+    # globalsouth, fundsforngos, greengrants). Running both wastes requests.
     ("IUCN",                       "https://www.iucn.org/feeds/news",                                 "GLOBAL","en"),
 
     # ── Francophone

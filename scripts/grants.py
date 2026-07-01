@@ -2266,10 +2266,11 @@ def push_to_supabase(grants, supabase_url, ingest_token, batch_size=100):
         new_grants = grants
 
     import urllib.request
+    import concurrent.futures
     endpoint = f"{supabase_url.rstrip('/')}/functions/v1/grants-ingest"
-    total_ok = True
-    for i in range(0, len(new_grants), batch_size):
-        batch = new_grants[i:i+batch_size]
+
+    def send_batch(batch_idx):
+        i, batch = batch_idx
         payload = json.dumps({"grants": batch}).encode("utf-8")
         req = urllib.request.Request(
             endpoint, data=payload,
@@ -2282,11 +2283,17 @@ def push_to_supabase(grants, supabase_url, ingest_token, batch_size=100):
         try:
             with urllib.request.urlopen(req, timeout=120) as resp:
                 result = json.loads(resp.read().decode())
-                console.print(f"[green]Batch {i//batch_size+1}: {result.get('inserted',0)} inserted, {result.get('skipped',0)} skipped[/]")
+                console.print(f"[green]Batch {i+1}: {result.get('inserted',0)} inserted, {result.get('skipped',0)} skipped[/]")
+                return True
         except Exception as e:
-            console.print(f"[red]Batch {i//batch_size+1} failed ({len(batch)} grants): {e}[/]")
-            total_ok = False
-    return total_ok
+            console.print(f"[red]Batch {i+1} failed ({len(batch)} grants): {e}[/]")
+            return False
+
+    batches = [(idx, new_grants[idx:idx+batch_size]) for idx in range(0, len(new_grants), batch_size)]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:
+        results = list(pool.map(send_batch, batches))
+
+    return all(results)
 
 def print_table(grants):
     t = Table(title="🌱 Grants Radar — Results", show_header=True, header_style="bold green", min_width=100)

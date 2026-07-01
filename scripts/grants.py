@@ -2219,30 +2219,33 @@ def save_markdown(grants, path, title="Grants Radar"):
             ]
     path.write_text("\n".join(lines), encoding="utf-8")
 
-def push_to_supabase(grants, supabase_url, ingest_token):
-    """POST grants to the grants-ingest edge function."""
+def push_to_supabase(grants, supabase_url, ingest_token, batch_size=100):
+    """POST grants to the grants-ingest edge function in batches to avoid 413 Payload Too Large."""
     if not supabase_url or not ingest_token:
         console.print("[yellow]Supabase push skipped: missing URL or token[/]")
         return False
     import urllib.request
     endpoint = f"{supabase_url.rstrip('/')}/functions/v1/grants-ingest"
-    payload = json.dumps({"grants": grants}).encode("utf-8")
-    req = urllib.request.Request(
-        endpoint, data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "X-Ingest-Token": ingest_token,
-        },
-        method="POST"
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            result = json.loads(resp.read().decode())
-            console.print(f"[green]Supabase push: {result.get('inserted',0)} inserted, {result.get('skipped',0)} skipped[/]")
-            return True
-    except Exception as e:
-        console.print(f"[red]Supabase push failed: {e}[/]")
-        return False
+    total_ok = True
+    for i in range(0, len(grants), batch_size):
+        batch = grants[i:i+batch_size]
+        payload = json.dumps({"grants": batch}).encode("utf-8")
+        req = urllib.request.Request(
+            endpoint, data=payload,
+            headers={
+                "Content-Type": "application/json",
+                "X-Ingest-Token": ingest_token,
+            },
+            method="POST"
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                result = json.loads(resp.read().decode())
+                console.print(f"[green]Batch {i//batch_size+1}: {result.get('inserted',0)} inserted, {result.get('skipped',0)} skipped[/]")
+        except Exception as e:
+            console.print(f"[red]Batch {i//batch_size+1} failed ({len(batch)} grants): {e}[/]")
+            total_ok = False
+    return total_ok
 
 def print_table(grants):
     t = Table(title="🌱 Grants Radar — Results", show_header=True, header_style="bold green", min_width=100)

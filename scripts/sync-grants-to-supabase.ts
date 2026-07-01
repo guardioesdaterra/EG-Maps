@@ -187,7 +187,7 @@ async function main() {
   }
 
   const edgeUrl = process.env.SUPABASE_EDGE_FUNCTION_URL ||
-    `${supabaseUrl.replace(/\/$/, "")}/functions/v1/grants-ingest`;
+    `${supabaseUrl.replace(/\/$/, "")}/functions/v1/grants-catalog-sync`;
 
   if (!syncSecret) {
     console.error("ERROR: SUPABASE_SYNC_SECRET environment variable is required");

@@ -2219,7 +2219,7 @@ def save_markdown(grants, path, title="Grants Radar"):
             ]
     path.write_text("\n".join(lines), encoding="utf-8")
 
-def push_to_supabase(grants, supabase_url, ingest_token, batch_size=100):
+def push_to_supabase(grants, supabase_url, ingest_token, batch_size=500):
     """POST grants to the grants-ingest edge function in batches to avoid 413 Payload Too Large."""
     if not supabase_url or not ingest_token:
         console.print("[yellow]Supabase push skipped: missing URL or token[/]")

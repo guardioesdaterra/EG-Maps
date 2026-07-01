@@ -53,13 +53,6 @@ jobs:
       - name: Compute overlap indicators (P1.7)
         run: node scripts/compute-overlaps.mjs
 
-      - name: Run Grants Radar scraper
-        run: pip install aiohttp aiofiles feedparser beautifulsoup4 python-dateutil rich click lxml && python scripts/grants.py --min-score 5
-        env:
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
-          GRANTS_INGEST_TOKEN: ${{ secrets.GRANTS_INGEST_TOKEN }}
-
       - name: Verify secrets
         run: |
           echo "SUPABASE_URL=${SUPABASE_URL:0:30}..."
@@ -214,7 +207,7 @@ jobs:
           node-version: 22
 
       - name: Scrape grants
-        run: python scripts/grants.py -o scripts/output/grants_export
+        run: python scripts/grants.py -o grants_export
         continue-on-error: true
 
       - name: Sync grants to Supabase

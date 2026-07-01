@@ -23,23 +23,27 @@ Deno.serve(async (req) => {
 
     const admin = getAdminClient();
 
-    // GET — return existing scraped_grants IDs + URLs so the client can pre-filter
+    // GET — return existing scraped_grants IDs + URLs (from both tables) so the client can pre-filter
     if (req.method === "GET") {
-      const { data: rows, error } = await admin
-        .from("scraped_grants")
-        .select("id, url");
+      const [r1, r2] = await Promise.all([
+        admin.from("scraped_grants").select("id, url"),
+        admin.from("grants").select("url"),
+      ]);
 
-      if (error) {
-        return jsonResponse({ error: error.message }, 500, origin);
+      if (r1.error) {
+        return jsonResponse({ error: r1.error.message }, 500, origin);
       }
 
       const ids: string[] = [];
       const urls: Record<string, string> = {};
-      for (const r of (rows || [])) {
+      for (const r of (r1.data || [])) {
         const short = r.id.replace(/^00000000-0000-0000-0000-/, "");
         const sid = short.length === 12 ? short : r.id;
         ids.push(sid);
         if (r.url) urls[r.url] = sid;
+      }
+      for (const r of (r2.data || [])) {
+        if (r.url) urls[r.url] = "";
       }
 
       return jsonResponse({ ids, urls }, 200, origin);

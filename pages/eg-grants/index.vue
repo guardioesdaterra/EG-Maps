@@ -310,6 +310,9 @@
                     <a :href="g.url" target="_blank" class="text-[11px] text-green-400 hover:text-green-300" rel="noopener">Apply ↗</a>
                     <button v-if="isManager && g.status === 'pending'" @click="handleReviewScraped(g.id, 'approved')" class="action-btn approve text-[11px] py-0.5">✓ Approve</button>
                     <button v-if="isManager && g.status === 'approved'" @click="handleReviewScraped(g.id, 'pending')" class="action-btn restore text-[11px] py-0.5">↩</button>
+                    <button v-if="isManager" @click="openEditScraped(g)" class="action-btn edit text-[11px] py-0.5" title="Edit grant info">
+                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -489,6 +492,77 @@
         </Transition>
       </Teleport>
 
+      <!-- Edit scraped grant modal -->
+      <Teleport to="body">
+        <Transition name="modal-fade">
+          <div v-if="editGrant" class="fixed inset-0 z-[9200] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Edit grant">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="closeEditScraped" />
+            <div class="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl">
+              <div class="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-white/5 bg-[#0c0c0e]/95 backdrop-blur-sm">
+                <div class="min-w-0 flex-1 mr-3">
+                  <h2 class="text-sm font-bold text-white truncate">{{ editForm.title || 'Edit Grant' }}</h2>
+                  <p class="text-[10px] text-white/40 truncate mt-0.5">{{ editGrant?.source || editGrant?.id }}</p>
+                </div>
+                <button class="rounded-full p-1.5 text-white/50 hover:text-white hover:bg-white/10 transition-colors" aria-label="Close" @click="closeEditScraped">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div class="p-4 space-y-3">
+                <label class="edit-field">
+                  <span>Title</span>
+                  <input v-model="editForm.title" class="edit-input" />
+                </label>
+                <label class="edit-field">
+                  <span>Funder</span>
+                  <input v-model="editForm.funder" class="edit-input" />
+                </label>
+                <label class="edit-field">
+                  <span>Description</span>
+                  <textarea v-model="editForm.description" rows="3" class="edit-input" />
+                </label>
+                <label class="edit-field">
+                  <span>Deadline</span>
+                  <input v-model="editForm.deadline" placeholder="e.g. 2026-12-31" class="edit-input" />
+                </label>
+                <div class="grid grid-cols-3 gap-2">
+                  <label class="edit-field">
+                    <span>Amount Max</span>
+                    <input v-model="editForm.amount_max" class="edit-input" />
+                  </label>
+                  <label class="edit-field">
+                    <span>Amount Min</span>
+                    <input v-model="editForm.amount_min" class="edit-input" />
+                  </label>
+                  <label class="edit-field">
+                    <span>Currency</span>
+                    <input v-model="editForm.currency" placeholder="USD" class="edit-input" />
+                  </label>
+                </div>
+                <label class="edit-field">
+                  <span>Country</span>
+                  <input v-model="editForm.country" class="edit-input" />
+                </label>
+                <label class="edit-field">
+                  <span>URL</span>
+                  <input v-model="editForm.url" class="edit-input" />
+                </label>
+                <label class="edit-field">
+                  <span>Categories (comma-separated)</span>
+                  <input v-model="editForm.categories" placeholder="e.g. environment, climate, youth" class="edit-input" />
+                </label>
+                <div v-if="editErr" class="text-[11px] text-red-400">{{ editErr }}</div>
+                <div class="flex justify-end gap-2 pt-2">
+                  <button class="px-3 py-1.5 rounded-lg bg-white/5 text-xs text-white/70 hover:bg-white/10 transition-colors" @click="closeEditScraped">Cancel</button>
+                  <button class="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-semibold hover:bg-blue-500/30 transition-colors" :disabled="editSaving" @click="handleSaveEdit">
+                    {{ editSaving ? 'Saving...' : 'Save Changes' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+
       <section id="footer" class="footer-section">
         <div class="footer-glow" />
         <div class="footer-content">
@@ -541,7 +615,7 @@ useHead({
 const { user, isManager, signIn, signOut } = useSupabaseAuth()
 const showAuthDropdown = ref(false)
 const confirmSignOut = ref(false)
-const { listGrants, listScrapedGrants, submitGrant: apiSubmitGrant, reviewGrant: apiReviewGrant, reviewScrapedGrant: apiReviewScraped, getStats, voteGrant, voteScrapedGrant, deleteVote, getLeaderboard } = useGrants()
+const { listGrants, listScrapedGrants, submitGrant: apiSubmitGrant, reviewGrant: apiReviewGrant, reviewScrapedGrant: apiReviewScraped, updateScrapedGrant: apiUpdateScrapedGrant, getStats, voteGrant, voteScrapedGrant, deleteVote, getLeaderboard } = useGrants()
 
 // Internal grants
 const grants = ref<GrantRecord[]>([])
@@ -597,6 +671,22 @@ interface DetailGrantData {
   priority_score?: number
   relevance?: number
 }
+
+// Edit state
+const editGrant = ref<ScrapedGrant | null>(null)
+const editSaving = ref(false)
+const editForm = reactive({
+  title: '',
+  funder: '',
+  description: '',
+  deadline: '',
+  amount_max: '',
+  amount_min: '',
+  currency: '',
+  country: '',
+  url: '',
+  categories: '',
+})
 
 // UI state
 const activePortalTab = ref('submit')
@@ -797,6 +887,54 @@ async function handleReview(grantId: string, decision: string) {
 
 async function handleReviewScraped(grantId: string, decision: 'approved' | 'pending') {
   await apiReviewScraped(grantId, decision)
+  loadScrapedGrants()
+}
+
+const editErr = ref('')
+
+function openEditScraped(g: ScrapedGrant) {
+  editGrant.value = g
+  editForm.title = g.title || ''
+  editForm.funder = g.funder || ''
+  editForm.description = g.description || ''
+  editForm.deadline = g.deadline || ''
+  editForm.amount_max = g.amount_max || ''
+  editForm.amount_min = g.amount_min || ''
+  editForm.currency = g.currency || ''
+  editForm.country = g.country || ''
+  editForm.url = g.url || ''
+  editForm.categories = (g.categories || []).join(', ')
+  editErr.value = ''
+}
+
+function closeEditScraped() {
+  editGrant.value = null
+  editErr.value = ''
+}
+
+async function handleSaveEdit() {
+  if (!editGrant.value) return
+  editSaving.value = true
+  editErr.value = ''
+  const updates: Record<string, unknown> = {
+    title: editForm.title,
+    funder: editForm.funder,
+    description: editForm.description,
+    deadline: editForm.deadline,
+    amount_max: editForm.amount_max,
+    amount_min: editForm.amount_min,
+    currency: editForm.currency,
+    country: editForm.country,
+    url: editForm.url,
+    categories: editForm.categories.split(',').map(c => c.trim()).filter(Boolean),
+  }
+  const result = await apiUpdateScrapedGrant(editGrant.value.id, updates)
+  editSaving.value = false
+  if ('error' in result && result.error) {
+    editErr.value = result.error as string
+    return
+  }
+  closeEditScraped()
   loadScrapedGrants()
 }
 
@@ -1882,4 +2020,48 @@ select.form-input option { background: #000; }
 .priority-score.high { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
 .priority-score.mid  { background: rgba(234, 179, 8, 0.2); color: #facc15; }
 .priority-score.low  { background: rgba(255, 255, 255, 0.06); color: rgba(255,255,255,0.5); }
+
+/* ── Edit modal ────────────────────────────────────────── */
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.edit-field > span {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.4);
+}
+.edit-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: #f0f0f0;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.edit-input:focus {
+  border-color: rgba(0,255,133,0.4);
+}
+.edit-input::placeholder {
+  color: rgba(255,255,255,0.2);
+}
+textarea.edit-input {
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* ── Action button variants ────────────────────────────── */
+.action-btn.edit {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+.action-btn.edit:hover {
+  background: rgba(59, 130, 246, 0.25);
+}
 </style>

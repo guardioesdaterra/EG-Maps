@@ -110,6 +110,15 @@ export function useGrants() {
     return data as { grant: GrantRecord }
   }
 
+  async function updateScrapedGrant(grantId: string, updates: Record<string, unknown>) {
+    const { data, error } = await supabase.functions.invoke('grants-scraped-update', {
+      method: 'POST',
+      body: { grant_id: grantId, ...updates },
+    })
+    if (error) return { error: error.message }
+    return data as { grant: ScrapedGrant }
+  }
+
   async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending') {
     const { data, error } = await supabase.functions.invoke('grants-scraped-review', {
       method: 'POST',
@@ -167,6 +176,7 @@ export function useGrants() {
     submitGrant,
     reviewGrant,
     reviewScrapedGrant,
+    updateScrapedGrant,
     getStats,
     voteGrant,
     voteScrapedGrant,

@@ -221,14 +221,7 @@ jobs:
             echo "No cultural agents export file found"
             exit 0
           fi
-          STATS=$(python3 -c "
-            import json
-            d = json.load(open('${EXPORT_FILE}'))
-            agents = d.get('agents', [])
-            mapa = len([a for a in agents if a.get('source') == 'mapa_cultura'])
-            fa = len([a for a in agents if a.get('source') == 'floresta_ativista'])
-            print(f'Total: {len(agents)}, Mapa Cultura: {mapa}, Floresta Ativista: {fa}')
-          ")
+          STATS=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); agents=d.get('agents',[]); mapa=len([a for a in agents if a.get('source')=='mapa_cultura']); fa=len([a for a in agents if a.get('source')=='floresta_ativista']); print(f'Total: {len(agents)}, Mapa Cultura: {mapa}, Floresta Ativista: {fa}')" "$EXPORT_FILE")
           echo "Cultural agents stats: $STATS"
 
       - name: Upload cultural agents artifact

@@ -1,0 +1,638 @@
+{
+  "synced_at": "20260703T223102Z",
+  "total_agents": 63,
+  "mapa_cultura_count": 0,
+  "floresta_ativista_count": 63,
+  "agents": [
+    {
+      "id": "fa-6",
+      "name": "Bruno Martin",
+      "type_name": "individual",
+      "lat": -23.052545,
+      "lng": -46.359374,
+      "single_url": "https://rede.florestaativista.org/agente/6/",
+      "source": "floresta_ativista",
+      "external_id": "6"
+    },
+    {
+      "id": "fa-139",
+      "name": "LUCAS DE SOUZA DETONI",
+      "type_name": "individual",
+      "lat": -22.9498108,
+      "lng": -47.1013482,
+      "single_url": "https://rede.florestaativista.org/agente/139/",
+      "source": "floresta_ativista",
+      "external_id": "139"
+    },
+    {
+      "id": "fa-1661",
+      "name": "Juliana",
+      "type_name": "individual",
+      "lat": -22.9506496,
+      "lng": -47.0547394,
+      "single_url": "https://rede.florestaativista.org/agente/1661/",
+      "source": "floresta_ativista",
+      "external_id": "1661"
+    },
+    {
+      "id": "fa-2259",
+      "name": "Taciane alves silva",
+      "type_name": "individual",
+      "lat": -20.781108,
+      "lng": -46.0271645,
+      "single_url": "https://rede.florestaativista.org/agente/2259/",
+      "source": "floresta_ativista",
+      "external_id": "2259"
+    },
+    {
+      "id": "fa-3720",
+      "name": "Vitória Teixeira",
+      "type_name": "individual",
+      "lat": -22.923973,
+      "lng": -47.0634187,
+      "single_url": "https://rede.florestaativista.org/agente/3720/",
+      "source": "floresta_ativista",
+      "external_id": "3720"
+    },
+    {
+      "id": "fa-3931",
+      "name": "Renan Cuel",
+      "type_name": "individual",
+      "lat": -22.0333973,
+      "lng": -47.4310968,
+      "single_url": "https://rede.florestaativista.org/agente/3931/",
+      "source": "floresta_ativista",
+      "external_id": "3931"
+    },
+    {
+      "id": "fa-8625",
+      "name": "Vinicius Preto",
+      "type_name": "individual",
+      "lat": -21.2147472,
+      "lng": -47.7695758,
+      "single_url": "https://rede.florestaativista.org/agente/8625/",
+      "source": "floresta_ativista",
+      "external_id": "8625"
+    },
+    {
+      "id": "fa-9326",
+      "name": "Tupã Levi",
+      "type_name": "individual",
+      "lat": -21.945543361548,
+      "lng": -46.722905767995,
+      "single_url": "https://rede.florestaativista.org/agente/9326/",
+      "source": "floresta_ativista",
+      "external_id": "9326"
+    },
+    {
+      "id": "fa-9327",
+      "name": "Guardiões da Terra BR",
+      "type_name": "individual",
+      "lat": -21.945672729936,
+      "lng": -46.722729482038,
+      "single_url": "https://rede.florestaativista.org/agente/9327/",
+      "source": "floresta_ativista",
+      "external_id": "9327"
+    },
+    {
+      "id": "fa-9691",
+      "name": "Moe & Banda",
+      "type_name": "individual",
+      "lat": -21.7907805,
+      "lng": -46.5351005,
+      "single_url": "https://rede.florestaativista.org/agente/9691/",
+      "source": "floresta_ativista",
+      "external_id": "9691"
+    },
+    {
+      "id": "fa-9742",
+      "name": "Fernanda Rossi ",
+      "type_name": "individual",
+      "lat": -21.788884823744937,
+      "lng": -46.53422225082553,
+      "single_url": "https://rede.florestaativista.org/agente/9742/",
+      "source": "floresta_ativista",
+      "external_id": "9742"
+    },
+    {
+      "id": "fa-9957",
+      "name": "Hard Coffee",
+      "type_name": "individual",
+      "lat": -22.7759586,
+      "lng": -47.3430733,
+      "single_url": "https://rede.florestaativista.org/agente/9957/",
+      "source": "floresta_ativista",
+      "external_id": "9957"
+    },
+    {
+      "id": "fa-10002",
+      "name": "Dru e a Luz Azul",
+      "type_name": "individual",
+      "lat": -21.784335,
+      "lng": -45.9651189,
+      "single_url": "https://rede.florestaativista.org/agente/10002/",
+      "source": "floresta_ativista",
+      "external_id": "10002"
+    },
+    {
+      "id": "fa-10028",
+      "name": "Allan Piter",
+      "type_name": "individual",
+      "lat": -22.5540246,
+      "lng": -47.4524335,
+      "single_url": "https://rede.florestaativista.org/agente/10028/",
+      "source": "floresta_ativista",
+      "external_id": "10028"
+    },
+    {
+      "id": "fa-10743",
+      "name": "Douglas Pereira de Souza",
+      "type_name": "individual",
+      "lat": -21.8329129,
+      "lng": -46.5643956,
+      "single_url": "https://rede.florestaativista.org/agente/10743/",
+      "source": "floresta_ativista",
+      "external_id": "10743"
+    },
+    {
+      "id": "fa-11112",
+      "name": "Brayan  Antunes",
+      "type_name": "individual",
+      "lat": -21.881078,
+      "lng": -45.0868526,
+      "single_url": "https://rede.florestaativista.org/agente/11112/",
+      "source": "floresta_ativista",
+      "external_id": "11112"
+    },
+    {
+      "id": "fa-13548",
+      "name": "Lares Morari",
+      "type_name": "individual",
+      "lat": -22.4260241,
+      "lng": -47.5812694,
+      "single_url": "https://rede.florestaativista.org/agente/13548/",
+      "source": "floresta_ativista",
+      "external_id": "13548"
+    },
+    {
+      "id": "fa-61414",
+      "name": "Anna Esteves",
+      "type_name": "individual",
+      "lat": -21.5565914,
+      "lng": -45.4340674,
+      "single_url": "https://rede.florestaativista.org/agente/61414/",
+      "source": "floresta_ativista",
+      "external_id": "61414"
+    },
+    {
+      "id": "fa-64581",
+      "name": "Bruno Maia",
+      "type_name": "individual",
+      "lat": -21.5690765,
+      "lng": -45.4389331,
+      "single_url": "https://rede.florestaativista.org/agente/64581/",
+      "source": "floresta_ativista",
+      "external_id": "64581"
+    },
+    {
+      "id": "fa-83843",
+      "name": "Alex Sander Luis Xavier ",
+      "type_name": "individual",
+      "lat": -21.7871901,
+      "lng": -46.5625935,
+      "single_url": "https://rede.florestaativista.org/agente/83843/",
+      "source": "floresta_ativista",
+      "external_id": "83843"
+    },
+    {
+      "id": "fa-84131",
+      "name": "Roberto José Moraes de Lima",
+      "type_name": "individual",
+      "lat": -21.8043547,
+      "lng": -46.5460158,
+      "single_url": "https://rede.florestaativista.org/agente/84131/",
+      "source": "floresta_ativista",
+      "external_id": "84131"
+    },
+    {
+      "id": "fa-84520",
+      "name": "Marlon de Oliveira Vieira ",
+      "type_name": "individual",
+      "lat": -20.9155726,
+      "lng": -46.9870773,
+      "single_url": "https://rede.florestaativista.org/agente/84520/",
+      "source": "floresta_ativista",
+      "external_id": "84520"
+    },
+    {
+      "id": "fa-84921",
+      "name": "OFFENCE!",
+      "type_name": "individual",
+      "lat": -21.6743974,
+      "lng": -45.9308047,
+      "single_url": "https://rede.florestaativista.org/agente/84921/",
+      "source": "floresta_ativista",
+      "external_id": "84921"
+    },
+    {
+      "id": "fa-85541",
+      "name": "Deryk Wender Ribeiro Justino",
+      "type_name": "individual",
+      "lat": -21.3115123,
+      "lng": -46.7938637,
+      "single_url": "https://rede.florestaativista.org/agente/85541/",
+      "source": "floresta_ativista",
+      "external_id": "85541"
+    },
+    {
+      "id": "fa-100689",
+      "name": "China Trindad",
+      "type_name": "individual",
+      "lat": -21.7985308,
+      "lng": -46.5713501,
+      "single_url": "https://rede.florestaativista.org/agente/100689/",
+      "source": "floresta_ativista",
+      "external_id": "100689"
+    },
+    {
+      "id": "fa-113904",
+      "name": "Pepe Bueno & Os Estranhos",
+      "type_name": "individual",
+      "lat": -22.9353917,
+      "lng": -47.09251,
+      "single_url": "https://rede.florestaativista.org/agente/113904/",
+      "source": "floresta_ativista",
+      "external_id": "113904"
+    },
+    {
+      "id": "fa-114091",
+      "name": "Felipe Gregório Castelo Branco Alves",
+      "type_name": "individual",
+      "lat": -22.755278,
+      "lng": -46.144444,
+      "single_url": "https://rede.florestaativista.org/agente/114091/",
+      "source": "floresta_ativista",
+      "external_id": "114091"
+    },
+    {
+      "id": "fa-115344",
+      "name": "Gabriel Orsi",
+      "type_name": "individual",
+      "lat": -22.951201224177,
+      "lng": -47.04882144928,
+      "single_url": "https://rede.florestaativista.org/agente/115344/",
+      "source": "floresta_ativista",
+      "external_id": "115344"
+    },
+    {
+      "id": "fa-117358",
+      "name": "Larissa Romano Moraes",
+      "type_name": "individual",
+      "lat": -22.7018874,
+      "lng": -46.7743841,
+      "single_url": "https://rede.florestaativista.org/agente/117358/",
+      "source": "floresta_ativista",
+      "external_id": "117358"
+    },
+    {
+      "id": "fa-121619",
+      "name": "Arvores que Flutuam",
+      "type_name": "individual",
+      "lat": -21.7900318,
+      "lng": -46.5647928,
+      "single_url": "https://rede.florestaativista.org/agente/121619/",
+      "source": "floresta_ativista",
+      "external_id": "121619"
+    },
+    {
+      "id": "fa-123648",
+      "name": "Gisele Bileia",
+      "type_name": "individual",
+      "lat": -21.312271,
+      "lng": -46.7310054,
+      "single_url": "https://rede.florestaativista.org/agente/123648/",
+      "source": "floresta_ativista",
+      "external_id": "123648"
+    },
+    {
+      "id": "fa-124629",
+      "name": "Renato Albino Gançalves",
+      "type_name": "individual",
+      "lat": -21.793582,
+      "lng": -46.6004822,
+      "single_url": "https://rede.florestaativista.org/agente/124629/",
+      "source": "floresta_ativista",
+      "external_id": "124629"
+    },
+    {
+      "id": "fa-132774",
+      "name": "Pedro Nóbrega ",
+      "type_name": "individual",
+      "lat": -23.1830633,
+      "lng": -46.8894619,
+      "single_url": "https://rede.florestaativista.org/agente/132774/",
+      "source": "floresta_ativista",
+      "external_id": "132774"
+    },
+    {
+      "id": "fa-133362",
+      "name": "Duo Rio-Juá",
+      "type_name": "individual",
+      "lat": -22.4328871,
+      "lng": -45.4695446,
+      "single_url": "https://rede.florestaativista.org/agente/133362/",
+      "source": "floresta_ativista",
+      "external_id": "133362"
+    },
+    {
+      "id": "fa-136031",
+      "name": "Francisco Sales de Lima Segundo",
+      "type_name": "individual",
+      "lat": -21.800878,
+      "lng": -46.5635995,
+      "single_url": "https://rede.florestaativista.org/agente/136031/",
+      "source": "floresta_ativista",
+      "external_id": "136031"
+    },
+    {
+      "id": "fa-136508",
+      "name": "Adriane Ferreira",
+      "type_name": "individual",
+      "lat": -22.4086642,
+      "lng": -45.791584,
+      "single_url": "https://rede.florestaativista.org/agente/136508/",
+      "source": "floresta_ativista",
+      "external_id": "136508"
+    },
+    {
+      "id": "fa-142988",
+      "name": "Isabela Domingos da Costa Pires",
+      "type_name": "individual",
+      "lat": -23.2139057,
+      "lng": -46.8770953,
+      "single_url": "https://rede.florestaativista.org/agente/142988/",
+      "source": "floresta_ativista",
+      "external_id": "142988"
+    },
+    {
+      "id": "fa-143060",
+      "name": "Édna Leite Ramos",
+      "type_name": "individual",
+      "lat": -21.792261,
+      "lng": -46.5759541,
+      "single_url": "https://rede.florestaativista.org/agente/143060/",
+      "source": "floresta_ativista",
+      "external_id": "143060"
+    },
+    {
+      "id": "fa-145021",
+      "name": "Digenir Chaves Fugazza",
+      "type_name": "individual",
+      "lat": -21.9799651,
+      "lng": -47.9390157,
+      "single_url": "https://rede.florestaativista.org/agente/145021/",
+      "source": "floresta_ativista",
+      "external_id": "145021"
+    },
+    {
+      "id": "fa-173379",
+      "name": "GISELE RIBEIRO",
+      "type_name": "individual",
+      "lat": -22.8974276,
+      "lng": -47.0661447,
+      "single_url": "https://rede.florestaativista.org/agente/173379/",
+      "source": "floresta_ativista",
+      "external_id": "173379"
+    },
+    {
+      "id": "fa-176715",
+      "name": "Anna Clara de Souza Ribelo",
+      "type_name": "individual",
+      "lat": -21.5595398,
+      "lng": -45.4666417,
+      "single_url": "https://rede.florestaativista.org/agente/176715/",
+      "source": "floresta_ativista",
+      "external_id": "176715"
+    },
+    {
+      "id": "fa-179828",
+      "name": "Diego Marcelino Augusto",
+      "type_name": "individual",
+      "lat": -21.8585691,
+      "lng": -47.4538892,
+      "single_url": "https://rede.florestaativista.org/agente/179828/",
+      "source": "floresta_ativista",
+      "external_id": "179828"
+    },
+    {
+      "id": "fa-180275",
+      "name": "Jupta",
+      "type_name": "individual",
+      "lat": -23.1908986,
+      "lng": -46.9527817,
+      "single_url": "https://rede.florestaativista.org/agente/180275/",
+      "source": "floresta_ativista",
+      "external_id": "180275"
+    },
+    {
+      "id": "fa-180733",
+      "name": "MATEUS COUTO FELICIANO",
+      "type_name": "individual",
+      "lat": -21.9166357,
+      "lng": -47.6136466,
+      "single_url": "https://rede.florestaativista.org/agente/180733/",
+      "source": "floresta_ativista",
+      "external_id": "180733"
+    },
+    {
+      "id": "fa-182212",
+      "name": "Gabriela Belloto",
+      "type_name": "individual",
+      "lat": -22.9319017,
+      "lng": -47.0464031,
+      "single_url": "https://rede.florestaativista.org/agente/182212/",
+      "source": "floresta_ativista",
+      "external_id": "182212"
+    },
+    {
+      "id": "fa-195930",
+      "name": "Vitor Rodrigues",
+      "type_name": "individual",
+      "lat": -22.7077135,
+      "lng": -46.3804666,
+      "single_url": "https://rede.florestaativista.org/agente/195930/",
+      "source": "floresta_ativista",
+      "external_id": "195930"
+    },
+    {
+      "id": "fa-197504",
+      "name": "Michael Antônio Inácio Martins",
+      "type_name": "individual",
+      "lat": -22.2415225,
+      "lng": -45.9618132,
+      "single_url": "https://rede.florestaativista.org/agente/197504/",
+      "source": "floresta_ativista",
+      "external_id": "197504"
+    },
+    {
+      "id": "fa-197770",
+      "name": "Arthur Matsubara Barroso",
+      "type_name": "individual",
+      "lat": -22.0069313,
+      "lng": -47.8887479,
+      "single_url": "https://rede.florestaativista.org/agente/197770/",
+      "source": "floresta_ativista",
+      "external_id": "197770"
+    },
+    {
+      "id": "fa-200865",
+      "name": "Plazafire",
+      "type_name": "individual",
+      "lat": -22.7268591,
+      "lng": -47.6377368,
+      "single_url": "https://rede.florestaativista.org/agente/200865/",
+      "source": "floresta_ativista",
+      "external_id": "200865"
+    },
+    {
+      "id": "fa-200876",
+      "name": "FOLHA",
+      "type_name": "individual",
+      "lat": -22.9056391,
+      "lng": -47.059564,
+      "single_url": "https://rede.florestaativista.org/agente/200876/",
+      "source": "floresta_ativista",
+      "external_id": "200876"
+    },
+    {
+      "id": "fa-201010",
+      "name": "Os Pós-Socràticos",
+      "type_name": "individual",
+      "lat": -21.340278,
+      "lng": -47.729444,
+      "single_url": "https://rede.florestaativista.org/agente/201010/",
+      "source": "floresta_ativista",
+      "external_id": "201010"
+    },
+    {
+      "id": "fa-201051",
+      "name": "Maria Julia",
+      "type_name": "individual",
+      "lat": -22.8502992,
+      "lng": -47.164636,
+      "single_url": "https://rede.florestaativista.org/agente/201051/",
+      "source": "floresta_ativista",
+      "external_id": "201051"
+    },
+    {
+      "id": "fa-201054",
+      "name": "Larissa Cristina Silva Ribeiro",
+      "type_name": "individual",
+      "lat": -21.8047498,
+      "lng": -46.5773234,
+      "single_url": "https://rede.florestaativista.org/agente/201054/",
+      "source": "floresta_ativista",
+      "external_id": "201054"
+    },
+    {
+      "id": "fa-201364",
+      "name": "Eduardo Rocha Pires",
+      "type_name": "individual",
+      "lat": -22.0224171,
+      "lng": -47.4092106,
+      "single_url": "https://rede.florestaativista.org/agente/201364/",
+      "source": "floresta_ativista",
+      "external_id": "201364"
+    },
+    {
+      "id": "fa-202382",
+      "name": "Legião Urbana Cover do Brasil",
+      "type_name": "individual",
+      "lat": -22.9771518,
+      "lng": -47.0109361,
+      "single_url": "https://rede.florestaativista.org/agente/202382/",
+      "source": "floresta_ativista",
+      "external_id": "202382"
+    },
+    {
+      "id": "fa-205323",
+      "name": "Davi Andrade Lopes",
+      "type_name": "individual",
+      "lat": -22.8215299,
+      "lng": -47.0724153,
+      "single_url": "https://rede.florestaativista.org/agente/205323/",
+      "source": "floresta_ativista",
+      "external_id": "205323"
+    },
+    {
+      "id": "fa-224009",
+      "name": "AMANDA GOMIERO",
+      "type_name": "individual",
+      "lat": -22.9051531,
+      "lng": -47.0540599,
+      "single_url": "https://rede.florestaativista.org/agente/224009/",
+      "source": "floresta_ativista",
+      "external_id": "224009"
+    },
+    {
+      "id": "fa-225239",
+      "name": "Janaina Pereira da Silva",
+      "type_name": "individual",
+      "lat": -22.92277,
+      "lng": -47.0769268,
+      "single_url": "https://rede.florestaativista.org/agente/225239/",
+      "source": "floresta_ativista",
+      "external_id": "225239"
+    },
+    {
+      "id": "fa-225510",
+      "name": "Ana Clara",
+      "type_name": "individual",
+      "lat": -22.7157425,
+      "lng": -47.3574555,
+      "single_url": "https://rede.florestaativista.org/agente/225510/",
+      "source": "floresta_ativista",
+      "external_id": "225510"
+    },
+    {
+      "id": "fa-231333",
+      "name": "Gustavo Leão",
+      "type_name": "individual",
+      "lat": -21.801244,
+      "lng": -46.5732181,
+      "single_url": "https://rede.florestaativista.org/agente/231333/",
+      "source": "floresta_ativista",
+      "external_id": "231333"
+    },
+    {
+      "id": "fa-232819",
+      "name": "Fabio Jose Donadone",
+      "type_name": "individual",
+      "lat": -22.0180395,
+      "lng": -47.891154,
+      "single_url": "https://rede.florestaativista.org/agente/232819/",
+      "source": "floresta_ativista",
+      "external_id": "232819"
+    },
+    {
+      "id": "fa-238135",
+      "name": "NEGGA",
+      "type_name": "individual",
+      "lat": -22.9243996,
+      "lng": -47.0346974,
+      "single_url": "https://rede.florestaativista.org/agente/238135/",
+      "source": "floresta_ativista",
+      "external_id": "238135"
+    },
+    {
+      "id": "fa-238420",
+      "name": "Thaís Ferraz",
+      "type_name": "individual",
+      "lat": -22.9056391,
+      "lng": -47.059564,
+      "single_url": "https://rede.florestaativista.org/agente/238420/",
+      "source": "floresta_ativista",
+      "external_id": "238420"
+    }
+  ]
+}

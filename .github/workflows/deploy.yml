@@ -192,6 +192,44 @@ jobs:
           SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
 
+  cultural-agents-sync:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync cultural agents (Mapa Cultura + Floresta Ativista)
+        run: python scripts/sync-cultural-agents.py
+        continue-on-error: true
+
+      - name: Validate cultural agents output
+        run: |
+          EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1)
+          if [ -z "$EXPORT_FILE" ]; then
+            echo "No cultural agents export file found"
+            exit 0
+          fi
+          STATS=$(python3 -c "
+import json
+d = json.load(open('${EXPORT_FILE}'))
+agents = d.get('agents', [])
+mapa = len([a for a in agents if a.get('source') == 'mapa_cultura'])
+fa = len([a for a in agents if a.get('source') == 'floresta_ativista'])
+print(f'Total: {len(agents)}, Mapa Cultura: {mapa}, Floresta Ativista: {fa}')
+")
+          echo "Cultural agents stats: $STATS"
+
+      - name: Upload cultural agents artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cultural-agents-data
+          path: public/data/cultural-agents/
+          retention-days: 7
+
   grants-sync:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'

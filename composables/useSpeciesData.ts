@@ -3,6 +3,7 @@ import type { Species } from '@/lib/types'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 
 const memCache = new Map<string, Species[] | SpeciesIndexItem[]>()
+const regionLookupCache = new Map<string, string>() // speciesId → region
 
 const DB_NAME = 'eg-maps-species'
 const DB_VERSION = 1
@@ -106,10 +107,17 @@ async function fetchDataset(baseURL: string, ds: string): Promise<Species[]> {
   return data
 }
 
-// Fetch lightweight index for map markers (loads in seconds vs minutes)
+// Fetch lightweight index for map markers (loads in seconds vs minutes).
+// IndexedDB-cached so repeat visits are instant.
 async function fetchSpeciesIndex(baseURL: string, ds: string): Promise<SpeciesIndexItem[]> {
   const cacheKey = `${ds}-index`
   if (memCache.has(cacheKey)) return memCache.get(cacheKey) as SpeciesIndexItem[]
+
+  const cached = await idbGet<SpeciesIndexItem[]>(cacheKey)
+  if (cached) {
+    memCache.set(cacheKey, cached as unknown as Species[])
+    return cached
+  }
 
   const url = `${baseURL}data/species/${ds}-index.json`
   const res = await fetch(url)
@@ -117,11 +125,67 @@ async function fetchSpeciesIndex(baseURL: string, ds: string): Promise<SpeciesIn
   const data: SpeciesIndexItem[] = await res.json()
   memCache.set(cacheKey, data as unknown as Species[])  // Store as Species[] for compatibility
 
+  idbSet(cacheKey, data)
   return data
 }
 
-// Fetch full species by ID from the complete dataset
+// Fetch species-to-region lookup (185 KB, cached in IDB)
+async function fetchRegionLookup(baseURL: string): Promise<Map<string, string>> {
+  if (regionLookupCache.size > 0) return regionLookupCache
+
+  const cacheKey = 'species-region-lookup'
+  const cached = await idbGet<Record<string, string>>(cacheKey)
+  if (cached) {
+    for (const [id, region] of Object.entries(cached)) {
+      regionLookupCache.set(id, region)
+    }
+    return regionLookupCache
+  }
+
+  const url = `${baseURL}data/species/regions/species-region-lookup.json`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Failed to load region lookup: ${res.status}`)
+  const data: Record<string, string> = await res.json()
+  for (const [id, region] of Object.entries(data)) {
+    regionLookupCache.set(id, region)
+  }
+  idbSet(cacheKey, data)
+  return regionLookupCache
+}
+
+// Fetch a single region chunk (1-6 MB) instead of the full 32 MB dataset
+async function fetchRegionChunk(baseURL: string, region: string): Promise<Species[]> {
+  const slug = region.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '')
+  const cacheKey = `icmbio-brazil-region-${slug}`
+  if (memCache.has(cacheKey)) return memCache.get(cacheKey)! as Species[]
+
+  const cached = await idbGet<Species[]>(cacheKey)
+  if (cached) {
+    memCache.set(cacheKey, cached)
+    return cached
+  }
+
+  const url = `${baseURL}data/species/regions/${slug}.json`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Failed to load region chunk: ${res.status}`)
+  const data: Species[] = await res.json()
+  memCache.set(cacheKey, data)
+  idbSet(cacheKey, data)
+  return data
+}
+
+// Fetch full species by ID — loads only the relevant region chunk (~1-6 MB)
 async function fetchSpeciesById(baseURL: string, ds: string, speciesId: string): Promise<Species | null> {
+  // For icmbio-brazil, use region-based loading (1-6 MB vs 32 MB)
+  if (ds === 'icmbio-brazil') {
+    const lookup = await fetchRegionLookup(baseURL)
+    const region = lookup.get(speciesId)
+    if (!region) return null
+    const regionData = await fetchRegionChunk(baseURL, region)
+    return regionData.find(s => s.id === speciesId) || null
+  }
+
+  // For other datasets (iucn etc.), load the full dataset (small enough)
   const fullData = await fetchDataset(baseURL, ds)
   return fullData.find(s => s.id === speciesId) || null
 }
@@ -138,12 +202,11 @@ export function useSpeciesData(dataset?: DatasetParam) {
     loading.value = true
     error.value = null
     try {
-      const results: Species[] = []
-      for (const ds of datasets) {
-        const species = await fetchDataset(baseURL, ds)
-        results.push(...species)
-      }
-      data.value = results
+      // Fetch all datasets in parallel
+      const results = await Promise.all(
+        datasets.map(ds => fetchDataset(baseURL, ds))
+      )
+      data.value = results.flat()
     } catch (e) {
       error.value = e as Error
       console.error('Failed to load species data:', e)
@@ -164,11 +227,13 @@ export function useSpeciesData(dataset?: DatasetParam) {
   return { data, loading, error, reload: load }
 }
 
-// Lightweight version that only loads marker index (for large datasets)
+// Lightweight version that only loads marker index (for large datasets).
+// Fetches datasets in parallel and supports progressive chunk loading.
 export function useSpeciesIndex(dataset?: DatasetParam) {
   const data = ref<SpeciesIndexItem[]>([])
   const loading = ref(true)
   const error = ref<Error | null>(null)
+  const loadedChunks = ref(0)
 
   const datasets = resolveDatasets(dataset)
   const baseURL = (useRuntimeConfig().app?.baseURL as string) || '/'
@@ -177,12 +242,12 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
     loading.value = true
     error.value = null
     try {
-      const results: SpeciesIndexItem[] = []
-      for (const ds of datasets) {
-        const index = await fetchSpeciesIndex(baseURL, ds)
-        results.push(...index)
-      }
-      data.value = results
+      // Fetch all datasets in parallel for faster initial load
+      const results = await Promise.all(
+        datasets.map(ds => fetchSpeciesIndex(baseURL, ds))
+      )
+      data.value = results.flat()
+      loadedChunks.value = results.length
     } catch (e) {
       error.value = e as Error
       console.error('[useSpeciesIndex] Failed to load species index:', e)
@@ -198,7 +263,7 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
     load()
   }
 
-  return { data, loading, error, reload: load }
+  return { data, loading, error, reload: load, loadedChunks }
 }
 
 // Get full species details on demand
@@ -237,6 +302,7 @@ export function getSpeciesCache() {
 
 export async function clearSpeciesCache() {
   memCache.clear()
+  regionLookupCache.clear()
   try {
     const db = await openDB()
     const tx = db.transaction(STORE_NAME, 'readwrite')

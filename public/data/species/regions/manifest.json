@@ -1,0 +1,52 @@
+{
+  "Amazon": {
+    "file": "amazon.json",
+    "count": 745,
+    "sizeKB": 5175
+  },
+  "Atlantic Forest": {
+    "file": "atlantic-forest.json",
+    "count": 745,
+    "sizeKB": 5330
+  },
+  "Cerrado": {
+    "file": "cerrado.json",
+    "count": 745,
+    "sizeKB": 5176
+  },
+  "Caatinga": {
+    "file": "caatinga.json",
+    "count": 596,
+    "sizeKB": 4155
+  },
+  "Pantanal": {
+    "file": "pantanal.json",
+    "count": 298,
+    "sizeKB": 2076
+  },
+  "Pampas": {
+    "file": "pampas.json",
+    "count": 298,
+    "sizeKB": 2062
+  },
+  "South Atlantic": {
+    "file": "south-atlantic.json",
+    "count": 744,
+    "sizeKB": 5293
+  },
+  "Amazon Basin": {
+    "file": "amazon-basin.json",
+    "count": 148,
+    "sizeKB": 1052
+  },
+  "Paraná Basin": {
+    "file": "paran-basin.json",
+    "count": 148,
+    "sizeKB": 1056
+  },
+  "São Francisco Basin": {
+    "file": "s-o-francisco-basin.json",
+    "count": 148,
+    "sizeKB": 1078
+  }
+}

@@ -30,17 +30,22 @@ export function useMapCore(locale: Ref<string>, t: (_key: string) => string) {
     mapInstance: MapLibreMap,
     markerList: Marker[],
   ) {
+    const canvas = mapInstance.getCanvas()
     const mapBounds = mapInstance.getBounds()
-    const margin = MARKER_VISIBILITY_MARGIN
+    const px = MARKER_VISIBILITY_MARGIN
+    const lngPerPx = (mapBounds.getEast() - mapBounds.getWest()) / canvas.clientWidth
+    const latPerPx = (mapBounds.getNorth() - mapBounds.getSouth()) / canvas.clientHeight
+    const lngMargin = px * lngPerPx
+    const latMargin = px * latPerPx
 
     markerList.forEach(marker => {
       const el = marker.getElement()
       try {
         const lngLat = marker.getLngLat()
-        const isOffScreen = lngLat.lng < mapBounds.getWest() - margin ||
-                            lngLat.lng > mapBounds.getEast() + margin ||
-                            lngLat.lat < mapBounds.getSouth() - margin ||
-                            lngLat.lat > mapBounds.getNorth() + margin
+        const isOffScreen = lngLat.lng < mapBounds.getWest() - lngMargin ||
+                            lngLat.lng > mapBounds.getEast() + lngMargin ||
+                            lngLat.lat < mapBounds.getSouth() - latMargin ||
+                            lngLat.lat > mapBounds.getNorth() + latMargin
         const wasVisible = el.style.display !== 'none'
         const shouldShow = !isOffScreen
         if (wasVisible !== shouldShow) {

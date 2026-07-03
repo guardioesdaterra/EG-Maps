@@ -12,7 +12,7 @@ import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { allProjectsData } from '@/lib/project-data'
 import { openRareEarthOverlayPopup } from '@/lib/map-utils'
 import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
-import { HEX_GRID } from '@/lib/constants'
+import { HEX_GRID, NATIVE_GEOJSON_THRESHOLD } from '@/lib/constants'
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
@@ -382,7 +382,11 @@ export function useMapBase(config: MapBaseConfig) {
       map.on('moveend', () => {
         updateMarkerVisibility()
         if (!map) return
-        const usingNativeGeoJSON = useNativeGeoJSON && activeDataset.value === 'endangered-species' && speciesIndexData.value.length > 500
+        const isNativeDataset = activeDataset.value === 'endangered-species' || activeDataset.value === 'project-grants'
+        const exceedsThreshold = activeDataset.value === 'endangered-species'
+          ? speciesIndexData.value.length > NATIVE_GEOJSON_THRESHOLD
+          : visibleProjects.value.length > NATIVE_GEOJSON_THRESHOLD
+        const usingNativeGeoJSON = useNativeGeoJSON && isNativeDataset && exceedsThreshold
         if (usingNativeGeoJSON) return
         if (pendingRebuildRAF) { cancelAnimationFrame(pendingRebuildRAF); pendingRebuildRAF = null }
         pendingRebuildRAF = requestAnimationFrame(() => {
@@ -401,14 +405,21 @@ export function useMapBase(config: MapBaseConfig) {
 
       let errorCount = 0
       let usedFallback = false
+      const DEMOTILES_STYLE = 'https://demotiles.maplibre.org/style.json'
+
+      function tryFallback() {
+        if (usedFallback || !map) return
+        if (!MAP_STYLE.includes('maptiler.com')) return
+        usedFallback = true
+        console.warn('MapTiler style failed, falling back to demotiles style')
+        map.setStyle(DEMOTILES_STYLE)
+      }
 
       map.on('error', (err) => {
         console.error(`[${isGlobe ? 'MapView3D' : 'MapView2D'}] MapLibre error:`, err)
         errorCount++
-        if (!usedFallback && errorCount >= 2 && MAP_STYLE.includes('maptiler.com')) {
-          usedFallback = true
-          console.warn('MapTiler style failed, falling back to demotiles style')
-          map!.setStyle('https://demotiles.maplibre.org/style.json')
+        if (errorCount >= 2) {
+          tryFallback()
           return
         }
         if (!map?.loaded()) {
@@ -427,13 +438,15 @@ export function useMapBase(config: MapBaseConfig) {
 
       loadingTimeout = setTimeout(() => {
         if (isLoading.value) {
+          tryFallback()
+          if (usedFallback) return
           isLoading.value = false
           if (!hasError.value) {
             hasError.value = true
-            errorMessage.value = `${isGlobe ? 'Globe' : 'Map'} tiles took too long to load. Please check your network connection and try again.`
+            errorMessage.value = `${isGlobe ? 'Globe' : 'Map'} tiles took too long to load. Your MapTiler API key may be invalid, expired, or rate-limited. You can also check your network connection.`
           }
         }
-      }, 20000)
+      }, 30000)
 
       window.addEventListener('resize', onResize)
     } catch (err) {

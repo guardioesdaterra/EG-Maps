@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   build:
+    needs: [cultural-agents-sync]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -43,6 +44,13 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Download cultural agents data
+        uses: actions/download-artifact@v4
+        with:
+          name: cultural-agents-data
+          path: public/data/cultural-agents/
+        continue-on-error: true
 
       - name: Prepare Nuxt types
         run: npx nuxi prepare

@@ -10,7 +10,7 @@
     <p class="text-red-400">{{ t('globe.connectionError') }}</p>
   </div>
   <ClientOnly v-else>
-    <GlobeView :species-index="speciesIndex" :default-dataset="'endangered-species'" />
+    <MapView3D :species-index="speciesIndex" :default-dataset="'endangered-species'" />
     <template #fallback>
       <div class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
         <LoadingSpinner

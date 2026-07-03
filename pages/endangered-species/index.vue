@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <UnifiedMap :species-index="speciesIndex || []" :default-dataset="'endangered-species'" />
+    <MapView2D :species-index="speciesIndex || []" :default-dataset="'endangered-species'" />
     <template #fallback>
       <div class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
         <LoadingSpinner

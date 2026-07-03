@@ -48,7 +48,7 @@
                 </svg>
                 <div class="impact-ring-inner">
                   <span class="impact-ring-num">{{ formatCompact(p.direct_beneficiaries + p.indirect_beneficiaries) }}</span>
-                  <span class="impact-ring-label">LIVES</span>
+                  <span class="impact-ring-label">{{ t('grantsPortal.impactRingLabel') }}</span>
                 </div>
               </div>
               <h4 class="impact-card-title">{{ p.project_title }}</h4>
@@ -59,16 +59,16 @@
       </section>
       <section class="grants-section" id="join">
         <div class="grants-inner">
-          <span class="data-label">EG PROJECT GRANTS</span>
+          <span class="data-label">{{ t('grantsPortal.grantsSectionLabel') }}</span>
           <h2 class="grants-heading">{{ t('grantsPortal.howGrantsWork') }}</h2>
           <div class="grants-body">
             <div class="grants-copy">
-              <p>We offer <strong>$300–$500 grants</strong> to support our global change-makers, with priority given to our Crews.</p>
-              <p>Since 2021, our Project Grants program has backed grassroots efforts in climate justice education, regenerative agriculture, tree plantings, nonviolent direct action, climate policy, food security, art-vism, &amp; more.</p>
-              <p>With education, mentorship, and funding, our Project Grants program empowers you to bring your ideas to life and inspire others. The Project Grant process also teaches grant writing, project coordination, &amp; data analysis skills.</p>
-              <p>Join us in building resilience and tackling the climate crisis locally!</p>
+              <p v-html="t('grantsPortal.grantsCopy1')" />
+              <p v-html="t('grantsPortal.grantsCopy2')" />
+              <p v-html="t('grantsPortal.grantsCopy3')" />
+              <p>{{ t('grantsPortal.grantsCopy4') }}</p>
               <NuxtLink to="https://www.earthguardians.org/project-grants" target="_blank" class="grants-cta-btn">
-                <span>EXPLORE PROJECT GRANTS</span>
+                <span>{{ t('grantsPortal.grantsCta') }}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               </NuxtLink>
             </div>
@@ -95,25 +95,25 @@
         <div class="nebula-bg" />
         <div class="open-dashboard-inner">
           <div class="dash-header">
-            <span class="dash-label">EG OPEN GRANTS</span>
-            <h2 class="dash-title">COLLABORATIVE<br/>DASHBOARD</h2>
-            <p class="dash-subtitle">Worldwide socio-environmental opportunities curated by youth, for youth.</p>
+            <span class="dash-label">{{ t('grantsPortal.dashboardLabel') }}</span>
+            <h2 class="dash-title" v-html="t('grantsPortal.dashboardTitle')" />
+            <p class="dash-subtitle">{{ t('grantsPortal.dashboardSubtitle') }}</p>
           </div>
 
           <div class="dash-stats">
             <div class="dash-stat-card">
               <span class="dash-stat-num open">{{ scrapedOpenCount }}</span>
-              <span class="dash-stat-label">OPEN</span>
+              <span class="dash-stat-label">{{ t('grantsPortal.dashboardOpenStat') }}</span>
             </div>
           </div>
 
           <div class="dash-search">
             <svg class="dash-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input v-model="dashboardSearch" placeholder="Search by title, funder, or country..." class="dash-search-input" />
+            <input v-model="dashboardSearch" :placeholder="t('grantsPortal.dashboardSearchPlaceholder')" class="dash-search-input" />
           </div>
           <div class="dash-grid">
             <div v-if="scrapedLoading" class="dash-loading">{{ t('grantsPortal.loadingOpenGrants') }}</div>
-            <div v-else-if="paginatedDashGrants.length === 0" class="dash-empty">{{ dashboardSearch ? 'No grants match your search.' : 'No open grants yet.' }}</div>
+            <div v-else-if="paginatedDashGrants.length === 0" class="dash-empty">{{ dashboardSearch ? t('grantsPortal.dashboardEmptySearch') : t('grantsPortal.dashboardEmpty') }}</div>
             <div v-for="g in paginatedDashGrants" :key="g.id" class="dash-card" @click="openScrapedDetail(g)">
               <div class="dash-card-top">
                 <span class="dash-card-type" :class="g.grant_type || 'general'">{{ typeEmoji(g.grant_type) }} {{ grantTypeLabel(g.grant_type) }}</span>
@@ -132,22 +132,22 @@
                   <button v-for="n in 8" :key="n" @click.stop="handleVoteScraped(g.id, n)" class="dash-star" :class="getStarClass(g.id, n)">★</button>
                   <span class="dash-votes">{{ getVoteCount(g.id) }} votes</span>
                 </div>
-                <a v-if="g.url" :href="g.url" target="_blank" @click.stop class="dash-apply">APPLY ↗</a>
+                <a v-if="g.url" :href="g.url" target="_blank" @click.stop class="dash-apply">{{ t('grantsPortal.apply') }}</a>
               </div>
             </div>
           </div>
 
           <div v-if="dashTotalPages > 1" class="dash-pagination">
-            <button class="dash-page-btn" :disabled="dashPage === 1" @click="dashPage--">← Prev</button>
+            <button class="dash-page-btn" :disabled="dashPage === 1" @click="dashPage--">{{ t('grantsPortal.paginationPrev') }}</button>
             <template v-for="p in dashPageNumbers" :key="p">
               <button v-if="typeof p === 'number'" class="dash-page-btn" :class="{ active: dashPage === p }" @click="dashPage = p">{{ p }}</button>
               <span v-else class="dash-page-ellipsis">…</span>
             </template>
-            <button class="dash-page-btn" :disabled="dashPage === dashTotalPages" @click="dashPage++">Next →</button>
+            <button class="dash-page-btn" :disabled="dashPage === dashTotalPages" @click="dashPage++">{{ t('grantsPortal.paginationNext') }}</button>
           </div>
 
           <div class="dash-cta">
-            <NuxtLink to="/project-grants/3d" class="dash-cta-btn">VIEW PROJECT GRANTS ON 3D GLOBE →</NuxtLink>
+            <NuxtLink to="/project-grants/3d" class="dash-cta-btn">{{ t('grantsPortal.dashboardCta') }}</NuxtLink>
           </div>
         </div>
       </section>
@@ -2076,45 +2076,6 @@ textarea.edit-input {
   color: rgba(255, 255, 255, 0.35);
   font-weight: 700;
   position: relative;
-}
-
-/* Dashboard tabs — pill-style glass */
-.dash-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.dash-tab {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  padding: 0.5rem 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 6px;
-  color: rgba(255, 255, 255, 0.4);
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.dash-tab:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.dash-tab.active {
-  background: rgba(0, 255, 133, 0.12);
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: 0 0 20px rgba(0, 255, 133, 0.15);
 }
 
 /* Dashboard search */

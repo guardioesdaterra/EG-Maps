@@ -132,7 +132,7 @@
     </div>
 
     <!-- Region Filter -->
-    <div :class="isMobile ? 'filter-group mb-2' : 'filter-group mb-2.5'">
+    <div v-if="regions.length > 0" :class="isMobile ? 'filter-group mb-2' : 'filter-group mb-2.5'">
       <label class="filter-label block text-[10px] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
         {{ t('filter.region') }}
       </label>
@@ -147,7 +147,7 @@
     </div>
 
     <!-- Ecosystem Filter -->
-    <div :class="isMobile ? 'filter-group mb-2' : 'filter-group mb-2.5'">
+    <div v-if="ecosystems.length > 0" :class="isMobile ? 'filter-group mb-2' : 'filter-group mb-2.5'">
       <label class="filter-label block text-[10px] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
         {{ t('filter.ecosystem') }}
       </label>
@@ -213,10 +213,10 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
-import type { Species } from '@/lib/map-utils'
+import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 
 interface Props {
-  species?: Species[]
+  species?: SpeciesIndexItem[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -224,7 +224,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'filter-change': [filteredSpecies: Species[]]
+  'filter-change': [filteredSpecies: SpeciesIndexItem[]]
   'group-selection-change': [groups: string[]]
   'close': []
 }>()
@@ -251,11 +251,11 @@ const taxonomicGroups = computed(() =>
 )
 
 const regions = computed(() =>
-  [...new Set(props.species.map(s => s.region))].sort()
+  [...new Set(props.species.map(s => (s as any).region).filter(Boolean))].sort()
 )
 
 const ecosystems = computed(() =>
-  [...new Set(props.species.map(s => s.ecosystem))].sort()
+  [...new Set(props.species.map(s => (s as any).ecosystem).filter(Boolean))].sort()
 )
 
 const threatTypes = computed(() => {
@@ -309,10 +309,10 @@ const filteredSpecies = computed(() => {
     result = result.filter(s => selectedTaxonomicGroups.value.includes(s.taxonomicGroup))
   }
   if (filters.region) {
-    result = result.filter(s => s.region === filters.region)
+    result = result.filter(s => (s as any).region === filters.region)
   }
   if (filters.ecosystem) {
-    result = result.filter(s => s.ecosystem === filters.ecosystem)
+    result = result.filter(s => (s as any).ecosystem === filters.ecosystem)
   }
   if (filters.threatType) {
     result = result.filter(s => s.threatTypes?.includes(filters.threatType))
@@ -322,10 +322,10 @@ const filteredSpecies = computed(() => {
     result = result.filter(s =>
       s.commonName.toLowerCase().includes(query) ||
       s.scientificName.toLowerCase().includes(query) ||
-      s.region.toLowerCase().includes(query) ||
+      ((s as any).region || '').toLowerCase().includes(query) ||
       s.taxonomicGroup.toLowerCase().includes(query) ||
       groupLabel(s.taxonomicGroup).toLowerCase().includes(query) ||
-      s.ecosystem.toLowerCase().includes(query)
+      ((s as any).ecosystem || '').toLowerCase().includes(query)
     )
   }
 

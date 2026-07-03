@@ -24,4 +24,6 @@ useHead({
 })
 
 const { data: speciesIndex } = useSpeciesIndex(['icmbio-brazil', 'iucn'])
+
+console.log(`[endangered-species/page] speciesIndex loaded: ${speciesIndex.value?.length ?? 0} items`)
 </script>

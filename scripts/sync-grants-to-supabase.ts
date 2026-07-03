@@ -56,6 +56,22 @@ function toUUID(shortId: string): string {
   return shortId;
 }
 
+function recordHash(r: Record<string, unknown>): string {
+  const parts = [
+    r.title,
+    r.funder,
+    r.url,
+    r.description,
+    r.deadline,
+    r.amount_max,
+    r.amount_min,
+    r.currency,
+    r.country,
+    r.categories,
+  ];
+  return parts.join("||");
+}
+
 async function main() {
   const filePath = process.argv[2];
 
@@ -118,31 +134,59 @@ async function main() {
         fetched_at: g.fetched_at || new Date().toISOString(),
       }));
 
+      const ids = records.map((r) => r.id);
       const { data: existing } = await supabase
         .from("scraped_grants")
-        .select("id")
-        .in("id", records.map((r) => r.id));
-      const existingIds = new Set((existing || []).map((r: { id: string }) => r.id));
+        .select("id, title, funder, url, description, deadline, amount_max, amount_min, currency, country, categories")
+        .in("id", ids);
 
-      const { error } = await supabase
-        .from("scraped_grants")
-        .upsert(records as never, { onConflict: "id", ignoreDuplicates: false });
-
-      if (error) {
-        process.stdout.write(`[FAIL] ${error.message}\n`);
-        allErrors.push(`Batch ${batchNum}: ${error.message}`);
-        totalSkipped += batch.length;
-      } else {
-        let insertCount = 0;
-        let updateCount = 0;
-        for (const r of records) {
-          if (existingIds.has(r.id)) updateCount++;
-          else insertCount++;
-        }
-        totalInserted += insertCount;
-        totalUpdated += updateCount;
-        process.stdout.write(`✓ ${insertCount} inserted, ${updateCount} updated\n`);
+      const existingMap = new Map<string, Record<string, unknown>>();
+      for (const e of existing ?? []) {
+        existingMap.set(e.id, e);
       }
+
+      const toUpsert: typeof records = [];
+      let batchInserted = 0;
+      let batchUpdated = 0;
+      let batchSkipped = 0;
+
+      for (const r of records) {
+        const ex = existingMap.get(r.id);
+        if (!ex) {
+          toUpsert.push(r);
+          batchInserted++;
+          continue;
+        }
+
+        const exHash = recordHash(ex);
+        const newHash = recordHash(r);
+        if (exHash === newHash) {
+          batchSkipped++;
+          continue;
+        }
+
+        toUpsert.push(r);
+        batchUpdated++;
+      }
+
+      if (toUpsert.length > 0) {
+        const { error } = await supabase
+          .from("scraped_grants")
+          .upsert(toUpsert as never, { onConflict: "id", ignoreDuplicates: false });
+
+        if (error) {
+          process.stdout.write(`[FAIL] ${error.message}\n`);
+          allErrors.push(`Batch ${batchNum}: ${error.message}`);
+          batchSkipped += toUpsert.length;
+          batchInserted = 0;
+          batchUpdated = 0;
+        }
+      }
+
+      totalInserted += batchInserted;
+      totalUpdated += batchUpdated;
+      totalSkipped += batchSkipped;
+      process.stdout.write(`✓ ${batchInserted} inserted, ${batchUpdated} updated, ${batchSkipped} skipped\n`);
     }
 
     console.log(`\n─── Result ───`);

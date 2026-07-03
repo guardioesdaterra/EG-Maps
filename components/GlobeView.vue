@@ -445,7 +445,7 @@ async function initMap() {
       }
       rebuildMarkers()
       if (activeDataset.value !== 'active-crews' && activeDataset.value !== 'vulcan-observatory') {
-        connectionsGlobe.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', projectsData.value, speciesData.value)
+        connectionsGlobe.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', projectsData.value, (activeDataset.value === 'endangered-species' ? speciesIndexData.value : speciesData.value))
         connectionsGlobe.startParticles()
       }
       hexGrid.setupHexGrid()
@@ -619,7 +619,7 @@ watch(isHexGridVisible, async (visible) => {
 
 watch(connectionsGlobe.showConnections, () => {
   if (activeDataset.value === 'active-crews') return
-  connectionsGlobe.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', projectsData.value, speciesData.value)
+  connectionsGlobe.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', projectsData.value, (activeDataset.value === 'endangered-species' ? speciesIndexData.value : speciesData.value))
   if (connectionsGlobe.showConnections.value) connectionsGlobe.startParticles()
 })
 

@@ -177,7 +177,7 @@ export function useGrants() {
     try {
       const data = await invoke('grants-vote', {
         method: 'POST',
-        body: { grant_id: scrapedId, stars },
+        body: { scraped_id: scrapedId, stars },
       })
       return data as { vote: { id: string; stars: number } }
     } catch (e: unknown) {
@@ -188,8 +188,8 @@ export function useGrants() {
   async function deleteVote(grantId: string, scrapedId?: string) {
     try {
       const params = new URLSearchParams({ method: 'delete' })
-      const gid = scrapedId || grantId
-      if (gid) params.set('grant_id', gid)
+      if (scrapedId) params.set('scraped_id', scrapedId)
+      else params.set('grant_id', grantId)
       const data = await invoke(`grants-vote?${params}`, { method: 'DELETE' })
       return data as { deleted: boolean }
     } catch (e: unknown) {

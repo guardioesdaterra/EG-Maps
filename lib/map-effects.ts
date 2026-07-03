@@ -4,6 +4,8 @@ import type { ProjectData, Species } from './types'
 import { getProjectColorByBeneficiaries } from './colors'
 import { GROUP_COLORS, generateCurvedPath, isValidCoordinate } from './map-utils'
 
+type SpeciesLike = { id: string; lat: number; lng: number; commonName: string; taxonomicGroup: string }
+
 export type DatasetKey = 'project-grants' | 'endangered-species' | 'vulcan-observatory'
 
 export interface ConnectionProperties {
@@ -23,7 +25,7 @@ const CONNECTION_LAYER_ID = 'connections-layer'
 interface BuildConnectionOptions {
   dataset: DatasetKey
   projects?: ProjectData[]
-  species?: Species[]
+  species?: SpeciesLike[]
   isMobile: boolean
 }
 
@@ -94,7 +96,7 @@ function buildProjectConnectionFeatures(projects: ProjectData[], isMobile: boole
   return features
 }
 
-function buildSpeciesConnectionFeatures(species: Species[], isMobile: boolean): MapConnectionFeature[] {
+function buildSpeciesConnectionFeatures(species: SpeciesLike[], isMobile: boolean): MapConnectionFeature[] {
   const speciesToProcess = isMobile ? species.slice(0, Math.min(50, species.length)) : species
   const incomingCountByGroup = new Map<string, Map<string, number>>()
   const edgeKeys = new Set<string>()

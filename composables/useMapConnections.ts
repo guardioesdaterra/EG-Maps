@@ -8,6 +8,8 @@ import {
   type MapConnectionFeature,
   type MapParticleSystem,
 } from '@/lib/map-effects'
+
+type SpeciesLike = { id: string; lat: number; lng: number; commonName: string; taxonomicGroup: string }
 import { useMediaQuery } from '@/composables/useMediaQuery'
 
 type MapGetter = MapLibreMap | null | (() => MapLibreMap | null)
@@ -92,7 +94,7 @@ export function useMapConnections(
   function addConnections(
     dataset: 'project-grants' | 'endangered-species',
     projects: ProjectData[],
-    species: (Species | { lat: number; lng: number; id: string })[],
+    species: SpeciesLike[],
   ) {
     cleanupParticles()
     const m = getMap()

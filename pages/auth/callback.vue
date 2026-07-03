@@ -26,6 +26,7 @@ const { client } = useSupabase()
 const error = ref('')
 
 onMounted(async () => {
+  // --- PKCE flow (authorization code in query string) ---
   const code = route.query.code as string | undefined
 
   if (code || route.query.state) {
@@ -42,18 +43,43 @@ onMounted(async () => {
         return
       }
       error.value = authError.message
-    } else {
-      await syncCrewMember()
-      navigateTo('/eg-grants')
+      return
     }
-  } else {
-    const { data: { session } } = await client.auth.getSession()
-    if (session) {
-      navigateTo('/eg-grants')
-    } else {
-      error.value = 'No authorization code received.'
-    }
+    await syncCrewMember()
+    navigateTo('/eg-grants')
+    return
   }
+
+  // --- Implicit grant flow (tokens in URL hash fragment) ---
+  const hash = window.location.hash.substring(1)
+  const hashParams = new URLSearchParams(hash)
+  const accessToken = hashParams.get('access_token')
+
+  if (accessToken) {
+    const refreshToken = hashParams.get('refresh_token') || ''
+    window.history.replaceState({}, '', window.location.pathname)
+
+    const { error: sessionError } = await client.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    })
+    if (sessionError) {
+      error.value = sessionError.message
+      return
+    }
+    await syncCrewMember()
+    navigateTo('/eg-grants')
+    return
+  }
+
+  // --- Check for existing session ---
+  const { data: { session } } = await client.auth.getSession()
+  if (session) {
+    navigateTo('/eg-grants')
+    return
+  }
+
+  error.value = 'No authorization code received.'
 })
 
 async function syncCrewMember() {

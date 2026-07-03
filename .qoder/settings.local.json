@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /home/ubuntu/EG-Maps && git diff --cached composables/useGrants.ts)",
+      "Bash(cd /home/ubuntu/EG-Maps && git commit -m \"$\\(cat <<'EOF'\nfix: narrow invoke method param to literal HTTP verbs\nEOF\n\\)\")",
+      "Bash(cd /home/ubuntu/EG-Maps && git push origin main)"
+    ]
+  }
+}

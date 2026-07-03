@@ -1537,27 +1537,20 @@ RSS_FEEDS = [
     ("MinC Brasil",                "https://www.gov.br/cultura/pt-br/assuntos/noticias/RSS",          "BR",    "pt"),
     ("BNDES Amazônia",             "https://www.bndes.gov.br/rss",                                    "BR",    "pt"),
 
-    # ── LatAm
-    ("Fondo Acción Urgente",       "https://fondoaccionurgente.org.co/feed/",                         "LATAM", "es"),
-    ("IICA",                       "https://www.iica.int/es/content/convocatorias/feed",              "LATAM", "es"),
+    # ── LatAm (Fondo Acción Urgente and IICA are covered by `latam` scraper)
 
     # ── EU programmes
     ("EEA Grants",                 "https://www.eeagrants.org/news/rss.xml",                          "EU",    "en"),
     ("Creative Europe news",       "https://culture.ec.europa.eu/news/rss",                           "EU",    "en"),
     ("Sida Sweden",                "https://www.sida.se/en/feed/rss",                                 "EU",    "en"),
 
-    # ── Grant aggregators (Substack feeds — free posts only)
-    ("Impact Funding newsletter",  "https://impactfunding.substack.com/feed",                        "GLOBAL","en"),
-    ("Opportunity Desk",           "https://opportunitydesk.org/feed/",                               "GLOBAL","en"),
-    ("Opportunities for Youth",    "https://opportunitiesforyouth.org/feed/",                         "GLOBAL","en"),
-    ("Global South Opportunities", "https://www.globalsouthopportunities.com/feed/",                  "GLOBAL","en"),
-    ("fundsforNGOs RSS",           "https://www2.fundsforngos.org/feed/",                             "GLOBAL","en"),
-
     # ── Colossal (arts open calls — curated monthly lists)
     ("Colossal open calls",        "https://www.thisiscolossal.com/feed/",                            "GLOBAL","en"),
 
-    # ── Indigenous/environment
-    ("Green Grants",               "https://www.greengrants.org/feed/",                               "GLOBAL","en"),
+    # NOTE: Impact Funding, Opportunity Desk, Opportunities for Youth,
+    # Global South Opportunities, fundsforNGOs, and Green Grants are NOT here
+    # because they have dedicated scrapers above (impactfunding, opdesk, ofy,
+    # globalsouth, fundsforngos, greengrants). Running both wastes requests.
     ("IUCN",                       "https://www.iucn.org/feeds/news",                                 "GLOBAL","en"),
 
     # ── Francophone
@@ -2219,82 +2212,6 @@ def save_markdown(grants, path, title="Grants Radar"):
             ]
     path.write_text("\n".join(lines), encoding="utf-8")
 
-def fetch_existing_grant_ids(supabase_url, ingest_token):
-    """Fetch existing scraped_grants IDs + URLs from the grants-ingest edge function (GET).
-    Returns dict with 'ids' (set) and 'urls' (dict of url->id), or None on failure."""
-    import urllib.request
-    endpoint = f"{supabase_url.rstrip('/')}/functions/v1/grants-ingest"
-    req = urllib.request.Request(endpoint, headers={
-        "X-Ingest-Token": ingest_token,
-        "Accept": "application/json",
-    }, method="GET")
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            result = json.loads(resp.read().decode())
-            ids = result.get("ids")
-            urls = result.get("urls")
-            if isinstance(ids, list):
-                return {"ids": set(ids), "urls": urls or {}}
-    except Exception as e:
-        console.print(f"[dim]Failed to fetch existing grant IDs: {e}[/]")
-    return None
-
-
-def push_to_supabase(grants, supabase_url, ingest_token, batch_size=100):
-    """POST grants to the grants-ingest edge function in batches, pre-filtering duplicates."""
-    if not supabase_url or not ingest_token:
-        console.print("[yellow]Supabase push skipped: missing URL or token[/]")
-        return False
-
-    existing = fetch_existing_grant_ids(supabase_url, ingest_token)
-
-    if existing is not None:
-        existing_ids = existing["ids"]
-        existing_urls = existing["urls"]
-        new_grants = [
-            g for g in grants
-            if g["id"] not in existing_ids and g.get("url") not in existing_urls
-        ]
-        skipped = len(grants) - len(new_grants)
-        if skipped:
-            console.print(f"[dim]Pre-filtered {skipped} existing grants (by ID: {len(existing_ids)}, by URL: {len(existing_urls)}), pushing {len(new_grants)} new[/]")
-        if not new_grants:
-            console.print("[green]All grants already exist — nothing to push[/]")
-            return True
-    else:
-        console.print("[yellow]Could not fetch existing grants — pushing all (edge function will skip duplicates)[/]")
-        new_grants = grants
-
-    import urllib.request
-    import concurrent.futures
-    endpoint = f"{supabase_url.rstrip('/')}/functions/v1/grants-ingest"
-
-    def send_batch(batch_idx):
-        i, batch = batch_idx
-        payload = json.dumps({"grants": batch}).encode("utf-8")
-        req = urllib.request.Request(
-            endpoint, data=payload,
-            headers={
-                "Content-Type": "application/json",
-                "X-Ingest-Token": ingest_token,
-            },
-            method="POST"
-        )
-        try:
-            with urllib.request.urlopen(req, timeout=120) as resp:
-                result = json.loads(resp.read().decode())
-                console.print(f"[green]Batch {i+1}: {result.get('inserted',0)} inserted, {result.get('skipped',0)} skipped[/]")
-                return True
-        except Exception as e:
-            console.print(f"[red]Batch {i+1} failed ({len(batch)} grants): {e}[/]")
-            return False
-
-    batches = [(idx, new_grants[idx:idx+batch_size]) for idx in range(0, len(new_grants), batch_size)]
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:
-        results = list(pool.map(send_batch, batches))
-
-    return all(results)
-
 def print_table(grants):
     t = Table(title="🌱 Grants Radar — Results", show_header=True, header_style="bold green", min_width=100)
     t.add_column("Pri",  style="cyan",   width=4)
@@ -2400,10 +2317,6 @@ async def run_radar(sources_filter, country_filter, keywords,
 
     console.print(f"[bold]Saved:[/] {prefix}.json / .csv / .md")
     print_table(filtered)
-
-    supabase_url = os.environ.get("SUPABASE_URL") or ""
-    ingest_token = os.environ.get("GRANTS_INGEST_TOKEN") or ""
-    push_to_supabase(filtered, supabase_url, ingest_token)
 
     return filtered
 

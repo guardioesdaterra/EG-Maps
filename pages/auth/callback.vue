@@ -17,17 +17,17 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useSupabase } from '~/composables/useSupabase'
 
 useHead({ title: 'Auth Callback | Earth Guardians' })
 
 const route = useRoute()
-const client = useSupabaseClient()
+const { client } = useSupabase()
 const error = ref('')
 
 onMounted(async () => {
   const code = route.query.code as string | undefined
 
-  // Clean URL params immediately to prevent re-exchange on refresh
   if (code || route.query.state) {
     const cleanUrl = window.location.pathname
     window.history.replaceState({}, '', cleanUrl)
@@ -36,7 +36,6 @@ onMounted(async () => {
   if (code) {
     const { error: authError } = await client.auth.exchangeCodeForSession(code)
     if (authError) {
-      // PKCE verifier may be missing if storage was cleared — check for existing session
       const { data: { session } } = await client.auth.getSession()
       if (session) {
         navigateTo('/eg-grants')
@@ -48,7 +47,6 @@ onMounted(async () => {
       navigateTo('/eg-grants')
     }
   } else {
-    // No code param — check if user already has a valid session (e.g. page refresh)
     const { data: { session } } = await client.auth.getSession()
     if (session) {
       navigateTo('/eg-grants')

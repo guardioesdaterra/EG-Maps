@@ -1,5 +1,7 @@
-supabase/
-supabase/*
+supabase/.temp/
+supabase/migrations/
+supabase/seed.sql
+supabase/.env
 *.sql
 # Nuxt
 .nuxt/

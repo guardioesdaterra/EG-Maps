@@ -93,9 +93,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       maptilerApiKey: process.env.NUXT_PUBLIC_MAPTILER_API_KEY || process.env.MAPTILER_API_KEY || '',
-      // Set NUXT_PUBLIC_PLAUSIBLE_DOMAIN to enable Plausible analytics.
-      // Example: 'eg-maps.example.org'
       plausibleDomain: process.env.NUXT_PUBLIC_PLAUSIBLE_DOMAIN || '',
+      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || '',
+      supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_KEY || '',
     },
   },
 

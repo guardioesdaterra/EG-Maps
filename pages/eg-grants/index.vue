@@ -129,6 +129,72 @@
           </p>
         </div>
       </section>
+
+      <!-- EG Open Grants Dashboard — glassmorphism + neobrutalism -->
+      <section class="open-dashboard" id="open-dashboard">
+        <div class="nebula-bg" />
+        <div class="open-dashboard-inner">
+          <div class="dash-header">
+            <span class="dash-label">EG OPEN GRANTS</span>
+            <h2 class="dash-title">COLLABORATIVE<br/>DASHBOARD</h2>
+            <p class="dash-subtitle">Worldwide socio-environmental opportunities curated by youth, for youth.</p>
+          </div>
+
+          <div class="dash-stats">
+            <div class="dash-stat-card">
+              <span class="dash-stat-num" style="color:#eab308;">{{ scrapedOpenCount }}</span>
+              <span class="dash-stat-label">OPEN</span>
+            </div>
+            <div class="dash-stat-card">
+              <span class="dash-stat-num" style="color:#00ff85;">{{ scrapedApprovedCount }}</span>
+              <span class="dash-stat-label">APPROVED</span>
+            </div>
+            <div class="dash-stat-card">
+              <span class="dash-stat-num" style="color:rgba(255,255,255,0.4);">{{ scrapedClosedCount }}</span>
+              <span class="dash-stat-label">CLOSED</span>
+            </div>
+            <div class="dash-stat-card">
+              <span class="dash-stat-num" style="color:#ef4444;">{{ scrapedDeclinedCount }}</span>
+              <span class="dash-stat-label">DECLINED</span>
+            </div>
+          </div>
+
+          <div class="dash-tabs">
+            <button v-for="dt in dashTabs" :key="dt.key" @click="activeDashTab = dt.key" class="dash-tab" :class="activeDashTab === dt.key ? 'active' : ''">{{ dt.label }}</button>
+          </div>
+
+          <div class="dash-grid">
+            <div v-if="scrapedLoading" class="dash-loading">{{ t('grantsPortal.loadingOpenGrants') }}</div>
+            <div v-else-if="dashGrants.length === 0" class="dash-empty">No grants in this category yet.</div>
+            <div v-for="g in dashGrants" :key="g.id" class="dash-card" @click="openScrapedDetail(g)">
+              <div class="dash-card-top">
+                <span class="dash-card-type" :class="g.grant_type || 'general'">{{ typeEmoji(g.grant_type) }} {{ g.grant_type || 'general' }}</span>
+                <span v-if="g.priority_score != null" class="dash-card-score" :class="priorityClass(g.priority_score)">{{ g.priority_score }}</span>
+              </div>
+              <h4 class="dash-card-title">{{ g.title }}</h4>
+              <p class="dash-card-desc">{{ g.description?.slice(0, 150) }}{{ g.description?.length > 150 ? '...' : '' }}</p>
+              <div class="dash-card-meta">
+                <span v-if="g.funder">🏛 {{ g.funder }}</span>
+                <span v-if="g.country">📍 {{ g.country }}</span>
+                <span v-if="g.deadline">📅 {{ g.deadline }}</span>
+                <span v-if="g.amount_max">💰 {{ g.amount_max }} {{ g.currency }}</span>
+              </div>
+              <div class="dash-card-footer">
+                <div class="dash-stars">
+                  <button v-for="n in 8" :key="n" @click.stop="handleVoteScraped(g.id, n)" class="dash-star" :class="getStarClass(g.id, n)">★</button>
+                  <span class="dash-votes">{{ getVoteCount(g.id) }} votes</span>
+                </div>
+                <a :href="g.url" target="_blank" @click.stop class="dash-apply">APPLY ↗</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-cta">
+            <NuxtLink to="/project-grants/3d" class="dash-cta-btn">VIEW PROJECT GROLS ON 3D GLOBE →</NuxtLink>
+          </div>
+        </div>
+      </section>
+
       <section class="projects-section" id="grants-portal">
         <div class="projects-header">
           <span class="data-label">{{ t('grantsPortal.portalLabel') }}</span>
@@ -556,6 +622,25 @@ const showRegistry = ref(false)
 const registryLoading = ref(false)
 const detailGrant = ref<DetailGrantData | null>(null)
 const detailUserVote = ref(0)
+
+// Dashboard state
+const activeDashTab = ref('open')
+const dashTabs = [
+  { key: 'open', label: 'OPEN' },
+  { key: 'approved', label: 'APPROVED' },
+  { key: 'closed', label: 'CLOSED' },
+  { key: 'declined', label: 'DECLINED' },
+]
+const dashGrants = computed(() => {
+  const map: Record<string, string[]> = {
+    open: ['pending'],
+    approved: ['approved'],
+    closed: ['closed'],
+    declined: ['rejected', 'hidden'],
+  }
+  const statuses = map[activeDashTab.value] || []
+  return scrapedGrants.value.filter(g => statuses.includes(g.status))
+})
 
 const portalTabs = computed(() => {
   const tabs = [
@@ -1742,5 +1827,373 @@ textarea.edit-input {
 }
 .action-btn.restore:hover {
   background: rgba(250, 204, 21, 0.25);
+}
+
+/* ── EG Open Grants Dashboard ─────────────────────────── */
+.open-dashboard {
+  position: relative;
+  padding: 8rem 10%;
+  overflow: hidden;
+}
+
+.nebula-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 40%, rgba(0, 255, 133, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 80% 30%, rgba(99, 102, 241, 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.open-dashboard-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dash-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.dash-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.dash-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--tectonic-white) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+.dash-subtitle {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.5);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Dashboard stat cards */
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.dash-stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.5rem;
+  text-align: center;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.dash-stat-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 30px rgba(0, 255, 133, 0.05);
+}
+
+.dash-stat-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2rem;
+  font-weight: 800;
+  display: block;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.dash-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 700;
+}
+
+/* Dashboard tabs */
+.dash-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.dash-tab {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: 0.6rem 1.5rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dash-tab:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dash-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  box-shadow: 0 0 20px rgba(0, 255, 133, 0.3);
+}
+
+/* Dashboard grid */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 3rem;
+}
+
+.dash-loading,
+.dash-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Dashboard cards — glassmorphism + neobrutalism */
+.dash-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.dash-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 60px rgba(0, 255, 133, 0.06);
+}
+
+.dash-card:hover::before {
+  opacity: 1;
+}
+
+.dash-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.dash-card-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.dash-card-type.conservation { background: rgba(34, 197, 94, 0.12); color: #4ade80; }
+.dash-card-type.artivism     { background: rgba(168, 85, 247, 0.12); color: #c084fc; }
+.dash-card-type.climate_justice { background: rgba(34, 197, 94, 0.12); color: #4ade80; }
+.dash-card-type.human_rights { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
+.dash-card-type.indigenous_rights { background: rgba(234, 179, 8, 0.12); color: #facc15; }
+.dash-card-type.youth        { background: rgba(236, 72, 153, 0.12); color: #f472b6; }
+
+.dash-card-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 800;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.dash-card-score.high { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+.dash-card-score.mid  { background: rgba(234, 179, 8, 0.2); color: #facc15; }
+.dash-card-score.low  { background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.4); }
+
+.dash-card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--tectonic-white);
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dash-card-desc {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 0.75rem;
+}
+
+.dash-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 1rem;
+}
+
+.dash-card-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dash-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dash-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.dash-star {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.12);
+  font-size: 0.85rem;
+  padding: 0;
+  transition: all 0.15s;
+}
+
+.dash-star:hover {
+  color: rgba(250, 204, 21, 0.6);
+  transform: scale(1.2);
+}
+
+.dash-star.active {
+  color: #facc15;
+  text-shadow: 0 0 6px rgba(250, 204, 21, 0.4);
+}
+
+.dash-votes {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.25);
+  margin-left: 0.5rem;
+}
+
+.dash-apply {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--accent);
+  transition: all 0.2s;
+}
+
+.dash-apply:hover {
+  background: var(--accent);
+  color: #000;
+  box-shadow: 0 0 16px rgba(0, 255, 133, 0.3);
+}
+
+/* CTA */
+.dash-cta {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.dash-cta-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  padding: 1rem 2.5rem;
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s;
+}
+
+.dash-cta-btn:hover {
+  background: var(--accent);
+  color: #000;
+  box-shadow: 0 0 40px rgba(0, 255, 133, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Dashboard responsive */
+@media (max-width: 768px) {
+  .open-dashboard {
+    padding: 4rem 5%;
+  }
+  .dash-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dash-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

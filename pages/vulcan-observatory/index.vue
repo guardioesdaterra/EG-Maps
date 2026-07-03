@@ -42,6 +42,7 @@
       <MapView2D
         :default-dataset="'vulcan-observatory'"
         :rare-earth-points="pointsData"
+        :rare-earth-filtered="filteredPoints"
         :rare-earth-polygons="polygonsData"
         :rare-earth-protected="protectedData"
         :rare-earth-water="waterData"
@@ -125,6 +126,7 @@
       <GeoLocateModal :visible="showGeoLocate" @close="showGeoLocate = false" @locate="onGeoLocate" />
       <UserContributionModal :visible="showUserContribution" @close="showUserContribution = false" />
       <ClaimsDataTable :visible="showDataTable" :data="allFeatures" @close="showDataTable = false" @fly-to="(coords) => flyToTarget = { lng: coords[0], lat: coords[1], zoom: 8 }" />
+      <ClaimDetailModal :visible="showClaimDetail" :claim="claimDetailProps" @close="closeClaimDetail" />
 
       <template #fallback>
         <div class="flex h-[100svh] w-full items-center justify-center bg-zinc-950 text-white">
@@ -136,9 +138,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, type Ref } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import { useObservatoryControls, type ObservatoryData, type ObservatoryTabKey } from '@/composables/useObservatoryControls'
+import { useObservatorySelection } from '@/composables/useObservatorySelection'
 import ObservatoryControls from '@/components/observatory/ObservatoryControls.vue'
 import ObservatorySidebar from '@/components/observatory/ObservatorySidebar.vue'
 import ClaimReportModal from '@/components/observatory/ClaimReportModal.vue'
@@ -147,6 +150,7 @@ import KeyboardShortcuts from '@/components/observatory/KeyboardShortcuts.vue'
 import ClaimsDataTable from '@/components/observatory/ClaimsDataTable.vue'
 import GeoLocateModal from '@/components/observatory/GeoLocateModal.vue'
 import UserContributionModal from '@/components/observatory/UserContributionModal.vue'
+import ClaimDetailModal from '@/components/observatory/ClaimDetailModal.vue'
 import { useRareEarthData } from '@/composables/useRareEarthData'
 
 const { t } = useI18n()
@@ -193,6 +197,8 @@ const {
   layerVis, enterpriseLayerVisible, toggleLayer, toggleEnterpriseLayer,
   // map
   flyToTarget, mapRef: _mapRef, onMapInit, flyToCoord, onGeoLocate, expandToFullBrazil, zoomToDanger, flyToEnterprise,
+  // data
+  filteredPoints,
   // stats
   categoryStats, totalCount, activeFilterCount, activeFilterSummary, formatSyncDate, formatHa,
   // animations
@@ -239,6 +245,7 @@ const stats = { categoryStats, totalCount, filteredCount, activeFilterCount, act
 const data: ObservatoryData = {
   allFeatures: allFeatures as unknown as Ref<unknown[]>,
   pointsData: _rawPointsData as unknown as Ref<GeoJSON.FeatureCollection>,
+  filteredPoints: filteredPoints as unknown as Ref<GeoJSON.FeatureCollection>,
   polygonsData: _rawPolygonsData as unknown as Ref<unknown>,
   protectedData: _rawProtectedData as unknown as Ref<unknown>,
   waterData: _rawWaterData as unknown as Ref<unknown>,
@@ -260,6 +267,30 @@ const showRedeCorporativa = ref(false)
 const showDownload = ref(false)
 const showUserContribution = ref(false)
 const showAll = ref(false)
+
+// ---- Claim full-screen overlay ----
+const showClaimDetail = ref(false)
+const claimDetailProps = ref<Record<string, unknown> | null>(null)
+const obsSel = useObservatorySelection()
+
+watch(() => obsSel.selection.value.processo, (processo) => {
+  if (processo) {
+    const sel = obsSel.selection.value
+    const features = allFeatures.value as Array<Record<string, unknown>>
+    const feature = features.find(f => f.p === processo) ?? { p: processo, n: sel.nome }
+    claimDetailProps.value = {
+      ...feature,
+      lo: sel.coords?.[0] ?? feature.lo,
+      la: sel.coords?.[1] ?? feature.la,
+    } as Record<string, unknown>
+    showClaimDetail.value = true
+  }
+})
+
+function closeClaimDetail() {
+  showClaimDetail.value = false
+  claimDetailProps.value = null
+}
 
 // ---- My Territory pin ----
 const { pin: userPin, sharedFromUrl: userPinShared, setPin: setUserPin, clearPin, copyShareUrl } = useUserPin()
@@ -350,6 +381,7 @@ function handleKeydownPage(e: KeyboardEvent) {
     if (showDownload.value) { showDownload.value = false; return }
     if (showClaimReport.value) { showClaimReport.value = false; return }
     if (showUserContribution.value) { showUserContribution.value = false; return }
+    if (showClaimDetail.value) { closeClaimDetail(); return }
   }
 }
 

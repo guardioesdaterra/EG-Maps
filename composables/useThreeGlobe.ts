@@ -154,27 +154,51 @@ export function useThreeGlobe(
     window.addEventListener('mousemove', mouseHandler)
 
     gsap.to(globe.rotation, { y: Math.PI * 2, scrollTrigger: { trigger: '#ui-overlay', start: 'top top', end: 'bottom bottom', scrub: 1.5 } })
-    gsap.to(globe.position, { x: 2, scrollTrigger: { trigger: '#hero', start: 'bottom center', end: 'bottom top', scrub: 1.5 } })
-    gsap.to(globe.position, { x: -2, scrollTrigger: { trigger: '#details', start: 'top center', end: 'bottom center', scrub: 1.5 } })
-    gsap.to(globe.position, { x: 0, scrollTrigger: { trigger: '#join', start: 'top center', end: 'bottom center', scrub: 1.5 } })
-    const footerTL = gsap.timeline({
-      scrollTrigger: { trigger: '#open-dashboard', start: 'top bottom', end: 'bottom top', scrub: 3, invalidateOnRefresh: true },
-    })
-    footerTL.to(globe.scale, { x: 2.5, y: 2.5, z: 2.5, ease: 'power2.out', duration: 1.5 }).to(camera.position, { z: 2.8, ease: 'power2.out', duration: 1.5 }, '-=1')
+    gsap.to(globe.scale, { x: 2.5, y: 2.5, z: 2.5, ease: 'power2.out', scrollTrigger: { trigger: '#open-dashboard', start: 'top bottom', end: 'bottom top', scrub: 3, invalidateOnRefresh: true } })
+    gsap.to(camera.position, { z: 2.8, ease: 'power2.out', scrollTrigger: { trigger: '#open-dashboard', start: 'top bottom', end: 'bottom top', scrub: 3, invalidateOnRefresh: true } })
 
-    gsap.from('.impact-card', { opacity: 0, x: -50, duration: 1, stagger: 0.1, scrollTrigger: { trigger: '#details', start: 'top center' } })
-    gsap.from('.grants-body', { opacity: 0, y: 80, duration: 1.2, force3D: true, scrollTrigger: { trigger: '#join', start: 'top 75%', toggleActions: 'play none none none' } })
-    gsap.from('.dash-card', { opacity: 0, y: 60, duration: 1, stagger: 0.1, force3D: true, scrollTrigger: { trigger: '#open-dashboard', start: 'top 75%', toggleActions: 'play none none none' } })
+    let targetX = 0
+    let currentX = 0
+
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: '#hero',
+        start: 'bottom center',
+        end: 'bottom top',
+        scrub: 1.5,
+        onUpdate: (self) => { targetX = 2 * self.progress },
+      })
+      ScrollTrigger.create({
+        trigger: '#details',
+        start: 'top center',
+        end: 'bottom center',
+        scrub: 1.5,
+        onUpdate: (self) => { targetX = 2 - 4 * self.progress },
+      })
+      ScrollTrigger.create({
+        trigger: '#join',
+        start: 'top center',
+        end: 'bottom center',
+        scrub: 1.5,
+        onUpdate: (self) => { targetX = -2 + 2 * self.progress },
+      })
+
+      gsap.from('.impact-card', { opacity: 0, x: -50, duration: 1, stagger: 0.1, scrollTrigger: { trigger: '#details', start: 'top center' } })
+      gsap.from('.grants-body', { opacity: 0, y: 80, duration: 1.2, force3D: true, scrollTrigger: { trigger: '#join', start: 'top 75%', toggleActions: 'play none none none' } })
+      gsap.from('.dash-card', { opacity: 0, y: 60, duration: 1, stagger: 0.1, force3D: true, scrollTrigger: { trigger: '#open-dashboard', start: 'top 75%', toggleActions: 'play none none none' } })
+    })
 
     let time = 0
     const animate = () => {
       rafId = requestAnimationFrame(animate)
       time += 0.016
-      globe.rotation.y += 0.001
       scene.rotation.y += (mouseX - scene.rotation.y) * 0.05
       scene.rotation.x += (mouseY - scene.rotation.x) * 0.05
 
-      // Animate marker pulses
+      targetX = Math.max(-3.5, Math.min(3.5, targetX))
+      currentX += (targetX - currentX) * 0.08
+      globe.position.x = currentX
+
       markerGroup.children.forEach((child: any) => {
         if (child.userData?.baseOpacity != null) {
           const { baseOpacity, phase } = child.userData
@@ -197,6 +221,7 @@ export function useThreeGlobe(
       window.removeEventListener('resize', resizeHandler)
       window.removeEventListener('mousemove', mouseHandler)
       cancelAnimationFrame(rafId)
+      ctx.revert()
       renderer.dispose()
     }
 

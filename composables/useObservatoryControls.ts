@@ -63,6 +63,7 @@ export interface ObservatoryAnimations {
 export interface ObservatoryData {
   allFeatures: Ref<unknown[]>
   pointsData: Ref<GeoJSON.FeatureCollection>
+  filteredPoints: Ref<GeoJSON.FeatureCollection>
   polygonsData: Ref<unknown>
   protectedData: Ref<unknown>
   waterData: Ref<unknown>
@@ -299,6 +300,13 @@ export function useObservatoryControls(): ObservatoryControls {
       loadFullBrazil,
       isRegional,
     } = data)
+
+    // Initialize filteredPoints with the full dataset so the map has data immediately
+    const raw = pointsData.value
+    if (raw?.features?.length) {
+      filteredPoints.value = raw
+      filteredCount.value = raw.features.length
+    }
   }
 
   // ---- animations ----
@@ -447,9 +455,8 @@ export function useObservatoryControls(): ObservatoryControls {
     }
   }
 
-  watch(pointsData, (next) => {
-    filteredPoints.value = next ?? { type: 'FeatureCollection', features: [] }
-    filteredCount.value = filteredPoints.value.features.length
+  watch(pointsData, () => {
+    updateFilter()
   })
 
   // ---- keyboard ----
@@ -498,7 +505,7 @@ export function useObservatoryControls(): ObservatoryControls {
     // map
     flyToTarget, mapRef, onMapInit, flyToCoord, onGeoLocate, expandToFullBrazil, zoomToDanger, flyToEnterprise,
     // data
-    allFeatures, pointsData, polygonsData, protectedData, waterData, culturalData,
+    allFeatures, pointsData, filteredPoints, polygonsData, protectedData, waterData, culturalData,
     speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error,
     loadRareEarthData, loadFullBrazil, isRegional, setupObservatory,
     // stats

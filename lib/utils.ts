@@ -62,6 +62,7 @@ export function clamp(value: number, min: number, max: number): number {
 /**
  * Stable debounce implementation. Cancels previous invocations within `wait` ms.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounce<T extends (..._args: any[]) => void>(
   fn: T,
   wait: number,

@@ -94,11 +94,11 @@ async function main() {
   try {
     const grants = loadGrants(filePath);
     if (grants.length === 0) {
-      console.log("No grants to sync.");
+      console.warn("No grants to sync.");
       return;
     }
 
-    console.log(`Loaded ${grants.length} grants from ${filePath || "stdin"}`);
+    console.warn(`Loaded ${grants.length} grants from ${filePath || "stdin"}`);
 
     const BATCH_SIZE = 200;
     let totalInserted = 0;
@@ -189,16 +189,16 @@ async function main() {
       process.stdout.write(`✓ ${batchInserted} inserted, ${batchUpdated} updated, ${batchSkipped} skipped\n`);
     }
 
-    console.log(`\n─── Result ───`);
-    console.log(`  Inserted: ${totalInserted}`);
-    console.log(`  Updated:  ${totalUpdated}`);
-    console.log(`  Skipped:  ${totalSkipped}`);
-    console.log(`  Total:    ${grants.length}`);
-    console.log(`  Errors:   ${allErrors.length}`);
+    console.warn(`\n─── Result ───`);
+    console.warn(`  Inserted: ${totalInserted}`);
+    console.warn(`  Updated:  ${totalUpdated}`);
+    console.warn(`  Skipped:  ${totalSkipped}`);
+    console.warn(`  Total:    ${grants.length}`);
+    console.warn(`  Errors:   ${allErrors.length}`);
 
     if (allErrors.length > 0) {
       for (const e of allErrors.slice(0, 10)) {
-        console.log(`  • ${e}`);
+        console.warn(`  • ${e}`);
       }
       process.exit(2);
     }

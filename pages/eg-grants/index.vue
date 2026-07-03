@@ -13,7 +13,7 @@
       gradient-to="rgba(160, 255, 188, 0.03)"
       glow-color="#08080a"
     />
-    <div class="scroll-indicator">{{ t('grantsPortal.scrollToExplore') }}</div>
+    <div v-if="showScrollIndicator" class="scroll-indicator">{{ t('grantsPortal.scrollToExplore') }}</div>
     <GrantsAuth :user="user" :is-manager="isManager" @sign-in="signIn" @sign-out="handleSignOut" />
 
     <!-- Sign-out confirmation dialog -->
@@ -142,19 +142,19 @@
 
           <div class="dash-stats">
             <div class="dash-stat-card">
-              <span class="dash-stat-num" style="color:#eab308;">{{ scrapedOpenCount }}</span>
+              <span class="dash-stat-num open">{{ scrapedOpenCount }}</span>
               <span class="dash-stat-label">OPEN</span>
             </div>
             <div class="dash-stat-card">
-              <span class="dash-stat-num" style="color:#00ff85;">{{ scrapedApprovedCount }}</span>
+              <span class="dash-stat-num approved">{{ scrapedApprovedCount }}</span>
               <span class="dash-stat-label">APPROVED</span>
             </div>
             <div class="dash-stat-card">
-              <span class="dash-stat-num" style="color:rgba(255,255,255,0.4);">{{ scrapedClosedCount }}</span>
+              <span class="dash-stat-num closed">{{ scrapedClosedCount }}</span>
               <span class="dash-stat-label">CLOSED</span>
             </div>
             <div class="dash-stat-card">
-              <span class="dash-stat-num" style="color:#ef4444;">{{ scrapedDeclinedCount }}</span>
+              <span class="dash-stat-num declined">{{ scrapedDeclinedCount }}</span>
               <span class="dash-stat-label">DECLINED</span>
             </div>
           </div>
@@ -163,12 +163,16 @@
             <button v-for="dt in dashTabs" :key="dt.key" @click="activeDashTab = dt.key" class="dash-tab" :class="activeDashTab === dt.key ? 'active' : ''">{{ dt.label }}</button>
           </div>
 
+          <div class="dash-search">
+            <svg class="dash-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input v-model="dashboardSearch" placeholder="Search by title, funder, or country..." class="dash-search-input" />
+          </div>
           <div class="dash-grid">
             <div v-if="scrapedLoading" class="dash-loading">{{ t('grantsPortal.loadingOpenGrants') }}</div>
-            <div v-else-if="dashGrants.length === 0" class="dash-empty">No grants in this category yet.</div>
-            <div v-for="g in dashGrants" :key="g.id" class="dash-card" @click="openScrapedDetail(g)">
+            <div v-else-if="filteredDashGrants.length === 0" class="dash-empty">{{ dashboardSearch ? 'No grants match your search.' : 'No grants in this category yet.' }}</div>
+            <div v-for="g in filteredDashGrants" :key="g.id" class="dash-card" @click="openScrapedDetail(g)">
               <div class="dash-card-top">
-                <span class="dash-card-type" :class="g.grant_type || 'general'">{{ typeEmoji(g.grant_type) }} {{ g.grant_type || 'general' }}</span>
+                <span class="dash-card-type" :class="g.grant_type || 'general'">{{ typeEmoji(g.grant_type) }} {{ grantTypeLabel(g.grant_type) }}</span>
                 <span v-if="g.priority_score != null" class="dash-card-score" :class="priorityClass(g.priority_score)">{{ g.priority_score }}</span>
               </div>
               <h4 class="dash-card-title">{{ g.title }}</h4>
@@ -184,13 +188,13 @@
                   <button v-for="n in 8" :key="n" @click.stop="handleVoteScraped(g.id, n)" class="dash-star" :class="getStarClass(g.id, n)">★</button>
                   <span class="dash-votes">{{ getVoteCount(g.id) }} votes</span>
                 </div>
-                <a :href="g.url" target="_blank" @click.stop class="dash-apply">APPLY ↗</a>
+                <a v-if="g.url" :href="g.url" target="_blank" @click.stop class="dash-apply">APPLY ↗</a>
               </div>
             </div>
           </div>
 
           <div class="dash-cta">
-            <NuxtLink to="/project-grants/3d" class="dash-cta-btn">VIEW PROJECT GROLS ON 3D GLOBE →</NuxtLink>
+            <NuxtLink to="/project-grants/3d" class="dash-cta-btn">VIEW PROJECT GRANTS ON 3D GLOBE →</NuxtLink>
           </div>
         </div>
       </section>
@@ -324,7 +328,7 @@
                 <div class="grant-item-body">
                   <div class="grant-item-header">
                     <div class="flex items-center gap-2 flex-wrap">
-                      <span class="grant-type-badge" :class="g.grant_type || 'general'">{{ typeEmoji(g.grant_type) }} {{ g.grant_type || 'general' }}</span>
+                      <span class="grant-type-badge" :class="g.grant_type || 'general'">{{ typeEmoji(g.grant_type) }} {{ grantTypeLabel(g.grant_type) }}</span>
                       <h4>{{ g.title }}</h4>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
@@ -388,7 +392,7 @@
                 <div class="grant-item-body">
                   <div class="grant-item-header">
                     <div class="flex items-center gap-2 flex-wrap">
-                      <span class="grant-type-badge" :class="g.grant_type || 'general'">{{ typeEmoji(g.grant_type) }} {{ g.grant_type || 'general' }}</span>
+                      <span class="grant-type-badge" :class="g.grant_type || 'general'">{{ typeEmoji(g.grant_type) }} {{ grantTypeLabel(g.grant_type) }}</span>
                       <h4>{{ g.title }}</h4>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
@@ -535,7 +539,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
 import { allProjectsData } from '~/lib/project-data'
 import type { ProjectData, DetailGrantData } from '~/lib/types'
@@ -642,6 +646,22 @@ const dashGrants = computed(() => {
   return scrapedGrants.value.filter(g => statuses.includes(g.status))
 })
 
+const dashboardSearch = ref('')
+const filteredDashGrants = computed(() => {
+  const q = dashboardSearch.value.toLowerCase().trim()
+  if (!q) return dashGrants.value
+  return dashGrants.value.filter(g =>
+    g.title.toLowerCase().includes(q) ||
+    g.funder?.toLowerCase().includes(q) ||
+    g.country?.toLowerCase().includes(q)
+  )
+})
+
+const showScrollIndicator = ref(true)
+function onPageScroll() {
+  showScrollIndicator.value = window.scrollY < window.innerHeight * 0.6
+}
+
 const portalTabs = computed(() => {
   const tabs = [
     { key: 'tabSubmit', label: '📝 Submit' },
@@ -741,6 +761,18 @@ function priorityClass(score: number): string {
   if (score >= 60) return 'high'
   if (score >= 30) return 'mid'
   return 'low'
+}
+
+function grantTypeLabel(type?: string): string {
+  const map: Record<string, string> = {
+    artivism: 'Artivism',
+    climate_justice: 'Climate Justice',
+    conservation: 'Conservation',
+    human_rights: 'Human Rights',
+    indigenous_rights: 'Indigenous Rights',
+    youth: 'Youth',
+  }
+  return map[type || ''] || 'General'
 }
 
 function formatAmount(val: number): string {
@@ -851,7 +883,7 @@ async function handleSubmitGrant() {
       submitMsg.value = result.error
       submitOk.value = false
     } else {
-      submitMsg.value = 'Grant submitted successfully!'
+      submitMsg.value = t('grantsPortal.submittedSuccess')
       submitOk.value = true
       form.title = ''
       form.description = ''
@@ -1010,6 +1042,11 @@ onMounted(async () => {
   await Promise.all([loadGrants(), loadStats(), loadScrapedGrants()])
   await nextTick()
   initGlobe()
+  window.addEventListener('scroll', onPageScroll, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onPageScroll)
 })
 </script>
 
@@ -1103,14 +1140,17 @@ h2 {
 }
 
 .stat-card {
-  background: var(--glass);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
   padding: 2rem;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s;
 }
 .stat-card:hover {
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 30px rgba(0, 255, 133, 0.04);
 }
 
 .stat-value {
@@ -1123,14 +1163,25 @@ h2 {
 /* Join/Features Section */
 .join-section {
   padding: 8rem 10%;
-  border-top: 1px solid var(--border);
   position: relative;
+}
+
+.join-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  pointer-events: none;
+  z-index: 1;
 }
 .join-section h2 {
   margin-top: 1rem;
   text-align: center;
 }
-.join-section::before {
+.join-section::after {
   content: '';
   position: absolute;
   top: 0;
@@ -1153,9 +1204,10 @@ h2 {
 }
 
 .join-card {
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 4rem 3rem;
   transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   position: relative;
@@ -1317,9 +1369,9 @@ h2 {
 /* Portal Section */
 .projects-section {
   padding: 8rem 10%;
-  border-top: 1px solid var(--border);
   position: relative;
 }
+
 .projects-section::before {
   content: '';
   position: absolute;
@@ -1329,6 +1381,18 @@ h2 {
   height: 100%;
   background: radial-gradient(circle at 30% 50%, rgba(0, 255, 133, 0.04) 0%, transparent 60%);
   pointer-events: none;
+}
+
+.projects-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 133, 0.12), rgba(99, 102, 241, 0.12), transparent);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .projects-header {
@@ -1361,14 +1425,16 @@ h2 {
 }
 
 .portal-card {
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
   padding: 2.5rem;
   margin-bottom: 2rem;
   transition: all 0.3s;
 }
-.portal-card:hover { border-color: rgba(255,255,255,0.15); }
+.portal-card:hover { border-color: rgba(255,255,255,0.18); }
 
 .signin-card {
   text-align: center;
@@ -1402,16 +1468,22 @@ h2 {
   align-items: center;
   gap: 10px;
   padding: 0.85rem 2rem;
-  background: #fff;
-  color: #000;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--tectonic-white);
   font-weight: 700;
   font-size: 0.9rem;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.25s;
-  border: none;
 }
-.signin-btn:hover { transform: scale(1.03); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.signin-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.02);
+}
 
 .user-card {
   display: flex;
@@ -1435,9 +1507,11 @@ h2 {
 .user-role { font-size: 0.8rem; font-weight: 700; color: var(--tectonic-white); }
 .user-email { font-size: 0.7rem; color: rgba(255,255,255,0.3); }
 .signout-btn {
-  background: none;
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.5);
   padding: 0.4rem 1rem;
   border-radius: 6px;
   font-size: 0.7rem;
@@ -1445,7 +1519,7 @@ h2 {
   cursor: pointer;
   transition: all 0.2s;
 }
-.signout-btn:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+.signout-btn:hover { color: var(--tectonic-white); border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); }
 
 .stats-row {
   display: grid;
@@ -1454,11 +1528,16 @@ h2 {
   margin-bottom: 2rem;
 }
 .stat-mini {
-  background: var(--glass);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
   padding: 1rem;
   text-align: center;
+  transition: all 0.3s;
 }
+.stat-mini:hover { border-color: rgba(255,255,255,0.15); }
 .stat-mini-value {
   display: block;
   font-family: 'JetBrains Mono', monospace;
@@ -1494,13 +1573,16 @@ h2 {
 /* Grant items */
 .grant-item {
   background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
   padding: 1rem;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
 }
 .grant-item:hover {
   border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .grant-item-body {
@@ -1836,13 +1918,25 @@ textarea.edit-input {
   overflow: hidden;
 }
 
+.open-dashboard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 133, 0.15), rgba(99, 102, 241, 0.15), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
 .nebula-bg {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 20% 40%, rgba(0, 255, 133, 0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 80% 30%, rgba(99, 102, 241, 0.05) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 70%);
+    radial-gradient(ellipse 80% 60% at 20% 40%, rgba(0, 255, 133, 0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 80% 30%, rgba(99, 102, 241, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 50% 80%, rgba(236, 72, 153, 0.05) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -1891,7 +1985,7 @@ textarea.edit-input {
   line-height: 1.6;
 }
 
-/* Dashboard stat cards */
+/* Dashboard stat cards — glassmorphism */
 .dash-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1901,16 +1995,48 @@ textarea.edit-input {
 
 .dash-stat-card {
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
   padding: 1.5rem;
   text-align: center;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.dash-stat-card::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 25%;
+  right: 25%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  opacity: 0;
+  transition: opacity 0.4s;
 }
 
 .dash-stat-card:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 30px rgba(0, 255, 133, 0.05);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 40px rgba(0, 255, 133, 0.06);
+  transform: translateY(-2px);
+}
+
+.dash-stat-card:hover::after {
+  opacity: 1;
 }
 
 .dash-stat-num {
@@ -1920,7 +2046,12 @@ textarea.edit-input {
   display: block;
   line-height: 1;
   margin-bottom: 0.5rem;
+  position: relative;
 }
+.dash-stat-num.open { color: var(--stat-open); }
+.dash-stat-num.approved { color: var(--stat-approved); }
+.dash-stat-num.closed { color: var(--stat-closed); }
+.dash-stat-num.declined { color: var(--stat-declined); }
 
 .dash-stat-label {
   font-family: 'JetBrains Mono', monospace;
@@ -1929,48 +2060,95 @@ textarea.edit-input {
   letter-spacing: 0.2em;
   color: rgba(255, 255, 255, 0.35);
   font-weight: 700;
+  position: relative;
 }
 
-/* Dashboard tabs */
+/* Dashboard tabs — pill-style glass */
 .dash-tabs {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
 .dash-tab {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  padding: 0.6rem 1.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
+  letter-spacing: 0.12em;
+  padding: 0.5rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 6px;
   color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
 }
 
 .dash-tab:hover {
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .dash-tab.active {
-  background: var(--accent);
+  background: rgba(0, 255, 133, 0.12);
   border-color: var(--accent);
-  color: #000;
-  box-shadow: 0 0 20px rgba(0, 255, 133, 0.3);
+  color: var(--accent);
+  box-shadow: 0 0 20px rgba(0, 255, 133, 0.15);
+}
+
+/* Dashboard search */
+.dash-search {
+  position: relative;
+  max-width: 400px;
+  margin: 0 auto 2rem;
+}
+
+.dash-search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+}
+
+.dash-search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: var(--tectonic-white);
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.dash-search-input:focus {
+  border-color: rgba(0, 255, 133, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 30px rgba(0, 255, 133, 0.04);
+}
+
+.dash-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
 }
 
 /* Dashboard grid */
 .dash-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.25rem;
+  gap: 1rem;
   margin-bottom: 3rem;
 }
 
@@ -1987,11 +2165,13 @@ textarea.edit-input {
 /* Dashboard cards — glassmorphism + neobrutalism */
 .dash-card {
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border: 2px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
   padding: 1.5rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   position: relative;
   overflow: hidden;
 }
@@ -2005,18 +2185,32 @@ textarea.edit-input {
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.4s;
+}
+
+.dash-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
 }
 
 .dash-card:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-4px);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 12px 48px rgba(0, 0, 0, 0.5),
     0 0 60px rgba(0, 255, 133, 0.06);
 }
 
 .dash-card:hover::before {
+  opacity: 1;
+}
+
+.dash-card:hover::after {
   opacity: 1;
 }
 
@@ -2025,45 +2219,48 @@ textarea.edit-input {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.75rem;
+  position: relative;
 }
 
 .dash-card-type {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: 9999px;
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.dash-card-type.conservation { background: rgba(34, 197, 94, 0.12); color: #4ade80; }
-.dash-card-type.artivism     { background: rgba(168, 85, 247, 0.12); color: #c084fc; }
-.dash-card-type.climate_justice { background: rgba(34, 197, 94, 0.12); color: #4ade80; }
-.dash-card-type.human_rights { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
-.dash-card-type.indigenous_rights { background: rgba(234, 179, 8, 0.12); color: #facc15; }
-.dash-card-type.youth        { background: rgba(236, 72, 153, 0.12); color: #f472b6; }
+.dash-card-type.conservation { background: rgba(34, 197, 94, 0.12); color: #4ade80; border-color: rgba(34, 197, 94, 0.15); }
+.dash-card-type.artivism     { background: rgba(168, 85, 247, 0.12); color: #c084fc; border-color: rgba(168, 85, 247, 0.15); }
+.dash-card-type.climate_justice { background: rgba(34, 197, 94, 0.12); color: #4ade80; border-color: rgba(34, 197, 94, 0.15); }
+.dash-card-type.human_rights { background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.15); }
+.dash-card-type.indigenous_rights { background: rgba(234, 179, 8, 0.12); color: #facc15; border-color: rgba(234, 179, 8, 0.15); }
+.dash-card-type.youth        { background: rgba(236, 72, 153, 0.12); color: #f472b6; border-color: rgba(236, 72, 153, 0.15); }
 
 .dash-card-score {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 800;
-  width: 1.75rem;
-  height: 1.75rem;
+  min-width: 1.5rem;
+  height: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
+  border: 1px solid transparent;
 }
 
-.dash-card-score.high { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
-.dash-card-score.mid  { background: rgba(234, 179, 8, 0.2); color: #facc15; }
-.dash-card-score.low  { background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.4); }
+.dash-card-score.high { background: rgba(34, 197, 94, 0.15); color: #4ade80; border-color: rgba(34, 197, 94, 0.15); }
+.dash-card-score.mid  { background: rgba(234, 179, 8, 0.15); color: #facc15; border-color: rgba(234, 179, 8, 0.15); }
+.dash-card-score.low  { background: rgba(255, 255, 255, 0.04); color: rgba(255, 255, 255, 0.4); border-color: rgba(255, 255, 255, 0.06); }
 
 .dash-card-title {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--tectonic-white);
   line-height: 1.3;
@@ -2075,7 +2272,7 @@ textarea.edit-input {
 }
 
 .dash-card-desc {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.45);
   margin-bottom: 0.75rem;
@@ -2084,10 +2281,10 @@ textarea.edit-input {
 .dash-card-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  font-size: 0.68rem;
+  gap: 0.375rem 0.75rem;
+  font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.35);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .dash-card-meta span {
@@ -2114,8 +2311,8 @@ textarea.edit-input {
   background: none;
   border: none;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.12);
-  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.1);
+  font-size: 0.75rem;
   padding: 0;
   transition: all 0.15s;
 }
@@ -2132,28 +2329,31 @@ textarea.edit-input {
 
 .dash-votes {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   color: rgba(255, 255, 255, 0.25);
-  margin-left: 0.5rem;
+  margin-left: 0.375rem;
 }
 
 .dash-apply {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--accent);
   text-decoration: none;
-  padding: 0.4rem 1rem;
-  border: 1px solid var(--accent);
-  transition: all 0.2s;
+  padding: 0.35rem 0.875rem;
+  border: 1px solid rgba(0, 255, 133, 0.25);
+  border-radius: 6px;
+  background: rgba(0, 255, 133, 0.04);
+  transition: all 0.3s;
 }
 
 .dash-apply:hover {
   background: var(--accent);
   color: #000;
-  box-shadow: 0 0 16px rgba(0, 255, 133, 0.3);
+  box-shadow: 0 0 20px rgba(0, 255, 133, 0.3);
+  border-color: var(--accent);
 }
 
 /* CTA */
@@ -2164,17 +2364,20 @@ textarea.edit-input {
 
 .dash-cta-btn {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  padding: 1rem 2.5rem;
-  background: transparent;
-  border: 2px solid var(--accent);
+  padding: 0.875rem 2rem;
+  background: rgba(0, 255, 133, 0.06);
+  border: 1px solid rgba(0, 255, 133, 0.25);
+  border-radius: 8px;
   color: var(--accent);
   text-decoration: none;
   display: inline-block;
   transition: all 0.3s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .dash-cta-btn:hover {
@@ -2182,6 +2385,7 @@ textarea.edit-input {
   color: #000;
   box-shadow: 0 0 40px rgba(0, 255, 133, 0.4);
   transform: translateY(-2px);
+  border-color: var(--accent);
 }
 
 /* Dashboard responsive */
@@ -2194,6 +2398,9 @@ textarea.edit-input {
   }
   .dash-grid {
     grid-template-columns: 1fr;
+  }
+  .dash-search {
+    max-width: 100%;
   }
 }
 </style>

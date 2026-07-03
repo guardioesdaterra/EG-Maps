@@ -89,9 +89,10 @@ test.describe('Locale file availability and validity', () => {
 test.describe('Species data files', () => {
   const datasets = [
     { path: '/data/species/index.json', checkKeys: false },
-    { path: '/data/species/icmbio-brazil.json', checkKeys: true },
-    { path: '/data/species/iucn.json', checkKeys: true },
+    { path: '/data/species/icmbio-brazil-index.json', checkKeys: true },
+    { path: '/data/species/iucn-index.json', checkKeys: true },
     { path: '/data/species/species-icon-mapping.json', checkKeys: false },
+    { path: '/data/species/regions/manifest.json', checkKeys: false },
   ]
 
   for (const { path, checkKeys } of datasets) {

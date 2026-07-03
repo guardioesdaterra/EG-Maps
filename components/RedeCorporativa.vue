@@ -213,21 +213,28 @@ function drawGraph() {
   cachedNodes = layoutGraph(w, h)
   const nodeMap = new Map(cachedNodes.map(n => [n.ent.name, n]))
 
-  // Draw edges
+  // Draw edges with hierarchical styling
   CORPORATE_CONNECTIONS.forEach(conn => {
     const from = nodeMap.get(conn.from)
     const to = nodeMap.get(conn.to)
     if (!from || !to) return
     const color = getConnectionColor(conn.type)
+    const edgeStyle = {
+      subsidiary:    { width: 3,   dash: [] as number[], alpha: 0.8 },
+      shareholding:  { width: 2.2, dash: [6, 3], alpha: 0.65 },
+      joint_venture: { width: 1.8, dash: [4, 4], alpha: 0.6 },
+      board_overlap: { width: 1.2, dash: [2, 4], alpha: 0.4 },
+      partnership:   { width: 1.5, dash: [8, 4], alpha: 0.5 },
+    }[conn.type] || { width: 1.5, dash: [5, 3], alpha: 0.5 }
     ctx.beginPath()
     ctx.moveTo(from.x, from.y)
     const cpx = (from.x + to.x) / 2
     const cpy = (from.y + to.y) / 2 - 15
     ctx.quadraticCurveTo(cpx, cpy, to.x, to.y)
     ctx.strokeStyle = color
-    ctx.globalAlpha = 0.6
-    ctx.lineWidth = 2
-    ctx.setLineDash([5, 3])
+    ctx.globalAlpha = edgeStyle.alpha
+    ctx.lineWidth = edgeStyle.width
+    ctx.setLineDash(edgeStyle.dash)
     ctx.stroke()
     ctx.globalAlpha = 1
     ctx.setLineDash([])

@@ -685,12 +685,12 @@ describe('buildEnterpriseNetworkLines', () => {
       ],
     }
     const result = buildEnterpriseNetworkLines(fc as RareEarthFeatureCollection)
-    const valeLine = result.features.find(f =>
+    const valeLines = result.features.filter(f =>
       f.properties?.from === 'VALE S.A.' && f.properties?.type === 'domestic_claims'
     )
-    expect(valeLine).toBeDefined()
-    expect(valeLine!.properties!.claimCount).toBe(2)
-    expect(valeLine!.geometry!.type).toBe('LineString')
+    expect(valeLines.length).toBe(2)
+    expect(valeLines[0]!.geometry!.type).toBe('LineString')
+    expect(valeLines[1]!.geometry!.type).toBe('LineString')
   })
 
   it('includes corporate connection lines between enterprises', () => {

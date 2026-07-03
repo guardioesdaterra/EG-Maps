@@ -352,7 +352,7 @@ function normalizeEnterpriseName(raw: string): string {
 }
 
 export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): GeoJSON.FeatureCollection {
-  const enterpriseClaimMap = new Map<string, { lng: number; lat: number; area: number }[]>()
+  const enterpriseClaimMap = new Map<string, { lng: number; lat: number; area: number; name: string }[]>()
 
   for (const ent of ENTERPRISES) {
     enterpriseClaimMap.set(normalizeEnterpriseName(ent.name), [])
@@ -371,7 +371,7 @@ export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): 
 
     for (const [entKey, claims] of enterpriseClaimMap) {
       if (normClaim.includes(entKey) || entKey.includes(normClaim)) {
-        claims.push({ lng, lat, area })
+        claims.push({ lng, lat, area, name: rawName })
         break
       }
     }
@@ -379,37 +379,45 @@ export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): 
 
   const features: GeoJSON.Feature[] = []
 
+  const connectionTypeStyles: Record<string, { color: string; width: number; dash: number[]; opacity: number }> = {
+    subsidiary:     { color: '#e74c3c', width: 2.5, dash: [],       opacity: 0.7 },
+    shareholding:   { color: '#f39c12', width: 1.8, dash: [6, 3],  opacity: 0.6 },
+    joint_venture:  { color: '#27ae60', width: 1.5, dash: [4, 4],  opacity: 0.55 },
+    board_overlap:  { color: '#8e44ad', width: 1.0, dash: [2, 4],  opacity: 0.4 },
+    partnership:    { color: '#3498db', width: 1.2, dash: [8, 4],  opacity: 0.5 },
+  }
+
   for (const ent of ENTERPRISES) {
     const claims = enterpriseClaimMap.get(normalizeEnterpriseName(ent.name)) || []
     if (claims.length === 0) continue
 
-    const centroidLng = claims.reduce((s, c) => s + c.lng, 0) / claims.length
-    const centroidLat = claims.reduce((s, c) => s + c.lat, 0) / claims.length
     const totalArea = claims.reduce((s, c) => s + c.area, 0)
-
     const connectionType = ent.country !== 'Brazil' ? 'foreign_to_claims' : 'domestic_claims'
     const color = ent.country !== 'Brazil' ? '#e74c3c' : '#27ae60'
 
-    features.push({
-      type: 'Feature',
-      properties: {
-        from: ent.name,
-        to: `${claims.length} claims`,
-        type: connectionType,
-        label: `${ent.name} → ${claims.length} claims (${totalArea.toFixed(0)} ha)`,
-        enterprise: ent.name,
-        claimCount: claims.length,
-        totalArea,
-        country: ent.country,
-        color,
-      },
-      geometry: { type: 'LineString', coordinates: [[ent.lng, ent.lat], [centroidLng, centroidLat]] },
-    })
+    for (const claim of claims) {
+      features.push({
+        type: 'Feature',
+        properties: {
+          from: ent.name,
+          to: claim.name,
+          type: connectionType,
+          label: `${ent.name} → ${claim.name} (${claim.area.toFixed(0)} ha)`,
+          enterprise: ent.name,
+          country: ent.country,
+          color,
+          connectionType: 'enterprise_to_claim',
+        },
+        geometry: { type: 'LineString', coordinates: [[ent.lng, ent.lat], [claim.lng, claim.lat]] },
+      })
+    }
 
     for (const conn of CORPORATE_CONNECTIONS.filter(c => c.from === ent.name || c.to === ent.name)) {
       const otherName = conn.from === ent.name ? conn.to : conn.from
       const otherEnt = ENTERPRISES.find(e => e.name === otherName)
       if (!otherEnt) continue
+
+      const style = connectionTypeStyles[conn.type] || connectionTypeStyles.partnership
 
       features.push({
         type: 'Feature',
@@ -419,7 +427,11 @@ export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): 
           type: conn.type,
           label: conn.label,
           connectionType: 'corporate',
-          color: '#5dade2',
+          corporateType: conn.type,
+          color: style.color,
+          lineWidth: style.width,
+          lineDash: style.dash,
+          lineOpacity: style.opacity,
         },
         geometry: { type: 'LineString', coordinates: [[ent.lng, ent.lat], [otherEnt.lng, otherEnt.lat]] },
       })

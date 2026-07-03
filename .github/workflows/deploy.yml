@@ -241,6 +241,7 @@ jobs:
           python3 -c "import json; d=json.load(open('${EXPORT_FILE}')); grants=d.get('grants',d) if isinstance(d,dict) else d; [print(f'  [{g.get(\"priority_score\",0):3d}] {g.get(\"source\",\"\"):25s} | {g.get(\"title\",\"\")[:60]}') for g in sorted(grants, key=lambda x: x.get('priority_score',0), reverse=True)[:5]]"
 
       - name: Sync grants to Supabase
+        continue-on-error: true
         run: |
           # Find the most recent grants export file
           EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1)

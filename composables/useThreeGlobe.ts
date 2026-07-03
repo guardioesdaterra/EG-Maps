@@ -3,6 +3,8 @@ import type { Ref } from 'vue'
 
 export function useThreeGlobe(canvasRef: Ref<HTMLCanvasElement | null>) {
   let cleanup: (() => void) | null = null
+  let resolveReady: (() => void) | null = null
+  const ready = new Promise<void>(r => { resolveReady = r })
 
   function loadScript(src: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -17,21 +19,24 @@ export function useThreeGlobe(canvasRef: Ref<HTMLCanvasElement | null>) {
   }
 
   async function init() {
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js')
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js')
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js')
+    const SCRIPTS = [
+      'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js',
+    ]
+    await Promise.all(SCRIPTS.map(loadScript))
 
     const win = window as unknown as { THREE: unknown; gsap: unknown; ScrollTrigger: unknown }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const THREE: any = win.THREE
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const gsap: any = win.gsap
-    if (!THREE || !gsap) return
+    if (!THREE || !gsap) { resolveReady?.(); return }
 
     gsap.registerPlugin(win.ScrollTrigger)
 
     const canvas = canvasRef.value
-    if (!canvas) return
+    if (!canvas) { resolveReady?.(); return }
 
     const scene = new THREE.Scene()
     scene.background = new THREE.Color(0x08080a)
@@ -47,7 +52,7 @@ export function useThreeGlobe(canvasRef: Ref<HTMLCanvasElement | null>) {
     earthMap.minFilter = THREE.LinearMipmapLinearFilter
     earthMap.magFilter = THREE.LinearFilter
 
-    const geo = new THREE.SphereGeometry(2, 96, 96)
+    const geo = new THREE.SphereGeometry(2, 64, 64)
     const mat = new THREE.MeshPhongMaterial({ map: earthMap, specular: new THREE.Color('#111111'), shininess: 10 })
     const globe = new THREE.Mesh(geo, mat)
     scene.add(globe)
@@ -85,7 +90,6 @@ export function useThreeGlobe(canvasRef: Ref<HTMLCanvasElement | null>) {
     })
     footerTL.to(globe.position, { x: 0, ease: 'power2.inOut', duration: 2 }).to(globe.scale, { x: 2.5, y: 2.5, z: 2.5, ease: 'power2.out', duration: 1.5 }, '-=0.5').to(camera.position, { z: 2.8, ease: 'power2.out', duration: 1.5 }, '-=1.5')
 
-    gsap.from('#hero h1', { opacity: 0, y: 100, duration: 1.5, stagger: 0.2, ease: 'power4.out' })
     gsap.from('.stat-card', { opacity: 0, x: -50, duration: 1, stagger: 0.1, scrollTrigger: { trigger: '#details', start: 'top center' } })
     gsap.from('.join-card', { opacity: 0, y: 80, duration: 1.2, stagger: 0.3, force3D: true, scrollTrigger: { trigger: '.join-section', start: 'top 75%', toggleActions: 'play none none none' } })
     gsap.from('.portal-card', { opacity: 0, y: 60, duration: 1, stagger: 0.1, force3D: true, scrollTrigger: { trigger: '#grants-portal', start: 'top 75%', toggleActions: 'play none none none' } })
@@ -112,9 +116,11 @@ export function useThreeGlobe(canvasRef: Ref<HTMLCanvasElement | null>) {
       cancelAnimationFrame(rafId)
       renderer.dispose()
     }
+
+    resolveReady?.()
   }
 
   onBeforeUnmount(() => cleanup?.())
 
-  return { init }
+  return { init, ready }
 }

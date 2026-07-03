@@ -242,6 +242,30 @@ jobs:
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
+  deploy-edge-functions:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy edge functions
+        run: |
+          supabase functions deploy grants-list --project-ref ${{ vars.SUPABASE_PROJECT_REF }} --no-verify-jwt
+          supabase functions deploy grants-scraped-list --project-ref ${{ vars.SUPABASE_PROJECT_REF }} --no-verify-jwt
+          supabase functions deploy grants-stats --project-ref ${{ vars.SUPABASE_PROJECT_REF }} --no-verify-jwt
+          supabase functions deploy grants-leaderboard --project-ref ${{ vars.SUPABASE_PROJECT_REF }} --no-verify-jwt
+          supabase functions deploy grants-submit --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
+          supabase functions deploy grants-review --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
+          supabase functions deploy grants-approve --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
+          supabase functions deploy grants-scraped-update --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
+          supabase functions deploy grants-vote --project-ref ${{ vars.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
   deploy:
     needs: build
     runs-on: ubuntu-latest

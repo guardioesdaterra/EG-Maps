@@ -1,5 +1,0 @@
-[project]
-id = "your-project-ref"
-
-[functions]
-verify_jwt = false

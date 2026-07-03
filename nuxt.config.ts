@@ -114,7 +114,7 @@ export default defineNuxtConfig({
     preset: 'static',
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d'],
+      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d', '/iframe'],
       ignore: ['/EG-Maps/manifest.json', '/vulcan-observatory/**', '/EG-Maps/vulcan-observatory/**'],
     },
     compressPublicAssets: true,

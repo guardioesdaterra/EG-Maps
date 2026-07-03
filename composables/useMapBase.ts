@@ -27,6 +27,7 @@ export interface MapBaseProps {
   crewLocations?: CrewLocation[]
   defaultDataset?: 'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'
   rareEarthPoints?: GeoJSON.FeatureCollection
+  rareEarthFiltered?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
   rareEarthProtected?: GeoJSON.FeatureCollection
   rareEarthWater?: GeoJSON.FeatureCollection | null
@@ -215,7 +216,7 @@ export function useMapBase(config: MapBaseConfig) {
     map: mapRef,
     isActive: computed(() => activeDataset.value === 'vulcan-observatory'),
     getProps: () => ({
-      rareEarthPoints: props.rareEarthPoints,
+      rareEarthPoints: props.rareEarthFiltered ?? props.rareEarthPoints,
       rareEarthPolygons: props.rareEarthPolygons,
       rareEarthProtected: props.rareEarthProtected,
       rareEarthWater: props.rareEarthWater ?? undefined,
@@ -240,7 +241,7 @@ export function useMapBase(config: MapBaseConfig) {
       crewsData.value,
       crewLocationsData.value,
       selectedSpeciesGroups.value,
-      props.rareEarthPoints?.features,
+      (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
     )
   }
 

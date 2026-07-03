@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref } from 'vue'
 import type { ObservatoryControls as ObservatoryControlsState, ObservatoryStats, ObservatoryFilters, ObservatoryLayers, ObservatoryAnimations, ObservatoryData } from '@/composables/useObservatoryControls'
 import type { EnterpriseHQ } from '@/lib/enterprise-data'
 import YearSlider from './YearSlider.vue'
@@ -29,11 +29,6 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-
-const isSmallScreen = ref(false)
-onMounted(() => {
-  isSmallScreen.value = window.innerWidth < 768
-})
 
 const activeFilterCount = computed(() => props.stats.activeFilterCount.value)
 const categoryStats = computed(() => props.stats.categoryStats.value)

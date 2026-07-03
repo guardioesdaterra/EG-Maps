@@ -1,3 +1,5 @@
+import { normalizeName } from '@/lib/observatory-analysis'
+
 export interface EnterpriseHQ {
   name: string
   ticker: string | null
@@ -341,28 +343,18 @@ export function getEnterpriseConnections(name: string): { from: CorporateConnect
   }
 }
 
-function normalizeEnterpriseName(raw: string): string {
-  return String(raw)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toUpperCase()
-    .replace(/\b(LTDA|S\.?A\.?|S\/A|MINERACAO|MINERAÇÃO|MINERALS|MINING|METALS|MINERAIS|RECURSOS|HOLDINGS|GROUP|GMBH|INC|LLC|CORP)\b/g, '')
-    .replace(/[^A-Z0-9]+/g, ' ')
-    .trim()
-}
-
 export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): GeoJSON.FeatureCollection {
   const enterpriseClaimMap = new Map<string, { lng: number; lat: number; area: number; name: string }[]>()
 
   for (const ent of ENTERPRISES) {
-    enterpriseClaimMap.set(normalizeEnterpriseName(ent.name), [])
+    enterpriseClaimMap.set(normalizeName(ent.name), [])
   }
 
   for (const f of points.features) {
     const p = f.properties || {}
     const rawName = String(p.nome ?? p.NOME ?? '').trim()
     if (!rawName) continue
-    const normClaim = normalizeEnterpriseName(rawName)
+    const normClaim = normalizeName(rawName)
     const coords = (f.geometry as GeoJSON.Point)?.coordinates
     if (!coords || !Array.isArray(coords) || coords.length < 2) continue
     const [lng, lat] = coords
@@ -388,7 +380,7 @@ export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): 
   }
 
   for (const ent of ENTERPRISES) {
-    const claims = enterpriseClaimMap.get(normalizeEnterpriseName(ent.name)) || []
+    const claims = enterpriseClaimMap.get(normalizeName(ent.name)) || []
     if (claims.length === 0) continue
 
     const totalArea = claims.reduce((s, c) => s + c.area, 0)
@@ -452,7 +444,7 @@ export function buildEnterpriseHQGeoJSON(speculatorIndex?: Array<{ normalizedNam
   return {
     type: 'FeatureCollection',
     features: ENTERPRISES.filter(e => e.lat !== 0).map(e => {
-      const normName = normalizeEnterpriseName(e.name)
+      const normName = normalizeName(e.name)
       const centroid = centroidMap.get(normName)
       const lng = centroid?.lng ?? e.lng
       const lat = centroid?.lat ?? e.lat

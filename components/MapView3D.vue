@@ -35,6 +35,7 @@
     <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-15" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
 
     <div ref="mapContainerRef" class="w-full h-full" :style="{ zIndex: 'var(--z-map-base)' }" />
+    <slot name="overlays" />
 
     <div v-if="isMobile" class="absolute top-2 xs:top-3 left-1/2 -translate-x-1/2 pointer-events-none px-2" :style="{ zIndex: 'var(--z-map-banner)' }">
       <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[10vh] xs:max-h-[12vh] max-w-[clamp(10rem,24vw,16rem)] object-contain" loading="lazy" />
@@ -94,6 +95,8 @@ const props = withDefaults(defineProps<MapBaseProps>(), {
   defaultDataset: 'project-grants',
   showHexGrid: true,
 })
+
+const emit = defineEmits<{ mapInit: [map: maplibregl.Map] }>()
 
 const mapContainerRef = ref<HTMLElement | null>(null)
 const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
@@ -161,6 +164,7 @@ const base = useMapBase({
     try { map.setProjection({ type: 'globe' }) } catch (e) { console.error('Error setting globe projection:', e) }
   },
   onMapReady: (map) => {
+    emit('mapInit', map)
     startAutoRotate(map)
     function pauseAutoRotate() { isUserInteracting = true; stopAutoRotate(); if (interactionTimeout) clearTimeout(interactionTimeout) }
     function resumeAutoRotate() {

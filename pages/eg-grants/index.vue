@@ -4,14 +4,14 @@
     <DotField
       class="absolute inset-0"
       :style="{ zIndex: 'var(--z-dots)' }"
-      :dot-radius="1"
+      :dot-radius="2"
       :dot-spacing="18"
       :cursor-radius="350"
       :bulge-strength="35"
       :glow-radius="100"
-      gradient-from="rgba(124, 255, 103, 0.05)"
-      gradient-to="rgba(160, 255, 188, 0.03)"
-      glow-color="#08080a"
+      gradient-from="rgba(124, 255, 103, 0.25)"
+      gradient-to="rgba(160, 255, 188, 0.15)"
+      glow-color="rgba(0, 255, 133, 0.08)"
     />
     <div v-if="showScrollIndicator" class="scroll-indicator">{{ t('grantsPortal.scrollToExplore') }}</div>
     <GrantsAuth v-if="!isEmbed" :user="user" :is-manager="isManager" @sign-in="signIn" @sign-out="handleSignOut" />

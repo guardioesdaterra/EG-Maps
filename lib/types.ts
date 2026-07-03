@@ -149,3 +149,58 @@ export interface DetailGrantData {
   priority_score?: number
   relevance?: number
 }
+
+// ── Vulcan Observatory: Cultural Agents & Community Pins ──
+
+export type CommunityPinType =
+  | 'cultural_agent'
+  | 'cultural_avenue'
+  | 'show_event'
+  | 'action'
+  | 'point_of_attention'
+
+export interface CulturalAgent {
+  id: string
+  name: string
+  agent_type: string
+  lat: number
+  lng: number
+  single_url?: string
+  source: 'mapa_cultura' | 'floresta_ativista' | 'community'
+  status: 'active' | 'pending' | 'approved'
+  description?: string
+}
+
+export interface CommunityPin {
+  id: string
+  user_id: string
+  pin_type: CommunityPinType
+  name: string
+  description?: string
+  latitude: number
+  longitude: number
+  source_url?: string
+  status: 'pending' | 'approved' | 'rejected'
+  created_at: string
+}
+
+export interface CulturalAgentFeature {
+  type: 'Feature'
+  id?: string | number
+  geometry: { type: 'Point'; coordinates: [number, number] }
+  properties: {
+    name: string
+    type: string
+    subtype?: string
+    source: string
+    source_id?: string
+    single_url?: string
+    status: string
+    description?: string
+  }
+}
+
+export interface CulturalAgentFeatureCollection {
+  type: 'FeatureCollection'
+  features: CulturalAgentFeature[]
+}

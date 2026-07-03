@@ -152,6 +152,7 @@ import GeoLocateModal from '@/components/observatory/GeoLocateModal.vue'
 import UserContributionModal from '@/components/observatory/UserContributionModal.vue'
 import ClaimDetailModal from '@/components/observatory/ClaimDetailModal.vue'
 import { useRareEarthData } from '@/composables/useRareEarthData'
+import { useCulturalAgentsData } from '@/composables/useCulturalAgentsData'
 
 const { t } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
@@ -213,6 +214,9 @@ const {
 
 // ---- Data ----
 const { pointsData: _rawPointsData, polygonsData: _rawPolygonsData, protectedData: _rawProtectedData, waterData: _rawWaterData, culturalData: _rawCulturalData, features: allFeatures, speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL, 'pococaldas')
+
+// ---- Cultural Agents (Mapa Cultura + Floresta Ativista + Community pins) ----
+const { combinedData: culturalAgentsCombined, sourceCounts: culturalAgentCounts, load: loadCulturalAgents, submitPin: submitCommunityPin } = useCulturalAgentsData(baseURL)
 
 // Cast data to match component prop types (ShallowRef<T|undefined> -> Ref<T|undefined>)
 const pointsData = computed(() => _rawPointsData.value ?? { type: 'FeatureCollection', features: [] } as GeoJSON.FeatureCollection)
@@ -388,7 +392,7 @@ function handleKeydownPage(e: KeyboardEvent) {
 // ---- Lifecycle ----
 onMounted(async () => {
   startCounterAnimation()
-  await loadRareEarthData()
+  await Promise.all([loadRareEarthData(), loadCulturalAgents()])
   filteredCount.value = allFeatures.value.length
   mapContainerRef.value = document.querySelector('.maplibregl-canvas-container')?.closest('.relative') as HTMLElement | null
 

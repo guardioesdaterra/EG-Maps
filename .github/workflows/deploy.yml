@@ -222,13 +222,13 @@ jobs:
             exit 0
           fi
           STATS=$(python3 -c "
-import json
-d = json.load(open('${EXPORT_FILE}'))
-agents = d.get('agents', [])
-mapa = len([a for a in agents if a.get('source') == 'mapa_cultura'])
-fa = len([a for a in agents if a.get('source') == 'floresta_ativista'])
-print(f'Total: {len(agents)}, Mapa Cultura: {mapa}, Floresta Ativista: {fa}')
-")
+            import json
+            d = json.load(open('${EXPORT_FILE}'))
+            agents = d.get('agents', [])
+            mapa = len([a for a in agents if a.get('source') == 'mapa_cultura'])
+            fa = len([a for a in agents if a.get('source') == 'floresta_ativista'])
+            print(f'Total: {len(agents)}, Mapa Cultura: {mapa}, Floresta Ativista: {fa}')
+          ")
           echo "Cultural agents stats: $STATS"
 
       - name: Upload cultural agents artifact

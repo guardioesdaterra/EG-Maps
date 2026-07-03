@@ -19,6 +19,22 @@
           </div>
         </div>
 
+        <!-- Mode Toggle -->
+        <div class="flex gap-1 mb-4 p-0.5 rounded-lg border border-zinc-800 bg-zinc-900/50">
+          <button
+            type="button"
+            class="flex-1 text-[9px] font-bold py-1.5 rounded-md transition-all"
+            :class="formMode === 'update' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-zinc-500 hover:text-zinc-300 border border-transparent'"
+            @click="formMode = 'update'"
+          >Monitoring Update</button>
+          <button
+            type="button"
+            class="flex-1 text-[9px] font-bold py-1.5 rounded-md transition-all"
+            :class="formMode === 'pin' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'text-zinc-500 hover:text-zinc-300 border border-transparent'"
+            @click="formMode = 'pin'"
+          >Community Pin</button>
+        </div>
+
         <!-- Contribution Form -->
         <div class="mb-4 p-3 rounded-lg border border-zinc-800 bg-zinc-900/50">
           <h3 class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Add Monitoring Update</h3>
@@ -155,6 +171,69 @@
           </div>
         </div>
 
+        <!-- Community Pin Form (shown when formMode === 'pin') -->
+        <div v-if="formMode === 'pin'" class="mb-4 p-3 rounded-lg border border-amber-800/30 bg-amber-900/10">
+          <h3 class="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-3">Add Community Pin</h3>
+          <p class="text-[8px] text-zinc-500 mb-3">Register a cultural agent, venue, event, or point of attention on the Vulcan Observatory map.</p>
+
+          <!-- Pin Type -->
+          <div class="mb-3">
+            <label class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 block">Pin Type <span class="text-red-400">*</span></label>
+            <select v-model="pinForm.pin_type" class="obs-select">
+              <option value="cultural_agent">Cultural Agent (pessoa/organização)</option>
+              <option value="cultural_avenue">Cultural Avenue / Space</option>
+              <option value="show_event">Show / Event / Festival</option>
+              <option value="action">Action / Campaign / Mobilization</option>
+              <option value="point_of_attention">Point of Attention / Heritage</option>
+            </select>
+          </div>
+
+          <!-- Name -->
+          <div class="mb-3">
+            <label class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 block">Name <span class="text-red-400">*</span></label>
+            <input v-model="pinForm.name" placeholder="Agent name, venue, event..." class="obs-input" />
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 block">Description</label>
+            <textarea v-model="pinForm.description" placeholder="Brief description of the cultural agent or activity..." class="obs-textarea" rows="2" />
+          </div>
+
+          <!-- Location -->
+          <div class="mb-3">
+            <label class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 block">Location <span class="text-red-400">*</span></label>
+            <div class="flex gap-2">
+              <button type="button" class="obs-btn-sm flex-1" @click="getCurrentLocationPin" :disabled="geoPending">
+                {{ geoPending ? 'Locating...' : '📍 Use my location' }}
+              </button>
+              <button type="button" class="obs-btn-sm flex-1" :class="{ 'obs-btn-sm--active': pinMode }" @click="togglePinMode" title="Click map to place">
+                🗺️ Click on map
+              </button>
+            </div>
+            <div v-if="pinMode" class="text-[8px] text-amber-400 mt-1 animate-pulse">Click anywhere on the map to place your pin</div>
+            <div v-if="pinForm.latitude && pinForm.longitude" class="flex items-center gap-2 mt-1">
+              <span class="text-[8px] text-zinc-600 font-mono">{{ pinForm.latitude.toFixed(4) }}, {{ pinForm.longitude.toFixed(4) }}</span>
+              <button type="button" class="text-[8px] text-red-400/60 hover:text-red-400" @click="clearPinCoords">clear</button>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="flex gap-2">
+            <button type="button" class="obs-btn obs-btn--primary obs-btn--amber flex-1" :disabled="!canSubmitPin || pinSubmitting" @click="submitPin">
+              <span v-if="pinSubmitting" class="flex items-center gap-1.5">
+                <span class="w-3 h-3 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+                Submitting...
+              </span>
+              <span v-else>{{ canSubmitPin ? 'Register Pin' : 'Fill required fields' }}</span>
+            </button>
+            <button type="button" class="obs-btn" @click="resetPinForm">Clear</button>
+          </div>
+          <div v-if="pinSubmitResult" class="mt-2 text-[8px]" :class="pinSubmitResult.success ? 'text-emerald-400' : 'text-amber-400'">
+            {{ pinSubmitResult.success ? '✓ Pin created — pending approval' : `⚠ ${pinSubmitResult.error}` }}
+          </div>
+        </div>
+
         <!-- Existing Contributions -->
         <div>
           <div class="flex items-center justify-between mb-2">
@@ -267,10 +346,18 @@ interface SubmitResult {
   error?: string
 }
 
+interface PinSubmitResult {
+  success: boolean
+  error?: string
+}
+
 const props = defineProps<{ visible: boolean; mapClickMode?: boolean; existingFeatureNames?: LocationSuggestion[] }>()
 const emit = defineEmits<{ close: []; 'pin-placed': [lat: number, lng: number]; 'map-click-mode-change': [active: boolean] }>()
 
 const { submitUpdate, deleteUpdate, getLocalUpdates } = useObservatoryUpdates()
+const { submitPin: submitCommunityPin } = useCulturalAgentsData(useRuntimeConfig().app.baseURL as string)
+
+const formMode = ref<'update' | 'pin'>('update')
 
 const form = ref({
   locationName: '',
@@ -279,6 +366,14 @@ const form = ref({
   photos: [] as string[],
   lat: undefined as number | undefined,
   lng: undefined as number | undefined,
+})
+
+const pinForm = ref({
+  pin_type: 'cultural_agent',
+  name: '',
+  description: '',
+  latitude: undefined as number | undefined,
+  longitude: undefined as number | undefined,
 })
 
 const geoPending = ref(false)
@@ -291,6 +386,8 @@ const confirmDialog = ref<ConfirmDialog | null>(null)
 const modalRef = ref<HTMLElement | null>(null)
 const submitting = ref(false)
 const submitResult = ref<SubmitResult | null>(null)
+const pinSubmitting = ref(false)
+const pinSubmitResult = ref<PinSubmitResult | null>(null)
 
 const TYPE_GUIDANCE: Record<string, string> = {
   observation: 'General observation about environmental or community conditions.',
@@ -314,6 +411,7 @@ const typeGuidance = computed(() => TYPE_GUIDANCE[form.value.type] || TYPE_GUIDA
 const typePlaceholder = computed(() => TYPE_PLACEHOLDERS[form.value.type] || TYPE_PLACEHOLDERS.observation)
 
 const canSubmit = computed(() => form.value.description.trim().length >= 10 && form.value.type)
+const canSubmitPin = computed(() => pinForm.value.name.trim().length >= 2 && pinForm.value.latitude != null && pinForm.value.longitude != null)
 
 const DEFAULT_FEATURE_NAMES: LocationSuggestion[] = [
   { name: 'Poços de Caldas', municipality: 'Poços de Caldas', lat: -21.7878, lng: -46.5614 },
@@ -372,8 +470,13 @@ function togglePinMode() {
 
 function onMapClick(lat: number, lng: number) {
   if (pinMode.value) {
-    form.value.lat = lat
-    form.value.lng = lng
+    if (formMode.value === 'pin') {
+      pinForm.value.latitude = lat
+      pinForm.value.longitude = lng
+    } else {
+      form.value.lat = lat
+      form.value.lng = lng
+    }
     pinMode.value = false
     emit('map-click-mode-change', false)
   }
@@ -450,6 +553,55 @@ async function submitContribution() {
 
 function resetForm() {
   form.value = { locationName: '', type: 'observation', description: '', photos: [], lat: undefined, lng: undefined }
+}
+
+function clearPinCoords() {
+  pinForm.value.latitude = undefined
+  pinForm.value.longitude = undefined
+}
+
+function getCurrentLocationPin() {
+  if (!navigator.geolocation) return
+  geoPending.value = true
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      pinForm.value.latitude = pos.coords.latitude
+      pinForm.value.longitude = pos.coords.longitude
+      geoPending.value = false
+    },
+    () => { geoPending.value = false },
+    { enableHighAccuracy: true, timeout: 10000 },
+  )
+}
+
+function resetPinForm() {
+  pinForm.value = { pin_type: 'cultural_agent', name: '', description: '', latitude: undefined, longitude: undefined }
+}
+
+async function submitPin() {
+  if (!canSubmitPin.value || pinSubmitting.value) return
+  pinSubmitting.value = true
+  pinSubmitResult.value = null
+
+  try {
+    const result = await submitCommunityPin({
+      pin_type: pinForm.value.pin_type,
+      name: pinForm.value.name.trim(),
+      description: pinForm.value.description.trim() || undefined,
+      latitude: pinForm.value.latitude!,
+      longitude: pinForm.value.longitude!,
+    })
+
+    pinSubmitResult.value = result
+    if (result.success) {
+      resetPinForm()
+    }
+  } catch (e) {
+    pinSubmitResult.value = { success: false, error: e instanceof Error ? e.message : 'Network error' }
+  } finally {
+    pinSubmitting.value = false
+    setTimeout(() => { pinSubmitResult.value = null }, 6000)
+  }
 }
 
 async function removeContribution(contrib: ObservatoryUpdate) {

@@ -389,7 +389,7 @@ export function useMapBase(config: MapBaseConfig) {
       let usedFallback = false
 
       map.on('error', (err) => {
-        console.error(`[${isGlobe ? 'GlobeView' : 'UnifiedMap'}] MapLibre error:`, err)
+        console.error(`[${isGlobe ? 'MapView3D' : 'MapView2D'}] MapLibre error:`, err)
         errorCount++
         if (!usedFallback && errorCount >= 2 && MAP_STYLE.includes('maptiler.com')) {
           usedFallback = true
@@ -423,7 +423,7 @@ export function useMapBase(config: MapBaseConfig) {
 
       window.addEventListener('resize', onResize)
     } catch (err) {
-      console.error(`[${isGlobe ? 'GlobeView' : 'UnifiedMap'}] Failed to initialize map:`, err)
+      console.error(`[${isGlobe ? 'MapView3D' : 'MapView2D'}] Failed to initialize map:`, err)
       isLoading.value = false
       hasError.value = true
     }

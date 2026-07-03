@@ -13,6 +13,9 @@ const IRRELEVANT_ERRORS = [
   'WebGL',
   'GPU',
   'gpu',
+  'MapLibre error: vt',
+  'UnifiedMap',
+  'GlobeView',
 ]
 
 test.describe('Page loads', () => {

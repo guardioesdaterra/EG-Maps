@@ -326,8 +326,8 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
 
   function onTileResponse(url: string, response: Response) {
     if (!response.ok) return
-    if (!url.includes('maptiler.com/tiles/satellite/') && !url.includes('maptiler.com/tiles/hybrid')) return
-    const match = url.match(/\/tiles\/(?:satellite|hybrid[^/]*)\/(\d+)\/(\d+)\/(\d+)\./)
+    if (!url.includes('maptiler.com/tiles/satellite')) return
+    const match = url.match(/\/tiles\/satellite[^/]*\/(\d+)\/(\d+)\/(\d+)\./)
     if (!match) return
     const [, z, x, y] = match
     response.clone().arrayBuffer().then(buf => {

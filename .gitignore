@@ -35,3 +35,7 @@ test-results-*
 
 # Lock (keep one)
 package-lock.json
+
+# Large data files (use build scripts to regenerate)
+public/data/species/icmbio-brazil.json
+public/data/species/iucn.json

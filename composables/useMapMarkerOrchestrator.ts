@@ -121,10 +121,13 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
 
       if (geoJSONSpeciesIndex) {
         speciesIndex = geoJSONSpeciesIndex
+        console.log(`[Orchestrator] setupGeoJSONMarkers: using cached geoJSONSpeciesIndex (${speciesIndex.length} species)`)
       } else if (speciesIndexData.length > 0) {
         speciesIndex = speciesIndexData
         geoJSONSpeciesIndex = speciesIndex
+        console.log(`[Orchestrator] setupGeoJSONMarkers: using speciesIndexData (${speciesIndex.length} species)`)
       } else if (speciesData.length) {
+        console.log(`[Orchestrator] setupGeoJSONMarkers: converting speciesData to index (${speciesData.length} species)`)
         speciesIndex = speciesData.filter(s => isValidCoordinate(s.lat, s.lng)).map(s => ({
           id: s.id,
           commonName: s.commonName,
@@ -140,6 +143,7 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
         }))
         geoJSONSpeciesIndex = speciesIndex
       } else {
+        console.warn(`[Orchestrator] setupGeoJSONMarkers: NO DATA AVAILABLE (speciesIndexData.length=${speciesIndexData.length}, speciesData.length=${speciesData.length})`)
         return
       }
 
@@ -230,6 +234,7 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
 
     // Use native GeoJSON for large datasets
     if (useNativeGeoJSON && activeDataset === 'endangered-species' && speciesIndexData.length > NATIVE_GEOJSON_THRESHOLD) {
+      console.log(`[Orchestrator] setupGeoJSONMarkers for endangered-species: ${speciesIndexData.length} species (threshold: ${NATIVE_GEOJSON_THRESHOLD})`)
       setupGeoJSONMarkers(activeDataset, projectsData, speciesIndexData, speciesData, selectedSpeciesGroups)
       return
     }

@@ -1,7 +1,7 @@
 export function getMapStyle(apiKey: string): string {
   return apiKey
-    ? `https://api.maptiler.com/maps/satellite-v2/style.json?key=${apiKey}`
-    : 'https://demotiles.maplibre.org/style.json'
+    ? `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${apiKey}`
+    : `https://api.maptiler.com/maps/satellite-v4/style.json?key=${apiKey}`
 }
 
 export function detectWebGLSupport(): boolean {

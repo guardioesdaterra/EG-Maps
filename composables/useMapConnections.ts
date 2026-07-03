@@ -92,7 +92,7 @@ export function useMapConnections(
   function addConnections(
     dataset: 'project-grants' | 'endangered-species',
     projects: ProjectData[],
-    species: Species[],
+    species: (Species | { lat: number; lng: number; id: string })[],
   ) {
     cleanupParticles()
     const m = getMap()

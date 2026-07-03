@@ -93,7 +93,7 @@
     <SpeciesFilterPanel
       v-if="activeDataset === 'endangered-species' && showFilterPanel"
       ref="speciesFilterPanelRef"
-      :species="speciesData"
+      :species="speciesIndexData"
       @filter-change="handleFilterChange"
       @group-selection-change="handleSpeciesGroupSelection"
       @close="showFilterPanel = false"
@@ -232,9 +232,13 @@ const crewLocationsData = computed(() => props.crewLocations || [])
 const speciesData = computed(() => props.species || [])
 const speciesIndexData = computed(() => props.speciesIndex || [])
 const filteredProjectsList = ref<ProjectData[] | null>(null)
-const filteredSpeciesList = ref<Species[] | null>(null)
+const filteredSpeciesList = ref<SpeciesIndexItem[] | null>(null)
 const visibleProjects = computed(() => filteredProjectsList.value ?? projectsData.value)
-const visibleSpecies = computed(() => filteredSpeciesList.value ?? speciesData.value)
+const visibleSpecies = computed(() => {
+  const list = filteredSpeciesList.value ?? (activeDataset.value === 'endangered-species' ? speciesIndexData.value : speciesData.value)
+  console.log(`[UnifiedMap] visibleSpecies: ${list.length} items (dataset=${activeDataset.value}, filtered=${!!filteredSpeciesList.value})`)
+  return list
+})
 
 
 
@@ -377,7 +381,7 @@ const orchestrator = useMapMarkerOrchestrator({
 
 const useNativeGeoJSON = orchestrator.useNativeGeoJSON
 
-function handleFilterChange(filtered: Species[]) {
+function handleFilterChange(filtered: SpeciesIndexItem[]) {
   filteredSpeciesList.value = filtered
   syncAfterFilter()
 }
@@ -435,6 +439,7 @@ const rareEarthController = useRareEarthController({
 // Fallback rebuildMarkers using DOM markers (for smaller datasets or when GeoJSON isn't available)
 function rebuildMarkers() {
   if (!map) return
+  console.log(`[UnifiedMap] rebuildMarkers: dataset=${activeDataset.value}, speciesIndex=${speciesIndexData.value.length}, speciesData=${speciesData.value.length}, projects=${visibleProjects.value.length}`)
   orchestrator.rebuildMarkers(
     activeDataset.value,
     visibleProjects.value,
@@ -632,6 +637,7 @@ watch(crewLocationsData, () => {
 // Falls back to rebuildMarkers() if the GeoJSON source isn't ready yet
 // (first paint, dataset switch, etc.).
 watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData], () => {
+  console.log(`[UnifiedMap] watch triggered: dataset=${activeDataset.value}, visibleSpecies=${visibleSpecies.value.length}, speciesIndex=${speciesIndexData.value.length}, geoJSONInit=${!!geoJSONInitializedFor.value}`)
   if (!map) return
   if (!useNativeGeoJSON) {
     rebuildMarkers()

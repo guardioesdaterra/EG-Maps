@@ -219,7 +219,7 @@ async function main() {
           if (existsSync(outputPath)) {
             return 'skipped'
           }
-          const url = `https://api.maptiler.com/tiles/satellite/${z}/${x}/${y}.${tileFormat}?key=${apiKey}`
+          const url = `https://api.maptiler.com/tiles/satellite-v2/${z}/${x}/${y}.${tileFormat}?key=${apiKey}`
           const downloaded = await downloadTile(url, outputPath)
           return downloaded ? 'downloaded' : 'nodata'
         })

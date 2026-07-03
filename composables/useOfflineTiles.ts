@@ -303,7 +303,7 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
             continue
           }
           try {
-            const url = `https://api.maptiler.com/tiles/satellite/${z}/${clampedX}/${y}.jpg?key=${apiKey}`
+            const url = `https://api.maptiler.com/tiles/satellite-v2/${z}/${clampedX}/${y}.jpg?key=${apiKey}`
             const resp = await fetch(url, { signal })
             if (resp.ok) {
               const buf = await resp.arrayBuffer()

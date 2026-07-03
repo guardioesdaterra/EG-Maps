@@ -177,12 +177,9 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
     try {
       const results: SpeciesIndexItem[] = []
       for (const ds of datasets) {
-        console.warn(`[useSpeciesIndex] Fetching index for dataset="${ds}" from ${baseURL}data/species/${ds}-index.json`)
         const index = await fetchSpeciesIndex(baseURL, ds)
-        console.warn(`[useSpeciesIndex] Got ${index.length} items for dataset="${ds}"`)
         results.push(...index)
       }
-      console.warn(`[useSpeciesIndex] Total loaded: ${results.length} species items (datasets: ${datasets.join(', ')})`)
       data.value = results
     } catch (e) {
       error.value = e as Error

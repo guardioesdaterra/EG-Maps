@@ -20,8 +20,8 @@
       </div>
     </Transition>
 
-    <!-- Star field background -->
-    <div class="star-field" aria-hidden="true"></div>
+    <!-- Star field background (canvas rendered) -->
+    <canvas ref="starCanvasRef" class="absolute inset-0 z-0 pointer-events-none" aria-hidden="true"></canvas>
 
     <!-- Black void overlay for globe edges -->
     <div class="absolute inset-0 pointer-events-none z-10 bg-black/20"></div>
@@ -301,6 +301,52 @@ const activeDataset = ref<'project-grants' | 'endangered-species' | 'active-crew
 const { showHexGrid: isHexGridVisible } = hexGrid
 const selectedSpeciesGroups = ref<string[]>([])
 const showFilterPanel = ref(false)
+const starCanvasRef = ref<HTMLCanvasElement | null>(null)
+
+let starAnimationId: number | null = null
+function initStarCanvas() {
+  const canvas = starCanvasRef.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  const stars: { x: number; y: number; r: number; a: number; da: number }[] = []
+  const count = 200
+  canvas.width = canvas.offsetWidth * devicePixelRatio
+  canvas.height = canvas.offsetHeight * devicePixelRatio
+  ctx.scale(devicePixelRatio, devicePixelRatio)
+  const w = canvas.offsetWidth
+  const h = canvas.offsetHeight
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      r: Math.random() * 1.5 + 0.5,
+      a: Math.random(),
+      da: (Math.random() - 0.5) * 0.02,
+    })
+  }
+  function draw() {
+    if (!ctx || !canvas) return
+    ctx.clearRect(0, 0, w, h)
+    for (const s of stars) {
+      s.a += s.da
+      if (s.a > 1) s.a = 1
+      if (s.a < 0.2) s.a = 0.2
+      ctx.beginPath()
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(255,255,255,${s.a})`
+      ctx.fill()
+    }
+    starAnimationId = requestAnimationFrame(draw)
+  }
+  draw()
+}
+function stopStarCanvas() {
+  if (starAnimationId !== null) {
+    cancelAnimationFrame(starAnimationId)
+    starAnimationId = null
+  }
+}
 
 let map: maplibregl.Map | null = null
 let isMounted = true
@@ -363,8 +409,12 @@ function startAutoRotate() {
       rotationAnimationId = null
       return
     }
+    if (document.hidden) {
+      rotationAnimationId = requestAnimationFrame(rotate)
+      return
+    }
     const center = map.getCenter()
-    map.setCenter([center.lng - 0.15, center.lat])
+    map.easeTo({ center: [center.lng - 0.15, center.lat], duration: 0, easing: (t) => t })
     rotationAnimationId = requestAnimationFrame(rotate)
   }
   rotationAnimationId = requestAnimationFrame(rotate)
@@ -396,6 +446,7 @@ async function initMap() {
   // Cancel pending RAFs from previous map lifecycle
   if (pendingRebuildRAF) { cancelAnimationFrame(pendingRebuildRAF); pendingRebuildRAF = null }
   pendingVisibilityUpdate = false
+  initStarCanvas()
   // Clean up existing map if retry
   window.removeEventListener('resize', onResize)
   if (map) {
@@ -440,6 +491,7 @@ async function initMap() {
     map.on('load', () => {
 
       isLoading.value = false
+      if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null }
       if (activeDataset.value === 'vulcan-observatory') {
         rareEarthController.setupLayers()
       }
@@ -623,20 +675,26 @@ watch(connectionsGlobe.showConnections, () => {
   if (connectionsGlobe.showConnections.value) connectionsGlobe.startParticles()
 })
 
+let rebuildPending = false
 watch(speciesIndexData, () => {
-  if (!map) return
-  if (!useNativeGeoJSON) {
-    rebuildMarkers()
-    return
-  }
-  if (orchestrator.geoJSONInitializedFor) {
-    updateGeoJSONMarkerData()
-  } else {
-    rebuildMarkers()
-  }
+  if (!map || rebuildPending) return
+  rebuildPending = true
+  nextTick(() => {
+    rebuildPending = false
+    if (!useNativeGeoJSON) {
+      rebuildMarkers()
+    } else if (orchestrator.geoJSONInitializedFor) {
+      updateGeoJSONMarkerData()
+    } else {
+      rebuildMarkers()
+    }
+    if (activeDataset.value !== 'active-crews' && activeDataset.value !== 'vulcan-observatory') {
+      connectionsGlobe.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', projectsData.value, (activeDataset.value === 'endangered-species' ? speciesIndexData.value : speciesData.value))
+      if (connectionsGlobe.showConnections.value) connectionsGlobe.startParticles()
+    }
+  })
 })
 
-// Fly-to target from parent (for all datasets)
 watch(() => props.flyToTarget, (target) => {
   if (!target || !map) return
   map.flyTo({
@@ -645,7 +703,7 @@ watch(() => props.flyToTarget, (target) => {
     duration: 1500,
     essential: true,
   })
-}, { deep: true })
+})
 
 // Rebuild species overlay when popup language changes
 watch(popupLocale, () => {
@@ -655,6 +713,7 @@ watch(popupLocale, () => {
 onUnmounted(() => {
   isMounted = false
   stopAutoRotate()
+  stopStarCanvas()
   if (interactionTimeout) clearTimeout(interactionTimeout)
   if (loadingTimeout) clearTimeout(loadingTimeout)
   connectionsGlobe.cleanup()

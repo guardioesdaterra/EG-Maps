@@ -15,6 +15,7 @@ import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import type { Map as MapLibreMap } from 'maplibre-gl'
+import { useMediaQuery } from '@/composables/useMediaQuery'
 
 export interface MapBaseProps {
   projects?: ProjectData[]
@@ -216,6 +217,3 @@ export function useMapBase(
     handleSpeciesSelected, openRareEarthOverlay,
   }
 }
-
-// Need to import useMediaQuery here
-import { useMediaQuery } from '@/composables/useMediaQuery'

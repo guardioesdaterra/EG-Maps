@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 interface DatasetInfo {
   id: string
@@ -102,10 +102,13 @@ const DATASET_ICONS: Record<string, string> = {
   'icmbio-brazil': 'lucide:tree-pine',
 }
 
+const abortController = new AbortController()
+onUnmounted(() => abortController.abort())
+
 onMounted(async () => {
   try {
     const baseURL = (useRuntimeConfig().app?.baseURL as string) || '/'
-    const res = await fetch(`${baseURL}data/species/index.json`)
+    const res = await fetch(`${baseURL}data/species/index.json`, { signal: abortController.signal })
     const index: { datasets: DatasetInfo[] } = await res.json()
 
     databases.value = index.datasets.map((ds) => {

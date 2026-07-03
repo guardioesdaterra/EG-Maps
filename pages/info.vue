@@ -232,9 +232,12 @@ const speciesCount = ref(0)
 const taxonomicGroups = ref<string[]>([])
 const taxonomicGroupCount = ref(0)
 
+const abortController = new AbortController()
+onBeforeUnmount(() => abortController.abort())
+
 onMounted(async () => {
   try {
-    const res = await fetch(`${baseURL}data/species/index.json`)
+    const res = await fetch(`${baseURL}data/species/index.json`, { signal: abortController.signal })
     if (res.ok) {
       const index = await res.json()
       const datasets = index.datasets ?? []

@@ -659,6 +659,7 @@
 /* MapLibre overrides */
 .maplibregl-popup {
   max-width: 350px !important;
+  z-index: var(--z-map-popups) !important;
 }
 
 .maplibregl-popup-content {

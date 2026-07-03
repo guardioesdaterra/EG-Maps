@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <GlobeView :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" />
+    <MapView3D :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" />
     <template #fallback>
       <div class="flex flex-col h-[100svh] w-full items-center justify-center bg-black text-white">
         <div class="relative mb-[clamp(1.5rem,4vw,3rem)] flex items-center justify-center loader-ring">

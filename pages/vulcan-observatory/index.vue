@@ -39,7 +39,7 @@
     </Transition>
 
     <ClientOnly>
-      <UnifiedMap
+      <MapView2D
         :default-dataset="'vulcan-observatory'"
         :rare-earth-points="pointsData"
         :rare-earth-polygons="polygonsData"
@@ -113,7 +113,7 @@
             {{ pinPickerMode ? t('observatory.myTerritory.cancel') : t('observatory.myTerritory.dropPin') }}
           </button>
         </template>
-      </UnifiedMap>
+      </MapView2D>
 
       <!-- Modals -->
       <GeoPoliticalTimeline :visible="showTimeline" @close="showTimeline = false" />

@@ -39,7 +39,7 @@
     </Transition>
 
     <ClientOnly>
-      <GlobeView
+      <MapView3D
         :default-dataset="'vulcan-observatory'"
         :rare-earth-points="pointsData"
         :rare-earth-polygons="polygonsData"

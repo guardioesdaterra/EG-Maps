@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <GlobeView :default-dataset="'project-grants'" />
+    <MapView3D :default-dataset="'project-grants'" />
     <template #fallback>
       <div class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
         <LoadingSpinner

@@ -18,9 +18,7 @@ export interface SpeciesIndexItem {
   lat: number
   lng: number
   imageUrl: string | null
-  description: string
-  endangerment: string
-  threatTypes: string[]
+  // description/endangerment/threatTypes are NOT in the index — loaded on-demand from full dataset
 }
 
 const GROUP_COLORS_HEX: Record<string, string> = GROUP_COLORS

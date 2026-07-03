@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Main controls container - Mobile optimized -->
-    <div :class="`absolute ${isMobile ? 'top-[clamp(5.5rem,12vh,7.5rem)] right-[max(0.5rem,env(safe-area-inset-right))]' : 'top-20 right-4'} z-[700] flex flex-col gap-1.5 xs:gap-2 map-tool-stack`">
+    <div v-if="!isEmbed" :class="`absolute ${isMobile ? 'top-[clamp(5.5rem,12vh,7.5rem)] right-[max(0.5rem,env(safe-area-inset-right))]' : 'top-20 right-4'} z-[700] flex flex-col gap-1.5 xs:gap-2 map-tool-stack`">
       <!-- Search Button -->
       <UiTooltip :side="isMobile ? 'right' : 'left'">
         <template #trigger>
@@ -272,6 +272,7 @@ interface Props {
   projects?: ProjectData[]
   species?: (Species | SpeciesIndexItem)[]
   filterOpen?: boolean
+  isEmbed?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -280,6 +281,7 @@ const props = withDefaults(defineProps<Props>(), {
   showConnections: true,
   dataset: 'project-grants',
   filterOpen: false,
+  isEmbed: false,
 })
 
 const emit = defineEmits<{

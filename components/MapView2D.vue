@@ -37,7 +37,7 @@
     <div v-if="isMobile" class="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none px-2 sm:px-3" :style="{ zIndex: 'var(--z-map-banner)' }">
       <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[10vh] xs:max-h-[12vh] max-w-[clamp(10rem,24vw,16rem)] object-contain" loading="lazy" />
     </div>
-    <div v-else class="absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" :style="{ zIndex: 'var(--z-map-banner)' }">
+    <div v-else class="absolute top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" :class="isEmbed ? '-left-4' : 'left-0'" :style="{ zIndex: 'var(--z-map-banner)' }">
       <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[clamp(10rem,24vw,16rem)] -rotate-90 origin-center" loading="lazy" />
     </div>
 
@@ -49,7 +49,7 @@
 
     <DataBubble v-if="activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" position-top="clamp(16rem, 40vh, 22rem)" @toggle-group="toggleLegendGroup" />
 
-    <MapControls v-if="activeDataset !== 'vulcan-observatory'" :is-globe-view="false" :show-hex-grid="showHexGrid" :show-connections="showConnections" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="showFilterPanel = !showFilterPanel" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" :style="{ zIndex: 'var(--z-map-ui-controls)' }" />
+    <MapControls v-if="activeDataset !== 'vulcan-observatory'" :is-globe-view="false" :show-hex-grid="showHexGrid" :show-connections="showConnections" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="isEmbed" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!isEmbed && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" :style="{ zIndex: 'var(--z-map-ui-controls)' }" />
 
     <Transition name="fade">
       <div v-if="hasError" class="absolute inset-0 bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center text-white z-[var(--z-map-error-overlay)]">
@@ -108,7 +108,7 @@ const ctx = useMapBase({
 })
 
 const {
-  t, localeNames, baseURL, isMobile,
+  t, localeNames, baseURL, isMobile, isEmbed,
   projectsData, speciesIndexData, visibleProjects,
   activeDataset, selectedSpeciesGroups,
   hasError, errorMessage, noWebglSupport, isLoading,

@@ -153,8 +153,10 @@ export function useSpeciesData(dataset?: DatasetParam) {
   }
 
   if (import.meta.client) {
+    // Only preload index files (lightweight). Full datasets are loaded on-demand
+    // when a user clicks a species — no point preloading 32MB+ upfront.
     for (const ds of datasets) {
-      preloadJSON(baseURL, ds)
+      preloadJSON(baseURL, `${ds}-index`)
     }
     load()
   }

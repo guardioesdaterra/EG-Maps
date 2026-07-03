@@ -74,7 +74,7 @@ export interface LeaderboardEntry {
   created_at: string
 }
 
-async function invoke(fnName: string, options?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT'; body?: Record<string, unknown> }) {
+  async function invoke(fnName: string, options?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT'; body?: Record<string, unknown> | object }) {
   const { client } = useSupabase()
   const { data, error } = await client.functions.invoke(fnName, {
     method: options?.method || 'GET',
@@ -91,7 +91,7 @@ export function useGrants() {
       if (status) params.set('status', status)
       const data = await invoke(`grants-list?${params}`)
       return data as { grants: GrantRecord[]; total: number }
-    } catch (e) {
+    } catch (e: unknown) {
       return { error: (e as Error).message, grants: [] as GrantRecord[], total: 0 }
     }
   }
@@ -102,7 +102,7 @@ export function useGrants() {
       if (status) params.set('status', status)
       const data = await invoke(`grants-scraped-list?${params}`)
       return data as { grants: ScrapedGrant[]; total: number }
-    } catch (e) {
+    } catch (e: unknown) {
       return { error: (e as Error).message, grants: [] as ScrapedGrant[], total: 0 }
     }
   }
@@ -111,7 +111,7 @@ export function useGrants() {
     try {
       const data = await invoke('grants-submit', { method: 'POST', body: input })
       return data as { grant: GrantRecord }
-    } catch (e) {
+    } catch (e: unknown) {
       return { error: (e as Error).message }
     }
   }
@@ -123,7 +123,7 @@ export function useGrants() {
         body: { grant_id: grantId, decision, notes },
       })
       return data as { grant: GrantRecord }
-    } catch (e) {
+    } catch (e: unknown) {
       return { error: (e as Error).message }
     }
   }
@@ -135,7 +135,7 @@ export function useGrants() {
         body: { grant_id: grantId, ...updates },
       })
       return data as { grant: ScrapedGrant }
-    } catch (e) {
+    } catch (e: unknown) {
       return { error: (e as Error).message }
     }
   }
@@ -147,7 +147,7 @@ export function useGrants() {
         body: { grant_id: grantId, decision, notes },
       })
       return data as { grant_id: string; decision: string }
-    } catch (e) {
+    } catch (e: unknown) {
       return { error: (e as Error).message }
     }
   }
@@ -156,7 +156,7 @@ export function useGrants() {
     try {
       const data = await invoke('grants-stats')
       return data as { pending: number; approved: number; rejected: number; total: number }
-    } catch {
+    } catch (e: unknown) {
       return { pending: 0, approved: 0, rejected: 0, total: 0 }
     }
   }
@@ -168,7 +168,7 @@ export function useGrants() {
         body: { grant_id: grantId, stars },
       })
       return data as { vote: { id: string; stars: number } }
-    } catch (e) {
+    } catch (e: unknown) {
       return { error: (e as Error).message }
     }
   }
@@ -180,7 +180,7 @@ export function useGrants() {
         body: { scraped_id: scrapedId, stars },
       })
       return data as { vote: { id: string; stars: number } }
-    } catch (e) {
+    } catch (e: unknown) {
       return { error: (e as Error).message }
     }
   }
@@ -192,7 +192,7 @@ export function useGrants() {
       else params.set('grant_id', grantId)
       const data = await invoke(`grants-vote?${params}`, { method: 'DELETE' })
       return data as { deleted: boolean }
-    } catch (e) {
+    } catch (e: unknown) {
       return { error: (e as Error).message }
     }
   }
@@ -204,7 +204,7 @@ export function useGrants() {
       if (status) params.set('status', status)
       const data = await invoke(`grants-leaderboard?${params}`)
       return data as { grants: LeaderboardEntry[]; total: number }
-    } catch (e) {
+    } catch (e: unknown) {
       return { error: (e as Error).message, grants: [] as LeaderboardEntry[], total: 0 }
     }
   }

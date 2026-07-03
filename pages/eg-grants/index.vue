@@ -228,7 +228,6 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import type { ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
 import type { DetailGrantData } from '~/lib/types'
-import { debounce } from '~/lib/utils'
 import GrantsAuth from '~/components/grants/GrantsAuth.vue'
 import GrantDetailModal from '~/components/grants/GrantDetailModal.vue'
 import GrantEditModal from '~/components/grants/GrantEditModal.vue'
@@ -241,8 +240,6 @@ useHead({
 const { t } = useI18n()
 const { user, isManager, signIn, signOut } = useSupabaseAuth()
 const { listScrapedGrants, submitGrant: apiSubmitGrant, reviewScrapedGrant: apiReviewScraped, updateScrapedGrant: apiUpdateScrapedGrant, voteScrapedGrant, deleteVote, getLeaderboard } = useGrants()
-const route = useRoute()
-const router = useRouter()
 
 // Data
 const scrapedGrants = ref<ScrapedGrant[]>([])
@@ -389,33 +386,6 @@ const form = reactive({
 })
 
 const confirmSignOut = ref(false)
-
-// URL-synced filters
-function readFiltersFromURL() {
-  if (route.query.q) searchQuery.value = route.query.q as string
-  if (route.query.status) activeStatusFilter.value = route.query.status as string
-  if (route.query.pending === '1') showPendingOnly.value = true
-  if (route.query.types) filterTypes.value = (route.query.types as string).split(',')
-  if (route.query.country) filterCountry.value = route.query.country as string
-  if (route.query.urgency) filterUrgency.value = (route.query.urgency as string).split(',')
-  if (route.query.pmin) filterPriorityMin.value = Number(route.query.pmin)
-  if (route.query.pmax) filterPriorityMax.value = Number(route.query.pmax)
-  if (route.query.sort) sortBy.value = route.query.sort as string
-}
-
-const syncFiltersToURL = debounce(() => {
-  const query: Record<string, string> = {}
-  if (searchQuery.value) query.q = searchQuery.value
-  if (activeStatusFilter.value) query.status = activeStatusFilter.value
-  if (showPendingOnly.value) query.pending = '1'
-  if (filterTypes.value.length) query.types = filterTypes.value.join(',')
-  if (filterCountry.value) query.country = filterCountry.value
-  if (filterUrgency.value.length) query.urgency = filterUrgency.value.join(',')
-  if (filterPriorityMin.value > 0) query.pmin = String(filterPriorityMin.value)
-  if (filterPriorityMax.value < 100) query.pmax = String(filterPriorityMax.value)
-  if (sortBy.value !== 'newest') query.sort = sortBy.value
-  router.replace({ query: Object.keys(query).length ? query : undefined })
-}, 400)
 
 function clearFilters() {
   searchQuery.value = ''
@@ -612,12 +582,8 @@ async function loadLeaderboardData() {
   }
 }
 
-// Sync filters to URL on change
-watch([searchQuery, activeStatusFilter, showPendingOnly, filterTypes, filterCountry, filterUrgency, filterPriorityMin, filterPriorityMax, sortBy], syncFiltersToURL, { deep: true })
-
 // Init
 onMounted(async () => {
-  readFiltersFromURL()
   await loadData()
   await loadLeaderboardData()
 })

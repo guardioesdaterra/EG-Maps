@@ -172,49 +172,6 @@
     "Plant": "Plants",
     "Invertebrate": "Invertebrates"
   },
-  "info": {
-    "title": "Info & Feedback",
-    "about": "About",
-    "aboutText": "Earth Guardians is a youth-led organization empowering communities worldwide through environmental action and data-driven storytelling.",
-    "feedback": "Feedback",
-    "feedbackText": "Help us improve by sharing your thoughts and suggestions.",
-    "contact": "Contact",
-    "documentation": "Documentation",
-    "dataSources": "Data Sources",
-    "methodology": "Methodology",
-    "projectGrants": "Project Grants",
-    "projectGrantsDesc": "Explore Earth Guardians' global grant initiatives supporting communities worldwide. The visualization shows {count} active projects with comprehensive beneficiary statistics.",
-    "view2dMap": "View 2D Map",
-    "view3dGlobe": "View 3D Globe",
-    "endangeredSpecies": "Endangered Species",
-    "endangeredSpeciesDesc": "Discover critically endangered species and their habitats around the world. The database contains {speciesCount} species across {groupCount} taxonomic groups with comprehensive metadata.",
-    "projects": "Projects",
-    "directBeneficiaries": "Direct Beneficiaries",
-    "indirectBeneficiaries": "Indirect Beneficiaries",
-    "speciesLabel": "Species",
-    "taxonomicGroups": "Taxonomic Groups",
-    "globalCoverage": "Global Coverage",
-    "feedbackName": "Your Name (optional)",
-    "feedbackNamePlaceholder": "Enter your name",
-    "feedbackType": "Feedback Type",
-    "bugReport": "Bug Report",
-    "featureRequest": "Feature Request",
-    "improvementSuggestion": "Improvement Suggestion",
-    "generalFeedback": "General Feedback",
-    "yourFeedback": "Your Feedback",
-    "feedbackPlaceholder": "Share your thoughts, report a bug, or suggest a feature...",
-    "submitFeedback": "Submit Feedback",
-    "feedbackSubmitted": "Thank you! Your feedback has been submitted.",
-    "mains": "Mains",
-    "mainsDesc": "This interactive platform is a creation of the following RCC members:",
-    "rccLoukaLabel": "RCC Europa",
-    "rccLouka": "RCC Louka — Europa",
-    "rccTupaLeviLabel": "RCC South America",
-    "rccTupaLevi": "RCC Tupã Levi — South America",
-    "makeDifference": "Want to Make a Difference?",
-    "makeDifferenceDesc": "Join Earth Guardians and become part of the movement protecting our planet.",
-    "joinUs": "Join Earth Guardians"
-  },
   "general": {
     "loading": "Loading...",
     "error": "An error occurred",
@@ -569,6 +526,45 @@
     "title": "Info & Feedback | Earth Guardians",
     "description": "Learn about Earth Guardians data visualization platforms and submit feedback",
     "subtitle": "The app brings Earth Guardians project grant locations, endangered species habitats, and real-world data to life through interactive maps and globes.",
+    "about": "About",
+    "aboutText": "Earth Guardians is a youth-led organization empowering communities worldwide through environmental action and data-driven storytelling.",
+    "feedback": "Feedback",
+    "feedbackText": "Help us improve by sharing your thoughts and suggestions.",
+    "contact": "Contact",
+    "documentation": "Documentation",
+    "dataSources": "Data Sources",
+    "methodology": "Methodology",
+    "projectGrants": "Project Grants",
+    "projectGrantsDesc": "Explore Earth Guardians' global grant initiatives supporting communities worldwide. The visualization shows {count} active projects with comprehensive beneficiary statistics.",
+    "view2dMap": "View 2D Map",
+    "view3dGlobe": "View 3D Globe",
+    "endangeredSpecies": "Endangered Species",
+    "endangeredSpeciesDesc": "Discover critically endangered species and their habitats around the world. The database contains {speciesCount} species across {groupCount} taxonomic groups with comprehensive metadata.",
+    "projects": "Projects",
+    "directBeneficiaries": "Direct Beneficiaries",
+    "indirectBeneficiaries": "Indirect Beneficiaries",
+    "speciesLabel": "Species",
+    "taxonomicGroups": "Taxonomic Groups",
+    "globalCoverage": "Global Coverage",
+    "feedbackName": "Your Name (optional)",
+    "feedbackNamePlaceholder": "Enter your name",
+    "feedbackType": "Feedback Type",
+    "bugReport": "Bug Report",
+    "featureRequest": "Feature Request",
+    "improvementSuggestion": "Improvement Suggestion",
+    "generalFeedback": "General Feedback",
+    "yourFeedback": "Your Feedback",
+    "feedbackPlaceholder": "Share your thoughts, report a bug, or suggest a feature...",
+    "submitFeedback": "Submit Feedback",
+    "mains": "Mains",
+    "mainsDesc": "This interactive platform is a creation of the following RCC members:",
+    "rccLoukaLabel": "RCC Europa",
+    "rccLouka": "RCC Louka — Europa",
+    "rccTupaLeviLabel": "RCC South America",
+    "rccTupaLevi": "RCC Tupã Levi — South America",
+    "makeDifference": "Want to Make a Difference?",
+    "makeDifferenceDesc": "Join Earth Guardians and become part of the movement protecting our planet.",
+    "joinUs": "Join Earth Guardians",
     "tabs": {
       "overview": "Overview",
       "grants": "Grants",
@@ -576,7 +572,6 @@
       "mains": "Mains",
       "feedback": "Feedback"
     },
-    "feedbackSubmitted": "Thank you for your feedback!",
     "shareCorrections": "Share corrections, missing data, or interaction ideas to help us improve the maps.",
     "homeLink": "Home"
   },
@@ -800,5 +795,61 @@
     "editFormCategoriesPlaceholder": "e.g. environment, climate, youth",
     "daysRemaining": "{count} days remaining",
     "daysAgo": "{count} days ago"
+  },
+  "iframe": {
+    "title": "Embed EG-Maps",
+    "subtitle": "Copy the embed code to display EG-Maps maps on your website or blog.",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "copyCode": "Copy embed code",
+    "fullScreen": {
+      "title": "Full Screen Embed",
+      "description": "Fills the entire browser viewport. Ideal for dedicated map pages."
+    },
+    "fixed100": {
+      "title": "Fixed Height Embed",
+      "description": "Fixed 500px height, full width. Good for content pages."
+    },
+    "responsive": {
+      "title": "Responsive 16:9 Embed",
+      "description": "Maintains 16:9 aspect ratio. Adapts to any container width."
+    },
+    "smallCard": {
+      "title": "Small Card (300×250)",
+      "description": "Standard ad-size card. Fits sidebars and widgets."
+    },
+    "mediumCard": {
+      "title": "Medium Card (600×400)",
+      "description": "Medium embed for blog posts and articles."
+    },
+    "largeCard": {
+      "title": "Large Card (900×600)",
+      "description": "Large embed for full-width content sections."
+    },
+    "fullScreenInteractive": {
+      "title": "Interactive Embed with Controls",
+      "description": "Full controls visible. Best for standalone integrations."
+    },
+    "observatory": {
+      "title": "Vulcan Observatory Embed",
+      "description": "Embed the mining process visualization map."
+    },
+    "usage": {
+      "title": "Usage Guide",
+      "queryParams": {
+        "title": "URL Parameters",
+        "embed": "Hides navigation and header for clean embedding.",
+        "controls": "Shows map controls (search, filters, fullscreen).",
+        "lang": "Sets the interface language (e.g., es, fr, pt)."
+      },
+      "security": {
+        "title": "Security",
+        "description": "Embeds use sandbox attributes to restrict access. Only public data is exposed through embedded maps."
+      },
+      "performance": {
+        "title": "Performance",
+        "description": "All embeds use lazy loading. Maps load only when scrolled into view, minimizing initial page weight."
+      }
+    }
   }
 }

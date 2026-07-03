@@ -495,7 +495,30 @@
     "openPalette": "Komut paletini aç",
     "toggleTheme": "Koyu modu aç/kapat",
     "toggleFullscreen": "Tam ekranı aç/kapat",
-      "showShortcuts": "Bu overlay'yi göster",
-      "closeOverlay": "Herhangi bir overlay'yi kapat"
+    "showShortcuts": "Bu overlay'yi göster",
+    "closeOverlay": "Herhangi bir overlay'yi kapat"
+  },
+  "grantsPortal": {
+    "declined": "Declined",
+    "impactRingLabel": "LIVES",
+    "grantsSectionLabel": "EG PROJECT GRANTS",
+    "grantsCopy1": "We offer $300–$500 grants to support our global change-makers, with priority given to our Crews.",
+    "grantsCopy1Strong": "$300–$500 grants",
+    "grantsCopy2": "Since 2021, our Project Grants program has backed grassroots efforts in climate justice education, regenerative agriculture, tree plantings, nonviolent direct action, climate policy, food security, art-vism, & more.",
+    "grantsCopy3": "With education, mentorship, and funding, our Project Grants program empowers you to bring your ideas to life and inspire others. The Project Grant process also teaches grant writing, project coordination, & data analysis skills.",
+    "grantsCopy4": "Join us in building resilience and tackling the climate crisis locally!",
+    "grantsCta": "EXPLORE PROJECT GRANTS",
+    "dashboardLabel": "EG OPEN GRANTS",
+    "dashboardTitle1": "COLLABORATIVE",
+    "dashboardTitle2": "DASHBOARD",
+    "dashboardSubtitle": "Worldwide socio-environmental opportunities curated by youth, for youth.",
+    "dashboardOpenStat": "OPEN",
+    "dashboardSearchPlaceholder": "Search by title, funder, or country...",
+    "dashboardEmptySearch": "No grants match your search.",
+    "dashboardEmpty": "No open grants yet.",
+    "dashboardCta": "VIEW PROJECT GRANTS ON 3D GLOBE →",
+    "paginationPrev": "← Prev",
+    "paginationNext": "Next →",
+    "apply": "APPLY ↗"
   }
 }

@@ -126,12 +126,9 @@ export function useGeoJSONMarkers() {
     }
 
     if (map.getSource(sourceId)) {
-      map.removeLayer(`${sourceId}-clusters-glow`)
-      map.removeLayer(`${sourceId}-clusters-ring`)
-      map.removeLayer(`${sourceId}-clusters`)
-      map.removeLayer(`${sourceId}-cluster-count`)
-      map.removeLayer(`${sourceId}-points-glow`)
-      map.removeLayer(`${sourceId}-points`)
+      for (const id of [`${sourceId}-clusters-glow`, `${sourceId}-clusters-ring`, `${sourceId}-clusters`, `${sourceId}-cluster-count`, `${sourceId}-points-glow`, `${sourceId}-points`]) {
+        if (map.getLayer(id)) map.removeLayer(id)
+      }
       map.removeSource(sourceId)
     }
 

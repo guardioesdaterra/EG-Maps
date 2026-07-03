@@ -1,0 +1,35 @@
+/* eslint-disable no-console */
+import { readFileSync, writeFileSync, mkdirSync } from 'fs';
+
+const srcPath = './public/data/species/icmbio-brazil.json';
+const outDir = './public/data/species/regions';
+
+mkdirSync(outDir, { recursive: true });
+
+const fullData = JSON.parse(readFileSync(srcPath, 'utf8'));
+
+// Group by region
+const byRegion = new Map();
+for (const s of fullData) {
+  const region = s.region || 'unknown';
+  if (!byRegion.has(region)) byRegion.set(region, []);
+  byRegion.get(region).push(s);
+}
+
+// Write each region as a separate chunk
+const manifest = {};
+for (const [region, species] of byRegion) {
+  const slug = region.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+  const fileName = `${slug}.json`;
+  const outPath = `${outDir}/${fileName}`;
+  writeFileSync(outPath, JSON.stringify(species, null, 0));
+  
+  const sizeKB = (Buffer.byteLength(JSON.stringify(species)) / 1024).toFixed(0);
+  manifest[region] = { file: fileName, count: species.length, sizeKB: Number(sizeKB) };
+  console.log(`  ${region}: ${species.length} species → ${fileName} (${sizeKB} KB)`);
+}
+
+// Write manifest
+writeFileSync(`${outDir}/manifest.json`, JSON.stringify(manifest, null, 2));
+console.log(`\nManifest: ${outDir}/manifest.json`);
+console.log(`Total regions: ${Object.keys(manifest).length}`);

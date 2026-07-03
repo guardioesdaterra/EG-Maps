@@ -186,12 +186,12 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
     if (geoJSONInitializedFor === 'project-grants') {
       const validProjects = projectsData.filter(p => isValidCoordinate(p.latitude, p.longitude))
       geoJSONMarkers.updateData(SOURCE_ID, projectsToGeoJSON(validProjects))
-    } else if (geoJSONSpeciesIndex) {
-      const filteredIndex = applySpeciesFilters(geoJSONSpeciesIndex, selectedSpeciesGroups)
-      geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(filteredIndex))
     } else if (speciesIndexData.length) {
       geoJSONSpeciesIndex = speciesIndexData
       geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(applySpeciesFilters(speciesIndexData, selectedSpeciesGroups)))
+    } else if (geoJSONSpeciesIndex) {
+      const filteredIndex = applySpeciesFilters(geoJSONSpeciesIndex, selectedSpeciesGroups)
+      geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(filteredIndex))
     } else if (speciesData.length) {
       const validSpecies = speciesData.filter(s => isValidCoordinate(s.lat, s.lng))
       geoJSONMarkers.updateData(SOURCE_ID, speciesIndexToGeoJSON(validSpecies.map(s => ({

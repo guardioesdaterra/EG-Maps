@@ -63,9 +63,9 @@
           <h2 class="grants-heading">{{ t('grantsPortal.howGrantsWork') }}</h2>
           <div class="grants-body">
             <div class="grants-copy">
-              <p v-html="t('grantsPortal.grantsCopy1')" />
-              <p v-html="t('grantsPortal.grantsCopy2')" />
-              <p v-html="t('grantsPortal.grantsCopy3')" />
+              <p>{{ t('grantsPortal.grantsCopy1').split(t('grantsPortal.grantsCopy1Strong'))[0] }}<strong>{{ t('grantsPortal.grantsCopy1Strong') }}</strong>{{ t('grantsPortal.grantsCopy1').split(t('grantsPortal.grantsCopy1Strong'))[1] }}</p>
+              <p>{{ t('grantsPortal.grantsCopy2') }}</p>
+              <p>{{ t('grantsPortal.grantsCopy3') }}</p>
               <p>{{ t('grantsPortal.grantsCopy4') }}</p>
               <NuxtLink to="https://www.earthguardians.org/project-grants" target="_blank" class="grants-cta-btn">
                 <span>{{ t('grantsPortal.grantsCta') }}</span>
@@ -96,7 +96,7 @@
         <div class="open-dashboard-inner">
           <div class="dash-header">
             <span class="dash-label">{{ t('grantsPortal.dashboardLabel') }}</span>
-            <h2 class="dash-title" v-html="t('grantsPortal.dashboardTitle')" />
+            <h2 class="dash-title">{{ t('grantsPortal.dashboardTitle1') }}<br/>{{ t('grantsPortal.dashboardTitle2') }}</h2>
             <p class="dash-subtitle">{{ t('grantsPortal.dashboardSubtitle') }}</p>
           </div>
 

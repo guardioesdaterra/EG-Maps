@@ -1,6 +1,5 @@
 <template>
   <section
-    v-show="!collapsed"
     class="obs-sidebar"
     :class="['obs-sidebar--' + (activeTab ?? 'none'), collapsed ? 'is-collapsed' : '']"
     role="region"
@@ -93,6 +92,7 @@ import { OBSERVATORY_TABS, type ObservatoryTab } from '@/lib/observatory-tabs'
 import type { SpeculatorIndexEntry } from '@/lib/observatory-analysis'
 import { useUrlState } from '@/composables/useUrlState'
 import { useFocusTrap } from '@/composables/useFocusTrap'
+import { useObservatorySelection } from '@/composables/useObservatorySelection'
 
 import DangerTab from '@/components/observatory/tabs/DangerTab.vue'
 import MilitaryTab from '@/components/observatory/tabs/MilitaryTab.vue'
@@ -144,6 +144,15 @@ watch(() => props.activeTab, (v) => {
 
 watch(() => props.showAll, (v) => {
   urlState.set('showAll', v ? '1' : null)
+})
+
+// Auto-expand sidebar when a marker selects "Open in sidebar" from the map popup
+const obsSel = useObservatorySelection()
+watch(() => obsSel.selection.value.tab, (tab) => {
+  if (tab) {
+    collapsed.value = false
+    emit('update:activeTab', tab)
+  }
 })
 
 function onTabClick(key: ObservatoryTab['key']) {

@@ -68,7 +68,7 @@
             :danger-items="speculatorIndex"
             :show-all="showAll"
             class="absolute"
-            style="top: clamp(5.5rem, 14vh, 8rem); right: clamp(0.75rem, 2vw, 1rem);"
+            style="top: clamp(6.5rem, 18vh, 10rem); right: clamp(0.75rem, 2vw, 1rem);"
             @update:active-tab="(tab) => activeTab = tab"
             @update:show-all="(v) => showAll = v"
             @fly-to-enterprise="zoomToDanger"
@@ -387,6 +387,13 @@ onUnmounted(() => {
 </script>
 
 <style>
+.obs-top-right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
 .obs-stats-panel {
   background: var(--obs-panel-bg);
   backdrop-filter: blur(12px);

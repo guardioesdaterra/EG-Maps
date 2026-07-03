@@ -6,6 +6,8 @@ import { setupEnterpriseLayer, cleanupEnterpriseLayer } from '@/composables/useE
 import { RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
 import { useStateHash } from '@/composables/useStateHash'
 
+const isSmallScreen = typeof window !== 'undefined' ? window.innerWidth < 768 : false
+
 export type ObservatoryTabKey = 'danger' | 'military' | 'illegal' | 'env' | 'network' | 'timeline'
 
 export interface ObservatoryFilters {
@@ -134,7 +136,7 @@ export function useObservatoryControls(): ObservatoryControls {
   ]))
   const searchTerm = ref('')
   const sobDemandaOnly = ref(false)
-  const filtersExpanded = ref(true)
+  const filtersExpanded = ref(!isSmallScreen)
   const activeTab = ref<ObservatoryTabKey>('danger')
   const showShortcuts = ref(false)
   const showDataTable = ref(false)
@@ -183,6 +185,7 @@ export function useObservatoryControls(): ObservatoryControls {
         }
       }
     }
+    debouncedFilter()
   }
 
   function toggleEnterpriseLayer() {

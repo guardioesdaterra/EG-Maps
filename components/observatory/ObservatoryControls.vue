@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import type { ObservatoryControls as ObservatoryControlsState, ObservatoryStats, ObservatoryFilters, ObservatoryLayers, ObservatoryAnimations, ObservatoryData } from '@/composables/useObservatoryControls'
 import type { EnterpriseHQ } from '@/lib/enterprise-data'
 import YearSlider from './YearSlider.vue'
@@ -29,6 +29,11 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+const isSmallScreen = ref(false)
+onMounted(() => {
+  isSmallScreen.value = window.innerWidth < 768
+})
 
 const activeFilterCount = computed(() => props.stats.activeFilterCount.value)
 const categoryStats = computed(() => props.stats.categoryStats.value)
@@ -109,82 +114,85 @@ function updatePhases(value: Set<string>) {
 
 <template>
   <div>
-    <!-- Stats panel top-left -->
-    <div class="absolute top-[clamp(0.75rem,2vh,1rem)] left-[clamp(0.75rem,2vw,1rem)] z-[500] obs-stats-panel">
-      <div class="flex items-center gap-2 mb-1.5">
-        <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
-        <h1 class="text-fluid-sm font-black text-red-400 uppercase tracking-tight">Terras Raras Brasil</h1>
+    <!-- Top-right: Title + Badges + Stats + Actions (integrated below menu header) -->
+    <div class="absolute top-[clamp(0.75rem,2vh,1rem)] right-[clamp(0.75rem,2vw,1rem)] z-[500] obs-top-right-stack">
+      <!-- Title + Badges -->
+      <div class="obs-stats-panel">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+          <h1 class="text-fluid-sm font-black text-red-400 uppercase tracking-tight">Terras Raras Brasil</h1>
+        </div>
+        <p class="text-[9px] text-zinc-400 leading-tight hidden sm:block">
+          <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-red);color:#fff">{{ t('observatory.badges.mil') }}</span>
+          <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-green);color:#fff">{{ t('observatory.badges.amb') }}</span>
+          <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-purple);color:#fff">{{ t('observatory.badges.ill') }}</span>
+          <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-blue-dark);color:#fff">{{ t('observatory.badges.for') }}</span>
+          {{ t('home.observatoryDesc') }}
+        </p>
       </div>
-      <p class="text-[9px] text-zinc-400 leading-tight hidden sm:block">
-        <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-red);color:#fff">{{ t('observatory.badges.mil') }}</span>
-        <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-green);color:#fff">{{ t('observatory.badges.amb') }}</span>
-        <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-purple);color:#fff">{{ t('observatory.badges.ill') }}</span>
-        <span class="inline-block text-[7px] px-1 py-0.5 rounded font-bold mr-0.5" style="background:var(--obs-blue-dark);color:#fff">{{ t('observatory.badges.for') }}</span>
-        {{ t('home.observatoryDesc') }}
-      </p>
+
+      <!-- Animated stats counts -->
+      <div class="hidden md:flex gap-2 bg-[var(--obs-panel-bg)] backdrop-blur border border-[var(--obs-panel-border)] rounded-xl px-3 py-1.5 shadow-lg">
+        <div v-for="s in categoryStats" :key="s.key" class="flex items-center gap-1.5 text-[9px] group cursor-default" :title="s.label">
+          <span class="w-2 h-2 rounded-full transition-transform group-hover:scale-150" :style="{ background: s.color }" />
+          <span class="font-bold text-zinc-200 tabular-nums">{{ animations.animatedCount(s.key, s.count) }}</span>
+          <span class="text-zinc-500 hidden lg:inline">{{ s.label }}</span>
+        </div>
+        <div class="w-px bg-zinc-700 mx-1" />
+        <span class="text-[9px] font-bold text-zinc-300 tabular-nums" aria-live="polite" aria-atomic="true">{{ animations.animatedCount('__total', totalCount) }} total</span>
+      </div>
+
+      <!-- Actions row -->
+      <div class="flex flex-wrap gap-1.5 max-w-[clamp(16rem,40vw,22rem)]">
+        <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-red)' }" @click="filters.showTimeline.value = !filters.showTimeline.value">
+          <span>📖</span> <span class="hidden sm:inline">Geopolitical Timeline</span><span class="sm:hidden">Timeline</span>
+        </button>
+        <button v-if="onRedeCorporativa" type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-blue-light)' }" @click="onRedeCorporativa()">
+          <span>🔗</span> <span class="hidden sm:inline">Rede Corporativa</span><span class="sm:hidden">Network</span>
+        </button>
+        <button v-if="onDataDownload" type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-green)' }" @click="onDataDownload()">
+          <span>⬇️</span> <span class="hidden sm:inline">Download Data</span><span class="sm:hidden">Download</span>
+        </button>
+        <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-purple-soft)' }" @click="filters.showExport.value = !filters.showExport.value">
+          <span>📄</span> Export
+        </button>
+        <button type="button" class="obs-action-btn" :class="enterpriseLayerVisible ? 'obs-action-btn--active' : ''" :style="{ '--accent': 'var(--obs-purple-soft)' }" @click="emit('toggle-enterprise')">
+          <span>🏢</span> <span class="hidden sm:inline">{{ t('observatory.layers.enterpriseHq') }}</span><span class="sm:hidden">HQ</span>
+        </button>
+        <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-gray)' }" @click="filters.showShortcuts.value = !filters.showShortcuts.value">
+          <span>⌨️</span> ?
+        </button>
+        <button type="button" class="obs-action-btn" :style="{ '--accent': '#3498db' }" @click="filters.showDataTable.value = !filters.showDataTable.value">
+          <span>📊</span> Table
+        </button>
+        <button type="button" class="obs-action-btn" :style="{ '--accent': '#27ae60' }" @click="filters.showGeoLocate.value = !filters.showGeoLocate.value">
+          <span>📍</span> <span class="hidden sm:inline">Near Me</span><span class="sm:hidden">Near</span>
+        </button>
+        <button v-if="isRegional && onExpandToFullBrazil" type="button" class="obs-action-btn" :style="{ '--accent': '#e67e22' }" @click="onExpandToFullBrazil">
+          <span>🌎</span> <span class="hidden sm:inline">Full Brazil</span><span class="sm:hidden">Brazil</span>
+        </button>
+        <button v-if="onUserContribution" type="button" class="obs-action-btn" :style="{ '--accent': '#2ecc71' }" @click="onUserContribution">
+          <span>📝</span> <span class="hidden sm:inline">Monitor</span>
+        </button>
+      </div>
+
+      <!-- Sync + Secrecy (below actions, away from sidebar) -->
+      <div v-if="deepAnalysis" class="hidden lg:flex flex-col gap-1 bg-[var(--obs-panel-bg)] backdrop-blur border border-[var(--obs-panel-border)] rounded-xl px-3 py-2 shadow-lg max-w-[clamp(10rem,20vw,14rem)]">
+        <div class="flex items-center gap-1.5 text-[8.5px]" :title="t('observatory.sync.syncNote')">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span class="text-zinc-500 uppercase tracking-wider font-bold">{{ t('observatory.sync.lastSync') }}</span>
+          <span class="text-zinc-300 font-mono ml-auto">{{ stats.formatSyncDate(deepAnalysis.last_sync) }}</span>
+        </div>
+        <div v-if="deepAnalysis.sigilo_stats" class="flex items-center gap-1.5 text-[8.5px] pt-1 border-t border-zinc-800">
+          <span class="text-zinc-500 uppercase tracking-wider font-bold">🔒</span>
+          <span class="text-zinc-500">{{ t('observatory.sync.secrecyClaims') }}:</span>
+          <span class="text-amber-400 font-bold">{{ deepAnalysis.sigilo_stats.total }}</span>
+          <span class="text-zinc-400 font-mono ml-auto">{{ stats.formatHa(deepAnalysis.sigilo_stats.total_area_ha) }} {{ t('observatory.sync.secrecyArea') }}</span>
+        </div>
+      </div>
     </div>
 
-    <!-- Animated stats counts top-center -->
-    <div class="absolute top-[clamp(0.75rem,2vh,1rem)] left-1/2 -translate-x-1/2 z-[500] hidden md:flex gap-2 bg-[var(--obs-panel-bg)] backdrop-blur border border-[var(--obs-panel-border)] rounded-xl px-3 py-1.5 shadow-lg">
-      <div v-for="s in categoryStats" :key="s.key" class="flex items-center gap-1.5 text-[9px] group cursor-default" :title="s.label">
-        <span class="w-2 h-2 rounded-full transition-transform group-hover:scale-150" :style="{ background: s.color }" />
-        <span class="font-bold text-zinc-200 tabular-nums">{{ animations.animatedCount(s.key, s.count) }}</span>
-        <span class="text-zinc-500 hidden lg:inline">{{ s.label }}</span>
-      </div>
-      <div class="w-px bg-zinc-700 mx-1" />
-      <span class="text-[9px] font-bold text-zinc-300 tabular-nums" aria-live="polite" aria-atomic="true">{{ animations.animatedCount('__total', totalCount) }} total</span>
-    </div>
-
-    <!-- Sync + Secrecy panel top-right -->
-    <div v-if="deepAnalysis" class="absolute top-[clamp(0.75rem,2vh,1rem)] right-[clamp(0.75rem,2vw,1rem)] z-[500] hidden lg:flex flex-col gap-1 bg-[var(--obs-panel-bg)] backdrop-blur border border-[var(--obs-panel-border)] rounded-xl px-3 py-2 shadow-lg max-w-[clamp(10rem,20vw,14rem)]">
-      <div class="flex items-center gap-1.5 text-[8.5px]" :title="t('observatory.sync.syncNote')">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-        <span class="text-zinc-500 uppercase tracking-wider font-bold">{{ t('observatory.sync.lastSync') }}</span>
-        <span class="text-zinc-300 font-mono ml-auto">{{ stats.formatSyncDate(deepAnalysis.last_sync) }}</span>
-      </div>
-      <div v-if="deepAnalysis.sigilo_stats" class="flex items-center gap-1.5 text-[8.5px] pt-1 border-t border-zinc-800">
-        <span class="text-zinc-500 uppercase tracking-wider font-bold">🔒</span>
-        <span class="text-zinc-500">{{ t('observatory.sync.secrecyClaims') }}:</span>
-        <span class="text-amber-400 font-bold">{{ deepAnalysis.sigilo_stats.total }}</span>
-        <span class="text-zinc-400 font-mono ml-auto">{{ stats.formatHa(deepAnalysis.sigilo_stats.total_area_ha) }} {{ t('observatory.sync.secrecyArea') }}</span>
-      </div>
-    </div>
-
-    <!-- Actions row -->
-    <div class="absolute top-[clamp(3.5rem,10vh,5rem)] left-[clamp(0.75rem,2vw,1rem)] z-[500] flex flex-wrap gap-1.5 max-w-[clamp(16rem,40vw,22rem)]">
-      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-red)' }" @click="filters.showTimeline.value = !filters.showTimeline.value">
-        <span>📖</span> <span class="hidden sm:inline">Geopolitical Timeline</span><span class="sm:hidden">Timeline</span>
-      </button>
-      <button v-if="onRedeCorporativa" type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-blue-light)' }" @click="onRedeCorporativa()">
-        <span>🔗</span> <span class="hidden sm:inline">Rede Corporativa</span><span class="sm:hidden">Network</span>
-      </button>
-      <button v-if="onDataDownload" type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-green)' }" @click="onDataDownload()">
-        <span>⬇️</span> <span class="hidden sm:inline">Download Data</span><span class="sm:hidden">Download</span>
-      </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-purple-soft)' }" @click="filters.showExport.value = !filters.showExport.value">
-        <span>📄</span> Export
-      </button>
-      <button type="button" class="obs-action-btn" :class="enterpriseLayerVisible ? 'obs-action-btn--active' : ''" :style="{ '--accent': 'var(--obs-purple-soft)' }" @click="emit('toggle-enterprise')">
-        <span>🏢</span> <span class="hidden sm:inline">{{ t('observatory.layers.enterpriseHq') }}</span><span class="sm:hidden">HQ</span>
-      </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': 'var(--obs-gray)' }" @click="filters.showShortcuts.value = !filters.showShortcuts.value">
-        <span>⌨️</span> ?
-      </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': '#3498db' }" @click="filters.showDataTable.value = !filters.showDataTable.value">
-        <span>📊</span> Table
-      </button>
-      <button type="button" class="obs-action-btn" :style="{ '--accent': '#27ae60' }" @click="filters.showGeoLocate.value = !filters.showGeoLocate.value">
-        <span>📍</span> <span class="hidden sm:inline">Near Me</span><span class="sm:hidden">Near</span>
-      </button>
-      <button v-if="isRegional && onExpandToFullBrazil" type="button" class="obs-action-btn" :style="{ '--accent': '#e67e22' }" @click="onExpandToFullBrazil">
-        <span>🌎</span> <span class="hidden sm:inline">Full Brazil</span><span class="sm:hidden">Brazil</span>
-      </button>
-      <button v-if="onUserContribution" type="button" class="obs-action-btn" :style="{ '--accent': '#2ecc71' }" @click="onUserContribution">
-        <span>📝</span> <span class="hidden sm:inline">Monitor</span>
-      </button>
-    </div>
-
-    <!-- Filters panel bottom-left -->
+    <!-- Filters panel bottom-left (minimized by default on small screens) -->
     <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] left-[clamp(0.75rem,2vw,1rem)] z-[500] obs-filter-panel">
       <button type="button" class="obs-filter-toggle" @click="filters.filtersExpanded.value = !filters.filtersExpanded.value">
         <span class="obs-filter-toggle__icon">⚙</span>
@@ -329,7 +337,7 @@ function updatePhases(value: Set<string>) {
     </div>
 
     <!-- Water legend bottom-right -->
-    <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] right-[clamp(0.75rem,2vw,1rem)] z-[500] obs-legend-panel hidden md:block">
+    <div class="absolute bottom-[clamp(1rem,4vh,1.5rem)] right-[clamp(0.75rem,2vw,1rem)] z-[500] obs-legend-panel hidden lg:block">
       <h3 class="obs-legend-title">{{ t('observatory.legend.hydrography') }}</h3>
       <div class="obs-legend-item"><div class="obs-legend-line" :style="{ background: 'var(--obs-blue)' }" /><span>{{ t('observatory.legend.basins') }}</span></div>
       <div class="obs-legend-item"><div class="obs-legend-line" :style="{ background: 'var(--obs-purple-light)' }" /><span>{{ t('observatory.legend.aquifers') }}</span></div>

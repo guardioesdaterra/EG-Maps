@@ -250,12 +250,15 @@ const taxonomicGroups = computed(() =>
   [...new Set(props.species.map(s => s.taxonomicGroup))].sort()
 )
 
+const hasRegion = (s: SpeciesIndexItem): s is SpeciesIndexItem & { region: string } => 'region' in s && !!(s as Record<string, unknown>).region
+const hasEcosystem = (s: SpeciesIndexItem): s is SpeciesIndexItem & { ecosystem: string } => 'ecosystem' in s && !!(s as Record<string, unknown>).ecosystem
+
 const regions = computed(() =>
-  [...new Set(props.species.map(s => (s as any).region).filter(Boolean))].sort()
+  [...new Set(props.species.filter(hasRegion).map(s => s.region))].sort()
 )
 
 const ecosystems = computed(() =>
-  [...new Set(props.species.map(s => (s as any).ecosystem).filter(Boolean))].sort()
+  [...new Set(props.species.filter(hasEcosystem).map(s => s.ecosystem))].sort()
 )
 
 const threatTypes = computed(() => {
@@ -309,10 +312,10 @@ const filteredSpecies = computed(() => {
     result = result.filter(s => selectedTaxonomicGroups.value.includes(s.taxonomicGroup))
   }
   if (filters.region) {
-    result = result.filter(s => (s as any).region === filters.region)
+    result = result.filter(s => hasRegion(s) && s.region === filters.region)
   }
   if (filters.ecosystem) {
-    result = result.filter(s => (s as any).ecosystem === filters.ecosystem)
+    result = result.filter(s => hasEcosystem(s) && s.ecosystem === filters.ecosystem)
   }
   if (filters.threatType) {
     result = result.filter(s => s.threatTypes?.includes(filters.threatType))
@@ -322,10 +325,10 @@ const filteredSpecies = computed(() => {
     result = result.filter(s =>
       s.commonName.toLowerCase().includes(query) ||
       s.scientificName.toLowerCase().includes(query) ||
-      ((s as any).region || '').toLowerCase().includes(query) ||
+      (hasRegion(s) && s.region.toLowerCase().includes(query)) ||
       s.taxonomicGroup.toLowerCase().includes(query) ||
       groupLabel(s.taxonomicGroup).toLowerCase().includes(query) ||
-      ((s as any).ecosystem || '').toLowerCase().includes(query)
+      (hasEcosystem(s) && s.ecosystem.toLowerCase().includes(query))
     )
   }
 

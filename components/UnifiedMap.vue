@@ -236,7 +236,7 @@ const filteredSpeciesList = ref<SpeciesIndexItem[] | null>(null)
 const visibleProjects = computed(() => filteredProjectsList.value ?? projectsData.value)
 const visibleSpecies = computed(() => {
   const list = filteredSpeciesList.value ?? (activeDataset.value === 'endangered-species' ? speciesIndexData.value : speciesData.value)
-  console.log(`[UnifiedMap] visibleSpecies: ${list.length} items (dataset=${activeDataset.value}, filtered=${!!filteredSpeciesList.value})`)
+  console.warn(`[UnifiedMap] visibleSpecies: ${list.length} items (dataset=${activeDataset.value}, filtered=${!!filteredSpeciesList.value})`)
   return list
 })
 
@@ -439,7 +439,7 @@ const rareEarthController = useRareEarthController({
 // Fallback rebuildMarkers using DOM markers (for smaller datasets or when GeoJSON isn't available)
 function rebuildMarkers() {
   if (!map) return
-  console.log(`[UnifiedMap] rebuildMarkers: dataset=${activeDataset.value}, speciesIndex=${speciesIndexData.value.length}, speciesData=${speciesData.value.length}, projects=${visibleProjects.value.length}`)
+  console.warn(`[UnifiedMap] rebuildMarkers: dataset=${activeDataset.value}, speciesIndex=${speciesIndexData.value.length}, speciesData=${speciesData.value.length}, projects=${visibleProjects.value.length}`)
   orchestrator.rebuildMarkers(
     activeDataset.value,
     visibleProjects.value,
@@ -637,7 +637,7 @@ watch(crewLocationsData, () => {
 // Falls back to rebuildMarkers() if the GeoJSON source isn't ready yet
 // (first paint, dataset switch, etc.).
 watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData], () => {
-  console.log(`[UnifiedMap] watch triggered: dataset=${activeDataset.value}, visibleSpecies=${visibleSpecies.value.length}, speciesIndex=${speciesIndexData.value.length}, geoJSONInit=${!!geoJSONInitializedFor.value}`)
+  console.warn(`[UnifiedMap] watch triggered: dataset=${activeDataset.value}, visibleSpecies=${visibleSpecies.value.length}, speciesIndex=${speciesIndexData.value.length}, geoJSONInit=${!!geoJSONInitializedFor.value}`)
   if (!map) return
   if (!useNativeGeoJSON) {
     rebuildMarkers()

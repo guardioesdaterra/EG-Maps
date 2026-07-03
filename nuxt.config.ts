@@ -3,7 +3,7 @@ const baseURL = process.env.NUXT_APP_BASE_URL || '/'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NODE_ENV !== 'production' },
 
   modules: [
     '@nuxtjs/tailwindcss',
@@ -85,6 +85,7 @@ export default defineNuxtConfig({
         { rel: 'manifest', href: `${baseURL}manifest.json` },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'preload', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap', as: 'style', onload: "this.onload=null;this.rel='stylesheet'" },
       ],
     },
   },

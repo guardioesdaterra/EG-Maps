@@ -17,6 +17,7 @@ export function formatCompact(num: number): string {
 /**
  * Format an ISO date as a relative time string (e.g. "2 days ago").
  */
+const _rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
 export function formatRelativeTime(iso?: string | number | Date): string {
   if (!iso) return '—'
   const d = new Date(iso)
@@ -32,13 +33,12 @@ export function formatRelativeTime(iso?: string | number | Date): string {
   const months = days / 30
   const years = days / 365
 
-  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
-  if (seconds < 60) return rtf.format(future ? Math.ceil(seconds) : -Math.floor(seconds), 'second')
-  if (minutes < 60) return rtf.format(future ? Math.ceil(minutes) : -Math.floor(minutes), 'minute')
-  if (hours < 24) return rtf.format(future ? Math.ceil(hours) : -Math.floor(hours), 'hour')
-  if (days < 30) return rtf.format(future ? Math.ceil(days) : -Math.floor(days), 'day')
-  if (months < 12) return rtf.format(future ? Math.ceil(months) : -Math.floor(months), 'month')
-  return rtf.format(future ? Math.ceil(years) : -Math.floor(years), 'year')
+  if (seconds < 60) return _rtf.format(future ? Math.ceil(seconds) : -Math.floor(seconds), 'second')
+  if (minutes < 60) return _rtf.format(future ? Math.ceil(minutes) : -Math.floor(minutes), 'minute')
+  if (hours < 24) return _rtf.format(future ? Math.ceil(hours) : -Math.floor(hours), 'hour')
+  if (days < 30) return _rtf.format(future ? Math.ceil(days) : -Math.floor(days), 'day')
+  if (months < 12) return _rtf.format(future ? Math.ceil(months) : -Math.floor(months), 'month')
+  return _rtf.format(future ? Math.ceil(years) : -Math.floor(years), 'year')
 }
 
 /**
@@ -46,15 +46,10 @@ export function formatRelativeTime(iso?: string | number | Date): string {
  * Used as a defense-in-depth measure in the rare places where v-html is still
  * used. Prefer Vue components over v-html wherever possible.
  */
+const ESCAPE_MAP: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
 export function escapeHtml(input: unknown): string {
   if (input === null || input === undefined) return ''
-  const str = String(input)
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
+  return String(input).replace(/[&<>"']/g, c => ESCAPE_MAP[c] || c)
 }
 
 /**
@@ -67,7 +62,7 @@ export function clamp(value: number, min: number, max: number): number {
 /**
  * Stable debounce implementation. Cancels previous invocations within `wait` ms.
  */
-export function debounce<T extends (..._args: never[]) => void>(
+export function debounce<T extends (..._args: any[]) => void>(
   fn: T,
   wait: number,
 ): T & { cancel: () => void } {

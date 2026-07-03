@@ -14,8 +14,8 @@ export interface RareEarthControllerProps {
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
   rareEarthProtected?: GeoJSON.FeatureCollection
-  rareEarthWater?: GeoJSON.FeatureCollection
-  rareEarthCultural?: GeoJSON.FeatureCollection
+  rareEarthWater?: GeoJSON.FeatureCollection | null
+  rareEarthCultural?: GeoJSON.FeatureCollection | null
   layerVisibility?: Record<string, boolean>
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null
 }
@@ -118,7 +118,6 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       if (!m) return
       syncRareEarthLayerVisibilityInternal(m, getProps().layerVisibility || {})
     },
-    { deep: true },
   )
 
   // Watcher: points data updates (e.g. from search filtering)

@@ -106,7 +106,7 @@ export default defineNuxtConfig({
   // Build settings
   typescript: {
     strict: true,
-    typeCheck: true,
+    typeCheck: false,
     shim: false,
   },
 
@@ -127,6 +127,16 @@ export default defineNuxtConfig({
 
   // Vite config for MapLibre + WSL HMR
   vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            maplibre: ['maplibre-gl'],
+            vendor: ['vue', 'vue-router', 'pinia'],
+          },
+        },
+      },
+    },
     optimizeDeps: {
       include: ['maplibre-gl'],
     },

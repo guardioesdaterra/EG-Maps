@@ -245,31 +245,34 @@ const searchQuery = ref('')
 const showAllGroups = ref(false)
 const taxonomicGroupCollapsed = ref(true)
 const selectedTaxonomicGroups = ref<string[]>([])
-// Extract unique filter values from species data
-const taxonomicGroups = computed(() =>
-  [...new Set(props.species.map(s => s.taxonomicGroup))].sort()
-)
-
-const hasRegion = (s: SpeciesIndexItem): s is SpeciesIndexItem & { region: string } => 'region' in s && !!(s as Record<string, unknown>).region
-const hasEcosystem = (s: SpeciesIndexItem): s is SpeciesIndexItem & { ecosystem: string } => 'ecosystem' in s && !!(s as Record<string, unknown>).ecosystem
-
-const regions = computed(() =>
-  [...new Set(props.species.filter(hasRegion).map(s => s.region))].sort()
-)
-
-const ecosystems = computed(() =>
-  [...new Set(props.species.filter(hasEcosystem).map(s => s.ecosystem))].sort()
-)
-
-const threatTypes = computed(() => {
-  const threats = new Set<string>()
-  props.species.forEach(s => {
+// Extract unique filter values from species data (single pass)
+const filterOptions = computed(() => {
+  const groups = new Set<string>()
+  const regionSet = new Set<string>()
+  const ecosystemSet = new Set<string>()
+  const threatsSet = new Set<string>()
+  for (const s of props.species) {
+    groups.add(s.taxonomicGroup)
+    const r = (s as Record<string, unknown>).region
+    if (r) regionSet.add(r as string)
+    const e = (s as Record<string, unknown>).ecosystem
+    if (e) ecosystemSet.add(e as string)
     if (s.threatTypes) {
-      s.threatTypes.forEach(t => threats.add(t))
+      for (const t of s.threatTypes) threatsSet.add(t)
     }
-  })
-  return [...threats].sort()
+  }
+  return {
+    taxonomicGroups: [...groups].sort(),
+    regions: [...regionSet].sort(),
+    ecosystems: [...ecosystemSet].sort(),
+    threatTypes: [...threatsSet].sort(),
+  }
 })
+
+const taxonomicGroups = computed(() => filterOptions.value.taxonomicGroups)
+const regions = computed(() => filterOptions.value.regions)
+const ecosystems = computed(() => filterOptions.value.ecosystems)
+const threatTypes = computed(() => filterOptions.value.threatTypes)
 
 // Count active filters
 const activeFilterCount = computed(() => {
@@ -304,35 +307,50 @@ function handleTaxonomicSelect(event: Event) {
   ;(event.target as HTMLSelectElement).value = ''
 }
 
-// Apply filters to species
+// Precomputed group labels for filter matching
+const groupLabels = computed(() => {
+  const map: Record<string, string> = {}
+  for (const s of props.species) {
+    if (!map[s.taxonomicGroup]) {
+      map[s.taxonomicGroup] = groupLabel(s.taxonomicGroup).toLowerCase()
+    }
+  }
+  return map
+})
+
+// Apply filters to species (single pass, no intermediate arrays)
 const filteredSpecies = computed(() => {
-  let result = props.species
+  const groupFilter = selectedTaxonomicGroups.value
+  const regionFilter = filters.region
+  const ecosystemFilter = filters.ecosystem
+  const threatFilter = filters.threatType
+  const query = searchQuery.value ? searchQuery.value.toLowerCase().trim() : ''
+  const labels = groupLabels.value
+  const hasGroupFilter = groupFilter.length > 0
 
-  if (selectedTaxonomicGroups.value.length) {
-    result = result.filter(s => selectedTaxonomicGroups.value.includes(s.taxonomicGroup))
-  }
-  if (filters.region) {
-    result = result.filter(s => hasRegion(s) && s.region === filters.region)
-  }
-  if (filters.ecosystem) {
-    result = result.filter(s => hasEcosystem(s) && s.ecosystem === filters.ecosystem)
-  }
-  if (filters.threatType) {
-    result = result.filter(s => s.threatTypes?.includes(filters.threatType))
-  }
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase().trim()
-    result = result.filter(s =>
-      s.commonName.toLowerCase().includes(query) ||
-      s.scientificName.toLowerCase().includes(query) ||
-      (hasRegion(s) && s.region.toLowerCase().includes(query)) ||
-      s.taxonomicGroup.toLowerCase().includes(query) ||
-      groupLabel(s.taxonomicGroup).toLowerCase().includes(query) ||
-      (hasEcosystem(s) && s.ecosystem.toLowerCase().includes(query))
-    )
-  }
-
-  return result
+  return props.species.filter(s => {
+    if (hasGroupFilter && !groupFilter.includes(s.taxonomicGroup)) return false
+    if (regionFilter) {
+      const r = (s as Record<string, unknown>).region
+      if (r !== regionFilter) return false
+    }
+    if (ecosystemFilter) {
+      const e = (s as Record<string, unknown>).ecosystem
+      if (e !== ecosystemFilter) return false
+    }
+    if (threatFilter && !s.threatTypes?.includes(threatFilter)) return false
+    if (query) {
+      const r = (s as Record<string, unknown>).region as string | undefined
+      const e = (s as Record<string, unknown>).ecosystem as string | undefined
+      if (!s.commonName.toLowerCase().includes(query) &&
+          !s.scientificName.toLowerCase().includes(query) &&
+          !(r && r.toLowerCase().includes(query)) &&
+          !s.taxonomicGroup.toLowerCase().includes(query) &&
+          !(labels[s.taxonomicGroup] && labels[s.taxonomicGroup].includes(query)) &&
+          !(e && e.toLowerCase().includes(query))) return false
+    }
+    return true
+  })
 })
 
 const filteredCount = computed(() => filteredSpecies.value.length)

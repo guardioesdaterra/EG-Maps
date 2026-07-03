@@ -113,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { allProjectsData } from '@/lib/project-data'
 import { crewOverallStats } from '@/lib/crew-data'
 import { formatCompact } from '@/lib/utils'
@@ -135,9 +135,12 @@ useHead({
 const speciesCount = ref(0)
 const taxonomicGroupCount = ref(0)
 
+const abortController = new AbortController()
+onUnmounted(() => abortController.abort())
+
 onMounted(async () => {
   try {
-    const res = await fetch(`${baseURL}data/species/index.json`)
+    const res = await fetch(`${baseURL}data/species/index.json`, { signal: abortController.signal })
     if (res.ok) {
       const index = await res.json()
       const datasets = index.datasets ?? []

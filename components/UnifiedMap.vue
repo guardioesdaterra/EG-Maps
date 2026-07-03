@@ -235,9 +235,7 @@ const filteredProjectsList = ref<ProjectData[] | null>(null)
 const filteredSpeciesList = ref<SpeciesIndexItem[] | null>(null)
 const visibleProjects = computed(() => filteredProjectsList.value ?? projectsData.value)
 const visibleSpecies = computed(() => {
-  const list = filteredSpeciesList.value ?? (activeDataset.value === 'endangered-species' ? speciesIndexData.value : speciesData.value)
-  console.warn(`[UnifiedMap] visibleSpecies: ${list.length} items (dataset=${activeDataset.value}, filtered=${!!filteredSpeciesList.value})`)
-  return list
+  return filteredSpeciesList.value ?? (activeDataset.value === 'endangered-species' ? speciesIndexData.value : speciesData.value)
 })
 
 
@@ -383,24 +381,10 @@ const useNativeGeoJSON = orchestrator.useNativeGeoJSON
 
 function handleFilterChange(filtered: SpeciesIndexItem[]) {
   filteredSpeciesList.value = filtered
-  syncAfterFilter()
 }
 
 function handleProjectFilterChange(filtered: ProjectData[]) {
   filteredProjectsList.value = filtered
-  syncAfterFilter()
-}
-
-let filterDebounceTimer: ReturnType<typeof setTimeout> | null = null
-
-function syncAfterFilter() {
-  if (filterDebounceTimer) clearTimeout(filterDebounceTimer)
-  filterDebounceTimer = setTimeout(() => {
-    filterDebounceTimer = null
-    rebuildMarkers()
-    connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
-    if (connections2D.showConnections.value) connections2D.startParticles()
-  }, 16)
 }
 
 function handleSearchOpenChange(open: boolean) {
@@ -439,7 +423,6 @@ const rareEarthController = useRareEarthController({
 // Fallback rebuildMarkers using DOM markers (for smaller datasets or when GeoJSON isn't available)
 function rebuildMarkers() {
   if (!map) return
-  console.warn(`[UnifiedMap] rebuildMarkers: dataset=${activeDataset.value}, speciesIndex=${speciesIndexData.value.length}, speciesData=${speciesData.value.length}, projects=${visibleProjects.value.length}`)
   orchestrator.rebuildMarkers(
     activeDataset.value,
     visibleProjects.value,
@@ -525,6 +508,7 @@ function initMap() {
 
       if (!isMounted) return
       isLoading.value = false
+      if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null }
       if (map) emit('mapInit', map)
       if (activeDataset.value === 'vulcan-observatory') {
         setupRareEarthLayers()
@@ -631,23 +615,24 @@ watch(crewLocationsData, () => {
   rebuildMarkers()
 })
 
-// In-place data update when filters change. Avoids the full teardown +
-// re-setup cycle (re-fetching the species index, re-installing handlers,
-// re-adding the source/layers) by calling setData on the existing source.
-// Falls back to rebuildMarkers() if the GeoJSON source isn't ready yet
-// (first paint, dataset switch, etc.).
+let rebuildPending = false
 watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData], () => {
-  console.warn(`[UnifiedMap] watch triggered: dataset=${activeDataset.value}, visibleSpecies=${visibleSpecies.value.length}, speciesIndex=${speciesIndexData.value.length}, geoJSONInit=${!!geoJSONInitializedFor.value}`)
-  if (!map) return
-  if (!useNativeGeoJSON) {
-    rebuildMarkers()
-    return
-  }
-  if (geoJSONInitializedFor.value) {
-    updateGeoJSONMarkerData()
-  } else {
-    rebuildMarkers()
-  }
+  if (!map || rebuildPending) return
+  rebuildPending = true
+  nextTick(() => {
+    rebuildPending = false
+    if (!useNativeGeoJSON) {
+      rebuildMarkers()
+    } else if (geoJSONInitializedFor.value) {
+      updateGeoJSONMarkerData()
+    } else {
+      rebuildMarkers()
+    }
+    if (activeDataset.value !== 'vulcan-observatory') {
+      connections2D.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+      if (connections2D.showConnections.value) connections2D.startParticles()
+    }
+  })
 })
 
 // Watch rare earth data changes (vulcan-observatory) to rebuild markers
@@ -668,7 +653,6 @@ watch(connections2D.showConnections, () => {
   if (connections2D.showConnections.value) connections2D.startParticles()
 })
 
-// Fly-to target from parent (for all datasets)
 watch(() => props.flyToTarget, (target) => {
   if (!target || !map) return
   map.flyTo({
@@ -677,7 +661,7 @@ watch(() => props.flyToTarget, (target) => {
     duration: 1500,
     essential: true,
   })
-}, { deep: true })
+})
 
 // Pause particles when overlay is open to save CPU
 watch([showSpeciesOverlay, showProjectOverlay, showCrewOverlay], ([speciesOpen, projectOpen, crewOpen]) => {

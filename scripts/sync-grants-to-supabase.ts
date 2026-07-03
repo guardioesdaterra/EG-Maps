@@ -21,7 +21,16 @@ interface Grant {
   language: string;
   relevance: number;
   fetched_at: string;
-  status: string;
+  status: string;        // open/closed/unknown (grant's temporal state)
+  grant_status?: string; // alias for status
+  is_standing?: boolean;
+  grant_type?: string;
+  grant_types?: string[];
+  highlights?: string[];
+  urgency?: string;
+  deadline_days?: number | null;
+  amount_usd?: number | null;
+  priority_score?: number;
 }
 
 function loadGrants(filePath?: string): Grant[] {
@@ -67,6 +76,7 @@ function recordHash(r: Record<string, unknown>): string {
     r.amount_min,
     r.currency,
     r.country,
+    r.region,
     r.categories,
   ];
   return parts.join("||");
@@ -124,20 +134,20 @@ async function main() {
         deadline: g.deadline || "",
         amount_max: String(g.amount_max ?? ""),
         amount_min: String(g.amount_min ?? ""),
-        currency: g.currency || "USD",
+        currency: g.currency || null,
         country: g.country || "GLOBAL",
-        region: g.region || "",
+        region: g.region || null,
         categories: Array.isArray(g.categories) ? g.categories.filter(Boolean) : [],
         language: g.language || "en",
         relevance: typeof g.relevance === "number" ? Math.max(0, Math.min(100, g.relevance)) : 0,
-        status: "pending",
+        status: "pending",                         // moderation pipeline: pending/approved/rejected
         fetched_at: g.fetched_at || new Date().toISOString(),
       }));
 
       const ids = records.map((r) => r.id);
       const { data: existing } = await supabase
         .from("scraped_grants")
-        .select("id, title, funder, url, description, deadline, amount_max, amount_min, currency, country, categories")
+        .select("id, title, funder, url, description, deadline, amount_max, amount_min, currency, country, region, categories")
         .in("id", ids);
 
       const existingMap = new Map<string, Record<string, unknown>>();

@@ -68,6 +68,30 @@ MAX_CONCURRENT  = 10
 REQUEST_TIMEOUT = 30
 RATE_LIMIT_DELAY = 0.5
 
+REGION_MAP = {
+    "BR": "LATAM", "AR": "LATAM", "CO": "LATAM", "MX": "LATAM", "PE": "LATAM",
+    "CL": "LATAM", "EC": "LATAM", "VE": "LATAM", "BO": "LATAM", "PY": "LATAM",
+    "UY": "LATAM", "LATAM": "LATAM",
+    "EU": "EUROPE", "FR": "EUROPE", "ES": "EUROPE", "DE": "EUROPE", "IT": "EUROPE",
+    "PT": "EUROPE", "UK": "EUROPE", "GB": "EUROPE", "NORDIC": "EUROPE",
+    "AFRICA": "AFRICA", "ASIA": "ASIA", "JP": "ASIA", "CN": "ASIA", "KR": "ASIA",
+    "IN": "ASIA", "TH": "ASIA", "VN": "ASIA", "ID": "ASIA", "PH": "ASIA",
+    "TW": "ASIA", "MY": "ASIA", "SG": "ASIA", "SEA": "ASIA",
+    "AU": "OCEANIA", "NZ": "OCEANIA", "PACIFIC": "OCEANIA",
+    "GLOBAL": "GLOBAL",
+}
+
+NON_GRANT_KEYWORDS = [
+    "resultado", "selecionad", "confira", "divulgad", "notícia", "noticia",
+    "lança ferramenta", "participação no", "principais destaques",
+    "congresso desmonta", "intercâmbios agroecológicos",
+    "encontros das comunidades", "contam suas histórias",
+    "my account", "register or sign in", "page not found",
+    "the page you are looking for", "file not found",
+    "evento", "conferência", "seminário", "webinar", "workshop",
+    "newsletter", "boletim", "reportagem",
+]
+
 console = Console()
 
 # ──────────────────────────────────────────────────────────────
@@ -156,10 +180,33 @@ SECONDARY_KEYWORDS = [
 
 
 
-def score_relevance(text: str) -> int:
+def is_likely_non_grant(title: str, description: str = "") -> bool:
+    blob = f"{title} {description}".lower()
+    return any(kw in blob for kw in NON_GRANT_KEYWORDS)
+
+def has_grant_signals(title: str, description: str, deadline: str, amount_max: str) -> int:
+    signals = 0
+    blob = f"{title} {description}".lower()
+    if deadline and deadline not in ("None", ""):
+        signals += 15
+    if amount_max and amount_max not in ("None", ""):
+        signals += 15
+    if re.search(r'(edital|chamada|open call|grant|fellowship|bolsa|subvenção|convocatória|beca|subvention|appel à projets|补助|助成金)', blob):
+        signals += 10
+    if re.search(r'(R\$|€|\$|£|¥|USD|EUR|BRL)', blob):
+        signals += 8
+    if re.search(r'\d{4}[-/]\d{1,2}[-/]\d{1,2}', blob):
+        signals += 5
+    return signals
+
+def score_relevance(text: str, is_standing: bool = False) -> int:
     text = text.lower()
     hits = sum(1 for k in CORE_KEYWORDS if k in text) * 8
     hits += sum(1 for k in SECONDARY_KEYWORDS if k in text) * 2
+    # Heavy penalty for standing entries — they're just SEO text, not real grants
+    if is_standing:
+        hits = min(hits, 20)
+        hits = int(hits * 0.3)
     return min(100, hits)
 
 
@@ -167,8 +214,37 @@ def parse_amount_value(amount_max, currency):
     """Return numeric value in approximate USD for ranking."""
     if not amount_max or amount_max in ("None", ""):
         return 0
+    raw = str(amount_max)
+    # Handle Brazilian format: "R$ 150.000,00" -> 150000.00
+    br_match = re.search(r'R\$\s*([\d\.]+(?:,\d{2})?)', raw)
+    if br_match:
+        num = br_match.group(1).replace(".", "").replace(",", ".")
+        try:
+            val = float(num)
+            return val / 5.5 if currency and currency.upper() == "BRL" else val
+        except ValueError:
+            pass
+    # Handle Indian format: "₹ 50,00,000" or "₹5 Crore"
+    crore_match = re.search(r'(?:₹|INR|Rs[.\s]*)?(\d+(?:,\d+)*)\s*(?:crore|Cr|CR)', raw, re.I)
+    if crore_match:
+        val = float(crore_match.group(1).replace(",", ""))
+        return val * 10000000 / 83  # 1 crore = 10M INR -> USD
+    lakh_match = re.search(r'(?:₹|INR|Rs[.\s]*)?(\d+(?:,\d+)*)\s*(?:lakh|Lakh|LAC)', raw, re.I)
+    if lakh_match:
+        val = float(lakh_match.group(1).replace(",", ""))
+        return val * 100000 / 83
+    # Handle "million", "thousand" suffixes
+    m = re.search(r'([\d,]+(?:\.\d+)?)\s*(million|milhão|mil|thousand|k)', raw, re.I)
+    if m:
+        num = float(m.group(1).replace(",", ""))
+        suffix = m.group(2).lower()
+        if suffix in ("million", "milhão"):
+            num *= 1000000
+        elif suffix in ("thousand", "mil", "k"):
+            num *= 1000
+        return num
     try:
-        val = float(re.sub(r"[^0-9.]", "", str(amount_max)))
+        val = float(re.sub(r"[^0-9.]", "", raw))
     except (ValueError, TypeError):
         return 0
     if not currency:
@@ -372,7 +448,7 @@ def compute_highlights(title, description, funder, amount_max, currency, deadlin
     # Status
     if status == "closed":
         highlights.append("CLOSED")
-    elif status == "pending":
+    elif status == "open":
         highlights.append("OPEN")
 
     # Scholarship / fellowship
@@ -389,16 +465,22 @@ def compute_highlights(title, description, funder, amount_max, currency, deadlin
 def make_grant(title, source_name, url, description="", funder="",
                deadline="", amount_max="", amount_min="", currency="",
                country="", region="", categories=None, language="en",
-               status="pending"):
+               status="open", is_standing=False):
     uid = hashlib.md5(f"{source_name}::{url}".encode()).hexdigest()[:12]
     blob = f"{title} {description} {funder}".lower()
-    base_relevance = score_relevance(blob)
+
+    base_relevance = score_relevance(blob, is_standing=is_standing)
+    # Heavy penalty for likely non-grant posts (news, results, etc.)
+    if is_likely_non_grant(title, description):
+        base_relevance = min(base_relevance, 10)
     grant_type, type_list = classify_grant(title, description, funder, categories, language)
     highlights = compute_highlights(title, description, funder, amount_max, currency, deadline, status, categories, language)
     usd_val = parse_amount_value(amount_max, currency)
+    grant_signals = has_grant_signals(title, description, deadline, amount_max)
+    inferred_region = region or REGION_MAP.get(country, "GLOBAL")
 
-    # Priority score: base relevance + bonuses
-    priority = base_relevance
+    # Priority score: base relevance + signals + bonuses
+    priority = base_relevance + grant_signals
     if "EG_CORE" in highlights:
         priority += 15
     if "URGENT" in highlights:
@@ -411,6 +493,9 @@ def make_grant(title, source_name, url, description="", funder="",
         priority += 5
     if status == "closed":
         priority -= 20
+    # Penalize standing entries in priority
+    if is_standing:
+        priority = int(priority * 0.4)
 
     days, urgency = compute_deadline_urgency(deadline)
 
@@ -426,7 +511,7 @@ def make_grant(title, source_name, url, description="", funder="",
         "amount_min":      amount_min,
         "currency":        currency,
         "country":         country,
-        "region":          region,
+        "region":          inferred_region,
         "categories":      categories or [],
         "language":        language,
         "grant_type":      grant_type,
@@ -438,7 +523,8 @@ def make_grant(title, source_name, url, description="", funder="",
         "relevance":       base_relevance,
         "priority_score":  priority,
         "fetched_at":      datetime.now(timezone.utc).isoformat(),
-        "status":          status,
+        "status":          status,         # open/closed/unknown (grant's temporal state)
+        "is_standing":     is_standing,    # true for hardcoded reference entries
     }
 def _cpath(key): return CACHE_DIR / f"{hashlib.md5(key.encode()).hexdigest()}.json"
 
@@ -686,14 +772,14 @@ async def fetch_capta(session):
             if any(w in raw_content for w in ["encerrad", "finalizada", "concluída"]):
                 status = "closed"
             elif any(w in raw_content for w in ["inscri", "prazo", "abert", "submissão", "proposta"]):
-                status = "pending"
+                status = "open"
             else:
-                status = "pending"
+                status = "open"
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=content[:600], country="BR", language="pt",
                 deadline=extract_deadline(content), status=status,
                 amount_max=extract_amount(content)))
-    console.print(f"  [cyan]capta.org.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='pending')} open)")
+    console.print(f"  [cyan]capta.org.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='open')} open)")
     return grants
 
 
@@ -728,9 +814,9 @@ async def fetch_prosas(session):
                 if "encerrad" in card_lower or "finalizada" in card_lower:
                     status = "closed"
                 elif url_has_abertos or any(w in card_lower for w in ["abert", "inscri", "prazo", "submissão"]):
-                    status = "pending"
+                    status = "open"
                 else:
-                    status = "pending"
+                    status = "open"
                 grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                     description=text[:400], country="BR", language="pt",
                     deadline=extract_deadline(text), amount_max=extract_amount(text),
@@ -738,7 +824,7 @@ async def fetch_prosas(session):
                 found += 1
             if found: break
         if found: break
-    console.print(f"  [cyan]prosas.com.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='pending')} open)")
+    console.print(f"  [cyan]prosas.com.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='open')} open)")
     return grants
 
 
@@ -768,6 +854,8 @@ async def fetch_casa(session):
             else:
                 open_section = div
 
+        # Collect card data first
+        card_data = []
         for card in cards:
             title = (card.get("title") or "").strip()
             if not title:
@@ -776,50 +864,38 @@ async def fetch_casa(session):
             if not title:
                 continue
             url = urljoin(BASE, card.get("href", ""))
-
-            # Determine status from badge
             badge = card.select_one("span.grid-note")
             badge_text = badge.get_text(strip=True).lower() if badge else ""
             if "aberta" in badge_text:
-                status = "pending"  # open
+                status = "open"
             elif "encerrad" in badge_text:
                 status = "closed"
             else:
-                # Fallback: check which section the card is in
                 parent = card.parent
                 parent_classes = parent.get("class", []) if parent else []
-                status = "closed" if "encerradas" in parent_classes else "pending"
+                status = "closed" if "encerradas" in parent_classes else "open"
+            card_data.append({"title": title, "url": url, "status": status, "text": card.get_text(" ")})
 
-            # Skip fully closed grants (old ones with no relevance boost)
-            # but keep recently closed ones (might still have active deadlines)
-            # We keep all for now and let the pipeline filter them
+        # Fetch detail pages for open chamadas to get real data
+        for cd in card_data:
+            detail_text = cd["text"]
+            deadline = extract_deadline(detail_text)
+            amount = extract_amount(detail_text)
+            description = detail_text[:500]
 
-            text = card.get_text(" ")
-            grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                description=text[:500], country="BR", language="pt",
-                funder="Fundo Casa Socioambiental",
-                deadline=extract_deadline(text), status=status))
-
-        # Fetch detail pages for open chamadas to get deadlines + amounts
-        for g in grants:
-            if g["status"] == "pending" and g["url"]:
-                detail = await fetch(session, g["url"])
+            if cd["status"] == "open" and cd["url"]:
+                detail = await fetch(session, cd["url"])
                 if detail:
                     dsoup = BeautifulSoup(detail, "lxml")
                     body = dsoup.select_one(".entry-content, .post-content, article, .et_pb_section")
-                    if body:
-                        detail_text = body.get_text(" ")
-                    else:
-                        detail_text = dsoup.get_text(" ")
-                    # Extract deadline from detail page
-                    dl = extract_deadline(detail_text)
-                    if dl:
-                        g["deadline"] = dl
-                    # Extract amount from detail page
-                    amt = extract_amount(detail_text)
-                    if amt:
-                        g["amount_max"] = amt
-                    # Update description with richer content
+                    full_text = body.get_text(" ") if body else dsoup.get_text(" ")
+
+                    dl = extract_deadline(full_text)
+                    if dl: deadline = dl
+                    amt = extract_amount(full_text)
+                    if amt: amount = amt
+
+                    # Build richer description
                     content_parts = []
                     for p in dsoup.select("p, li"):
                         pt = p.get_text(strip=True)
@@ -831,8 +907,14 @@ async def fetch_casa(session):
                         ]):
                             content_parts.append(pt)
                     if content_parts:
-                        enriched = " | ".join(content_parts[:8])
-                        g["description"] = enriched[:1200]
+                        description = " | ".join(content_parts[:8])[:1200]
+
+            grants.append(make_grant(
+                title=cd["title"], source_name=SOURCE, url=cd["url"],
+                description=description, deadline=deadline, amount_max=amount,
+                country="BR", language="pt",
+                funder="Fundo Casa Socioambiental", status=cd["status"],
+            ))
 
     # --- Fallback: WP REST API (only if HTML scraping returned nothing) ---
     if not grants:
@@ -843,20 +925,19 @@ async def fetch_casa(session):
                 content = clean_html(p.get("content",{}).get("rendered",""))
                 url     = p.get("link","")
                 if score_relevance(f"{title} {content}") < 3: continue
-                # Try to detect status from WP post content
                 raw_content = p.get("content",{}).get("rendered","").lower()
                 if any(w in raw_content for w in ["encerrad", "finalizada", "concluída", "selecionad"]):
                     status = "closed"
                 elif any(w in raw_content for w in ["aberta", "inscri", "prazo"]):
-                    status = "pending"
+                    status = "open"
                 else:
-                    status = "pending"
+                    status = "open"
                 grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                     description=content[:500], country="BR", language="pt",
                     funder="Fundo Casa Socioambiental",
                     deadline=extract_deadline(content), status=status))
 
-    console.print(f"  [cyan]casa.org.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='pending')} open, {sum(1 for g in grants if g['status']=='closed')} closed)")
+    console.print(f"  [cyan]casa.org.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='open')} open, {sum(1 for g in grants if g['status']=='closed')} closed)")
     return grants
 
 
@@ -876,52 +957,163 @@ async def fetch_ispn(session):
             if any(w in raw_content for w in ["encerrad", "finalizada", "concluída", "resultado"]):
                 status = "closed"
             elif any(w in raw_content for w in ["inscri", "prazo", "abert", "submissão", "proposta", "chamada"]):
-                status = "pending"
+                status = "open"
             else:
-                status = "pending"
+                status = "open"
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=content[:500], country="BR", language="pt",
                 funder="ISPN", deadline=extract_deadline(content), status=status,
                 amount_max=extract_amount(content)))
-    console.print(f"  [cyan]ispn.org.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='pending')} open)")
+    console.print(f"  [cyan]ispn.org.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='open')} open)")
     return grants
 
 
 async def fetch_fundobrasil(session):
-    """Fundo Brasil de Direitos Humanos — 61 editais (19 general + 42 specific, all closed)."""
+    """Fundo Brasil de Direitos Humanos — fetch listing pages + detail pages for real data."""
     grants = []
     SOURCE = "fundobrasil.org.br"
     BASE = "https://www.fundobrasil.org.br"
     seen = set()
-    for base_path in [
-        "/nosso-trabalho/apoio-a-sociedade-civil/editais-gerais-e-especificos",
-        "/nosso-trabalho/apoio-a-sociedade-civil/editais-gerais-e-especificos/editais-especificos",
-    ]:
-        for page_num in range(1, 10):
-            path = f"{base_path}/page/{page_num}/" if page_num > 1 else f"{base_path}/"
-            url = BASE + path
-            html = await fetch(session, url)
-            if not html: break
-            soup = BeautifulSoup(html, "lxml")
-            found = 0
-            for a in soup.find_all("a", href=True):
-                href = a["href"]
-                if "/edital/" not in href: continue
-                edital_url = urljoin(BASE, href)
-                if edital_url in seen: continue
+
+    # Try primary listing URL
+    list_urls = [
+        f"{BASE}/editais/",
+        f"{BASE}/nosso-trabalho/apoio-a-sociedade-civil/editais-gerais-e-especificos/",
+        f"{BASE}/nosso-trabalho/apoio-a-sociedade-civil/editais-gerais-e-especificos/editais-especificos/",
+        # Also try WP API as fallback
+        f"{BASE}/wp-json/wp/v2/posts?per_page=100&_embed=true&categories=68",
+    ]
+
+    edital_links = []
+    for url in list_urls:
+        html = await fetch(session, url)
+        if not html: continue
+        soup = BeautifulSoup(html, "lxml")
+        # Find all edital links via multiple strategies
+        for a in soup.find_all("a", href=True):
+            href = a["href"]
+            if "/edital/" not in href: continue
+            edital_url = urljoin(BASE, href)
+            if edital_url not in seen:
                 seen.add(edital_url)
-                raw = a.get_text(" ", strip=True)
-                title = raw.removeprefix("Encerrado").split("RESULTADO")[0].strip()
-                if not title or len(title) < 8: continue
-                text = a.parent.get_text(" ", strip=True) if a.parent else title
-                grants.append(make_grant(title=title, source_name=SOURCE, url=edital_url,
-                    description=text[:800], country="BR", language="pt", status="closed",
-                    funder="Fundo Brasil de Direitos Humanos",
-                    deadline=extract_deadline(text), amount_max=extract_amount(text),
-                    categories=["human rights","environmental justice","social justice","Brazil"]))
-                found += 1
-            if found == 0: break
-    console.print(f"  [cyan]fundobrasil.org.br[/] → {len(grants)}")
+                edital_links.append(edital_url)
+        # Also try finding in div/post content
+        for article in soup.select("article, .post, .card, [class*='edital'], li"):
+            a = article.find("a", href=True)
+            if a and "/edital/" in a["href"]:
+                edital_url = urljoin(BASE, a["href"])
+                if edital_url not in seen:
+                    seen.add(edital_url)
+                    edital_links.append(edital_url)
+        if edital_links:
+            break  # Found links, skip remaining URLs
+
+    if not edital_links:
+        console.print(f"  [yellow]fundobrasil.org.br[/] — no edital links found (site may be blocking)")
+        return grants
+
+    # Now fetch each edital detail page for real data
+    for edital_url in edital_links:
+        detail = await fetch(session, edital_url)
+        if not detail:
+            # Still add as minimal entry
+            grants.append(make_grant(
+                title=f"Edital (unavailable — {edital_url.split('/')[-1]})",
+                source_name=SOURCE, url=edital_url,
+                description="", country="BR", language="pt",
+                funder="Fundo Brasil de Direitos Humanos", status="unknown",
+            ))
+            continue
+
+        dsoup = BeautifulSoup(detail, "lxml")
+        detail_text = dsoup.get_text(" ", strip=True)
+
+        # Extract title from <h1> or <title>
+        title = ""
+        h1 = dsoup.find("h1")
+        if h1:
+            title = h1.get_text(strip=True)
+        if not title:
+            title_tag = dsoup.find("title")
+            if title_tag:
+                title = title_tag.get_text(strip=True).split("|")[0].strip()
+
+        # Extract status: "Encerrado" / "Aberto"
+        status = "unknown"
+        detail_lower = detail_text.lower()
+        # Look for Status label
+        status_section = re.search(r'(?:Status|Situação)\s*:?\s*(\w+)', detail_text, re.I)
+        if status_section:
+            s = status_section.group(1).lower()
+            if "encerrad" in s or "finalizad" in s or "concluíd" in s:
+                status = "closed"
+            elif "abert" in s or "andament" in s or "ativo" in s:
+                status = "open"
+        elif "encerrad" in detail_lower:
+            status = "closed"
+        elif "abert" in detail_lower:
+            status = "open"
+
+        # Extract deadline
+        deadline = extract_deadline(detail_text)
+        # Look for RESULTADO A PARTIR DE date
+        if not deadline:
+            resultado = re.search(r'RESULTADO A PARTIR DE[:\s]+(\d{1,2})[°º\s]+(?:de\s+)?(\w+)(?:\s+de\s+)?(\d{4})', detail_text, re.I)
+            if resultado:
+                month_map = {
+                    "janeiro":1,"fevereiro":2,"março":3,"abril":4,"maio":5,"junho":6,
+                    "julho":7,"agosto":8,"setembro":9,"outubro":10,"novembro":11,"dezembro":12,
+                }
+                day, month_name, year = resultado.group(1), resultado.group(2).lower(), resultado.group(3)
+                mo = month_map.get(month_name, 0)
+                if mo:
+                    deadline = f"{year}-{mo:02d}-{int(day):02d}"
+
+        # Extract amount
+        amount = extract_amount(detail_text)
+        if not amount:
+            amt_range = re.search(r'(?:valor|investimento|orçamento|custeio)[^:]*:\s*R?\$?\s*([\d.]+\s*(?:a|,|-|até)\s*R?\$?\s*[\d.]+)', detail_text, re.I)
+            if amt_range:
+                amount = f"R$ {amt_range.group(1)}"
+
+        # Build better description from key sections
+        content_parts = []
+        for selector in [".entry-content", "article", "main", ".post-content", ".et_pb_section"]:
+            body = dsoup.select_one(selector)
+            if body:
+                for p in body.select("p, li, h2, h3, h4"):
+                    pt = p.get_text(strip=True)
+                    if len(pt) > 30:
+                        content_parts.append(pt)
+                break
+        if not content_parts:
+            content_parts.append(detail_text[:600])
+
+        description = " | ".join(content_parts[:10])[:1200]
+
+        # Detect categories from content
+        cats = ["human rights", "Brazil"]
+        if any(w in detail_lower for w in ["ambiental", "clima", "socioambiental", "natureza"]):
+            cats.append("environmental justice")
+        if any(w in detail_lower for w in ["cultura", "arte", "artista", "música"]):
+            cats.append("culture")
+        if any(w in detail_lower for w in ["mulher", "feminist", "gênero", "genero"]):
+            cats.append("gender")
+        if any(w in detail_lower for w in ["indígena", "indigena", "quilombola", "tradicional"]):
+            cats.append("indigenous")
+        if any(w in detail_lower for w in ["jovem", "juventude", "criança", "adolescente"]):
+            cats.append("youth")
+
+        grants.append(make_grant(
+            title=title or f"Edital {edital_url.split('/')[-1]}",
+            source_name=SOURCE, url=edital_url,
+            description=description, country="BR", language="pt",
+            funder="Fundo Brasil de Direitos Humanos",
+            deadline=deadline, amount_max=amount, status=status,
+            categories=cats,
+        ))
+
+    console.print(f"  [cyan]fundobrasil.org.br[/] → {len(grants)} editais ({sum(1 for g in grants if g['status']=='open')} open, {sum(1 for g in grants if g['status']=='closed')} closed)")
     return grants
 
 
@@ -930,7 +1122,7 @@ async def fetch_fundobrasil(session):
 # ══════════════════════════════════════════════════════════════
 
 async def fetch_eu_tenders(session):
-    """EU Funding & Tenders Portal — standing entry (SEDIA API deprecated)."""
+    """EU Funding & Tenders Portal — reference entry."""
     grants = []
     grants.append(make_grant(
         title="European Commission — EU Funding Programmes (LIFE, Horizon, Creative Europe)",
@@ -943,7 +1135,7 @@ async def fetch_eu_tenders(session):
             "published on the Funding & Tenders Portal throughout the year."
         ),
         funder="European Commission",
-        country="EU", language="en", currency="EUR", status="closed",
+        country="EU", language="en", currency="EUR", status="unknown", is_standing=True,
         categories=["EU","Horizon","LIFE","Creative Europe","Erasmus","environment","culture"],
     ))
     console.print(f"  [cyan]eu-funding[/] → {len(grants)}")
@@ -951,7 +1143,7 @@ async def fetch_eu_tenders(session):
 
 
 async def fetch_eea_grants(session):
-    """EEA and Norway Grants — environment + civil society + arts (standing entry)."""
+    """EEA and Norway Grants — reference entry."""
     grants = []
     grants.append(make_grant(
         title="EEA and Norway Grants — Funding Programmes",
@@ -965,7 +1157,7 @@ async def fetch_eea_grants(session):
             "engagement, human rights, and cultural cooperation."
         ),
         funder="EEA and Norway Grants",
-        country="EU", language="en", currency="EUR", status="closed",
+        country="EU", language="en", currency="EUR", status="unknown", is_standing=True,
         categories=["environment","climate","civil society","culture","human rights"],
     ))
     console.print(f"  [cyan]eeagrants.org[/] → {len(grants)}")
@@ -973,7 +1165,7 @@ async def fetch_eea_grants(session):
 
 
 async def fetch_gulbenkian(session):
-    """Calouste Gulbenkian Foundation — arts, environment, science (standing entry)."""
+    """Calouste Gulbenkian Foundation — reference entry."""
     grants = []
     SOURCE = "gulbenkian.pt"
     grants.append(make_grant(
@@ -988,7 +1180,7 @@ async def fetch_gulbenkian(session):
             "organizations in Portugal and internationally."
         ),
         funder="Calouste Gulbenkian Foundation",
-        country="EU", language="en", currency="EUR", status="closed",
+        country="EU", language="en", currency="EUR", status="unknown", is_standing=True,
         categories=["arts","environment","science","culture","climate","ocean"],
     ))
     console.print(f"  [cyan]gulbenkian[/] → {len(grants)}")
@@ -996,7 +1188,7 @@ async def fetch_gulbenkian(session):
 
 
 async def fetch_doen(session):
-    """Doen Foundation (Netherlands) — arts + fair/green economy (standing entry)."""
+    """Doen Foundation (Netherlands) — reference entry."""
     grants = []
     SOURCE = "doen.nl"
     grants.append(make_grant(
@@ -1010,7 +1202,7 @@ async def fetch_doen(session):
         ),
         funder="Doen Foundation",
         country="EU", language="en",
-        currency="EUR", status="closed",
+        currency="EUR", status="unknown", is_standing=True,
         categories=["culture","green economy","arts","social cohesion"],
     ))
     console.print(f"  [cyan]doen.nl[/] → {len(grants)}")
@@ -1018,7 +1210,7 @@ async def fetch_doen(session):
 
 
 async def fetch_porticus(session):
-    """Porticus Foundation — social, cultural, environmental (standing entry)."""
+    """Porticus Foundation — reference entry."""
     grants = []
     SOURCE = "porticus.com"
     grants.append(make_grant(
@@ -1032,7 +1224,7 @@ async def fetch_porticus(session):
             "Asia, and the Middle East. Multi-year core and programme grants."
         ),
         funder="Porticus Foundation",
-        country="GLOBAL", language="en", status="closed",
+        country="GLOBAL", language="en", status="unknown", is_standing=True,
         categories=["education","environment","climate justice","youth","global"],
     ))
     console.print(f"  [cyan]porticus.com[/] → {len(grants)}")
@@ -1153,7 +1345,7 @@ async def fetch_ycjf(session):
         ),
         funder="Youth Climate Justice Fund",
         amount_max="40000", currency="USD",
-        country="GLOBAL", language="en",
+        country="GLOBAL", language="en", is_standing=True,
         categories=["youth","climate justice","socio-environmental","grassroots","global south"],
     ))
     console.print(f"  [cyan]ycjf.org[/] → {len(grants)}")
@@ -1161,7 +1353,7 @@ async def fetch_ycjf(session):
 
 
 async def fetch_cjrfund(session):
-    """Climate Justice Resilience Fund — women, youth, indigenous (standing entry)."""
+    """Climate Justice Resilience Fund — reference entry."""
     grants = []
     grants.append(make_grant(
         title="Climate Justice Resilience Fund — Grantmaking",
@@ -1175,7 +1367,7 @@ async def fetch_cjrfund(session):
             "knowledge, and youth leadership in climate action."
         ),
         funder="Climate Justice Resilience Fund",
-        country="GLOBAL", language="en", status="closed",
+        country="GLOBAL", language="en", status="unknown", is_standing=True,
         categories=["climate justice","women","indigenous","community","resilience"],
     ))
     console.print(f"  [cyan]cjrfund.org[/] → {len(grants)}")
@@ -1203,7 +1395,7 @@ async def fetch_moleskine_pioneers(session):
         ),
         funder="Moleskine Foundation",
         amount_max="5000", currency="EUR",
-        country="GLOBAL", language="en", status="closed",
+        country="GLOBAL", language="en", status="unknown", is_standing=True,
         deadline=extract_deadline(text_extra),
         categories=["arts","creativity","social change","youth","global"],
     ))
@@ -1301,7 +1493,7 @@ async def fetch_opportunities_for_youth(session):
 
 
 async def fetch_eflux(session):
-    """e-flux — art + activism open calls (standing entry)."""
+    """e-flux — reference entry (their announcements require JS)."""
     grants = []
     grants.append(make_grant(
         title="e-flux Announcements — Art & Activism Open Calls",
@@ -1314,7 +1506,7 @@ async def fetch_eflux(session):
             "calls for exhibitions, residencies, grants, fellowships, and commissions."
         ),
         funder="e-flux",
-        country="GLOBAL", language="en", status="closed",
+        country="GLOBAL", language="en", status="unknown", is_standing=True,
         categories=["art","culture","open call","residency","activism"],
     ))
     console.print(f"  [cyan]e-flux.com[/] → {len(grants)}")
@@ -1394,7 +1586,7 @@ async def fetch_global_south_opportunities(session):
 # ══════════════════════════════════════════════════════════════
 
 async def fetch_latam(session):
-    """LATAM foundations — standing entries (most sites dead/blocked)."""
+    """LATAM foundations — reference entries (most sites dead/blocked)."""
     grants = []
     grants.append(make_grant(
         title="Fondo Acción Urgente — Financiamiento Feminista",
@@ -1407,7 +1599,7 @@ async def fetch_latam(session):
             "flexible para protección, seguridad y acción urgente."
         ),
         funder="Fondo Acción Urgente",
-        country="LATAM", language="es", status="closed",
+        country="LATAM", language="es", status="unknown", is_standing=True,
         categories=["feminist","human rights","environmental defenders","Latin America"],
     ))
     grants.append(make_grant(
@@ -1421,7 +1613,7 @@ async def fetch_latam(session):
             "Suriname, and Guyana."
         ),
         funder="Amazon Conservation Team",
-        country="LATAM", language="en", status="closed",
+        country="LATAM", language="en", status="unknown", is_standing=True,
         categories=["Amazon","indigenous","conservation","rainforest","Latin America"],
     ))
     console.print(f"  [cyan]LATAM sources[/] → {len(grants)}")
@@ -1466,7 +1658,7 @@ async def fetch_africa(session):
         if found:
             console.print(f"    [dim]Southern Africa Trust: {found} calls[/]")
 
-    # ── Standing: Tony Elumelu Foundation ──────────────────────
+    # ── Reference: Tony Elumelu Foundation ──────────────────────
     grants.append(make_grant(
         title="Tony Elumelu Foundation — Entrepreneurship Programme",
         source_name="africa:tef",
@@ -1479,11 +1671,11 @@ async def fetch_africa(session):
         ),
         funder="Tony Elumelu Foundation (TEF)",
         amount_max="5000", currency="USD",
-        country="AFRICA", language="en", status="closed",
+        country="AFRICA", language="en", status="unknown", is_standing=True,
         categories=["entrepreneurship","startup","seed funding","africa","youth"],
     ))
 
-    # ── Standing: African Wildlife Foundation ───────────────────
+    # ── Reference: African Wildlife Foundation ───────────────────
     grants.append(make_grant(
         title="African Wildlife Foundation — Conservation Partnerships",
         source_name="africa:awf",
@@ -1495,7 +1687,7 @@ async def fetch_africa(session):
             "resource management, and climate resilience across sub-Saharan Africa."
         ),
         funder="African Wildlife Foundation (AWF)",
-        country="AFRICA", language="en", status="closed",
+        country="AFRICA", language="en", status="unknown", is_standing=True,
         categories=["wildlife","conservation","community","biodiversity","africa"],
     ))
 
@@ -1670,7 +1862,7 @@ async def fetch_rss(session):
 # ══════════════════════════════════════════════════════════════
 
 async def fetch_global_greengrants(session):
-    """Global Greengrants Fund — standing entry (WAF blocks all requests)."""
+    """Global Greengrants Fund — reference entry (WAF blocks all requests)."""
     grants = []
     grants.append(make_grant(
         title="Global Greengrants Fund — Grassroots Environmental Grants",
@@ -1683,7 +1875,7 @@ async def fetch_global_greengrants(session):
             "and environmental health. Rolling applications with priority to underrepresented groups."
         ),
         funder="Global Greengrants Fund",
-        country="GLOBAL", language="en", currency="USD", status="closed",
+        country="GLOBAL", language="en", currency="USD", status="unknown", is_standing=True,
         categories=["grassroots","environment","indigenous","climate justice","small grants"],
     ))
     console.print(f"  [cyan]greengrants.org[/] → {len(grants)}")
@@ -1691,7 +1883,7 @@ async def fetch_global_greengrants(session):
 
 
 async def fetch_wellbeing_economy(session):
-    """Wellbeing Economy Alliance — standing entry (no grant page, org info only)."""
+    """Wellbeing Economy Alliance — reference entry (not a grant source)."""
     grants = []
     grants.append(make_grant(
         title="Wellbeing Economy Alliance — Membership & Advocacy",
@@ -1704,7 +1896,7 @@ async def fetch_wellbeing_economy(session):
             "and capacity-building resources for post-growth, wellbeing-centered economic projects."
         ),
         funder="Wellbeing Economy Alliance",
-        country="GLOBAL", language="en", status="closed",
+        country="GLOBAL", language="en", status="unknown", is_standing=True,
         categories=["wellbeing economy","community","environment","advocacy","post-growth"],
     ))
     console.print(f"  [cyan]weall.org[/] → {len(grants)}")
@@ -1738,7 +1930,7 @@ async def fetch_ashoka(session):
 
 
 async def fetch_emerging_climate_champions(session):
-    """Emerging Climate Champions Award — $1M grants for youth climate orgs."""
+    """Emerging Climate Champions Award — reference entry."""
     grants = []
     SOURCE = "emerging-climate-champions"
     grants.append(make_grant(
@@ -1753,7 +1945,7 @@ async def fetch_emerging_climate_champions(session):
         ),
         funder="Enlight Foundation / Lever For Change / Patchwork Collective",
         amount_max="1000000", currency="USD",
-        country="GLOBAL", language="en", status="closed",
+        country="GLOBAL", language="en", status="unknown", is_standing=True,
         categories=["youth","climate","social change","large grant","global south"],
     ))
     console.print(f"  [cyan]emerging climate champions[/] → {len(grants)}")
@@ -1765,7 +1957,7 @@ async def fetch_emerging_climate_champions(session):
 # ══════════════════════════════════════════════════════════════
 
 async def fetch_francophone(session):
-    """Francophone grant sources — standing entries (sites lack open-call listings)."""
+    """Francophone grant sources — reference entries."""
     grants = []
     grants.append(make_grant(
         title="AFD — Appels à Projets (Agence Française de Développement)",
@@ -1778,7 +1970,7 @@ async def fetch_francophone(session):
             "Asie et Outre-mer. Subventions et financements pour projets à impact."
         ),
         funder="Agence Française de Développement (AFD)",
-        country="FR", language="fr", currency="EUR", status="closed",
+        country="FR", language="fr", currency="EUR", status="unknown", is_standing=True,
         categories=["development","climate","biodiversity","Africa","French"],
     ))
     grants.append(make_grant(
@@ -1791,7 +1983,7 @@ async def fetch_francophone(session):
             "projets réguliers pour associations et organisations à but non lucratif en France."
         ),
         funder="Fondation de France",
-        country="FR", language="fr", currency="EUR", status="closed",
+        country="FR", language="fr", currency="EUR", status="unknown", is_standing=True,
         categories=["environment","solidarity","culture","education","French"],
     ))
     console.print(f"  [cyan]Francophone sources[/] → {len(grants)}")
@@ -1803,7 +1995,7 @@ async def fetch_francophone(session):
 # ══════════════════════════════════════════════════════════════
 
 async def fetch_hispanophone(session):
-    """Hispanophone grant sources — standing entries (most sites dead)."""
+    """Hispanophone grant sources — reference entries."""
     grants = []
     grants.append(make_grant(
         title="Cooperación Española — Convocatorias MAEC-AECID",
@@ -1815,7 +2007,7 @@ async def fetch_hispanophone(session):
             "países socios de América Latina, África y Asia."
         ),
         funder="Cooperación Española / MAEC-AECID",
-        country="ES", language="es", currency="EUR", status="closed",
+        country="ES", language="es", currency="EUR", status="unknown", is_standing=True,
         categories=["development","culture","education","cooperation","Spanish"],
     ))
     grants.append(make_grant(
@@ -1828,7 +2020,7 @@ async def fetch_hispanophone(session):
             "cultura, ciencia y tecnología."
         ),
         funder="Fundación Carolina",
-        country="ES", language="es", currency="EUR", status="closed",
+        country="ES", language="es", currency="EUR", status="unknown", is_standing=True,
         categories=["scholarships","environment","culture","science","Latin America"],
     ))
     console.print(f"  [cyan]Hispanophone sources[/] → {len(grants)}")
@@ -1919,9 +2111,9 @@ async def fetch_asia(session):
                 categories=["youth","culture","social enterprise","education"]))
         console.print(f"    [dim]ASEAN Foundation: {len(seen)} calls[/]")
 
-    # ── Standing: Keidanren Nature Conservation Fund ────────────
+    # ── Reference: Keidanren Nature Conservation Fund ────────────
     grants.append(make_grant(
-        title="Keidanren Nature Conservation Fund (KNCF) — Grant Program (Reference)",
+        title="Keidanren Nature Conservation Fund (KNCF) — Grant Program",
         source_name="asia:kncf",
         url="https://www.keidanren.net/kncf/en/fund/program",
         description=(
@@ -1931,13 +2123,13 @@ async def fetch_asia(session):
         ),
         funder="Keidanren Nature Conservation Fund / Nippon Keidanren",
         amount_max="20000000", currency="JPY",
-        country="ASIA", language="en", status="closed",
+        country="ASIA", language="en", status="unknown", is_standing=True,
         categories=["biodiversity","conservation","nature","asia","oceania"],
     ))
 
-    # ── Standing: HCL Foundation HCLTech Grant ─────────────────
+    # ── Reference: HCL Foundation HCLTech Grant ─────────────────
     grants.append(make_grant(
-        title="HCLTech Grant — Water, Biodiversity & Environment (Reference)",
+        title="HCLTech Grant — Water, Biodiversity & Environment",
         source_name="asia:hcl",
         url="https://www.hclfoundation.org/hcltech-grant",
         description=(
@@ -1947,13 +2139,13 @@ async def fetch_asia(session):
         ),
         funder="HCLFoundation",
         amount_max="50000000", currency="INR",
-        country="IN", language="en", status="closed",
+        country="IN", language="en", status="unknown", is_standing=True,
         categories=["water","biodiversity","environment","climate","community"],
     ))
 
-    # ── Standing: Sasakawa Peace Foundation Idea Submission ────
+    # ── Reference: Sasakawa Peace Foundation Idea Submission ────
     grants.append(make_grant(
-        title="Sasakawa Peace Foundation — Idea Submission Program (Reference)",
+        title="Sasakawa Peace Foundation — Idea Submission Program",
         source_name="asia:sasakawa",
         url="https://www.spf.org/en/about/idea_submission/",
         description=(
@@ -1962,7 +2154,7 @@ async def fetch_asia(session):
             "US-Japan exchange, Middle East peace, and Pacific Islands development."
         ),
         funder="Sasakawa Peace Foundation",
-        country="ASIA", language="en", status="closed",
+        country="ASIA", language="en", status="unknown", is_standing=True,
         categories=["peace","security","maritime","women","exchange","development"],
     ))
 
@@ -1975,7 +2167,7 @@ async def fetch_asia(session):
 # ══════════════════════════════════════════════════════════════
 
 async def fetch_pollination_project(session):
-    """The Pollination Project — grassroots grants $500–$8,000 (standing entry)."""
+    """The Pollination Project — reference entry."""
     grants = []
     grants.append(make_grant(
         title="The Pollination Project — Grassroots Grants",
@@ -1988,7 +2180,7 @@ async def fetch_pollination_project(session):
             "early-stage, community-led initiatives with strong social impact potential."
         ),
         funder="The Pollination Project",
-        country="GLOBAL", language="en", currency="USD", status="closed",
+        country="GLOBAL", language="en", currency="USD", status="unknown", is_standing=True,
         categories=["grassroots","environment","social justice","small grants","seed funding"],
     ))
     console.print(f"  [cyan]pollinationproject.org[/] → {len(grants)}")
@@ -1996,7 +2188,7 @@ async def fetch_pollination_project(session):
 
 
 async def fetch_globalgiving(session):
-    """GlobalGiving — open call grants + matching campaigns (standing entry)."""
+    """GlobalGiving — reference entry."""
     grants = []
     grants.append(make_grant(
         title="GlobalGiving — Open Call Funding & Matching Campaigns",
@@ -2009,7 +2201,7 @@ async def fetch_globalgiving(session):
             "where donations are matched by corporate and foundation partners."
         ),
         funder="GlobalGiving Foundation",
-        country="GLOBAL", language="en", currency="USD", status="closed",
+        country="GLOBAL", language="en", currency="USD", status="unknown", is_standing=True,
         categories=["crowdfunding","capacity building","environment","community","disaster relief"],
     ))
     console.print(f"  [cyan]globalgiving.org[/] → {len(grants)}")
@@ -2240,7 +2432,7 @@ def print_table(grants):
 
 async def run_radar(sources_filter, country_filter, keywords,
                    category_filter, highlight_filter, urgent_only, min_amount,
-                   refresh, min_relevance, output_prefix):
+                   refresh, min_relevance, output_prefix, include_standing=False):
     if refresh:
         for f in CACHE_DIR.glob("*.json"): f.unlink()
         console.print("[yellow]Cache cleared.[/]")
@@ -2281,9 +2473,12 @@ async def run_radar(sources_filter, country_filter, keywords,
     for r in results: all_grants.extend(r)
     console.print(f"\n[green]✓ Raw:[/] {len(all_grants)}")
 
-    unique   = deduplicate(all_grants)
-    filtered = filter_by_country(unique, country_filter)
-    filtered = filter_by_keywords(filtered, keywords)
+    unique    = deduplicate(all_grants)
+    # By default, exclude standing/reference entries from output
+    if not include_standing:
+        unique = [g for g in unique if not g.get("is_standing", False)]
+    filtered  = filter_by_country(unique, country_filter)
+    filtered  = filter_by_keywords(filtered, keywords)
 
     # Category filter
     if category_filter:
@@ -2349,8 +2544,10 @@ async def run_radar(sources_filter, country_filter, keywords,
 @click.option("--list-sources", is_flag=True)
 @click.option("--list-types", is_flag=True,
               help="Show available grant types and highlights")
+@click.option("--include-standing", is_flag=True,
+              help="Include reference/standing entries (omitted by default)")
 def main(country, sources, keywords, category, highlight, urgent, min_amount,
-         refresh, min_score, output, list_sources, list_types):
+         refresh, min_score, output, list_sources, list_types, include_standing):
     """
     \b
     GRANTS RADAR v2 — Earth Guardians South America
@@ -2377,7 +2574,7 @@ def main(country, sources, keywords, category, highlight, urgent, min_amount,
     logging.basicConfig(
         filename=LOG_DIR/f"radar_{datetime.now().strftime('%Y%m%d')}.log",
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    asyncio.run(run_radar(sources, country, keywords, category, highlight, urgent, min_amount, refresh, min_score, output))
+    asyncio.run(run_radar(sources, country, keywords, category, highlight, urgent, min_amount, refresh, min_score, output, include_standing))
 
 if __name__ == "__main__":
     main()

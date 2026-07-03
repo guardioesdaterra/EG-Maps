@@ -194,7 +194,7 @@ jobs:
 
   grants-sync:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     steps:
       - uses: actions/checkout@v4
 
@@ -225,9 +225,33 @@ jobs:
       - name: Install Node dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Scrape grants
+      - name: Scrape grants (standing entries excluded by default)
         run: python scripts/grants.py -o grants_export
         continue-on-error: true
+
+      - name: Validate grants output
+        run: |
+          EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1)
+          if [ -z "$EXPORT_FILE" ]; then
+            echo "No grants export file found"
+            exit 0
+          fi
+          REAL_GRANTS=$(python3 -c "
+import json
+d=json.load(open('$EXPORT_FILE'))
+grants=d.get('grants',d) if isinstance(d,dict) else d
+non_standing = [g for g in grants if not g.get('is_standing', False)]
+real_with_data = [g for g in non_standing if g.get('deadline') or g.get('amount_max') or g.get('description','').strip()]
+print(f'Total: {len(grants)}, Non-standing: {len(non_standing)}, With deadline/amount: {len(real_with_data)}')
+")
+          echo "Grants stats: $REAL_GRANTS"
+          python3 -c "
+import json
+d=json.load(open('$EXPORT_FILE'))
+grants=d.get('grants',d) if isinstance(d,dict) else d
+for g in sorted(grants, key=lambda x: x.get('priority_score',0), reverse=True)[:5]:
+    print(f'  [{g.get(\"priority_score\",0):3d}] {g.get(\"source\",\"\"):25s} | {g.get(\"title\",\"\")[:60]}')
+"
 
       - name: Sync grants to Supabase
         run: |

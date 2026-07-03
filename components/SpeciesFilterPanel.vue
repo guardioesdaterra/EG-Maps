@@ -253,9 +253,9 @@ const filterOptions = computed(() => {
   const threatsSet = new Set<string>()
   for (const s of props.species) {
     groups.add(s.taxonomicGroup)
-    const r = (s as Record<string, unknown>).region
+    const r = (s as unknown as Record<string, unknown>).region
     if (r) regionSet.add(r as string)
-    const e = (s as Record<string, unknown>).ecosystem
+    const e = (s as unknown as Record<string, unknown>).ecosystem
     if (e) ecosystemSet.add(e as string)
     if (s.threatTypes) {
       for (const t of s.threatTypes) threatsSet.add(t)
@@ -331,17 +331,17 @@ const filteredSpecies = computed(() => {
   return props.species.filter(s => {
     if (hasGroupFilter && !groupFilter.includes(s.taxonomicGroup)) return false
     if (regionFilter) {
-      const r = (s as Record<string, unknown>).region
+      const r = (s as unknown as Record<string, unknown>).region
       if (r !== regionFilter) return false
     }
     if (ecosystemFilter) {
-      const e = (s as Record<string, unknown>).ecosystem
+      const e = (s as unknown as Record<string, unknown>).ecosystem
       if (e !== ecosystemFilter) return false
     }
     if (threatFilter && !s.threatTypes?.includes(threatFilter)) return false
     if (query) {
-      const r = (s as Record<string, unknown>).region as string | undefined
-      const e = (s as Record<string, unknown>).ecosystem as string | undefined
+      const r = (s as unknown as Record<string, unknown>).region as string | undefined
+      const e = (s as unknown as Record<string, unknown>).ecosystem as string | undefined
       if (!s.commonName.toLowerCase().includes(query) &&
           !s.scientificName.toLowerCase().includes(query) &&
           !(r && r.toLowerCase().includes(query)) &&

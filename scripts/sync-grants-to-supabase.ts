@@ -102,7 +102,7 @@ async function main() {
         title: g.title || "Untitled Grant",
         funder: g.funder || "",
         source: g.source || "",
-        source_id: "",
+        source_id: g.id || "",
         url: g.url || "",
         description: (g.description || "").slice(0, 5000),
         deadline: g.deadline || "",

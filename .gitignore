@@ -1,5 +1,6 @@
-supabase/
-*.sql
+supabase/.temp/
+supabase/.branches/
+*.sql.tmp
 # Nuxt
 .nuxt/
 .output/

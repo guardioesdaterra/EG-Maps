@@ -328,6 +328,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import type { ObservatoryUpdate } from '~/composables/useObservatoryUpdates'
+import { useCulturalAgentsData } from '~/composables/useCulturalAgentsData'
 
 interface LocationSuggestion {
   name: string
@@ -766,6 +767,13 @@ defineExpose({ onMapClick })
 }
 .obs-btn--primary:hover { background: rgba(46, 204, 113, 0.25); }
 .obs-btn--primary:disabled { opacity: 0.3; cursor: not-allowed; }
+.obs-btn--primary.obs-btn--amber {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+.obs-btn--primary.obs-btn--amber:hover { background: rgba(245, 158, 11, 0.25); }
+.obs-btn--primary.obs-btn--amber:disabled { opacity: 0.3; cursor: not-allowed; }
 .obs-btn--danger {
   background: rgba(231, 76, 60, 0.15);
   border-color: rgba(231, 76, 60, 0.3);

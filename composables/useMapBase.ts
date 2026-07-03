@@ -82,6 +82,15 @@ export function useMapBase(config: MapBaseConfig) {
     return new URLSearchParams(window.location.search).get('embed') === 'true'
   })
 
+  const isSmallViewport = ref(false)
+  function checkViewportSize() {
+    if (import.meta.server) return
+    const w = window.innerWidth
+    const h = window.innerHeight
+    isSmallViewport.value = w < 400 || h < 300 || (w < 500 && h < 500 && Math.abs(w - h) < 150)
+  }
+  const hideControls = computed(() => isEmbed.value || isSmallViewport.value)
+
   const hexGrid = useMapHexGrid(hexCanvasRef, isGlobe ? {
     mobileSize: HEX_GRID.mobileSizeGlobe,
     desktopSize: HEX_GRID.desktopSizeGlobe,
@@ -435,7 +444,9 @@ export function useMapBase(config: MapBaseConfig) {
   }
 
   onMounted(() => {
-    showFilterPanel.value = !isMobile.value && !isEmbed.value
+    checkViewportSize()
+    window.addEventListener('resize', checkViewportSize)
+    showFilterPanel.value = !isMobile.value && !hideControls.value
     initMap()
   })
 
@@ -515,6 +526,7 @@ export function useMapBase(config: MapBaseConfig) {
     connections.cleanup()
     orchestrator.cleanup()
     window.removeEventListener('resize', onResize)
+    window.removeEventListener('resize', checkViewportSize)
     if (map) {
       map.remove()
       map = null
@@ -522,7 +534,7 @@ export function useMapBase(config: MapBaseConfig) {
   })
 
   return {
-    t, locale, localeNames, baseURL, isMobile, isEmbed,
+    t, locale, localeNames, baseURL, isMobile, isEmbed, hideControls,
     speciesPanel,
     projectsData, speciesData, speciesIndexData, crewsData, crewLocationsData,
     filteredProjectsList, filteredSpeciesList, visibleProjects, visibleSpecies,

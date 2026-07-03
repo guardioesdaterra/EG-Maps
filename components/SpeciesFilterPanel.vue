@@ -257,8 +257,9 @@ const filterOptions = computed(() => {
     if (r) regionSet.add(r as string)
     const e = (s as unknown as Record<string, unknown>).ecosystem
     if (e) ecosystemSet.add(e as string)
-    if (s.threatTypes) {
-      for (const t of s.threatTypes) threatsSet.add(t)
+    const tt = (s as unknown as Record<string, unknown>).threatTypes as string[] | undefined
+    if (tt) {
+      for (const t of tt) threatsSet.add(t)
     }
   }
   return {
@@ -338,7 +339,7 @@ const filteredSpecies = computed(() => {
       const e = (s as unknown as Record<string, unknown>).ecosystem
       if (e !== ecosystemFilter) return false
     }
-    if (threatFilter && !s.threatTypes?.includes(threatFilter)) return false
+    if (threatFilter && !((s as unknown as Record<string, unknown>).threatTypes as string[] | undefined)?.includes(threatFilter)) return false
     if (query) {
       const r = (s as unknown as Record<string, unknown>).region as string | undefined
       const e = (s as unknown as Record<string, unknown>).ecosystem as string | undefined

@@ -51,7 +51,7 @@ export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.Feat
           category: s.category,
           color: GROUP_COLORS_HEX[s.taxonomicGroup] ?? '#B64032',
           hasImage: !!s.imageUrl,
-          threatCount: s.threatTypes?.length ?? 0,
+          threatCount: ((s as unknown as Record<string, unknown>).threatTypes as string[] | undefined)?.length ?? 0,
         }
       }))
   }

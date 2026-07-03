@@ -295,6 +295,22 @@
             </ul>
           </div>
           <div>
+            <h3 class="font-bold mb-2">{{ t('iframe.usage.autoHide.title') }}</h3>
+            <p class="text-sm text-black/70 dark:text-[var(--text-secondary)]">
+              {{ t('iframe.usage.autoHide.description') }}
+            </p>
+          </div>
+          <div>
+            <h3 class="font-bold mb-2">{{ t('iframe.usage.viewportSizes.title') }}</h3>
+            <ul class="list-disc list-inside text-sm text-black/70 dark:text-[var(--text-secondary)] space-y-1">
+              <li><strong>Banner</strong> — {{ t('iframe.usage.viewportSizes.banner') }}</li>
+              <li><strong>Small Card</strong> — {{ t('iframe.usage.viewportSizes.smallCard') }}</li>
+              <li><strong>Medium Card</strong> — {{ t('iframe.usage.viewportSizes.mediumCard') }}</li>
+              <li><strong>Responsive</strong> — {{ t('iframe.usage.viewportSizes.responsive') }}</li>
+              <li><strong>Full Screen</strong> — {{ t('iframe.usage.viewportSizes.fullScreen') }}</li>
+            </ul>
+          </div>
+          <div>
             <h3 class="font-bold mb-2">{{ t('iframe.usage.security.title') }}</h3>
             <p class="text-sm text-black/70 dark:text-[var(--text-secondary)]">
               {{ t('iframe.usage.security.description') }}

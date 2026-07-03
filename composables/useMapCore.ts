@@ -44,8 +44,10 @@ export function useMapCore(locale: Ref<string>, t: (_key: string) => string) {
         const wasVisible = el.style.display !== 'none'
         const shouldShow = !isOffScreen
         if (wasVisible !== shouldShow) {
-          el.style.display = shouldShow ? '' : 'none'
-          el.style.pointerEvents = shouldShow ? '' : 'none'
+          el.style.display = shouldShow
+            ? (el.getAttribute('data-marker-display') || 'flex')
+            : 'none'
+          el.style.pointerEvents = shouldShow ? 'auto' : 'none'
         }
       } catch {
         el.style.display = 'none'

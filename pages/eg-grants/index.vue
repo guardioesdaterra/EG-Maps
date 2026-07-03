@@ -730,10 +730,8 @@ function projectToScrapedGrant(p: ProjectData, i: number): ScrapedGrant {
 async function loadScrapedGrants() {
   scrapedLoading.value = true
   try {
-    if (user.value) {
-      const result = await listScrapedGrants()
-      scrapedGrants.value = result.grants ?? []
-    }
+    const result = await listScrapedGrants()
+    scrapedGrants.value = result.grants ?? []
     if (scrapedGrants.value.length === 0) {
       scrapedGrants.value = allProjectsData.map(projectToScrapedGrant)
     }
@@ -924,7 +922,7 @@ const globeCanvas = ref<HTMLCanvasElement | null>(null)
 const { init: initGlobe } = useThreeGlobe(globeCanvas)
 
 onMounted(async () => {
-  await Promise.all([loadGrants(), loadStats()])
+  await Promise.all([loadGrants(), loadStats(), loadScrapedGrants()])
   await nextTick()
   initGlobe()
 })

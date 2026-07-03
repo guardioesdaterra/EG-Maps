@@ -134,7 +134,7 @@ async function main() {
         deadline: g.deadline || "",
         amount_max: String(g.amount_max ?? ""),
         amount_min: String(g.amount_min ?? ""),
-        currency: g.currency || null,
+        currency: g.currency || "",
         country: g.country || "GLOBAL",
         region: g.region || null,
         categories: Array.isArray(g.categories) ? g.categories.filter(Boolean) : [],

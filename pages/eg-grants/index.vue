@@ -31,102 +31,62 @@
     </Transition>
     <div id="ui-overlay" class="relative" :style="{ zIndex: 'var(--z-ui)' }">
       <section id="hero" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
-        <span class="data-label">{{ t('grantsPortal.heroLabel') }}</span>
-        <h1>{{ t('grantsPortal.heroTitle1') }}<br/>{{ t('grantsPortal.heroTitle2') }}</h1>
-        <p class="hero-desc" v-html="t('grantsPortal.heroDesc', { strong1: '<strong>', strong2: '</strong>', strong3: '<strong>', strong4: '</strong>', strong5: '<strong>', strong6: '</strong>' })" />
+        <span class="data-label hero-reveal">{{ t('grantsPortal.heroLabel') }}</span>
+        <h1 class="hero-reveal">{{ t('grantsPortal.heroTitle1') }}<br/>{{ t('grantsPortal.heroTitle2') }}</h1>
+        <p class="hero-desc hero-reveal" v-html="t('grantsPortal.heroDesc', { strong1: '<strong>', strong2: '</strong>', strong3: '<strong>', strong4: '</strong>', strong5: '<strong>', strong6: '</strong>' })" />
       </section>
       <section id="details" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
         <span class="data-label">{{ t('grantsPortal.statsLabel') }}</span>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <span class="data-label">{{ t('grantsPortal.projectGrantsStat') }}</span>
-            <span class="stat-value">{{ projectStats.total }}</span>
+        <h2 class="impact-heading">{{ t('grantsPortal.heroTitle1') }}</h2>
+        <div class="impact-carousel">
+          <div class="impact-track">
+            <div v-for="(p, i) in topProjects" :key="p.project_title" class="impact-card" :style="{ '--i': i }">
+              <div class="impact-ring">
+                <svg viewBox="0 0 120 120" class="impact-ring-svg">
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2" />
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="339.3" :stroke-dashoffset="339.3 - (339.3 * (p.direct_beneficiaries + p.indirect_beneficiaries) / maxBeneficiaries)" stroke-linecap="round" class="impact-ring-progress" />
+                </svg>
+                <div class="impact-ring-inner">
+                  <span class="impact-ring-num">{{ formatCompact(p.direct_beneficiaries + p.indirect_beneficiaries) }}</span>
+                  <span class="impact-ring-label">LIVES</span>
+                </div>
+              </div>
+              <h4 class="impact-card-title">{{ p.project_title }}</h4>
+              <p class="impact-card-loc">{{ p.country_province }}</p>
+            </div>
           </div>
-          <div class="stat-card">
-            <span class="data-label">{{ t('grantsPortal.countriesStat') }}</span>
-            <span class="stat-value">{{ projectStats.countries }}+</span>
-          </div>
-          <div class="stat-card">
-            <span class="data-label">{{ t('grantsPortal.beneficiariesStat') }}</span>
-            <span class="stat-value">{{ beneficiaryCount }}</span>
-          </div>
-        </div>
-        <div class="stats-grid mt-8">
-          <div class="stat-card">
-            <span class="data-label">{{ t('grantsPortal.openStat') }}</span>
-            <span class="stat-value" style="color: var(--stat-open);">{{ scrapedOpenCount }}</span>
-          </div>
-          <div class="stat-card">
-            <span class="data-label">{{ t('grantsPortal.approvedStat') }}</span>
-            <span class="stat-value" style="color: var(--stat-approved);">{{ scrapedApprovedCount }}</span>
-          </div>
-          <div class="stat-card">
-            <span class="data-label">{{ t('grantsPortal.closedStat') }}</span>
-            <span class="stat-value" style="color: var(--stat-closed);">{{ scrapedClosedCount }}</span>
-          </div>
-          <div class="stat-card">
-            <span class="data-label">{{ t('grantsPortal.declinedStat') }}</span>
-            <span class="stat-value" style="color: var(--stat-declined);">{{ scrapedDeclinedCount }}</span>
-          </div>
-        </div>
-        <div class="mt-6 flex gap-3 flex-wrap items-center">
-          <span class="text-[10px] uppercase tracking-widest text-white/30 mr-2">{{ t('grantsPortal.communityOpenGrants') }}</span>
-          <button class="px-4 py-2 bg-emerald-600 text-white rounded text-xs font-semibold hover:bg-emerald-500 transition-all" @click="openRegistryModal">{{ t('grantsPortal.viewRegistry') }}</button>
-          <NuxtLink to="/project-grants" class="px-4 py-2 border border-white/20 text-white rounded text-xs font-semibold hover:bg-white/10 transition-all">{{ t('grantsPortal.exploreMap') }}</NuxtLink>
         </div>
       </section>
-      <section class="join-section" id="join">
-        <span class="data-label">{{ t('grantsPortal.twoProgramsLabel') }}</span>
-        <h2>{{ t('grantsPortal.howGrantsWork') }}</h2>
-        <div class="join-grid">
-          <div class="join-card">
-            <div class="join-card-content">
-              <div class="preview-tooltip">
-                <strong>{{ t('grantsPortal.openGrantsTooltipTitle') }}</strong>
-                {{ t('grantsPortal.openGrantsTooltipDesc') }}
-              </div>
-              <h3>{{ t('grantsPortal.openGrantsTitle') }}</h3>
-              <p>{{ t('grantsPortal.openGrantsDesc') }}</p>
-              <NuxtLink to="#" @click.prevent="scrollToPortal" class="join-card-btn">
-                <span>{{ user ? t('grantsPortal.submitGrant') : t('grantsPortal.signInToSubmit') }}</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      <section class="grants-section" id="join">
+        <div class="grants-inner">
+          <span class="data-label">EG PROJECT GRANTS</span>
+          <h2 class="grants-heading">{{ t('grantsPortal.howGrantsWork') }}</h2>
+          <div class="grants-body">
+            <div class="grants-copy">
+              <p>We offer <strong>$300–$500 grants</strong> to support our global change-makers, with priority given to our Crews.</p>
+              <p>Since 2021, our Project Grants program has backed grassroots efforts in climate justice education, regenerative agriculture, tree plantings, nonviolent direct action, climate policy, food security, art-vism, &amp; more.</p>
+              <p>With education, mentorship, and funding, our Project Grants program empowers you to bring your ideas to life and inspire others. The Project Grant process also teaches grant writing, project coordination, &amp; data analysis skills.</p>
+              <p>Join us in building resilience and tackling the climate crisis locally!</p>
+              <NuxtLink to="https://www.earthguardians.org/project-grants" target="_blank" class="grants-cta-btn">
+                <span>EXPLORE PROJECT GRANTS</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               </NuxtLink>
             </div>
-          </div>
-          <div class="join-card">
-            <div class="join-card-content">
-              <div class="preview-tooltip">
-                <strong>{{ t('grantsPortal.projectGrantsTooltipTitle') }}</strong>
-                {{ t('grantsPortal.projectGrantsTooltipDesc') }}
+            <div class="grants-visual">
+              <div class="grants-globe-ring">
+                <div v-for="(p, i) in topProjects" :key="'gv-'+i" class="grants-globe-item" :style="{ '--delay': i * 0.8 + 's' }">
+                  <div class="grants-globe-dot" />
+                  <span class="grants-globe-label">{{ p.country_province.split(',').pop()?.trim() }}</span>
+                </div>
               </div>
-              <h3>{{ t('grantsPortal.projectGrantsTitle') }}</h3>
-              <p>{{ t('grantsPortal.projectGrantsDesc') }}</p>
-              <NuxtLink to="/project-grants/3d" class="join-card-btn">
-                <span>{{ t('grantsPortal.viewOn3DGlobe') }}</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              </NuxtLink>
             </div>
           </div>
-          <div class="join-card">
-            <div class="join-card-content">
-              <div class="preview-tooltip">
-                <strong>{{ t('grantsPortal.reviewTooltipTitle') }}</strong>
-                {{ t('grantsPortal.reviewTooltipDesc') }}
-              </div>
-              <h3>{{ t('grantsPortal.reviewTitle') }}</h3>
-              <p>{{ t('grantsPortal.reviewDesc') }}</p>
-              <NuxtLink to="#" @click.prevent="scrollToPortal" class="join-card-btn">
-                <span>{{ t('grantsPortal.viewDashboard') }}</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </NuxtLink>
-            </div>
+          <div class="contact-info">
+            <p class="contact-text" v-html="contactEmailHtml" />
+            <p class="contact-text">
+              <a href="https://www.earthguardians.org/" target="_blank">{{ t('grantsPortal.visitEarthGuardians') }}</a>
+            </p>
           </div>
-        </div>
-        <div class="contact-info">
-          <p class="contact-text" v-html="contactEmailHtml" />
-          <p class="contact-text">
-            <a href="https://www.earthguardians.org/" target="_blank">{{ t('grantsPortal.visitEarthGuardians') }}</a>
-          </p>
         </div>
       </section>
 
@@ -145,22 +105,6 @@
               <span class="dash-stat-num open">{{ scrapedOpenCount }}</span>
               <span class="dash-stat-label">OPEN</span>
             </div>
-            <div class="dash-stat-card">
-              <span class="dash-stat-num approved">{{ scrapedApprovedCount }}</span>
-              <span class="dash-stat-label">APPROVED</span>
-            </div>
-            <div class="dash-stat-card">
-              <span class="dash-stat-num closed">{{ scrapedClosedCount }}</span>
-              <span class="dash-stat-label">CLOSED</span>
-            </div>
-            <div class="dash-stat-card">
-              <span class="dash-stat-num declined">{{ scrapedDeclinedCount }}</span>
-              <span class="dash-stat-label">DECLINED</span>
-            </div>
-          </div>
-
-          <div class="dash-tabs">
-            <button v-for="dt in dashTabs" :key="dt.key" @click="activeDashTab = dt.key" class="dash-tab" :class="activeDashTab === dt.key ? 'active' : ''">{{ dt.label }}</button>
           </div>
 
           <div class="dash-search">
@@ -169,8 +113,8 @@
           </div>
           <div class="dash-grid">
             <div v-if="scrapedLoading" class="dash-loading">{{ t('grantsPortal.loadingOpenGrants') }}</div>
-            <div v-else-if="filteredDashGrants.length === 0" class="dash-empty">{{ dashboardSearch ? 'No grants match your search.' : 'No grants in this category yet.' }}</div>
-            <div v-for="g in filteredDashGrants" :key="g.id" class="dash-card" @click="openScrapedDetail(g)">
+            <div v-else-if="paginatedDashGrants.length === 0" class="dash-empty">{{ dashboardSearch ? 'No grants match your search.' : 'No open grants yet.' }}</div>
+            <div v-for="g in paginatedDashGrants" :key="g.id" class="dash-card" @click="openScrapedDetail(g)">
               <div class="dash-card-top">
                 <span class="dash-card-type" :class="g.grant_type || 'general'">{{ typeEmoji(g.grant_type) }} {{ grantTypeLabel(g.grant_type) }}</span>
                 <span v-if="g.priority_score != null" class="dash-card-score" :class="priorityClass(g.priority_score)">{{ g.priority_score }}</span>
@@ -191,6 +135,15 @@
                 <a v-if="g.url" :href="g.url" target="_blank" @click.stop class="dash-apply">APPLY ↗</a>
               </div>
             </div>
+          </div>
+
+          <div v-if="dashTotalPages > 1" class="dash-pagination">
+            <button class="dash-page-btn" :disabled="dashPage === 1" @click="dashPage--">← Prev</button>
+            <template v-for="p in dashPageNumbers" :key="p">
+              <button v-if="typeof p === 'number'" class="dash-page-btn" :class="{ active: dashPage === p }" @click="dashPage = p">{{ p }}</button>
+              <span v-else class="dash-page-ellipsis">…</span>
+            </template>
+            <button class="dash-page-btn" :disabled="dashPage === dashTotalPages" @click="dashPage++">Next →</button>
           </div>
 
           <div class="dash-cta">
@@ -559,6 +512,12 @@ useHead({
     { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
     { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
     { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@900&family=JetBrains+Mono:wght@300;500;700;800&display=swap' },
+    { rel: 'preconnect', href: 'https://cdnjs.cloudflare.com' },
+    { rel: 'preconnect', href: 'https://threejs.org' },
+    { rel: 'preload', href: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', as: 'script' },
+    { rel: 'preload', href: 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', as: 'script' },
+    { rel: 'preload', href: 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', as: 'script' },
+    { rel: 'preload', href: 'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg', as: 'image' },
   ],
 })
 
@@ -628,34 +587,53 @@ const detailGrant = ref<DetailGrantData | null>(null)
 const detailUserVote = ref(0)
 
 // Dashboard state
-const activeDashTab = ref('open')
-const dashTabs = [
-  { key: 'open', label: 'OPEN' },
-  { key: 'approved', label: 'APPROVED' },
-  { key: 'closed', label: 'CLOSED' },
-  { key: 'declined', label: 'DECLINED' },
-]
-const dashGrants = computed(() => {
-  const map: Record<string, string[]> = {
-    open: ['pending'],
-    approved: ['approved'],
-    closed: ['closed'],
-    declined: ['rejected', 'hidden'],
-  }
-  const statuses = map[activeDashTab.value] || []
-  return scrapedGrants.value.filter(g => statuses.includes(g.status))
-})
-
 const dashboardSearch = ref('')
+const dashPage = ref(1)
+const DASH_PAGE_SIZE = 12
+
+const topProjects = computed(() =>
+  [...allProjectsData]
+    .map(p => ({ ...p, _total: (p.direct_beneficiaries || 0) + (p.indirect_beneficiaries || 0) }))
+    .sort((a, b) => b._total - a._total)
+    .slice(0, 5)
+)
+const maxBeneficiaries = computed(() => topProjects.value[0]?._total || 1)
+
+function formatCompact(n: number): string {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
+  if (n >= 1000) return (n / 1000).toFixed(0) + 'K'
+  return String(n)
+}
+
 const filteredDashGrants = computed(() => {
   const q = dashboardSearch.value.toLowerCase().trim()
-  if (!q) return dashGrants.value
-  return dashGrants.value.filter(g =>
+  const all = scrapedGrants.value.filter(g => g.status === 'pending')
+  if (!q) return all
+  return all.filter(g =>
     g.title.toLowerCase().includes(q) ||
     g.funder?.toLowerCase().includes(q) ||
     g.country?.toLowerCase().includes(q)
   )
 })
+const dashTotalPages = computed(() => Math.max(1, Math.ceil(filteredDashGrants.value.length / DASH_PAGE_SIZE)))
+const paginatedDashGrants = computed(() => {
+  const start = (dashPage.value - 1) * DASH_PAGE_SIZE
+  return filteredDashGrants.value.slice(start, start + DASH_PAGE_SIZE)
+})
+const dashPageNumbers = computed(() => {
+  const total = dashTotalPages.value
+  const cur = dashPage.value
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const pages: (number | string)[] = [1]
+  if (cur > 3) pages.push('...')
+  const start = Math.max(2, cur - 1)
+  const end = Math.min(total - 1, cur + 1)
+  for (let i = start; i <= end; i++) pages.push(i)
+  if (cur < total - 2) pages.push('...')
+  pages.push(total)
+  return pages
+})
+watch(dashboardSearch, () => { dashPage.value = 1 })
 
 const showScrollIndicator = ref(true)
 function onPageScroll() {
@@ -1036,12 +1014,16 @@ watch(activePortalTab, (tab) => {
 })
 
 const globeCanvas = ref<HTMLCanvasElement | null>(null)
-const { init: initGlobe } = useThreeGlobe(globeCanvas)
+const { init: initGlobe, ready: globeReady } = useThreeGlobe(globeCanvas)
 
 onMounted(async () => {
   await Promise.all([loadGrants(), loadStats(), loadScrapedGrants()])
-  await nextTick()
   initGlobe()
+  globeReady.then(() => {
+    setTimeout(() => {
+      document.querySelector('.grants-portal')?.classList.add('revealed')
+    }, 1200)
+  })
   window.addEventListener('scroll', onPageScroll, { passive: true })
 })
 
@@ -1051,6 +1033,32 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* ── Cinematic hero reveal ─────────────────────────────── */
+.hero-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  will-change: opacity, transform;
+}
+
+.revealed .hero-reveal {
+  animation: heroReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.revealed .data-label.hero-reveal { animation-delay: 0s; }
+.revealed h1.hero-reveal { animation-delay: 0.2s; }
+.revealed .hero-desc.hero-reveal { animation-delay: 0.4s; }
+
+@keyframes heroReveal {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .grants-portal {
   --obsidian: #08080a;
   --tectonic-white: #f0f0f0;

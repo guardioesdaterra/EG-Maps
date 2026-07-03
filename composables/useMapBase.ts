@@ -77,6 +77,11 @@ export function useMapBase(config: MapBaseConfig) {
   const showFilterPanel = ref(false)
   const speciesFilterPanelRef = ref<{ toggleTaxonomicGroup: (_group: string) => void } | null>(null)
 
+  const isEmbed = computed(() => {
+    if (import.meta.server) return false
+    return new URLSearchParams(window.location.search).get('embed') === 'true'
+  })
+
   const hexGrid = useMapHexGrid(hexCanvasRef, isGlobe ? {
     mobileSize: HEX_GRID.mobileSizeGlobe,
     desktopSize: HEX_GRID.desktopSizeGlobe,
@@ -430,7 +435,7 @@ export function useMapBase(config: MapBaseConfig) {
   }
 
   onMounted(() => {
-    showFilterPanel.value = !isMobile.value
+    showFilterPanel.value = !isMobile.value && !isEmbed.value
     initMap()
   })
 
@@ -517,7 +522,7 @@ export function useMapBase(config: MapBaseConfig) {
   })
 
   return {
-    t, locale, localeNames, baseURL, isMobile,
+    t, locale, localeNames, baseURL, isMobile, isEmbed,
     speciesPanel,
     projectsData, speciesData, speciesIndexData, crewsData, crewLocationsData,
     filteredProjectsList, filteredSpeciesList, visibleProjects, visibleSpecies,

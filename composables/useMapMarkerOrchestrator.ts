@@ -134,9 +134,6 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
           lat: s.lat,
           lng: s.lng,
           imageUrl: s.imageUrl || null,
-          description: '',
-          endangerment: '',
-          threatTypes: s.threatTypes || [],
         }))
         geoJSONSpeciesIndex = speciesIndex
       } else {
@@ -206,9 +203,6 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
         lat: s.lat,
         lng: s.lng,
         imageUrl: s.imageUrl || null,
-        description: '',
-        endangerment: '',
-        threatTypes: s.threatTypes || [],
       }))))
     }
   }

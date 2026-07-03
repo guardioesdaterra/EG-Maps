@@ -1,7 +1,17 @@
 import { onBeforeUnmount } from 'vue'
 import type { Ref } from 'vue'
 
-export function useThreeGlobe(canvasRef: Ref<HTMLCanvasElement | null>) {
+export interface GlobeProject {
+  latitude: number
+  longitude: number
+  direct_beneficiaries?: number
+  indirect_beneficiaries?: number
+}
+
+export function useThreeGlobe(
+  canvasRef: Ref<HTMLCanvasElement | null>,
+  projects: GlobeProject[] = [],
+) {
   let cleanup: (() => void) | null = null
   let resolveReady: (() => void) | null = null
   const ready = new Promise<void>(r => { resolveReady = r })
@@ -16,6 +26,15 @@ export function useThreeGlobe(canvasRef: Ref<HTMLCanvasElement | null>) {
       s.onerror = reject
       document.head.appendChild(s)
     })
+  }
+
+  function latLngToVector3(lat: number, lng: number, radius: number) {
+    const phi = (90 - lat) * (Math.PI / 180)
+    const theta = (lng + 180) * (Math.PI / 180)
+    const x = -(radius * Math.sin(phi) * Math.cos(theta))
+    const z = radius * Math.sin(phi) * Math.sin(theta)
+    const y = radius * Math.cos(phi)
+    return { x, y, z }
   }
 
   async function init() {
@@ -52,10 +71,61 @@ export function useThreeGlobe(canvasRef: Ref<HTMLCanvasElement | null>) {
     earthMap.minFilter = THREE.LinearMipmapLinearFilter
     earthMap.magFilter = THREE.LinearFilter
 
-    const geo = new THREE.SphereGeometry(2, 64, 64)
+    const GLOBE_RADIUS = 2
+    const geo = new THREE.SphereGeometry(GLOBE_RADIUS, 64, 64)
     const mat = new THREE.MeshPhongMaterial({ map: earthMap, specular: new THREE.Color('#111111'), shininess: 10 })
     const globe = new THREE.Mesh(geo, mat)
     scene.add(globe)
+
+    // ── Neon glowing markers ──────────────────────────────────
+    const NEON_COLOR = 0x00ff85
+    const markerGroup = new THREE.Group()
+    globe.add(markerGroup)
+
+    const maxBeneficiaries = projects.reduce(
+      (max, p) => Math.max(max, (p.direct_beneficiaries || 0) + (p.indirect_beneficiaries || 0)),
+      1,
+    )
+
+    projects.forEach((project) => {
+      const pos = latLngToVector3(project.latitude, project.longitude, GLOBE_RADIUS)
+      const total = (project.direct_beneficiaries || 0) + (project.indirect_beneficiaries || 0)
+      const intensity = Math.max(0.3, Math.min(1, total / maxBeneficiaries))
+
+      // Core dot
+      const dotGeo = new THREE.SphereGeometry(0.018 * (0.6 + intensity * 0.8), 12, 12)
+      const dotMat = new THREE.MeshBasicMaterial({ color: NEON_COLOR })
+      const dot = new THREE.Mesh(dotGeo, dotMat)
+      dot.position.set(pos.x, pos.y, pos.z)
+      markerGroup.add(dot)
+
+      // Outer glow ring
+      const ringGeo = new THREE.RingGeometry(0.025 * (0.6 + intensity * 0.8), 0.04 * (0.6 + intensity * 0.8), 24)
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: NEON_COLOR,
+        transparent: true,
+        opacity: 0.35 * intensity,
+        side: THREE.DoubleSide,
+      })
+      const ring = new THREE.Mesh(ringGeo, ringMat)
+      ring.position.set(pos.x, pos.y, pos.z)
+      ring.lookAt(0, 0, 0)
+      markerGroup.add(ring)
+
+      // Pulsing outer glow
+      const pulseGeo = new THREE.RingGeometry(0.04 * (0.6 + intensity * 0.8), 0.06 * (0.6 + intensity * 0.8), 24)
+      const pulseMat = new THREE.MeshBasicMaterial({
+        color: NEON_COLOR,
+        transparent: true,
+        opacity: 0.15 * intensity,
+        side: THREE.DoubleSide,
+      })
+      const pulse = new THREE.Mesh(pulseGeo, pulseMat)
+      pulse.position.set(pos.x, pos.y, pos.z)
+      pulse.lookAt(0, 0, 0)
+      pulse.userData = { baseOpacity: 0.15 * intensity, phase: Math.random() * Math.PI * 2 }
+      markerGroup.add(pulse)
+    })
 
     const starGeo = new THREE.BufferGeometry()
     const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.015 })
@@ -94,11 +164,22 @@ export function useThreeGlobe(canvasRef: Ref<HTMLCanvasElement | null>) {
     gsap.from('.join-card', { opacity: 0, y: 80, duration: 1.2, stagger: 0.3, force3D: true, scrollTrigger: { trigger: '.join-section', start: 'top 75%', toggleActions: 'play none none none' } })
     gsap.from('.portal-card', { opacity: 0, y: 60, duration: 1, stagger: 0.1, force3D: true, scrollTrigger: { trigger: '#grants-portal', start: 'top 75%', toggleActions: 'play none none none' } })
 
+    let time = 0
     const animate = () => {
       rafId = requestAnimationFrame(animate)
+      time += 0.016
       globe.rotation.y += 0.001
       scene.rotation.y += (mouseX - scene.rotation.y) * 0.05
       scene.rotation.x += (mouseY - scene.rotation.x) * 0.05
+
+      // Animate marker pulses
+      markerGroup.children.forEach((child: any) => {
+        if (child.userData?.baseOpacity != null) {
+          const { baseOpacity, phase } = child.userData
+          child.material.opacity = baseOpacity * (0.5 + 0.5 * Math.sin(time * 2 + phase))
+        }
+      })
+
       renderer.render(scene, camera)
     }
     let rafId = requestAnimationFrame(animate)

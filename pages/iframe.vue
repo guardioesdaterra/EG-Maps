@@ -25,7 +25,7 @@
             <!-- Preview -->
             <div class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
               <iframe
-                :src="`${baseURL}active-crews`"
+                :src="`${baseURL}active-crews/3d`"
                 class="w-full h-96 border-0"
                 loading="lazy"
                 :title="t('iframe.fullScreen.title')"
@@ -58,7 +58,7 @@
           <div class="p-4">
             <div class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
               <iframe
-                :src="`${baseURL}active-crews?embed=true`"
+                :src="`${baseURL}active-crews/3d?embed=true`"
                 class="w-full h-[500px] border-0"
                 loading="lazy"
                 :title="t('iframe.fixed100.title')"
@@ -91,7 +91,7 @@
             <div class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
               <div class="relative w-full" style="padding-bottom: 56.25%;">
                 <iframe
-                  :src="`${baseURL}active-crews?embed=true`"
+                  :src="`${baseURL}active-crews/3d?embed=true`"
                   class="absolute inset-0 w-full h-full border-0"
                   loading="lazy"
                   :title="t('iframe.responsive.title')"
@@ -125,7 +125,7 @@
             <div class="mb-4 flex justify-center">
               <div class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden w-[300px] h-[250px]">
                 <iframe
-                  :src="`${baseURL}active-crews?embed=true`"
+                  :src="`${baseURL}active-crews/3d?embed=true`"
                   class="w-full h-full border-0"
                   loading="lazy"
                   :title="t('iframe.smallCard.title')"
@@ -159,7 +159,7 @@
             <div class="mb-4 flex justify-center overflow-hidden">
               <div class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden w-full max-w-[600px] aspect-[3/2]">
                 <iframe
-                  :src="`${baseURL}active-crews?embed=true`"
+                  :src="`${baseURL}active-crews/3d?embed=true`"
                   class="w-full h-full border-0"
                   loading="lazy"
                   :title="t('iframe.mediumCard.title')"
@@ -193,7 +193,7 @@
             <div class="mb-4 flex justify-center overflow-hidden">
               <div class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden w-full max-w-[900px] aspect-[3/2]">
                 <iframe
-                  :src="`${baseURL}active-crews?embed=true`"
+                  :src="`${baseURL}active-crews/3d?embed=true`"
                   class="w-full h-full border-0"
                   loading="lazy"
                   :title="t('iframe.largeCard.title')"
@@ -226,7 +226,7 @@
           <div class="p-4">
             <div class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
               <iframe
-                :src="`${baseURL}active-crews?embed=true&controls=true`"
+                :src="`${baseURL}active-crews/3d?embed=true&controls=true`"
                 class="w-full h-[500px] border-0"
                 loading="lazy"
                 :title="t('iframe.fullScreenInteractive.title')"
@@ -336,7 +336,7 @@ async function copyToClipboard(text: string, id: string) {
 // Embed codes
 const fullScreenCode = computed(() => `<!-- Full Screen Embed -->
 <iframe
-  src="${baseURL}active-crews"
+  src="${baseURL}active-crews/3d"
   style="width: 100%; height: 100vh; border: none;"
   loading="lazy"
   title="Earth Guardians Active Crews"
@@ -344,7 +344,7 @@ const fullScreenCode = computed(() => `<!-- Full Screen Embed -->
 
 const fixed100Code = computed(() => `<!-- Fixed Height Embed -->
 <iframe
-  src="${baseURL}active-crews?embed=true"
+  src="${baseURL}active-crews/3d?embed=true"
   style="width: 100%; height: 500px; border: none;"
   loading="lazy"
   title="Earth Guardians Active Crews"
@@ -353,7 +353,7 @@ const fixed100Code = computed(() => `<!-- Fixed Height Embed -->
 const responsiveCode = computed(() => `<!-- Responsive 16:9 Aspect Ratio Embed -->
 <div style="position: relative; width: 100%; padding-bottom: 56.25%;">
   <iframe
-    src="${baseURL}active-crews?embed=true"
+    src="${baseURL}active-crews/3d?embed=true"
     style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;"
     loading="lazy"
     title="Earth Guardians Active Crews"
@@ -362,7 +362,7 @@ const responsiveCode = computed(() => `<!-- Responsive 16:9 Aspect Ratio Embed -
 
 const smallCardCode = computed(() => `<!-- Small Card Embed (300x250) -->
 <iframe
-  src="${baseURL}active-crews?embed=true"
+  src="${baseURL}active-crews/3d?embed=true"
   style="width: 300px; height: 250px; border: none;"
   loading="lazy"
   title="Earth Guardians Active Crews"
@@ -370,7 +370,7 @@ const smallCardCode = computed(() => `<!-- Small Card Embed (300x250) -->
 
 const mediumCardCode = computed(() => `<!-- Medium Card Embed (600x400) -->
 <iframe
-  src="${baseURL}active-crews?embed=true"
+  src="${baseURL}active-crews/3d?embed=true"
   style="width: 600px; height: 400px; border: none;"
   loading="lazy"
   title="Earth Guardians Active Crews"
@@ -378,7 +378,7 @@ const mediumCardCode = computed(() => `<!-- Medium Card Embed (600x400) -->
 
 const largeCardCode = computed(() => `<!-- Large Card Embed (900x600) -->
 <iframe
-  src="${baseURL}active-crews?embed=true"
+  src="${baseURL}active-crews/3d?embed=true"
   style="width: 900px; height: 600px; border: none;"
   loading="lazy"
   title="Earth Guardians Active Crews"
@@ -386,7 +386,7 @@ const largeCardCode = computed(() => `<!-- Large Card Embed (900x600) -->
 
 const fullScreenInteractiveCode = computed(() => `<!-- Full Screen Interactive Embed -->
 <iframe
-  src="${baseURL}active-crews?embed=true&controls=true"
+  src="${baseURL}active-crews/3d?embed=true&controls=true"
   style="width: 100%; height: 500px; border: none;"
   loading="lazy"
   title="Earth Guardians Active Crews - Interactive"

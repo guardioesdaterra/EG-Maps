@@ -48,9 +48,7 @@ for (const ds of DATASETS) {
         lat: Number((s.lat + latOffset).toFixed(6)),
         lng: Number((s.lng + lngOffset).toFixed(6)),
         imageUrl: s.imageUrl || null,
-        description: s.content?.en?.description || '',
-        endangerment: s.content?.en?.endangerment || '',
-        threatTypes: s.threatTypes || [],
+        // description/endangerment/threatTypes omitted — loaded on-demand for detail popups
       });
     }
   }

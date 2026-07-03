@@ -1,3 +1,6 @@
+supabase/
+supabase/*
+*.sql
 # Nuxt
 .nuxt/
 .output/

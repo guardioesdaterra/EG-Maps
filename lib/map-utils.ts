@@ -457,7 +457,7 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
   const cat = RARE_EARTH_CATEGORIES[props.c ?? ''] ?? { label: props.c || 'Unknown', color: '#666' }
   const dangerColor = (props.ds ?? 5) >= 8 ? '#e74c3c' : (props.ds ?? 5) >= 6 ? '#f39c12' : '#27ae60'
   const areaHa = Number(props.a ?? 0)
-  const area = areaHa >= 10000 ? `${(areaHa / 1000).toFixed(0)}K ha` : `${areaHa.toLocaleString()} ha`
+  const area = areaHa >= 10000 ? `${(areaHa / 1000).toFixed(0)}K ha` : `${areaHa.toLocaleString('en-US')} ha`
 
   const milFlag = props.mil !== false && isMilitaryInterest(props.u || '')
   const envFlag = props.env !== false && isHighEnvRisk(props as unknown as Record<string, unknown>)

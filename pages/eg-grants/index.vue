@@ -1,6 +1,6 @@
 <template>
   <div class="grants-portal relative min-h-screen overflow-hidden bg-[#08080a]">
-    <canvas ref="globeCanvas" class="fixed inset-0 pointer-events-none" :style="{ zIndex: 'var(--z-canvas)' }" />
+    <GlobeView :projects="allProjectsData" @ready="onGlobeReady" />
     <DotField
       class="absolute inset-0"
       :style="{ zIndex: 'var(--z-dots)' }"
@@ -496,12 +496,12 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } 
 import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
 import { allProjectsData } from '~/lib/project-data'
 import type { ProjectData, DetailGrantData } from '~/lib/types'
-import { useThreeGlobe } from '~/composables/useThreeGlobe'
 import GrantsAuth from '~/components/grants/GrantsAuth.vue'
 import GrantDetailModal from '~/components/grants/GrantDetailModal.vue'
 import GrantEditModal from '~/components/grants/GrantEditModal.vue'
 import RegistryModal from '~/components/grants/RegistryModal.vue'
 import GrantsFooter from '~/components/grants/GrantsFooter.vue'
+import GlobeView from '~/components/GlobeView.vue'
 
 useHead({
   title: 'EG Grants | Earth Guardians',
@@ -1018,19 +1018,16 @@ watch(activePortalTab, (tab) => {
   if (tab === 'tabLeaderboard') loadLeaderboardData()
 })
 
-const globeCanvas = ref<HTMLCanvasElement | null>(null)
-const { init: initGlobe, ready: globeReady } = useThreeGlobe(globeCanvas, allProjectsData)
-
 onMounted(async () => {
   await Promise.all([loadGrants(), loadStats(), loadScrapedGrants()])
-  initGlobe()
-  globeReady.then(() => {
-    setTimeout(() => {
-      document.querySelector('.grants-portal')?.classList.add('revealed')
-    }, 1200)
-  })
   window.addEventListener('scroll', onPageScroll, { passive: true })
 })
+
+function onGlobeReady() {
+  setTimeout(() => {
+    document.querySelector('.grants-portal')?.classList.add('revealed')
+  }, 1200)
+}
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onPageScroll)

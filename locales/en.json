@@ -838,9 +838,21 @@
       "title": "Usage Guide",
       "queryParams": {
         "title": "URL Parameters",
-        "embed": "Hides navigation and header for clean embedding.",
-        "controls": "Shows map controls (search, filters, fullscreen).",
+        "embed": "Hides navigation, header, and map controls for clean embedding. Automatically enabled when viewport is smaller than 400×300px.",
+        "controls": "Overrides embed mode to show map controls (search, filters, fullscreen). Useful when you want controls in an embedded context.",
         "lang": "Sets the interface language (e.g., es, fr, pt)."
+      },
+      "autoHide": {
+        "title": "Auto-Hide Behavior",
+        "description": "Map controls (search, filters, hex grid, connections, fullscreen) automatically hide when the viewport is too small: width < 400px, height < 300px, or when both dimensions are under 500px with a near-square aspect ratio. This ensures a clean experience in small embeds like ad cards and widgets."
+      },
+      "viewportSizes": {
+        "title": "Recommended Viewport Sizes",
+        "banner": "728×90 or 320×50 — Banner embeds, minimal map visible.",
+        "smallCard": "300×250 — Sidebar widgets, ad-sized cards. Controls auto-hidden.",
+        "mediumCard": "600×400 — Blog posts and articles. Controls visible.",
+        "responsive": "16:9 aspect ratio — Best for responsive layouts. Controls visible when wide enough.",
+        "fullScreen": "100vw×100vh — Dedicated map pages. Full interactive experience."
       },
       "security": {
         "title": "Security",

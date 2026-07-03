@@ -154,15 +154,17 @@ export function useThreeGlobe(
     window.addEventListener('mousemove', mouseHandler)
 
     gsap.to(globe.rotation, { y: Math.PI * 2, scrollTrigger: { trigger: '#ui-overlay', start: 'top top', end: 'bottom bottom', scrub: 1.5 } })
-    gsap.to(globe.position, { x: 1.5, scrollTrigger: { trigger: '#hero', start: 'bottom center', end: 'center center', scrub: 1.5 } })
+    gsap.to(globe.position, { x: 2, scrollTrigger: { trigger: '#hero', start: 'bottom center', end: 'bottom top', scrub: 1.5 } })
+    gsap.to(globe.position, { x: -2, scrollTrigger: { trigger: '#details', start: 'top center', end: 'bottom center', scrub: 1.5 } })
+    gsap.to(globe.position, { x: 0, scrollTrigger: { trigger: '#join', start: 'top center', end: 'bottom center', scrub: 1.5 } })
     const footerTL = gsap.timeline({
-      scrollTrigger: { trigger: '#footer', start: 'top bottom', end: 'bottom top', scrub: 3, invalidateOnRefresh: true },
+      scrollTrigger: { trigger: '#open-dashboard', start: 'top bottom', end: 'bottom top', scrub: 3, invalidateOnRefresh: true },
     })
-    footerTL.to(globe.position, { x: 0, ease: 'power2.inOut', duration: 2 }).to(globe.scale, { x: 2.5, y: 2.5, z: 2.5, ease: 'power2.out', duration: 1.5 }, '-=0.5').to(camera.position, { z: 2.8, ease: 'power2.out', duration: 1.5 }, '-=1.5')
+    footerTL.to(globe.scale, { x: 2.5, y: 2.5, z: 2.5, ease: 'power2.out', duration: 1.5 }).to(camera.position, { z: 2.8, ease: 'power2.out', duration: 1.5 }, '-=1')
 
-    gsap.from('.stat-card', { opacity: 0, x: -50, duration: 1, stagger: 0.1, scrollTrigger: { trigger: '#details', start: 'top center' } })
-    gsap.from('.join-card', { opacity: 0, y: 80, duration: 1.2, stagger: 0.3, force3D: true, scrollTrigger: { trigger: '.join-section', start: 'top 75%', toggleActions: 'play none none none' } })
-    gsap.from('.portal-card', { opacity: 0, y: 60, duration: 1, stagger: 0.1, force3D: true, scrollTrigger: { trigger: '#grants-portal', start: 'top 75%', toggleActions: 'play none none none' } })
+    gsap.from('.impact-card', { opacity: 0, x: -50, duration: 1, stagger: 0.1, scrollTrigger: { trigger: '#details', start: 'top center' } })
+    gsap.from('.grants-body', { opacity: 0, y: 80, duration: 1.2, force3D: true, scrollTrigger: { trigger: '#join', start: 'top 75%', toggleActions: 'play none none none' } })
+    gsap.from('.dash-card', { opacity: 0, y: 60, duration: 1, stagger: 0.1, force3D: true, scrollTrigger: { trigger: '#open-dashboard', start: 'top 75%', toggleActions: 'play none none none' } })
 
     let time = 0
     const animate = () => {

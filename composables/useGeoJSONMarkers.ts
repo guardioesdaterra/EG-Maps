@@ -25,16 +25,15 @@ export interface SpeciesIndexItem {
 
 const GROUP_COLORS_HEX: Record<string, string> = GROUP_COLORS
 
-// Simple inline cache for unfiltered GeoJSON conversions
-let cachedSpeciesKey: SpeciesIndexItem[] | null = null
-let cachedSpeciesResult: GeoJSON.FeatureCollection | null = null
-let cachedProjectsKey: object[] | null = null
-let cachedProjectsResult: GeoJSON.FeatureCollection | null = null
+// WeakMap-based cache so entries are GC'd when the source array is dropped
+const speciesGeoCache = new WeakMap<SpeciesIndexItem[], GeoJSON.FeatureCollection>()
+const projectsGeoCache = new WeakMap<object[], GeoJSON.FeatureCollection>()
 
 // Lightweight index for markers - only 3.2MB vs 35MB full data
 export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.FeatureCollection {
 
-  if (cachedSpeciesKey === species && cachedSpeciesResult) return cachedSpeciesResult
+  const cached = speciesGeoCache.get(species)
+  if (cached) return cached
 
   const result: GeoJSON.FeatureCollection = {
     type: 'FeatureCollection',
@@ -59,14 +58,14 @@ export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.Feat
       }))
   }
 
-  cachedSpeciesKey = species
-  cachedSpeciesResult = result
+  speciesGeoCache.set(species, result)
   return result
 }
 
 // Convert project data to GeoJSON FeatureCollection
 export function projectsToGeoJSON(projects: { latitude: number; longitude: number; project_title: string; country_province: string; direct_beneficiaries: number; indirect_beneficiaries: number }[]): GeoJSON.FeatureCollection {
-  if (cachedProjectsKey === projects && cachedProjectsResult) return cachedProjectsResult
+  const cached = projectsGeoCache.get(projects)
+  if (cached) return cached
 
   const result: GeoJSON.FeatureCollection = {
     type: 'FeatureCollection',
@@ -94,17 +93,13 @@ export function projectsToGeoJSON(projects: { latitude: number; longitude: numbe
       })
   }
 
-  cachedProjectsKey = projects
-  cachedProjectsResult = result
+  projectsGeoCache.set(projects, result)
   return result
 }
 
 // Clear caches when data changes
 export function clearGeoJSONCache() {
-  cachedSpeciesKey = null
-  cachedSpeciesResult = null
-  cachedProjectsKey = null
-  cachedProjectsResult = null
+  // WeakMap clears automatically when keys are GC'd
 }
 
 export function useGeoJSONMarkers() {

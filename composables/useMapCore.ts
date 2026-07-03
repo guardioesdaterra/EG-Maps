@@ -30,35 +30,22 @@ export function useMapCore(locale: Ref<string>, t: (_key: string) => string) {
     mapInstance: MapLibreMap,
     markerList: Marker[],
   ) {
-    const canvas = mapInstance.getCanvas()
+    const mapBounds = mapInstance.getBounds()
     const margin = MARKER_VISIBILITY_MARGIN
-    const bounds = {
-      minX: -margin,
-      maxX: canvas.width + margin,
-      minY: -margin,
-      maxY: canvas.height + margin,
-    }
 
     markerList.forEach(marker => {
       const el = marker.getElement()
       try {
-        const point = mapInstance.project(marker.getLngLat())
-        if (!point || isNaN(point.x) || isNaN(point.y)) {
-          el.style.display = 'none'
-          el.style.pointerEvents = 'none'
-          return
-        }
-
-        const isVisible =
-          point.x >= bounds.minX &&
-          point.x <= bounds.maxX &&
-          point.y >= bounds.minY &&
-          point.y <= bounds.maxY
-
+        const lngLat = marker.getLngLat()
+        const isOffScreen = lngLat.lng < mapBounds.getWest() - margin ||
+                            lngLat.lng > mapBounds.getEast() + margin ||
+                            lngLat.lat < mapBounds.getSouth() - margin ||
+                            lngLat.lat > mapBounds.getNorth() + margin
         const wasVisible = el.style.display !== 'none'
-        if (isVisible !== wasVisible) {
-          el.style.display = isVisible ? '' : 'none'
-          el.style.pointerEvents = isVisible ? '' : 'none'
+        const shouldShow = !isOffScreen
+        if (wasVisible !== shouldShow) {
+          el.style.display = shouldShow ? '' : 'none'
+          el.style.pointerEvents = shouldShow ? '' : 'none'
         }
       } catch {
         el.style.display = 'none'

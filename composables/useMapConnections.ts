@@ -8,9 +8,9 @@ import {
   type MapConnectionFeature,
   type MapParticleSystem,
 } from '@/lib/map-effects'
+import { useMediaQuery } from '@/composables/useMediaQuery'
 
 type SpeciesLike = { id: string; lat: number; lng: number; commonName: string; taxonomicGroup: string }
-import { useMediaQuery } from '@/composables/useMediaQuery'
 
 type MapGetter = MapLibreMap | null | (() => MapLibreMap | null)
 
@@ -119,6 +119,7 @@ export function useMapConnections(
   function cleanupParticles() {
     particleSystem?.stop()
     particleSystem = null
+    teardownVisibilityTracking()
   }
 
   function startParticles() {

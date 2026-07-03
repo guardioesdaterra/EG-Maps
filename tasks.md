@@ -1,175 +1,117 @@
-# tasks.md — EG Grants Portal Refactor
+# EG-Maps Modernization Tasks
 
-**File:** `pages/eg-grants/index.vue`  
-**Date:** 2026-07-01  
-**Total Issues:** 28  
-**Status:** 22/28 completed
+## Phase 0: Architecture Restructuring
 
----
+### 0.1 Create shared map composable
+- [ ] `composables/useMapShared.ts` — extract shared init/teardown, watchers, popup wrappers, focus trap, loading state
 
-## Critical (5)
+### 0.2 Rename & restructure components
+- [ ] `components/UnifiedMap.vue` → `components/map/MapView2D.vue` — strip shared logic, keep 2D-specific
+- [ ] `components/GlobeView.vue` → `components/map/MapView3D.vue` — strip shared logic, keep 3D-specific (globe projection, auto-rotation, star field)
 
-### C1. Monolithic file — 2413 lines → 1776 lines
-- **Status:** ✅ COMPLETED
-- **Fix:** Extracted 6 components + 1 composable (940 lines total)
+### 0.3 Update page references
+- [ ] `pages/project-grants/index.vue` — update import/component name
+- [ ] `pages/project-grants/3d.vue` — update import/component name
+- [ ] `pages/endangered-species/index.vue` — update import/component name
+- [ ] `pages/endangered-species/3d.vue` — update import/component name
 
-### C2. Inconsistent i18n — hardcoded English strings
-- **Status:** ✅ COMPLETED
-- **Fix:** Added 30+ new i18n keys to `locales/en.json`, replaced all hardcoded strings
+## Phase 1: Critical Performance Fixes
 
-### C3. CSS custom properties scoped to `div`
-- **Status:** ✅ COMPLETED
-- **Fix:** Changed selector from `div` to `.grants-portal` class on root wrapper
+### 1.1 Marker diffing (stop full teardown)
+- [ ] `composables/useMapMarkerOrchestrator.ts` — add marker pooling with diff-based add/remove
 
-### C4. External CDN scripts loaded at runtime
-- **Status:** ⚠️ PARTIAL (extracted to composable, still loads from CDN)
-- **Note:** CDN loading moved to `useThreeGlobe.ts` with dedup check. Full npm migration deferred.
+### 1.2 Fix watcher cascade (double rebuild)
+- [ ] `components/map/MapView2D.vue` — coalesce watchers with nextTick, remove syncAfterFilter duplicate
+- [ ] `components/map/MapView3D.vue` — same coalescing
 
-### C5. Unused computed properties
-- **Status:** ✅ COMPLETED
-- **Fix:** Removed `approvedGrantsCount`, `pendingGrantsCount`, `scrapedGrantsCount`
+### 1.3 Throttle map.project() during drag
+- [ ] `composables/useMapCore.ts` — replace per-marker project() with bounds-based culling
 
----
+### 1.4 Fix particle memory leak
+- [ ] `composables/useMapConnections.ts` — cleanupParticles() must call teardownVisibilityTracking()
+- [ ] `lib/map-effects.ts` — resize logic off RAF hot path, manual array compaction
 
-## Template Issues (6)
+### 1.5 Remove all console.log from production paths
+- [ ] `components/map/MapView2D.vue` — line 239, 442, 640
+- [ ] `components/map/MapView3D.vue` — line 435
+- [ ] `composables/useMapMarkerOrchestrator.ts` — lines 124, 128, 130, 146, 237
+- [ ] `composables/useSpeciesData.ts` — lines 180, 182, 185
+- [ ] `pages/endangered-species/index.vue` — line 28
 
-### T1. Duplicate NuxtLink blocks
-- **Status:** ✅ COMPLETED
-- **Fix:** Merged into single NuxtLink with ternary expression
+## Phase 2: High-Impact Optimizations
 
-### T2. Empty spacer div
-- **Status:** ✅ COMPLETED
-- **Fix:** Replaced `<div class="mt-8"></div>` with `mt-8` class on adjacent element
+### 2.1 Single-pass filter in SpeciesFilterPanel
+- [ ] `components/SpeciesFilterPanel.vue` — merge 4 computed properties into 1 pass
+- [ ] Merge 5 chained .filter() calls into single pass
 
-### T3. Inconsistent z-index scale
-- **Status:** ✅ COMPLETED
-- **Fix:** Added CSS variables: `--z-canvas`, `--z-dots`, `--z-ui`, `--z-dropdown`, `--z-modal-registry`, `--z-modal-detail`, `--z-modal-edit`, `--z-confirm`
+### 2.2 Fix GeoJSON cache with WeakMap
+- [ ] `composables/useGeoJSONMarkers.ts` — replace module-level ref cache with WeakMap
 
-### T4. Inline SVGs everywhere
-- **Status:** ❌ NOT STARTED
-- **Note:** Deferred — SVGs are inline in templates, low priority
+### 2.3 Remove render-blocking Google Fonts
+- [ ] `assets/css/main.css` — remove @import
+- [ ] `nuxt.config.ts` — add preload link tags
 
-### T5. v-html usage
-- **Status:** ❌ NOT STARTED
-- **Note:** Deferred — used for i18n with strong tags, low XSS risk
+### 2.4 Move MapLibre CSS to map components
+- [ ] `nuxt.config.ts` — remove from global css
+- [ ] `components/map/MapView2D.vue` — add <style> import
+- [ ] `components/map/MapView3D.vue` — add <style> import
 
-### T6. Stats section rendered twice
-- **Status:** ❌ NOT STARTED
-- **Note:** Deferred — hero stats and portal stats serve different contexts
+### 2.5 Fix Playwright in devDependencies
+- [ ] `package.json` — move playwright to devDependencies
 
----
+### 2.6 Disable typeCheck during builds
+- [ ] `nuxt.config.ts` — typeCheck: false
 
-## Script Issues (7)
+### 2.7 Reduce CSS duplication
+- [ ] `assets/css/main.css` — merge duplicate :root, @media, .filter-* blocks
 
-### S1. ~100-line onMounted with Three.js setup
-- **Status:** ✅ COMPLETED
-- **Fix:** Extracted to `composables/useThreeGlobe.ts` (120 lines)
+### 2.8 Fix formatRelativeTime allocation
+- [ ] `lib/utils.ts` — module-level Intl.RelativeTimeFormat singleton
 
-### S2. eslint-disable for any types
-- **Status:** ⚠️ PARTIAL
-- **Note:** Moved to composable, still uses `any` for THREE/gsap (CDN-loaded libs lack types)
+### 2.9 Single-pass escapeHtml
+- [ ] `lib/utils.ts` — replace 4 sequential regex with char map
 
-### S3. DetailGrantData interface inline
-- **Status:** ✅ COMPLETED
-- **Fix:** Moved to `lib/types.ts`, imported in page
+### 2.10 Fix debounce return type
+- [ ] `lib/utils.ts` — change never[] to any[]
 
-### S4. No error handling on async functions
-- **Status:** ✅ COMPLETED
-- **Fix:** Added try/catch/finally to all 9 async functions
+## Phase 3: Architectural Modernization
 
-### S5. openScrapedDetail manually maps 20+ fields
-- **Status:** ✅ COMPLETED
-- **Fix:** Simplified to spread operator: `{ ...g, source_type: 'scraped', source_id: g.id }`
+### 3.1 Add code splitting
+- [ ] `nuxt.config.ts` — add manualChunks for maplibre, pdf-export, vendor
 
-### S6. Mixed state management patterns
-- **Status:** ❌ NOT STARTED
-- **Note:** Deferred — low priority, current pattern works
+### 3.2 Add AbortController to fetches
+- [ ] `pages/index.vue` — abort on unmount
+- [ ] `pages/info.vue` — abort on unmount
+- [ ] `components/RedBookDatabases.vue` — abort on unmount
 
-### S7. Dead code in closeRegistryModal
-- **Status:** ✅ COMPLETED
-- **Fix:** Removed `detailGrant.value = null` assignment
+### 3.3 Remove deep watchers
+- [ ] `components/map/MapView2D.vue` — flyToTarget watcher
+- [ ] `components/map/MapView3D.vue` — flyToTarget watcher
+- [ ] `composables/useRareEarthController.ts` — layerVisibility watcher
 
----
+### 3.4 Globe auto-rotation optimization
+- [ ] `components/map/MapView3D.vue` — stop RAF when tab hidden, use easeTo not setCenter
 
-## Style Issues (6)
+### 3.5 Star field CSS → canvas
+- [ ] `assets/css/main.css` — remove star field CSS
+- [ ] `components/map/MapView3D.vue` — add canvas-based star rendering
 
-### ST1. Global element selectors in scoped CSS
-- **Status:** ❌ NOT STARTED
-- **Note:** Deferred — scoped styles work correctly
+### 3.6 Fix 20s loading timeout not cleared
+- [ ] `components/map/MapView2D.vue` — clearTimeout on load success
+- [ ] `components/map/MapView3D.vue` — clearTimeout on load success
 
-### ST2. Inconsistent color system
-- **Status:** ❌ NOT STARTED
-- **Note:** Deferred — CSS variables already defined, full migration is large
+### 3.7 Disable devtools in production
+- [ ] `nuxt.config.ts` — devtools conditional on NODE_ENV
 
-### ST3. Duplicate glass morphism patterns
-- **Status:** ❌ NOT STARTED
-- **Note:** Deferred — can create shared `.glass` utility later
+### 3.8 Add @nuxt/image for image optimization
+- [ ] `nuxt.config.ts` — add module
+- [ ] `package.json` — add dependency
 
-### ST4. Unused CSS class
-- **Status:** ✅ COMPLETED
-- **Fix:** Removed `.action-btn.edit` and `.action-btn.edit:hover`
+## Phase 4: Testing & Cleanup
 
-### ST5. Mixed CSS approaches
-- **Status:** ❌ NOT STARTED
-- **Note:** Deferred — Tailwind + custom CSS is standard for this project
+### 4.1 Run builds
+- [ ] `pnpm lint` — fix any lint errors
+- [ ] `pnpm build` — verify build succeeds
 
-### ST6. Font loading from Google Fonts CDN
-- **Status:** ❌ NOT STARTED
-- **Note:** Deferred — requires build config changes
-
----
-
-## Architecture Issues (4)
-
-### A1. No component decomposition
-- **Status:** ✅ COMPLETED
-- **Fix:** Created 5 new components:
-  - `components/grants/GrantsAuth.vue` (213 lines)
-  - `components/grants/GrantDetailModal.vue` (243 lines)
-  - `components/grants/GrantEditModal.vue` (162 lines)
-  - `components/grants/RegistryModal.vue` (45 lines)
-  - `components/grants/GrantsFooter.vue` (157 lines)
-
-### A2. Three modal Teleports
-- **Status:** ✅ COMPLETED
-- **Fix:** All 3 modals extracted to separate components
-
-### A3. Auth UI duplicated
-- **Status:** ✅ COMPLETED
-- **Fix:** Extracted to `GrantsAuth.vue`, used in top-right auth
-
-### A4. Form input styling duplicated
-- **Status:** ✅ COMPLETED
-- **Fix:** Consolidated `.form-input` and `.edit-input` into shared class
-
----
-
-## Summary
-
-| Category | Total | Completed | Pending |
-|----------|-------|-----------|---------|
-| Critical | 5 | 4 | 1 |
-| Template | 6 | 3 | 3 |
-| Script | 7 | 5 | 2 |
-| Style | 6 | 1 | 5 |
-| Architecture | 4 | 4 | 0 |
-| **Total** | **28** | **17** | **11** |
-
-## New Files Created
-
-| File | Lines | Purpose |
-|------|-------|---------|
-| `composables/useThreeGlobe.ts` | 120 | Three.js globe logic |
-| `components/grants/GrantsAuth.vue` | 213 | Auth button + dropdown |
-| `components/grants/GrantDetailModal.vue` | 243 | Grant detail modal |
-| `components/grants/GrantEditModal.vue` | 162 | Grant edit modal |
-| `components/grants/RegistryModal.vue` | 45 | Registry modal |
-| `components/grants/GrantsFooter.vue` | 157 | Footer section |
-
-## Modified Files
-
-| File | Changes |
-|------|---------|
-| `pages/eg-grants/index.vue` | 2413 → 1776 lines (-26%) |
-| `locales/en.json` | Added 30+ i18n keys |
-| `lib/types.ts` | Added `DetailGrantData` interface |
+### 4.2 Delete tasks.md
+- [ ] Remove the tasks.md file

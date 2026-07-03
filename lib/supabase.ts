@@ -14,7 +14,12 @@ export function getSupabaseClient(): SupabaseClient {
     return createClient('https://placeholder.supabase.co', 'placeholder-key')
   }
 
-  client = createClient(url, key)
+  client = createClient(url, key, {
+    auth: {
+      flowType: 'pkce',
+      detectSessionInUrl: true,
+    },
+  })
   return client
 }
 

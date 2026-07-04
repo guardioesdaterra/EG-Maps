@@ -133,7 +133,7 @@ export function useGeoJSONMarkers() {
 
     currentSourceId = sourceId
 
-    console.log(`[useGeoJSONMarkers] addGeoJSONSource: ${sourceId}, features: ${data.features.length}, clustering: ${clustering}`)
+    console.warn(`[useGeoJSONMarkers] addGeoJSONSource: ${sourceId}, features: ${data.features.length}, clustering: ${clustering}`)
     map.addSource(sourceId, {
       type: 'geojson',
       data,
@@ -145,15 +145,17 @@ export function useGeoJSONMarkers() {
 
   function addClusterLayers(sourceId: string, dataset: 'project-grants' | 'endangered-species') {
     if (!map) return
-    console.log(`[useGeoJSONMarkers] addClusterLayers: ${sourceId}, dataset: ${dataset}`)
+    console.warn(`[useGeoJSONMarkers] addClusterLayers: ${sourceId}, dataset: ${dataset}`)
 
     const clusterColors = dataset === 'endangered-species'
       ? ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']
       : ['#06b6d4', '#22c55e', '#eab308', '#ef4444']
 
-    const zf = ['interpolate', ['linear'], ['zoom'], 6, 0.7, 10, 0.9, 14, 1.15] as unknown as number
-    const zfGlow = ['interpolate', ['linear'], ['zoom'], 6, 0.6, 10, 0.85, 14, 1.2] as unknown as number
-    const zfLabel = ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 10, 14, 13] as unknown as number
+    // Helper: multiply a base expression by a zoom-dependent factor.
+    // MapLibre v5 doesn't allow ['zoom'] nested inside ['*'], so we must
+    // fold the factor into the interpolation directly.
+    const zs = (base: unknown, z6: number, z10: number, z14: number) =>
+      ['interpolate', ['linear'], ['zoom'], 6, ['*', base, z6], 10, ['*', base, z10], 14, ['*', base, z14]]
 
     // Cluster glow — soft halo behind the main circle
     map.addLayer({
@@ -164,7 +166,7 @@ export function useGeoJSONMarkers() {
       paint: {
         'circle-color': ['step', ['get', 'point_count'],
           clusterColors[0], 10, clusterColors[1], 50, clusterColors[2], 100, clusterColors[3]],
-        'circle-radius': ['*', ['step', ['get', 'point_count'], 28, 10, 36, 50, 44, 100, 54], zfGlow],
+        'circle-radius': zs(['step', ['get', 'point_count'], 28, 10, 36, 50, 44, 100, 54], 0.6, 0.85, 1.2),
         'circle-blur': 0.9,
         'circle-opacity': 0.25,
       }
@@ -179,8 +181,8 @@ export function useGeoJSONMarkers() {
       paint: {
         'circle-color': ['step', ['get', 'point_count'],
           clusterColors[0], 10, clusterColors[1], 50, clusterColors[2], 100, clusterColors[3]],
-        'circle-radius': ['*', ['step', ['get', 'point_count'], 16, 10, 22, 50, 28, 100, 36], zf],
-        'circle-stroke-width': ['*', 2.5, zf],
+        'circle-radius': zs(['step', ['get', 'point_count'], 16, 10, 22, 50, 28, 100, 36], 0.7, 0.9, 1.15),
+        'circle-stroke-width': zs(2.5, 0.7, 0.9, 1.15),
         'circle-stroke-color': 'rgba(255, 255, 255, 0.85)',
         'circle-opacity': 0.92,
       }
@@ -194,7 +196,7 @@ export function useGeoJSONMarkers() {
       filter: ['has', 'point_count'],
       paint: {
         'circle-color': 'rgba(255, 255, 255, 0.18)',
-        'circle-radius': ['*', ['step', ['get', 'point_count'], 8, 10, 10, 50, 12, 100, 14], zf],
+        'circle-radius': zs(['step', ['get', 'point_count'], 8, 10, 10, 50, 12, 100, 14], 0.7, 0.9, 1.15),
         'circle-opacity': 0.6,
       }
     })
@@ -208,12 +210,12 @@ export function useGeoJSONMarkers() {
       layout: {
         'text-field': ['get', 'point_count_abbreviated'],
         'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
-        'text-size': zfLabel,
+        'text-size': ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 10, 14, 13],
       },
       paint: {
         'text-color': '#ffffff',
         'text-halo-color': 'rgba(0, 0, 0, 0.35)',
-        'text-halo-width': ['*', 1.5, zf],
+        'text-halo-width': zs(1.5, 0.7, 0.9, 1.15),
       }
     })
 
@@ -225,10 +227,10 @@ export function useGeoJSONMarkers() {
       filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-color': ['get', 'color'],
-        'circle-radius': ['*', ['case',
+        'circle-radius': zs(['case',
           ['get', 'hasImage'], 13,
           ['step', ['get', 'threatCount'], 7, 2, 10, 4, 13]
-        ], zfGlow],
+        ], 0.6, 0.85, 1.2),
         'circle-blur': 0.8,
         'circle-opacity': 0.2,
       }
@@ -242,11 +244,11 @@ export function useGeoJSONMarkers() {
       filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-color': ['get', 'color'],
-        'circle-radius': ['*', ['case',
+        'circle-radius': zs(['case',
           ['get', 'hasImage'], 7,
           ['step', ['get', 'threatCount'], 5, 2, 7, 4, 9]
-        ], zf],
-        'circle-stroke-width': ['*', 1.5, zf],
+        ], 0.7, 0.9, 1.15),
+        'circle-stroke-width': zs(1.5, 0.7, 0.9, 1.15),
         'circle-stroke-color': 'rgba(255, 255, 255, 0.85)',
         'circle-opacity': 0.95,
       }
@@ -340,7 +342,7 @@ export function useGeoJSONMarkers() {
     if (!map) return
     const source = map.getSource(sourceId) as GeoJSONSource
     if (source) {
-      console.log(`[useGeoJSONMarkers] updateData: ${sourceId}, features: ${data.features.length}`)
+      console.warn(`[useGeoJSONMarkers] updateData: ${sourceId}, features: ${data.features.length}`)
       source.setData(data)
     } else {
       console.warn(`[useGeoJSONMarkers] updateData: source ${sourceId} not found!`)

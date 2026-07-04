@@ -1,6 +1,11 @@
 import { onBeforeUnmount } from 'vue'
 import type { Ref } from 'vue'
 
+interface ThreeChild {
+  userData?: { baseOpacity?: number; phase?: number }
+  material?: { opacity: number }
+}
+
 export interface GlobeProject {
   latitude: number
   longitude: number
@@ -199,7 +204,7 @@ export function useThreeGlobe(
       currentX += (targetX - currentX) * 0.08
       globe.position.x = currentX
 
-      markerGroup.children.forEach((child: any) => {
+      markerGroup.children.forEach((child: ThreeChild) => {
         if (child.userData?.baseOpacity != null) {
           const { baseOpacity, phase } = child.userData
           child.material.opacity = baseOpacity * (0.5 + 0.5 * Math.sin(time * 2 + phase))

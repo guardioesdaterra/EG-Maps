@@ -223,10 +223,11 @@ const pointsData = computed(() => _rawPointsData.value ?? { type: 'FeatureCollec
 const polygonsData = computed(() => _rawPolygonsData.value)
 const protectedData = computed(() => _rawProtectedData.value)
 const waterData = computed(() => _rawWaterData.value)
-const culturalData = computed<GeoJSON.FeatureCollection>(() => {
+const culturalData = computed<GeoJSON.FeatureCollection | undefined>(() => {
+  if (!_rawCulturalData.value && !culturalAgentsCombined.value?.features?.length) return undefined
   const base = _rawCulturalData.value ?? { type: 'FeatureCollection', features: [] } as GeoJSON.FeatureCollection
   const agents = culturalAgentsCombined.value?.features ?? []
-  if (!agents.length) return base
+  if (!agents.length) return _rawCulturalData.value
   return { ...base, features: [...base.features, ...agents] }
 })
 

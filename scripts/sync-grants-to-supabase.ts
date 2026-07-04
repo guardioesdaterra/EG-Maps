@@ -237,10 +237,9 @@ function printResult(label: string, inserted: number, updated: number, skipped: 
 }
 
 function findLatest(pattern: string): string | null {
-  const { readdirSync } = require("node:fs") as typeof import("node:fs");
-  const outputDir = new URL(".", import.meta.url).pathname + "/output";
+  const outputDir = new URL("./output", import.meta.url).pathname;
   try {
-    const files = readdirSync(outputDir).filter((f: string) => f.startsWith(pattern) && f.endsWith(".json")).sort().reverse();
+    const files = readdirSync(outputDir).filter((f) => f.startsWith(pattern) && f.endsWith(".json")).sort().reverse();
     return files.length > 0 ? `${outputDir}/${files[0]}` : null;
   } catch { return null; }
 }

@@ -3,14 +3,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
-interface CulturalAgentExport {
-  synced_at: string;
-  total_agents: number;
-  mapa_cultura_count: number;
-  floresta_ativista_count: number;
-  agents: CulturalAgent[];
-}
-
 interface CulturalAgent {
   id: string;
   name: string;
@@ -22,10 +14,10 @@ interface CulturalAgent {
   external_id: string;
 }
 
-interface CulturalAgentRow {
+interface VulcanRow {
   id: string;
+  type: string;
   name: string;
-  agent_type: string;
   source: string;
   external_id: string;
   latitude: number;
@@ -38,16 +30,9 @@ interface CulturalAgentRow {
 function loadAgents(filePath: string): CulturalAgent[] {
   const raw = readFileSync(filePath, "utf-8");
   const parsed = JSON.parse(raw);
-
-  if (parsed.agents && Array.isArray(parsed.agents)) {
-    return parsed.agents;
-  }
-  if (Array.isArray(parsed)) {
-    return parsed;
-  }
-  throw new Error(
-    'Unknown JSON structure — expected { agents: [...] } or an array',
-  );
+  if (parsed.agents && Array.isArray(parsed.agents)) return parsed.agents;
+  if (Array.isArray(parsed)) return parsed;
+  throw new Error('Unknown JSON structure — expected { agents: [...] } or an array');
 }
 
 function findLatestExport(): string | null {
@@ -63,16 +48,23 @@ function findLatestExport(): string | null {
   }
 }
 
+function mapSource(source: string): string {
+  if (source === "mapa_cultura") return "minc";
+  if (source === "floresta_ativista") return "midia_ninja";
+  return source;
+}
+
 function recordHash(r: Record<string, unknown>): string {
   return [r.name, r.source, r.latitude, r.longitude].join("||");
 }
 
-function toRow(agent: CulturalAgent): CulturalAgentRow {
+function toRow(agent: CulturalAgent): VulcanRow {
+  const mappedSource = mapSource(agent.source);
   return {
-    id: agent.id,
+    id: `${mappedSource}-${agent.external_id}`,
+    type: "cultural_agent",
     name: (agent.name || "Unknown").trim(),
-    agent_type: agent.type_name || "unknown",
-    source: agent.source,
+    source: mappedSource,
     external_id: agent.external_id || "",
     latitude: typeof agent.lat === "number" ? agent.lat : 0,
     longitude: typeof agent.lng === "number" ? agent.lng : 0,
@@ -85,8 +77,7 @@ function toRow(agent: CulturalAgent): CulturalAgentRow {
 async function main() {
   const filePath = process.argv[2] || findLatestExport();
 
-  const supabaseUrl =
-    process.env.SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL;
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl) {
@@ -94,15 +85,11 @@ async function main() {
     process.exit(1);
   }
   if (!serviceRoleKey) {
-    console.error(
-      "ERROR: SUPABASE_SERVICE_ROLE_KEY environment variable is required",
-    );
+    console.error("ERROR: SUPABASE_SERVICE_ROLE_KEY environment variable is required");
     process.exit(1);
   }
   if (!filePath) {
-    console.error(
-      "ERROR: No cultural agents export file found. Provide a path or run sync-cultural-agents.py first.",
-    );
+    console.error("ERROR: No cultural agents export file found. Provide a path or run sync-cultural-agents.py first.");
     process.exit(1);
   }
 
@@ -117,9 +104,7 @@ async function main() {
       return;
     }
 
-    console.warn(
-      `Loaded ${agents.length} cultural agents from ${filePath}`,
-    );
+    console.warn(`Loaded ${agents.length} cultural agents from ${filePath}`);
 
     const BATCH_SIZE = 200;
     let totalInserted = 0;
@@ -132,15 +117,13 @@ async function main() {
       const batchNum = Math.floor(i / BATCH_SIZE) + 1;
       const totalBatches = Math.ceil(agents.length / BATCH_SIZE);
 
-      process.stdout.write(
-        `Batch ${batchNum}/${totalBatches} (${batch.length} agents)... `,
-      );
+      process.stdout.write(`Batch ${batchNum}/${totalBatches} (${batch.length} agents)... `);
 
       const records = batch.map(toRow);
 
       const ids = records.map((r) => r.id);
       const { data: existing } = await supabase
-        .from("cultural_agents")
+        .from("vulcan_observatory")
         .select("id, name, source, latitude, longitude")
         .in("id", ids);
 
@@ -149,7 +132,7 @@ async function main() {
         existingMap.set(e.id as string, e);
       }
 
-      const toUpsert: CulturalAgentRow[] = [];
+      const toUpsert: VulcanRow[] = [];
       let batchInserted = 0;
       let batchUpdated = 0;
       let batchSkipped = 0;
@@ -175,8 +158,8 @@ async function main() {
 
       if (toUpsert.length > 0) {
         const { error } = await supabase
-          .from("cultural_agents")
-          .upsert(toUpsert, {
+          .from("vulcan_observatory")
+          .upsert(toUpsert as never, {
             onConflict: "id",
             ignoreDuplicates: false,
           });
@@ -193,9 +176,7 @@ async function main() {
       totalInserted += batchInserted;
       totalUpdated += batchUpdated;
       totalSkipped += batchSkipped;
-      process.stdout.write(
-        `✓ ${batchInserted} inserted, ${batchUpdated} updated, ${batchSkipped} skipped\n`,
-      );
+      process.stdout.write(`✓ ${batchInserted} inserted, ${batchUpdated} updated, ${batchSkipped} skipped\n`);
     }
 
     console.warn(`\n─── Result ───`);
@@ -212,10 +193,7 @@ async function main() {
       process.exit(2);
     }
   } catch (err) {
-    console.error(
-      "Fatal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    console.error("Fatal error:", err instanceof Error ? err.message : String(err));
     process.exit(1);
   }
 }

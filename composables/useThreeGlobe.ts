@@ -13,6 +13,15 @@ export interface GlobeProject {
   indirect_beneficiaries?: number
 }
 
+export function latLngToVector3(lat: number, lng: number, radius: number) {
+  const phi = (90 - lat) * (Math.PI / 180)
+  const theta = (lng + 180) * (Math.PI / 180)
+  const x = -(radius * Math.sin(phi) * Math.cos(theta))
+  const z = radius * Math.sin(phi) * Math.sin(theta)
+  const y = radius * Math.cos(phi)
+  return { x, y, z }
+}
+
 export function useThreeGlobe(
   canvasRef: Ref<HTMLCanvasElement | null>,
   projects: GlobeProject[] = [],
@@ -31,15 +40,6 @@ export function useThreeGlobe(
       s.onerror = reject
       document.head.appendChild(s)
     })
-  }
-
-  function latLngToVector3(lat: number, lng: number, radius: number) {
-    const phi = (90 - lat) * (Math.PI / 180)
-    const theta = (lng + 180) * (Math.PI / 180)
-    const x = -(radius * Math.sin(phi) * Math.cos(theta))
-    const z = radius * Math.sin(phi) * Math.sin(theta)
-    const y = radius * Math.cos(phi)
-    return { x, y, z }
   }
 
   async function init() {
@@ -132,6 +132,53 @@ export function useThreeGlobe(
       markerGroup.add(pulse)
     })
 
+    // ── Photo panels inside the globe ──────────────────────────
+    const PANEL_COUNT = 21
+    const panelGroup = new THREE.Group()
+    globe.add(panelGroup)
+
+    const PANEL_COLORS = [
+      0x00ff85, 0x00ccff, 0xff6b6b, 0xffd93d, 0x6c5ce7,
+      0x00cec9, 0xfd79a8, 0xe17055, 0x0984e3, 0x00b894,
+      0xfdcba0, 0xa29bfe, 0x55efc4, 0xff7675, 0x74b9ff,
+      0x636e72, 0xdfe6e9, 0xb2bec3, 0xffeaa7, 0x81ecec,
+      0xfab1a0,
+    ]
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const panels: any[] = []
+    for (let i = 0; i < PANEL_COUNT; i++) {
+      const w = 0.15 + Math.random() * 0.25
+      const h = 0.1 + Math.random() * 0.15
+      const panelGeo = new THREE.PlaneGeometry(w, h)
+      const panelMat = new THREE.MeshBasicMaterial({
+        color: PANEL_COLORS[i % PANEL_COLORS.length],
+        transparent: true,
+        opacity: 0,
+        side: THREE.DoubleSide,
+      })
+      const mesh = new THREE.Mesh(panelGeo, panelMat)
+
+      const lat = (Math.random() - 0.5) * 160
+      const lng = Math.random() * 360 - 180
+      const initialRadius = GLOBE_RADIUS * (0.15 + Math.random() * 0.25)
+      const targetRadius = GLOBE_RADIUS * (0.5 + Math.random() * 0.4)
+      const pos = latLngToVector3(lat, lng, initialRadius)
+      mesh.position.set(pos.x, pos.y, pos.z)
+      mesh.lookAt(0, 0, 0)
+
+      const dir = new THREE.Vector3(pos.x, pos.y, pos.z).normalize()
+      mesh.userData = {
+        baseOpacity: 0.6 + Math.random() * 0.4,
+        phase: Math.random() * Math.PI * 2,
+        targetRadius,
+        initialRadius,
+        direction: dir,
+      }
+      panelGroup.add(mesh)
+      panels.push(mesh)
+    }
+
     const starGeo = new THREE.BufferGeometry()
     const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.015 })
     const starVerts: number[] = []
@@ -191,6 +238,29 @@ export function useThreeGlobe(
       gsap.from('.impact-card', { opacity: 0, x: -50, duration: 1, stagger: 0.1, scrollTrigger: { trigger: '#details', start: 'top center' } })
       gsap.from('.grants-body', { opacity: 0, y: 80, duration: 1.2, force3D: true, scrollTrigger: { trigger: '#join', start: 'top 75%', toggleActions: 'play none none none' } })
       gsap.from('.dash-card', { opacity: 0, y: 60, duration: 1, stagger: 0.1, force3D: true, scrollTrigger: { trigger: '#open-dashboard', start: 'top 75%', toggleActions: 'play none none none' } })
+
+      ScrollTrigger.create({
+        trigger: '#open-dashboard',
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 1.5,
+        onUpdate: (self) => {
+          panels.forEach((panel, i) => {
+            const stagger = (i / PANEL_COUNT) * 0.4
+            const panelProgress = Math.max(0, Math.min(1, (self.progress - 0.2 - stagger) / (0.6 - stagger)))
+            panel.material.opacity = panelProgress * panel.userData.baseOpacity
+
+            const currentRadius = panel.userData.initialRadius +
+              (panel.userData.targetRadius - panel.userData.initialRadius) * panelProgress
+            const dir = panel.userData.direction
+            panel.position.set(
+              dir.x * currentRadius,
+              dir.y * currentRadius,
+              dir.z * currentRadius,
+            )
+          })
+        },
+      })
     })
 
     let time = 0
@@ -207,7 +277,13 @@ export function useThreeGlobe(
       markerGroup.children.forEach((child: ThreeChild) => {
         if (child.userData?.baseOpacity != null) {
           const { baseOpacity, phase } = child.userData
-          child.material.opacity = baseOpacity * (0.5 + 0.5 * Math.sin(time * 2 + phase))
+          child.material!.opacity = baseOpacity * (0.5 + 0.5 * Math.sin(time * 2 + phase!))
+        }
+      })
+
+      panels.forEach((panel) => {
+        if (panel.userData?.phase != null) {
+          panel.rotation.z = Math.sin(time * 0.5 + panel.userData.phase) * 0.1
         }
       })
 
@@ -227,6 +303,11 @@ export function useThreeGlobe(
       window.removeEventListener('mousemove', mouseHandler)
       cancelAnimationFrame(rafId)
       ctx.revert()
+      panels.forEach((p) => {
+        p.geometry.dispose()
+        p.material.dispose()
+      })
+      globe.remove(panelGroup)
       renderer.dispose()
     }
 

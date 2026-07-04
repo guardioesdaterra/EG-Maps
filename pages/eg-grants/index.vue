@@ -153,10 +153,11 @@
       </section>
 
       <section class="projects-section" id="grants-portal">
+        <div class="nebula-bg" />
         <div class="projects-header">
-          <span class="data-label">{{ t('grantsPortal.portalLabel') }}</span>
+          <span class="dash-label">{{ t('grantsPortal.dashboardLabel') }}</span>
           <h2>{{ t('grantsPortal.portalTitle') }}</h2>
-          <p class="projects-subtitle">{{ t('grantsPortal.portalSubtitle') }}</p>
+          <p class="projects-subtitle">{{ t('grantsPortal.dashboardSubtitle') }}</p>
         </div>
         <div class="portal-container">
           <div v-if="!user" class="portal-card signin-card">
@@ -210,31 +211,29 @@
           </div>
           <p v-if="!user" class="text-xs text-white/40 text-center mt-3">{{ t('grantsPortal.signInDashboardDesc') }}</p>
 
-          <!-- Tab: Submit / My Grants -->
-          <div v-if="activePortalTab === 'tabSubmit'" class="portal-card">
-            <h3 class="portal-card-title">{{ t('grantsPortal.submitGrantTitle') }}</h3>
-            <form @submit.prevent="handleSubmitGrant" class="grant-form">
-              <input v-model="form.title" :placeholder="t('grantsPortal.formTitle')" required class="form-input" />
-              <textarea v-model="form.description" :placeholder="t('grantsPortal.formDescription')" required rows="3" class="form-input" />
-              <input v-model="form.location_name" :placeholder="t('grantsPortal.formLocation')" required class="form-input" />
-              <div class="form-row">
-                <input v-model.number="form.latitude" type="number" step="any" :placeholder="t('grantsPortal.formLatitude')" required class="form-input" />
-                <input v-model.number="form.longitude" type="number" step="any" :placeholder="t('grantsPortal.formLongitude')" required class="form-input" />
-              </div>
-              <select v-model="form.category" class="form-input">
-                <option value="environment">{{ t('grantsPortal.categoryEnvironment') }}</option>
-                <option value="social">{{ t('grantsPortal.categorySocial') }}</option>
-                <option value="art">{{ t('grantsPortal.categoryArt') }}</option>
-                <option value="education">{{ t('grantsPortal.categoryEducation') }}</option>
-                <option value="health">{{ t('grantsPortal.categoryHealth') }}</option>
-                <option value="socioenvironmental">{{ t('grantsPortal.categorySocioenvironmental') }}</option>
-                <option value="sociocultural">{{ t('grantsPortal.categorySociocultural') }}</option>
-                <option value="artistic">{{ t('grantsPortal.categoryArtistic') }}</option>
-                <option value="community">{{ t('grantsPortal.categoryCommunity') }}</option>
-              </select>
-              <button type="submit" :disabled="submitting" class="submit-btn">{{ submitting ? t('grantsPortal.submitting') : t('grantsPortal.submitBtn') }}</button>
-              <p v-if="submitMsg" class="submit-msg" :class="submitOk ? 'ok' : 'err'">{{ submitOk ? t('grantsPortal.submittedSuccess') : submitMsg }}</p>
-            </form>
+          <!-- Dashboard stats + search -->
+          <div class="dash-stats">
+            <div class="dash-stat-card">
+              <span class="dash-stat-num open">{{ scrapedOpenCount }}</span>
+              <span class="dash-stat-label">{{ t('grantsPortal.dashboardOpenStat') }}</span>
+            </div>
+            <div class="dash-stat-card">
+              <span class="dash-stat-num approved">{{ scrapedApprovedCount }}</span>
+              <span class="dash-stat-label">{{ t('grantsPortal.approved') }}</span>
+            </div>
+            <div class="dash-stat-card">
+              <span class="dash-stat-num closed">{{ scrapedClosedCount }}</span>
+              <span class="dash-stat-label">{{ t('grantsPortal.closed') }}</span>
+            </div>
+            <div class="dash-stat-card">
+              <span class="dash-stat-num declined">{{ scrapedDeclinedCount }}</span>
+              <span class="dash-stat-label">{{ t('grantsPortal.declined') }}</span>
+            </div>
+          </div>
+
+          <div class="dash-search">
+            <svg class="dash-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input v-model="dashboardSearch" :placeholder="t('grantsPortal.dashboardSearchPlaceholder')" class="dash-search-input" />
           </div>
 
           <!-- Tab: Submitted Grants (managers can filter by status + see history) -->
@@ -647,7 +646,6 @@ function onPageScroll() {
 
 const portalTabs = computed(() => {
   const tabs = [
-    { key: 'tabSubmit', label: '📝 Submit' },
     { key: 'tabOpen', label: '🌍 Open' },
     { key: 'tabApproved', label: '✅ Approved' },
     { key: 'tabClosed', label: '🔒 Closed' },
@@ -655,9 +653,9 @@ const portalTabs = computed(() => {
     { key: 'tabLeaderboard', label: '🏆 Leaderboard' },
   ]
   if (isManager.value) {
-    tabs.splice(1, 0, { key: 'tabSubmitted', label: '📋 Submitted' })
+    tabs.splice(0, 0, { key: 'tabSubmitted', label: '📋 Submitted' })
   }
-  if (!user.value) return tabs.filter(tab => tab.key === 'tabSubmit')
+  if (!user.value) return tabs.filter(tab => tab.key === 'tabOpen')
   return tabs
 })
 

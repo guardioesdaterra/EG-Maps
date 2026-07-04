@@ -2,9 +2,11 @@
 
 import { readFileSync, readdirSync } from "node:fs";
 import { createInterface } from "node:readline";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // ── Types ────────────────────────────────────────────────────
+type SupabaseDB = Record<string, never>;
+type SupabaseTable = { id: string } & Record<string, unknown>;
 interface Grant {
   id: string;
   title: string;
@@ -113,7 +115,7 @@ function toVulcanRow(agent: CulturalAgent): VulcanRow {
 
 // ── Batch upsert core ────────────────────────────────────────
 async function batchUpsert(
-  supabase: any,
+  supabase: SupabaseClient<SupabaseDB>,
   table: string,
   records: Record<string, unknown>[],
   hashFields: string[],
@@ -135,7 +137,7 @@ async function batchUpsert(
     process.stdout.write(`Batch ${batchNum}/${totalBatches} (${batch.length})... `);
 
     const ids = batch.map((r) => r.id as string);
-    const { data: existing }: { data: any[] } = await supabase.from(table).select(selectCols).in("id", ids);
+    const { data: existing }: { data: SupabaseTable[] | null } = await supabase.from(table).select(selectCols).in("id", ids);
 
     const existMap = new Map<string, Record<string, unknown>>();
     for (const e of existing ?? []) existMap.set(e.id as string, e);
@@ -169,7 +171,7 @@ async function batchUpsert(
 }
 
 // ── Sync grants ──────────────────────────────────────────────
-async function syncGrants(supabase: any, filePath: string) {
+async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string) {
   const grants = loadGrants(filePath);
   if (grants.length === 0) { console.warn("No grants to sync."); return; }
 
@@ -216,7 +218,7 @@ async function syncGrants(supabase: any, filePath: string) {
 }
 
 // ── Sync cultural agents ─────────────────────────────────────
-async function syncAgents(supabase: any, filePath: string) {
+async function syncAgents(supabase: SupabaseClient<SupabaseDB>, filePath: string) {
   const agents = loadAgents(filePath);
   if (agents.length === 0) { console.warn("No cultural agents to sync."); return; }
 

@@ -197,8 +197,13 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     (newVal) => {
       if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
       if (!newVal?.features?.length) return
-      if (culturalCleanup) return // already set up
-      culturalCleanup = setupCulturalLayers(map.value, newVal)
+      if (!culturalCleanup) {
+        culturalCleanup = setupCulturalLayers(map.value, newVal)
+        return
+      }
+      // Update source data in-place if already set up
+      const src = map.value.getSource('ree-cultural') as maplibregl.GeoJSONSource | undefined
+      if (src) src.setData(newVal)
     },
   )
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env -S npx tsx
 
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { createInterface } from "node:readline";
 import { createClient } from "@supabase/supabase-js";
 
@@ -239,7 +239,7 @@ function printResult(label: string, inserted: number, updated: number, skipped: 
 function findLatest(pattern: string): string | null {
   const outputDir = new URL("./output", import.meta.url).pathname;
   try {
-    const files = readdirSync(outputDir).filter((f) => f.startsWith(pattern) && f.endsWith(".json")).sort().reverse();
+    const files = readdirSync(outputDir).filter((f: string) => f.startsWith(pattern) && f.endsWith(".json")).sort().reverse();
     return files.length > 0 ? `${outputDir}/${files[0]}` : null;
   } catch { return null; }
 }

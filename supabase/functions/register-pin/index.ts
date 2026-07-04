@@ -4,9 +4,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-sync-key",
 };
 
+// ── Community pin payload ────────────────────────────────────
 interface PinPayload {
   pin_type: string;
   name: string;
@@ -24,6 +25,25 @@ const VALID_PIN_TYPES = [
   "point_of_attention",
 ];
 
+// ── Cultural agent batch payload ─────────────────────────────
+interface AgentRow {
+  id: string;
+  type: string;
+  name: string;
+  source: string;
+  external_id: string;
+  latitude: number;
+  longitude: number;
+  single_url: string;
+  status: string;
+  synced_at: string;
+}
+
+interface SyncPayload {
+  agents: AgentRow[];
+}
+
+// ── Helpers ──────────────────────────────────────────────────
 function isValidCoordinate(lat: number, lng: number): boolean {
   return (
     typeof lat === "number" &&
@@ -36,30 +56,95 @@ function isValidCoordinate(lat: number, lng: number): boolean {
   );
 }
 
+function jsonResp(data: unknown, status: number): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+// ── Main handler ─────────────────────────────────────────────
 serve(async (req: Request) => {
-  // CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    // Authenticate user
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Missing authorization header" }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify JWT and get user
+    const body = await req.json();
+
+    // ── Route: Batch cultural agent sync (CI → service role) ──
+    if (body.agents && Array.isArray(body.agents)) {
+      const syncKey = req.headers.get("x-sync-key");
+      if (!syncKey || syncKey !== supabaseKey) {
+        return jsonResp({ error: "Invalid sync key" }, 401);
+      }
+
+      const adminClient = createClient(supabaseUrl, supabaseKey);
+      const agents: AgentRow[] = body.agents;
+      const BATCH = 200;
+      let inserted = 0;
+      let updated = 0;
+      let skipped = 0;
+      const errors: string[] = [];
+
+      for (let i = 0; i < agents.length; i += BATCH) {
+        const batch = agents.slice(i, i + BATCH);
+
+        const ids = batch.map((a) => a.id);
+        const { data: existing } = await adminClient
+          .from("vulcan_observatory")
+          .select("id, name, source, latitude, longitude")
+          .in("id", ids);
+
+        const existMap = new Map<string, Record<string, unknown>>();
+        for (const e of existing ?? []) existMap.set(e.id as string, e);
+
+        const toUpsert: AgentRow[] = [];
+        for (const a of batch) {
+          const ex = existMap.get(a.id);
+          if (!ex) {
+            toUpsert.push(a);
+            inserted++;
+            continue;
+          }
+          const exHash = [ex.name, ex.source, ex.latitude, ex.longitude].join("||");
+          const newHash = [a.name, a.source, a.latitude, a.longitude].join("||");
+          if (exHash === newHash) {
+            skipped++;
+            continue;
+          }
+          toUpsert.push(a);
+          updated++;
+        }
+
+        if (toUpsert.length > 0) {
+          const { error } = await adminClient
+            .from("vulcan_observatory")
+            .upsert(toUpsert, { onConflict: "id", ignoreDuplicates: false });
+          if (error) errors.push(error.message);
+        }
+      }
+
+      return jsonResp({
+        message: "Cultural agents synced",
+        inserted,
+        updated,
+        skipped,
+        total: agents.length,
+        errors,
+      }, 200);
+    }
+
+    // ── Route: Community pin (user → JWT auth) ────────────────
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return jsonResp({ error: "Missing authorization header" }, 401);
+    }
+
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -70,57 +155,26 @@ serve(async (req: Request) => {
     } = await userClient.auth.getUser();
 
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized", details: authError?.message }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return jsonResp({ error: "Unauthorized", details: authError?.message }, 401);
     }
 
-    // Parse body
-    const body: PinPayload = await req.json();
+    const pin: PinPayload = body;
 
-    // Validate
-    if (!body.pin_type || !VALID_PIN_TYPES.includes(body.pin_type)) {
-      return new Response(
-        JSON.stringify({
-          error: "Invalid pin_type",
-          valid: VALID_PIN_TYPES,
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+    if (!pin.pin_type || !VALID_PIN_TYPES.includes(pin.pin_type)) {
+      return jsonResp({ error: "Invalid pin_type", valid: VALID_PIN_TYPES }, 400);
     }
 
-    if (!body.name || body.name.trim().length < 2) {
-      return new Response(
-        JSON.stringify({ error: "Name must be at least 2 characters" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+    if (!pin.name || pin.name.trim().length < 2) {
+      return jsonResp({ error: "Name must be at least 2 characters" }, 400);
     }
 
-    if (!isValidCoordinate(body.latitude, body.longitude)) {
-      return new Response(
-        JSON.stringify({ error: "Invalid coordinates (lat/lng)" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+    if (!isValidCoordinate(pin.latitude, pin.longitude)) {
+      return jsonResp({ error: "Invalid coordinates (lat/lng)" }, 400);
     }
 
-    // Check rate limit: max 10 pins per user per day
+    // Rate limit: 10 pins per user per day
     const adminClient = createClient(supabaseUrl, supabaseKey);
-    const oneDayAgo = new Date(
-      Date.now() - 24 * 60 * 60 * 1000
-    ).toISOString();
+    const oneDayAgo = new Date(Date.now() - 86400000).toISOString();
 
     const { count } = await adminClient
       .from("community_pins")
@@ -129,26 +183,19 @@ serve(async (req: Request) => {
       .gte("created_at", oneDayAgo);
 
     if (count && count >= 10) {
-      return new Response(
-        JSON.stringify({ error: "Rate limit: max 10 pins per day" }),
-        {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return jsonResp({ error: "Rate limit: max 10 pins per day" }, 429);
     }
 
-    // Insert pin
     const { data, error: insertError } = await adminClient
       .from("community_pins")
       .insert({
         user_id: user.id,
-        pin_type: body.pin_type,
-        name: body.name.trim(),
-        description: body.description?.trim() || null,
-        latitude: body.latitude,
-        longitude: body.longitude,
-        source_url: body.source_url || null,
+        pin_type: pin.pin_type,
+        name: pin.name.trim(),
+        description: pin.description?.trim() || null,
+        latitude: pin.latitude,
+        longitude: pin.longitude,
+        source_url: pin.source_url || null,
         status: "pending",
       })
       .select()
@@ -156,27 +203,12 @@ serve(async (req: Request) => {
 
     if (insertError) {
       console.error("Insert error:", insertError);
-      return new Response(
-        JSON.stringify({ error: "Failed to create pin", details: insertError.message }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return jsonResp({ error: "Failed to create pin", details: insertError.message }, 500);
     }
 
-    return new Response(JSON.stringify({ pin: data, message: "Pin created — pending approval" }), {
-      status: 201,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResp({ pin: data, message: "Pin created — pending approval" }, 201);
   } catch (err) {
     console.error("Unexpected error:", err);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return jsonResp({ error: "Internal server error" }, 500);
   }
 });

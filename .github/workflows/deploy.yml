@@ -266,12 +266,6 @@ jobs:
           echo "Cultural agents stats: $STATS"
 
       # ── Shared step: Supabase push ────────────────────────────
-      - name: Push migrations to Supabase
-        run: npx supabase db push --project-ref lfyvociptzyhjtrxwhhf
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        continue-on-error: true
-
       - name: Sync grants to Supabase
         continue-on-error: true
         run: |
@@ -285,24 +279,50 @@ jobs:
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
-      - name: Sync cultural agents to Supabase
+      - name: Sync cultural agents to Supabase (via edge function)
         continue-on-error: true
         run: |
           EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1)
-          if [ -n "$EXPORT_FILE" ]; then
-            npx tsx scripts/sync-cultural-agents-to-supabase.ts "$EXPORT_FILE"
-          else
+          if [ -z "$EXPORT_FILE" ]; then
             echo "No cultural agents export file found, skipping sync"
+            exit 0
           fi
+          python3 -c "
+          import json, sys, urllib.request
+          d = json.load(open(sys.argv[1]))
+          agents = d.get('agents', [])
+          mapped = []
+          for a in agents:
+              src = 'minc' if a['source'] == 'mapa_cultura' else 'midia_ninja'
+              mapped.append({
+                  'id': f\"{src}-{a['external_id']}\",
+                  'type': 'cultural_agent',
+                  'name': a['name'],
+                  'source': src,
+                  'external_id': a['external_id'],
+                  'latitude': a['lat'],
+                  'longitude': a['lng'],
+                  'single_url': a.get('single_url', ''),
+                  'status': 'active',
+                  'synced_at': __import__('datetime').datetime.utcnow().isoformat() + 'Z',
+              })
+          payload = json.dumps({'agents': mapped}).encode()
+          req = urllib.request.Request(
+              sys.argv[2],
+              data=payload,
+              headers={
+                  'Content-Type': 'application/json',
+                  'x-sync-key': sys.argv[3],
+              },
+              method='POST',
+          )
+          resp = urllib.request.urlopen(req, timeout=120)
+          print(json.loads(resp.read().decode()))
+          " "$EXPORT_FILE" \
+            "https://lfyvociptzyhjtrxwhhf.supabase.co/functions/v1/register-pin" \
+            "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
         env:
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-
-      - name: Review Supabase databases
-        run: npx supabase inspect db --project-ref lfyvociptzyhjtrxwhhf
-        continue-on-error: true
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       # ── Artifact upload (for build job) ───────────────────────
       - name: Upload cultural agents artifact

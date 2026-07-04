@@ -356,7 +356,7 @@ export function useMapBase(config: MapBaseConfig) {
 
       map.on('load', () => {
         if (!isMounted) return
-        console.log(`[useMapBase] map.on('load'): dataset=${activeDataset.value}, speciesIndex=${speciesIndexData.value.length}, projects=${projectsData.value.length}`)
+        console.warn(`[useMapBase] map.on('load'): dataset=${activeDataset.value}, speciesIndex=${speciesIndexData.value.length}, projects=${projectsData.value.length}`)
         isLoading.value = false
         if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null }
         if (activeDataset.value === 'vulcan-observatory') {
@@ -476,7 +476,7 @@ export function useMapBase(config: MapBaseConfig) {
 
   watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData], () => {
     if (!map || rebuildPending) return
-    console.log(`[useMapBase] watch triggered: visibleSpecies=${visibleSpecies.value.length}, visibleProjects=${visibleProjects.value.length}, geoJSONInitFor=${geoJSONInitializedFor.value}, useNative=${useNativeGeoJSON}`)
+    console.warn(`[useMapBase] watch triggered: visibleSpecies=${visibleSpecies.value.length}, visibleProjects=${visibleProjects.value.length}, geoJSONInitFor=${geoJSONInitializedFor.value}, useNative=${useNativeGeoJSON}`)
     rebuildPending = true
     nextTick(() => {
       rebuildPending = false

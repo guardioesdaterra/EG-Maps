@@ -89,12 +89,12 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
     const dataset = activeDataset === 'project-grants' ? 'project-grants' : 'endangered-species'
 
     if (!forceReinit && geoJSONInitializedFor === dataset) {
-      console.log(`[Orchestrator] setupGeoJSONMarkers: already initialized for ${dataset}, updating data`)
+      console.warn(`[Orchestrator] setupGeoJSONMarkers: already initialized for ${dataset}, updating data`)
       updateGeoJSONMarkerData(activeDataset, projectsData, speciesIndexData, speciesData, selectedSpeciesGroups)
       return
     }
 
-    console.log(`[Orchestrator] setupGeoJSONMarkers: initializing ${dataset}, speciesIndex: ${speciesIndexData.length}, projects: ${projectsData.length}`)
+    console.warn(`[Orchestrator] setupGeoJSONMarkers: initializing ${dataset}, speciesIndex: ${speciesIndexData.length}, projects: ${projectsData.length}`)
 
     // Clean up old DOM markers
     markers.forEach(mm => mm.remove())
@@ -186,7 +186,7 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
   ) {
     const m = getMap()
     if (!m || !geoJSONInitializedFor) return
-    console.log(`[Orchestrator] updateGeoJSONMarkerData: ${geoJSONInitializedFor}, speciesIndex: ${speciesIndexData.length}`)
+    console.warn(`[Orchestrator] updateGeoJSONMarkerData: ${geoJSONInitializedFor}, speciesIndex: ${speciesIndexData.length}`)
     if (geoJSONInitializedFor === 'project-grants') {
       const validProjects = projectsData.filter(p => isValidCoordinate(p.latitude, p.longitude))
       geoJSONMarkers.updateData(SOURCE_ID, projectsToGeoJSON(validProjects))
@@ -228,17 +228,17 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
 
     // Use native GeoJSON for large datasets
     if (useNativeGeoJSON && activeDataset === 'endangered-species' && speciesIndexData.length > NATIVE_GEOJSON_THRESHOLD) {
-      console.log(`[Orchestrator] rebuildMarkers: using native GeoJSON for endangered-species (${speciesIndexData.length} > ${NATIVE_GEOJSON_THRESHOLD})`)
+      console.warn(`[Orchestrator] rebuildMarkers: using native GeoJSON for endangered-species (${speciesIndexData.length} > ${NATIVE_GEOJSON_THRESHOLD})`)
       setupGeoJSONMarkers(activeDataset, projectsData, speciesIndexData, speciesData, selectedSpeciesGroups)
       return
     }
     if (useNativeGeoJSON && activeDataset === 'project-grants' && projectsData.length > NATIVE_GEOJSON_THRESHOLD) {
-      console.log(`[Orchestrator] rebuildMarkers: using native GeoJSON for project-grants (${projectsData.length} > ${NATIVE_GEOJSON_THRESHOLD})`)
+      console.warn(`[Orchestrator] rebuildMarkers: using native GeoJSON for project-grants (${projectsData.length} > ${NATIVE_GEOJSON_THRESHOLD})`)
       setupGeoJSONMarkers(activeDataset, projectsData, speciesIndexData, speciesData, selectedSpeciesGroups)
       return
     }
 
-    console.log(`[Orchestrator] rebuildMarkers: DOM markers for ${activeDataset}, species: ${speciesIndexData.length}, projects: ${projectsData.length}`)
+    console.warn(`[Orchestrator] rebuildMarkers: DOM markers for ${activeDataset}, species: ${speciesIndexData.length}, projects: ${projectsData.length}`)
 
     // Clean up old markers
     markers.forEach(mm => mm.remove())

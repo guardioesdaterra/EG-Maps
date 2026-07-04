@@ -119,7 +119,6 @@ export function useGeoJSONMarkers() {
 
   function addGeoJSONSource(sourceId: string, data: GeoJSON.FeatureCollection, clustering: boolean = true) {
     if (!map) return
-    if (!map.isStyleLoaded()) return
 
     if (currentSourceId && currentSourceId !== sourceId) {
       removeLayersAndSource()
@@ -145,7 +144,6 @@ export function useGeoJSONMarkers() {
 
   function addClusterLayers(sourceId: string, dataset: 'project-grants' | 'endangered-species') {
     if (!map) return
-    if (!map.isStyleLoaded()) return
 
     const clusterColors = dataset === 'endangered-species'
       ? ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']

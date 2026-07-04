@@ -16,26 +16,26 @@ concurrency:
 
 jobs:
   build:
-    needs: [cultural-agents-sync]
+    needs: [sync]
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10.12.0
           run_install: false
 
       - name: Setup pnpm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -46,7 +46,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Download cultural agents data
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: cultural-agents-data
           path: public/data/cultural-agents/
@@ -107,19 +107,19 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10.12.0
           run_install: false
 
       - name: Setup pnpm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -136,19 +136,19 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10.12.0
           run_install: false
 
       - name: Setup pnpm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -165,19 +165,19 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10.12.0
           run_install: false
 
       - name: Setup pnpm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -200,61 +200,31 @@ jobs:
           SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
 
-  cultural-agents-sync:
+  sync:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     steps:
-      - uses: actions/checkout@v4
+      # ── Shared setup ──────────────────────────────────────────
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Sync cultural agents (Mapa Cultura + Floresta Ativista)
-        run: python scripts/sync-cultural-agents.py
-        continue-on-error: true
-
-      - name: Validate cultural agents output
-        run: |
-          EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1)
-          if [ -z "$EXPORT_FILE" ]; then
-            echo "No cultural agents export file found"
-            exit 0
-          fi
-          STATS=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); agents=d.get('agents',[]); mapa=len([a for a in agents if a.get('source')=='mapa_cultura']); fa=len([a for a in agents if a.get('source')=='floresta_ativista']); print(f'Total: {len(agents)}, Mapa Cultura: {mapa}, Floresta Ativista: {fa}')" "$EXPORT_FILE")
-          echo "Cultural agents stats: $STATS"
-
-      - name: Upload cultural agents artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: cultural-agents-data
-          path: public/data/cultural-agents/
-          retention-days: 7
-
-  grants-sync:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Install Python dependencies
         run: pip install feedparser aiohttp aiofiles beautifulsoup4 lxml python-dateutil rich click
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10.12.0
           run_install: false
 
       - name: Setup pnpm cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -264,6 +234,7 @@ jobs:
       - name: Install Node dependencies
         run: pnpm install --frozen-lockfile
 
+      # ── Sub-step 1: Grants sync ───────────────────────────────
       - name: Scrape grants (standing entries excluded by default)
         run: python scripts/grants.py -o grants_export
         continue-on-error: true
@@ -279,10 +250,31 @@ jobs:
           echo "Grants stats: $REAL_GRANTS"
           python3 -c "import json; d=json.load(open('${EXPORT_FILE}')); grants=d.get('grants',d) if isinstance(d,dict) else d; [print(f'  [{g.get(\"priority_score\",0):3d}] {g.get(\"source\",\"\"):25s} | {g.get(\"title\",\"\")[:60]}') for g in sorted(grants, key=lambda x: x.get('priority_score',0), reverse=True)[:5]]"
 
+      # ── Sub-step 2: Cultural agents sync ──────────────────────
+      - name: Sync cultural agents (Mapa Cultura + Floresta Ativista)
+        run: python scripts/sync-cultural-agents.py
+        continue-on-error: true
+
+      - name: Validate cultural agents output
+        run: |
+          EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1)
+          if [ -z "$EXPORT_FILE" ]; then
+            echo "No cultural agents export file found"
+            exit 0
+          fi
+          STATS=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); agents=d.get('agents',[]); mapa=len([a for a in agents if a.get('source')=='mapa_cultura']); fa=len([a for a in agents if a.get('source')=='floresta_ativista']); print(f'Total: {len(agents)}, Mapa Cultura: {mapa}, Floresta Ativista: {fa}')" "$EXPORT_FILE")
+          echo "Cultural agents stats: $STATS"
+
+      # ── Shared step: Supabase push ────────────────────────────
+      - name: Push migrations to Supabase
+        run: npx supabase db push --project-ref lfyvociptzyhjtrxwhhf
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        continue-on-error: true
+
       - name: Sync grants to Supabase
         continue-on-error: true
         run: |
-          # Find the most recent grants export file
           EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1)
           if [ -n "$EXPORT_FILE" ]; then
             npx tsx scripts/sync-grants-to-supabase.ts "$EXPORT_FILE"
@@ -292,6 +284,33 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Sync cultural agents to Supabase
+        continue-on-error: true
+        run: |
+          EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1)
+          if [ -n "$EXPORT_FILE" ]; then
+            npx tsx scripts/sync-cultural-agents-to-supabase.ts "$EXPORT_FILE"
+          else
+            echo "No cultural agents export file found, skipping sync"
+          fi
+        env:
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Review Supabase databases
+        run: npx supabase inspect db --project-ref lfyvociptzyhjtrxwhhf
+        continue-on-error: true
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      # ── Artifact upload (for build job) ───────────────────────
+      - name: Upload cultural agents artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: cultural-agents-data
+          path: public/data/cultural-agents/
+          retention-days: 7
 
   deploy:
     needs: build

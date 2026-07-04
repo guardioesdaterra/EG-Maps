@@ -5,7 +5,7 @@
  * which can handle 10,000+ points smoothly compared to the 100-200 limit of DOM markers.
  */
 
-import type { Map as MapLibreMap, GeoJSONSource, MapLayerEventType } from 'maplibre-gl'
+import type { Map as MapLibreMap, GeoJSONSource, MapLayerEventType, ExpressionSpecification } from 'maplibre-gl'
 import { GROUP_COLORS } from '@/lib/map-utils'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
 
@@ -154,8 +154,8 @@ export function useGeoJSONMarkers() {
     // Helper: multiply a base expression by a zoom-dependent factor.
     // MapLibre v5 doesn't allow ['zoom'] nested inside ['*'], so we must
     // fold the factor into the interpolation directly.
-    const zs = (base: unknown, z6: number, z10: number, z14: number) =>
-      ['interpolate', ['linear'], ['zoom'], 6, ['*', base, z6], 10, ['*', base, z10], 14, ['*', base, z14]]
+    const zs = (base: unknown, z6: number, z10: number, z14: number): ExpressionSpecification =>
+      ['interpolate', ['linear'], ['zoom'], 6, ['*', base, z6], 10, ['*', base, z10], 14, ['*', base, z14]] as unknown as ExpressionSpecification
 
     // Cluster glow — soft halo behind the main circle
     map.addLayer({

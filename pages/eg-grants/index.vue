@@ -90,68 +90,6 @@
         </div>
       </section>
 
-      <!-- EG Open Grants Dashboard — glassmorphism + neobrutalism -->
-      <section class="open-dashboard" id="open-dashboard">
-        <div class="nebula-bg" />
-        <div class="open-dashboard-inner">
-          <div class="dash-header">
-            <span class="dash-label">{{ t('grantsPortal.dashboardLabel') }}</span>
-            <h2 class="dash-title">{{ t('grantsPortal.dashboardTitle1') }}<br/>{{ t('grantsPortal.dashboardTitle2') }}</h2>
-            <p class="dash-subtitle">{{ t('grantsPortal.dashboardSubtitle') }}</p>
-          </div>
-
-          <div class="dash-stats">
-            <div class="dash-stat-card">
-              <span class="dash-stat-num open">{{ scrapedOpenCount }}</span>
-              <span class="dash-stat-label">{{ t('grantsPortal.dashboardOpenStat') }}</span>
-            </div>
-          </div>
-
-          <div class="dash-search">
-            <svg class="dash-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input v-model="dashboardSearch" :placeholder="t('grantsPortal.dashboardSearchPlaceholder')" class="dash-search-input" />
-          </div>
-          <div class="dash-grid">
-            <div v-if="scrapedLoading" class="dash-loading">{{ t('grantsPortal.loadingOpenGrants') }}</div>
-            <div v-else-if="paginatedDashGrants.length === 0" class="dash-empty">{{ dashboardSearch ? t('grantsPortal.dashboardEmptySearch') : t('grantsPortal.dashboardEmpty') }}</div>
-            <div v-for="g in paginatedDashGrants" :key="g.id" class="dash-card" @click="openScrapedDetail(g)">
-              <div class="dash-card-top">
-                <span class="dash-card-type" :class="g.grant_type || 'general'">{{ typeEmoji(g.grant_type) }} {{ grantTypeLabel(g.grant_type) }}</span>
-                <span v-if="g.priority_score != null" class="dash-card-score" :class="priorityClass(g.priority_score)">{{ g.priority_score }}</span>
-              </div>
-              <h4 class="dash-card-title">{{ g.title }}</h4>
-              <p class="dash-card-desc">{{ g.description?.slice(0, 150) }}{{ g.description?.length > 150 ? '...' : '' }}</p>
-              <div class="dash-card-meta">
-                <span v-if="g.funder">🏛 {{ g.funder }}</span>
-                <span v-if="g.country">📍 {{ g.country }}</span>
-                <span v-if="g.deadline">📅 {{ g.deadline }}</span>
-                <span v-if="g.amount_max">💰 {{ g.amount_max }} {{ g.currency }}</span>
-              </div>
-              <div class="dash-card-footer">
-                <div class="dash-stars">
-                  <button v-for="n in 8" :key="n" @click.stop="handleVoteScraped(g.id, n)" class="dash-star" :class="getStarClass(g.id, n)">★</button>
-                  <span class="dash-votes">{{ getVoteCount(g.id) }} votes</span>
-                </div>
-                <a v-if="g.url" :href="g.url" target="_blank" @click.stop class="dash-apply">{{ t('grantsPortal.apply') }}</a>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="dashTotalPages > 1" class="dash-pagination">
-            <button class="dash-page-btn" :disabled="dashPage === 1" @click="dashPage--">{{ t('grantsPortal.paginationPrev') }}</button>
-            <template v-for="p in dashPageNumbers" :key="p">
-              <button v-if="typeof p === 'number'" class="dash-page-btn" :class="{ active: dashPage === p }" @click="dashPage = p">{{ p }}</button>
-              <span v-else class="dash-page-ellipsis">…</span>
-            </template>
-            <button class="dash-page-btn" :disabled="dashPage === dashTotalPages" @click="dashPage++">{{ t('grantsPortal.paginationNext') }}</button>
-          </div>
-
-          <div class="dash-cta">
-            <NuxtLink to="/project-grants/3d" class="dash-cta-btn">{{ t('grantsPortal.dashboardCta') }}</NuxtLink>
-          </div>
-        </div>
-      </section>
-
       <section class="projects-section" id="grants-portal">
         <div class="nebula-bg" />
         <div class="projects-header">
@@ -528,24 +466,19 @@ const isEmbed = computed(() => {
   if (import.meta.server) return false
   return new URLSearchParams(window.location.search).get('embed') === 'true'
 })
-const { listGrants, listScrapedGrants, submitGrant: apiSubmitGrant, reviewGrant: apiReviewGrant, reviewScrapedGrant: apiReviewScraped, updateScrapedGrant: apiUpdateScrapedGrant, getStats, voteGrant, voteScrapedGrant, deleteVote, getLeaderboard } = useGrants()
+const { listGrants, listScrapedGrants, reviewGrant: apiReviewGrant, reviewScrapedGrant: apiReviewScraped, updateScrapedGrant: apiUpdateScrapedGrant, getStats, voteGrant, voteScrapedGrant, deleteVote, getLeaderboard } = useGrants()
 
 // Internal grants
 const grants = ref<GrantRecord[]>([])
 const registry = ref<Array<GrantRecord & { relevante?: boolean }>>([])
 const stats = reactive({ pending: 0, approved: 0, rejected: 0, total: 0 })
 const loading = ref(true)
-
-// Static project data fallback
 const projectStats = computed(() => {
   const countries = new Set(allProjectsData.map(p => p.country_province.split(',').pop()?.trim()).filter(Boolean))
   const direct = allProjectsData.reduce((s, p) => s + (p.direct_beneficiaries || 0), 0)
   const indirect = allProjectsData.reduce((s, p) => s + (p.indirect_beneficiaries || 0), 0)
   return { total: allProjectsData.length, countries: countries.size, beneficiaries: direct + indirect }
 })
-const submitting = ref(false)
-const submitMsg = ref('')
-const submitOk = ref(false)
 const activeTab = ref<'pending' | 'approved' | 'rejected'>('pending')
 const showHistory = ref(false)
 
@@ -657,15 +590,6 @@ const portalTabs = computed(() => {
   }
   if (!user.value) return tabs.filter(tab => tab.key === 'tabOpen')
   return tabs
-})
-
-const form = reactive({
-  title: '',
-  description: '',
-  location_name: '',
-  latitude: null as number | null,
-  longitude: null as number | null,
-  category: 'environment' as string,
 })
 
 const filteredGrants = computed(() => {
@@ -852,35 +776,6 @@ async function loadLeaderboardData() {
     console.error('Failed to load leaderboard:', e)
   } finally {
     leaderboardLoading.value = false
-  }
-}
-
-async function handleSubmitGrant() {
-  submitting.value = true
-  submitMsg.value = ''
-  try {
-    const result: { error?: string; grant?: GrantRecord } = await apiSubmitGrant(form)
-    if (result.error) {
-      submitMsg.value = result.error
-      submitOk.value = false
-    } else {
-      submitMsg.value = t('grantsPortal.submittedSuccess')
-      submitOk.value = true
-      form.title = ''
-      form.description = ''
-      form.location_name = ''
-      form.latitude = null
-      form.longitude = null
-      form.category = 'environment'
-      loadGrants()
-      loadStats()
-    }
-  } catch (e) {
-    submitMsg.value = 'An unexpected error occurred. Please try again.'
-    submitOk.value = false
-    console.error('Failed to submit grant:', e)
-  } finally {
-    submitting.value = false
   }
 }
 
@@ -1659,9 +1554,6 @@ h2 {
   color: rgba(255, 255, 255, 0.4);
 }
 
-.grant-form { display: flex; flex-direction: column; gap: 0.75rem; }
-
-.form-input,
 .edit-input {
   width: 100%;
   padding: 0.7rem 1rem;
@@ -1673,12 +1565,8 @@ h2 {
   outline: none;
   transition: border-color 0.2s;
 }
-.form-input:focus,
 .edit-input:focus { border-color: rgba(0,255,133,0.4); }
-.form-input::placeholder,
 .edit-input::placeholder { color: rgba(255,255,255,0.2); }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-select.form-input option { background: #000; }
 textarea.edit-input {
   resize: vertical;
   font-family: inherit;
@@ -1785,9 +1673,6 @@ textarea.edit-input {
   }
   .stats-row {
     grid-template-columns: 1fr 1fr;
-  }
-  .form-row {
-    grid-template-columns: 1fr;
   }
   .impact-card {
     flex: 0 0 180px;
@@ -1925,24 +1810,6 @@ textarea.edit-input {
 }
 
 /* ── EG Open Grants Dashboard ─────────────────────────── */
-.open-dashboard {
-  position: relative;
-  padding: 8rem 10%;
-  overflow: hidden;
-}
-
-.open-dashboard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 133, 0.15), rgba(99, 102, 241, 0.15), transparent);
-  pointer-events: none;
-  z-index: 1;
-}
-
 .nebula-bg {
   position: absolute;
   inset: 0;
@@ -1952,18 +1819,6 @@ textarea.edit-input {
     radial-gradient(ellipse 50% 40% at 50% 80%, rgba(236, 72, 153, 0.05) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
-}
-
-.open-dashboard-inner {
-  position: relative;
-  z-index: 1;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.dash-header {
-  text-align: center;
-  margin-bottom: 3rem;
 }
 
 .dash-label {
@@ -2412,9 +2267,6 @@ textarea.edit-input {
 
 /* Dashboard responsive */
 @media (max-width: 768px) {
-  .open-dashboard {
-    padding: 4rem 5%;
-  }
   .dash-stats {
     grid-template-columns: repeat(2, 1fr);
   }

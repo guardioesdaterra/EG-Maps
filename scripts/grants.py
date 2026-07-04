@@ -249,24 +249,56 @@ def detect_status_from_parent(parent_classes: list) -> str:
     return ""
 
 def has_grant_signals(title: str, description: str, deadline: str, amount_max: str) -> int:
+    """Detect grant signals in text. Returns 0-53 signal score."""
     signals = 0
     blob = f"{title} {description}".lower()
+    # ── Deadline present — strong signal ──
     if deadline and deadline not in ("None", ""):
         signals += 15
+    # ── Amount present — strong signal ──
     if amount_max and amount_max not in ("None", ""):
         signals += 15
-    if re.search(r'(edital|chamada|open call|grant|fellowship|bolsa|subvenção|convocatória|beca|subvention|appel à projets|补助|助成金)', blob):
+    # ── Grant-related terms in multiple languages ──
+    grant_terms = (
+        r'(edital|chamada|open call|grant|fellowship|bolsa|subvenção|convocatória|beca|subvention|'
+        r'appel à projets|补助|助成金|bando|convocatoria|propuesta|progetto|bewerbung|antrag|'
+        r'proposal|funding|financiamento|financement|financiación|finanziamento|'
+        r'prize|premio|premio|award|bourse|stipendium|scholarship|beca|'
+        r'research fund|development fund|environmental fund|climate fund|'
+        r'microgrant|micro-grant|seed fund|seed grant|bridge fund)'
+    )
+    if re.search(grant_terms, blob):
         signals += 10
-    if re.search(r'(R\$|€|\$|£|¥|USD|EUR|BRL)', blob):
+    # ── Currency symbols present ──
+    if re.search(r'(R\$|€|\$|£|¥|₹|₩|฿|Rp|USD|EUR|BRL|GBP|JPY|INR|KRW|CNY)', blob):
         signals += 8
+    # ── Date patterns present ──
     if re.search(r'\d{4}[-/]\d{1,2}[-/]\d{1,2}', blob):
         signals += 5
+    # ── Application-related terms ──
+    if re.search(r'(apply|inscreva|solicitar|postular|applicare|bewerben|candidatar)', blob):
+        signals += 3
+    # ── Eligibility terms ──
+    if re.search(r'(eligible|elegível|elegible|éligible|berechtigt|idoneo)', blob):
+        signals += 2
     return signals
 
 def score_relevance(text: str, is_standing: bool = False) -> int:
+    """Score relevance 0-100 based on keyword hits. Higher = more grant-like."""
     text = text.lower()
-    hits = sum(1 for k in CORE_KEYWORDS if k in text) * 8
-    hits += sum(1 for k in SECONDARY_KEYWORDS if k in text) * 2
+    # ── Core keywords (strong grant signals) — 8 points each ──
+    core_hits = sum(1 for k in CORE_KEYWORDS if k in text)
+    # ── Secondary keywords (weaker signals) — 2 points each ──
+    secondary_hits = sum(1 for k in SECONDARY_KEYWORDS if k in text)
+    # ── Bonus for multiple core hits (diminishing returns) ──
+    if core_hits >= 3:
+        core_bonus = min(core_hits * 8, 50)  # Cap at 50 for core
+    else:
+        core_bonus = core_hits * 8
+    hits = core_bonus + secondary_hits * 2
+    # ── Penalty for likely non-grant content ──
+    if is_likely_non_grant(text, text):
+        hits = max(0, hits - 20)
     # Moderate penalty for standing entries — they're valid reference grants, not just SEO
     if is_standing:
         hits = min(hits, 40)
@@ -275,7 +307,7 @@ def score_relevance(text: str, is_standing: bool = False) -> int:
 
 
 def parse_amount_value(amount_max, currency):
-    """Return numeric value in approximate USD for ranking."""
+    """Return numeric value in approximate USD for ranking. Handles BRL, EUR, GBP, JPY, INR, KRW, CNY, THB, IDR, and more."""
     if not amount_max or amount_max in ("None", ""):
         return 0
     raw = str(amount_max)
@@ -297,8 +329,8 @@ def parse_amount_value(amount_max, currency):
     if lakh_match:
         val = float(lakh_match.group(1).replace(",", ""))
         return val * 100000 / 83
-    # Handle "million", "thousand" suffixes
-    m = re.search(r'([\d,]+(?:\.\d+)?)\s*(million|milhão|mil|thousand|k)', raw, re.I)
+    # Handle "million", "thousand", "k", "万", "億" suffixes
+    m = re.search(r'([\d,]+(?:\.\d+)?)\s*(million|milhão|mil|thousand|k|万|億|mrd|billion|bn)', raw, re.I)
     if m:
         num = float(m.group(1).replace(",", ""))
         suffix = m.group(2).lower()
@@ -306,7 +338,14 @@ def parse_amount_value(amount_max, currency):
             num *= 1000000
         elif suffix in ("thousand", "mil", "k"):
             num *= 1000
+        elif suffix in ("万",):
+            num *= 10000
+        elif suffix in ("億",):
+            num *= 100000000
+        elif suffix in ("mrd", "billion", "bn"):
+            num *= 1000000000
         return num
+    # Try to extract raw number
     try:
         val = float(re.sub(r"[^0-9.]", "", raw))
     except (ValueError, TypeError):
@@ -314,24 +353,42 @@ def parse_amount_value(amount_max, currency):
     if not currency:
         return val
     c = currency.upper()
-    if c == "BRL":
-        return val / 5.5
-    if c == "EUR":
-        return val * 1.08
-    if c == "GBP":
-        return val * 1.27
-    if c == "JPY":
-        return val / 150
-    if c == "INR":
-        return val / 83
-    if c == "KRW":
-        return val / 1300
-    if c == "CNY":
-        return val / 7.2
-    if c == "THB":
-        return val / 35
-    if c == "IDR":
-        return val / 16000
+    # Approximate exchange rates to USD (as of 2025)
+    rates = {
+        "BRL": 5.5,    # 1 USD ≈ 5.5 BRL
+        "EUR": 0.92,   # 1 USD ≈ 0.92 EUR
+        "GBP": 0.79,   # 1 USD ≈ 0.79 GBP
+        "JPY": 150,    # 1 USD ≈ 150 JPY
+        "INR": 83,     # 1 USD ≈ 83 INR
+        "KRW": 1300,   # 1 USD ≈ 1300 KRW
+        "CNY": 7.2,    # 1 USD ≈ 7.2 CNY
+        "THB": 35,     # 1 USD ≈ 35 THB
+        "IDR": 16000,  # 1 USD ≈ 16000 IDR
+        "MYR": 4.7,    # 1 USD ≈ 4.7 MYR
+        "PHP": 56,     # 1 USD ≈ 56 PHP
+        "SGD": 1.35,   # 1 USD ≈ 1.35 SGD
+        "CAD": 1.36,   # 1 USD ≈ 1.36 CAD
+        "AUD": 1.53,   # 1 USD ≈ 1.53 AUD
+        "NZD": 1.65,   # 1 USD ≈ 1.65 NZD
+        "CHF": 0.88,   # 1 USD ≈ 0.88 CHF
+        "SEK": 10.5,   # 1 USD ≈ 10.5 SEK
+        "NOK": 10.8,   # 1 USD ≈ 10.8 NOK
+        "DKK": 6.9,    # 1 USD ≈ 6.9 DKK
+        "PLN": 4.0,    # 1 USD ≈ 4.0 PLN
+        "CZK": 23,     # 1 USD ≈ 23 CZK
+        "HUF": 360,    # 1 USD ≈ 360 HUF
+        "RON": 4.5,    # 1 USD ≈ 4.5 RON
+        "BGN": 1.8,    # 1 USD ≈ 1.8 BGN
+        "TRY": 30,     # 1 USD ≈ 30 TRY
+        "ZAR": 18,     # 1 USD ≈ 18 ZAR
+        "MXN": 17,     # 1 USD ≈ 17 MXN
+        "ARS": 350,    # 1 USD ≈ 350 ARS
+        "CLP": 900,    # 1 USD ≈ 900 CLP
+        "COP": 4000,   # 1 USD ≈ 4000 COP
+        "PEN": 3.7,    # 1 USD ≈ 3.7 PEN
+    }
+    if c in rates:
+        return val / rates[c]
     return val
 
 
@@ -421,40 +478,97 @@ YOUTH_KW = [
 
 
 def classify_grant(title, description, funder, categories, language):
-    """Auto-classify a grant into a primary type and sub-categories."""
+    """Auto-classify a grant into a primary type and sub-categories. Uses keyword matching with confidence scoring."""
     blob = f"{title} {description} {funder}".lower()
     types = []
+    scores = {}  # Track match confidence for each type
 
-    if any(kw in blob for kw in ARTIVISM_KW):
+    # ── Artivism (art + activism) ──
+    artivism_hits = sum(1 for kw in ARTIVISM_KW if kw in blob)
+    if artivism_hits > 0:
         types.append("artivism")
-    if any(kw in blob for kw in CLIMATE_JUSTICE_KW):
-        types.append("climate_justice")
-    if any(kw in blob for kw in CONSERVATION_KW):
-        types.append("conservation")
-    if any(kw in blob for kw in HUMAN_RIGHTS_KW):
-        types.append("human_rights")
-    if any(kw in blob for kw in INDIGENOUS_KW):
-        types.append("indigenous_rights")
-    if any(kw in blob for kw in YOUTH_KW):
-        types.append("youth")
+        scores["artivism"] = artivism_hits
 
-    # Also check existing categories
+    # ── Climate Justice ──
+    climate_hits = sum(1 for kw in CLIMATE_JUSTICE_KW if kw in blob)
+    if climate_hits > 0:
+        types.append("climate_justice")
+        scores["climate_justice"] = climate_hits
+
+    # ── Conservation ──
+    conservation_hits = sum(1 for kw in CONSERVATION_KW if kw in blob)
+    if conservation_hits > 0:
+        types.append("conservation")
+        scores["conservation"] = conservation_hits
+
+    # ── Human Rights ──
+    human_rights_hits = sum(1 for kw in HUMAN_RIGHTS_KW if kw in blob)
+    if human_rights_hits > 0:
+        types.append("human_rights")
+        scores["human_rights"] = human_rights_hits
+
+    # ── Indigenous Rights ──
+    indigenous_hits = sum(1 for kw in INDIGENOUS_KW if kw in blob)
+    if indigenous_hits > 0:
+        types.append("indigenous_rights")
+        scores["indigenous_rights"] = indigenous_hits
+
+    # ── Youth ──
+    youth_hits = sum(1 for kw in YOUTH_KW if kw in blob)
+    if youth_hits > 0:
+        types.append("youth")
+        scores["youth"] = youth_hits
+
+    # ── Education (additional type) ──
+    education_kw = ["education","educação","education","enseignement","bildung","scuola","learning","aprendizagem","school","escola","university","universidade","research","pesquisa"]
+    education_hits = sum(1 for kw in education_kw if kw in blob)
+    if education_hits > 0:
+        types.append("education")
+        scores["education"] = education_hits
+
+    # ── Health (additional type) ──
+    health_kw = ["health","saúde","health","santé","gesundheit","salud","medical","médico","hospital","vaccination","vacinação","public health","saúde pública"]
+    health_hits = sum(1 for kw in health_kw if kw in blob)
+    if health_hits > 0:
+        types.append("health")
+        scores["health"] = health_hits
+
+    # ── Technology/Innovation (additional type) ──
+    tech_kw = ["technology","tecnologia","innovation","inovação","digital","startup","entrepreneurship","empreendedorismo","tech","tech for good","impact tech"]
+    tech_hits = sum(1 for kw in tech_kw if kw in blob)
+    if tech_hits > 0:
+        types.append("technology")
+        scores["technology"] = tech_hits
+
+    # ── Also check existing categories ──
     for cat in (categories or []):
         cl = cat.lower()
         if "art" in cl or "creativ" in cl or "cultur" in cl:
-            types.append("artivism")
+            if "artivism" not in types:
+                types.append("artivism")
+                scores["artivism"] = scores.get("artivism", 0) + 1
         if "climate" in cl or "environment" in cl:
-            types.append("climate_justice")
+            if "climate_justice" not in types:
+                types.append("climate_justice")
+                scores["climate_justice"] = scores.get("climate_justice", 0) + 1
         if "conserv" in cl or "biodivers" in cl or "wildlife" in cl or "forest" in cl:
-            types.append("conservation")
+            if "conservation" not in types:
+                types.append("conservation")
+                scores["conservation"] = scores.get("conservation", 0) + 1
         if "human right" in cl or "social justice" in cl or "feminist" in cl:
-            types.append("human_rights")
+            if "human_rights" not in types:
+                types.append("human_rights")
+                scores["human_rights"] = scores.get("human_rights", 0) + 1
         if "indigenous" in cl or "tribal" in cl:
-            types.append("indigenous_rights")
+            if "indigenous_rights" not in types:
+                types.append("indigenous_rights")
+                scores["indigenous_rights"] = scores.get("indigenous_rights", 0) + 1
         if "youth" in cl or "education" in cl or "student" in cl:
-            types.append("youth")
+            if "youth" not in types:
+                types.append("youth")
+                scores["youth"] = scores.get("youth", 0) + 1
 
-    # Deduplicate while preserving order
+    # ── Deduplicate while preserving order ──
     seen = set()
     unique_types = []
     for t in types:
@@ -462,11 +576,19 @@ def classify_grant(title, description, funder, categories, language):
             seen.add(t)
             unique_types.append(t)
 
-    # If nothing matched, mark as general
+    # ── If nothing matched, mark as general ──
     if not unique_types:
         unique_types.append("general")
 
-    primary = unique_types[0]
+    # ── Primary type is the one with highest confidence score ──
+    if len(unique_types) > 1 and scores:
+        primary = max(unique_types, key=lambda t: scores.get(t, 0))
+        # Move primary to front
+        unique_types.remove(primary)
+        unique_types.insert(0, primary)
+    else:
+        primary = unique_types[0]
+
     return primary, unique_types
 
 
@@ -599,7 +721,9 @@ async def cache_get(key):
         d = json.loads(p.read_text())
         if (time.time() - d["_ts"]) / 3600 > CACHE_TTL_HOURS: return None
         return d["v"]
-    except: return None
+    except (json.JSONDecodeError, KeyError, OSError) as e:
+        logging.debug(f"cache_get fail {p.name}: {e}")
+        return None
 
 async def cache_set(key, val):
     async with aiofiles.open(_cpath(key), "w") as f:
@@ -620,7 +744,8 @@ HEADERS = {
 _domain_ts: dict = {}
 
 async def fetch(session, url, method="GET", json_body=None,
-                extra_headers=None, use_cache=True):
+                extra_headers=None, use_cache=True, max_retries=3):
+    """Fetch URL with caching, rate limiting, and retry with exponential backoff."""
     ck = f"{method}::{url}::{json.dumps(json_body or {}, sort_keys=True)}"
     if use_cache:
         cached = await cache_get(ck)
@@ -632,23 +757,28 @@ async def fetch(session, url, method="GET", json_body=None,
     _domain_ts[domain] = time.time()
 
     h = {**HEADERS, **(extra_headers or {})}
-    for attempt in range(3):
+    for attempt in range(max_retries):
         try:
             kw = dict(headers=h, timeout=aiohttp.ClientTimeout(total=REQUEST_TIMEOUT))
             if method == "POST":
                 async with session.post(url, json=json_body, **kw) as r:
-                    if r.status >= 400: return None
+                    if r.status >= 400:
+                        logging.debug(f"fetch {r.status} {url[:80]}")
+                        return None
                     text = await r.text()
             else:
                 async with session.get(url, **kw) as r:
-                    if r.status >= 400: return None
+                    if r.status >= 400:
+                        logging.debug(f"fetch {r.status} {url[:80]}")
+                        return None
                     text = await r.text()
             if use_cache: await cache_set(ck, text)
             return text
         except asyncio.TimeoutError:
+            logging.debug(f"fetch timeout (attempt {attempt+1}/{max_retries}) {url[:80]}")
             await asyncio.sleep(1.5 ** attempt)
         except Exception as e:
-            logging.debug(f"fetch fail {url}: {e}")
+            logging.debug(f"fetch fail (attempt {attempt+1}/{max_retries}) {url[:80]}: {e}")
             await asyncio.sleep(1.5 ** attempt)
     return None
 
@@ -665,7 +795,9 @@ async def fetch_json(session, url, method="GET", json_body=None, use_cache=True)
     else:
         clean = text  # fallback: nothing looks like JSON
     try: return json.loads(clean)
-    except: return None
+    except (json.JSONDecodeError, ValueError) as e:
+        logging.debug(f"fetch_json parse fail {url[:80]}: {e}")
+        return None
 
 def clean_html(html):
     return re.sub(r'\s+', ' ', BeautifulSoup(html or "", "lxml").get_text(" ")).strip()
@@ -673,30 +805,113 @@ def clean_html(html):
 def parse_date(s):
     if not s: return ""
     try: return dateparser.parse(str(s), fuzzy=True).date().isoformat()
-    except: return str(s)[:20]
+    except (ValueError, OverflowError) as e:
+        logging.debug(f"parse_date fail '{s[:50]}': {e}")
+        return str(s)[:20]
+
+
+def extract_grant_items(soup, base_url, selectors=None):
+    """Extract grant items from a BeautifulSoup page using robust fallback selectors.
+    Returns list of dicts with title, url, text, and selector that matched.
+    """
+    if selectors is None:
+        selectors = [
+            # High-confidence selectors
+            "article", ".grant", ".opportunity", ".call", ".chamada", ".edital",
+            "[class*='grant']", "[class*='fund']", "[class*='opportunity']",
+            "[class*='call']", "[class*='edital']", "[class*='chamada']",
+            # Medium-confidence selectors
+            "section", "li", ".card", "[class*='card']", "[class*='item']",
+            # Low-confidence fallbacks
+            "h2 a", "h3 a", "h4 a",
+        ]
+    items = []
+    seen_titles = set()
+    for selector in selectors:
+        for el in soup.select(selector):
+            a = el.find("a", href=True)
+            t = el.find(["h1","h2","h3","h4","h5"])
+            if not t:
+                # Try to get title from the element itself
+                title_text = el.get_text(strip=True)
+                if len(title_text) > 10 and len(title_text) < 200:
+                    title = title_text
+                else:
+                    continue
+            else:
+                title = t.get_text(strip=True)
+            if len(title) < 10:
+                continue
+            # Deduplicate within this page
+            title_key = re.sub(r'\s+', ' ', title.lower())[:60]
+            if title_key in seen_titles:
+                continue
+            seen_titles.add(title_key)
+            url = urljoin(base_url, a["href"]) if a else base_url
+            text = el.get_text(" ")
+            items.append({"title": title, "url": url, "text": text, "selector": selector})
+        if items:
+            break  # Stop at first selector that yields results
+    return items
+
+
+def extract_body_text(soup):
+    """Extract meaningful body text from a page, trying multiple selectors."""
+    for selector in [".entry-content", ".post-content", "article", ".et_pb_section",
+                     ".content", "main", "[role='main']", "#content", ".page-content"]:
+        body = soup.select_one(selector)
+        if body:
+            parts = []
+            for p in body.select("p, li, h2, h3, h4"):
+                pt = p.get_text(strip=True)
+                if len(pt) > 30:
+                    parts.append(pt)
+            if parts:
+                return " | ".join(parts[:10])
+    # Fallback: just get all paragraph text
+    paragraphs = []
+    for p in soup.select("p"):
+        pt = p.get_text(strip=True)
+        if len(pt) > 30:
+            paragraphs.append(pt)
+    return " | ".join(paragraphs[:10]) if paragraphs else ""
 
 def extract_amount(text):
-    """Extract first currency amount from text. Handles ranges, multiple currencies."""
+    """Extract first currency amount from text. Handles ranges, multiple currencies, edge cases."""
     if not text:
         return ""
-    # Brazilian Real range: "R$ 50.000,00 a R$ 200.000,00" or "R$ 50.000 a R$ 200.000"
+    # ── Brazilian Real (BRL) — most common in this scraper ──
+    # Range: "R$ 50.000,00 a R$ 200.000,00" or "R$50.000 a R$200.000"
     m_brl_range = re.search(
-        r'R\$\s*([\d\.]+(?:,\d{2})?)\s*(?:a|até|-)\s*R\$\s*([\d\.]+(?:,\d{2})?)', text)
+        r'R\$\s*([\d\.]+(?:,\d{2})?)\s*(?:a|até|–|-)\s*R\$\s*([\d\.]+(?:,\d{2})?)', text)
     if m_brl_range:
         return f"R$ {m_brl_range.group(1)} – R$ {m_brl_range.group(2)}"
-    # Brazilian Real single: "R$ 150.000,00" or "até R$ 150.000"
+    # Single: "R$ 150.000,00" or "até R$ 150.000" or "R$150.000"
     m_brl = re.search(r'R\$\s*([\d\.]+(?:,\d{2})?)', text)
     if m_brl:
         return f"R$ {m_brl.group(1)}"
-    # USD/EUR range: "$5,000 – $10,000" or "$5,000 to $10,000"
+
+    # ── USD/EUR/GBP ranges ──
+    # "$5,000 – $10,000" or "$5,000 to $10,000" or "€5,000 – €10,000"
     m_usd_range = re.search(
-        r'[\$€]\s*([\d,\.]+)\s*(?:–|-|to|a|até)\s*[\$€]\s*([\d,\.]+)', text)
+        r'[\$€£]\s*([\d,\.]+)\s*(?:–|-|to|a|até)\s*[\$€£]\s*([\d,\.]+)', text)
     if m_usd_range:
-        sym = '$' if '$' in text[m_usd_range.start():m_usd_range.end()] else '€'
+        sym = '$' if '$' in text[m_usd_range.start():m_usd_range.end()] else (
+            '€' if '€' in text[m_usd_range.start():m_usd_range.end()] else '£')
         return f"{sym}{m_usd_range.group(1)} – {sym}{m_usd_range.group(2)}"
-    # Standard currencies with optional suffixes
+
+    # ── Named currency ranges: "USD 5,000 – USD 10,000" ──
+    m_named_range = re.search(
+        r'(USD|EUR|GBP|JPY|CNY|INR|KRW|THB|IDR|MYR|PHP|SGD|CAD|AUD|NZD|CHF|SEK|NOK|DKK)'
+        r'\s*([\d,\.]+)\s*(?:–|-|to)\s*(?:USD|EUR|GBP|JPY|CNY|INR|KRW|THB|IDR|MYR|PHP|SGD|CAD|AUD|NZD|CHF|SEK|NOK|DKK)'
+        r'\s*([\d,\.]+)', text, re.I)
+    if m_named_range:
+        cur = m_named_range.group(1).upper()
+        return f"{cur} {m_named_range.group(2)} – {cur} {m_named_range.group(3)}"
+
+    # ── Standard currencies with suffixes (million, lakh, crore, 万, 億) ──
     m = re.search(
-        r'(€|USD?\s*[\d]|EUR?\s*[\d]|GBP?\s*[\d]|£|¥|JPY|CNY?|₹|INR?|₩|KRW|฿|THB?|Rp|IDR?|RM|MYR?|PHP?|SGD?)'
+        r'(€|USD?\s*[\d]|EUR?\s*[\d]|GBP?\s*[\d]|£|¥|JPY|CNY?|₹|INR?|₩|KRW|฿|THB?|Rp|IDR?|RM|MYR?|PHP?|SGD?|CAD?|AUD?|NZD?|CHF?|SEK?|NOK?|DKK?)'
         r'\s*([\d,\.]+(?:\s*(?:million|mil|thousand|万|億|lakh|crore))?)', text, re.I)
     if m:
         raw = m.group(0).strip()
@@ -704,121 +919,219 @@ def extract_amount(text):
         num_part = re.search(r'[\d,\.]+', raw)
         if num_part and len(num_part.group().replace(',','').replace('.','')) >= 2:
             return raw
-    # Dollar sign with amount: "$5,000" or "$ 5000"
+
+    # ── Dollar sign with amount: "$5,000" or "$ 5000" ──
     m2 = re.search(r'\$\s*([\d,\.]{2,})', text)
     if m2:
         return m2.group(0).strip()
-    # Euro sign with amount
+
+    # ── Euro sign with amount ──
     m3 = re.search(r'€\s*([\d,\.]{2,})', text)
     if m3:
         return m3.group(0).strip()
-    # "up to X" or "até X" patterns
-    m_up = re.search(r'(?:up to|até|jusqu\'à)\s*(?:R\$\s*|US\$\s*|\$\s*|€\s*)?([\d,\.]+)', text, re.I)
+
+    # ── Pound sign with amount ──
+    m4 = re.search(r'£\s*([\d,\.]{2,})', text)
+    if m4:
+        return m4.group(0).strip()
+
+    # ── Yen sign (¥) — careful: matches both JPY and CNY ──
+    m5 = re.search(r'¥\s*([\d,\.]{2,})', text)
+    if m5:
+        return m5.group(0).strip()
+
+    # ── "up to X" or "até X" patterns ──
+    m_up = re.search(r'(?:up to|até|jusqu\'à|bis zu|fino a)\s*(?:R\$\s*|US\$\s*|\$\s*|€\s*|£\s*)?([\d,\.]+)', text, re.I)
     if m_up:
         # Find the currency symbol before "up to"
-        prefix = text[max(0, m_up.start()-10):m_up.start()]
+        prefix = text[max(0, m_up.start()-15):m_up.start()]
         sym = "$"
         if "R$" in prefix: sym = "R$"
         elif "€" in prefix: sym = "€"
         elif "£" in prefix: sym = "£"
+        elif "¥" in prefix: sym = "¥"
         return f"{sym}{m_up.group(1)}"
+
+    # ── "from X to Y" patterns ──
+    m_from_to = re.search(r'(?:from|de|von|da)\s*(?:R\$\s*|US\$\s*|\$\s*|€\s*|£\s*)?([\d,\.]+)\s*(?:to|a|até|bis|fino a)\s*(?:R\$\s*|US\$\s*|\$\s*|€\с*|£\s*)?([\d,\.]+)', text, re.I)
+    if m_from_to:
+        prefix = text[max(0, m_from_to.start()-15):m_from_to.start()]
+        sym = "$"
+        if "R$" in prefix: sym = "R$"
+        elif "€" in prefix: sym = "€"
+        elif "£" in prefix: sym = "£"
+        return f"{sym}{m_from_to.group(1)} – {sym}{m_from_to.group(2)}"
+
+    # ── Plain number + currency word: "5000 USD", "10000 euros" ──
+    m_word = re.search(r'([\d,\.]{2,})\s*(?:USD|dollars?|euros?|euro|pounds?|sterling|reais|BRL|EUR|GBP)', text, re.I)
+    if m_word:
+        return m_word.group(0).strip()
+
     return ""
 
 def extract_deadline(text):
-    """Extract deadline from text. Supports absolute dates and relative expressions."""
+    """Extract deadline from text. Supports absolute dates and relative expressions in 10+ languages."""
     if not text:
         return ""
     from datetime import timedelta
     today = datetime.now(timezone.utc).replace(tzinfo=None)
     blob = text.lower()
-    # Relative deadlines — convert to absolute dates
-    # Portuguese: "em 30 dias", "daqui 30 dias", "prazo de 30 dias"
+
+    # ══════════════════════════════════════════════════════════
+    # RELATIVE DEADLINES — convert to absolute dates
+    # ══════════════════════════════════════════════════════════
+
+    # ── Portuguese: "em 30 dias", "daqui 30 dias", "prazo de 30 dias" ──
     rel_pt = re.search(r'(?:daqui|em|prazo\s+de)\s+(\d+)\s+dias?', blob)
     if rel_pt:
-        days = int(rel_pt.group(1))
-        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
-    # English: "in 30 days", "30 days from now", "closing in 2 weeks"
-    rel_en_days = re.search(r'(?:in|within|closing\s+in)\s+(\d+)\s+days?', blob)
-    if rel_en_days:
-        days = int(rel_en_days.group(1))
-        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
-    rel_en_weeks = re.search(r'(?:in|within|closing\s+in)\s+(\d+)\s+weeks?', blob)
-    if rel_en_weeks:
-        days = int(rel_en_weeks.group(1)) * 7
-        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
-    rel_en_months = re.search(r'(?:in|within|closing\s+in)\s+(\d+)\s+months?', blob)
-    if rel_en_months:
-        days = int(rel_en_months.group(1)) * 30
-        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
-    # Portuguese: "em 2 semanas", "em 3 meses"
+        return (today + timedelta(days=int(rel_pt.group(1)))).strftime("%Y-%m-%d")
     rel_pt_weeks = re.search(r'(?:daqui|em)\s+(\d+)\s+semanas?', blob)
     if rel_pt_weeks:
-        days = int(rel_pt_weeks.group(1)) * 7
-        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
+        return (today + timedelta(days=int(rel_pt_weeks.group(1)) * 7)).strftime("%Y-%m-%d")
     rel_pt_months = re.search(r'(?:daqui|em)\s+(\d+)\s+meses?', blob)
     if rel_pt_months:
-        days = int(rel_pt_months.group(1)) * 30
-        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
-    # French: "dans 30 jours", "dans 2 semaines"
+        return (today + timedelta(days=int(rel_pt_months.group(1)) * 30)).strftime("%Y-%m-%d")
+    rel_pt_years = re.search(r'(?:daqui|em)\s+(\d+)\s+anos?', blob)
+    if rel_pt_years:
+        return (today + timedelta(days=int(rel_pt_years.group(1)) * 365)).strftime("%Y-%m-%d")
+
+    # ── English: "in 30 days", "30 days from now", "closing in 2 weeks" ──
+    rel_en_days = re.search(r'(?:in|within|closing\s+in|next)\s+(\d+)\s+days?', blob)
+    if rel_en_days:
+        return (today + timedelta(days=int(rel_en_days.group(1)))).strftime("%Y-%m-%d")
+    rel_en_weeks = re.search(r'(?:in|within|closing\s+in|next)\s+(\d+)\s+weeks?', blob)
+    if rel_en_weeks:
+        return (today + timedelta(days=int(rel_en_weeks.group(1)) * 7)).strftime("%Y-%m-%d")
+    rel_en_months = re.search(r'(?:in|within|closing\s+in|next)\s+(\d+)\s+months?', blob)
+    if rel_en_months:
+        return (today + timedelta(days=int(rel_en_months.group(1)) * 30)).strftime("%Y-%m-%d")
+    # "30 days from now", "by end of month", "by end of year"
+    rel_en_from_now = re.search(r'(\d+)\s+days?\s+from\s+now', blob)
+    if rel_en_from_now:
+        return (today + timedelta(days=int(rel_en_from_now.group(1)))).strftime("%Y-%m-%d")
+    if re.search(r'by\s+end\s+of\s+month', blob):
+        import calendar
+        next_month = today.month + 1 if today.month < 12 else 1
+        next_year = today.year if today.month < 12 else today.year + 1
+        last_day = calendar.monthrange(next_year, next_month)[1]
+        return f"{next_year}-{next_month:02d}-{last_day:02d}"
+    if re.search(r'by\s+end\s+of\s+year', blob):
+        return f"{today.year}-12-31"
+
+    # ── French: "dans 30 jours", "dans 2 semaines", "dans 3 mois" ──
     rel_fr_days = re.search(r'dans\s+(\d+)\s+jours?', blob)
     if rel_fr_days:
-        days = int(rel_fr_days.group(1))
-        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
+        return (today + timedelta(days=int(rel_fr_days.group(1)))).strftime("%Y-%m-%d")
     rel_fr_weeks = re.search(r'dans\s+(\d+)\s+semaines?', blob)
     if rel_fr_weeks:
-        days = int(rel_fr_weeks.group(1)) * 7
-        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
-    # Spanish: "en 30 días", "en 2 semanas"
+        return (today + timedelta(days=int(rel_fr_weeks.group(1)) * 7)).strftime("%Y-%m-%d")
+    rel_fr_months = re.search(r'dans\s+(\d+)\s+mois', blob)
+    if rel_fr_months:
+        return (today + timedelta(days=int(rel_fr_months.group(1)) * 30)).strftime("%Y-%m-%d")
+
+    # ── Spanish: "en 30 días", "en 2 semanas", "en 3 meses" ──
     rel_es_days = re.search(r'en\s+(\d+)\s+d[ií]as?', blob)
     if rel_es_days:
-        days = int(rel_es_days.group(1))
-        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
-    # "closing soon" / "próximo" / "em breve" — assume 14 days
-    if re.search(r'(?:closing\s+soon|pr[oó]xim[oa]|em\s+breve|soon|urgent)', blob):
+        return (today + timedelta(days=int(rel_es_days.group(1)))).strftime("%Y-%m-%d")
+    rel_es_weeks = re.search(r'en\s+(\d+)\s+semanas?', blob)
+    if rel_es_weeks:
+        return (today + timedelta(days=int(rel_es_weeks.group(1)) * 7)).strftime("%Y-%m-%d")
+    rel_es_months = re.search(r'en\s+(\d+)\s+meses?', blob)
+    if rel_es_months:
+        return (today + timedelta(days=int(rel_es_months.group(1)) * 30)).strftime("%Y-%m-%d")
+
+    # ── German: "in 30 Tagen", "in 2 Wochen", "in 3 Monaten" ──
+    rel_de_days = re.search(r'in\s+(\d+)\s+Tag(?:en)?', blob)
+    if rel_de_days:
+        return (today + timedelta(days=int(rel_de_days.group(1)))).strftime("%Y-%m-%d")
+    rel_de_weeks = re.search(r'in\s+(\d+)\s+Woch(?:en)?', blob)
+    if rel_de_weeks:
+        return (today + timedelta(days=int(rel_de_weeks.group(1)) * 7)).strftime("%Y-%m-%d")
+    rel_de_months = re.search(r'in\s+(\d+)\s+Monat(?:en)?', blob)
+    if rel_de_months:
+        return (today + timedelta(days=int(rel_de_months.group(1)) * 30)).strftime("%Y-%m-%d")
+
+    # ── Italian: "entro 30 giorni", "entro 2 settimane", "entro 3 mesi" ──
+    rel_it_days = re.search(r'entro\s+(\d+)\s+giorni?', blob)
+    if rel_it_days:
+        return (today + timedelta(days=int(rel_it_days.group(1)))).strftime("%Y-%m-%d")
+    rel_it_weeks = re.search(r'entro\s+(\d+)\s+settiman[ae]', blob)
+    if rel_it_weeks:
+        return (today + timedelta(days=int(rel_it_weeks.group(1)) * 7)).strftime("%Y-%m-%d")
+    rel_it_months = re.search(r'entro\s+(\d+)\s+mesi', blob)
+    if rel_it_months:
+        return (today + timedelta(days=int(rel_it_months.group(1)) * 30)).strftime("%Y-%m-%d")
+
+    # ── "closing soon" / "próximo" / "em breve" / "bald" / "prossimamente" — assume 14 days ──
+    if re.search(r'(?:closing\s+soon|pr[oó]xim[oa]|em\s+breve|soon|urgent|bald|prossimamente|prochainement|pr[oó]xim[oa])', blob):
         return (today + timedelta(days=14)).strftime("%Y-%m-%d")
-    # Absolute date patterns follow
+
+    # ══════════════════════════════════════════════════════════
+    # ABSOLUTE DATE PATTERNS
+    # ══════════════════════════════════════════════════════════
     patterns = [
+        # English
         r'[Dd]eadline[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
         r'[Dd]eadline[:\s]+(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
-        # Brazilian Portuguese deadline patterns
+        r'[Cc]losing[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
+        r'[Cc]losing[:\s]+(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
+        r'[Aa]pplication\s+deadline[:\s]+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
+        # Portuguese
         r'[Dd]ata.limite[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Ii]nscrições até[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Pp]razo[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Ee]ncerramento[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Cc]onclusão[:\s]+(\d{2}/\d{2}/\d{4})',
-        r'[Cc]losing[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
-        r'[Dd]ate.limite[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Dd]ata.limite[:\s]+(\d{2}\.\d{2}\.\d{4})',
+        r'[Pp]razo[:\s]+(\d{2}\.\d{2}\.\d{4})',
+        # Spanish
         r'[Ff]echa.límite[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Cc]ierre[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Hh]asta.el[:\s]+(\d{2}/\d{2}/\d{4})',
-        r'[Dd]ate.limite[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
+        r'[Dd]ate.limite[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Ff]echa.límite[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
+        # French
         r'[Cc]lôture[:\s]+(\d{2}/\d{2}/\d{4})',
         r'[Aa]vant.le[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Dd]ate.limite[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Dd]ate.de.limite[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Aa]vant.le[:\s]+(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
+        # German
+        r'[Ss]chluss[:\s]+(\d{2}\.\d{2}\.\d{4})',
+        r'[Ee]inreichungsfrist[:\s]+(\d{2}\.\d{2}\.\d{4})',
+        r'[Bb]ewerbungsfrist[:\s]+(\d{2}\.\d{2}\.\d{4})',
+        # Italian
+        r'[Ss]cadenza[:\s]+(\d{2}/\d{2}/\d{4})',
+        r'[Tt]ermine[:\s]+(\d{2}/\d{2}/\d{4})',
+        # ISO format
+        r'(\d{4}-\d{2}-\d{2})',
+        # DD/MM/YYYY
+        r'(\d{2}/\d{2}/\d{4})',
+        # DD.MM.YYYY
+        r'(\d{2}\.\d{2}\.\d{4})',
         # Brazilian date with month name: "24 de abril de 2025"
         r'[Dd]ia\s+(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})',
-        # 日本語 (Japanese)
+        # Japanese (日本語)
         r'[Ss]himekiri[:\s]+(\d{4}/\d{2}/\d{2})',
         r'応募締切[:\s]*(\d{4}年\d{1,2}月\d{1,2}日)',
         r'締切[日]?[:\s]*(\d{4}年\d{1,2}月\d{1,2}日)',
         r'締切[日]?[:\s]*(\d{4}/\d{2}/\d{2})',
         r'募集期間.*?(\d{4}年\d{1,2}月\d{1,2}日)',
-        # 中文 (Chinese)
+        # Chinese (中文)
         r'截止日期[:\s]*(\d{4}年\d{1,2}月\d{1,2}日)',
         r'申请截止[:\s]*(\d{4}年\d{1,2}月\d{1,2}日)',
         r'截止[日期]?[:\s]*(\d{4}年\d{1,2}月\d{1,2}日)',
         r'截止[日期]?[:\s]*(\d{4}/\d{2}/\d{2})',
-        # 한국어 (Korean)
+        # Korean (한국어)
         r'마감[일]?[:\s]*(\d{4}년 \d{1,2}월 \d{1,2}일)',
         r'마감[일]?[:\s]*(\d{4}/\d{2}/\d{2})',
         r'신청마감[:\s]*(\d{4}/\d{2}/\d{2})',
-        # ภาษาไทย (Thai)
+        # Thai (ภาษาไทย)
         r'กำหนดเวลา[:\s]*(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
         r'หมดเขต[:\s]*(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
         # Generic Asian date formats
         r'(\d{4})年(\d{1,2})月(\d{1,2})日',
         r'(\d{4})년 (\d{1,2})월 (\d{1,2})일',
-        r'(\d{4}-\d{2}-\d{2})',
-        r'(\d{2}/\d{2}/\d{4})',
     ]
     for pat in patterns:
         m = re.search(pat, text)
@@ -843,41 +1156,144 @@ def extract_deadline(text):
     return ""
 
 def infer_country(text, lang):
-    """Infer country/region from content text and language."""
+    """Infer country/region from content text and language. Uses keyword matching with city/country hints."""
     text_lower = text.lower()
     regions = {
-        "FR": ["france","paris","marseille","lyon","toulouse","hexagone","outre-mer","république française"],
-        "ES": ["españa","madrid","barcelona","valencia","andalucía","reino de españa"],
-        "MX": ["méxico","méjico","ciudad de méxico"],
-        "AR": ["argentina","buenos aires"],
-        "CO": ["colombia","bogotá"],
-        "PE": ["perú","lima"],
-        "CL": ["chile","santiago"],
-        "EC": ["ecuador","quito"],
-        "AFRICA": ["áfrica","afrique","africa","kenya","nigeria","senegal","ghana","tanzania","ethiopia","mozambique","angola"],
-        "ASIA": ["asia","asien","asie","asía","アジア","아시아","एशिया","เอเชีย","asia tenggara"],
-        "JP": ["japan","japon","tóquio","tokyo","nihon","nippon","日本語","東京"],
-        "CN": ["china","chine","beijing","shanghai","中文","中国","chinese"],
-        "KR": ["korea","seoul","한국","korean"],
-        "IN": ["india","mumbai","delhi","bangalore","bengaluru","new delhi","hindi"],
-        "TH": ["thailand","thai","bangkok","กรุงเทพ"],
-        "VN": ["vietnam","vietnã","hanoi","ho chi minh"],
-        "ID": ["indonesia","jakarta","indonesian"],
-        "PH": ["philippines","manila","filipinas"],
+        # ── Europe ──
+        "FR": ["france","paris","marseille","lyon","toulouse","hexagone","outre-mer","république française","français","francophone"],
+        "ES": ["españa","madrid","barcelona","valencia","andalucía","reino de españa","español"],
+        "DE": ["deutschland","germany","berlin","munich","hamburg","köln","frankfurt","deutsch"],
+        "IT": ["italia","italy","roma","rome","milano","milan","napoli","naples","italiano"],
+        "PT": ["portugal","lisboa","lisbon","porto","português","lusófono"],
+        "NL": ["netherlands","holland","amsterdam","rotterdam","dutch","nederland"],
+        "BE": ["belgium","belgique","belgië","brussels","bruxelles","brugge"],
+        "CH": ["switzerland","schweiz","suisse","zürich","geneva","genève","basel"],
+        "AT": ["austria","österreich","wien","vienna","graz"],
+        "PL": ["poland","polska","warsaw","warszawa","kraków"],
+        "CZ": ["czech","czechia","česko","prague","praha"],
+        "HU": ["hungary","magyarország","budapest"],
+        "RO": ["romania","românia","bucharest","bucurești"],
+        "BG": ["bulgaria","bulgária","sofia"],
+        "GR": ["greece","elláda","athens","athína"],
+        "IE": ["ireland","éire","dublin","baile átha cliath"],
+        # ── Nordic ──
+        "SE": ["sweden","sverige","stockholm","göteborg"],
+        "NO": ["norway","norge","noreg","oslo","bergen"],
+        "DK": ["denmark","danmark","copenhagen","københavn"],
+        "FI": ["finland","suomi","helsinki","turku"],
+        "IS": ["iceland","ísland","reykjavik"],
+        # ── Americas ──
+        "BR": ["brasil","brazil","são paulo","sao paulo","rio de janeiro","brasília","brasilia","belo horizonte","salvador","fortaleza","curitiba","manaus","belém","recife","porto alegre","goiânia","guarulhos","campinas","são luís","natal"," João Pessoa","aracaju","campo grande","florianópolis","vitória","londrina","maringá","foz do iguacu"],
+        "AR": ["argentina","buenos aires","córdoba","cordoba","rosario","mendoza"],
+        "MX": ["méxico","méjico","ciudad de méxico","guadalajara","monterrey","puebla","tijuana"],
+        "CO": ["colombia","bogotá","bogota","medellín","medellin","cali","barranquilla"],
+        "PE": ["perú","peru","lima","arequipa","cusco","trujillo"],
+        "CL": ["chile","santiago","valparaíso","valparaiso","concepción"],
+        "EC": ["ecuador","quito","guayaquil"],
+        "VE": ["venezuela","caracas","maracaibo","valencia"],
+        "BO": ["bolivia","la paz","santa cruz","cochabamba"],
+        "PY": ["paraguay","asunción","asuncion"],
+        "UY": ["uruguay","montevideo"],
+        "CR": ["costa rica","san josé","san jose"],
+        "PA": ["panamá","panama","ciudad de panamá"],
+        "GT": ["guatemala","guatemala city"],
+        "CU": ["cuba","habana","havana"],
+        # ── Africa ──
+        "NG": ["nigeria","lagos","abuja","kano","ibadan"],
+        "KE": ["kenya","nairobi","mombasa","kisumu"],
+        "GH": ["ghana","accra","kumasi","tema"],
+        "ZA": ["south africa","áfrica do sul","johannesburg","cape town","durban","pretoria","south african"],
+        "TZ": ["tanzania","dar es salaam","dodoma","arusha"],
+        "ET": ["ethiopia","ethiopia","addis ababa","adís Abeba"],
+        "SN": ["senegal","dakar","thiès","saint-louis"],
+        "MZ": ["mozambique","maputo","beira"],
+        "AO": ["angola","luanda","huambo","lobito"],
+        "CD": ["congo","kinshasa","lubumbashi"],
+        "CM": ["cameroon","yaoundé","douala"],
+        "CI": ["côte d'ivoire","ivoire","abidjan","yamoussoukro"],
+        "MG": ["madagascar","antananarivo"],
+        "RW": ["rwanda","kigali"],
+        "UG": ["uganda","kampala"],
+        "MW": ["malawi","lilongwe"],
+        "ZM": ["zambia","lusaka"],
+        "ZW": ["zimbabwe","harare"],
+        "BF": ["burkina faso","ouagadougou"],
+        "ML": ["mali","bamako"],
+        "NE": ["niger","niamey"],
+        "TD": ["chad","ndjamena"],
+        "GN": ["guinea","conakry"],
+        "SL": ["sierra leone","freetown"],
+        "LR": ["liberia","monrovia"],
+        "GM": ["gambia","banjul"],
+        "BJ": ["benin","porto-novo"],
+        "TG": ["togo","lomé"],
+        "GA": ["gabon","libreville"],
+        "CG": ["congo","brazzaville"],
+        "BW": ["botswana","gaborone"],
+        "NA": ["namibia","windhoek"],
+        "LS": ["lesotho","maseru"],
+        "SZ": ["eswatini","mbabane"],
+        "MU": ["mauritius","port louis"],
+        "CV": ["cabo verde","cape verde","praia"],
+        "ST": ["são tomé","sao tome"],
+        # ── Middle East ──
+        "TR": ["turkey","türkiye","istanbul","ankara","izmir"],
+        "IL": ["israel","tel aviv","jerusalem","haifa"],
+        "AE": ["united arab emirates","uae","dubai","abu dhabi"],
+        "SA": ["saudi arabia","riyadh","jeddah"],
+        "QA": ["qatar","doha"],
+        "JO": ["jordan","amman"],
+        "LB": ["lebanon","beirut"],
+        "EG": ["egypt","cairo","alexandria"],
+        "MA": ["morocco","maroc","casablanca","rabat","marrakech"],
+        "TN": ["tunisia","tunis"],
+        "DZ": ["algeria","algiers","alger"],
+        # ── Asia ──
+        "JP": ["japan","japon","tóquio","tokyo","nihon","nippon","日本語","東京","日本"],
+        "CN": ["china","chine","beijing","shanghai","中文","中国","chinese","guangzhou","shenzhen","hangzhou"],
+        "KR": ["korea","seoul","한국","korean","busan","인천"],
+        "IN": ["india","mumbai","delhi","bangalore","bengaluru","new delhi","hindi","chennai","kolkata","pune","hyderabad"],
+        "TH": ["thailand","thai","bangkok","กรุงเทพ","chiang mai"],
+        "VN": ["vietnam","vietnã","hanoi","ho chi minh","da nang"],
+        "ID": ["indonesia","jakarta","indonesian","surabaya","bandung","bali"],
+        "PH": ["philippines","manila","filipinas","cebu","davao"],
         "TW": ["taiwan","taipei","taipé"],
-        "MY": ["malaysia","kuala lumpur"],
+        "MY": ["malaysia","kuala lumpur","penang","johor"],
         "SG": ["singapore","singapura","cingapura"],
-        "PK": ["pakistan","islamabad","karachi","punjab"],
-        "BD": ["bangladesh","dhaka"],
+        "PK": ["pakistan","islamabad","karachi","punjab","lahore"],
+        "BD": ["bangladesh","dhaka","chittagong"],
         "NP": ["nepal","kathmandu","himalaya"],
         "LK": ["sri lanka","colombo","ceylon"],
         "MM": ["myanmar","burma","yangon","rangoon"],
         "KH": ["cambodia","camboja","phnom penh"],
         "LA": ["laos","vientiane"],
         "MN": ["mongolia","ulaanbaatar"],
-        "EU": ["europe","europa","european union","union européenne","unión europea","portugal","spain","france","italy","germany","netherlands","sweden"],
-        "LATAM": ["américa latina","latin america","amérique latine","latinoamérica","brasil","brazil"],
+        "KZ": ["kazakhstan","almaty","astana"],
+        "UZ": ["uzbekistan","tashkent"],
+        # ── Oceania ──
+        "AU": ["australia","sydney","melbourne","brisbane","perth","adelaide","canberra"],
+        "NZ": ["new zealand","aotearoa","wellington","auckland","christchurch"],
+        "FJ": ["fiji","suva"],
+        "PG": ["papua new guinea","port moresby"],
+        "WS": ["samoa","apia"],
+        "TO": ["tonga","nuku'alofa"],
+        "VU": ["vanuatu","port vila"],
+        "SB": ["solomon islands","honiara"],
+        "CK": ["cook islands","rarotonga"],
+        "NR": ["nauru","yaren"],
+        "TV": ["tuvalu","funafuti"],
+        "KI": ["kiribati","tarawa"],
+        "MH": ["marshall islands","majuro"],
+        "FM": ["micronesia","palikir"],
+        "PW": ["palau","ngerulmud"],
+        # ── Regions ──
+        "EU": ["europe","europa","european union","union européenne","unión europea","portugal","spain","france","italy","germany","netherlands","sweden","european"],
+        "LATAM": ["américa latina","latin america","amérique latine","latinoamérica","brasil","brazil","latinoamericano"],
+        "AFRICA": ["áfrica","afrique","africa","kenya","nigeria","senegal","ghana","tanzania","ethiopia","mozambique","angola","african","africain"],
+        "ASIA": ["asia","asien","asie","asía","アジア","아시아","एशिया","เอเชีย","asia tenggara","asian"],
+        "OCEANIA": ["oceania","pacific","pacifico","pacifique","oceânico"],
     }
+    # Language-based defaults
     if lang == "pt": return "BR"
     if lang == "fr": return "FR" if "france" in text_lower else "EU"
     if lang == "es":
@@ -892,8 +1308,22 @@ def infer_country(text, lang):
     if lang == "th": return "TH"
     if lang == "id": return "ID"
     if lang == "vi": return "VN"
-    # General region check for any language
+    if lang == "de": return "DE"
+    if lang == "it": return "IT"
+    if lang == "nl": return "NL"
+    if lang == "pl": return "PL"
+    if lang == "tr": return "TR"
+    if lang == "ar": return "EG"  # Default Arabic to Egypt
+    # General region check for any language — try specific countries first
     for country, hints in regions.items():
+        if country in ("EU","LATAM","AFRICA","ASIA","OCEANIA"):
+            continue  # Skip regions for now, check specific countries first
+        if any(h in text_lower for h in hints):
+            return country
+    # Fall back to regions
+    for country, hints in regions.items():
+        if country not in ("EU","LATAM","AFRICA","ASIA","OCEANIA"):
+            continue
         if any(h in text_lower for h in hints):
             return country
     return "GLOBAL"
@@ -1220,6 +1650,7 @@ async def fetch_fundobrasil(session):
         description = " | ".join(content_parts[:10])[:MAX_DESCRIPTION_LEN]
 
         # Detect categories from content
+        detail_lower = detail_text.lower()
         cats = ["human rights", "Brazil"]
         if any(w in detail_lower for w in ["ambiental", "clima", "socioambiental", "natureza"]):
             cats.append("environmental justice")
@@ -2459,12 +2890,66 @@ ALL_SOURCES = {
 # ══════════════════════════════════════════════════════════════
 
 def deduplicate(grants):
+    """Remove duplicate grants. Uses URL normalization + fuzzy title matching."""
     seen_u, seen_t, result = set(), set(), []
+
+    def normalize_url(url):
+        """Normalize URL for deduplication — strip tracking, fragments, trailing slashes."""
+        u = url.lower().strip()
+        # Remove common tracking parameters
+        u = re.sub(r'[?&](utm_\w+|fbclid|gclid|mc_cid|mc_eid|ref|source|medium|campaign)=[^&]*', '', u)
+        # Remove fragment
+        u = u.split("#")[0]
+        # Remove trailing slash
+        u = u.rstrip("/")
+        # Remove www. prefix
+        u = re.sub(r'^https?://www\.', '', u)
+        # Remove protocol for comparison
+        u = re.sub(r'^https?://', '', u)
+        # Remove trailing slashes again after normalization
+        u = u.rstrip("/")
+        return u
+
+    def normalize_title(title):
+        """Normalize title for fuzzy matching — lowercase, strip punctuation, truncate."""
+        t = re.sub(r'[^\w\s]', '', title.lower())
+        t = re.sub(r'\s+', ' ', t).strip()
+        # Remove common suffixes/prefixes that don't affect identity
+        for suffix in [" - grant", " - fellowship", " - scholarship", " - call for", " - open call"]:
+            if t.endswith(suffix):
+                t = t[:-len(suffix)]
+        return t[:80]
+
     for g in sorted(grants, key=lambda x: x.get("priority_score", x["relevance"]), reverse=True):
-        uk = g["url"].rstrip("/").lower().split("?")[0]
-        tk = re.sub(r'\s+', ' ', g["title"].lower())[:80]
-        if uk in seen_u or tk in seen_t: continue
-        seen_u.add(uk); seen_t.add(tk)
+        uk = normalize_url(g["url"])
+        tk = normalize_title(g["title"])
+
+        # Skip if URL already seen
+        if uk in seen_u:
+            continue
+
+        # Skip if title is very similar to an existing one (fuzzy match)
+        is_dup = False
+        for existing_t in seen_t:
+            # Simple prefix match — if one title starts with the other
+            if tk.startswith(existing_t) or existing_t.startswith(tk):
+                is_dup = True
+                break
+            # Check for high word overlap (>80% shared words)
+            if len(tk) > 20 and len(existing_t) > 20:
+                tk_words = set(tk.split())
+                et_words = set(existing_t.split())
+                if len(tk_words) > 0 and len(et_words) > 0:
+                    overlap = len(tk_words & et_words) / max(len(tk_words), len(et_words))
+                    if overlap > 0.8:
+                        is_dup = True
+                        break
+
+        if is_dup:
+            continue
+
+        seen_u.add(uk)
+        seen_t.add(tk)
         result.append(g)
     return result
 

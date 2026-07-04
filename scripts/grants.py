@@ -67,6 +67,7 @@ CACHE_TTL_HOURS = 6
 MAX_CONCURRENT  = 10
 REQUEST_TIMEOUT = 30
 RATE_LIMIT_DELAY = 0.5
+MAX_DESCRIPTION_LEN = 600
 
 REGION_MAP = {
     "BR": "LATAM", "AR": "LATAM", "CO": "LATAM", "MX": "LATAM", "PE": "LATAM",
@@ -184,6 +185,69 @@ def is_likely_non_grant(title: str, description: str = "") -> bool:
     blob = f"{title} {description}".lower()
     return any(kw in blob for kw in NON_GRANT_KEYWORDS)
 
+
+CLOSED_KEYWORDS = [
+    "encerrad", "finalizada", "concluída", "concluida", "resultado",
+    "selecionad", "divulgad", "closed", "expired", "ended", "completed",
+    "no longer accepting", "no longer accepting applications",
+    "applications are closed", "deadline has passed",
+]
+
+OPEN_KEYWORDS = [
+    "inscri", "prazo", "abert", "submissão", "submissao", "proposta",
+    "chamada", "edital", "open call", "call for", "accepting applications",
+    "applications open", "apply now", "submit proposal", "submit your",
+    "registration open", "is open", "are open",
+]
+
+ACTIVE_KEYWORDS = [
+    "em andamento", "ativo", "active", "ongoing", "running",
+    "current", "vigor", "vigente",
+]
+
+UNKNOWN_KEYWORDS = [
+    "rolling", "continuous", "ongoing basis", "year-round",
+    "at any time", "no deadline", "always open",
+]
+
+
+def detect_status_from_text(text: str) -> str:
+    """Detect grant status from content text. Returns 'open', 'closed', or 'unknown'."""
+    blob = text.lower()
+    # Check closed first (higher priority — if something says "encerrado", it's closed)
+    for kw in CLOSED_KEYWORDS:
+        if kw in blob:
+            return "closed"
+    # Check active/open
+    for kw in ACTIVE_KEYWORDS + OPEN_KEYWORDS:
+        if kw in blob:
+            return "open"
+    # Check rolling/continuous
+    for kw in UNKNOWN_KEYWORDS:
+        if kw in blob:
+            return "unknown"
+    return ""  # No signal — caller decides default
+
+
+def detect_status_from_badge(badge_text: str) -> str:
+    """Detect status from badge/label text (e.g., 'Abertas', 'Encerradas')."""
+    bt = badge_text.lower().strip()
+    if any(w in bt for w in ["aberta", "open", "ativo", "andamento"]):
+        return "open"
+    if any(w in bt for w in ["encerrad", "closed", "finalizad", "concluid"]):
+        return "closed"
+    return ""
+
+
+def detect_status_from_parent(parent_classes: list) -> str:
+    """Detect status from parent container CSS classes."""
+    classes_str = " ".join(parent_classes).lower()
+    if "encerrad" in classes_str or "closed" in classes_str:
+        return "closed"
+    if "abert" in classes_str or "open" in classes_str or "active" in classes_str:
+        return "open"
+    return ""
+
 def has_grant_signals(title: str, description: str, deadline: str, amount_max: str) -> int:
     signals = 0
     blob = f"{title} {description}".lower()
@@ -203,10 +267,10 @@ def score_relevance(text: str, is_standing: bool = False) -> int:
     text = text.lower()
     hits = sum(1 for k in CORE_KEYWORDS if k in text) * 8
     hits += sum(1 for k in SECONDARY_KEYWORDS if k in text) * 2
-    # Heavy penalty for standing entries — they're just SEO text, not real grants
+    # Moderate penalty for standing entries — they're valid reference grants, not just SEO
     if is_standing:
-        hits = min(hits, 20)
-        hits = int(hits * 0.3)
+        hits = min(hits, 40)
+        hits = int(hits * 0.5)
     return min(100, hits)
 
 
@@ -493,9 +557,9 @@ def make_grant(title, source_name, url, description="", funder="",
         priority += 5
     if status == "closed":
         priority -= 20
-    # Penalize standing entries in priority
+    # Penalize standing entries in priority (less aggressive — they're valid reference grants)
     if is_standing:
-        priority = int(priority * 0.4)
+        priority = int(priority * 0.6)
 
     days, urgency = compute_deadline_urgency(deadline)
 
@@ -505,7 +569,7 @@ def make_grant(title, source_name, url, description="", funder="",
         "funder":          funder.strip(),
         "source":          source_name,
         "url":             url,
-        "description":     description.strip()[:1200],
+        "description":     description.strip()[:MAX_DESCRIPTION_LEN],
         "deadline":        deadline,
         "amount_max":      amount_max,
         "amount_min":      amount_min,
@@ -612,20 +676,107 @@ def parse_date(s):
     except: return str(s)[:20]
 
 def extract_amount(text):
-    """Extract first currency amount from text."""
-    # Brazilian Real: "R$ 150.000,00" or "até R$ 150.000" or "R$ 50.000,00 a R$ 200.000,00"
+    """Extract first currency amount from text. Handles ranges, multiple currencies."""
+    if not text:
+        return ""
+    # Brazilian Real range: "R$ 50.000,00 a R$ 200.000,00" or "R$ 50.000 a R$ 200.000"
+    m_brl_range = re.search(
+        r'R\$\s*([\d\.]+(?:,\d{2})?)\s*(?:a|até|-)\s*R\$\s*([\d\.]+(?:,\d{2})?)', text)
+    if m_brl_range:
+        return f"R$ {m_brl_range.group(1)} – R$ {m_brl_range.group(2)}"
+    # Brazilian Real single: "R$ 150.000,00" or "até R$ 150.000"
     m_brl = re.search(r'R\$\s*([\d\.]+(?:,\d{2})?)', text)
     if m_brl:
         return f"R$ {m_brl.group(1)}"
-    # Standard currencies
-    m = re.search(r'(€|USD?|EUR?|GBP?|BRL?|£|¥|JPY|CNY?|₹|INR?|₩|KRW|฿|THB?|Rp|IDR?|RM|MYR?|PHP?|SGD?)'
-                  r'\s*([\d,\.]+(?:\s*(?:million|mil|thousand|万|億|lakh|crore))?)', text, re.I)
-    if m: return m.group(0).strip()
-    m2 = re.search(r'\$\s*([\d,\.]+)', text)
-    if m2: return m2.group(0).strip()
+    # USD/EUR range: "$5,000 – $10,000" or "$5,000 to $10,000"
+    m_usd_range = re.search(
+        r'[\$€]\s*([\d,\.]+)\s*(?:–|-|to|a|até)\s*[\$€]\s*([\d,\.]+)', text)
+    if m_usd_range:
+        sym = '$' if '$' in text[m_usd_range.start():m_usd_range.end()] else '€'
+        return f"{sym}{m_usd_range.group(1)} – {sym}{m_usd_range.group(2)}"
+    # Standard currencies with optional suffixes
+    m = re.search(
+        r'(€|USD?\s*[\d]|EUR?\s*[\d]|GBP?\s*[\d]|£|¥|JPY|CNY?|₹|INR?|₩|KRW|฿|THB?|Rp|IDR?|RM|MYR?|PHP?|SGD?)'
+        r'\s*([\d,\.]+(?:\s*(?:million|mil|thousand|万|億|lakh|crore))?)', text, re.I)
+    if m:
+        raw = m.group(0).strip()
+        # Avoid matching single digits like "$1" unless followed by more
+        num_part = re.search(r'[\d,\.]+', raw)
+        if num_part and len(num_part.group().replace(',','').replace('.','')) >= 2:
+            return raw
+    # Dollar sign with amount: "$5,000" or "$ 5000"
+    m2 = re.search(r'\$\s*([\d,\.]{2,})', text)
+    if m2:
+        return m2.group(0).strip()
+    # Euro sign with amount
+    m3 = re.search(r'€\s*([\d,\.]{2,})', text)
+    if m3:
+        return m3.group(0).strip()
+    # "up to X" or "até X" patterns
+    m_up = re.search(r'(?:up to|até|jusqu\'à)\s*(?:R\$\s*|US\$\s*|\$\s*|€\s*)?([\d,\.]+)', text, re.I)
+    if m_up:
+        # Find the currency symbol before "up to"
+        prefix = text[max(0, m_up.start()-10):m_up.start()]
+        sym = "$"
+        if "R$" in prefix: sym = "R$"
+        elif "€" in prefix: sym = "€"
+        elif "£" in prefix: sym = "£"
+        return f"{sym}{m_up.group(1)}"
     return ""
 
 def extract_deadline(text):
+    """Extract deadline from text. Supports absolute dates and relative expressions."""
+    if not text:
+        return ""
+    from datetime import timedelta
+    today = datetime.now(timezone.utc).replace(tzinfo=None)
+    blob = text.lower()
+    # Relative deadlines — convert to absolute dates
+    # Portuguese: "em 30 dias", "daqui 30 dias", "prazo de 30 dias"
+    rel_pt = re.search(r'(?:daqui|em|prazo\s+de)\s+(\d+)\s+dias?', blob)
+    if rel_pt:
+        days = int(rel_pt.group(1))
+        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
+    # English: "in 30 days", "30 days from now", "closing in 2 weeks"
+    rel_en_days = re.search(r'(?:in|within|closing\s+in)\s+(\d+)\s+days?', blob)
+    if rel_en_days:
+        days = int(rel_en_days.group(1))
+        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
+    rel_en_weeks = re.search(r'(?:in|within|closing\s+in)\s+(\d+)\s+weeks?', blob)
+    if rel_en_weeks:
+        days = int(rel_en_weeks.group(1)) * 7
+        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
+    rel_en_months = re.search(r'(?:in|within|closing\s+in)\s+(\d+)\s+months?', blob)
+    if rel_en_months:
+        days = int(rel_en_months.group(1)) * 30
+        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
+    # Portuguese: "em 2 semanas", "em 3 meses"
+    rel_pt_weeks = re.search(r'(?:daqui|em)\s+(\d+)\s+semanas?', blob)
+    if rel_pt_weeks:
+        days = int(rel_pt_weeks.group(1)) * 7
+        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
+    rel_pt_months = re.search(r'(?:daqui|em)\s+(\d+)\s+meses?', blob)
+    if rel_pt_months:
+        days = int(rel_pt_months.group(1)) * 30
+        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
+    # French: "dans 30 jours", "dans 2 semaines"
+    rel_fr_days = re.search(r'dans\s+(\d+)\s+jours?', blob)
+    if rel_fr_days:
+        days = int(rel_fr_days.group(1))
+        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
+    rel_fr_weeks = re.search(r'dans\s+(\d+)\s+semaines?', blob)
+    if rel_fr_weeks:
+        days = int(rel_fr_weeks.group(1)) * 7
+        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
+    # Spanish: "en 30 días", "en 2 semanas"
+    rel_es_days = re.search(r'en\s+(\d+)\s+d[ií]as?', blob)
+    if rel_es_days:
+        days = int(rel_es_days.group(1))
+        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
+    # "closing soon" / "próximo" / "em breve" — assume 14 days
+    if re.search(r'(?:closing\s+soon|pr[oó]xim[oa]|em\s+breve|soon|urgent)', blob):
+        return (today + timedelta(days=14)).strftime("%Y-%m-%d")
+    # Absolute date patterns follow
     patterns = [
         r'[Dd]eadline[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
         r'[Dd]eadline[:\s]+(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
@@ -768,15 +919,10 @@ async def fetch_capta(session):
             # Relevance filter — skip generic blog posts, keep grant/opportunity content
             if score_relevance(f"{title} {content}") < 2: continue
             # Detect open/closed from WP post content
-            raw_content = p.get("content", {}).get("rendered", "").lower()
-            if any(w in raw_content for w in ["encerrad", "finalizada", "concluída"]):
-                status = "closed"
-            elif any(w in raw_content for w in ["inscri", "prazo", "abert", "submissão", "proposta"]):
-                status = "open"
-            else:
-                status = "open"
+            raw_content = p.get("content", {}).get("rendered", "")
+            status = detect_status_from_text(raw_content) or "open"
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                description=content[:600], country="BR", language="pt",
+                description=content[:MAX_DESCRIPTION_LEN], country="BR", language="pt",
                 deadline=extract_deadline(content), status=status,
                 amount_max=extract_amount(content)))
     console.print(f"  [cyan]capta.org.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='open')} open)")
@@ -811,14 +957,14 @@ async def fetch_prosas(session):
                 # Detect open/closed from card text and URL
                 card_lower = text.lower()
                 url_has_abertos = "abertos=1" in url
-                if "encerrad" in card_lower or "finalizada" in card_lower:
-                    status = "closed"
-                elif url_has_abertos or any(w in card_lower for w in ["abert", "inscri", "prazo", "submissão"]):
-                    status = "open"
-                else:
-                    status = "open"
+                status = detect_status_from_text(text)
+                if not status:
+                    if url_has_abertos:
+                        status = "open"
+                    else:
+                        status = "open"  # Default when no signal
                 grants.append(make_grant(title=title, source_name=SOURCE, url=link,
-                    description=text[:400], country="BR", language="pt",
+                    description=text[:MAX_DESCRIPTION_LEN], country="BR", language="pt",
                     deadline=extract_deadline(text), amount_max=extract_amount(text),
                     status=status))
                 found += 1
@@ -865,15 +1011,12 @@ async def fetch_casa(session):
                 continue
             url = urljoin(BASE, card.get("href", ""))
             badge = card.select_one("span.grid-note")
-            badge_text = badge.get_text(strip=True).lower() if badge else ""
-            if "aberta" in badge_text:
-                status = "open"
-            elif "encerrad" in badge_text:
-                status = "closed"
-            else:
+            badge_text = badge.get_text(strip=True) if badge else ""
+            status = detect_status_from_badge(badge_text)
+            if not status:
                 parent = card.parent
                 parent_classes = parent.get("class", []) if parent else []
-                status = "closed" if "encerradas" in parent_classes else "open"
+                status = detect_status_from_parent(parent_classes) or "open"
             card_data.append({"title": title, "url": url, "status": status, "text": card.get_text(" ")})
 
         # Fetch detail pages for open chamadas to get real data
@@ -881,7 +1024,7 @@ async def fetch_casa(session):
             detail_text = cd["text"]
             deadline = extract_deadline(detail_text)
             amount = extract_amount(detail_text)
-            description = detail_text[:500]
+            description = detail_text[:MAX_DESCRIPTION_LEN]
 
             if cd["status"] == "open" and cd["url"]:
                 detail = await fetch(session, cd["url"])
@@ -907,7 +1050,7 @@ async def fetch_casa(session):
                         ]):
                             content_parts.append(pt)
                     if content_parts:
-                        description = " | ".join(content_parts[:8])[:1200]
+                        description = " | ".join(content_parts[:8])[:MAX_DESCRIPTION_LEN]
 
             grants.append(make_grant(
                 title=cd["title"], source_name=SOURCE, url=cd["url"],
@@ -925,15 +1068,10 @@ async def fetch_casa(session):
                 content = clean_html(p.get("content",{}).get("rendered",""))
                 url     = p.get("link","")
                 if score_relevance(f"{title} {content}") < 3: continue
-                raw_content = p.get("content",{}).get("rendered","").lower()
-                if any(w in raw_content for w in ["encerrad", "finalizada", "concluída", "selecionad"]):
-                    status = "closed"
-                elif any(w in raw_content for w in ["aberta", "inscri", "prazo"]):
-                    status = "open"
-                else:
-                    status = "open"
+                raw_content = p.get("content",{}).get("rendered","")
+                status = detect_status_from_text(raw_content) or "open"
                 grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                    description=content[:500], country="BR", language="pt",
+                    description=content[:MAX_DESCRIPTION_LEN], country="BR", language="pt",
                     funder="Fundo Casa Socioambiental",
                     deadline=extract_deadline(content), status=status))
 
@@ -953,15 +1091,10 @@ async def fetch_ispn(session):
             url     = p.get("link","")
             if score_relevance(f"{title} {content}") < 2: continue
             # Detect open/closed from WP post content
-            raw_content = p.get("content",{}).get("rendered","").lower()
-            if any(w in raw_content for w in ["encerrad", "finalizada", "concluída", "resultado"]):
-                status = "closed"
-            elif any(w in raw_content for w in ["inscri", "prazo", "abert", "submissão", "proposta", "chamada"]):
-                status = "open"
-            else:
-                status = "open"
+            raw_content = p.get("content",{}).get("rendered","")
+            status = detect_status_from_text(raw_content) or "open"
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                description=content[:500], country="BR", language="pt",
+                description=content[:MAX_DESCRIPTION_LEN], country="BR", language="pt",
                 funder="ISPN", deadline=extract_deadline(content), status=status,
                 amount_max=extract_amount(content)))
     console.print(f"  [cyan]ispn.org.br[/] → {len(grants)} ({sum(1 for g in grants if g['status']=='open')} open)")
@@ -1040,19 +1173,14 @@ async def fetch_fundobrasil(session):
 
         # Extract status: "Encerrado" / "Aberto"
         status = "unknown"
-        detail_lower = detail_text.lower()
-        # Look for Status label
+        # Look for Status label first
         status_section = re.search(r'(?:Status|Situação)\s*:?\s*(\w+)', detail_text, re.I)
         if status_section:
             s = status_section.group(1).lower()
-            if "encerrad" in s or "finalizad" in s or "concluíd" in s:
-                status = "closed"
-            elif "abert" in s or "andament" in s or "ativo" in s:
-                status = "open"
-        elif "encerrad" in detail_lower:
-            status = "closed"
-        elif "abert" in detail_lower:
-            status = "open"
+            status = detect_status_from_text(s)
+        if not status or status == "unknown":
+            # Fall back to full text detection
+            status = detect_status_from_text(detail_text) or "unknown"
 
         # Extract deadline
         deadline = extract_deadline(detail_text)
@@ -1089,7 +1217,7 @@ async def fetch_fundobrasil(session):
         if not content_parts:
             content_parts.append(detail_text[:600])
 
-        description = " | ".join(content_parts[:10])[:1200]
+        description = " | ".join(content_parts[:10])[:MAX_DESCRIPTION_LEN]
 
         # Detect categories from content
         cats = ["human rights", "Brazil"]
@@ -1253,7 +1381,7 @@ async def fetch_commonwealth_foundation(session):
             link = urljoin("https://commonwealthfoundation.com", a["href"]) if a else url
             text = art.get_text(" ")
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
-                description=text[:400], country="GLOBAL",
+                description=text[:MAX_DESCRIPTION_LEN], country="GLOBAL",
                 funder="Commonwealth Foundation", deadline=extract_deadline(text),
                 categories=["civil society","arts","governance","commonwealth"]))
             found += 1
@@ -1286,7 +1414,7 @@ async def fetch_unesco(session):
             link  = urljoin("https://www.unesco.org", a["href"]) if a else url
             text  = art.get_text(" ")
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
-                description=text[:400], country="GLOBAL",
+                description=text[:MAX_DESCRIPTION_LEN], country="GLOBAL",
                 funder="UNESCO", deadline=extract_deadline(text),
                 categories=["culture","creative economy","cultural diversity","IFCD"]))
     # UNESCO RSS feed
@@ -1298,7 +1426,7 @@ async def fetch_unesco(session):
             link  = e.get("link", "https://www.unesco.org")
             desc  = clean_html(e.get("summary",""))
             grants.append(make_grant(title=title, source_name=f"{SOURCE}:rss", url=link,
-                description=desc[:400], country="GLOBAL",
+                description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL",
                 funder="UNESCO", deadline=extract_deadline(desc)))
     console.print(f"  [cyan]unesco.org[/] → {len(grants)}")
     return grants
@@ -1326,7 +1454,7 @@ async def fetch_ycjf(session):
             url   = urljoin("https://ycjf.org", a["href"]) if a else "https://ycjf.org"
             text_block = art.get_text(" ")
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                description=text_block[:500], country="GLOBAL",
+                description=text_block[:MAX_DESCRIPTION_LEN], country="GLOBAL",
                 funder="Youth Climate Justice Fund",
                 deadline=extract_deadline(text_block),
                 amount_max="$40,000", currency="USD",
@@ -1423,7 +1551,7 @@ async def fetch_fundsforngos(session):
             url     = p.get("link","")
             if score_relevance(f"{title} {content}") < 4: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                description=content[:600], country="GLOBAL", language="en",
+                description=content[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(content),
                 amount_max=extract_amount(content)))
     # Also scrape their listing page
@@ -1438,7 +1566,7 @@ async def fetch_fundsforngos(session):
             url = urljoin("https://www2.fundsforngos.org", a["href"]) if a else ""
             text = art.get_text(" ")
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                description=text[:400], country="GLOBAL", language="en",
+                description=text[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(text)))
     console.print(f"  [cyan]fundsforngos.org[/] → {len(grants)}")
     return grants
@@ -1457,7 +1585,7 @@ async def fetch_opportunity_desk(session):
             desc  = clean_html(e.get("summary",""))
             if score_relevance(f"{title} {desc}") < 2: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
-                description=desc[:500], country="GLOBAL", language="en",
+                description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc),
                 amount_max=extract_amount(desc)))
     console.print(f"  [cyan]opportunitydesk.org[/] → {len(grants)}")
@@ -1485,7 +1613,7 @@ async def fetch_opportunities_for_youth(session):
             elif "europe" in tag_str: country = "EU"
             elif "asia" in tag_str: country = "ASIA"
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
-                description=desc[:500], country=country, language="en",
+                description=desc[:MAX_DESCRIPTION_LEN], country=country, language="en",
                 deadline=extract_deadline(desc), amount_max=extract_amount(desc),
                 categories=tags[:5]))
     console.print(f"  [cyan]opportunitiesforyouth.org[/] → {len(grants)}")
@@ -1554,7 +1682,7 @@ async def fetch_impactfunding_substack(session):
             desc  = clean_html(e.get("summary",""))
             if score_relevance(f"{title} {desc}") < 2: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
-                description=desc[:800], country="GLOBAL", language="en",
+                description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc),
                 categories=["aggregator","social enterprise","environment","global"]))
     console.print(f"  [cyan]impactfunding substack[/] → {len(grants)}")
@@ -1574,7 +1702,7 @@ async def fetch_global_south_opportunities(session):
             desc  = clean_html(e.get("summary",""))
             if score_relevance(f"{title} {desc}") < 2: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
-                description=desc[:500], country="GLOBAL", language="en",
+                description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc), amount_max=extract_amount(desc),
                 categories=["global south","development","environment"]))
     console.print(f"  [cyan]globalsouthopportunities.com[/] → {len(grants)}")
@@ -1844,7 +1972,7 @@ async def fetch_rss(session):
                 blob  = f"{title} {desc}".lower()
                 if score_relevance(blob) < 3: continue
                 result.append(make_grant(title=title, source_name=f"rss:{name}",
-                    url=link, description=desc[:500], country=country,
+                    url=link, description=desc[:MAX_DESCRIPTION_LEN], country=country,
                     language=lang, deadline="",
                     amount_max=extract_amount(desc)))
         except Exception as ex:
@@ -1921,7 +2049,7 @@ async def fetch_ashoka(session):
             text = art.get_text(" ")
             if score_relevance(f"{title} {text}") < 3: continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
-                description=text[:400], country="GLOBAL",
+                description=text[:MAX_DESCRIPTION_LEN], country="GLOBAL",
                 funder="Ashoka / Changemakers",
                 deadline=extract_deadline(text), amount_max=extract_amount(text),
                 categories=["social entrepreneurship","environment","community"]))
@@ -2057,7 +2185,7 @@ async def fetch_global_env(session):
             link = urljoin(url, a["href"]) if a else url
             text = art.get_text(" ")
             grants.append(make_grant(title=title, source_name=f"env:{name}", url=link,
-                description=text[:400], country=country, language=lang,
+                description=text[:MAX_DESCRIPTION_LEN], country=country, language=lang,
                 funder=funder, deadline=extract_deadline(text)))
             found += 1
         if found:
@@ -2231,7 +2359,7 @@ async def fetch_nordic_funding(session):
             if score_relevance(f"{title} {text}") < 2: continue
             cty = infer_country(text, lang)
             grants.append(make_grant(title=title, source_name=f"nordic:{name}", url=link,
-                description=text[:400], country=cty, language=lang,
+                description=text[:MAX_DESCRIPTION_LEN], country=cty, language=lang,
                 funder=funder, deadline=extract_deadline(text),
                 amount_max=extract_amount(text)))
     console.print(f"  [cyan]Nordic funding[/] → {len(grants)}")
@@ -2262,7 +2390,7 @@ async def fetch_oceania(session):
             text = art.get_text(" ")
             cty = infer_country(text, lang)
             grants.append(make_grant(title=title, source_name=f"oceania:{name}", url=link,
-                description=text[:400], country=cty, language=lang,
+                description=text[:MAX_DESCRIPTION_LEN], country=cty, language=lang,
                 funder=funder, deadline=extract_deadline(text),
                 amount_max=extract_amount(text)))
     console.print(f"  [cyan]Oceania funding[/] → {len(grants)}")

@@ -192,14 +192,23 @@ async function syncGrants(supabase: any, filePath: string) {
     categories: Array.isArray(g.categories) ? g.categories.filter(Boolean) : [],
     language: g.language || "en",
     relevance: typeof g.relevance === "number" ? Math.max(0, Math.min(100, g.relevance)) : 0,
-    status: "pending",
+    status: ["open", "closed", "unknown"].includes(g.status) ? g.status : "unknown",
+    grant_status: g.status || "unknown",
     fetched_at: g.fetched_at || new Date().toISOString(),
+    grant_type: g.grant_type || "general",
+    grant_types: Array.isArray(g.grant_types) ? g.grant_types : [],
+    highlights: Array.isArray(g.highlights) ? g.highlights : [],
+    urgency: g.urgency || "unknown",
+    deadline_days: g.deadline_days ?? null,
+    amount_usd: g.amount_usd ?? null,
+    priority_score: typeof g.priority_score === "number" ? g.priority_score : 0,
+    is_standing: Boolean(g.is_standing),
   }));
 
   const { inserted, updated, skipped, errors } = await batchUpsert(
     supabase, "scraped_grants", records,
-    ["title", "funder", "url", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories"],
-    "id, title, funder, url, description, deadline, amount_max, amount_min, currency, country, region, categories",
+    ["title", "funder", "url", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories", "status"],
+    "id, title, funder, url, description, deadline, amount_max, amount_min, currency, country, region, categories, status",
   );
 
   printResult("Grants", inserted, updated, skipped, grants.length, errors);

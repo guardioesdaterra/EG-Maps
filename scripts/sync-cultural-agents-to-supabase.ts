@@ -146,7 +146,7 @@ async function main() {
         }
 
         const exHash = recordHash(ex);
-        const newHash = recordHash(r);
+        const newHash = recordHash(r as unknown as Record<string, unknown>);
         if (exHash === newHash) {
           batchSkipped++;
           continue;

@@ -36,16 +36,16 @@
             class="mt-4 sm:mt-fluid-md grid grid-cols-3 gap-1.5 sm:gap-2 border-y border-black dark:border-[var(--border-color)] text-center"
           >
             <div class="py-2.5 sm:py-fluid-sm">
+              <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ crewOverallStats.totalActiveCrews }}</p>
+              <p class="mt-0.5 text-[10px] xs:text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.crewsCount') }}</p>
+            </div>
+            <div class="py-2.5 sm:py-fluid-sm">
               <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ projectStats.totalProjects }}</p>
               <p class="mt-0.5 text-[10px] xs:text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.projectsCount') }}</p>
             </div>
             <div class="py-2.5 sm:py-fluid-sm">
               <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ speciesCount }}</p>
               <p class="mt-0.5 text-[10px] xs:text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.speciesCount') }}</p>
-            </div>
-            <div class="py-2.5 sm:py-fluid-sm">
-              <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ taxonomicGroupCount }}</p>
-              <p class="mt-0.5 text-[10px] xs:text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.groupsCount') }}</p>
             </div>
           </div>
         </header>

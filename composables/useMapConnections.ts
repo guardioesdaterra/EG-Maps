@@ -101,6 +101,7 @@ export function useMapConnections(
     if (!m) return
 
     if (!showConnections.value) {
+      console.log(`[useMapConnections] addConnections: disabled, clearing features`)
       connectionFeatures.value = []
       syncMapConnectionLayers(m, [])
       return
@@ -113,6 +114,7 @@ export function useMapConnections(
       isMobile: isMobile.value,
     })
 
+    console.log(`[useMapConnections] addConnections: dataset=${dataset}, projects=${projects.length}, species=${species.length}, features=${connectionFeatures.value.length}`)
     syncMapConnectionLayers(m, connectionFeatures.value)
   }
 
@@ -124,8 +126,12 @@ export function useMapConnections(
 
   function startParticles() {
     const m = getMap()
-    if (!showConnections.value || !m || !containerRef.value || !connectionFeatures.value.length) return
+    if (!showConnections.value || !m || !containerRef.value || !connectionFeatures.value.length) {
+      console.log(`[useMapConnections] startParticles: skipped (showConn=${showConnections.value}, map=${!!m}, container=${!!containerRef.value}, features=${connectionFeatures.value.length})`)
+      return
+    }
     if (!isMounted()) return
+    console.log(`[useMapConnections] startParticles: starting with ${connectionFeatures.value.length} features`)
     cleanupParticles()
     isPaused = false
     particleSystem = createMapParticleSystem({

@@ -7,6 +7,13 @@ export interface GrantInput {
   latitude: number | null
   longitude: number | null
   category: string
+  funder?: string
+  url?: string
+  amount_max?: string
+  amount_min?: string
+  currency?: string
+  country?: string
+  grant_type?: string
 }
 
 export interface GrantRecord {
@@ -23,6 +30,17 @@ export interface GrantRecord {
   reviewed_at: string | null
   rejection_reason: string | null
   created_at: string
+  funder?: string
+  url?: string
+  amount_max?: string
+  amount_min?: string
+  currency?: string
+  country?: string
+  grant_type?: string
+  priority_score?: number
+  hidden?: boolean
+  source_id?: string
+  source?: string
 }
 
 export interface ScrapedGrant {
@@ -58,7 +76,7 @@ export interface LeaderboardEntry {
   id: string
   title: string
   description: string
-  source_type: 'internal' | 'scraped'
+  source_type: 'crew' | 'scraped'
   avg_stars: number
   total_stars: number
   vote_count: number
@@ -74,7 +92,7 @@ export interface LeaderboardEntry {
   created_at: string
 }
 
-  async function invoke(fnName: string, options?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT'; body?: Record<string, unknown> | object }) {
+async function invoke(fnName: string, options?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'PUT'; body?: Record<string, unknown> | object }) {
   const { client } = useSupabase()
   const { data, error } = await client.functions.invoke(fnName, {
     method: options?.method || 'GET',
@@ -87,9 +105,9 @@ export interface LeaderboardEntry {
 export function useGrants() {
   async function listGrants(status?: string) {
     try {
-      const params = new URLSearchParams()
+      const params = new URLSearchParams({ action: 'list' })
       if (status) params.set('status', status)
-      const data = await invoke(`grants-list?${params}`)
+      const data = await invoke(`grants?${params}`)
       return data as { grants: GrantRecord[]; total: number }
     } catch (e: unknown) {
       return { error: (e as Error).message, grants: [] as GrantRecord[], total: 0 }
@@ -98,9 +116,9 @@ export function useGrants() {
 
   async function listScrapedGrants(status?: string) {
     try {
-      const params = new URLSearchParams()
+      const params = new URLSearchParams({ action: 'list', source_table: 'scraped_grants' })
       if (status) params.set('status', status)
-      const data = await invoke(`grants-scraped-list?${params}`)
+      const data = await invoke(`grants?${params}`)
       return data as { grants: ScrapedGrant[]; total: number }
     } catch (e: unknown) {
       return { error: (e as Error).message, grants: [] as ScrapedGrant[], total: 0 }
@@ -109,18 +127,18 @@ export function useGrants() {
 
   async function submitGrant(input: GrantInput) {
     try {
-      const data = await invoke('grants-submit', { method: 'POST', body: input })
+      const data = await invoke('grants?action=submit', { method: 'POST', body: input })
       return data as { grant: GrantRecord }
     } catch (e: unknown) {
       return { error: (e as Error).message }
     }
   }
 
-  async function reviewGrant(grantId: string, decision: 'approved' | 'rejected', notes?: string) {
+  async function reviewGrant(grantId: string, decision: 'open' | 'closed', notes?: string) {
     try {
-      const data = await invoke('grants-review', {
+      const data = await invoke('grants?action=manage', {
         method: 'POST',
-        body: { grant_id: grantId, decision, notes },
+        body: { grant_id: grantId, action: decision === 'open' ? 'approve' : 'reject', notes },
       })
       return data as { grant: GrantRecord }
     } catch (e: unknown) {
@@ -130,9 +148,9 @@ export function useGrants() {
 
   async function updateScrapedGrant(grantId: string, updates: Record<string, unknown>) {
     try {
-      const data = await invoke('grants-scraped-update', {
+      const data = await invoke('grants?action=manage', {
         method: 'POST',
-        body: { grant_id: grantId, ...updates },
+        body: { grant_id: grantId, action: 'edit', table: 'scraped_grants', updates },
       })
       return data as { grant: ScrapedGrant }
     } catch (e: unknown) {
@@ -142,11 +160,17 @@ export function useGrants() {
 
   async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending', notes?: string) {
     try {
-      const data = await invoke('grants-approve', {
+      const actionMap: Record<string, string> = {
+        approved: 'approve',
+        rejected: 'reject',
+        hidden: 'hide',
+        pending: 'reject',
+      }
+      const data = await invoke('grants?action=manage', {
         method: 'POST',
-        body: { grant_id: grantId, decision, notes },
+        body: { grant_id: grantId, action: actionMap[decision] || 'reject', table: 'scraped_grants', notes },
       })
-      return data as { grant_id: string; decision: string }
+      return data as { grant_id: string; action: string }
     } catch (e: unknown) {
       return { error: (e as Error).message }
     }
@@ -154,16 +178,22 @@ export function useGrants() {
 
   async function getStats() {
     try {
-      const data = await invoke('grants-stats')
-      return data as { pending: number; approved: number; rejected: number; total: number }
-    } catch (e: unknown) {
+      const data = await invoke('grants?action=list&status=stats')
+      const s = data as { pending: number; open: number; closed: number; hidden: number; total: number }
+      return {
+        pending: s.pending ?? 0,
+        approved: s.open ?? 0,
+        rejected: s.closed ?? 0,
+        total: s.total ?? 0,
+      }
+    } catch {
       return { pending: 0, approved: 0, rejected: 0, total: 0 }
     }
   }
 
   async function voteGrant(grantId: string, stars: number) {
     try {
-      const data = await invoke('grants-vote', {
+      const data = await invoke('grants?action=vote', {
         method: 'POST',
         body: { grant_id: grantId, stars },
       })
@@ -175,7 +205,7 @@ export function useGrants() {
 
   async function voteScrapedGrant(scrapedId: string, stars: number) {
     try {
-      const data = await invoke('grants-vote', {
+      const data = await invoke('grants?action=vote', {
         method: 'POST',
         body: { scraped_id: scrapedId, stars },
       })
@@ -187,10 +217,8 @@ export function useGrants() {
 
   async function deleteVote(grantId: string, scrapedId?: string) {
     try {
-      const params = new URLSearchParams({ method: 'delete' })
-      if (scrapedId) params.set('scraped_id', scrapedId)
-      else params.set('grant_id', grantId)
-      const data = await invoke(`grants-vote?${params}`, { method: 'DELETE' })
+      const id = scrapedId || grantId
+      const data = await invoke(`grants?action=vote&grant_id=${encodeURIComponent(id)}`, { method: 'DELETE' })
       return data as { deleted: boolean }
     } catch (e: unknown) {
       return { error: (e as Error).message }
@@ -199,10 +227,10 @@ export function useGrants() {
 
   async function getLeaderboard(type?: string, status?: string) {
     try {
-      const params = new URLSearchParams()
+      const params = new URLSearchParams({ action: 'leaderboard' })
       if (type) params.set('type', type)
       if (status) params.set('status', status)
-      const data = await invoke(`grants-leaderboard?${params}`)
+      const data = await invoke(`grants?${params}`)
       return data as { grants: LeaderboardEntry[]; total: number }
     } catch (e: unknown) {
       return { error: (e as Error).message, grants: [] as LeaderboardEntry[], total: 0 }

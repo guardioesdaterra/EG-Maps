@@ -82,7 +82,7 @@
     <!-- ── Manager: submitted grants sub-tabs ────────── -->
     <div v-if="user && isManager && activeTab === 'tabSubmitted'" class="gdash-subtabs">
       <button
-        v-for="s in (['pending', 'approved', 'rejected'] as const)"
+        v-for="s in (['pending', 'open', 'closed'] as const)"
         :key="s"
         class="gdash-subtab"
         :class="{ active: managerSubTab === s }"
@@ -119,8 +119,8 @@
           <p class="gdash-card-desc">{{ grant.description }}</p>
           <p class="gdash-card-meta">{{ grant.location_name }}</p>
           <div v-if="isManager && grant.status === 'pending'" class="gdash-card-actions">
-            <button class="gdash-action approve" @click="$emit('review:grant', String(grant.id), 'approved')">{{ t('grantsPortal.approve') }}</button>
-            <button class="gdash-action reject" @click="$emit('review:grant', String(grant.id), 'rejected')">{{ t('grantsPortal.reject') }}</button>
+            <button class="gdash-action approve" @click="$emit('review:grant', String(grant.id), 'open')">{{ t('grantsPortal.approve') }}</button>
+            <button class="gdash-action reject" @click="$emit('review:grant', String(grant.id), 'closed')">{{ t('grantsPortal.reject') }}</button>
           </div>
           <div v-if="isManager && showHistory && grant.status !== 'pending'" class="gdash-card-actions">
             <button class="gdash-action restore" @click="$emit('review:grant', String(grant.id), 'pending')">↩ {{ t('grantsPortal.restore') }}</button>
@@ -256,8 +256,8 @@ defineEmits<{
   vote: [id: string, stars: number]
   detail: [grant: ScrapedGrant]
   leaderboardDetail: [entry: LeaderboardEntry]
-  'review:grant': [id: string, decision: 'pending' | 'approved' | 'rejected']
-  'review:scraped': [id: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending']
+  'review:grant': [id: string, decision: 'pending' | 'open' | 'closed']
+  'review:scraped': [id: string, decision: 'approved' | 'hidden' | 'pending']
 }>()
 
 const { t } = useI18n()
@@ -280,9 +280,9 @@ const displayGrants = computed(() => props.filteredScrapedGrants)
 const statusClass = computed(() => {
   const map: Record<string, string> = {
     tabOpen: 'pending',
-    tabApproved: 'approved',
+    tabApproved: 'open',
     tabClosed: 'closed',
-    tabDeclined: 'rejected',
+    tabDeclined: 'hidden',
   }
   return map[props.activeTab] || 'pending'
 })
@@ -723,10 +723,9 @@ function voteCount(grantId: string): number {
   white-space: nowrap;
 }
 .gdash-badge.pending { background: rgba(234, 179, 8, 0.12); color: #eab308; }
-.gdash-badge.approved { background: rgba(0, 200, 83, 0.12); color: #00c853; }
-.gdash-badge.rejected { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
-.gdash-badge.hidden { background: rgba(255, 255, 255, 0.05); color: rgba(255,255,255,0.4); }
+.gdash-badge.open { background: rgba(0, 200, 83, 0.12); color: #00c853; }
 .gdash-badge.closed { background: rgba(255, 255, 255, 0.05); color: rgba(255,255,255,0.4); }
+.gdash-badge.hidden { background: rgba(255, 255, 255, 0.05); color: rgba(255,255,255,0.4); }
 .gdash-badge.neutral { background: rgba(255, 255, 255, 0.06); color: rgba(255,255,255,0.5); }
 
 /* ── Type badges ───────────────────────────────────── */

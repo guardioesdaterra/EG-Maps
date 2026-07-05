@@ -251,7 +251,7 @@ const projectStats = computed(() => {
   const indirect = allProjectsData.reduce((s, p) => s + (p.indirect_beneficiaries || 0), 0)
   return { total: allProjectsData.length, countries: countries.size, beneficiaries: direct + indirect }
 })
-const activeTab = ref<'pending' | 'approved' | 'rejected'>('pending')
+const activeTab = ref<'pending' | 'open' | 'closed'>('pending')
 const showHistory = ref(false)
 
 // Scraped (open) grants
@@ -262,9 +262,9 @@ const scrapedUserVotes = reactive<Record<string, number>>({})
 const filteredScrapedGrants = computed(() => {
   const tab = activePortalTab.value
   if (tab === 'tabOpen') return scrapedGrants.value.filter(g => g.status === 'pending')
-  if (tab === 'tabApproved') return scrapedGrants.value.filter(g => g.status === 'approved')
+  if (tab === 'tabApproved') return scrapedGrants.value.filter(g => g.status === 'open')
   if (tab === 'tabClosed') return scrapedGrants.value.filter(g => g.status === 'closed')
-  if (tab === 'tabDeclined') return scrapedGrants.value.filter(g => g.status === 'rejected' || g.status === 'hidden')
+  if (tab === 'tabDeclined') return scrapedGrants.value.filter(g => g.status === 'hidden')
   return scrapedGrants.value
 })
 
@@ -323,9 +323,9 @@ const filteredGrants = computed(() => {
 })
 
 const scrapedOpenCount = computed(() => scrapedGrants.value.filter(g => g.status === 'pending').length)
-const scrapedApprovedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'approved').length)
+const scrapedApprovedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'open').length)
 const scrapedClosedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'closed').length)
-const scrapedDeclinedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'rejected' || g.status === 'hidden').length)
+const scrapedDeclinedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'hidden').length)
 const countryCount = computed(() => Math.max(stats.approved > 0 ? 47 : 0, projectStats.value.countries) + '+')
 
 const contactEmailHtml = computed(() => {
@@ -336,7 +336,7 @@ const contactEmailHtml = computed(() => {
 async function loadRegistry() {
   registryLoading.value = true
   try {
-    const result = await listGrants('approved')
+    const result = await listGrants('open')
     registry.value = (result.grants ?? []).slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   } catch (e) {
     console.error('Failed to load registry:', e)
@@ -421,7 +421,7 @@ function projectToScrapedGrant(p: ProjectData, i: number): ScrapedGrant {
     region: p.country_province,
     categories: ['environment', 'community'],
     language: 'en',
-    status: 'approved',
+    status: 'open',
     fetched_at: new Date().toISOString(),
     created_at: new Date('2024-01-01').toISOString(),
     grant_type: 'conservation',
@@ -453,7 +453,7 @@ async function loadScrapedGrants() {
 async function loadLeaderboardData() {
   leaderboardLoading.value = true
   try {
-    const result = await getLeaderboard('all', 'approved')
+    const result = await getLeaderboard('all', 'open')
     leaderboard.value = result.grants ?? []
   } catch (e) {
     console.error('Failed to load leaderboard:', e)
@@ -463,12 +463,12 @@ async function loadLeaderboardData() {
 }
 
 function setManagerSubTab(tab: string) {
-  activeTab.value = tab as 'pending' | 'approved' | 'rejected'
+  activeTab.value = tab as 'pending' | 'open' | 'closed'
 }
 
 async function handleReview(grantId: string, decision: string) {
   try {
-    await apiReviewGrant(grantId, decision as 'approved' | 'rejected')
+    await apiReviewGrant(grantId, decision as 'open' | 'closed')
     loadGrants()
     loadStats()
     if (showRegistry.value) loadRegistry()
@@ -479,7 +479,7 @@ async function handleReview(grantId: string, decision: string) {
 
 async function handleReviewScraped(grantId: string, decision: string) {
   try {
-    await apiReviewScraped(grantId, decision as 'approved' | 'rejected' | 'hidden' | 'pending')
+    await apiReviewScraped(grantId, decision as 'approved' | 'hidden' | 'pending')
     loadScrapedGrants()
     loadGrants()
   } catch (e) {

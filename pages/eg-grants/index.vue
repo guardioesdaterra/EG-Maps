@@ -360,12 +360,12 @@ function closeGrantDetail() {
   detailUserVote.value = 0
 }
 
-function openScrapedDetail(g: ScrapedGrant) {
+function openScrapedDetail(g: ScrapedGrant | GrantRecord) {
   detailGrant.value = {
     ...g,
     source_type: 'scraped',
     source_id: g.id,
-    created_at: g.fetched_at || g.created_at,
+    created_at: ('fetched_at' in g ? g.fetched_at : null) || g.created_at,
   }
 }
 

@@ -241,7 +241,7 @@ export function useMapBase(config: MapBaseConfig) {
     },
   })
 
-  const geoJSONInitializedFor = computed(() => orchestrator.geoJSONInitializedFor)
+  const geoJSONInitializedFor = computed(() => orchestrator.geoJSONInitializedFor.value)
 
   const rareEarthController = useRareEarthController({
     map: mapRef,
@@ -434,7 +434,7 @@ export function useMapBase(config: MapBaseConfig) {
           pendingRebuildRAF = null
           if (!map) return
           const currentZoom = Math.floor(map.getZoom())
-          if (orchestrator.mapCore.shouldRebuildClusters(map, currentZoom, orchestrator.lastClusterZoom, orchestrator.lastBboxCenter)) {
+          if (orchestrator.mapCore.shouldRebuildClusters(map, currentZoom, orchestrator.lastClusterZoom.value, orchestrator.lastBboxCenter.value)) {
             updateDOMMarkers()
           }
         })

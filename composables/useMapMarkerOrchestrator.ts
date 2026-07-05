@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import maplibregl from 'maplibre-gl'
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
@@ -53,10 +53,10 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
   const geoJSONMarkers = useGeoJSONMarkers()
 
   const markers: maplibregl.Marker[] = []
-  let lastClusterZoom = -1
-  let lastBboxCenter: { lng: number; lat: number } | null = null
+  const lastClusterZoom = ref(-1)
+  const lastBboxCenter = ref<{ lng: number; lat: number } | null>(null)
   const SOURCE_ID = isGlobe ? 'globe-species-markers' : 'species-markers'
-  let geoJSONInitializedFor: 'project-grants' | 'endangered-species' | null = null
+  const geoJSONInitializedFor = ref<'project-grants' | 'endangered-species' | null>(null)
   let geoJSONSpeciesIndex: SpeciesIndexItem[] | null = null
   let lastDOMClusterItems: ClusterItem[] | null = null
 
@@ -89,7 +89,7 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
 
     const dataset = activeDataset === 'project-grants' ? 'project-grants' : 'endangered-species'
 
-    if (!forceReinit && geoJSONInitializedFor === dataset) {
+    if (!forceReinit && geoJSONInitializedFor.value === dataset) {
       if (import.meta.dev) console.warn(`[Orchestrator] setupGeoJSONMarkers: already initialized for ${dataset}, updating data`)
       updateGeoJSONMarkerData(activeDataset, projectsData, speciesIndexData, speciesData, selectedSpeciesGroups)
       return
@@ -125,7 +125,7 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
         },
         () => { /* flyTo handled inside setupEventHandlers */ }
       )
-      geoJSONInitializedFor = 'project-grants'
+      geoJSONInitializedFor.value = 'project-grants'
     } else {
       let speciesIndex: SpeciesIndexItem[]
 
@@ -182,12 +182,12 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
           }
         }
       )
-      geoJSONInitializedFor = 'endangered-species'
+      geoJSONInitializedFor.value = 'endangered-species'
     }
 
-    lastClusterZoom = Math.floor(m.getZoom())
+    lastClusterZoom.value = Math.floor(m.getZoom())
     const center = m.getCenter()
-    lastBboxCenter = { lng: center.lng, lat: center.lat }
+    lastBboxCenter.value = { lng: center.lng, lat: center.lat }
   }
 
   function updateGeoJSONMarkerData(
@@ -198,9 +198,9 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
     selectedSpeciesGroups: string[],
   ) {
     const m = getMap()
-    if (!m || !geoJSONInitializedFor) return
-    if (import.meta.dev) console.warn(`[Orchestrator] updateGeoJSONMarkerData: ${geoJSONInitializedFor}, speciesIndex: ${speciesIndexData.length}`)
-    if (geoJSONInitializedFor === 'project-grants') {
+    if (!m || !geoJSONInitializedFor.value) return
+    if (import.meta.dev) console.warn(`[Orchestrator] updateGeoJSONMarkerData: ${geoJSONInitializedFor.value}, speciesIndex: ${speciesIndexData.length}`)
+    if (geoJSONInitializedFor.value === 'project-grants') {
       const validProjects = projectsData.filter(p => isValidCoordinate(p.latitude, p.longitude))
       geoJSONMarkers.updateData(SOURCE_ID, projectsToGeoJSON(validProjects))
     } else if (speciesIndexData.length) {
@@ -242,10 +242,10 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
     // Use native GeoJSON clustering for project-grants and endangered-species
     if (activeDataset === 'project-grants' || activeDataset === 'endangered-species') {
       setupGeoJSONMarkers(activeDataset, projectsData, speciesIndexData, speciesData, selectedSpeciesGroups)
-      lastClusterZoom = Math.floor(currentZoom)
+      lastClusterZoom.value = Math.floor(currentZoom)
       if (m) {
         const c = m.getCenter()
-        lastBboxCenter = { lng: c.lng, lat: c.lat }
+        lastBboxCenter.value = { lng: c.lng, lat: c.lat }
       }
       updateMarkerVisibility()
       return
@@ -398,10 +398,10 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
       })
     }
 
-    lastClusterZoom = Math.floor(currentZoom)
+    lastClusterZoom.value = Math.floor(currentZoom)
     if (m) {
       const c = m.getCenter()
-      lastBboxCenter = { lng: c.lng, lat: c.lat }
+      lastBboxCenter.value = { lng: c.lng, lat: c.lat }
     }
     updateMarkerVisibility()
   }
@@ -562,9 +562,9 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
       }
     })
 
-    lastClusterZoom = Math.floor(currentZoom)
+    lastClusterZoom.value = Math.floor(currentZoom)
     const center = m.getCenter()
-    lastBboxCenter = { lng: center.lng, lat: center.lat }
+    lastBboxCenter.value = { lng: center.lng, lat: center.lat }
     updateMarkerVisibility()
   }
 
@@ -573,15 +573,15 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
     markers.length = 0
     clusterer.destroy()
     geoJSONMarkers.cleanup()
-    geoJSONInitializedFor = null
+    geoJSONInitializedFor.value = null
     geoJSONSpeciesIndex = null
   }
 
   function resetState() {
-    geoJSONInitializedFor = null
+    geoJSONInitializedFor.value = null
     geoJSONSpeciesIndex = null
-    lastClusterZoom = -1
-    lastBboxCenter = null
+    lastClusterZoom.value = -1
+    lastBboxCenter.value = null
   }
 
   return {

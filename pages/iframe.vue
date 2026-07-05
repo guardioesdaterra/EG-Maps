@@ -23,11 +23,20 @@
           </div>
           <div class="p-4">
             <!-- Preview -->
-            <div class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
+            <div
+              ref="fullScreenRef"
+              class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+            >
+              <div
+                v-if="!isVisible.fullScreen"
+                class="w-full h-96 bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm"
+              >
+                {{ t('iframe.loadingPreview') }}
+              </div>
               <iframe
+                v-else
                 :src="`${baseURL}active-crews/3d`"
                 class="w-full h-96 border-0"
-                loading="lazy"
                 :title="t('iframe.fullScreen.title')"
               ></iframe>
             </div>
@@ -56,11 +65,20 @@
             </p>
           </div>
           <div class="p-4">
-            <div class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
+            <div
+              ref="fixed100Ref"
+              class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+            >
+              <div
+                v-if="!isVisible.fixed100"
+                class="w-full h-[500px] bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm"
+              >
+                {{ t('iframe.loadingPreview') }}
+              </div>
               <iframe
+                v-else
                 :src="`${baseURL}active-crews/3d?embed=true`"
                 class="w-full h-[500px] border-0"
-                loading="lazy"
                 :title="t('iframe.fixed100.title')"
               ></iframe>
             </div>
@@ -88,12 +106,21 @@
             </p>
           </div>
           <div class="p-4">
-            <div class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
-              <div class="relative w-full" style="padding-bottom: 56.25%;">
+            <div
+              ref="responsiveRef"
+              class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+            >
+              <div
+                v-if="!isVisible.responsive"
+                class="relative w-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm"
+                style="padding-bottom: 56.25%;"
+              >
+                <span class="absolute inset-0 flex items-center justify-center">{{ t('iframe.loadingPreview') }}</span>
+              </div>
+              <div v-else class="relative w-full" style="padding-bottom: 56.25%;">
                 <iframe
                   :src="`${baseURL}active-crews/3d?embed=true`"
                   class="absolute inset-0 w-full h-full border-0"
-                  loading="lazy"
                   :title="t('iframe.responsive.title')"
                 ></iframe>
               </div>
@@ -123,11 +150,20 @@
           </div>
           <div class="p-4">
             <div class="mb-4 flex justify-center">
-              <div class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden w-[300px] h-[250px]">
+              <div
+                ref="smallCardRef"
+                class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden w-[300px] h-[250px]"
+              >
+                <div
+                  v-if="!isVisible.smallCard"
+                  class="w-full h-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm"
+                >
+                  {{ t('iframe.loadingPreview') }}
+                </div>
                 <iframe
+                  v-else
                   :src="`${baseURL}active-crews/3d?embed=true`"
                   class="w-full h-full border-0"
-                  loading="lazy"
                   :title="t('iframe.smallCard.title')"
                 ></iframe>
               </div>
@@ -157,11 +193,20 @@
           </div>
           <div class="p-4">
             <div class="mb-4 flex justify-center overflow-hidden">
-              <div class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden w-full max-w-[600px] aspect-[3/2]">
+              <div
+                ref="mediumCardRef"
+                class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden w-full max-w-[600px] aspect-[3/2]"
+              >
+                <div
+                  v-if="!isVisible.mediumCard"
+                  class="w-full h-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm"
+                >
+                  {{ t('iframe.loadingPreview') }}
+                </div>
                 <iframe
+                  v-else
                   :src="`${baseURL}active-crews/3d?embed=true`"
                   class="w-full h-full border-0"
-                  loading="lazy"
                   :title="t('iframe.mediumCard.title')"
                 ></iframe>
               </div>
@@ -191,11 +236,20 @@
           </div>
           <div class="p-4">
             <div class="mb-4 flex justify-center overflow-hidden">
-              <div class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden w-full max-w-[900px] aspect-[3/2]">
+              <div
+                ref="largeCardRef"
+                class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden w-full max-w-[900px] aspect-[3/2]"
+              >
+                <div
+                  v-if="!isVisible.largeCard"
+                  class="w-full h-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm"
+                >
+                  {{ t('iframe.loadingPreview') }}
+                </div>
                 <iframe
+                  v-else
                   :src="`${baseURL}active-crews/3d?embed=true`"
                   class="w-full h-full border-0"
-                  loading="lazy"
                   :title="t('iframe.largeCard.title')"
                 ></iframe>
               </div>
@@ -224,11 +278,20 @@
             </p>
           </div>
           <div class="p-4">
-            <div class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
+            <div
+              ref="fullScreenInteractiveRef"
+              class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+            >
+              <div
+                v-if="!isVisible.fullScreenInteractive"
+                class="w-full h-[500px] bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm"
+              >
+                {{ t('iframe.loadingPreview') }}
+              </div>
               <iframe
+                v-else
                 :src="`${baseURL}active-crews/3d?embed=true&controls=true`"
                 class="w-full h-[500px] border-0"
-                loading="lazy"
                 :title="t('iframe.fullScreenInteractive.title')"
               ></iframe>
             </div>
@@ -256,11 +319,20 @@
             </p>
           </div>
           <div class="p-4">
-            <div class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
+            <div
+              ref="observatoryRef"
+              class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+            >
+              <div
+                v-if="!isVisible.observatory"
+                class="w-full h-[500px] bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm"
+              >
+                {{ t('iframe.loadingPreview') }}
+              </div>
               <iframe
+                v-else
                 :src="`${baseURL}vulcan-observatory?embed=true`"
                 class="w-full h-[500px] border-0"
-                loading="lazy"
                 :title="t('iframe.observatory.title')"
               ></iframe>
             </div>
@@ -348,6 +420,65 @@ async function copyToClipboard(text: string, id: string) {
     console.error('Failed to copy:', err)
   }
 }
+
+// Viewport visibility tracking — only render iframes when visible
+const iframeKeys = [
+  'fullScreen', 'fixed100', 'responsive', 'smallCard',
+  'mediumCard', 'largeCard', 'fullScreenInteractive', 'observatory',
+] as const
+type IframeKey = typeof iframeKeys[number]
+
+const isVisible = reactive<Record<IframeKey, boolean>>({
+  fullScreen: false,
+  fixed100: false,
+  responsive: false,
+  smallCard: false,
+  mediumCard: false,
+  largeCard: false,
+  fullScreenInteractive: false,
+  observatory: false,
+})
+
+const fullScreenRef = ref<HTMLElement | null>(null)
+const fixed100Ref = ref<HTMLElement | null>(null)
+const responsiveRef = ref<HTMLElement | null>(null)
+const smallCardRef = ref<HTMLElement | null>(null)
+const mediumCardRef = ref<HTMLElement | null>(null)
+const largeCardRef = ref<HTMLElement | null>(null)
+const fullScreenInteractiveRef = ref<HTMLElement | null>(null)
+const observatoryRef = ref<HTMLElement | null>(null)
+
+const refMap: Record<IframeKey, Ref<HTMLElement | null>> = {
+  fullScreen: fullScreenRef,
+  fixed100: fixed100Ref,
+  responsive: responsiveRef,
+  smallCard: smallCardRef,
+  mediumCard: mediumCardRef,
+  largeCard: largeCardRef,
+  fullScreenInteractive: fullScreenInteractiveRef,
+  observatory: observatoryRef,
+}
+
+onMounted(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        const key = iframeKeys.find((k) => refMap[k].value === entry.target)
+        if (key) {
+          isVisible[key] = entry.isIntersecting
+        }
+      }
+    },
+    { rootMargin: '200px' },
+  )
+
+  for (const key of iframeKeys) {
+    const el = refMap[key].value
+    if (el) observer.observe(el)
+  }
+
+  onUnmounted(() => observer.disconnect())
+})
 
 // Embed codes
 const fullScreenCode = computed(() => `<!-- Full Screen Embed -->

@@ -421,6 +421,7 @@ function projectToScrapedGrant(p: ProjectData, i: number): ScrapedGrant {
     urgency: 'unknown',
     amount_usd: null,
     priority_score: 50,
+    reviewed: false,
   }
 }
 

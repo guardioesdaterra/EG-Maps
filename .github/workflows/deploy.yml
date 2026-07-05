@@ -16,7 +16,6 @@ concurrency:
 
 jobs:
   build:
-    needs: [sync]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -202,6 +201,7 @@ jobs:
 
   sync:
     runs-on: ubuntu-latest
+    continue-on-error: true
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     steps:
       # ── Shared setup ──────────────────────────────────────────

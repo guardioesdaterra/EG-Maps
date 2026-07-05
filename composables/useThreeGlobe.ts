@@ -196,7 +196,7 @@ export function useThreeGlobe(
     const fillLight = new THREE.DirectionalLight(0xffffff, 0.4)
     fillLight.position.set(-3, 1, 2)
     scene.add(fillLight)
-    camera.position.z = 6
+    camera.position.z = 10
 
     let mouseX = 0, mouseY = 0
     const mouseHandler = (e: MouseEvent) => {
@@ -206,33 +206,33 @@ export function useThreeGlobe(
     window.addEventListener('mousemove', mouseHandler)
 
     gsap.to(globe.rotation, { y: Math.PI * 2, scrollTrigger: { trigger: '#ui-overlay', start: 'top top', end: 'bottom bottom', scrub: 1.5 } })
-    gsap.to(globe.scale, { x: 2.5, y: 2.5, z: 2.5, ease: 'power2.out', scrollTrigger: { trigger: '#grants-portal', start: 'top bottom', end: 'bottom top', scrub: 3, invalidateOnRefresh: true } })
-    gsap.to(camera.position, { z: 2.8, ease: 'power2.out', scrollTrigger: { trigger: '#grants-portal', start: 'top bottom', end: 'bottom top', scrub: 3, invalidateOnRefresh: true } })
+    gsap.to(globe.scale, { x: 2.5, y: 2.5, z: 2.5, ease: 'power2.out', scrollTrigger: { trigger: '#details', start: 'bottom center', endTrigger: '#grants-portal', end: 'bottom bottom', scrub: 3, invalidateOnRefresh: true } })
+    gsap.to(camera.position, { z: 2.8, ease: 'power2.out', scrollTrigger: { trigger: '#details', start: 'bottom center', endTrigger: '#grants-portal', end: 'bottom bottom', scrub: 3, invalidateOnRefresh: true } })
 
-    let targetX = 0
-    let currentX = 0
+    let targetX = 3
+    let currentX = 3
 
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
         trigger: '#hero',
-        start: 'bottom center',
-        end: 'bottom top',
+        start: 'top top',
+        end: 'bottom bottom',
         scrub: 1.5,
-        onUpdate: (self) => { targetX = 2 * self.progress },
+        onUpdate: (self) => { targetX = 3 - 3 * self.progress },
       })
       ScrollTrigger.create({
         trigger: '#details',
-        start: 'top center',
-        end: 'bottom center',
+        start: 'top top',
+        end: 'bottom bottom',
         scrub: 1.5,
-        onUpdate: (self) => { targetX = 2 - 4 * self.progress },
+        onUpdate: (self) => { targetX = -3 * self.progress },
       })
       ScrollTrigger.create({
         trigger: '#join',
-        start: 'top center',
-        end: 'bottom center',
+        start: 'top top',
+        end: 'bottom bottom',
         scrub: 1.5,
-        onUpdate: (self) => { targetX = -2 + 2 * self.progress },
+        onUpdate: (self) => { targetX = -3 + 3 * self.progress },
       })
 
       gsap.from('.impact-card', { opacity: 0, x: -50, duration: 1, stagger: 0.1, scrollTrigger: { trigger: '#details', start: 'top center' } })
@@ -270,7 +270,7 @@ export function useThreeGlobe(
       scene.rotation.y += (mouseX - scene.rotation.y) * 0.05
       scene.rotation.x += (mouseY - scene.rotation.x) * 0.05
 
-      targetX = Math.max(-3.5, Math.min(3.5, targetX))
+      targetX = Math.max(-4, Math.min(4, targetX))
       currentX += (targetX - currentX) * 0.08
       globe.position.x = currentX
 

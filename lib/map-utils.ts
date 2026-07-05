@@ -3,7 +3,8 @@ import { getProjectColorByBeneficiaries, COLOR_MAMMAL } from './colors'
 import type { ProjectData, Species } from './types'
 import type { CrewRegionData } from './crew-data'
 import { isMilitaryInterest as _isMilitaryInterest, isHighEnvRisk as _isHighEnvRisk, isSuspiciousBasic, buildAnmVerifyUrl, buildClaimReportMailtoUrl, type SpeculatorIndexEntry } from './observatory-analysis'
-import { escapeHtml as _escapeHtml } from './utils'
+import { escapeHtml as _escapeHtml, formatCompact } from './utils'
+import { getPreviewImageUrl, getProjectPlaceholder, getMarkerPlaceholder } from './image-utils'
 
 export type { Species }
 export const escapeHtml = _escapeHtml
@@ -366,6 +367,106 @@ export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPo
       <div class="species-footer">
         <div class="species-footer-line" style="background: rgba(128, 128, 128, 0.3);"></div>
       </div>
+    </div>
+  `
+}
+
+// ── Preview card HTML builders (compact on-map cards) ──
+
+export interface PreviewTranslations {
+  expand: string
+  beneficiaries: string
+  location: string
+  activeCrews: string
+  totalMembers: string
+}
+
+export function buildProjectPreviewHTML(project: ProjectData, baseURL?: string, translations?: PreviewTranslations): string {
+  const color = getProjectColorByBeneficiaries(project.direct_beneficiaries, project.indirect_beneficiaries)
+  const total = project.direct_beneficiaries + project.indirect_beneficiaries
+  const t = translations || { expand: 'View details', beneficiaries: 'Beneficiaries', location: 'Location', activeCrews: 'Active Crews', totalMembers: 'Total Members' }
+  const placeholderKey = getProjectPlaceholder(project.project_title)
+  const placeholderSvg = getMarkerPlaceholder(placeholderKey)
+
+  return `
+    <div class="preview-card" data-type="project">
+      <div class="preview-card__photo" style="background-image: url('${placeholderSvg}'); background-color: ${color}22;">
+        <div class="preview-card__photo-accent" style="background: ${color};"></div>
+      </div>
+      <div class="preview-card__body">
+        <p class="preview-card__eyebrow">Project Grantee</p>
+        <h4 class="preview-card__title">${escapeHtml(project.project_title)}</h4>
+        <p class="preview-card__subtitle">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${escapeHtml(project.country_province || 'Unknown location')}
+        </p>
+        <div class="preview-card__metric">
+          <span class="preview-card__metric-value" style="color: ${color};">${formatCompact(total)}</span>
+          <span class="preview-card__metric-label">${t.beneficiaries}</span>
+        </div>
+      </div>
+      <button class="preview-card__expand" data-action="expand" title="${t.expand}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+      </button>
+    </div>
+  `
+}
+
+export function buildSpeciesPreviewHTML(species: { commonName: string; scientificName: string; taxonomicGroup: string; category: string; imageUrl: string | null }, baseURL?: string, translations?: PreviewTranslations): string {
+  const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64032'
+  const t = translations || { expand: 'View details', beneficiaries: 'Beneficiaries', location: 'Location', activeCrews: 'Active Crews', totalMembers: 'Total Members' }
+  const groupLabel = species.taxonomicGroup || 'Species'
+
+  let photoHTML = ''
+  if (species.imageUrl) {
+    const previewUrl = getPreviewImageUrl(species.imageUrl, baseURL)
+    if (previewUrl) {
+      photoHTML = `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(species.commonName)}" class="preview-card__img" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />`
+    }
+  }
+  const placeholderFallback = getMarkerPlaceholder(species.taxonomicGroup)
+
+  return `
+    <div class="preview-card" data-type="species">
+      <div class="preview-card__photo" style="background-color: ${color}18;">
+        ${photoHTML}
+        <div class="preview-card__placeholder" style="background-image: url('${placeholderFallback}'); display: ${photoHTML ? 'none' : 'flex'};"></div>
+        <div class="preview-card__photo-accent" style="background: ${color};"></div>
+        <span class="preview-card__category-badge" style="background: ${color};">${escapeHtml(species.category)}</span>
+      </div>
+      <div class="preview-card__body">
+        <p class="preview-card__eyebrow" style="color: ${color};">${escapeHtml(groupLabel)}</p>
+        <h4 class="preview-card__title">${escapeHtml(species.commonName)}</h4>
+        <p class="preview-card__subtitle preview-card__subtitle--italic">${escapeHtml(species.scientificName)}</p>
+      </div>
+      <button class="preview-card__expand" data-action="expand" title="${t.expand}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+      </button>
+    </div>
+  `
+}
+
+export function buildCrewPreviewHTML(crew: CrewRegionData, translations?: PreviewTranslations): string {
+  const color = crew.activeCrews > 20 ? '#22c55e' : crew.activeCrews > 5 ? '#3b82f6' : '#a855f7'
+  const t = translations || { expand: 'View details', beneficiaries: 'Beneficiaries', location: 'Location', activeCrews: 'Active Crews', totalMembers: 'Total Members' }
+
+  return `
+    <div class="preview-card" data-type="crew">
+      <div class="preview-card__photo preview-card__photo--icon" style="background-color: ${color}18;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5" style="opacity:0.7"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <div class="preview-card__photo-accent" style="background: ${color};"></div>
+      </div>
+      <div class="preview-card__body">
+        <p class="preview-card__eyebrow">Earth Guardians Crew</p>
+        <h4 class="preview-card__title">${escapeHtml(crew.region)}</h4>
+        <div class="preview-card__tags">
+          <span class="preview-card__tag" style="color: ${color};">${crew.activeCrews} ${t.activeCrews}</span>
+          <span class="preview-card__tag">${crew.totalMembers.toLocaleString()} ${t.totalMembers}</span>
+        </div>
+      </div>
+      <button class="preview-card__expand" data-action="expand" title="${t.expand}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+      </button>
     </div>
   `
 }

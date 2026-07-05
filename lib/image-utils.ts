@@ -1,4 +1,5 @@
 const MARKER_THUMB_SIZE = 64
+const PREVIEW_THUMB_SIZE = 112
 const POPUP_THUMB_SIZE = 560
 const MAX_CONCURRENT_LOADS = 6
 const CACHE_TTL_MS = 5 * 60 * 1000
@@ -104,6 +105,11 @@ export function getThumbnailUrl(originalUrl: string, width: number, baseURL?: st
 export function getMarkerImageUrl(originalUrl: string, baseURL?: string): string {
   if (!originalUrl) return ''
   return getThumbnailUrl(originalUrl, MARKER_THUMB_SIZE, baseURL)
+}
+
+export function getPreviewImageUrl(originalUrl: string, baseURL?: string): string {
+  if (!originalUrl) return ''
+  return getThumbnailUrl(originalUrl, PREVIEW_THUMB_SIZE, baseURL)
 }
 
 export function getPopupImageUrl(originalUrl: string, baseURL?: string): string {

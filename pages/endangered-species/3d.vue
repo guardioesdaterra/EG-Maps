@@ -33,5 +33,5 @@ useHead({
   ],
 })
 
-const { data: speciesIndex, loading, error } = useSpeciesIndex('icmbio-brazil')
+const { data: speciesIndex, loading, error } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
 </script>

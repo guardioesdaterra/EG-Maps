@@ -158,7 +158,7 @@
           @sign-in="signIn"
           @sign-out="handleSignOut"
           @update:active-tab="activePortalTab = $event"
-          @update:manager-sub-tab="activeTab = $event"
+          @update:manager-sub-tab="activeTab = $event as 'pending' | 'approved' | 'rejected'"
           @update:search-query="dashboardSearch = $event"
           @toggle:show-history="showHistory = !showHistory"
           @vote="handleVoteScraped"

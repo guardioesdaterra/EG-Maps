@@ -20,7 +20,10 @@
 </template>
 
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
 import { allCrewRegionsData, type CrewLocation } from '@/lib/crew-data'
+
+const MapView2D = defineAsyncComponent(() => import('~/components/MapView2D.vue'))
 
 const { t } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL

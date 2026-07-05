@@ -20,6 +20,10 @@
 </template>
 
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
+
+const MapView2D = defineAsyncComponent(() => import('~/components/MapView2D.vue'))
+
 const { t } = useI18n()
 
 useHead({

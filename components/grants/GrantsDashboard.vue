@@ -114,6 +114,7 @@
           <div class="gdash-card-header">
             <h4>{{ grant.title }}</h4>
             <span class="gdash-badge" :class="grant.status">{{ grant.status }}</span>
+            <span v-if="grant.reviewed" class="gdash-badge reviewed">✓ {{ t('grantsPortal.reviewed') }}</span>
             <span class="gdash-badge neutral">{{ grant.category }}</span>
           </div>
           <p class="gdash-card-desc">{{ grant.description }}</p>
@@ -726,6 +727,7 @@ function voteCount(grantId: string): number {
 .gdash-badge.open { background: rgba(0, 200, 83, 0.12); color: #00c853; }
 .gdash-badge.closed { background: rgba(255, 255, 255, 0.05); color: rgba(255,255,255,0.4); }
 .gdash-badge.hidden { background: rgba(255, 255, 255, 0.05); color: rgba(255,255,255,0.4); }
+.gdash-badge.reviewed { background: rgba(0, 255, 133, 0.12); color: #00ff85; }
 .gdash-badge.neutral { background: rgba(255, 255, 255, 0.06); color: rgba(255,255,255,0.5); }
 
 /* ── Type badges ───────────────────────────────────── */

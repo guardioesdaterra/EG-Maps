@@ -26,6 +26,7 @@ export interface GrantRecord {
   category: string
   status: string
   submitted_by: string
+  reviewed: boolean
   reviewed_by: string | null
   reviewed_at: string | null
   rejection_reason: string | null
@@ -61,6 +62,7 @@ export interface ScrapedGrant {
   language: string
   relevance?: number
   status: string
+  reviewed: boolean
   fetched_at: string
   created_at: string
   grant_type?: string
@@ -164,7 +166,7 @@ export function useGrants() {
         approved: 'approve',
         rejected: 'reject',
         hidden: 'hide',
-        pending: 'reject',
+        pending: 'show',
       }
       const data = await invoke('grants?action=manage', {
         method: 'POST',

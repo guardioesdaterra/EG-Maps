@@ -26,7 +26,7 @@ export interface GrantRecord {
   category: string
   status: string
   submitted_by: string
-  reviewed: boolean
+  reviewed?: boolean
   reviewed_by: string | null
   reviewed_at: string | null
   rejection_reason: string | null
@@ -62,7 +62,7 @@ export interface ScrapedGrant {
   language: string
   relevance?: number
   status: string
-  reviewed: boolean
+  reviewed?: boolean
   fetched_at: string
   created_at: string
   grant_type?: string

@@ -60,8 +60,8 @@ export function createUnifiedMarkerElement(metrics: MarkerMetrics, baseURL?: str
   inner.style.height = `${metrics.visualSize}px`
   inner.style.borderRadius = '50%'
   inner.style.backgroundColor = 'rgba(0, 0, 0, 0.82)'
-  inner.style.border = '2px solid rgba(255, 255, 255, 0.86)'
-  inner.style.boxShadow = `0 0 ${Math.max(8, metrics.visualSize * 0.5)}px ${metrics.color}, 0 0 1.5px #fff`
+  inner.style.border = `2px solid ${metrics.color}`
+  inner.style.boxShadow = `0 0 ${Math.max(8, metrics.visualSize * 0.5)}px ${metrics.color}`
   inner.style.display = 'flex'
   inner.style.justifyContent = 'center'
   inner.style.alignItems = 'center'
@@ -102,7 +102,7 @@ export function createUnifiedMarkerElement(metrics: MarkerMetrics, baseURL?: str
   })
   el.addEventListener('mouseleave', () => {
     inner.style.transform = 'scale(1)'
-    inner.style.boxShadow = `0 0 ${Math.max(8, metrics.visualSize * 0.5)}px ${metrics.color}, 0 0 1.5px #fff`
+    inner.style.boxShadow = `0 0 ${Math.max(8, metrics.visualSize * 0.5)}px ${metrics.color}`
     el.style.zIndex = '10'
   })
 
@@ -375,8 +375,8 @@ export function createClusterMarkerElement(
         mini.style.backgroundSize = 'cover'
         mini.style.backgroundPosition = 'center'
       }
-      mini.style.border = '1.5px solid rgba(255,255,255,0.85)'
-      mini.style.boxShadow = `0 0 7px ${itemColor}, 0 0 1.5px #fff`
+      mini.style.border = `1.5px solid ${itemColor}`
+      mini.style.boxShadow = `0 0 7px ${itemColor}`
       mini.style.top = `calc(50% + ${c.y}px - ${miniSize / 2}px)`
       mini.style.left = `calc(50% + ${c.x}px - ${miniSize / 2}px)`
       mini.style.cursor = 'pointer'
@@ -504,7 +504,7 @@ export function createClusterMarkerElement(
         mini.style.backgroundSize = 'cover'
         mini.style.backgroundPosition = 'center'
       }
-      mini.style.border = '1px solid rgba(255,255,255,0.75)'
+      mini.style.border = `1px solid ${itemColor}`
       mini.style.boxShadow = `0 0 4px ${itemColor}`
       mini.style.cursor = 'pointer'
       mini.style.flexShrink = '0'

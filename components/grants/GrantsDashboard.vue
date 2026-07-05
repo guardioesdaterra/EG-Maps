@@ -31,12 +31,12 @@
     <!-- ── Stats row ─────────────────────────────────── -->
     <div class="gdash-stats">
       <div class="gdash-stat glass">
-        <span class="gdash-stat-num" style="color:var(--stat-open)">{{ openCount }}</span>
-        <span class="gdash-stat-label">{{ t('grantsPortal.statOpen') }}</span>
+        <span class="gdash-stat-num" style="color:var(--stat-open)">{{ pendingCount }}</span>
+        <span class="gdash-stat-label">{{ t('grantsPortal.statPending') }}</span>
       </div>
       <div class="gdash-stat glass">
-        <span class="gdash-stat-num" style="color:var(--stat-approved)">{{ approvedCount }}</span>
-        <span class="gdash-stat-label">{{ t('grantsPortal.statApproved') }}</span>
+        <span class="gdash-stat-num" style="color:var(--stat-approved)">{{ openCount }}</span>
+        <span class="gdash-stat-label">{{ t('grantsPortal.statOpen') }}</span>
       </div>
       <div class="gdash-stat glass">
         <span class="gdash-stat-num" style="color:var(--stat-closed)">{{ closedCount }}</span>
@@ -80,7 +80,7 @@
     <p v-else class="gdash-signin-hint">{{ t('grantsPortal.signInDashboardDesc') }}</p>
 
     <!-- ── Manager: submitted grants sub-tabs ────────── -->
-    <div v-if="user && isManager && activeTab === 'tabSubmitted'" class="gdash-subtabs">
+    <div v-if="user && isManager && activeTab === 'tabPending'" class="gdash-subtabs">
       <button
         v-for="s in (['pending', 'open', 'closed'] as const)"
         :key="s"
@@ -104,9 +104,9 @@
       <div v-else-if="displayGrants.length === 0" class="gdash-status">{{ emptyMessage }}</div>
 
       <!-- Manager submitted grants -->
-      <template v-if="activeTab === 'tabSubmitted'">
+      <template v-if="activeTab === 'tabPending'">
         <div
-          v-for="grant in internalGrants"
+          v-for="grant in filteredInternalGrants"
           :key="String(grant.id)"
           class="gdash-card glass"
           :class="{ 'opacity-60': grant.status !== 'pending' }"
@@ -186,9 +186,10 @@
               <button class="gdash-link-btn" @click="$emit('detail', g)">{{ t('grantsPortal.details') }}</button>
               <a v-if="g.url" :href="g.url" target="_blank" class="gdash-link-btn apply" rel="noopener">{{ t('grantsPortal.apply') }} ↗</a>
               <template v-if="isManager">
-                <button v-if="activeTab === 'tabOpen'" class="gdash-action approve text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'approved')">✓ {{ t('grantsPortal.approve') }}</button>
+                <button v-if="activeTab === 'tabPending'" class="gdash-action approve text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'approved')">✓ {{ t('grantsPortal.approve') }}</button>
+                <button v-if="activeTab === 'tabPending'" class="gdash-action reject text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'hidden')">✗ {{ t('grantsPortal.reject') }}</button>
                 <button v-if="activeTab === 'tabOpen'" class="gdash-action reject text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'hidden')">✗ {{ t('grantsPortal.reject') }}</button>
-                <button v-if="activeTab === 'tabApproved'" class="gdash-action restore text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'pending')">↩ {{ t('grantsPortal.restore') }}</button>
+                <button v-if="activeTab === 'tabClosed'" class="gdash-action restore text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'pending')">↩ {{ t('grantsPortal.restore') }}</button>
                 <button v-if="activeTab === 'tabDeclined'" class="gdash-action restore text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'pending')">↩ {{ t('grantsPortal.restore') }}</button>
               </template>
             </div>
@@ -228,8 +229,8 @@ import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/
 const props = defineProps<{
   user: { email?: string } | null
   isManager: boolean
+  pendingCount: number
   openCount: number
-  approvedCount: number
   closedCount: number
   declinedCount: number
   projectCount: number
@@ -265,13 +266,12 @@ const { t } = useI18n()
 
 const tabs = computed(() => {
   const list = [
+    { key: 'tabPending', emoji: '📋' },
     { key: 'tabOpen', emoji: '🌍' },
-    { key: 'tabApproved', emoji: '✅' },
     { key: 'tabClosed', emoji: '🔒' },
     { key: 'tabDeclined', emoji: '🚫' },
     { key: 'tabLeaderboard', emoji: '🏆' },
   ]
-  if (props.isManager) list.unshift({ key: 'tabSubmitted', emoji: '📋' })
   if (!props.user) return list.filter(tab => tab.key === 'tabOpen')
   return list
 })
@@ -280,8 +280,8 @@ const displayGrants = computed(() => props.filteredScrapedGrants)
 
 const statusClass = computed(() => {
   const map: Record<string, string> = {
-    tabOpen: 'pending',
-    tabApproved: 'open',
+    tabPending: 'pending',
+    tabOpen: 'open',
     tabClosed: 'closed',
     tabDeclined: 'hidden',
   }
@@ -290,8 +290,8 @@ const statusClass = computed(() => {
 
 const statusLabel = computed(() => {
   const map: Record<string, string> = {
+    tabPending: t('grantsPortal.statusPending'),
     tabOpen: t('grantsPortal.statusOpen'),
-    tabApproved: t('grantsPortal.statusApproved'),
     tabClosed: t('grantsPortal.statusClosed'),
     tabDeclined: t('grantsPortal.statusRejected'),
   }
@@ -300,9 +300,8 @@ const statusLabel = computed(() => {
 
 const emptyMessage = computed(() => {
   const map: Record<string, string> = {
-    tabSubmitted: t('grantsPortal.noGrants'),
+    tabPending: t('grantsPortal.noGrants'),
     tabOpen: t('grantsPortal.noOpenGrants'),
-    tabApproved: t('grantsPortal.noApprovedGrantsYet'),
     tabClosed: t('grantsPortal.noClosedGrants'),
     tabDeclined: t('grantsPortal.noDeclinedGrants'),
     tabLeaderboard: t('grantsPortal.noLeaderboard'),
@@ -312,9 +311,8 @@ const emptyMessage = computed(() => {
 
 function tabCount(key: string): string {
   const map: Record<string, number> = {
-    tabSubmitted: props.internalGrants.length,
+    tabPending: props.pendingCount,
     tabOpen: props.openCount,
-    tabApproved: props.approvedCount,
     tabClosed: props.closedCount,
     tabDeclined: props.declinedCount,
   }

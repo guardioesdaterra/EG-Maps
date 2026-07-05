@@ -130,8 +130,8 @@
         <GrantsDashboard
           :user="user"
           :is-manager="isManager"
+          :pending-count="scrapedPendingCount"
           :open-count="scrapedOpenCount"
-          :approved-count="scrapedApprovedCount"
           :closed-count="scrapedClosedCount"
           :declined-count="scrapedDeclinedCount"
           :project-count="projectStats.total"
@@ -235,7 +235,7 @@ const { listGrants, listScrapedGrants, reviewGrant: apiReviewGrant, reviewScrape
 // Internal grants
 const grants = ref<GrantRecord[]>([])
 const registry = ref<Array<GrantRecord & { relevante?: boolean }>>([])
-const stats = reactive({ pending: 0, approved: 0, rejected: 0, total: 0 })
+const stats = reactive({ pending: 0, open: 0, closed: 0, hidden: 0, total: 0 })
 const loading = ref(true)
 const projectStats = computed(() => {
   const countries = new Set(allProjectsData.map(p => p.country_province.split(',').pop()?.trim()).filter(Boolean))
@@ -253,8 +253,8 @@ const scrapedUserVotes = reactive<Record<string, number>>({})
 
 const filteredScrapedGrants = computed(() => {
   const tab = activePortalTab.value
-  if (tab === 'tabOpen') return scrapedGrants.value.filter(g => g.status === 'pending')
-  if (tab === 'tabApproved') return scrapedGrants.value.filter(g => g.status === 'open')
+  if (tab === 'tabPending') return scrapedGrants.value.filter(g => g.status === 'pending')
+  if (tab === 'tabOpen') return scrapedGrants.value.filter(g => g.status === 'open')
   if (tab === 'tabClosed') return scrapedGrants.value.filter(g => g.status === 'closed')
   if (tab === 'tabDeclined') return scrapedGrants.value.filter(g => g.status === 'hidden')
   return scrapedGrants.value
@@ -314,11 +314,11 @@ const filteredGrants = computed(() => {
   return grants.value.filter(g => g.status === activeTab.value)
 })
 
-const scrapedOpenCount = computed(() => scrapedGrants.value.filter(g => g.status === 'pending').length)
-const scrapedApprovedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'open').length)
+const scrapedPendingCount = computed(() => scrapedGrants.value.filter(g => g.status === 'pending').length)
+const scrapedOpenCount = computed(() => scrapedGrants.value.filter(g => g.status === 'open').length)
 const scrapedClosedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'closed').length)
 const scrapedDeclinedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'hidden').length)
-const countryCount = computed(() => Math.max(stats.approved > 0 ? 47 : 0, projectStats.value.countries) + '+')
+const countryCount = computed(() => Math.max(stats.open > 0 ? 47 : 0, projectStats.value.countries) + '+')
 
 const contactEmailHtml = computed(() => {
   const emailLink = '<a href="mailto:GRANTS@EARTHGUARDIANS.ORG">GRANTS@EARTHGUARDIANS.ORG</a>'
@@ -388,11 +388,11 @@ async function loadStats() {
     if (s.total > 0) {
       Object.assign(stats, s)
     } else {
-      Object.assign(stats, { pending: 0, approved: projectStats.value.total, rejected: 0, total: projectStats.value.total })
+      Object.assign(stats, { pending: 0, open: projectStats.value.total, closed: 0, hidden: 0, total: projectStats.value.total })
     }
   } catch (e) {
     console.error('Failed to load stats:', e)
-    Object.assign(stats, { pending: 0, approved: projectStats.value.total, rejected: 0, total: projectStats.value.total })
+    Object.assign(stats, { pending: 0, open: projectStats.value.total, closed: 0, hidden: 0, total: projectStats.value.total })
   }
 }
 
@@ -573,7 +573,7 @@ function handleSignOut() {
 
 watch(activeTab, () => loadGrants())
 watch(activePortalTab, (tab) => {
-  if (['tabOpen', 'tabApproved', 'tabClosed', 'tabDeclined'].includes(tab)) loadScrapedGrants()
+  if (['tabPending', 'tabOpen', 'tabClosed', 'tabDeclined'].includes(tab)) loadScrapedGrants()
   if (tab === 'tabLeaderboard') loadLeaderboardData()
 })
 

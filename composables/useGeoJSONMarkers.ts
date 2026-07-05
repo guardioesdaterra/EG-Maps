@@ -133,7 +133,7 @@ export function useGeoJSONMarkers() {
 
     currentSourceId = sourceId
 
-    console.warn(`[useGeoJSONMarkers] addGeoJSONSource: ${sourceId}, features: ${data.features.length}, clustering: ${clustering}`)
+    if (import.meta.dev) console.warn(`[useGeoJSONMarkers] addGeoJSONSource: ${sourceId}, features: ${data.features.length}, clustering: ${clustering}`)
     map.addSource(sourceId, {
       type: 'geojson',
       data,
@@ -145,7 +145,7 @@ export function useGeoJSONMarkers() {
 
   function addClusterLayers(sourceId: string, dataset: 'project-grants' | 'endangered-species') {
     if (!map) return
-    console.warn(`[useGeoJSONMarkers] addClusterLayers: ${sourceId}, dataset: ${dataset}`)
+    if (import.meta.dev) console.warn(`[useGeoJSONMarkers] addClusterLayers: ${sourceId}, dataset: ${dataset}`)
 
     const clusterColors = dataset === 'endangered-species'
       ? ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899']
@@ -342,10 +342,10 @@ export function useGeoJSONMarkers() {
     if (!map) return
     const source = map.getSource(sourceId) as GeoJSONSource
     if (source) {
-      console.warn(`[useGeoJSONMarkers] updateData: ${sourceId}, features: ${data.features.length}`)
+      if (import.meta.dev) console.warn(`[useGeoJSONMarkers] updateData: ${sourceId}, features: ${data.features.length}`)
       source.setData(data)
     } else {
-      console.warn(`[useGeoJSONMarkers] updateData: source ${sourceId} not found!`)
+      if (import.meta.dev) console.warn(`[useGeoJSONMarkers] updateData: source ${sourceId} not found!`)
     }
   }
 

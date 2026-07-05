@@ -184,12 +184,13 @@ export function useGrants() {
       const s = data as { pending: number; open: number; closed: number; hidden: number; total: number }
       return {
         pending: s.pending ?? 0,
-        approved: s.open ?? 0,
-        rejected: s.closed ?? 0,
+        open: s.open ?? 0,
+        closed: s.closed ?? 0,
+        hidden: s.hidden ?? 0,
         total: s.total ?? 0,
       }
     } catch {
-      return { pending: 0, approved: 0, rejected: 0, total: 0 }
+      return { pending: 0, open: 0, closed: 0, hidden: 0, total: 0 }
     }
   }
 

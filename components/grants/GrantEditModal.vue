@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
-      <div v-if="grant" class="fixed inset-0 flex items-center justify-center p-4" :style="{ zIndex: 'var(--z-modal-edit)' }" role="dialog" aria-modal="true" aria-label="Edit grant">
+      <div v-if="grant" class="fixed inset-0 flex items-center justify-center p-4 grant-edit-overlay" role="dialog" aria-modal="true" aria-label="Edit grant">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="$emit('close')" />
         <div class="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl">
           <div class="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-white/5 bg-[#0c0c0e]/95 backdrop-blur-sm">
@@ -123,6 +123,13 @@ watch(() => props.grant, (g) => {
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
+}
+
+.grant-edit-overlay {
+  position: fixed !important;
+  z-index: 9200 !important;
+  isolation: isolate;
+  pointer-events: auto;
 }
 
 .edit-field {

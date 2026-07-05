@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
-      <div v-if="grant" class="fixed inset-0 flex items-center justify-center p-2 sm:p-4 md:p-6" :style="{ zIndex: 'var(--z-modal-detail)' }" role="dialog" aria-modal="true" aria-label="Grant detail">
+      <div v-if="grant" class="fixed inset-0 flex items-center justify-center p-2 sm:p-4 md:p-6 grant-detail-overlay" role="dialog" aria-modal="true" aria-label="Grant detail">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="$emit('close')" />
         <div class="relative w-full max-w-[85vw] sm:max-w-[85vw] max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl">
           <div class="sticky top-0 z-10 flex items-start justify-between gap-4 p-4 sm:p-6 md:p-8 border-b border-white/5 bg-[#0c0c0e]/95 backdrop-blur-sm">
@@ -163,6 +163,13 @@ function formatAmount(val: number): string {
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
+}
+
+.grant-detail-overlay {
+  position: fixed !important;
+  z-index: 9100 !important;
+  isolation: isolate;
+  pointer-events: auto;
 }
 
 .star-btn {

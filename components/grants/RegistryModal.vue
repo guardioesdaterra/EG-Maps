@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div v-if="show" class="fixed inset-0 bg-black/90 p-4 overflow-y-auto" :style="{ zIndex: 'var(--z-modal-registry)' }" role="dialog" aria-modal="true" :aria-label="t('grantsPortal.approvedGrants')">
+    <div v-if="show" class="fixed inset-0 bg-black/90 p-4 overflow-y-auto registry-modal-overlay" role="dialog" aria-modal="true" :aria-label="t('grantsPortal.approvedGrants')">
       <div class="mx-auto max-w-6xl w-full">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-bold text-white">{{ t('grantsPortal.approvedGrants') }}</h2>
@@ -43,3 +43,12 @@ defineEmits<{
 
 const { t } = useI18n()
 </script>
+
+<style scoped>
+.registry-modal-overlay {
+  position: fixed !important;
+  z-index: 9000 !important;
+  isolation: isolate;
+  pointer-events: auto;
+}
+</style>

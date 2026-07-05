@@ -669,19 +669,19 @@ section {
 }
 
 h1 {
-  font-size: clamp(3rem, 10vw, 8rem);
-  line-height: 0.9;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1;
   text-transform: uppercase;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.04em;
   max-width: 800px;
   color: var(--tectonic-white);
 }
 
 h2 {
-  font-size: clamp(2rem, 6vw, 4rem);
-  line-height: 1;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  line-height: 1.1;
   text-transform: uppercase;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   margin-bottom: 2rem;
   color: var(--tectonic-white);
 }
@@ -696,10 +696,10 @@ h2 {
 
 .impact-heading {
   margin-top: 1rem;
-  font-size: clamp(3rem, 8vw, 6rem);
-  line-height: 0.95;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1;
   text-transform: uppercase;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   color: var(--tectonic-white);
 }
 .impact-heading-accent {
@@ -835,7 +835,8 @@ h2 {
 .grants-inner { max-width: 1200px; margin: 0 auto; }
 .grants-heading { margin-top: 1rem; }
 .grants-body { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 3rem; align-items: start; }
-.grants-copy p { line-height: 1.8; color: rgba(255, 255, 255, 0.65); font-size: 0.95rem; margin-bottom: 1.25rem; }
+.grants-copy { background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 2rem; }
+.grants-copy p { line-height: 1.8; color: rgba(255, 255, 255, 0.75); font-size: 0.95rem; margin-bottom: 1.25rem; }
 .grants-copy strong { color: var(--accent); }
 .grants-visual { display: flex; align-items: center; justify-content: center; }
 .grants-globe-ring { position: relative; width: 260px; height: 260px; border-radius: 50%; border: 1px solid rgba(0, 255, 133, 0.15); animation: ringRotate 20s linear infinite; }

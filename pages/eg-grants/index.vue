@@ -41,7 +41,37 @@
       <!-- Impact -->
       <section id="details" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
         <span class="data-label">{{ t('grantsPortal.statsLabel') }}</span>
-        <h2 class="impact-heading">{{ t('grantsPortal.heroTitle1') }}</h2>
+        <h2 class="impact-heading">
+          {{ t('grantsPortal.impactHeading1') }}<br/>
+          <span class="impact-heading-accent">{{ t('grantsPortal.impactHeading2') }}</span>
+        </h2>
+        <p class="impact-desc">{{ t('grantsPortal.impactDesc') }}</p>
+
+        <div class="impact-stats-grid">
+          <div class="impact-stat-card">
+            <span class="impact-stat-num">1M+</span>
+            <span class="impact-stat-label">{{ t('grantsPortal.impactStat1Label') }}</span>
+          </div>
+          <div class="impact-stat-card">
+            <span class="impact-stat-num">20K+</span>
+            <span class="impact-stat-label">{{ t('grantsPortal.impactStat2Label') }}</span>
+          </div>
+          <div class="impact-stat-card">
+            <span class="impact-stat-num">30+</span>
+            <span class="impact-stat-label">{{ t('grantsPortal.impactStat3Label') }}</span>
+          </div>
+          <div class="impact-stat-card">
+            <span class="impact-stat-num">100%</span>
+            <span class="impact-stat-label">{{ t('grantsPortal.impactStat4Label') }}</span>
+          </div>
+        </div>
+
+        <div class="mission-quote-card">
+          <div class="mission-quote-mark">"</div>
+          <p class="mission-quote-text">{{ t('grantsPortal.missionQuote') }}</p>
+          <span class="mission-quote-attr">{{ t('grantsPortal.missionAttribution') }}</span>
+        </div>
+
         <div class="impact-carousel">
           <div class="impact-track">
             <div v-for="(p, i) in topProjects" :key="p.project_title" class="impact-card" :style="{ '--i': i }">
@@ -163,8 +193,6 @@
       />
 
       <GrantsFooter
-        :project-stats="projectStats"
-        :open-grants-total="scrapedOpenCount + scrapedApprovedCount + scrapedClosedCount + scrapedDeclinedCount"
         :country-count="countryCount"
       />
     </div>
@@ -666,8 +694,106 @@ h2 {
   font-size: 1rem;
 }
 
-.impact-heading { margin-top: 1rem; }
-.impact-carousel { margin-top: 2rem; overflow: visible; }
+.impact-heading {
+  margin-top: 1rem;
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  color: var(--tectonic-white);
+}
+.impact-heading-accent {
+  background: linear-gradient(135deg, var(--accent) 0%, #00ccff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.impact-desc {
+  margin-top: 1.5rem;
+  max-width: 560px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 1rem;
+}
+.impact-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 3rem;
+}
+.impact-stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.impact-stat-card:hover {
+  border-color: rgba(0, 255, 133, 0.25);
+  box-shadow: 0 0 40px rgba(0, 255, 133, 0.06);
+  transform: translateY(-3px);
+}
+.impact-stat-num {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.impact-stat-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 600;
+}
+.mission-quote-card {
+  margin-top: 3rem;
+  padding: 2rem 2.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 255, 133, 0.1);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  position: relative;
+}
+.mission-quote-mark {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 4rem;
+  font-weight: 800;
+  color: var(--accent);
+  opacity: 0.2;
+  line-height: 1;
+  position: absolute;
+  top: 0.5rem;
+  left: 1.2rem;
+}
+.mission-quote-text {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  position: relative;
+  z-index: 1;
+}
+.mission-quote-attr {
+  display: block;
+  margin-top: 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.3);
+}
+.impact-carousel { margin-top: 3rem; overflow: visible; }
 .impact-track {
   display: flex;
   gap: 2rem;
@@ -814,5 +940,7 @@ h2 {
   .grants-body { grid-template-columns: 1fr; gap: 2rem; }
   .grants-globe-ring { width: 200px; height: 200px; }
   .impact-card { flex: 0 0 180px; }
+  .impact-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .mission-quote-card { padding: 1.5rem; }
 }
 </style>

@@ -134,7 +134,6 @@
           :open-count="scrapedOpenCount"
           :closed-count="scrapedClosedCount"
           :declined-count="scrapedDeclinedCount"
-          :project-count="projectStats.total"
           :active-tab="activePortalTab"
           :manager-sub-tab="activeTab"
           :show-history="showHistory"
@@ -254,7 +253,7 @@ const scrapedUserVotes = reactive<Record<string, number>>({})
 const filteredScrapedGrants = computed(() => {
   const tab = activePortalTab.value
   if (tab === 'tabPending') return scrapedGrants.value.filter(g => g.status === 'pending')
-  if (tab === 'tabOpen') return scrapedGrants.value.filter(g => g.status === 'open')
+  if (tab === 'tabOpen') return grants.value.filter(g => g.reviewed === true)
   if (tab === 'tabClosed') return scrapedGrants.value.filter(g => g.status === 'closed')
   if (tab === 'tabDeclined') return scrapedGrants.value.filter(g => g.status === 'hidden')
   return scrapedGrants.value
@@ -315,7 +314,7 @@ const filteredGrants = computed(() => {
 })
 
 const scrapedPendingCount = computed(() => scrapedGrants.value.filter(g => g.status === 'pending').length)
-const scrapedOpenCount = computed(() => scrapedGrants.value.filter(g => g.status === 'open').length)
+const scrapedOpenCount = computed(() => grants.value.filter(g => g.reviewed === true).length)
 const scrapedClosedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'closed').length)
 const scrapedDeclinedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'hidden').length)
 const countryCount = computed(() => Math.max(stats.open > 0 ? 47 : 0, projectStats.value.countries) + '+')

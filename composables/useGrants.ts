@@ -42,6 +42,11 @@ export interface GrantRecord {
   hidden?: boolean
   source_id?: string
   source?: string
+  highlights?: string[]
+  urgency?: string
+  categories?: string[]
+  amount_usd?: number | null
+  deadline?: string
 }
 
 export interface ScrapedGrant {

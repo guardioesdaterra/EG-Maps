@@ -62,6 +62,17 @@ export function useMapCluster() {
   let index: Supercluster<GeoJsonProperties, GeoJsonProperties> | null = null
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
   let pendingData: ClusterItem[] | null = null
+  let lastDataHash = ''
+
+  function hashData(data: ClusterItem[]): string {
+    if (data.length === 0) return 'empty'
+    let h = 0
+    const len = Math.min(data.length, 100)
+    for (let i = 0; i < len; i++) {
+      h = ((h << 5) - h + data[i].lng * 1000 + data[i].lat * 1000 + data[i].index) | 0
+    }
+    return `${h}:${data.length}`
+  }
 
   function load(data: ClusterItem[]) {
     // Supercluster has no incremental add(), so reloads are O(N log N).
@@ -81,6 +92,9 @@ export function useMapCluster() {
 
   function flushLoad(data: ClusterItem[]) {
     pendingData = null
+    const hash = hashData(data)
+    if (hash === lastDataHash && index) return
+    lastDataHash = hash
     const next = new Supercluster<GeoJsonProperties, GeoJsonProperties>(SUPERCLUSTER_OPTIONS)
     next.load(toFeatures(data))
     index = next
@@ -176,6 +190,7 @@ export function useMapCluster() {
       debounceTimer = null
     }
     pendingData = null
+    lastDataHash = ''
     index = null
   }
 

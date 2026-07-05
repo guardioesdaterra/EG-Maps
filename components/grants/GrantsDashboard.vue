@@ -46,10 +46,6 @@
         <span class="gdash-stat-num" style="color:var(--stat-declined)">{{ declinedCount }}</span>
         <span class="gdash-stat-label">{{ t('grantsPortal.statDeclined') }}</span>
       </div>
-      <div class="gdash-stat glass">
-        <span class="gdash-stat-num" style="color:var(--tectonic-white)">{{ projectCount }}</span>
-        <span class="gdash-stat-label">{{ t('grantsPortal.statProjects') }}</span>
-      </div>
     </div>
 
     <!-- ── Tabs + Search ─────────────────────────────── -->
@@ -233,7 +229,6 @@ const props = defineProps<{
   openCount: number
   closedCount: number
   declinedCount: number
-  projectCount: number
   activeTab: string
   managerSubTab: string
   showHistory: boolean
@@ -241,7 +236,7 @@ const props = defineProps<{
   isLoading: boolean
   scrapedLoading: boolean
   internalGrants: GrantRecord[]
-  filteredScrapedGrants: ScrapedGrant[]
+  filteredScrapedGrants: (ScrapedGrant | GrantRecord)[]
   filteredInternalGrants: GrantRecord[]
   userVotes: Record<string, number>
   leaderboard: LeaderboardEntry[]
@@ -500,7 +495,7 @@ function voteCount(grantId: string): number {
 /* ── Stats row ─────────────────────────────────────── */
 .gdash-stats {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
@@ -945,9 +940,6 @@ function voteCount(grantId: string): number {
 @media (max-width: 768px) {
   .gdash-stats {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .gdash-stats .gdash-stat:last-child {
-    grid-column: 1 / -1;
   }
   .gdash-user {
     flex-direction: column;

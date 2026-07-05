@@ -291,6 +291,20 @@ export function useMapBase(config: MapBaseConfig) {
     )
   }
 
+  function updateDOMMarkers() {
+    if (!map) return
+    orchestrator.updateDOMMarkers(
+      activeDataset.value!,
+      visibleProjects.value,
+      speciesIndexData.value,
+      speciesData.value,
+      crewsData.value,
+      crewLocationsData.value,
+      selectedSpeciesGroups.value,
+      (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
+    )
+  }
+
   function navigateToLocation(lat: number, lng: number) {
     if (map) {
       map.flyTo({ center: [lng, lat], zoom: isMobile.value ? (isGlobe ? 3 : 6) : (isGlobe ? 4 : 6), duration: 1500, essential: true })
@@ -387,7 +401,7 @@ export function useMapBase(config: MapBaseConfig) {
 
       map.on('load', () => {
         if (!isMounted) return
-        console.warn(`[useMapBase] map.on('load'): dataset=${activeDataset.value}, speciesIndex=${speciesIndexData.value.length}, projects=${projectsData.value.length}`)
+        if (import.meta.dev) console.warn(`[useMapBase] map.on('load'): dataset=${activeDataset.value}, speciesIndex=${speciesIndexData.value.length}, projects=${projectsData.value.length}`)
         isLoading.value = false
         if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null }
         if (activeDataset.value === 'vulcan-observatory') {
@@ -421,7 +435,7 @@ export function useMapBase(config: MapBaseConfig) {
           if (!map) return
           const currentZoom = Math.floor(map.getZoom())
           if (orchestrator.mapCore.shouldRebuildClusters(map, currentZoom, orchestrator.lastClusterZoom, orchestrator.lastBboxCenter)) {
-            rebuildMarkers()
+            updateDOMMarkers()
           }
         })
       })
@@ -591,7 +605,7 @@ export function useMapBase(config: MapBaseConfig) {
     connections, showConnections, toggleConnections,
     hexGrid, onResize,
     orchestrator, geoJSONInitializedFor,
-    rebuildMarkers, updateMarkerVisibility, updateGeoJSONMarkerData, navigateToLocation,
+    rebuildMarkers, updateMarkerVisibility, updateGeoJSONMarkerData, updateDOMMarkers, navigateToLocation,
     rareEarthController, setupRareEarthLayers,
     showSpeciesOverlay, showProjectOverlay, showCrewOverlay,
     speciesOverlayHTML, projectOverlayHTML, crewOverlayHTML,

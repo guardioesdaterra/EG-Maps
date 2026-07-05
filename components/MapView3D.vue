@@ -86,10 +86,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import type { MapBaseProps } from '@/composables/useMapBase'
 import { useMapBase } from '@/composables/useMapBase'
+
+const DataBubble = defineAsyncComponent(() => import('~/components/DataBubble.vue'))
+const MapControls = defineAsyncComponent(() => import('~/components/MapControls.vue'))
+const SpeciesPanel = defineAsyncComponent(() => import('~/components/SpeciesPanel.vue'))
 
 const props = withDefaults(defineProps<MapBaseProps>(), {
   defaultDataset: 'project-grants',
@@ -106,6 +110,7 @@ let starAnimationId: number | null = null
 let rotationAnimationId: number | null = null
 let isUserInteracting = false
 let interactionTimeout: ReturnType<typeof setTimeout> | null = null
+let visibilityHandler: (() => void) | null = null
 
 function initStarCanvas() {
   const canvas = starCanvasRef.value
@@ -113,7 +118,7 @@ function initStarCanvas() {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   const stars: { x: number; y: number; r: number; a: number; da: number }[] = []
-  const count = 200
+  const count = 120
   canvas.width = canvas.offsetWidth * devicePixelRatio
   canvas.height = canvas.offsetHeight * devicePixelRatio
   ctx.scale(devicePixelRatio, devicePixelRatio)
@@ -124,6 +129,7 @@ function initStarCanvas() {
   }
   function draw() {
     if (!ctx || !canvas) return
+    if (document.hidden) { starAnimationId = requestAnimationFrame(draw); return }
     ctx.clearRect(0, 0, w, h)
     for (const s of stars) {
       s.a += s.da; if (s.a > 1) s.a = 1; if (s.a < 0.2) s.a = 0.2
@@ -165,6 +171,7 @@ const base = useMapBase({
   },
   onMapReady: (map) => {
     emit('mapInit', map)
+    setTimeout(() => initStarCanvas(), 500)
     startAutoRotate(map)
     function pauseAutoRotate() { isUserInteracting = true; stopAutoRotate(); if (interactionTimeout) clearTimeout(interactionTimeout) }
     function resumeAutoRotate() {
@@ -181,11 +188,11 @@ const base = useMapBase({
     stopAutoRotate()
     stopStarCanvas()
     if (interactionTimeout) clearTimeout(interactionTimeout)
+    if (visibilityHandler) { document.removeEventListener('visibilitychange', visibilityHandler); visibilityHandler = null }
   },
 })
 
 function initMap() {
-  initStarCanvas()
   base.initMap()
 }
 

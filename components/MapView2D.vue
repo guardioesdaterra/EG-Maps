@@ -88,10 +88,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import type { MapBaseProps } from '@/composables/useMapBase'
 import { useMapBase } from '@/composables/useMapBase'
+
+const SpeciesFilterPanel = defineAsyncComponent(() => import('~/components/SpeciesFilterPanel.vue'))
+const ProjectFilterPanel = defineAsyncComponent(() => import('~/components/ProjectFilterPanel.vue'))
+const DataBubble = defineAsyncComponent(() => import('~/components/DataBubble.vue'))
+const MapControls = defineAsyncComponent(() => import('~/components/MapControls.vue'))
+const SpeciesPanel = defineAsyncComponent(() => import('~/components/SpeciesPanel.vue'))
 
 const props = withDefaults(defineProps<MapBaseProps>(), { defaultDataset: 'project-grants' })
 const emit = defineEmits<{ mapInit: [map: maplibregl.Map] }>()

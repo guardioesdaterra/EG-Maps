@@ -50,6 +50,12 @@ export default defineNuxtConfig({
     '/globe': { redirect: `${baseURL}project-grants/3d` },
     '/vulcan-observatory': { prerender: false },
     '/vulcan-observatory/3d': { prerender: false },
+    '/endangered-species': { prerender: false },
+    '/endangered-species/3d': { prerender: false },
+    '/project-grants': { prerender: false },
+    '/project-grants/3d': { prerender: false },
+    '/active-crews': { prerender: false },
+    '/active-crews/3d': { prerender: false },
   },
 
   // App configuration
@@ -132,10 +138,29 @@ export default defineNuxtConfig({
         output: {
           manualChunks: {
             maplibre: ['maplibre-gl'],
-            vendor: ['vue', 'vue-router', 'pinia'],
+            vendor: ['vue', 'vue-router'],
+            species: [
+              '~/composables/useSpeciesData.ts',
+              '~/composables/useSpeciesPanel.ts',
+              '~/composables/useSpeciesIcons.ts',
+            ],
+            mapCore: [
+              '~/composables/useMapBase.ts',
+              '~/composables/useMapCore.ts',
+              '~/composables/useMapCluster.ts',
+              '~/composables/useMapMarkerOrchestrator.ts',
+            ],
+            mapUi: [
+              '~/components/MapControls.vue',
+              '~/components/SpeciesFilterPanel.vue',
+              '~/components/ProjectFilterPanel.vue',
+              '~/components/DataBubble.vue',
+              '~/components/SpeciesPanel.vue',
+            ],
           },
         },
       },
+      chunkSizeWarningLimit: 600,
     },
     optimizeDeps: {
       include: ['maplibre-gl'],

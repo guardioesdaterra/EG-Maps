@@ -24,6 +24,10 @@
 </template>
 
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
+
+const MapView3D = defineAsyncComponent(() => import('~/components/MapView3D.vue'))
+
 const { t } = useI18n()
 
 useHead({

@@ -179,7 +179,7 @@
               <span class="gdash-votes">{{ voteCount(g.id) }} {{ t('grantsPortal.votes') }}</span>
             </div>
             <div class="gdash-card-links">
-              <button class="gdash-link-btn" @click="$emit('detail', g)">{{ t('grantsPortal.details') }}</button>
+              <button class="gdash-link-btn" @click="$emit('viewDetail', g)">{{ t('grantsPortal.details') }}</button>
               <a v-if="g.url" :href="g.url" target="_blank" class="gdash-link-btn apply" rel="noopener">{{ t('grantsPortal.apply') }} ↗</a>
               <template v-if="isManager">
                 <button v-if="activeTab === 'tabPending'" class="gdash-action approve text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'approved')">✓ {{ t('grantsPortal.approve') }}</button>
@@ -251,7 +251,7 @@ defineEmits<{
   'update:searchQuery': [q: string]
   'toggle:showHistory': []
   vote: [id: string, stars: number]
-  detail: [grant: ScrapedGrant]
+  viewDetail: [grant: ScrapedGrant | GrantRecord]
   leaderboardDetail: [entry: LeaderboardEntry]
   'review:grant': [id: string, decision: 'pending' | 'open' | 'closed']
   'review:scraped': [id: string, decision: 'approved' | 'hidden' | 'pending']

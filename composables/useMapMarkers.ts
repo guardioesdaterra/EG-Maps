@@ -95,8 +95,6 @@ export function createUnifiedMarkerElement(metrics: MarkerMetrics, baseURL?: str
 
   el.appendChild(inner)
 
-  el.setAttribute('data-marker-display', el.style.display)
-
   el.addEventListener('mouseenter', () => {
     inner.style.transform = 'scale(1.28)'
     inner.style.boxShadow = `0 0 ${Math.max(16, metrics.visualSize * 0.9)}px ${metrics.color}, 0 0 4px #fff`
@@ -582,8 +580,6 @@ export function createClusterMarkerElement(
       outer.style.zIndex = '20'
     })
   }
-
-  outer.setAttribute('data-marker-display', outer.style.display)
 
   return outer
 }

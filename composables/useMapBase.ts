@@ -4,7 +4,7 @@ import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 import { useMapHexGrid } from '@/composables/useMapHexGrid'
-import { useSpeciesPopup, useProjectPopup, useCrewPopup } from '@/composables/useMapPopup'
+import { useSpeciesPopup, useProjectPopup, useCrewPopup, usePreviewCard } from '@/composables/useMapPopup'
 import { useMapConnections } from '@/composables/useMapConnections'
 import { useMapMarkerOrchestrator } from '@/composables/useMapMarkerOrchestrator'
 import { useRareEarthController } from '@/composables/useRareEarthController'
@@ -12,7 +12,7 @@ import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { allProjectsData } from '@/lib/project-data'
 import { openRareEarthOverlayPopup } from '@/lib/map-utils'
 import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
-import { HEX_GRID, NATIVE_GEOJSON_THRESHOLD } from '@/lib/constants'
+import { HEX_GRID } from '@/lib/constants'
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
@@ -110,6 +110,7 @@ export function useMapBase(config: MapBaseConfig) {
   const speciesPopup = useSpeciesPopup(baseURL)
   const projectPopup = useProjectPopup()
   const crewPopup = useCrewPopup()
+  const previewCard = usePreviewCard(baseURL)
 
   const {
     showOverlay: showSpeciesOverlay,
@@ -163,6 +164,7 @@ export function useMapBase(config: MapBaseConfig) {
   }
 
   function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
+    previewCard.close()
     lastFocusedEl = document.activeElement as HTMLElement
     openSpeciesPopup(species)
   }
@@ -171,6 +173,7 @@ export function useMapBase(config: MapBaseConfig) {
     nextTick(() => lastFocusedEl?.focus())
   }
   function openProjectOverlay(project: ProjectData) {
+    previewCard.close()
     lastFocusedEl = document.activeElement as HTMLElement
     openProjectPopup(project)
   }
@@ -179,6 +182,7 @@ export function useMapBase(config: MapBaseConfig) {
     nextTick(() => lastFocusedEl?.focus())
   }
   function openCrewOverlay(crew: CrewRegionData | CrewLocation) {
+    previewCard.close()
     lastFocusedEl = document.activeElement as HTMLElement
     openCrewPopup(crew)
   }
@@ -198,6 +202,31 @@ export function useMapBase(config: MapBaseConfig) {
     if (map) openRareEarthOverlayPopup(map, feature)
   }
 
+  function openProjectPreview(project: ProjectData) {
+    if (!map) return
+    previewCard.openProject(project, map, {
+      expandProject: (p) => openProjectOverlay(p),
+      expandSpecies: () => {},
+      expandCrew: () => {},
+    })
+  }
+  function openSpeciesPreview(species: Species | SpeciesIndexItem) {
+    if (!map) return
+    previewCard.openSpecies(species, map, {
+      expandProject: () => {},
+      expandSpecies: (s) => openSpeciesOverlay(s),
+      expandCrew: () => {},
+    })
+  }
+  function openCrewPreview(crew: CrewRegionData | CrewLocation) {
+    if (!map) return
+    previewCard.openCrew(crew, map, {
+      expandProject: () => {},
+      expandSpecies: () => {},
+      expandCrew: (c) => openCrewOverlay(c),
+    })
+  }
+
   const orchestrator = useMapMarkerOrchestrator({
     ...orchestatorConfig,
     callbacks: {
@@ -206,10 +235,12 @@ export function useMapBase(config: MapBaseConfig) {
       openCrewOverlay: (crew: CrewRegionData | CrewLocation) => openCrewOverlay(crew),
       openCrewLocationOverlay: (crew: CrewLocation) => openCrewLocationOverlay(crew),
       openRareEarthOverlay: (feature: GeoJSON.Feature) => openRareEarthOverlay(feature),
+      openProjectPreview,
+      openSpeciesPreview,
+      openCrewPreview,
     },
   })
 
-  const { useNativeGeoJSON } = orchestrator
   const geoJSONInitializedFor = computed(() => orchestrator.geoJSONInitializedFor)
 
   const rareEarthController = useRareEarthController({
@@ -382,14 +413,8 @@ export function useMapBase(config: MapBaseConfig) {
       })
 
       map.on('moveend', () => {
-        updateMarkerVisibility()
         if (!map) return
-        const isNativeDataset = activeDataset.value === 'endangered-species' || activeDataset.value === 'project-grants'
-        const exceedsThreshold = activeDataset.value === 'endangered-species'
-          ? speciesIndexData.value.length > NATIVE_GEOJSON_THRESHOLD
-          : visibleProjects.value.length > NATIVE_GEOJSON_THRESHOLD
-        const usingNativeGeoJSON = useNativeGeoJSON && isNativeDataset && exceedsThreshold
-        if (usingNativeGeoJSON) return
+        if (activeDataset.value === 'endangered-species' || activeDataset.value === 'project-grants') return
         if (pendingRebuildRAF) { cancelAnimationFrame(pendingRebuildRAF); pendingRebuildRAF = null }
         pendingRebuildRAF = requestAnimationFrame(() => {
           pendingRebuildRAF = null
@@ -476,14 +501,16 @@ export function useMapBase(config: MapBaseConfig) {
 
   watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData], () => {
     if (!map || rebuildPending) return
-    console.warn(`[useMapBase] watch triggered: visibleSpecies=${visibleSpecies.value.length}, visibleProjects=${visibleProjects.value.length}, geoJSONInitFor=${geoJSONInitializedFor.value}, useNative=${useNativeGeoJSON}`)
+    console.warn(`[useMapBase] watch triggered: visibleSpecies=${visibleSpecies.value.length}, visibleProjects=${visibleProjects.value.length}, geoJSONInitFor=${geoJSONInitializedFor.value}`)
     rebuildPending = true
     nextTick(() => {
       rebuildPending = false
-      if (!useNativeGeoJSON) {
-        rebuildMarkers()
-      } else if (geoJSONInitializedFor.value) {
-        updateGeoJSONMarkerData()
+      if (activeDataset.value === 'endangered-species' || activeDataset.value === 'project-grants') {
+        if (geoJSONInitializedFor.value) {
+          updateGeoJSONMarkerData()
+        } else {
+          rebuildMarkers()
+        }
       } else {
         rebuildMarkers()
       }
@@ -540,6 +567,7 @@ export function useMapBase(config: MapBaseConfig) {
     onBeforeCleanup?.()
     if (loadingTimeout) clearTimeout(loadingTimeout)
     connections.cleanup()
+    previewCard.close()
     orchestrator.cleanup()
     window.removeEventListener('resize', onResize)
     window.removeEventListener('resize', checkViewportSize)
@@ -559,7 +587,7 @@ export function useMapBase(config: MapBaseConfig) {
     showHexGrid, showFilterPanel, speciesFilterPanelRef,
     connections, showConnections, toggleConnections,
     hexGrid, onResize,
-    orchestrator, useNativeGeoJSON, geoJSONInitializedFor,
+    orchestrator, geoJSONInitializedFor,
     rebuildMarkers, updateMarkerVisibility, updateGeoJSONMarkerData, navigateToLocation,
     rareEarthController, setupRareEarthLayers,
     showSpeciesOverlay, showProjectOverlay, showCrewOverlay,

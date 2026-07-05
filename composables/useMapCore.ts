@@ -25,6 +25,11 @@ export function useMapCore(locale: Ref<string>, t: (_key: string) => string) {
   }
 
   // ── Marker visibility ──
+  // Uses visibility + pointer-events instead of display toggling to avoid
+  // layout reflow that fights with MapLibre's coordinate→pixel positioning.
+  // display:none removes the element from layout flow, causing the browser
+  // to recalculate surrounding geometry — which shifts marker positions
+  // during pan/zoom animations.
 
   function updateMarkerVisibility(
     mapInstance: MapLibreMap,
@@ -46,16 +51,14 @@ export function useMapCore(locale: Ref<string>, t: (_key: string) => string) {
                             lngLat.lng > mapBounds.getEast() + lngMargin ||
                             lngLat.lat < mapBounds.getSouth() - latMargin ||
                             lngLat.lat > mapBounds.getNorth() + latMargin
-        const wasVisible = el.style.display !== 'none'
+        const isCurrentlyHidden = el.style.visibility === 'hidden'
         const shouldShow = !isOffScreen
-        if (wasVisible !== shouldShow) {
-          el.style.display = shouldShow
-            ? (el.getAttribute('data-marker-display') || 'flex')
-            : 'none'
+        if (isCurrentlyHidden !== !shouldShow) {
+          el.style.visibility = shouldShow ? 'visible' : 'hidden'
           el.style.pointerEvents = shouldShow ? 'auto' : 'none'
         }
       } catch {
-        el.style.display = 'none'
+        el.style.visibility = 'hidden'
         el.style.pointerEvents = 'none'
       }
     })

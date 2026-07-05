@@ -81,9 +81,9 @@ test.describe('Scroll sections exist', () => {
     await expect(join).toBeAttached({ timeout: 10000 })
   })
 
-  test('open-dashboard section is present (triggers panel animation)', async ({ page }) => {
+  test('grants-portal section is present (triggers panel animation)', async ({ page }) => {
     await loadPage(page, '/eg-grants')
-    const dashboard = page.locator('#open-dashboard')
+    const dashboard = page.locator('#grants-portal')
     await expect(dashboard).toBeAttached({ timeout: 10000 })
   })
 })
@@ -122,11 +122,11 @@ test.describe('Interactive elements', () => {
   test('dashboard section renders after scroll', async ({ page }) => {
     await loadPage(page, '/eg-grants')
     await page.evaluate(() => {
-      const el = document.getElementById('open-dashboard')
+      const el = document.getElementById('grants-portal')
       if (el) el.scrollIntoView()
     })
     await page.waitForTimeout(1500)
-    const dashboard = page.locator('#open-dashboard')
+    const dashboard = page.locator('#grants-portal')
     await expect(dashboard).toBeVisible({ timeout: 10000 })
   })
 })

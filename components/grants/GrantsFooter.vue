@@ -17,8 +17,6 @@
       <div class="tectonic-line" />
       <div class="footer-stats-grid">
         <div><h4>{{ t('grantsPortal.since') }}</h4><p class="footer-stat-value">2014</p><p class="footer-stat-label">{{ t('grantsPortal.overADecade') }}</p></div>
-        <div><h4>{{ t('grantsPortal.projectGrantsStat') }}</h4><p class="footer-stat-value">{{ projectStats.total }}</p><p class="footer-stat-label">{{ t('grantsPortal.fundedProjects') }}</p></div>
-        <div><h4>{{ t('grantsPortal.openGrantsCount') }}</h4><p class="footer-stat-value">{{ openGrantsTotal }}</p><p class="footer-stat-label">{{ t('grantsPortal.worldwideOpportunities') }}</p></div>
         <div><h4>{{ t('grantsPortal.countriesCount') }}</h4><p class="footer-stat-value">{{ countryCount }}</p><p class="footer-stat-label">{{ t('grantsPortal.globalReach') }}</p></div>
       </div>
       <div class="tectonic-line" />
@@ -37,8 +35,6 @@
 
 <script setup lang="ts">
 defineProps<{
-  projectStats: { total: number; countries: number; beneficiaries: number }
-  openGrantsTotal: number
   countryCount: string
 }>()
 

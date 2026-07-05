@@ -1,7 +1,6 @@
 #!/usr/bin/env -S npx tsx
 
 import { readFileSync, readdirSync } from "node:fs";
-import { createInterface } from "node:readline";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // ── Types ────────────────────────────────────────────────────
@@ -74,10 +73,6 @@ function toUUID(shortId: string): string {
   return shortId;
 }
 
-function grantHash(r: Record<string, unknown>): string {
-  return [r.title, r.funder, r.url, r.description, r.deadline, r.amount_max, r.amount_min, r.currency, r.country, r.region, r.categories].join("||");
-}
-
 // ── Cultural agents helpers ──────────────────────────────────
 function loadAgents(filePath: string): CulturalAgent[] {
   const raw = readFileSync(filePath, "utf-8");
@@ -91,10 +86,6 @@ function mapSource(source: string): string {
   if (source === "mapa_cultura") return "minc";
   if (source === "floresta_ativista") return "midia_ninja";
   return source;
-}
-
-function agentHash(r: Record<string, unknown>): string {
-  return [r.name, r.source, r.latitude, r.longitude].join("||");
 }
 
 function toVulcanRow(agent: CulturalAgent): VulcanRow {
@@ -111,6 +102,25 @@ function toVulcanRow(agent: CulturalAgent): VulcanRow {
     status: "active",
     synced_at: new Date().toISOString(),
   };
+}
+
+// ── Schema introspection (only upsert columns that exist) ────
+async function existingColumns(
+  supabase: SupabaseClient<SupabaseDB>,
+  table: string,
+  wanted: Set<string>,
+): Promise<Set<string>> {
+  const results = await Promise.all(
+    [...wanted].map(async (col) => {
+      const { error } = await supabase.from(table).select(col).limit(0);
+      return { col, exists: !error || !/(column|does not exist)/i.test(error.message) };
+    }),
+  );
+  const existing = new Set<string>(["id"]);
+  for (const r of results) {
+    if (r.exists) existing.add(r.col);
+  }
+  return existing;
 }
 
 // ── Batch upsert core ────────────────────────────────────────
@@ -177,40 +187,56 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
 
   console.warn(`Loaded ${grants.length} grants from ${filePath}`);
 
-  const records = grants.map((g) => ({
-    id: toUUID(g.id),
-    title: g.title || "Untitled Grant",
-    funder: g.funder || "",
-    source: g.source || "",
-    source_id: g.id || "",
-    url: g.url || "",
-    description: (g.description || "").slice(0, 5000),
-    deadline: g.deadline || "",
-    amount_max: String(g.amount_max ?? ""),
-    amount_min: String(g.amount_min ?? ""),
-    currency: g.currency || "",
-    country: g.country || "GLOBAL",
-    region: g.region || null,
-    categories: Array.isArray(g.categories) ? g.categories.filter(Boolean) : [],
-    language: g.language || "en",
-    relevance: typeof g.relevance === "number" ? Math.max(0, Math.min(100, g.relevance)) : 0,
-    status: ["open", "closed", "unknown"].includes(g.status) ? g.status : "unknown",
-    grant_status: g.status || "unknown",
-    fetched_at: g.fetched_at || new Date().toISOString(),
-    grant_type: g.grant_type || "general",
-    grant_types: Array.isArray(g.grant_types) ? g.grant_types : [],
-    highlights: Array.isArray(g.highlights) ? g.highlights : [],
-    urgency: g.urgency || "unknown",
-    deadline_days: g.deadline_days ?? null,
-    amount_usd: g.amount_usd ?? null,
-    priority_score: typeof g.priority_score === "number" ? g.priority_score : 0,
-    is_standing: Boolean(g.is_standing),
-  }));
+  // Introspect which of our wanted columns actually exist in the table
+  const allWanted = new Set([
+    "id", "title", "funder", "source", "source_id", "url", "description",
+    "deadline", "amount_max", "amount_min", "currency", "country", "region",
+    "categories", "language", "relevance", "status", "grant_status",
+    "fetched_at", "grant_type", "grant_types", "highlights", "urgency",
+    "deadline_days", "amount_usd", "priority_score", "is_standing",
+  ]);
+  const cols = await existingColumns(supabase, "scraped_grants", allWanted);
+
+  // Build records from grants, dropping any column absent from the DB
+  const records: Record<string, unknown>[] = grants.map((g) => {
+    const r: Record<string, unknown> = {};
+    if (cols.has("id"))                r.id = toUUID(g.id);
+    if (cols.has("title"))             r.title = g.title || "Untitled Grant";
+    if (cols.has("funder"))            r.funder = g.funder || "";
+    if (cols.has("source"))            r.source = g.source || "";
+    if (cols.has("source_id"))         r.source_id = g.id || "";
+    if (cols.has("url"))               r.url = g.url || "";
+    if (cols.has("description"))       r.description = (g.description || "").slice(0, 5000);
+    if (cols.has("deadline"))          r.deadline = g.deadline || "";
+    if (cols.has("amount_max"))        r.amount_max = String(g.amount_max ?? "");
+    if (cols.has("amount_min"))        r.amount_min = String(g.amount_min ?? "");
+    if (cols.has("currency"))          r.currency = g.currency || "";
+    if (cols.has("country"))           r.country = g.country || "GLOBAL";
+    if (cols.has("region"))            r.region = g.region || null;
+    if (cols.has("categories"))        r.categories = Array.isArray(g.categories) ? g.categories.filter(Boolean) : [];
+    if (cols.has("language"))          r.language = g.language || "en";
+    if (cols.has("relevance"))         r.relevance = typeof g.relevance === "number" ? Math.max(0, Math.min(100, g.relevance)) : 0;
+    if (cols.has("status"))            r.status = ["open", "closed", "unknown"].includes(g.status) ? g.status : "unknown";
+    if (cols.has("grant_status"))      r.grant_status = g.status || "unknown";
+    if (cols.has("fetched_at"))        r.fetched_at = g.fetched_at || new Date().toISOString();
+    if (cols.has("grant_type"))        r.grant_type = g.grant_type || "general";
+    if (cols.has("grant_types"))       r.grant_types = Array.isArray(g.grant_types) ? g.grant_types : [];
+    if (cols.has("highlights"))        r.highlights = Array.isArray(g.highlights) ? g.highlights : [];
+    if (cols.has("urgency"))           r.urgency = g.urgency || "unknown";
+    if (cols.has("deadline_days"))     r.deadline_days = g.deadline_days ?? null;
+    if (cols.has("amount_usd"))        r.amount_usd = g.amount_usd ?? null;
+    if (cols.has("priority_score"))    r.priority_score = typeof g.priority_score === "number" ? g.priority_score : 0;
+    if (cols.has("is_standing"))       r.is_standing = Boolean(g.is_standing);
+    return r;
+  });
+
+  const hashFields = ["title", "funder", "url", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories", "status"];
+  const selectCols = "id, " + hashFields.join(", ");
 
   const { inserted, updated, skipped, errors } = await batchUpsert(
     supabase, "scraped_grants", records,
-    ["title", "funder", "url", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories", "status"],
-    "id, title, funder, url, description, deadline, amount_max, amount_min, currency, country, region, categories, status",
+    hashFields,
+    selectCols,
   );
 
   printResult("Grants", inserted, updated, skipped, grants.length, errors);

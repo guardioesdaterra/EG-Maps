@@ -137,22 +137,43 @@ export function useThreeGlobe(
     const panelGroup = new THREE.Group()
     globe.add(panelGroup)
 
-    const PANEL_COLORS = [
-      0x00ff85, 0x00ccff, 0xff6b6b, 0xffd93d, 0x6c5ce7,
-      0x00cec9, 0xfd79a8, 0xe17055, 0x0984e3, 0x00b894,
-      0xfdcba0, 0xa29bfe, 0x55efc4, 0xff7675, 0x74b9ff,
-      0x636e72, 0xdfe6e9, 0xb2bec3, 0xffeaa7, 0x81ecec,
-      0xfab1a0,
+    const GRANT_IMAGES = [
+      { src: '/images/Image- (1).jpg', w: 931, h: 620 },
+      { src: '/images/Image- (2).jpg', w: 1440, h: 1800 },
+      { src: '/images/Image- (3).jpg', w: 1024, h: 683 },
+      { src: '/images/Image- (4).jpg', w: 959, h: 640 },
+      { src: '/images/Image- (5).jpg', w: 1024, h: 683 },
     ]
+
+    // Duplicate images to fill all panels (5 images → 21 panels)
+    const panelImages: { src: string; w: number; h: number }[] = []
+    while (panelImages.length < PANEL_COUNT) {
+      panelImages.push(...GRANT_IMAGES)
+    }
+    panelImages.length = PANEL_COUNT
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const panels: any[] = []
+    const MAX_PANEL_W = 0.4
+    const MAX_PANEL_H = 0.35
     for (let i = 0; i < PANEL_COUNT; i++) {
-      const w = 0.15 + Math.random() * 0.25
-      const h = 0.1 + Math.random() * 0.15
+      const imgInfo = panelImages[i]
+      const aspect = imgInfo.w / imgInfo.h
+      let w: number
+      let h: number
+      if (aspect >= 1) {
+        w = MAX_PANEL_W
+        h = w / aspect
+      } else {
+        h = MAX_PANEL_H
+        w = h * aspect
+      }
       const panelGeo = new THREE.PlaneGeometry(w, h)
+      const texture = loader.load(imgInfo.src)
+      texture.minFilter = THREE.LinearFilter
+      texture.magFilter = THREE.LinearFilter
       const panelMat = new THREE.MeshBasicMaterial({
-        color: PANEL_COLORS[i % PANEL_COLORS.length],
+        map: texture,
         transparent: true,
         opacity: 0,
         side: THREE.DoubleSide,

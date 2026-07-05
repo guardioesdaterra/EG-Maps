@@ -158,7 +158,7 @@
           @sign-in="signIn"
           @sign-out="handleSignOut"
           @update:active-tab="activePortalTab = $event"
-          @update:manager-sub-tab="activeTab = $event as 'pending' | 'approved' | 'rejected'"
+          @update:manager-sub-tab="setManagerSubTab"
           @update:search-query="dashboardSearch = $event"
           @toggle:show-history="showHistory = !showHistory"
           @vote="handleVoteScraped"
@@ -462,6 +462,10 @@ async function loadLeaderboardData() {
   }
 }
 
+function setManagerSubTab(tab: string) {
+  activeTab.value = tab as 'pending' | 'approved' | 'rejected'
+}
+
 async function handleReview(grantId: string, decision: string) {
   try {
     await apiReviewGrant(grantId, decision as 'approved' | 'rejected')
@@ -473,9 +477,9 @@ async function handleReview(grantId: string, decision: string) {
   }
 }
 
-async function handleReviewScraped(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending') {
+async function handleReviewScraped(grantId: string, decision: string) {
   try {
-    await apiReviewScraped(grantId, decision)
+    await apiReviewScraped(grantId, decision as 'approved' | 'rejected' | 'hidden' | 'pending')
     loadScrapedGrants()
     loadGrants()
   } catch (e) {

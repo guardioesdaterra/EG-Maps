@@ -838,6 +838,7 @@
     "copy": "Copy",
     "copied": "Copied!",
     "copyCode": "Copy embed code",
+    "loadingPreview": "Scroll into view to load preview",
     "fullScreen": {
       "title": "Full Screen Embed",
       "description": "Fills the entire browser viewport. Ideal for dedicated map pages."

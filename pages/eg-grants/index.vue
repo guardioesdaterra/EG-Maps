@@ -98,8 +98,7 @@
           <span class="data-label">{{ t('grantsPortal.grantsSectionLabel') }}</span>
           <h2 class="grants-heading">{{ t('grantsPortal.howGrantsWork') }}</h2>
           <div class="grants-body">
-            <div class="grants-copy">
-              <p>{{ t('grantsPortal.grantsCopy1').split(t('grantsPortal.grantsCopy1Strong'))[0] }}<strong>{{ t('grantsPortal.grantsCopy1Strong') }}</strong>{{ t('grantsPortal.grantsCopy1').split(t('grantsPortal.grantsCopy1Strong'))[1] }}</p>
+            <div class="grants-copy">              <p>{{ t('grantsPortal.grantsCopy1').split(t('grantsPortal.grantsCopy1Strong'))[0] }}<strong>{{ t('grantsPortal.grantsCopy1Strong') }}</strong>{{ t('grantsPortal.grantsCopy1').split(t('grantsPortal.grantsCopy1Strong'))[1] }}</p>
               <p>{{ t('grantsPortal.grantsCopy2') }}</p>
               <p>{{ t('grantsPortal.grantsCopy3') }}</p>
               <p>{{ t('grantsPortal.grantsCopy4') }}</p>
@@ -108,14 +107,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               </NuxtLink>
             </div>
-            <div class="grants-visual">
-              <div class="grants-globe-ring">
-                <div v-for="(p, i) in topProjects" :key="'gv-'+i" class="grants-globe-item" :style="{ '--delay': i * 0.8 + 's' }">
-                  <div class="grants-globe-dot" />
-                  <span class="grants-globe-label">{{ p.country_province.split(',').pop()?.trim() }}</span>
-                </div>
-              </div>
-            </div>
+
           </div>
           <div class="contact-info">
             <p class="contact-text" v-html="contactEmailHtml" />
@@ -633,9 +625,6 @@ onBeforeUnmount(() => {
   --z-ui: 10;
   --z-dropdown: 9999;
   --z-dropdown-backdrop: 9998;
-  --z-modal-registry: 9000;
-  --z-modal-detail: 9100;
-  --z-modal-edit: 9200;
   --z-confirm: 10000;
 }
 
@@ -838,18 +827,10 @@ h2 {
 .grants-section { min-height: auto; padding: 6rem 10%; position: relative; }
 .grants-inner { max-width: 1200px; margin: 0 auto; }
 .grants-heading { margin-top: 1rem; }
-.grants-body { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 3rem; align-items: start; }
+.grants-body { max-width: 700px; margin: 3rem auto 0; }
 .grants-copy { background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 2rem; }
 .grants-copy p { line-height: 1.8; color: rgba(255, 255, 255, 0.75); font-size: 0.95rem; margin-bottom: 1.25rem; }
 .grants-copy strong { color: var(--accent); }
-.grants-visual { display: flex; align-items: center; justify-content: center; }
-.grants-globe-ring { position: relative; width: 260px; height: 260px; border-radius: 50%; border: 1px solid rgba(0, 255, 133, 0.15); animation: ringRotate 20s linear infinite; }
-@keyframes ringRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-.grants-globe-item { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: ringRotate 20s linear infinite reverse; }
-.grants-globe-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px rgba(0, 255, 133, 0.5); animation: dotPulse 2s ease-in-out infinite; animation-delay: var(--delay, 0s); }
-@keyframes dotPulse { 0%, 100% { opacity: 0.4; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
-.grants-globe-label { position: absolute; top: -24px; left: 50%; transform: translateX(-50%); font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255, 255, 255, 0.5); white-space: nowrap; }
-
 .grants-cta-btn {
   display: inline-flex;
   align-items: center;
@@ -942,8 +923,6 @@ h2 {
 @media (max-width: 768px) {
   section, .projects-section { padding: 4rem 5%; }
   .grants-section { padding: 4rem 5%; }
-  .grants-body { grid-template-columns: 1fr; gap: 2rem; }
-  .grants-globe-ring { width: 200px; height: 200px; }
   .impact-card { flex: 0 0 180px; }
   .impact-stats-grid { grid-template-columns: repeat(2, 1fr); }
   .mission-quote-card { padding: 1.5rem; }

@@ -23,14 +23,45 @@ export interface SpeciesIndexItem {
 
 const GROUP_COLORS_HEX: Record<string, string> = GROUP_COLORS
 
-// WeakMap-based cache so entries are GC'd when the source array is dropped
-const speciesGeoCache = new WeakMap<SpeciesIndexItem[], GeoJSON.FeatureCollection>()
-const projectsGeoCache = new WeakMap<object[], GeoJSON.FeatureCollection>()
+// Content-hash cache so filter changes with same data hit the cache
+const speciesGeoCache = new Map<string, GeoJSON.FeatureCollection>()
+const projectsGeoCache = new Map<string, GeoJSON.FeatureCollection>()
+const MAX_CACHE_SIZE = 10
+
+function hashSpeciesIndex(items: SpeciesIndexItem[]): string {
+  if (items.length === 0) return 'empty'
+  let h = 0
+  const len = Math.min(items.length, 200)
+  for (let i = 0; i < len; i++) {
+    const s = items[i]
+    h = ((h << 5) - h + s.lat * 1000 + s.lng * 1000 + (s.taxonomicGroup?.length ?? 0)) | 0
+  }
+  return `${h}:${items.length}`
+}
+
+function hashProjects(projects: { latitude: number; longitude: number; project_title: string }[]): string {
+  if (projects.length === 0) return 'empty'
+  let h = 0
+  const len = Math.min(projects.length, 200)
+  for (let i = 0; i < len; i++) {
+    const p = projects[i]
+    h = ((h << 5) - h + p.latitude * 1000 + p.longitude * 1000) | 0
+  }
+  return `${h}:${projects.length}`
+}
+
+function evictOldest(cache: Map<string, GeoJSON.FeatureCollection>) {
+  if (cache.size > MAX_CACHE_SIZE) {
+    const first = cache.keys().next().value
+    if (first) cache.delete(first)
+  }
+}
 
 // Lightweight index for markers - only 3.2MB vs 35MB full data
 export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.FeatureCollection {
 
-  const cached = speciesGeoCache.get(species)
+  const key = hashSpeciesIndex(species)
+  const cached = speciesGeoCache.get(key)
   if (cached) return cached
 
   const result: GeoJSON.FeatureCollection = {
@@ -56,13 +87,15 @@ export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.Feat
       }))
   }
 
-  speciesGeoCache.set(species, result)
+  evictOldest(speciesGeoCache)
+  speciesGeoCache.set(key, result)
   return result
 }
 
 // Convert project data to GeoJSON FeatureCollection
 export function projectsToGeoJSON(projects: { latitude: number; longitude: number; project_title: string; country_province: string; direct_beneficiaries: number; indirect_beneficiaries: number }[]): GeoJSON.FeatureCollection {
-  const cached = projectsGeoCache.get(projects)
+  const key = hashProjects(projects)
+  const cached = projectsGeoCache.get(key)
   if (cached) return cached
 
   const result: GeoJSON.FeatureCollection = {
@@ -91,13 +124,15 @@ export function projectsToGeoJSON(projects: { latitude: number; longitude: numbe
       })
   }
 
-  projectsGeoCache.set(projects, result)
+  evictOldest(projectsGeoCache)
+  projectsGeoCache.set(key, result)
   return result
 }
 
 // Clear caches when data changes
 export function clearGeoJSONCache() {
-  // WeakMap clears automatically when keys are GC'd
+  speciesGeoCache.clear()
+  projectsGeoCache.clear()
 }
 
 export function useGeoJSONMarkers() {

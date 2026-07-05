@@ -36,7 +36,7 @@ export const MAX_CLUSTER_SIZE = 5
 export const MARKER_VISIBILITY_MARGIN = 50
 
 /** Cluster rebuild threshold: fraction of viewport pan needed to trigger a rebuild */
-export const CLUSTER_REBUILD_THRESHOLD = 0.5
+export const CLUSTER_REBUILD_THRESHOLD = 0.75
 
 /** Mobile item limit for project markers */
 export const MOBILE_PROJECT_LIMIT = 60

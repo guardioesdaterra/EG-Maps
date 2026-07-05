@@ -138,11 +138,11 @@ export function useThreeGlobe(
     globe.add(panelGroup)
 
     const GRANT_IMAGES = [
-      { src: '/images/Image- (1).jpg', w: 931, h: 620 },
-      { src: '/images/Image- (2).jpg', w: 1440, h: 1800 },
-      { src: '/images/Image- (3).jpg', w: 1024, h: 683 },
-      { src: '/images/Image- (4).jpg', w: 959, h: 640 },
-      { src: '/images/Image- (5).jpg', w: 1024, h: 683 },
+      { src: '/images/grant-1.jpg', w: 931, h: 620 },
+      { src: '/images/grant-2.jpg', w: 1440, h: 1800 },
+      { src: '/images/grant-3.jpg', w: 1024, h: 683 },
+      { src: '/images/grant-4.jpg', w: 959, h: 640 },
+      { src: '/images/grant-5.jpg', w: 1024, h: 683 },
     ]
 
     // Duplicate images to fill all panels (5 images → 21 panels)

@@ -89,12 +89,12 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
     const dataset = activeDataset === 'project-grants' ? 'project-grants' : 'endangered-species'
 
     if (!forceReinit && geoJSONInitializedFor === dataset) {
-      console.warn(`[Orchestrator] setupGeoJSONMarkers: already initialized for ${dataset}, updating data`)
+      if (import.meta.dev) console.warn(`[Orchestrator] setupGeoJSONMarkers: already initialized for ${dataset}, updating data`)
       updateGeoJSONMarkerData(activeDataset, projectsData, speciesIndexData, speciesData, selectedSpeciesGroups)
       return
     }
 
-    console.warn(`[Orchestrator] setupGeoJSONMarkers: initializing ${dataset}, speciesIndex: ${speciesIndexData.length}, projects: ${projectsData.length}`)
+    if (import.meta.dev) console.warn(`[Orchestrator] setupGeoJSONMarkers: initializing ${dataset}, speciesIndex: ${speciesIndexData.length}, projects: ${projectsData.length}`)
 
     // Clean up old DOM markers
     markers.forEach(mm => mm.remove())
@@ -198,7 +198,7 @@ export function useMapMarkerOrchestrator(options: OrchestratorOptions) {
   ) {
     const m = getMap()
     if (!m || !geoJSONInitializedFor) return
-    console.warn(`[Orchestrator] updateGeoJSONMarkerData: ${geoJSONInitializedFor}, speciesIndex: ${speciesIndexData.length}`)
+    if (import.meta.dev) console.warn(`[Orchestrator] updateGeoJSONMarkerData: ${geoJSONInitializedFor}, speciesIndex: ${speciesIndexData.length}`)
     if (geoJSONInitializedFor === 'project-grants') {
       const validProjects = projectsData.filter(p => isValidCoordinate(p.latitude, p.longitude))
       geoJSONMarkers.updateData(SOURCE_ID, projectsToGeoJSON(validProjects))

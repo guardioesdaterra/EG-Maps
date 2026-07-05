@@ -491,7 +491,9 @@ export function useMapBase(config: MapBaseConfig) {
   })
 
   watch(locale, () => {
-    rebuildMarkers()
+    if (activeDataset.value === 'project-grants' || activeDataset.value === 'endangered-species') {
+      rebuildMarkers()
+    }
   })
 
   watch(crewLocationsData, () => {
@@ -501,7 +503,6 @@ export function useMapBase(config: MapBaseConfig) {
 
   watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData], () => {
     if (!map || rebuildPending) return
-    console.warn(`[useMapBase] watch triggered: visibleSpecies=${visibleSpecies.value.length}, visibleProjects=${visibleProjects.value.length}, geoJSONInitFor=${geoJSONInitializedFor.value}`)
     rebuildPending = true
     nextTick(() => {
       rebuildPending = false
@@ -514,11 +515,13 @@ export function useMapBase(config: MapBaseConfig) {
       } else {
         rebuildMarkers()
       }
-      if (activeDataset.value !== 'vulcan-observatory') {
-        connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
-        if (connections.showConnections.value) connections.startParticles()
-      }
     })
+  })
+
+  watch([visibleSpecies, visibleProjects], () => {
+    if (!map || activeDataset.value === 'vulcan-observatory') return
+    connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+    if (connections.showConnections.value) connections.startParticles()
   })
 
   watch(() => [props.rareEarthPoints, props.rareEarthPolygons], () => {

@@ -11,12 +11,12 @@
         </a>
         <a href="https://www.instagram.com/earthguardians/" target="_blank" class="footer-link">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-          <span>@earthguardians_br</span>
+          <span>@earthguardians</span>
         </a>
       </div>
       <div class="tectonic-line" />
       <div class="footer-stats-grid">
-        <div><h4>{{ t('grantsPortal.since') }}</h4><p class="footer-stat-value">2014</p><p class="footer-stat-label">{{ t('grantsPortal.overADecade') }}</p></div>
+        <div><h4>{{ t('grantsPortal.since') }}</h4><p class="footer-stat-value">1992</p><p class="footer-stat-label">{{ t('grantsPortal.overADecade') }}</p></div>
         <div><h4>{{ t('grantsPortal.countriesCount') }}</h4><p class="footer-stat-value">{{ countryCount }}</p><p class="footer-stat-label">{{ t('grantsPortal.globalReach') }}</p></div>
       </div>
       <div class="tectonic-line" />

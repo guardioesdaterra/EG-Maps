@@ -74,14 +74,6 @@ export const allProjectsData: ProjectData[] = [
       indirect_beneficiaries: 3000,
     },
     {
-      project_title: "Campagne de reboisement de 1OO pieds d'arbres",
-      country_province: "Bamako Mali",
-      latitude: 12.6392,
-      longitude: -8.0025,
-      direct_beneficiaries: 1230,
-      indirect_beneficiaries: 6000,
-    },
-    {
       project_title: "Sakubva Community Clean-Up and tree planting",
       country_province: "Mutare, Zimbabwe",
       latitude: -18.9758,
@@ -112,14 +104,6 @@ export const allProjectsData: ProjectData[] = [
       longitude: -11.7799,
       direct_beneficiaries: 200,
       indirect_beneficiaries: 2500,
-    },
-    {
-      project_title: "PROJET DE GESTION DE QUALITE DES ORDURES EN MILIEU SCOLAIRE ET D'AMENAGEMENT D'ESPACE VERT",
-      country_province: "Kpalime-TOGO",
-      latitude: 6.9098,
-      longitude: 0.6299,
-      direct_beneficiaries: 1500,
-      indirect_beneficiaries: 5000,
     },
     {
       project_title: "sensibilisation et formation des populations du village Ekeke sur les evaluations environnementales et sociales",

@@ -256,8 +256,8 @@ defineEmits<{
   vote: [id: string, stars: number]
   detail: [grant: ScrapedGrant]
   leaderboardDetail: [entry: LeaderboardEntry]
-  'review:grant': [id: string, decision: string]
-  'review:scraped': [id: string, decision: string]
+  'review:grant': [id: string, decision: 'pending' | 'approved' | 'rejected']
+  'review:scraped': [id: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending']
 }>()
 
 const { t } = useI18n()

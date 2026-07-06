@@ -42,10 +42,6 @@
         <span class="gdash-stat-num" style="color:var(--stat-closed)">{{ closedCount }}</span>
         <span class="gdash-stat-label">{{ t('grantsPortal.statClosed') }}</span>
       </div>
-      <div class="gdash-stat glass">
-        <span class="gdash-stat-num" style="color:var(--stat-declined)">{{ declinedCount }}</span>
-        <span class="gdash-stat-label">{{ t('grantsPortal.statDeclined') }}</span>
-      </div>
     </div>
 
     <!-- ── Tabs + Search ─────────────────────────────── -->
@@ -131,7 +127,7 @@
           v-for="g in displayGrants"
           :key="g.id"
           class="gdash-card glass"
-          :class="{ 'opacity-60': activeTab === 'tabClosed', 'opacity-50': activeTab === 'tabDeclined' }"
+          :class="{ 'opacity-60': activeTab === 'tabClosed' }"
         >
           <div class="gdash-card-header">
             <div class="gdash-card-title-row">
@@ -228,7 +224,6 @@ const props = defineProps<{
   pendingCount: number
   openCount: number
   closedCount: number
-  declinedCount: number
   activeTab: string
   managerSubTab: string
   showHistory: boolean
@@ -264,7 +259,6 @@ const tabs = computed(() => {
     { key: 'tabPending', emoji: '📋' },
     { key: 'tabOpen', emoji: '🌍' },
     { key: 'tabClosed', emoji: '🔒' },
-    { key: 'tabDeclined', emoji: '🚫' },
     { key: 'tabLeaderboard', emoji: '🏆' },
   ]
   if (!props.user) return list.filter(tab => tab.key === 'tabOpen')
@@ -278,7 +272,6 @@ const statusClass = computed(() => {
     tabPending: 'pending',
     tabOpen: 'open',
     tabClosed: 'closed',
-    tabDeclined: 'hidden',
   }
   return map[props.activeTab] || 'pending'
 })
@@ -288,7 +281,6 @@ const statusLabel = computed(() => {
     tabPending: t('grantsPortal.statusPending'),
     tabOpen: t('grantsPortal.statusOpen'),
     tabClosed: t('grantsPortal.statusClosed'),
-    tabDeclined: t('grantsPortal.statusRejected'),
   }
   return map[props.activeTab] || ''
 })
@@ -298,7 +290,6 @@ const emptyMessage = computed(() => {
     tabPending: t('grantsPortal.noGrants'),
     tabOpen: t('grantsPortal.noOpenGrants'),
     tabClosed: t('grantsPortal.noClosedGrants'),
-    tabDeclined: t('grantsPortal.noDeclinedGrants'),
     tabLeaderboard: t('grantsPortal.noLeaderboard'),
   }
   return map[props.activeTab] || t('grantsPortal.noGrants')
@@ -309,7 +300,6 @@ function tabCount(key: string): string {
     tabPending: props.pendingCount,
     tabOpen: props.openCount,
     tabClosed: props.closedCount,
-    tabDeclined: props.declinedCount,
   }
   const n = map[key]
   return n != null ? `(${n})` : ''

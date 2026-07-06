@@ -6,7 +6,7 @@ import { useFocusTrap } from '@/composables/useFocusTrap'
 import { useMapHexGrid } from '@/composables/useMapHexGrid'
 import { useSpeciesPopup, useProjectPopup, useCrewPopup, usePreviewCard } from '@/composables/useMapPopup'
 import { useMapConnections } from '@/composables/useMapConnections'
-import { useMapMarkerOrchestrator } from '@/composables/useMapMarkerOrchestrator'
+import { useMapMarker } from '@/composables/useMapMarker'
 import { useRareEarthController } from '@/composables/useRareEarthController'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { allProjectsData } from '@/lib/project-data'
@@ -147,21 +147,12 @@ export function useMapBase(config: MapBaseConfig) {
   let map: maplibregl.Map | null = null
   let isMounted = true
   let loadingTimeout: ReturnType<typeof setTimeout> | null = null
-  let pendingVisibilityUpdate = false
-  let pendingRebuildRAF: number | null = null
   let lastFocusedEl: HTMLElement | null = null
   let rebuildPending = false
 
   const mapRef = computed(() => map)
 
-  const orchestatorConfig = {
-    map: mapRef,
-    locale,
-    isMobile,
-    baseURL,
-    defaultDataset: props.defaultDataset || 'project-grants',
-    isGlobe,
-  }
+  /* ── overlay helpers ───────────────────────────────────────────────── */
 
   function openSpeciesOverlay(species: Species | SpeciesIndexItem) {
     previewCard.close()
@@ -227,21 +218,18 @@ export function useMapBase(config: MapBaseConfig) {
     })
   }
 
-  const orchestrator = useMapMarkerOrchestrator({
-    ...orchestatorConfig,
-    callbacks: {
-      openProjectOverlay,
-      openSpeciesOverlay,
-      openCrewOverlay: (crew: CrewRegionData | CrewLocation) => openCrewOverlay(crew),
-      openCrewLocationOverlay: (crew: CrewLocation) => openCrewLocationOverlay(crew),
-      openRareEarthOverlay: (feature: GeoJSON.Feature) => openRareEarthOverlay(feature),
-      openProjectPreview,
-      openSpeciesPreview,
-      openCrewPreview,
-    },
-  })
+  /* ── marker system (replaces orchestrator) ─────────────────────────── */
 
-  const geoJSONInitializedFor = computed(() => orchestrator.geoJSONInitializedFor.value)
+  const marker = useMapMarker({
+    openProjectOverlay,
+    openSpeciesOverlay,
+    openCrewOverlay,
+    openCrewLocationOverlay,
+    openRareEarthOverlay,
+    openProjectPreview,
+    openSpeciesPreview,
+    openCrewPreview,
+  })
 
   const rareEarthController = useRareEarthController({
     map: mapRef,
@@ -262,47 +250,34 @@ export function useMapBase(config: MapBaseConfig) {
     rareEarthController.setupLayers()
   }
 
+  /* ── marker rebuild (single entry-point for all datasets) ──────────── */
+
   function rebuildMarkers() {
-    if (!map) return
-    orchestrator.rebuildMarkers(
-      activeDataset.value!,
-      visibleProjects.value,
-      speciesIndexData.value,
-      speciesData.value,
-      crewsData.value,
-      crewLocationsData.value,
-      selectedSpeciesGroups.value,
-      (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
-    )
+    if (!map || activeDataset.value === 'vulcan-observatory') return
+    marker.rebuild({
+      dataset: activeDataset.value!,
+      projects: visibleProjects.value,
+      speciesIndex: speciesIndexData.value,
+      species: speciesData.value,
+      crews: crewsData.value,
+      crewLocations: crewLocationsData.value,
+      selectedSpeciesGroups: selectedSpeciesGroups.value,
+      rareEarthFeatures: (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
+    })
   }
 
-  function updateMarkerVisibility() {
-    orchestrator.updateMarkerVisibility()
-  }
-
-  function updateGeoJSONMarkerData() {
-    if (!map) return
-    orchestrator.updateGeoJSONMarkerData(
-      activeDataset.value!,
-      visibleProjects.value,
-      speciesIndexData.value,
-      speciesData.value,
-      selectedSpeciesGroups.value,
-    )
-  }
-
-  function updateDOMMarkers() {
-    if (!map) return
-    orchestrator.updateDOMMarkers(
-      activeDataset.value!,
-      visibleProjects.value,
-      speciesIndexData.value,
-      speciesData.value,
-      crewsData.value,
-      crewLocationsData.value,
-      selectedSpeciesGroups.value,
-      (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
-    )
+  function updateMarkerData() {
+    if (!map || activeDataset.value === 'vulcan-observatory') return
+    marker.update({
+      dataset: activeDataset.value!,
+      projects: visibleProjects.value,
+      speciesIndex: speciesIndexData.value,
+      species: speciesData.value,
+      crews: crewsData.value,
+      crewLocations: crewLocationsData.value,
+      selectedSpeciesGroups: selectedSpeciesGroups.value,
+      rareEarthFeatures: (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
+    })
   }
 
   function navigateToLocation(lat: number, lng: number) {
@@ -345,6 +320,8 @@ export function useMapBase(config: MapBaseConfig) {
 
   function rebuildSpeciesOverlay() { rebuildSpeciesPopup() }
 
+  /* ── map init ─────────────────────────────────────────────────────── */
+
   function initMap() {
     if (!mapContainerRef.value) return
 
@@ -356,13 +333,10 @@ export function useMapBase(config: MapBaseConfig) {
       return
     }
 
-    if (pendingRebuildRAF) { cancelAnimationFrame(pendingRebuildRAF); pendingRebuildRAF = null }
-    pendingVisibilityUpdate = false
-
     window.removeEventListener('resize', onResize)
     if (map) {
       onBeforeCleanup?.()
-      orchestrator.cleanup()
+      marker.cleanup()
       map.remove()
       map = null
     }
@@ -401,9 +375,10 @@ export function useMapBase(config: MapBaseConfig) {
 
       map.on('load', () => {
         if (!isMounted) return
-        if (import.meta.dev) console.warn(`[useMapBase] map.on('load'): dataset=${activeDataset.value}, speciesIndex=${speciesIndexData.value.length}, projects=${projectsData.value.length}`)
+        if (import.meta.dev) console.warn(`[useMapBase] map.on('load'): dataset=${activeDataset.value}`)
         isLoading.value = false
         if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null }
+        marker.init(map!)
         if (activeDataset.value === 'vulcan-observatory') {
           setupRareEarthLayers()
         }
@@ -416,29 +391,7 @@ export function useMapBase(config: MapBaseConfig) {
         onMapReady?.(map!)
       })
 
-      map.on('move', () => {
-        if (!pendingVisibilityUpdate) {
-          pendingVisibilityUpdate = true
-          requestAnimationFrame(() => {
-            updateMarkerVisibility()
-            pendingVisibilityUpdate = false
-          })
-        }
-      })
-
-      map.on('moveend', () => {
-        if (!map) return
-        if (activeDataset.value === 'endangered-species' || activeDataset.value === 'project-grants') return
-        if (pendingRebuildRAF) { cancelAnimationFrame(pendingRebuildRAF); pendingRebuildRAF = null }
-        pendingRebuildRAF = requestAnimationFrame(() => {
-          pendingRebuildRAF = null
-          if (!map) return
-          const currentZoom = Math.floor(map.getZoom())
-          if (orchestrator.mapCore.shouldRebuildClusters(map, currentZoom, orchestrator.lastClusterZoom.value, orchestrator.lastBboxCenter.value)) {
-            updateDOMMarkers()
-          }
-        })
-      })
+      /* no move/moveend handlers needed — GeoJSON layers auto-reposition */
 
       map.on('resize', () => {
         hexGrid.debouncedSetup()
@@ -497,6 +450,8 @@ export function useMapBase(config: MapBaseConfig) {
     }
   }
 
+  /* ── lifecycle ────────────────────────────────────────────────────── */
+
   onMounted(() => {
     checkViewportSize()
     window.addEventListener('resize', checkViewportSize)
@@ -504,10 +459,25 @@ export function useMapBase(config: MapBaseConfig) {
     initMap()
   })
 
-  watch(locale, () => {
-    if (activeDataset.value === 'project-grants' || activeDataset.value === 'endangered-species') {
-      rebuildMarkers()
+  onUnmounted(() => {
+    isMounted = false
+    onBeforeCleanup?.()
+    if (loadingTimeout) clearTimeout(loadingTimeout)
+    connections.cleanup()
+    previewCard.close()
+    marker.cleanup()
+    window.removeEventListener('resize', onResize)
+    window.removeEventListener('resize', checkViewportSize)
+    if (map) {
+      map.remove()
+      map = null
     }
+  })
+
+  /* ── watchers ─────────────────────────────────────────────────────── */
+
+  watch(locale, () => {
+    updateMarkerData()
   })
 
   watch(crewLocationsData, () => {
@@ -520,15 +490,7 @@ export function useMapBase(config: MapBaseConfig) {
     rebuildPending = true
     nextTick(() => {
       rebuildPending = false
-      if (activeDataset.value === 'endangered-species' || activeDataset.value === 'project-grants') {
-        if (geoJSONInitializedFor.value) {
-          updateGeoJSONMarkerData()
-        } else {
-          rebuildMarkers()
-        }
-      } else {
-        rebuildMarkers()
-      }
+      rebuildMarkers()
     })
   })
 
@@ -541,7 +503,6 @@ export function useMapBase(config: MapBaseConfig) {
   watch(() => [props.rareEarthPoints, props.rareEarthPolygons], () => {
     if (!map || activeDataset.value !== 'vulcan-observatory') return
     setupRareEarthLayers()
-    rebuildMarkers()
   })
 
   watch(showHexGrid, async (visible) => {
@@ -579,20 +540,7 @@ export function useMapBase(config: MapBaseConfig) {
     if (showSpeciesOverlay.value) rebuildSpeciesOverlay()
   })
 
-  onUnmounted(() => {
-    isMounted = false
-    onBeforeCleanup?.()
-    if (loadingTimeout) clearTimeout(loadingTimeout)
-    connections.cleanup()
-    previewCard.close()
-    orchestrator.cleanup()
-    window.removeEventListener('resize', onResize)
-    window.removeEventListener('resize', checkViewportSize)
-    if (map) {
-      map.remove()
-      map = null
-    }
-  })
+  /* ── return ───────────────────────────────────────────────────────── */
 
   return {
     t, locale, localeNames, baseURL, isMobile, isEmbed, hideControls,
@@ -604,8 +552,7 @@ export function useMapBase(config: MapBaseConfig) {
     showHexGrid, showFilterPanel, speciesFilterPanelRef,
     connections, showConnections, toggleConnections,
     hexGrid, onResize,
-    orchestrator, geoJSONInitializedFor,
-    rebuildMarkers, updateMarkerVisibility, updateGeoJSONMarkerData, updateDOMMarkers, navigateToLocation,
+    rebuildMarkers, updateMarkerData, navigateToLocation,
     rareEarthController, setupRareEarthLayers,
     showSpeciesOverlay, showProjectOverlay, showCrewOverlay,
     speciesOverlayHTML, projectOverlayHTML, crewOverlayHTML,

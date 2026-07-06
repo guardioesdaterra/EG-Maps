@@ -133,7 +133,6 @@
           :pending-count="scrapedPendingCount"
           :open-count="scrapedOpenCount"
           :closed-count="scrapedClosedCount"
-          :declined-count="scrapedDeclinedCount"
           :active-tab="activePortalTab"
           :manager-sub-tab="activeTab"
           :show-history="showHistory"
@@ -255,7 +254,6 @@ const filteredScrapedGrants = computed(() => {
   if (tab === 'tabPending') return scrapedGrants.value.filter(g => g.status === 'pending')
   if (tab === 'tabOpen') return grants.value.filter(g => g.reviewed === true)
   if (tab === 'tabClosed') return scrapedGrants.value.filter(g => g.status === 'closed')
-  if (tab === 'tabDeclined') return scrapedGrants.value.filter(g => g.status === 'hidden')
   return scrapedGrants.value
 })
 
@@ -316,7 +314,6 @@ const filteredGrants = computed(() => {
 const scrapedPendingCount = computed(() => scrapedGrants.value.filter(g => g.status === 'pending').length)
 const scrapedOpenCount = computed(() => grants.value.filter(g => g.reviewed === true).length)
 const scrapedClosedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'closed').length)
-const scrapedDeclinedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'hidden').length)
 const countryCount = computed(() => Math.max(stats.open > 0 ? 47 : 0, projectStats.value.countries) + '+')
 
 const contactEmailHtml = computed(() => {
@@ -572,7 +569,7 @@ function handleSignOut() {
 
 watch(activeTab, () => loadGrants())
 watch(activePortalTab, (tab) => {
-  if (['tabPending', 'tabOpen', 'tabClosed', 'tabDeclined'].includes(tab)) loadScrapedGrants()
+  if (['tabPending', 'tabOpen', 'tabClosed'].includes(tab)) loadScrapedGrants()
   if (tab === 'tabLeaderboard') loadLeaderboardData()
 })
 
@@ -619,7 +616,6 @@ onBeforeUnmount(() => {
   --stat-open: #eab308;
   --stat-approved: var(--accent);
   --stat-closed: rgba(255, 255, 255, 0.4);
-  --stat-declined: #ef4444;
   --z-canvas: 0;
   --z-dots: 1;
   --z-ui: 10;

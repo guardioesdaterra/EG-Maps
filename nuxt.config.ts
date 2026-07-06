@@ -147,8 +147,6 @@ export default defineNuxtConfig({
             mapCore: [
               '~/composables/useMapBase.ts',
               '~/composables/useMapCore.ts',
-              '~/composables/useMapCluster.ts',
-              '~/composables/useMapMarkerOrchestrator.ts',
             ],
             mapUi: [
               '~/components/MapControls.vue',

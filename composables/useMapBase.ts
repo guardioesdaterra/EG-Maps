@@ -384,7 +384,11 @@ export function useMapBase(config: MapBaseConfig) {
         }
         rebuildMarkers()
         if (activeDataset.value !== 'vulcan-observatory') {
-          connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+          if (activeDataset.value === 'active-crews') {
+            connections.addConnections('active-crews', [], [], crewLocationsData.value)
+          } else {
+            connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+          }
           connections.startParticles()
         }
         hexGrid.setupHexGrid()
@@ -483,6 +487,8 @@ export function useMapBase(config: MapBaseConfig) {
   watch(crewLocationsData, () => {
     if (!map || activeDataset.value !== 'active-crews') return
     rebuildMarkers()
+    connections.addConnections('active-crews', [], [], crewLocationsData.value)
+    if (connections.showConnections.value) connections.startParticles()
   })
 
   watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData], () => {
@@ -496,7 +502,11 @@ export function useMapBase(config: MapBaseConfig) {
 
   watch([visibleSpecies, visibleProjects], () => {
     if (!map || activeDataset.value === 'vulcan-observatory') return
-    connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+    if (activeDataset.value === 'active-crews') {
+      connections.addConnections('active-crews', [], [], crewLocationsData.value)
+    } else {
+      connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+    }
     if (connections.showConnections.value) connections.startParticles()
   })
 
@@ -512,10 +522,12 @@ export function useMapBase(config: MapBaseConfig) {
   })
 
   watch(connections.showConnections, () => {
-    if (!isGlobe || activeDataset.value !== 'active-crews') {
+    if (activeDataset.value === 'active-crews') {
+      connections.addConnections('active-crews', [], [], crewLocationsData.value)
+    } else if (!isGlobe || activeDataset.value !== 'active-crews') {
       connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
-      if (connections.showConnections.value) connections.startParticles()
     }
+    if (connections.showConnections.value) connections.startParticles()
   })
 
   watch(() => props.flyToTarget, (target) => {

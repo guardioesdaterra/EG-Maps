@@ -435,6 +435,7 @@ export function createMapParticleSystem({
     stop()
     cancelled = false
 
+    // Ensure container is positioned so the absolute canvas overlays correctly
     const computedPosition = window.getComputedStyle(container).position
     if (computedPosition === 'static') {
       container.style.position = 'relative'
@@ -473,6 +474,9 @@ export function createMapParticleSystem({
 
     resizeCanvas()
 
+    // Skip first few frames to let map style finish loading
+    let warmupFrames = 0
+
     const animate = (timestamp: number) => {
       if (cancelled || !particleCanvas) return
       particleAnimationFrame = requestAnimationFrame(animate)
@@ -483,6 +487,10 @@ export function createMapParticleSystem({
       if (dpr !== lastDpr) {
         resizeCanvas()
       }
+
+      // Allow particles to render — map.project() will throw if style not loaded,
+      // and individual particles will be filtered out by the visibility check
+      warmupFrames++
 
       ctx.clearRect(0, 0, lastRectW, lastRectH)
 

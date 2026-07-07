@@ -882,12 +882,22 @@
       "title": "Vulcan Observatory Embed",
       "description": "Embed the mining process visualization map."
     },
+    "noControl": {
+      "title": "No Controls Embed",
+      "description": "Header and map controls hidden. Dock navigation remains for easy switching."
+    },
+    "hideAll": {
+      "title": "Globe Only Embed",
+      "description": "Only the globe and Earth Guardians logo visible. Cleanest embedding option."
+    },
     "usage": {
       "title": "Usage Guide",
       "queryParams": {
         "title": "URL Parameters",
         "embed": "Hides navigation, header, and map controls for clean embedding. Automatically enabled when viewport is smaller than 400×300px.",
-        "controls": "Overrides embed mode to show map controls (search, filters, fullscreen). Useful when you want controls in an embedded context.",
+        "noControl": "Hides the top header and map controls (search, filters, fullscreen). The bottom dock navigation remains visible.",
+        "hideAll": "Hides everything except the globe/map and the Earth Guardians logo. No header, dock, controls, or legends.",
+        "controls": "Overrides embed/no-control mode to force-show all controls. Useful when you want full interactivity in an embedded context.",
         "lang": "Sets the interface language (e.g., es, fr, pt)."
       },
       "autoHide": {

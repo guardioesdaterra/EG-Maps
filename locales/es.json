@@ -831,5 +831,84 @@
     "editFormCategoriesPlaceholder": "ej. medio ambiente, clima, jóvenes",
     "daysRemaining": "{count} días restantes",
     "daysAgo": "hace {count} días"
+  },
+  "iframe": {
+    "title": "Incrustar EG-Maps",
+    "subtitle": "Copia el código de incrustación para mostrar los mapas de EG-Maps en tu sitio web o blog.",
+    "copy": "Copiar",
+    "copied": "¡Copiado!",
+    "copyCode": "Copiar código de incrustación",
+    "loadingPreview": "Desplázate para cargar la vista previa",
+    "fullScreen": {
+      "title": "Incrustación de pantalla completa",
+      "description": "Rellena todo el viewport del navegador. Ideal para páginas de mapa dedicadas."
+    },
+    "fixed100": {
+      "title": "Incrustación de altura fija",
+      "description": "Altura fija de 500px, ancho completo. Bueno para páginas de contenido."
+    },
+    "responsive": {
+      "title": "Incrustación responsiva 16:9",
+      "description": "Mantiene la proporción 16:9. Se adapta a cualquier ancho de contenedor."
+    },
+    "smallCard": {
+      "title": "Tarjeta pequeña (300×250)",
+      "description": "Tarjeta de tamaño estándar de anuncio. Se ajusta a barras laterales y widgets."
+    },
+    "mediumCard": {
+      "title": "Tarjeta mediana (600×400)",
+      "description": "Incrustación mediana para publicaciones de blog y artículos."
+    },
+    "largeCard": {
+      "title": "Tarjeta grande (900×600)",
+      "description": "Incrustación grande para secciones de contenido de ancho completo."
+    },
+    "fullScreenInteractive": {
+      "title": "Incrustación interactiva con controles",
+      "description": "Todos los controles visibles. Mejor para integraciones independientes."
+    },
+    "observatory": {
+      "title": "Incrustación del Observatorio Vulcan",
+      "description": "Incrustar el mapa de visualización de procesos mineros."
+    },
+    "noControl": {
+      "title": "Incrustación sin Controles",
+      "description": "Encabezado y controles del mapa ocultos. La navegación del dock permanece para fácil cambio."
+    },
+    "hideAll": {
+      "title": "Incrustación Solo Globo",
+      "description": "Solo el globo y el logotipo de Earth Guardians visibles. Opción de incrustación más limpia."
+    },
+    "usage": {
+      "title": "Guía de uso",
+      "queryParams": {
+        "title": "Parámetros de URL",
+        "embed": "Oculta la navegación, el encabezado y los controles del mapa para una incrustación limpia. Se habilita automáticamente cuando el viewport es menor de 400×300px.",
+        "noControl": "Oculta el encabezado superior y los controles del mapa (búsqueda, filtros, pantalla completa). La navegación del dock inferior permanece visible.",
+        "hideAll": "Oculta todo excepto el globo/mapa y el logotipo de Earth Guardians. Sin encabezado, dock, controles ni leyendas.",
+        "controls": "Sobrescribe el modo embed/no-control para mostrar todos los controles. Útil cuando se desea interactividad completa en un contexto incrustado.",
+        "lang": "Establece el idioma de la interfaz (ej., es, fr, pt)."
+      },
+      "autoHide": {
+        "title": "Comportamiento de auto-ocultar",
+        "description": "Los controles del mapa (búsqueda, filtros, cuadrícula hexagonal, conexiones, pantalla completa) se ocultan automáticamente cuando el viewport es demasiado pequeño: ancho < 400px, alto < 300px, o cuando ambas dimensiones están por debajo de 500px con una proporción casi cuadrada. Esto garantiza una experiencia limpia en incrustaciones pequeñas como tarjetas de anuncios y widgets."
+      },
+      "viewportSizes": {
+        "title": "Tamaños de viewport recomendados",
+        "banner": "728×90 o 320×50 — Incrustaciones de banner, mapa mínimo visible.",
+        "smallCard": "300×250 — Widgets de barra lateral, tarjetas de tamaño de anuncio. Controles ocultos automáticamente.",
+        "mediumCard": "600×400 — Publicaciones de blog y artículos. Controles visibles.",
+        "responsive": "Proporción 16:9 — Mejor para diseños responsivos. Controles visibles cuando es lo suficientemente ancho.",
+        "fullScreen": "100vw×100vh — Páginas de mapa dedicadas. Experiencia interactiva completa."
+      },
+      "security": {
+        "title": "Seguridad",
+        "description": "Las incrustaciones usan atributos sandbox para restringir el acceso. Solo se exponen datos públicos a través de mapas incrustados."
+      },
+      "performance": {
+        "title": "Rendimiento",
+        "description": "Todas las incrustaciones usan carga diferida. Los mapas se cargan solo cuando se desplazan a la vista, minimizando el peso inicial de la página."
+      }
+    }
   }
 }

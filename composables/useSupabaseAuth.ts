@@ -21,7 +21,6 @@ export function useSupabaseAuth() {
 
   async function signOut() {
     await client.auth.signOut()
-    navigateTo('/')
   }
 
   return { user, isManager, signIn, signOut }

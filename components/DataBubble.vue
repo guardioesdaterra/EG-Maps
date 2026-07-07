@@ -3,7 +3,8 @@
     class="data-bubble"
     :class="{ 'is-expanded': isExpanded }"
     :style="{
-      top: positionTop ?? 'clamp(16rem, 40vh, 22rem)',
+      top: positionTop ?? undefined,
+      bottom: positionBottom ?? undefined,
       zIndex: 'var(--z-map-global-stats)',
     }"
   >
@@ -31,6 +32,7 @@
           </button>
         </div>
 
+        <!-- Species: taxonomic group filters -->
         <template v-if="mode === 'species'">
           <div class="groups-grid">
             <button
@@ -47,6 +49,7 @@
           </div>
         </template>
 
+        <!-- Projects: stats + legend -->
         <template v-else-if="mode === 'projects' && stats">
           <div class="stats-grid">
             <div class="stat-cell">
@@ -66,6 +69,59 @@
               <span class="stat-label">{{ t('stats.indirectBeneficiaries') }}</span>
             </div>
           </div>
+          <div class="legend-section">
+            <span class="legend-title">{{ t('stats.markerLegend') }}</span>
+            <div class="legend-items">
+              <div class="legend-item" v-for="item in projectLegendItems" :key="item.label">
+                <span class="legend-dot" :style="{ backgroundColor: item.color }" />
+                <span class="legend-label">{{ item.label }}</span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Crews: stats + legend -->
+        <template v-else-if="mode === 'crews'">
+          <div v-if="crewStats" class="stats-grid">
+            <div class="stat-cell">
+              <span class="stat-value">{{ formatCompact(crewStats.totalRegions) }}</span>
+              <span class="stat-label">{{ t('stats.regions') }}</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-value">{{ formatCompact(crewStats.totalLocations) }}</span>
+              <span class="stat-label">{{ t('stats.crews') }}</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-value">{{ formatCompact(crewStats.totalMembers) }}</span>
+              <span class="stat-label">{{ t('stats.members') }}</span>
+            </div>
+            <div class="stat-cell">
+              <span class="stat-value">{{ formatCompact(crewStats.totalCountries) }}</span>
+              <span class="stat-label">{{ t('stats.countries') }}</span>
+            </div>
+          </div>
+          <div class="legend-section">
+            <span class="legend-title">{{ t('stats.markerLegend') }}</span>
+            <div class="legend-items">
+              <div class="legend-item" v-for="item in crewLegendItems" :key="item.label">
+                <span class="legend-dot" :style="{ backgroundColor: item.color }" />
+                <span class="legend-label">{{ item.label }}</span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Species: legend below group filters -->
+        <template v-if="mode === 'species'">
+          <div class="legend-section">
+            <span class="legend-title">{{ t('stats.markerSize') }}</span>
+            <div class="legend-items">
+              <div class="legend-item" v-for="item in speciesLegendItems" :key="item.label">
+                <span class="legend-dot" :style="{ backgroundColor: item.color, width: item.size + 'px', height: item.size + 'px' }" />
+                <span class="legend-label">{{ item.label }}</span>
+              </div>
+            </div>
+          </div>
         </template>
       </div>
     </Transition>
@@ -79,16 +135,23 @@ import Icon from './Icon.vue'
 import { GROUP_COLORS } from '@/lib/map-utils'
 import { formatCompact } from '@/lib/utils'
 import type { ProjectData } from '@/lib/types'
+import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 
 const props = withDefaults(defineProps<{
-  mode: 'species' | 'projects'
+  mode: 'species' | 'projects' | 'crews'
   selectedGroups?: string[]
   projects?: ProjectData[]
+  crews?: CrewRegionData[]
+  crewLocations?: CrewLocation[]
   positionTop?: string
+  positionBottom?: string
 }>(), {
   selectedGroups: () => [],
   projects: () => [],
+  crews: () => [],
+  crewLocations: () => [],
   positionTop: undefined,
+  positionBottom: undefined,
 })
 
 const emit = defineEmits<{
@@ -100,9 +163,11 @@ const isExpanded = ref(false)
 const triggerRef = ref<HTMLButtonElement | null>(null)
 const closeRef = ref<HTMLButtonElement | null>(null)
 
-const label = computed(() =>
-  props.mode === 'species' ? t('globe.taxonomicGroups') : t('stats.title')
-)
+const label = computed(() => {
+  if (props.mode === 'species') return t('globe.taxonomicGroups')
+  if (props.mode === 'crews') return t('stats.activeCrewsTitle')
+  return t('stats.title')
+})
 
 function toggle() {
   isExpanded.value = !isExpanded.value
@@ -143,6 +208,44 @@ const stats = computed(() => {
   const totalIndirect = projects.reduce((s, p) => s + p.indirect_beneficiaries, 0)
   return { activeInitiatives, countriesCount: uniqueCountries.size, totalDirect, totalIndirect }
 })
+
+const crewStats = computed(() => {
+  const regions = props.crews
+  const locations = props.crewLocations
+  if (!regions.length && !locations.length) return null
+  const totalMembers = regions.reduce((s, r) => s + r.totalMembers, 0)
+  const totalCountries = regions.reduce((s, r) => s + r.countries, 0)
+  return {
+    totalRegions: regions.length,
+    totalLocations: locations.length || regions.reduce((s, r) => s + r.activeCrews + r.inactiveCrews, 0),
+    totalMembers,
+    totalCountries,
+  }
+})
+
+const projectLegendItems = computed(() => [
+  { color: '#3b82f6', label: '≤100' },
+  { color: '#22c55e', label: '101–500' },
+  { color: '#eab308', label: '501–1K' },
+  { color: '#ef4444', label: '>1K' },
+])
+
+const crewLegendItems = computed(() => [
+  { color: '#22c55e', label: t('stats.crewsActive20') },
+  { color: '#3b82f6', label: t('stats.crewsActive5to20') },
+  { color: '#a855f7', label: t('stats.crewsActive1to5') },
+  { color: '#f59e0b', label: t('stats.crewsInactive') },
+])
+
+const speciesLegendItems = computed(() => [
+  { color: '#B64032', label: t('taxonomy.Mammal'), size: 11 },
+  { color: '#D97706', label: t('taxonomy.Bird'), size: 9 },
+  { color: '#5A8F3C', label: t('taxonomy.Amphibian'), size: 9 },
+  { color: '#7C3AED', label: t('taxonomy.Reptile'), size: 9 },
+  { color: '#2563EB', label: t('taxonomy.Fish'), size: 9 },
+  { color: '#15803D', label: t('taxonomy.Plant'), size: 7 },
+  { color: '#DB2777', label: t('taxonomy.Invertebrate'), size: 7 },
+])
 </script>
 
 <style scoped>
@@ -359,6 +462,48 @@ const stats = computed(() => {
   letter-spacing: 0.08em;
   margin-top: 0.125rem;
   line-height: 1.2;
+}
+
+/* Legend section */
+.legend-section {
+  margin-top: clamp(0.375rem, 1vw, 0.5rem);
+  padding-top: clamp(0.375rem, 1vw, 0.5rem);
+  border-top: 1px solid var(--panel-border);
+}
+
+.legend-title {
+  font-size: clamp(0.5rem, 1.3vw, 0.6rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: clamp(0.25rem, 0.6vw, 0.375rem);
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.25rem, 0.6vw, 0.375rem);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.2rem, 0.5vw, 0.3rem);
+}
+
+.legend-dot {
+  width: clamp(0.4rem, 1.1vw, 0.5rem);
+  height: clamp(0.4rem, 1.1vw, 0.5rem);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-label {
+  font-size: clamp(0.5rem, 1.3vw, 0.6rem);
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 /* Expansion transition */

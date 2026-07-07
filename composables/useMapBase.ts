@@ -455,7 +455,7 @@ export function useMapBase(config: MapBaseConfig) {
   onMounted(() => {
     checkViewportSize()
     window.addEventListener('resize', checkViewportSize)
-    showFilterPanel.value = !isMobile.value && !hideControls.value
+    showFilterPanel.value = false
     initMap()
   })
 

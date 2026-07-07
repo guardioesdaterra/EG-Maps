@@ -120,7 +120,17 @@
     "indirectBeneficiaries": "Косвенные бенефициары",
     "collapse": "Свернуть",
     "expand": "Развернуть",
-    "close": "Закрыть"
+    "close": "Закрыть",
+    "markerLegend": "Marker Colors",
+    "markerSize": "Marker Size",
+    "activeCrewsTitle": "Active Crews",
+    "regions": "Regions",
+    "crews": "Crews",
+    "members": "Members",
+    "crewsActive20": ">20 active",
+    "crewsActive5to20": "6–20 active",
+    "crewsActive1to5": "1–5 active",
+    "crewsInactive": "Inactive"
   },
   "globe": {
     "loading": "Загрузка 3D-глобуса",

@@ -44,7 +44,7 @@
       <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[clamp(10rem,24vw,16rem)] -rotate-90 origin-center" loading="lazy" />
     </div>
 
-    <DataBubble v-if="activeDataset !== 'active-crews' && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" position-top="clamp(14rem, 35vh, 19rem)" @toggle-group="toggleLegendGroup" />
+    <DataBubble v-if="activeDataset !== 'active-crews' && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" position-top="auto" position-bottom="clamp(1rem, 4vh, 2rem)" @toggle-group="toggleLegendGroup" />
 
     <MapControls v-if="activeDataset !== 'vulcan-observatory'" :is-globe-view="true" :show-hex-grid="showHexGrid" :show-connections="showConnections" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" :style="{ zIndex: 'var(--z-map-ui-controls)' }" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @navigate="navigateToLocation" />
 

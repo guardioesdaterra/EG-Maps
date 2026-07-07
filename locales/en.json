@@ -121,7 +121,17 @@
     "indirectBeneficiaries": "Indirect Beneficiaries",
     "collapse": "Collapse",
     "expand": "Expand",
-    "close": "Close"
+    "close": "Close",
+    "markerLegend": "Marker Colors",
+    "markerSize": "Marker Size",
+    "activeCrewsTitle": "Active Crews",
+    "regions": "Regions",
+    "crews": "Crews",
+    "members": "Members",
+    "crewsActive20": ">20 active",
+    "crewsActive5to20": "6–20 active",
+    "crewsActive1to5": "1–5 active",
+    "crewsInactive": "Inactive"
   },
   "globe": {
     "loading": "Loading 3D Globe",
@@ -670,6 +680,7 @@
     "portalSubtitle": "Submit your project, review open opportunities, and help build a youth-led funding ecosystem.",
     "signInTitle": "Join the Crew",
     "signInDesc": "Sign in with Google to access the grants portal. Only Earth Guardians crew members can submit, curate, and fund projects.",
+    "signInToVote": "Sign in with Google to vote and comment on grants.",
     "signInBtn": "Sign in with Google",
     "crewMember": "Crew Member",
     "manager": "Manager",

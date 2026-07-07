@@ -121,7 +121,17 @@
     "indirectBeneficiaries": "Beneficiarios indirectos",
     "collapse": "Contraer",
     "expand": "Expandir",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "markerLegend": "Marker Colors",
+    "markerSize": "Marker Size",
+    "activeCrewsTitle": "Active Crews",
+    "regions": "Regions",
+    "crews": "Crews",
+    "members": "Members",
+    "crewsActive20": ">20 active",
+    "crewsActive5to20": "6–20 active",
+    "crewsActive1to5": "1–5 active",
+    "crewsInactive": "Inactive"
   },
   "globe": {
     "loading": "Cargando globo 3D",
@@ -660,6 +670,7 @@
     "portalSubtitle": "Envía tu proyecto, revisa oportunidades abiertas y ayuda a construir un ecosistema de financiamiento liderado por jóvenes.",
     "signInTitle": "Únete al Crew",
     "signInDesc": "Inicia sesión con Google para acceder al portal de subvenciones. Solo los miembros de crews de Earth Guardians pueden enviar, curar y financiar proyectos.",
+    "signInToVote": "Inicia sesión con Google para votar y comentar en las subvenciones.",
     "signInBtn": "Iniciar sesión con Google",
     "crewMember": "Miembro del Crew",
     "manager": "Administrador",

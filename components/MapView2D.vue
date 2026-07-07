@@ -47,7 +47,7 @@
     <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" />
     <SpeciesFilterPanel v-if="activeDataset === 'endangered-species' && showFilterPanel" ref="speciesFilterPanelRef" :species="speciesIndexData" @filter-change="handleFilterChange" @group-selection-change="handleSpeciesGroupSelection" @close="showFilterPanel = false" />
 
-    <DataBubble v-if="activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" position-top="clamp(16rem, 40vh, 22rem)" @toggle-group="toggleLegendGroup" />
+    <DataBubble v-if="activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" position-bottom="clamp(1rem, 4vh, 2rem)" @toggle-group="toggleLegendGroup" />
 
     <MapControls v-if="activeDataset !== 'vulcan-observatory'" :is-globe-view="false" :show-hex-grid="showHexGrid" :show-connections="showConnections" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" :style="{ zIndex: 'var(--z-map-ui-controls)' }" />
 
@@ -115,7 +115,7 @@ const ctx = useMapBase({
 
 const {
   t, localeNames, baseURL, isMobile, isEmbed, hideControls,
-  projectsData, speciesIndexData, visibleProjects,
+  projectsData, speciesIndexData, visibleProjects, crewsData, crewLocationsData,
   activeDataset, selectedSpeciesGroups,
   hasError, errorMessage, noWebglSupport, isLoading,
   showHexGrid, showFilterPanel, speciesFilterPanelRef,

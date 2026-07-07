@@ -148,28 +148,28 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
 
     // clusters
     map.addLayer({ id: `${id}_cg`, type: 'circle', source: id, filter: ['has', 'point_count'], paint: {
-      'circle-color': stepExpr(cc), 'circle-radius': radExpr(1.5), 'circle-blur': 0.9, 'circle-opacity': 0.25 } })
+      'circle-color': stepExpr(cc), 'circle-radius': radExpr(1.2), 'circle-blur': 0.9, 'circle-opacity': 0.25 } })
     map.addLayer({ id: `${id}_c`, type: 'circle', source: id, filter: ['has', 'point_count'], paint: {
-      'circle-color': 'rgba(0,0,0,0.82)', 'circle-radius': radExpr(1),
-      'circle-stroke-color': stepExpr(cc), 'circle-stroke-width': 2.5, 'circle-opacity': 0.92 } })
+      'circle-color': 'rgba(0,0,0,0.82)', 'circle-radius': radExpr(0.8),
+      'circle-stroke-color': stepExpr(cc), 'circle-stroke-width': 2, 'circle-opacity': 0.92 } })
     map.addLayer({ id: `${id}_cn`, type: 'symbol', source: id, filter: ['has', 'point_count'], layout: {
       'text-field': ['get', 'point_count_abbreviated'],
       'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
-      'text-size': ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 10, 14, 13],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 9, 14, 11],
       'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
       'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.35)', 'text-halo-width': 1.5 } })
 
     // points
     map.addLayer({ id: `${id}_pg`, type: 'circle', source: id, filter: ['!', ['has', 'point_count']], paint: {
-      'circle-color': ['get', 'color'], 'circle-radius': ['*', ['coalesce', ['get', 'size'], 10], 1.5],
+      'circle-color': ['get', 'color'], 'circle-radius': ['*', ['coalesce', ['get', 'size'], 7], 1.4],
       'circle-blur': 0.8, 'circle-opacity': 0.25 } })
     map.addLayer({ id: `${id}_p`, type: 'circle', source: id, filter: ['!', ['has', 'point_count']], paint: {
-      'circle-color': 'rgba(0,0,0,0.82)', 'circle-radius': ['coalesce', ['get', 'size'], 10],
-      'circle-stroke-color': ['get', 'color'], 'circle-stroke-width': 2, 'circle-opacity': 0.95 } })
+      'circle-color': 'rgba(0,0,0,0.82)', 'circle-radius': ['coalesce', ['get', 'size'], 7],
+      'circle-stroke-color': ['get', 'color'], 'circle-stroke-width': 1.5, 'circle-opacity': 0.95 } })
     map.addLayer({ id: `${id}_pl`, type: 'symbol', source: id, filter: ['!', ['has', 'point_count']], layout: {
       'text-field': ['coalesce', ['get', 'label'], ''],
       'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
-      'text-size': 9, 'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
+      'text-size': 8, 'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
       'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.5)', 'text-halo-width': 1 } })
   }
 
@@ -331,7 +331,7 @@ function toProjectGeoJSON(projects: ProjectData[]): GeoJSON.FeatureCollection {
           properties: {
             id: p.project_title,
             color: getProjectColorByBeneficiaries(p.direct_beneficiaries, p.indirect_beneficiaries),
-            size: 8 + f * 5,
+            size: 5 + f * 3,
             label: formatCompact(total),
             ...p as unknown as Record<string, unknown>,
           },
@@ -369,8 +369,8 @@ function toSpeciesGeoJSON(
           properties: {
             id: s.id,
             color: GROUP_COLORS[s.taxonomicGroup ?? ''] ?? '#B64032',
-            size: 8 + cf * 2.5,
-            label: s.imageUrl ? '' : (s.taxonomicGroup?.charAt(0) || '?'),
+            size: 5 + cf * 2,
+            label: '1',
             ...s as unknown as Record<string, unknown>,
           },
         }
@@ -390,7 +390,7 @@ function toCrewGeoJSON(regions: CrewRegionData[], locations: CrewLocation[]): Ge
       properties: {
         id: r.id, _type: 'crewRegion',
         color: r.activeCrews > 20 ? '#22c55e' : r.activeCrews > 5 ? '#3b82f6' : '#a855f7',
-        size: 8 + mf * 5, label: String(r.activeCrews),
+        size: 5 + mf * 3, label: String(r.activeCrews),
         region: r.region, activeCrews: r.activeCrews, inactiveCrews: r.inactiveCrews,
         totalMembers: r.totalMembers, countries: r.countries, history: r.history,
       },
@@ -404,7 +404,7 @@ function toCrewGeoJSON(regions: CrewRegionData[], locations: CrewLocation[]): Ge
       properties: {
         id: `${loc.name}|${loc.city}`, _type: 'crewLocation',
         color: loc.status === 'inactive' ? '#f59e0b' : '#22c55e',
-        size: 9, label: '',
+        size: 6, label: '1',
         name: loc.name, country: loc.country, city: loc.city,
         state: loc.state, region: loc.region, status: loc.status,
       },
@@ -449,5 +449,5 @@ function stepExpr(c: string[]): ExpressionSpecification {
 }
 
 function radExpr(s: number): ExpressionSpecification {
-  return ['*', ['interpolate', ['linear'], ['get', 'point_count'], 0, 16, 10, 22, 50, 28, 100, 36], s] as unknown as ExpressionSpecification
+  return ['*', ['interpolate', ['linear'], ['get', 'point_count'], 0, 12, 10, 16, 50, 20, 100, 26], s] as unknown as ExpressionSpecification
 }

@@ -102,6 +102,33 @@ CREATE INDEX idx_user_roles_user ON user_roles(user_id);
 CREATE INDEX idx_user_roles_role ON user_roles(role_id);
 ```
 
+#### 9. `members`
+
+```sql
+CREATE TABLE members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  full_name TEXT,
+  crew_id TEXT REFERENCES crew_members(crew_id) ON DELETE SET NULL,
+  role TEXT DEFAULT 'member' CHECK (role IN ('admin', 'crew_lead', 'member', 'viewer')),
+  is_active BOOLEAN DEFAULT true,
+  joined_at TIMESTAMPTZ DEFAULT now(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+
+  CONSTRAINT members_email_unique UNIQUE (email),
+  CONSTRAINT members_email_format CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+);
+
+CREATE INDEX idx_members_email ON members(email);
+CREATE INDEX idx_members_user_id ON members(user_id);
+CREATE INDEX idx_members_crew_id ON members(crew_id);
+CREATE INDEX idx_members_is_active ON members(is_active);
+```
+
+**Purpose**: Registry of individual Earth Guardians members. Used during login to verify if a user is an approved member. If their email is not found, they are redirected to the sign-up page.
+
 ### Grants Tables
 
 #### 5. `grants`
@@ -233,6 +260,25 @@ CREATE POLICY "Admins full access" ON crew_members
         AND r.name = 'admin'
     )
   );
+```
+
+### Members
+
+```sql
+ALTER TABLE members ENABLE ROW LEVEL SECURITY;
+
+-- Public email lookup (needed for login membership check)
+CREATE POLICY "Members: public email lookup" ON members
+  FOR SELECT USING (true);
+
+-- Authenticated users can read their own record
+CREATE POLICY "Members: read own" ON members
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Service role full access (synced via crew-sync or sign-up form)
+CREATE POLICY "Members: service role full access" ON members
+  FOR ALL USING (auth.role() = 'service_role');
+```
 
 -- Audit trigger
 CREATE OR REPLACE FUNCTION audit_crew_members()

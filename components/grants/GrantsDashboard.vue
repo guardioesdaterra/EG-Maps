@@ -66,6 +66,7 @@
           @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
           :placeholder="t('grantsPortal.dashboardSearchPlaceholder')"
           class="gdash-search-input"
+          :aria-label="t('grantsPortal.dashboardSearchPlaceholder')"
         />
       </div>
     </div>
@@ -170,19 +171,18 @@
           </div>
 
           <div class="gdash-card-footer">
-            <div v-if="activeTab !== 'tabClosed' && activeTab !== 'tabDeclined'" class="gdash-stars">
-              <button v-for="n in 8" :key="n" class="gdash-star" :class="{ active: (userVotes[g.id] || 0) >= n }" @click="$emit('vote', g.id, n)" :title="n + ' ' + t('grantsPortal.stars')">★</button>
+            <div v-if="activeTab !== 'tabClosed'" class="gdash-stars">
+              <button v-for="n in 8" :key="n" class="gdash-star" :class="{ active: (userVotes[g.id] || 0) >= n }" @click="user ? $emit('vote', g.id, n) : showLoginPopup = true" :aria-label="n + ' ' + t('grantsPortal.stars')" role="radio" :aria-checked="(userVotes[g.id] || 0) >= n">★</button>
               <span class="gdash-votes">{{ voteCount(g.id) }} {{ t('grantsPortal.votes') }}</span>
             </div>
             <div class="gdash-card-links">
               <button class="gdash-link-btn" @click="$emit('viewDetail', g)">{{ t('grantsPortal.details') }}</button>
-              <a v-if="g.url" :href="g.url" target="_blank" class="gdash-link-btn apply" rel="noopener">{{ t('grantsPortal.apply') }} ↗</a>
+              <a v-if="isSafeUrl(g.url)" :href="g.url" target="_blank" class="gdash-link-btn apply" rel="noopener noreferrer">{{ t('grantsPortal.apply') }} ↗</a>
               <template v-if="isManager">
                 <button v-if="activeTab === 'tabPending'" class="gdash-action approve text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'approved')">✓ {{ t('grantsPortal.approve') }}</button>
                 <button v-if="activeTab === 'tabPending'" class="gdash-action reject text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'hidden')">✗ {{ t('grantsPortal.reject') }}</button>
                 <button v-if="activeTab === 'tabOpen'" class="gdash-action reject text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'hidden')">✗ {{ t('grantsPortal.reject') }}</button>
                 <button v-if="activeTab === 'tabClosed'" class="gdash-action restore text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'pending')">↩ {{ t('grantsPortal.restore') }}</button>
-                <button v-if="activeTab === 'tabDeclined'" class="gdash-action restore text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'pending')">↩ {{ t('grantsPortal.restore') }}</button>
               </template>
             </div>
           </div>
@@ -199,7 +199,7 @@
             <div class="gdash-lb-info">
               <h4>{{ entry.title }}</h4>
               <div class="gdash-lb-meta">
-                <span class="text-yellow-400 text-sm">{{ '★'.repeat(Math.round(entry.avg_stars)) }}{{ '☆'.repeat(8 - Math.round(entry.avg_stars)) }}</span>
+                <span class="text-yellow-400 text-sm">{{ safeStarRepeat(entry.avg_stars) }}</span>
                 <span class="text-xs text-white/50">{{ entry.avg_stars }}/8 ({{ entry.vote_count }} votes)</span>
                 <span class="text-xs text-white/30">{{ entry.view_count }} views</span>
                 <span v-if="entry.source_type === 'scraped'" class="gdash-source-badge open">{{ t('grantsPortal.leaderboardOpen') }}</span>
@@ -212,10 +212,32 @@
       </template>
     </div>
   </div>
+
+  <!-- Login popup for non-authenticated actions -->
+  <Teleport to="body">
+    <Transition name="popup-fade">
+      <div v-if="showLoginPopup" class="gdash-login-overlay" role="dialog" aria-modal="true" :aria-label="t('grantsPortal.signInTitle')" @click.self="showLoginPopup = false">
+        <div class="gdash-login-popup glass">
+          <div class="gdash-login-header">
+            <svg class="gdash-login-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            <h3>{{ t('grantsPortal.signInTitle') }}</h3>
+          </div>
+          <p class="gdash-login-desc">{{ t('grantsPortal.signInToVote') }}</p>
+          <div class="gdash-login-actions">
+            <button class="gdash-google-btn" @click="$emit('signIn'); showLoginPopup = false">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              {{ t('grantsPortal.signInBtn') }}
+            </button>
+            <button class="gdash-cancel-btn" @click="showLoginPopup = false">{{ t('grantsPortal.cancel') }}</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
 
 const props = defineProps<{
@@ -254,6 +276,12 @@ defineEmits<{
 
 const { t } = useI18n()
 
+const showLoginPopup = ref(false)
+
+watch(() => props.user, (newUser) => {
+  if (newUser) showLoginPopup.value = false
+})
+
 const tabs = computed(() => {
   const list = [
     { key: 'tabPending', emoji: '📋' },
@@ -262,6 +290,7 @@ const tabs = computed(() => {
     { key: 'tabLeaderboard', emoji: '🏆' },
   ]
   if (!props.user) return list.filter(tab => tab.key === 'tabOpen')
+  if (!props.isManager) return list.filter(tab => tab.key !== 'tabPending')
   return list
 })
 
@@ -339,6 +368,21 @@ function formatAmount(val: number): string {
   if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M'
   if (val >= 1000) return (val / 1000).toFixed(val >= 10000 ? 0 : 1) + 'K'
   return val.toFixed(0)
+}
+
+function isSafeUrl(url: string | undefined | null): boolean {
+  if (!url) return false
+  try {
+    const parsed = new URL(url)
+    return ['http:', 'https:'].includes(parsed.protocol)
+  } catch {
+    return false
+  }
+}
+
+function safeStarRepeat(count: number): string {
+  const clamped = Math.max(0, Math.min(8, Math.round(count)))
+  return '★'.repeat(clamped) + '☆'.repeat(8 - clamped)
 }
 
 function voteCount(grantId: string): number {
@@ -925,6 +969,80 @@ function voteCount(grantId: string): number {
 }
 .gdash-source-badge.open { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
 .gdash-source-badge.crew { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+
+/* ── Login popup ──────────────────────────────────── */
+.gdash-login-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+}
+.gdash-login-popup {
+  max-width: 360px;
+  width: 100%;
+  padding: 2rem;
+  text-align: center;
+}
+.gdash-login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.gdash-login-icon {
+  width: 48px;
+  height: 48px;
+  stroke: var(--accent);
+}
+.gdash-login-header h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--tectonic-white);
+  font-family: 'JetBrains Mono', monospace;
+  margin: 0;
+}
+.gdash-login-desc {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+.gdash-login-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.gdash-cancel-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.gdash-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--tectonic-white);
+}
+
+/* ── Popup transition ────────────────────────────── */
+.popup-fade-enter-active,
+.popup-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.popup-fade-enter-from,
+.popup-fade-leave-to {
+  opacity: 0;
+}
 
 /* ── Responsive ────────────────────────────────────── */
 @media (max-width: 768px) {

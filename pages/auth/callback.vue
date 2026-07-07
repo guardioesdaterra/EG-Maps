@@ -26,6 +26,8 @@ const { client } = useSupabase()
 const error = ref('')
 
 onMounted(async () => {
+  const SIGN_UP_URL = 'https://www.earthguardians.org/crews-sign-up-1'
+
   // --- PKCE flow (authorization code in query string) ---
   const code = route.query.code as string | undefined
 
@@ -39,14 +41,14 @@ onMounted(async () => {
     if (authError) {
       const { data: { session } } = await client.auth.getSession()
       if (session) {
-        navigateTo('/eg-grants')
+        await checkMembershipAndRedirect(SIGN_UP_URL)
         return
       }
       error.value = authError.message
       return
     }
     await syncCrewMember()
-    navigateTo('/eg-grants')
+    await checkMembershipAndRedirect(SIGN_UP_URL)
     return
   }
 
@@ -68,19 +70,41 @@ onMounted(async () => {
       return
     }
     await syncCrewMember()
-    navigateTo('/eg-grants')
+    await checkMembershipAndRedirect(SIGN_UP_URL)
     return
   }
 
   // --- Check for existing session ---
   const { data: { session } } = await client.auth.getSession()
   if (session) {
-    navigateTo('/eg-grants')
+    await checkMembershipAndRedirect(SIGN_UP_URL)
     return
   }
 
   error.value = 'No authorization code received.'
 })
+
+async function checkMembershipAndRedirect(signUpUrl: string) {
+  const { data: { user } } = await client.auth.getUser()
+  if (!user?.email) {
+    window.location.href = signUpUrl
+    return
+  }
+
+  const { data: member, error: queryError } = await client
+    .from('members')
+    .select('id, is_active')
+    .eq('email', user.email)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (queryError || !member) {
+    window.location.href = signUpUrl
+    return
+  }
+
+  navigateTo('/eg-grants')
+}
 
 async function syncCrewMember() {
   try {

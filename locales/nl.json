@@ -120,7 +120,17 @@
     "indirectBeneficiaries": "Indirecte begunstigden",
     "collapse": "Inklappen",
     "expand": "Uitklappen",
-    "close": "Sluiten"
+    "close": "Sluiten",
+    "markerLegend": "Marker Colors",
+    "markerSize": "Marker Size",
+    "activeCrewsTitle": "Active Crews",
+    "regions": "Regions",
+    "crews": "Crews",
+    "members": "Members",
+    "crewsActive20": ">20 active",
+    "crewsActive5to20": "6–20 active",
+    "crewsActive1to5": "1–5 active",
+    "crewsInactive": "Inactive"
   },
   "globe": {
     "loading": "3D-globe laden",

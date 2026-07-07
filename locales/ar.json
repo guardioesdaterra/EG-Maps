@@ -120,7 +120,17 @@
     "indirectBeneficiaries": "المستفيدون غير المباشرين",
     "collapse": "طي",
     "expand": "توسيع",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "markerLegend": "Marker Colors",
+    "markerSize": "Marker Size",
+    "activeCrewsTitle": "Active Crews",
+    "regions": "Regions",
+    "crews": "Crews",
+    "members": "Members",
+    "crewsActive20": ">20 active",
+    "crewsActive5to20": "6–20 active",
+    "crewsActive1to5": "1–5 active",
+    "crewsInactive": "Inactive"
   },
   "globe": {
     "loading": "جارٍ تحميل الكرة الأرضية ثلاثية الأبعاد",

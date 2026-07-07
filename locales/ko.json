@@ -120,7 +120,17 @@
     "indirectBeneficiaries": "간접 수혜자",
     "collapse": "접기",
     "expand": "펼치기",
-    "close": "닫기"
+    "close": "닫기",
+    "markerLegend": "Marker Colors",
+    "markerSize": "Marker Size",
+    "activeCrewsTitle": "Active Crews",
+    "regions": "Regions",
+    "crews": "Crews",
+    "members": "Members",
+    "crewsActive20": ">20 active",
+    "crewsActive5to20": "6–20 active",
+    "crewsActive1to5": "1–5 active",
+    "crewsInactive": "Inactive"
   },
   "globe": {
     "loading": "3D 지구본 로딩 중",

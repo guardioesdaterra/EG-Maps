@@ -69,7 +69,7 @@
     </header>
 
     <!-- Map-focused Dock Navigation with GooeyNav -->
-    <nav v-if="showDock" class="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] xs:bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
+    <nav v-if="showDock && !hideAll" class="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] xs:bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
       <div :class="dockShellClass">
         <div class="flex items-center gap-1">
           <GooeyNav :items="navItems" />
@@ -178,8 +178,11 @@ const isMapRoute = computed(() =>
   route.path.startsWith('/project-grants') || route.path.startsWith('/endangered-species') || route.path.startsWith('/vulcan-observatory') || route.path.startsWith('/active-crews')
 )
 const is3DRoute = computed(() => route.path.endsWith('/3d'))
-const showUnifiedHeader = computed(() => isMapRoute.value || route.path === '/info')
-const showViewToggle = computed(() => isMapRoute.value)
+const noControl = computed(() => route.query['no-control'] === 'true')
+const hideAll = computed(() => route.query.hideAll === 'true')
+const controlsForced = computed(() => route.query.controls === 'true')
+const showUnifiedHeader = computed(() => (isMapRoute.value || route.path === '/info') && !noControl.value && !hideAll.value && !controlsForced.value)
+const showViewToggle = computed(() => isMapRoute.value && !noControl.value && !hideAll.value && !controlsForced.value)
 
 const view2DRoute = computed(() => {
   const p = route.path.replace(/\/+$/, '')

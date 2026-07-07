@@ -83,6 +83,24 @@ export function useMapBase(config: MapBaseConfig) {
     return new URLSearchParams(window.location.search).get('embed') === 'true'
   })
 
+  const noControl = computed(() => {
+    if (import.meta.server) return false
+    const params = new URLSearchParams(window.location.search)
+    return params.get('no-control') === 'true'
+  })
+
+  const hideAll = computed(() => {
+    if (import.meta.server) return false
+    const params = new URLSearchParams(window.location.search)
+    return params.get('hideAll') === 'true'
+  })
+
+  const controlsForced = computed(() => {
+    if (import.meta.server) return false
+    const params = new URLSearchParams(window.location.search)
+    return params.get('controls') === 'true'
+  })
+
   const isSmallViewport = ref(false)
   function checkViewportSize() {
     if (import.meta.server) return
@@ -90,7 +108,10 @@ export function useMapBase(config: MapBaseConfig) {
     const h = window.innerHeight
     isSmallViewport.value = w < 400 || h < 300 || (w < 500 && h < 500 && Math.abs(w - h) < 150)
   }
-  const hideControls = computed(() => isEmbed.value || isSmallViewport.value)
+  const hideControls = computed(() => {
+    if (controlsForced.value) return false
+    return isEmbed.value || noControl.value || isSmallViewport.value
+  })
 
   const hexGrid = useMapHexGrid(hexCanvasRef, isGlobe ? {
     mobileSize: HEX_GRID.mobileSizeGlobe,
@@ -524,7 +545,7 @@ export function useMapBase(config: MapBaseConfig) {
   watch(connections.showConnections, () => {
     if (activeDataset.value === 'active-crews') {
       connections.addConnections('active-crews', [], [], crewLocationsData.value)
-    } else if (!isGlobe || activeDataset.value !== 'active-crews') {
+    } else {
       connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
     }
     if (connections.showConnections.value) connections.startParticles()
@@ -555,7 +576,7 @@ export function useMapBase(config: MapBaseConfig) {
   /* ── return ───────────────────────────────────────────────────────── */
 
   return {
-    t, locale, localeNames, baseURL, isMobile, isEmbed, hideControls,
+    t, locale, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,
     speciesPanel,
     projectsData, speciesData, speciesIndexData, crewsData, crewLocationsData,
     filteredProjectsList, filteredSpeciesList, visibleProjects, visibleSpecies,

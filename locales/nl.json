@@ -530,5 +530,84 @@
     "paginationPrev": "← Prev",
     "paginationNext": "Next →",
     "apply": "APPLY ↗"
+  },
+  "iframe": {
+    "title": "EG-Maps inbedden",
+    "subtitle": "Kopieer de inbedcode om EG-Maps kaarten op uw website of blog weer te geven.",
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd!",
+    "copyCode": "Inbedcode kopiëren",
+    "loadingPreview": "Scroll om voorbeeld te laden",
+    "fullScreen": {
+      "title": "Volledig scherm inbedden",
+      "description": "Vult de volledige browser viewport. Ideaal voor toegewijde kaartpagina's."
+    },
+    "fixed100": {
+      "title": "Vaste hoogte inbedden",
+      "description": "Vaste 500px hoogte, volledige breedte. Goed voor inhoudspagina's."
+    },
+    "responsive": {
+      "title": "Responsief 16:9 inbedden",
+      "description": "Behoudt 16:9 beeldverhouding. Past zich aan elke containerbreedte aan."
+    },
+    "smallCard": {
+      "title": "Klein kaartje (300×250)",
+      "description": "Standaard advertentieformaat kaart. Past in zijbalken en widgets."
+    },
+    "mediumCard": {
+      "title": "Medium kaartje (600×400)",
+      "description": "Medium inbedden voor blogberichten en artikelen."
+    },
+    "largeCard": {
+      "title": "Groot kaartje (900×600)",
+      "description": "Groot inbedden voor volledige breedte inhoudsecties."
+    },
+    "fullScreenInteractive": {
+      "title": "Interactief inbedden met besturingselementen",
+      "description": "Alle besturingselementen zichtbaar. Het beste voor zelfstandige integraties."
+    },
+    "observatory": {
+      "title": "Vulcaan Observatorium inbedden",
+      "description": "De mijnbouwproces visualisatiekaart inbedden."
+    },
+    "noControl": {
+      "title": "Inbedden zonder Besturingen",
+      "description": "Header en kaartbesturingen verborgen. Dock-navigatie blijft voor eenvoudig wisselen."
+    },
+    "hideAll": {
+      "title": "Alleen Globe Inbedden",
+      "description": "Alleen de globe en het Earth Guardians-logo zichtbaar. Schoonste inbedoptie."
+    },
+    "usage": {
+      "title": "Gebruiksgids",
+      "queryParams": {
+        "title": "URL Parameters",
+        "embed": "Verbergt navigatie, header en kaartbesturingen voor schoon inbedden. Automatisch ingeschakeld wanneer viewport kleiner is dan 400×300px.",
+        "noControl": "Verbergt de bovenste header en kaartbesturingen (zoeken, filters, volledig scherm). De onderste dock-navigatie blijft zichtbaar.",
+        "hideAll": "Verbergt alles behalve de globe/kaart en het Earth Guardians-logo. Geen header, dock, besturingen of legendes.",
+        "controls": "Overschrijft de embed/no-control modus om alle besturingen te tonen. Handig wanneer je volledige interactiviteit wilt in een ingebedde context.",
+        "lang": "Stelt de interfacetaal in (bijv. es, fr, pt)."
+      },
+      "autoHide": {
+        "title": "Automatisch verbergen gedrag",
+        "description": "Kaartbesturingen (zoeken, filters, hex rooster, verbindingen, volledig scherm) worden automatisch verborgen wanneer de viewport te klein is: breedte < 400px, hoogte < 300px, of wanneer beide dimensies onder 500px liggen met een bijna vierkante beeldverhouding. Dit zorgt voor een schone ervaring in kleine inbeddingen zoals advertentiekaarten en widgets."
+      },
+      "viewportSizes": {
+        "title": "Aanbevolen viewport formaten",
+        "banner": "728×90 of 320×50 — Banner inbeddingen, minimale kaart zichtbaar.",
+        "smallCard": "300×250 — Zijbalk widgets, advertentieformaat kaarten. Besturingen automatisch verborgen.",
+        "mediumCard": "600×400 — Blogberichten en artikelen. Besturingen zichtbaar.",
+        "responsive": "16:9 beeldverhouding — Het beste voor responsieve lay-outs. Besturingen zichtbaar wanneer breed genoeg.",
+        "fullScreen": "100vw×100vh — Toegewijde kaartpagina's. Volledige interactieve ervaring."
+      },
+      "security": {
+        "title": "Beveiliging",
+        "description": "Inbeddingen gebruiken sandbox attributen om toegang te beperken. Alleen openbare data wordt blootgesteld via ingebedde kaarten."
+      },
+      "performance": {
+        "title": "Prestaties",
+        "description": "Alle inbeddingen gebruiken lazy loading. Kaarten worden alleen geladen wanneer ze in beeld worden gescroold, waardoor het initiële paginagewicht wordt geminimaliseerd."
+      }
+    }
   }
 }

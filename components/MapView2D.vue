@@ -34,10 +34,10 @@
       </div>
     </div>
 
-    <div v-if="isMobile" class="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none px-2 sm:px-3" :style="{ zIndex: 'var(--z-map-banner)' }">
+    <div v-if="isMobile && !hideAll" class="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none px-2 sm:px-3" :style="{ zIndex: 'var(--z-map-banner)' }">
       <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[10vh] xs:max-h-[12vh] max-w-[clamp(10rem,24vw,16rem)] object-contain" loading="lazy" />
     </div>
-    <div v-else class="absolute top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" :class="hideControls ? '-left-4' : 'left-0'" :style="{ zIndex: 'var(--z-map-banner)' }">
+    <div v-else-if="!hideAll" class="absolute top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" :class="hideControls ? '-left-4' : 'left-0'" :style="{ zIndex: 'var(--z-map-banner)' }">
       <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[clamp(10rem,24vw,16rem)] -rotate-90 origin-center" loading="lazy" />
     </div>
 
@@ -47,7 +47,7 @@
     <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" />
     <SpeciesFilterPanel v-if="activeDataset === 'endangered-species' && showFilterPanel" ref="speciesFilterPanelRef" :species="speciesIndexData" @filter-change="handleFilterChange" @group-selection-change="handleSpeciesGroupSelection" @close="showFilterPanel = false" />
 
-    <DataBubble v-if="activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" position-bottom="clamp(1rem, 4vh, 2rem)" @toggle-group="toggleLegendGroup" />
+    <DataBubble v-if="!hideAll && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" position-bottom="clamp(1rem, 4vh, 2rem)" @toggle-group="toggleLegendGroup" />
 
     <MapControls v-if="activeDataset !== 'vulcan-observatory'" :is-globe-view="false" :show-hex-grid="showHexGrid" :show-connections="showConnections" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" :style="{ zIndex: 'var(--z-map-ui-controls)' }" />
 
@@ -114,7 +114,7 @@ const ctx = useMapBase({
 })
 
 const {
-  t, localeNames, baseURL, isMobile, isEmbed, hideControls,
+  t, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,
   projectsData, speciesIndexData, visibleProjects, crewsData, crewLocationsData,
   activeDataset, selectedSpeciesGroups,
   hasError, errorMessage, noWebglSupport, isLoading,

@@ -193,6 +193,13 @@
     touch-action: manipulation;
   }
 
+  /* MapLibre needs full touch control (pinch-zoom, drag) — especially in iframes */
+  .maplibregl-map,
+  .maplibregl-canvas-container,
+  .maplibregl-canvas {
+    touch-action: none !important;
+  }
+
   html, body {
     height: 100%;
     width: 100%;

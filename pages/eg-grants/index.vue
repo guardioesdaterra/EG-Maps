@@ -152,7 +152,7 @@
           @update:search-query="dashboardSearch = $event"
           @toggle:show-history="showHistory = !showHistory"
           @vote="handleVoteScraped"
-          @viewDetail="openScrapedDetail"
+          @view-detail="openScrapedDetail"
           @leaderboard-detail="openLeaderboardDetail"
           @review:grant="handleReview"
           @review:scraped="handleReviewScraped"

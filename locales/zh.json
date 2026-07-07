@@ -530,5 +530,84 @@
     "paginationPrev": "← Prev",
     "paginationNext": "Next →",
     "apply": "APPLY ↗"
+  },
+  "iframe": {
+    "title": "嵌入 EG-Maps",
+    "subtitle": "复制嵌入代码以在您的网站或博客上显示 EG-Maps 地图。",
+    "copy": "复制",
+    "copied": "已复制！",
+    "copyCode": "复制嵌入代码",
+    "loadingPreview": "滚动以加载预览",
+    "fullScreen": {
+      "title": "全屏嵌入",
+      "description": "填充整个浏览器视口。适用于专用地图页面。"
+    },
+    "fixed100": {
+      "title": "固定高度嵌入",
+      "description": "500px固定高度，全宽。适用于内容页面。"
+    },
+    "responsive": {
+      "title": "响应式 16:9 嵌入",
+      "description": "保持 16:9 宽高比。适应任何容器宽度。"
+    },
+    "smallCard": {
+      "title": "小卡片 (300×250)",
+      "description": "标准广告尺寸卡片。适合侧边栏和小部件。"
+    },
+    "mediumCard": {
+      "title": "中卡片 (600×400)",
+      "description": "适用于博客文章和文章的中等嵌入。"
+    },
+    "largeCard": {
+      "title": "大卡片 (900×600)",
+      "description": "适用于全宽内容部分的大嵌入。"
+    },
+    "fullScreenInteractive": {
+      "title": "带控件的交互式嵌入",
+      "description": "显示所有控件。最适合独立集成。"
+    },
+    "observatory": {
+      "title": "火山观测站嵌入",
+      "description": "嵌入采矿过程可视化地图。"
+    },
+    "noControl": {
+      "title": "无控件嵌入",
+      "description": "标题和地图控件隐藏。停靠导航保留以便轻松切换。"
+    },
+    "hideAll": {
+      "title": "仅地球嵌入",
+      "description": "仅显示地球和 Earth Guardians 标志。最简洁的嵌入选项。"
+    },
+    "usage": {
+      "title": "使用指南",
+      "queryParams": {
+        "title": "URL 参数",
+        "embed": "隐藏导航、标题和地图控件以实现简洁嵌入。当视口小于 400×300px 时自动启用。",
+        "noControl": "隐藏顶部标题栏和地图控件（搜索、筛选、全屏）。底部停靠导航保持可见。",
+        "hideAll": "除地球/地图和 Earth Guardians 标志外隐藏所有内容。无标题、停靠栏、控件或图例。",
+        "controls": "覆盖 embed/no-control 模式以显示所有控件。在嵌入式上下文中需要完全交互时使用。",
+        "lang": "设置界面语言（例如 es、fr、pt）。"
+      },
+      "autoHide": {
+        "title": "自动隐藏行为",
+        "description": "当地图控件（搜索、筛选、六边形网格、连接、全屏）视口太小时自动隐藏：宽度 < 400px，高度 < 300px，或两个尺寸都小于 500px 且接近正方形宽高比时。这确保了在广告卡片和小部件等小嵌入中提供干净的体验。"
+      },
+      "viewportSizes": {
+        "title": "推荐视口尺寸",
+        "banner": "728×90 或 320×50 — 横幅嵌入，最小地图可见。",
+        "smallCard": "300×250 — 侧边栏小部件，广告尺寸卡片。控件自动隐藏。",
+        "mediumCard": "600×400 — 博客文章和文章。控件可见。",
+        "responsive": "16:9 宽高比 — 最适合响应式布局。足够宽时控件可见。",
+        "fullScreen": "100vw×100vh — 专用地图页面。完全交互式体验。"
+      },
+      "security": {
+        "title": "安全性",
+        "description": "嵌入使用沙箱属性来限制访问。只有公共数据通过嵌入式地图公开。"
+      },
+      "performance": {
+        "title": "性能",
+        "description": "所有嵌入都使用延迟加载。地图仅在滚动到视图时加载，最小化页面初始大小。"
+      }
+    }
   }
 }

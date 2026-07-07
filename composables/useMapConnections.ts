@@ -37,6 +37,9 @@ export function useMapConnections(
   const connectionFeatures = ref<MapConnectionFeature[]>([])
   let particleSystem: MapParticleSystem | null = null
   let isPaused = false
+  let deferredSyncHandler: (() => void) | null = null
+  let deferredSyncRetries = 0
+  const MAX_DEFERRED_SYNC_RETRIES = 5
   const isMobile = useMediaQuery('(max-width: 768px)')
 
   // Pause particles when off-screen
@@ -99,6 +102,7 @@ export function useMapConnections(
     crewLocations?: CrewLocation[],
   ) {
     cleanupParticles()
+    cleanupDeferredSync()
     const m = getMap()
     if (!m) return
 
@@ -118,7 +122,36 @@ export function useMapConnections(
     })
 
     if (import.meta.dev) console.warn(`[useMapConnections] addConnections: dataset=${dataset}, projects=${projects.length}, species=${species.length}, crewLocations=${crewLocations?.length ?? 0}, features=${connectionFeatures.value.length}`)
-    syncMapConnectionLayers(m, connectionFeatures.value)
+
+    // Try to sync layers immediately; if map style isn't loaded yet, retry on style.load
+    if (connectionFeatures.value.length > 0 && !m.isStyleLoaded()) {
+      scheduleDeferredSync(m)
+    } else {
+      syncMapConnectionLayers(m, connectionFeatures.value)
+    }
+  }
+
+  function scheduleDeferredSync(m: MapLibreMap) {
+    cleanupDeferredSync()
+    deferredSyncRetries = 0
+
+    deferredSyncHandler = () => {
+      deferredSyncRetries++
+      if (m.isStyleLoaded() || deferredSyncRetries >= MAX_DEFERRED_SYNC_RETRIES) {
+        cleanupDeferredSync()
+        syncMapConnectionLayers(m, connectionFeatures.value)
+        return
+      }
+    }
+    m.on('style.load', deferredSyncHandler)
+  }
+
+  function cleanupDeferredSync() {
+    if (deferredSyncHandler) {
+      const m = getMap()
+      if (m) m.off('style.load', deferredSyncHandler)
+      deferredSyncHandler = null
+    }
   }
 
   function cleanupParticles() {
@@ -127,6 +160,9 @@ export function useMapConnections(
     teardownVisibilityTracking()
   }
 
+  let startRetries = 0
+  const MAX_START_RETRIES = 5
+
   function startParticles() {
     const m = getMap()
     if (!showConnections.value || !m || !containerRef.value || !connectionFeatures.value.length) {
@@ -134,6 +170,16 @@ export function useMapConnections(
       return
     }
     if (!isMounted()) return
+
+    // Wait for map readiness — map.project() won't work before style is loaded
+    if (!m.isStyleLoaded() && startRetries < MAX_START_RETRIES) {
+      startRetries++
+      if (import.meta.dev) console.warn(`[useMapConnections] startParticles: map not ready, retry ${startRetries}/${MAX_START_RETRIES}`)
+      setTimeout(() => startParticles(), 300)
+      return
+    }
+    startRetries = 0
+
     if (import.meta.dev) console.warn(`[useMapConnections] startParticles: starting with ${connectionFeatures.value.length} features`)
     cleanupParticles()
     isPaused = false
@@ -155,6 +201,7 @@ export function useMapConnections(
   function cleanup() {
     cleanupParticles()
     teardownVisibilityTracking()
+    cleanupDeferredSync()
     const m = getMap()
     if (m) {
       syncMapConnectionLayers(m, [])

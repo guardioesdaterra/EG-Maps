@@ -830,5 +830,84 @@
     "editFormCategoriesPlaceholder": "ex. meio ambiente, clima, jovens",
     "daysRemaining": "{count} dias restantes",
     "daysAgo": "{count} dias atrás"
+  },
+  "iframe": {
+    "title": "Incorporar EG-Maps",
+    "subtitle": "Copie o código de incorporação para exibir os mapas EG-Maps em seu site ou blog.",
+    "copy": "Copiar",
+    "copied": "Copiado!",
+    "copyCode": "Copiar código de incorporação",
+    "loadingPreview": "Role para carregar a pré-visualização",
+    "fullScreen": {
+      "title": "Incorporação em Tela Cheia",
+      "description": "Preenche todo o viewport do navegador. Ideal para páginas de mapa dedicadas."
+    },
+    "fixed100": {
+      "title": "Incorporação de Altura Fixa",
+      "description": "Altura fixa de 500px, largura completa. Bom para páginas de conteúdo."
+    },
+    "responsive": {
+      "title": "Incorporação Responsiva 16:9",
+      "description": "Mantém a proporção 16:9. Se adapta a qualquer largura de contêiner."
+    },
+    "smallCard": {
+      "title": "Cartão Pequeno (300×250)",
+      "description": "Cartão de tamanho padrão de anúncio. Cabe em barras laterais e widgets."
+    },
+    "mediumCard": {
+      "title": "Cartão Médio (600×400)",
+      "description": "Incorporação média para posts de blog e artigos."
+    },
+    "largeCard": {
+      "title": "Cartão Grande (900×600)",
+      "description": "Incorporação grande para seções de conteúdo de largura completa."
+    },
+    "fullScreenInteractive": {
+      "title": "Incorporação Interativa com Controles",
+      "description": "Todos os controles visíveis. Melhor para integrações independentes."
+    },
+    "observatory": {
+      "title": "Incorporação do Observatório Vulcan",
+      "description": "Incorporar o mapa de visualização de processos mineração."
+    },
+    "noControl": {
+      "title": "Incorporação sem Controles",
+      "description": "Cabeçalho e controles do mapa ocultos. A navegação do dock permanece para fácil troca."
+    },
+    "hideAll": {
+      "title": "Incorporação Apenas Globo",
+      "description": "Apenas o globo e o logotipo da Earth Guardians visíveis. Opção de incorporação mais limpa."
+    },
+    "usage": {
+      "title": "Guia de uso",
+      "queryParams": {
+        "title": "Parâmetros de URL",
+        "embed": "Oculta a navegação, o cabeçalho e os controles do mapa para uma incorporação limpa. Ativado automaticamente quando o viewport é menor que 400×300px.",
+        "noControl": "Oculta o cabeçalho superior e os controles do mapa (pesquisa, filtros, tela cheia). A navegação do dock inferior permanece visível.",
+        "hideAll": "Oculta tudo exceto o globo/mapa e o logotipo da Earth Guardians. Sem cabeçalho, dock, controles ou legendas.",
+        "controls": "Substitui o modo embed/no-control para mostrar todos os controles. Útil quando deseja interatividade completa em um contexto incorporado.",
+        "lang": "Define o idioma da interface (ex., es, fr, pt)."
+      },
+      "autoHide": {
+        "title": "Comportamento de auto-ocultar",
+        "description": "Os controles do mapa (pesquisa, filtros, grade hexagonal, conexões, tela cheia) ocultam automaticamente quando o viewport é pequeno demais: largura < 400px, altura < 300px, ou quando ambas as dimensões estão abaixo de 500px com proporção quase quadrada. Isso garante uma experiência limpa em incorporações pequenas como cartões de anúncio e widgets."
+      },
+      "viewportSizes": {
+        "title": "Tamanhos de viewport recomendados",
+        "banner": "728×90 ou 320×50 — Incorporações de banner, mapa mínimo visível.",
+        "smallCard": "300×250 — Widgets de barra lateral, cartões de tamanho de anúncio. Controles ocultos automaticamente.",
+        "mediumCard": "600×400 — Posts de blog e artigos. Controles visíveis.",
+        "responsive": "Proporção 16:9 — Melhor para layouts responsivos. Controles visíveis quando largo o suficiente.",
+        "fullScreen": "100vw×100vh — Páginas de mapa dedicadas. Experiência interativa completa."
+      },
+      "security": {
+        "title": "Segurança",
+        "description": "Incorporações usam atributos sandbox para restringir o acesso. Apenas dados públicos são expostos através de mapas incorporados."
+      },
+      "performance": {
+        "title": "Desempenho",
+        "description": "Todas as incorporações usam carregamento adiado. Os mapas são carregados apenas quando deslizados para a vista, minimizando o peso inicial da página."
+      }
+    }
   }
 }

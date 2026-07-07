@@ -19,7 +19,7 @@
               <span>{{ grant.location_name }}</span>
               <span>{{ new Date(grant.created_at).toLocaleDateString() }}</span>
             </div>
-            <button class="mt-3 w-full rounded bg-white/10 py-2 text-xs font-semibold text-white hover:bg-white/20" @click="$emit('viewDetail', grant)">{{ t('grantsPortal.viewDetails') }}</button>
+            <button class="mt-3 w-full rounded bg-white/10 py-2 text-xs font-semibold text-white hover:bg-white/20" @click="$emit('view-detail', grant)">{{ t('grantsPortal.viewDetails') }}</button>
           </div>
         </div>
       </div>
@@ -38,7 +38,7 @@ defineProps<{
 
 defineEmits<{
   close: []
-  viewDetail: [grant: GrantRecord]
+  'view-detail': [grant: GrantRecord]
 }>()
 
 const { t } = useI18n()

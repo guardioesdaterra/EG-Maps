@@ -740,5 +740,84 @@
     "editFormCategoriesPlaceholder": "ex. environnement, climat, jeunesse",
     "daysRemaining": "{count} jours restants",
     "daysAgo": "il y a {count} jours"
+  },
+  "iframe": {
+    "title": "Intégrer EG-Maps",
+    "subtitle": "Copiez le code d'intégration pour afficher les cartes EG-Maps sur votre site web ou blog.",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "copyCode": "Copier le code d'intégration",
+    "loadingPreview": "Défilez pour charger l'aperçu",
+    "fullScreen": {
+      "title": "Intégration plein écran",
+      "description": "Remplit tout le viewport du navigateur. Idéal pour les pages de carte dédiées."
+    },
+    "fixed100": {
+      "title": "Intégration hauteur fixe",
+      "description": "Hauteur fixe de 500px, largeur complète. Bon pour les pages de contenu."
+    },
+    "responsive": {
+      "title": "Intégration responsive 16:9",
+      "description": "Maintient le ratio 16:9. S'adapte à toute largeur de conteneur."
+    },
+    "smallCard": {
+      "title": "Petite carte (300×250)",
+      "description": "Carte de taille standard pour publicité. Convient aux barres latérales et widgets."
+    },
+    "mediumCard": {
+      "title": "Carte moyenne (600×400)",
+      "description": "Intégration moyenne pour les articles de blog et les publications."
+    },
+    "largeCard": {
+      "title": "Grande carte (900×600)",
+      "description": "Grande intégration pour les sections de contenu pleine largeur."
+    },
+    "fullScreenInteractive": {
+      "title": "Intégration interactive avec contrôles",
+      "description": "Tous les contrôles visibles. Meilleur pour les intégrations autonomes."
+    },
+    "observatory": {
+      "title": "Intégration Observatoire Vulcan",
+      "description": "Intégrer la carte de visualisation des processus miniers."
+    },
+    "noControl": {
+      "title": "Intégration sans Contrôles",
+      "description": "En-tête et contrôles de la carte masqués. La navigation du dock reste pour un changement facile."
+    },
+    "hideAll": {
+      "title": "Intégration Globe Uniquement",
+      "description": "Seul le globe et le logo Earth Guardians visibles. Option d'intégration la plus épurée."
+    },
+    "usage": {
+      "title": "Guide d'utilisation",
+      "queryParams": {
+        "title": "Paramètres URL",
+        "embed": "Masque la navigation, l'en-tête et les contrôles de la carte pour une intégration épurée. Activé automatiquement lorsque le viewport est inférieur à 400×300px.",
+        "noControl": "Masque l'en-tête supérieur et les contrôles de la carte (recherche, filtres, plein écran). La navigation du dock en bas reste visible.",
+        "hideAll": "Masque tout sauf le globe/la carte et le logo Earth Guardians. Pas d'en-tête, de dock, de contrôles ni de légendes.",
+        "controls": "Remplace le mode embed/no-control pour afficher tous les contrôles. Utile lorsque vous souhaitez une interactivité complète dans un contexte intégré.",
+        "lang": "Définit la langue de l'interface (par ex., es, fr, pt)."
+      },
+      "autoHide": {
+        "title": "Comportement de masquage automatique",
+        "description": "Les contrôles de la carte (recherche, filtres, grille hexagonale, connexions, plein écran) se masquent automatiquement lorsque le viewport est trop petit : largeur < 400px, hauteur < 300px, ou lorsque les deux dimensions sont inférieures à 500px avec un ratio presque carré. Cela garantit une expérience épurée dans les petites intégrations comme les cartes publicitaires et les widgets."
+      },
+      "viewportSizes": {
+        "title": "Tailles de viewport recommandées",
+        "banner": "728×90 ou 320×50 — Intégrations bannière, carte minimale visible.",
+        "smallCard": "300×250 — Widgets barre latérale, cartes taille publicité. Contrôles masqués automatiquement.",
+        "mediumCard": "600×400 — Articles de blog et publications. Contrôles visibles.",
+        "responsive": "Ratio 16:9 — Meilleur pour les mises en page responsive. Contrôles visibles lorsque suffisamment large.",
+        "fullScreen": "100vw×100vh — Pages de carte dédiées. Expérience interactive complète."
+      },
+      "security": {
+        "title": "Sécurité",
+        "description": "Les intégrations utilisent des attributs sandbox pour restreindre l'accès. Seules les données publiques sont exposées via les cartes intégrées."
+      },
+      "performance": {
+        "title": "Performance",
+        "description": "Toutes les intégrations utilisent le chargement différé. Les cartes ne se chargent que lorsqu'elles sont en vue, minimisant le poids initial de la page."
+      }
+    }
   }
 }

@@ -27,12 +27,14 @@ export function usePreviewCard(baseURL?: string) {
   let currentMap: MapLibreMap | null = null
   let callbacks: PreviewCardCallbacks | null = null
 
-  const translations = {
-    expand: t('preview.expand') || 'View details',
-    beneficiaries: t('stats.directBeneficiaries') || 'Beneficiaries',
-    location: t('project.location') || 'Location',
-    activeCrews: t('crews.activeCrews') || 'Active Crews',
-    totalMembers: t('crews.totalMembers') || 'Total Members',
+  function getTranslations() {
+    return {
+      expand: t('preview.expand') || 'View details',
+      beneficiaries: t('stats.directBeneficiaries') || 'Beneficiaries',
+      location: t('project.location') || 'Location',
+      activeCrews: t('crews.activeCrews') || 'Active Crews',
+      totalMembers: t('crews.totalMembers') || 'Total Members',
+    }
   }
 
   function close() {
@@ -53,7 +55,7 @@ export function usePreviewCard(baseURL?: string) {
     currentItem.value = project
     currentType.value = 'project'
 
-    const html = buildProjectPreviewHTML(project, baseURL, translations)
+    const html = buildProjectPreviewHTML(project, baseURL, getTranslations())
     createPopup(html, [project.longitude, project.latitude], map, () => {
       cbs.expandProject(project)
     })
@@ -68,7 +70,7 @@ export function usePreviewCard(baseURL?: string) {
 
     const lat = 'lat' in species ? species.lat : 0
     const lng = 'lng' in species ? species.lng : 0
-    const html = buildSpeciesPreviewHTML(species as Species, baseURL, translations)
+    const html = buildSpeciesPreviewHTML(species as Species, baseURL, getTranslations())
     createPopup(html, [lng, lat], map, () => {
       cbs.expandSpecies(species)
     })
@@ -83,7 +85,7 @@ export function usePreviewCard(baseURL?: string) {
 
     const lat = 'lat' in crew ? crew.lat : (crew as CrewRegionData).latitude
     const lng = 'lng' in crew ? crew.lng : (crew as CrewRegionData).longitude
-    const html = buildCrewPreviewHTML(crew as CrewRegionData, translations)
+    const html = buildCrewPreviewHTML(crew as CrewRegionData, getTranslations())
     createPopup(html, [lng, lat], map, () => {
       cbs.expandCrew(crew)
     })

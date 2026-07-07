@@ -44,9 +44,12 @@
       <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[clamp(10rem,24vw,16rem)] -rotate-90 origin-center" loading="lazy" />
     </div>
 
+    <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" />
+    <SpeciesFilterPanel v-if="activeDataset === 'endangered-species' && showFilterPanel" ref="speciesFilterPanelRef" :species="speciesIndexData" @filter-change="handleFilterChange" @group-selection-change="handleSpeciesGroupSelection" @close="showFilterPanel = false" />
+
     <DataBubble v-if="!hideAll && activeDataset !== 'active-crews' && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" position-top="auto" position-bottom="clamp(1rem, 4vh, 2rem)" @toggle-group="toggleLegendGroup" />
 
-    <MapControls v-if="activeDataset !== 'vulcan-observatory'" :is-globe-view="true" :show-hex-grid="showHexGrid" :show-connections="showConnections" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" :style="{ zIndex: 'var(--z-map-ui-controls)' }" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @navigate="navigateToLocation" />
+    <MapControls v-if="activeDataset !== 'vulcan-observatory'" :is-globe-view="true" :show-hex-grid="showHexGrid" :show-connections="showConnections" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" :style="{ zIndex: 'var(--z-map-ui-controls)' }" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" />
 
     <Transition name="fade">
       <div v-if="hasError" class="absolute inset-0 bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center text-white z-[2000]">
@@ -63,23 +66,38 @@
       </div>
     </Transition>
 
-    <div v-if="showSpeciesOverlay" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Species details" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
-      <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" aria-label="Close species details"><Icon name="lucide:x" class="h-6 w-6" /></button>
-      <div v-if="availablePopupLocales.length > 0" class="species-popup-lang-bar">
-        <button v-for="loc in availablePopupLocales" :key="loc" class="species-popup-lang-btn" :class="{ active: popupLocale === loc }" @click="popupLocale = loc" :aria-label="`Show in ${(localeNames as Record<string, string>)[loc] || loc}`">{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
+    <!-- Species overlay -->
+    <Transition name="fade">
+      <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Species details" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
+        <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" aria-label="Close species details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+        <div v-if="availablePopupLocales.length > 0" class="species-popup-lang-bar">
+          <button v-for="loc in availablePopupLocales" :key="loc" class="species-popup-lang-btn" :class="{ active: popupLocale === loc }" @click="popupLocale = loc" :aria-label="`Show in ${(localeNames as Record<string, string>)[loc] || loc}`">{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
+        </div>
+        <div class="species-popup-content-fixed">
+          <SpeciesPopup :species="speciesData" />
+        </div>
       </div>
-      <div class="species-popup-content-fixed" v-html="speciesOverlayHTML"></div>
-    </div>
+    </Transition>
 
-    <div v-if="showProjectOverlay" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Project details" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
-      <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
-      <div class="project-popup-content-fixed" v-html="projectOverlayHTML"></div>
-    </div>
+    <!-- Project overlay -->
+    <Transition name="fade">
+      <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Project details" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
+        <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+        <div class="project-popup-content-fixed">
+          <ProjectPopup :project="projectData" />
+        </div>
+      </div>
+    </Transition>
 
-    <div v-if="showCrewOverlay" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
-      <button ref="crewCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
-      <div class="project-popup-content-fixed" v-html="crewOverlayHTML"></div>
-    </div>
+    <!-- Crew overlay -->
+    <Transition name="fade">
+      <div v-if="showCrewOverlay" ref="crewOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
+        <button ref="crewCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+        <div class="project-popup-content-fixed">
+          <CrewPopup :crew="crewData" :is-location="isCrewLocationData" />
+        </div>
+      </div>
+    </Transition>
 
     <SpeciesPanel @species-selected="handleSpeciesSelected" />
   </div>
@@ -93,11 +111,12 @@ import { useMapBase } from '@/composables/useMapBase'
 
 const DataBubble = defineAsyncComponent(() => import('~/components/DataBubble.vue'))
 const MapControls = defineAsyncComponent(() => import('~/components/MapControls.vue'))
+const SpeciesFilterPanel = defineAsyncComponent(() => import('~/components/SpeciesFilterPanel.vue'))
+const ProjectFilterPanel = defineAsyncComponent(() => import('~/components/ProjectFilterPanel.vue'))
 const SpeciesPanel = defineAsyncComponent(() => import('~/components/SpeciesPanel.vue'))
 
 const props = withDefaults(defineProps<MapBaseProps>(), {
   defaultDataset: 'project-grants',
-  showHexGrid: true,
 })
 
 const emit = defineEmits<{ mapInit: [map: maplibregl.Map] }>()
@@ -201,16 +220,20 @@ const {
   activeDataset, projectsData, speciesIndexData, visibleProjects,
   selectedSpeciesGroups,
   hasError, errorMessage, noWebglSupport, isLoading,
-  showHexGrid, showFilterPanel,
+  showHexGrid, showFilterPanel, speciesFilterPanelRef,
   showConnections, toggleConnections,
   showSpeciesOverlay, showProjectOverlay, showCrewOverlay,
-  speciesOverlayHTML, projectOverlayHTML, crewOverlayHTML,
+  speciesData, projectData, crewData, isCrewLocationData,
   popupLocale, availablePopupLocales,
-  speciesCloseBtnRef, projectCloseBtnRef, crewCloseBtnRef,
+  speciesCloseBtnRef, speciesOverlayRef,
+  projectCloseBtnRef, projectOverlayRef,
+  crewCloseBtnRef, crewOverlayRef,
   openSpeciesOverlay, closeSpeciesOverlay,
   openProjectOverlay, closeProjectOverlay,
   openCrewOverlay, closeCrewOverlay,
   handleSpeciesSelected,
+  handleFilterChange, handleProjectFilterChange,
+  handleSearchOpenChange, handleSpeciesGroupSelection,
   toggleLegendGroup, navigateToLocation,
 } = base
 </script>

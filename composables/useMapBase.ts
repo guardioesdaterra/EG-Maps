@@ -128,25 +128,24 @@ export function useMapBase(config: MapBaseConfig) {
   )
   const { showConnections, toggleConnections } = connections
 
-  const speciesPopup = useSpeciesPopup(baseURL)
+  const speciesPopup = useSpeciesPopup()
   const projectPopup = useProjectPopup()
   const crewPopup = useCrewPopup()
   const previewCard = usePreviewCard(baseURL)
 
   const {
     showOverlay: showSpeciesOverlay,
-    overlayHTML: speciesOverlayHTML,
+    species: selectedSpeciesData,
     popupLocale,
     availableLocales: availablePopupLocales,
     closeBtnRef: speciesCloseBtnRef,
     overlayRef: speciesOverlayRef,
     open: openSpeciesPopup,
     close: closeSpeciesPopup,
-    rebuild: rebuildSpeciesPopup,
   } = speciesPopup
   const {
     showOverlay: showProjectOverlay,
-    overlayHTML: projectOverlayHTML,
+    project: selectedProjectData,
     closeBtnRef: projectCloseBtnRef,
     overlayRef: projectOverlayRef,
     open: openProjectPopup,
@@ -154,16 +153,20 @@ export function useMapBase(config: MapBaseConfig) {
   } = projectPopup
   const {
     showOverlay: showCrewOverlay,
-    overlayHTML: crewOverlayHTML,
+    crew: selectedCrewData,
+    isCrewLocation: isCrewLocationData,
     closeBtnRef: crewCloseBtnRef,
+    overlayRef: crewOverlayRef,
     open: openCrewPopup,
     close: closeCrewPopup,
   } = crewPopup
 
   const speciesOverlayActive = computed(() => showSpeciesOverlay.value)
   const projectOverlayActive = computed(() => showProjectOverlay.value)
+  const crewOverlayActive = computed(() => showCrewOverlay.value)
   useFocusTrap(speciesOverlayRef, { active: speciesOverlayActive })
   useFocusTrap(projectOverlayRef, { active: projectOverlayActive })
+  useFocusTrap(crewOverlayRef, { active: crewOverlayActive })
 
   let map: maplibregl.Map | null = null
   let isMounted = true
@@ -338,8 +341,6 @@ export function useMapBase(config: MapBaseConfig) {
   function handleSpeciesGroupSelection(groups: string[]) {
     selectedSpeciesGroups.value = groups
   }
-
-  function rebuildSpeciesOverlay() { rebuildSpeciesPopup() }
 
   /* ── map init ─────────────────────────────────────────────────────── */
 
@@ -569,16 +570,12 @@ export function useMapBase(config: MapBaseConfig) {
     }
   })
 
-  watch(popupLocale, () => {
-    if (showSpeciesOverlay.value) rebuildSpeciesOverlay()
-  })
-
   /* ── return ───────────────────────────────────────────────────────── */
 
   return {
     t, locale, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,
     speciesPanel,
-    projectsData, speciesData, speciesIndexData, crewsData, crewLocationsData,
+    projectsData, speciesIndexData, crewsData, crewLocationsData,
     filteredProjectsList, filteredSpeciesList, visibleProjects, visibleSpecies,
     activeDataset, selectedSpeciesGroups,
     hasError, errorMessage, noWebglSupport, isLoading,
@@ -588,18 +585,17 @@ export function useMapBase(config: MapBaseConfig) {
     rebuildMarkers, updateMarkerData, navigateToLocation,
     rareEarthController, setupRareEarthLayers,
     showSpeciesOverlay, showProjectOverlay, showCrewOverlay,
-    speciesOverlayHTML, projectOverlayHTML, crewOverlayHTML,
+    speciesData: selectedSpeciesData, projectData: selectedProjectData, crewData: selectedCrewData, isCrewLocationData,
     popupLocale, availablePopupLocales,
     speciesCloseBtnRef, speciesOverlayRef,
     projectCloseBtnRef, projectOverlayRef,
-    crewCloseBtnRef,
+    crewCloseBtnRef, crewOverlayRef,
     openSpeciesOverlay, closeSpeciesOverlay,
     openProjectOverlay, closeProjectOverlay,
     openCrewOverlay, closeCrewOverlay, openCrewLocationOverlay,
     handleSpeciesSelected, openRareEarthOverlay,
     handleFilterChange, handleProjectFilterChange,
     handleSearchOpenChange, handleSpeciesGroupSelection, toggleLegendGroup,
-    rebuildSpeciesOverlay,
     initMap, map, mapRef,
     isMounted,
   }

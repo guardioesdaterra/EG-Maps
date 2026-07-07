@@ -65,23 +65,38 @@
       </div>
     </Transition>
 
-    <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Species details" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
-      <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" aria-label="Close species details"><Icon name="lucide:x" class="h-6 w-6" /></button>
-      <div v-if="availablePopupLocales.length > 0" class="species-popup-lang-bar">
-        <button v-for="loc in availablePopupLocales" :key="loc" class="species-popup-lang-btn" :class="{ active: popupLocale === loc }" @click="popupLocale = loc" :aria-label="`Show in ${(localeNames as Record<string, string>)[loc] || loc}`">{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
+    <!-- Species overlay -->
+    <Transition name="fade">
+      <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Species details" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
+        <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" aria-label="Close species details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+        <div v-if="availablePopupLocales.length > 0" class="species-popup-lang-bar">
+          <button v-for="loc in availablePopupLocales" :key="loc" class="species-popup-lang-btn" :class="{ active: popupLocale === loc }" @click="popupLocale = loc" :aria-label="`Show in ${(localeNames as Record<string, string>)[loc] || loc}`">{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
+        </div>
+        <div class="species-popup-content-fixed">
+          <SpeciesPopup :species="speciesData" />
+        </div>
       </div>
-      <div class="species-popup-content-fixed" v-html="speciesOverlayHTML"></div>
-    </div>
+    </Transition>
 
-    <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Project details" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
-      <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
-      <div class="project-popup-content-fixed" v-html="projectOverlayHTML"></div>
-    </div>
+    <!-- Project overlay -->
+    <Transition name="fade">
+      <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Project details" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
+        <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+        <div class="project-popup-content-fixed">
+          <ProjectPopup :project="projectData" />
+        </div>
+      </div>
+    </Transition>
 
-    <div v-if="showCrewOverlay" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew region details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
-      <button ref="crewCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
-      <div class="project-popup-content-fixed" v-html="crewOverlayHTML"></div>
-    </div>
+    <!-- Crew overlay -->
+    <Transition name="fade">
+      <div v-if="showCrewOverlay" ref="crewOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew region details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
+        <button ref="crewCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+        <div class="project-popup-content-fixed">
+          <CrewPopup :crew="crewData" :is-location="isCrewLocationData" />
+        </div>
+      </div>
+    </Transition>
 
     <SpeciesPanel @species-selected="handleSpeciesSelected" />
   </div>
@@ -121,11 +136,11 @@ const {
   showHexGrid, showFilterPanel, speciesFilterPanelRef,
   showConnections, toggleConnections,
   showSpeciesOverlay, showProjectOverlay, showCrewOverlay,
-  speciesOverlayHTML, projectOverlayHTML, crewOverlayHTML,
+  speciesData, projectData, crewData, isCrewLocationData,
   popupLocale, availablePopupLocales,
   speciesCloseBtnRef, speciesOverlayRef,
   projectCloseBtnRef, projectOverlayRef,
-  crewCloseBtnRef,
+  crewCloseBtnRef, crewOverlayRef,
   openSpeciesOverlay, closeSpeciesOverlay,
   openProjectOverlay, closeProjectOverlay,
   openCrewOverlay, closeCrewOverlay,

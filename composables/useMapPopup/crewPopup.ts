@@ -1,46 +1,33 @@
-import { ref, nextTick } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
-import { buildCrewPopupHTML, buildCrewLocationPopupHTML } from '@/lib/map-utils'
-import { useI18n } from '@/composables/useI18n'
 
 export function useCrewPopup() {
-  const { t } = useI18n()
-
   const showOverlay = ref(false)
-  const overlayHTML = ref('')
+  const selectedCrew = ref<CrewRegionData | CrewLocation | null>(null)
+  const isCrewLocation = ref(false)
   const closeBtnRef = ref<HTMLElement | null>(null)
+  const overlayRef = ref<HTMLElement | null>(null)
 
-  function open(crew: CrewRegionData | CrewLocation) {
-    if ('activeCrews' in crew) {
-      overlayHTML.value = buildCrewPopupHTML(crew as CrewRegionData, {
-        activeCrews: t('crews.activeCrews'),
-        inactiveCrews: t('crews.inactiveCrews'),
-        totalMembers: t('crews.totalMembers'),
-        countries: t('crews.countries'),
-        region: t('crews.region'),
-        growthSince2022: t('crews.growthSince2022'),
-      })
-    } else {
-      overlayHTML.value = buildCrewLocationPopupHTML(crew as CrewLocation, {
-        crewName: t('crews.activeCrews'),
-        country: t('crews.countries'),
-        city: t('crews.region'),
-        region: t('crews.region'),
-      })
-    }
+  const crew = computed(() => selectedCrew.value)
+
+  function open(data: CrewRegionData | CrewLocation) {
+    selectedCrew.value = data
+    isCrewLocation.value = !('activeCrews' in data)
     showOverlay.value = true
     nextTick(() => closeBtnRef.value?.focus())
   }
 
   function close() {
     showOverlay.value = false
-    overlayHTML.value = ''
+    selectedCrew.value = null
   }
 
   return {
     showOverlay,
-    overlayHTML,
+    crew,
+    isCrewLocation,
     closeBtnRef,
+    overlayRef,
     open,
     close,
   }

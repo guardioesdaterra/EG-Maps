@@ -1,13 +1,12 @@
-import { ref, computed, watch, nextTick } from 'vue'
-import { buildSpeciesPopupHTML } from '@/lib/map-utils'
+import { ref, computed, nextTick } from 'vue'
 import { useI18n } from '@/composables/useI18n'
-import { getLocalizedSpecies, getTaxonomicGroupLabels, type PopupSpecies } from './utils'
+import { getLocalizedSpecies, type PopupSpecies } from './utils'
+import type { Species } from '@/lib/types'
 
-export function useSpeciesPopup(baseURL?: string) {
-  const { t, locale } = useI18n()
+export function useSpeciesPopup() {
+  const { locale } = useI18n()
 
   const showOverlay = ref(false)
-  const overlayHTML = ref('')
   const popupLocale = ref<string>(locale.value)
   const selectedSpecies = ref<PopupSpecies | null>(null)
   const closeBtnRef = ref<HTMLElement | null>(null)
@@ -19,49 +18,32 @@ export function useSpeciesPopup(baseURL?: string) {
     return (Object.keys(s.content) as string[]).filter(l => l !== popupLocale.value)
   })
 
-  function rebuild() {
-    const species = selectedSpecies.value
-    if (!species) return
-    const localized = getLocalizedSpecies(species, popupLocale.value)
-    overlayHTML.value = buildSpeciesPopupHTML(localized, {
-      scientificName: t('species.scientificName'),
-      threatTypes: t('species.threatTypes'),
-      population: t('species.population'),
-      habitat: t('species.habitat'),
-      region: t('filter.region'),
-      ecosystem: t('filter.ecosystem'),
-      groupLabels: getTaxonomicGroupLabels(t),
-    }, baseURL)
-  }
+  const species = computed<Species | null>(() => {
+    const s = selectedSpecies.value
+    if (!s) return null
+    return getLocalizedSpecies(s, popupLocale.value)
+  })
 
-  function open(species: PopupSpecies) {
-    selectedSpecies.value = species
+  function open(data: PopupSpecies) {
+    selectedSpecies.value = data
     popupLocale.value = locale.value
-    rebuild()
     showOverlay.value = true
     nextTick(() => closeBtnRef.value?.focus())
   }
 
   function close() {
     showOverlay.value = false
-    overlayHTML.value = ''
     selectedSpecies.value = null
   }
 
-  watch(popupLocale, () => {
-    if (showOverlay.value) rebuild()
-  })
-
   return {
     showOverlay,
-    overlayHTML,
+    species,
     popupLocale,
-    selectedSpecies,
     availableLocales,
     closeBtnRef,
     overlayRef,
     open,
     close,
-    rebuild,
   }
 }

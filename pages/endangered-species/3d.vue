@@ -1,15 +1,5 @@
 <template>
-  <div v-if="loading" class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
-    <LoadingSpinner
-      icon="svg-spinners:wind-toy"
-      :message="t('loading.endangeredSpeciesGlobe')"
-      :inline="true"
-    />
-  </div>
-  <div v-else-if="error" class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
-    <p class="text-red-400">{{ t('globe.connectionError') }}</p>
-  </div>
-  <ClientOnly v-else>
+  <ClientOnly>
     <MapView3D :species-index="speciesIndex" :default-dataset="'endangered-species'" />
     <template #fallback>
       <div class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
@@ -37,5 +27,5 @@ useHead({
   ],
 })
 
-const { data: speciesIndex, loading, error } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
+const { data: speciesIndex } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
 </script>

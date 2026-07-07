@@ -6,7 +6,7 @@ import { GROUP_COLORS, generateCurvedPath, isValidCoordinate } from './map-utils
 
 type SpeciesLike = { id: string; lat: number; lng: number; commonName: string; taxonomicGroup: string }
 
-export type DatasetKey = 'project-grants' | 'endangered-species' | 'vulcan-observatory'
+export type DatasetKey = 'project-grants' | 'endangered-species' | 'active-crews' | 'vulcan-observatory'
 
 export interface ConnectionProperties {
   color: string
@@ -26,6 +26,7 @@ interface BuildConnectionOptions {
   dataset: DatasetKey
   projects?: ProjectData[]
   species?: SpeciesLike[]
+  crewLocations?: { name: string; country: string; city: string; state: string; region: string; status: 'active' | 'inactive'; lat: number; lng: number }[]
   isMobile: boolean
 }
 
@@ -33,11 +34,19 @@ export function buildMapConnectionFeatures({
   dataset,
   projects = [],
   species = [],
+  crewLocations = [],
   isMobile,
 }: BuildConnectionOptions): MapConnectionFeature[] {
-  return dataset === 'project-grants'
-    ? buildProjectConnectionFeatures(projects, isMobile)
-    : buildSpeciesConnectionFeatures(species, isMobile)
+  switch (dataset) {
+    case 'project-grants':
+      return buildProjectConnectionFeatures(projects, isMobile)
+    case 'endangered-species':
+      return buildSpeciesConnectionFeatures(species, isMobile)
+    case 'active-crews':
+      return buildCrewConnectionFeatures(crewLocations, isMobile)
+    default:
+      return []
+  }
 }
 
 function buildProjectConnectionFeatures(projects: ProjectData[], isMobile: boolean): MapConnectionFeature[] {
@@ -149,6 +158,68 @@ function buildSpeciesConnectionFeatures(species: SpeciesLike[], isMobile: boolea
     edgeKeys.add([sourceKey, targetKey].sort().join('::'))
     incomingCount.set(targetKey, (incomingCount.get(targetKey) ?? 0) + 1)
   })
+
+  return features
+}
+
+type CrewLocationLike = { name: string; country: string; city: string; state: string; region: string; status: 'active' | 'inactive'; lat: number; lng: number }
+
+const CREW_REGION_COLORS: Record<string, string> = {
+  'Africa': '#22c55e',
+  'North America': '#3b82f6',
+  'South America': '#a855f7',
+  'Europe': '#ec4899',
+  'East Asia': '#f59e0b',
+  'South Asia': '#06b6d4',
+}
+
+function buildCrewConnectionFeatures(locations: CrewLocationLike[], isMobile: boolean): MapConnectionFeature[] {
+  const locs = locations.filter(l => l.status === 'active' && isValidCoordinate(l.lat, l.lng))
+  if (locs.length < 2) return []
+
+  const byRegion = new Map<string, CrewLocationLike[]>()
+  for (const loc of locs) {
+    const region = loc.region || 'Other'
+    if (!byRegion.has(region)) byRegion.set(region, [])
+    byRegion.get(region)!.push(loc)
+  }
+
+  const features: MapConnectionFeature[] = []
+  const edgeKeys = new Set<string>()
+
+  for (const [region, regionLocs] of byRegion) {
+    const color = CREW_REGION_COLORS[region] ?? '#22c55e'
+    const processLocs = isMobile ? regionLocs.slice(0, Math.min(10, regionLocs.length)) : regionLocs
+
+    for (let i = 0; i < processLocs.length; i++) {
+      const source = processLocs[i]
+      const sourceKey = `${source.name}|${source.city}`
+
+      // Connect to 1-2 random locations in the same region
+      const targets = processLocs.filter((_, j) => {
+        if (j === i) return false
+        const targetKey = `${processLocs[j].name}|${processLocs[j].city}`
+        const edgeKey = [sourceKey, targetKey].sort().join('::')
+        return !edgeKeys.has(edgeKey)
+      })
+
+      if (targets.length === 0) continue
+      const target = targets[Math.floor(Math.random() * targets.length)]
+      const targetKey = `${target.name}|${target.city}`
+
+      features.push(createConnectionFeature({
+        from: [source.lng, source.lat],
+        to: [target.lng, target.lat],
+        color,
+        opacity: 0.15,
+        weight: 1.0,
+        dataset: 'active-crews',
+        group: region,
+      }))
+
+      edgeKeys.add([sourceKey, targetKey].sort().join('::'))
+    }
+  }
 
   return features
 }

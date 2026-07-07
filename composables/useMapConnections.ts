@@ -1,6 +1,7 @@
 import { ref, onUnmounted, type Ref } from 'vue'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { ProjectData, Species } from '@/lib/types'
+import type { CrewLocation } from '@/lib/crew-data'
 import {
   buildMapConnectionFeatures,
   createMapParticleSystem,
@@ -92,9 +93,10 @@ export function useMapConnections(
   }
 
   function addConnections(
-    dataset: 'project-grants' | 'endangered-species',
+    dataset: 'project-grants' | 'endangered-species' | 'active-crews',
     projects: ProjectData[],
     species: SpeciesLike[],
+    crewLocations?: CrewLocation[],
   ) {
     cleanupParticles()
     const m = getMap()
@@ -111,10 +113,11 @@ export function useMapConnections(
       dataset,
       projects,
       species,
+      crewLocations,
       isMobile: isMobile.value,
     })
 
-    if (import.meta.dev) console.warn(`[useMapConnections] addConnections: dataset=${dataset}, projects=${projects.length}, species=${species.length}, features=${connectionFeatures.value.length}`)
+    if (import.meta.dev) console.warn(`[useMapConnections] addConnections: dataset=${dataset}, projects=${projects.length}, species=${species.length}, crewLocations=${crewLocations?.length ?? 0}, features=${connectionFeatures.value.length}`)
     syncMapConnectionLayers(m, connectionFeatures.value)
   }
 

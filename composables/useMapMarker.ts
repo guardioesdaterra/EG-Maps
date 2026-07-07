@@ -101,7 +101,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
 
     /* first time or dataset switch → full setup */
     detach()
-    addSource(SOURCE, geojson)
+    addSource(SOURCE, geojson, ds)
     addLayers(SOURCE, ds)
     setupEvents(SOURCE, ds, a)
     currentDataset = ds
@@ -120,10 +120,17 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
 
   /* ── source helpers ─────────────────────────────────────────────────── */
 
-  function addSource(id: string, data: GeoJSON.FeatureCollection) {
+  function addSource(id: string, data: GeoJSON.FeatureCollection, ds: MarkerDataset) {
     if (!map) return
     removeSource(id)
-    map.addSource(id, { type: 'geojson', data, cluster: true, clusterRadius: 50, clusterMaxZoom: 16 })
+    const useClustering = ds !== 'active-crews'
+    map.addSource(id, {
+      type: 'geojson',
+      data,
+      cluster: useClustering,
+      clusterRadius: useClustering ? 50 : undefined,
+      clusterMaxZoom: useClustering ? 16 : undefined,
+    })
   }
 
   function updateData(id: string, data: GeoJSON.FeatureCollection) {
@@ -137,6 +144,11 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     for (const lid of LAYER_SUFFIXES.map(s => id + s)) {
       if (map.getLayer(lid)) map.removeLayer(lid)
     }
+    // Also remove cluster layers if they exist
+    for (const suffix of ['_cg', '_c', '_cn']) {
+      const lid = id + suffix
+      if (map.getLayer(lid)) map.removeLayer(lid)
+    }
     if (map.getSource(id)) map.removeSource(id)
   }
 
@@ -145,28 +157,34 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   function addLayers(id: string, ds: MarkerDataset) {
     if (!map) return
     const cc = clusterPalette(ds)
+    const useClustering = ds !== 'active-crews'
 
-    // clusters
-    map.addLayer({ id: `${id}_cg`, type: 'circle', source: id, filter: ['has', 'point_count'], paint: {
-      'circle-color': stepExpr(cc), 'circle-radius': radExpr(1.2), 'circle-blur': 0.9, 'circle-opacity': 0.25 } })
-    map.addLayer({ id: `${id}_c`, type: 'circle', source: id, filter: ['has', 'point_count'], paint: {
-      'circle-color': 'rgba(0,0,0,0.82)', 'circle-radius': radExpr(0.8),
-      'circle-stroke-color': stepExpr(cc), 'circle-stroke-width': 2, 'circle-opacity': 0.92 } })
-    map.addLayer({ id: `${id}_cn`, type: 'symbol', source: id, filter: ['has', 'point_count'], layout: {
-      'text-field': ['get', 'point_count_abbreviated'],
-      'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
-      'text-size': ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 9, 14, 11],
-      'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
-      'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.35)', 'text-halo-width': 1.5 } })
+    // clusters (only when clustering is enabled)
+    if (useClustering) {
+      map.addLayer({ id: `${id}_cg`, type: 'circle', source: id, filter: ['has', 'point_count'], paint: {
+        'circle-color': stepExpr(cc), 'circle-radius': radExpr(1.2), 'circle-blur': 0.9, 'circle-opacity': 0.25 } })
+      map.addLayer({ id: `${id}_c`, type: 'circle', source: id, filter: ['has', 'point_count'], paint: {
+        'circle-color': 'rgba(0,0,0,0.82)', 'circle-radius': radExpr(0.8),
+        'circle-stroke-color': stepExpr(cc), 'circle-stroke-width': 2, 'circle-opacity': 0.92 } })
+      map.addLayer({ id: `${id}_cn`, type: 'symbol', source: id, filter: ['has', 'point_count'], layout: {
+        'text-field': ['get', 'point_count_abbreviated'],
+        'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
+        'text-size': ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 9, 14, 11],
+        'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
+        'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.35)', 'text-halo-width': 1.5 } })
+    }
 
     // points
-    map.addLayer({ id: `${id}_pg`, type: 'circle', source: id, filter: ['!', ['has', 'point_count']], paint: {
+    const pointFilter = useClustering ? ['!', ['has', 'point_count']] : undefined
+    const pointLayerOpts = pointFilter ? { filter: pointFilter } : {}
+
+    map.addLayer({ id: `${id}_pg`, type: 'circle', source: id, ...pointLayerOpts, paint: {
       'circle-color': ['get', 'color'], 'circle-radius': ['*', ['coalesce', ['get', 'size'], 7], 1.4],
       'circle-blur': 0.8, 'circle-opacity': 0.25 } })
-    map.addLayer({ id: `${id}_p`, type: 'circle', source: id, filter: ['!', ['has', 'point_count']], paint: {
+    map.addLayer({ id: `${id}_p`, type: 'circle', source: id, ...pointLayerOpts, paint: {
       'circle-color': 'rgba(0,0,0,0.82)', 'circle-radius': ['coalesce', ['get', 'size'], 7],
       'circle-stroke-color': ['get', 'color'], 'circle-stroke-width': 1.5, 'circle-opacity': 0.95 } })
-    map.addLayer({ id: `${id}_pl`, type: 'symbol', source: id, filter: ['!', ['has', 'point_count']], layout: {
+    map.addLayer({ id: `${id}_pl`, type: 'symbol', source: id, ...pointLayerOpts, layout: {
       'text-field': ['coalesce', ['get', 'label'], ''],
       'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
       'text-size': 8, 'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
@@ -208,7 +226,10 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       map!.on(evt as any, lid, fn as any); handlers.push({ id: lid, evt, fn })
     }
     reg(pL, 'click', onPoint)
-    reg(cL, 'click', onCluster)
+    // Only register cluster handler if clustering is enabled (not for active-crews)
+    if (ds !== 'active-crews') {
+      reg(cL, 'click', onCluster)
+    }
     for (const l of [pL, cL]) { reg(l, 'mouseenter', ptr); reg(l, 'mouseleave', nop) }
   }
 
@@ -248,6 +269,13 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
             lat: coords[1], lng: coords[0],
           }
           if (callbacks.openCrewLocationOverlay) callbacks.openCrewLocationOverlay(loc); else callbacks.openCrewOverlay(loc)
+        } else if (t === 'crewBubble') {
+          // Show first location from the bubble as a preview
+          const locations = (p.locations as Array<{ name: string; country: string; city: string; state: string; region: string; status: 'active' | 'inactive'; lat: number; lng: number }>) ?? []
+          if (locations.length > 0) {
+            const loc: CrewLocation = { ...locations[0] }
+            if (callbacks.openCrewLocationOverlay) callbacks.openCrewLocationOverlay(loc); else callbacks.openCrewOverlay(loc)
+          }
         } else {
           const crew: CrewRegionData = {
             id: p.id as string, region: p.region as string,
@@ -380,6 +408,8 @@ function toSpeciesGeoJSON(
 
 function toCrewGeoJSON(regions: CrewRegionData[], locations: CrewLocation[]): GeoJSON.FeatureCollection {
   const feats: GeoJSON.Feature[] = []
+
+  // Add region-level markers
   for (const r of regions) {
     if (r.activeCrews === 0 && r.inactiveCrews === 0) continue
     if (!isValidCoordinate(r.latitude, r.longitude)) continue
@@ -396,20 +426,45 @@ function toCrewGeoJSON(regions: CrewRegionData[], locations: CrewLocation[]): Ge
       },
     })
   }
-  for (const loc of locations) {
-    if (!isValidCoordinate(loc.lat, loc.lng)) continue
-    feats.push({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [loc.lng, loc.lat] },
-      properties: {
-        id: `${loc.name}|${loc.city}`, _type: 'crewLocation',
-        color: loc.status === 'inactive' ? '#f59e0b' : '#22c55e',
-        size: 6, label: '1',
-        name: loc.name, country: loc.country, city: loc.city,
-        state: loc.state, region: loc.region, status: loc.status,
-      },
-    })
+
+  // Group crew locations into 5 bubbles
+  const validLocs = locations.filter(l => isValidCoordinate(l.lat, l.lng))
+  if (validLocs.length > 0) {
+    const BUBBLE_COUNT = 5
+    const sorted = [...validLocs].sort((a, b) => a.lng - b.lng)
+    const chunkSize = Math.ceil(sorted.length / BUBBLE_COUNT)
+
+    for (let i = 0; i < BUBBLE_COUNT; i++) {
+      const chunk = sorted.slice(i * chunkSize, (i + 1) * chunkSize)
+      if (chunk.length === 0) continue
+
+      const avgLng = chunk.reduce((sum, l) => sum + l.lng, 0) / chunk.length
+      const avgLat = chunk.reduce((sum, l) => sum + l.lat, 0) / chunk.length
+
+      const activeCount = chunk.filter(l => l.status === 'active').length
+      const inactiveCount = chunk.filter(l => l.status === 'inactive').length
+
+      feats.push({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [avgLng, avgLat] },
+        properties: {
+          id: `crew-bubble-${i}`, _type: 'crewBubble',
+          color: activeCount > inactiveCount ? '#22c55e' : '#f59e0b',
+          size: 5 + Math.min(chunk.length / 10, 5),
+          label: String(chunk.length),
+          locationCount: chunk.length,
+          activeCount,
+          inactiveCount,
+          locations: chunk.map(l => ({
+            name: l.name, country: l.country, city: l.city,
+            state: l.state, region: l.region, status: l.status,
+            lat: l.lat, lng: l.lng,
+          })),
+        },
+      })
+    }
   }
+
   return { type: 'FeatureCollection', features: feats }
 }
 

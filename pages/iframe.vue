@@ -421,7 +421,11 @@ async function copyToClipboard(text: string, id: string) {
   }
 }
 
-// Viewport visibility tracking — only render iframes when visible
+// ── Viewport visibility tracking ──────────────────────────────
+// Only mount heavy WebGL iframes while visible; destroy on exit.
+// Uses a Map for O(1) observer → key lookup and per-iframe
+// debounce timers to avoid rapid mount/unmount during fast scrolls.
+
 const iframeKeys = [
   'fullScreen', 'fixed100', 'responsive', 'smallCard',
   'mediumCard', 'largeCard', 'fullScreenInteractive', 'observatory',
@@ -460,16 +464,50 @@ const refMap: Record<IframeKey, Ref<HTMLElement | null>> = {
 }
 
 onMounted(() => {
+  const elToKey = new Map<Element, IframeKey>()
+  const timers = new Map<IframeKey, ReturnType<typeof setTimeout>>()
+
+  for (const key of iframeKeys) {
+    const el = refMap[key].value
+    if (el) elToKey.set(el, key)
+  }
+
+  // Enter after 100 ms of sustained visibility (avoids scroll flicker)
+  const ENTER_DELAY = 100
+  // Destroy 300 ms after leaving viewport (GPU stays warm briefly)
+  const EXIT_DELAY = 300
+
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
-        const key = iframeKeys.find((k) => refMap[k].value === entry.target)
-        if (key) {
-          isVisible[key] = entry.isIntersecting
+        const key = elToKey.get(entry.target)
+        if (!key) continue
+
+        if (entry.isIntersecting) {
+          // Cancel any pending exit timer; schedule enter
+          const pending = timers.get(key)
+          if (pending) clearTimeout(pending)
+          timers.set(key, setTimeout(() => {
+            isVisible[key] = true
+            timers.delete(key)
+          }, ENTER_DELAY))
+        } else {
+          // Cancel any pending enter timer; schedule exit
+          const pending = timers.get(key)
+          if (pending) clearTimeout(pending)
+          timers.set(key, setTimeout(() => {
+            isVisible[key] = false
+            timers.delete(key)
+          }, EXIT_DELAY))
         }
       }
     },
-    { rootMargin: '200px' },
+    {
+      // Enter zone: 200px before the viewport edge
+      rootMargin: '200px 0px',
+      // Fire when 25% of the container is visible
+      threshold: 0.25,
+    },
   )
 
   for (const key of iframeKeys) {
@@ -477,7 +515,11 @@ onMounted(() => {
     if (el) observer.observe(el)
   }
 
-  onUnmounted(() => observer.disconnect())
+  onUnmounted(() => {
+    observer.disconnect()
+    for (const t of timers.values()) clearTimeout(t)
+    timers.clear()
+  })
 })
 
 // Embed codes

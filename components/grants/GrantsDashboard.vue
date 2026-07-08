@@ -28,21 +28,7 @@
       </template>
     </div>
 
-    <!-- ── Stats row ─────────────────────────────────── -->
-    <div class="gdash-stats">
-      <div class="gdash-stat glass">
-        <span class="gdash-stat-num" style="color:var(--stat-open)">{{ pendingCount }}</span>
-        <span class="gdash-stat-label">{{ t('grantsPortal.statPending') }}</span>
-      </div>
-      <div class="gdash-stat glass">
-        <span class="gdash-stat-num" style="color:var(--stat-approved)">{{ openCount }}</span>
-        <span class="gdash-stat-label">{{ t('grantsPortal.statOpen') }}</span>
-      </div>
-      <div class="gdash-stat glass">
-        <span class="gdash-stat-num" style="color:var(--stat-closed)">{{ closedCount }}</span>
-        <span class="gdash-stat-label">{{ t('grantsPortal.statClosed') }}</span>
-      </div>
-    </div>
+    <!--     ── Stats row ─────────────────────────────────── -->
 
     <!-- ── Tabs + Search ─────────────────────────────── -->
     <div v-if="user" class="gdash-controls">
@@ -125,7 +111,7 @@
       <!-- Scraped grants (open/approved/closed/declined) -->
       <template v-else>
         <div
-          v-for="g in displayGrants"
+          v-for="g in paginatedGrants"
           :key="g.id"
           class="gdash-card glass"
           :class="{ 'opacity-60': activeTab === 'tabClosed' }"
@@ -210,6 +196,31 @@
           </div>
         </div>
       </template>
+
+      <!-- ── Pagination ──────────────────────────── -->
+      <div v-if="totalPages > 1" class="gdash-pagination glass">
+        <button
+          class="gdash-page-btn"
+          :disabled="currentPage <= 1"
+          @click="currentPage = Math.max(1, currentPage - 1)"
+          :aria-label="t('grantsPortal.prevPage')"
+        >‹</button>
+        <template v-for="p in visiblePages" :key="p">
+          <span v-if="p === '...'" class="gdash-page-ellipsis">…</span>
+          <button
+            v-else
+            class="gdash-page-num"
+            :class="{ active: p === currentPage }"
+            @click="currentPage = p"
+          >{{ p }}</button>
+        </template>
+        <button
+          class="gdash-page-btn"
+          :disabled="currentPage >= totalPages"
+          @click="currentPage = Math.min(totalPages, currentPage + 1)"
+          :aria-label="t('grantsPortal.nextPage')"
+        >›</button>
+      </div>
     </div>
   </div>
 
@@ -277,9 +288,15 @@ defineEmits<{
 const { t } = useI18n()
 
 const showLoginPopup = ref(false)
+const currentPage = ref(1)
+const perPage = 10
 
 watch(() => props.user, (newUser) => {
   if (newUser) showLoginPopup.value = false
+})
+
+watch([() => props.activeTab, () => props.filteredScrapedGrants, () => props.searchQuery], () => {
+  currentPage.value = 1
 })
 
 const tabs = computed(() => {
@@ -290,11 +307,29 @@ const tabs = computed(() => {
     { key: 'tabLeaderboard', emoji: '🏆' },
   ]
   if (!props.user) return list.filter(tab => tab.key === 'tabOpen')
-  if (!props.isManager) return list.filter(tab => tab.key !== 'tabPending')
+  if (!props.isManager) return list.filter(tab => tab.key === 'tabOpen' || tab.key === 'tabLeaderboard')
   return list
 })
 
 const displayGrants = computed(() => props.filteredScrapedGrants)
+
+const totalPages = computed(() => Math.max(1, Math.ceil(displayGrants.value.length / perPage)))
+
+const paginatedGrants = computed(() => {
+  const start = (currentPage.value - 1) * perPage
+  return displayGrants.value.slice(start, start + perPage)
+})
+
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const curr = currentPage.value
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1)
+  }
+  if (curr <= 4) return [1, 2, 3, 4, 5, '...', total]
+  if (curr >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total]
+  return [1, '...', curr - 1, curr, curr + 1, '...', total]
+})
 
 const statusClass = computed(() => {
   const map: Record<string, string> = {
@@ -1032,6 +1067,65 @@ function voteCount(grantId: string): number {
 .gdash-cancel-btn:hover {
   background: rgba(255, 255, 255, 0.05);
   color: var(--tectonic-white);
+}
+
+/* ── Pagination ──────────────────────────────────── */
+.gdash-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  margin-top: 0.5rem;
+}
+.gdash-page-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5);
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1;
+}
+.gdash-page-btn:hover:not(:disabled) {
+  color: var(--tectonic-white);
+  border-color: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+}
+.gdash-page-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.gdash-page-num {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 1.75rem;
+  text-align: center;
+}
+.gdash-page-num:hover {
+  color: var(--tectonic-white);
+  background: rgba(255,255,255,0.06);
+}
+.gdash-page-num.active {
+  color: #fff;
+  background: rgba(0, 255, 133, 0.15);
+  font-weight: 700;
+}
+.gdash-page-ellipsis {
+  color: rgba(255,255,255,0.25);
+  padding: 0.25rem 0.25rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
 }
 
 /* ── Popup transition ────────────────────────────── */

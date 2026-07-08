@@ -18,13 +18,23 @@ export function getTaxonomicGroupLabels(t: (_key: string) => string): Record<str
 export function getLocalizedSpecies(species: PopupSpecies, targetLocale: string, defaultLocale?: string): Species {
   if (!('content' in species)) {
     return {
-      ...species,
-      imageUrl: species.imageUrl ?? '',
-      region: '',
-      ecosystem: '',
-      imageCredit: '',
-      ecosystemNeeds: undefined,
-      actions: undefined,
+      id: species.id,
+      commonName: species.commonName,
+      scientificName: species.scientificName,
+      category: 'category' in species ? (species as { category?: string }).category ?? '' : '',
+      taxonomicGroup: species.taxonomicGroup,
+      region: 'region' in species ? (species as { region?: string }).region ?? '' : '',
+      ecosystem: 'ecosystem' in species ? (species as { ecosystem?: string }).ecosystem ?? '' : '',
+      lat: species.lat,
+      lng: species.lng,
+      imageUrl: species.imageUrl ?? null,
+      imageCredit: 'imageCredit' in species ? (species as { imageCredit?: string }).imageCredit ?? '' : '',
+      description: 'description' in species ? (species as { description?: string }).description : undefined,
+      endangerment: 'endangerment' in species ? (species as { endangerment?: string }).endangerment : undefined,
+      ecosystemNeeds: 'ecosystemNeeds' in species ? (species as { ecosystemNeeds?: string }).ecosystemNeeds : undefined,
+      actions: 'actions' in species ? (species as { actions?: string }).actions : undefined,
+      threatTypes: 'threatTypes' in species ? (species as { threatTypes?: string[] }).threatTypes : undefined,
+      iucnUrl: 'iucnUrl' in species ? (species as { iucnUrl?: string }).iucnUrl : undefined,
       content: {},
     }
   }

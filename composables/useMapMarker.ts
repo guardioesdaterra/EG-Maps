@@ -19,7 +19,7 @@ import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 
 /* ══════════════════════════════════════════════════════════════════════════
-   🏠 TYPES — the front door
+   🏠 SWARM 1 · TYPES + CONSTANTS (8)
    ══════════════════════════════════════════════════════════════════════════ */
 
 export type MarkerDataset = 'project-grants' | 'endangered-species' | 'active-crews' | 'vulcan-observatory'
@@ -46,10 +46,6 @@ export interface RebuildArgs {
   rareEarthFeatures?:   GeoJSON.Feature[]
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   🏠 CONSTANTS — the foundation stones
-   ══════════════════════════════════════════════════════════════════════════ */
-
 const SOURCE = 'markers'
 
 const LAYER_SUFFIXES = ['_cg', '_c', '_cn', '_pg', '_p', '_pl'] as const
@@ -66,22 +62,19 @@ const CLUSTER_PALETTES: Record<MarkerDataset, readonly [string, string, string, 
 const CLUSTERED_DATASETS = new Set<MarkerDataset>(['project-grants', 'endangered-species', 'vulcan-observatory'])
 
 /* ══════════════════════════════════════════════════════════════════════════
-   🏠 COMPOSABLE — the hive mind
+   🏠 SWARM 2 · COMPOSABLE STATE + LIFECYCLE (8)
    ══════════════════════════════════════════════════════════════════════════ */
 
 export function useMapMarker(callbacks: MarkerCallbacks) {
-
-  /* ── state ──────────────────────────────────────────────────────────── */
 
   let map: MapLibreMap | null = null
   let currentDataset: MarkerDataset | null = null
   let speciesIndexCache: SpeciesIndexItem[] | null = null
   let projectMap: Map<string, ProjectData> | null = null
   let speciesMap: Map<string, SpeciesIndexItem> | null = null
+  let fullSpeciesMap: Map<string, Species> | null = null
 
   const handlers: Array<{ id: string; evt: keyof MapLayerEventType; fn: (e: MapLayerMouseEvent) => void }> = []
-
-  /* ── 🏠 cell 1 · init / cleanup ────────────────────────────────────── */
 
   function init(m: MapLibreMap) { map = m }
 
@@ -92,38 +85,24 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     speciesIndexCache = null
     projectMap = null
     speciesMap = null
+    fullSpeciesMap = null
     map = null
   }
 
-  /* ── 🏠 cell 2 · rebuild / update ──────────────────────────────────── */
+  /* ── 🏠 SWARM 3 · DATA + SOURCE MANAGEMENT (6) ───────────────────── */
 
   function rebuild(a: RebuildArgs) {
     const m = map
     if (!m || !m.isStyleLoaded()) return
-
     const ds = a.dataset as MarkerDataset
     speciesIndexCache = null
-
     if (currentDataset && currentDataset !== ds) {
       removeSource(SOURCE)
       currentDataset = null
     }
-
     const geojson = toGeoJSON(ds, a)
-    if (!geojson.features.length) return
-
-    if (currentDataset === ds && m.getSource(SOURCE)) {
-      updateData(SOURCE, geojson)
-      buildLookupMaps(ds, a)
-      return
-    }
-
-    detach()
-    addSource(SOURCE, geojson, ds)
-    addLayers(SOURCE, ds)
-    setupEvents(SOURCE, ds, a)
-    buildLookupMaps(ds, a)
-    currentDataset = ds
+    if (!geojson.features.length || tryFastPath(ds, geojson, m, a)) return
+    fullSetup(ds, geojson, a)
   }
 
   function update(a: RebuildArgs) {
@@ -137,6 +116,22 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     updateData(SOURCE, toGeoJSON(a.dataset as MarkerDataset, a))
   }
 
+  function tryFastPath(ds: MarkerDataset, geojson: GeoJSON.FeatureCollection, m: MapLibreMap, a: RebuildArgs): boolean {
+    if (currentDataset !== ds || !m.getSource(SOURCE)) return false
+    updateData(SOURCE, geojson)
+    buildLookupMaps(ds, a)
+    return true
+  }
+
+  function fullSetup(ds: MarkerDataset, geojson: GeoJSON.FeatureCollection, a: RebuildArgs) {
+    detach()
+    addSource(SOURCE, geojson, ds)
+    addLayers(SOURCE, ds)
+    setupEvents(SOURCE, ds, a)
+    buildLookupMaps(ds, a)
+    currentDataset = ds
+  }
+
   function buildLookupMaps(ds: MarkerDataset, a: RebuildArgs) {
     projectMap = ds === 'project-grants'
       ? new Map(a.projects.map(p => [p.project_title, p]))
@@ -144,17 +139,19 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     speciesMap = ds === 'endangered-species'
       ? new Map(resolveSpeciesIndex(a).map(s => [s.id, s]))
       : null
+    fullSpeciesMap = ds === 'endangered-species'
+      ? new Map(a.species.map(s => [s.id, s]))
+      : null
   }
 
-  /* ── 🏠 cell 3 · source CRUD ───────────────────────────────────────── */
+  /* ── source CRUD ──────────────────────────────────────────────────── */
 
   function addSource(id: string, data: GeoJSON.FeatureCollection, ds: MarkerDataset) {
     if (!map) return
     removeSource(id)
     const isClustered = CLUSTERED_DATASETS.has(ds)
     map.addSource(id, {
-      type: 'geojson',
-      data,
+      type: 'geojson', data,
       cluster: isClustered,
       clusterRadius: isClustered ? 50 : undefined,
       clusterMaxZoom: isClustered ? 16 : undefined,
@@ -176,7 +173,15 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     if (map.getSource(id)) map.removeSource(id)
   }
 
-  /* ── 🏠 cell 4 · cluster layers (glow + ring + count) ─────────────── */
+  /* ── 🏠 SWARM 4 · LAYERS (3) ─────────────────────────────────────── */
+
+  function addLayers(id: string, ds: MarkerDataset) {
+    if (!map) return
+    const isClustered = CLUSTERED_DATASETS.has(ds)
+    if (isClustered) addClusterLayers(id, CLUSTER_PALETTES[ds])
+    const pf = isClustered ? ['!', ['has', 'point_count']] as FilterSpecification : undefined
+    addPointLayers(id, pf)
+  }
 
   function addClusterLayers(id: string, palette: readonly [string, string, string, string]) {
     if (!map) return
@@ -194,12 +199,9 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.35)', 'text-halo-width': 1.5 } })
   }
 
-  /* ── 🏠 cell 5 · point layers (glow + ring + label) ────────────────── */
-
   function addPointLayers(id: string, filter?: FilterSpecification) {
     if (!map) return
     const opts = filter ? { filter } : {}
-
     map.addLayer({ id: `${id}_pg`, type: 'circle', source: id, ...opts, paint: {
       'circle-color': ['get', 'color'], 'circle-radius': ['*', ['coalesce', ['get', 'size'], 7], 1.4],
       'circle-blur': 0.8, 'circle-opacity': 0.25 } })
@@ -213,32 +215,34 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.5)', 'text-halo-width': 1 } })
   }
 
-  /* ── 🏠 cell 5b · layer orchestrator ───────────────────────────────── */
-
-  function addLayers(id: string, ds: MarkerDataset) {
-    if (!map) return
-    const isClustered = CLUSTERED_DATASETS.has(ds)
-    if (isClustered) addClusterLayers(id, CLUSTER_PALETTES[ds])
-    const pf = isClustered ? ['!', ['has', 'point_count']] as FilterSpecification : undefined
-    addPointLayers(id, pf)
-  }
-
-  /* ── 🏠 cell 6 · event wiring ──────────────────────────────────────── */
+  /* ── 🏠 SWARM 5 · EVENTS (7) ─────────────────────────────────────── */
 
   function setupEvents(id: string, ds: MarkerDataset, a: RebuildArgs) {
     if (!map) return
     detach()
     const pL = `${id}_p`
     const cL = `${id}_c`
+    reg(pL, 'click', onPoint(ds, a))
+    if (ds !== 'active-crews') {
+      reg(cL, 'click', onCluster(id))
+      reg(cL, 'mouseenter', ptr)
+      reg(cL, 'mouseleave', nop)
+    }
+    reg(pL, 'mouseenter', ptr)
+    reg(pL, 'mouseleave', nop)
+  }
 
-    const onPoint = (e: MapLayerMouseEvent) => {
+  function onPoint(ds: MarkerDataset, a: RebuildArgs) {
+    return (e: MapLayerMouseEvent) => {
       if (!e.features?.[0]) return
       const f = e.features[0]
       const coords = (f.geometry as GeoJSON.Point).coordinates as [number, number]
       dispatchPoint(ds, f, coords, a)
     }
+  }
 
-    const onCluster = async (e: MapLayerMouseEvent) => {
+  function onCluster(id: string) {
+    return async (e: MapLayerMouseEvent) => {
       if (!map || !e.features?.[0]) return
       const f = e.features[0]
       const cid = f.properties?.cluster_id as number
@@ -250,22 +254,15 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
         map.flyTo({ center: coords, zoom: Math.min(Math.max(z, map.getZoom() + 1), map.getMaxZoom()), duration: 600, essential: true })
       }
     }
+  }
 
-    const ptr = () => { if (map) map.getCanvas().style.cursor = 'pointer' }
-    const nop = () => { if (map) map.getCanvas().style.cursor = '' }
+  const ptr = () => { if (map) map.getCanvas().style.cursor = 'pointer' }
 
-    const reg = (lid: string, evt: keyof MapLayerEventType, fn: (e: MapLayerMouseEvent) => void) => {
-      map!.on(evt, lid, fn as (ev: MapLayerEventType[typeof evt] & object) => void)
-      handlers.push({ id: lid, evt, fn })
-    }
-    reg(pL, 'click', onPoint)
-    if (ds !== 'active-crews') {
-      reg(cL, 'click', onCluster)
-      reg(cL, 'mouseenter', ptr)
-      reg(cL, 'mouseleave', nop)
-    }
-    reg(pL, 'mouseenter', ptr)
-    reg(pL, 'mouseleave', nop)
+  const nop = () => { if (map) map.getCanvas().style.cursor = '' }
+
+  function reg(lid: string, evt: keyof MapLayerEventType, fn: (e: MapLayerMouseEvent) => void) {
+    map!.on(evt, lid, fn as (ev: MapLayerEventType[typeof evt] & object) => void)
+    handlers.push({ id: lid, evt, fn })
   }
 
   function detach() {
@@ -274,7 +271,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     handlers.length = 0
   }
 
-  /* ── 🏠 cell 7 · click dispatch ────────────────────────────────────── */
+  /* ── 🏠 SWARM 6 · CLICK DISPATCH (8) ─────────────────────────────── */
 
   function dispatchPoint(ds: MarkerDataset, f: GeoJSON.Feature, coords: [number, number], a: RebuildArgs) {
     const p = f.properties ?? {}
@@ -297,18 +294,24 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     const idx = resolveSpeciesIndex(a)
     const [, lat] = coords
     const matches = _findSpeciesAtCoord(lat, coords[0], idx, SPECIES_COORD_TOLERANCE)
-    if (matches.length > 1) { callbacks.openSpeciesOverlay(matches[0]); return }
+    if (matches.length > 1) {
+      const full = fullSpeciesMap?.get(matches[0].id) ?? matches[0]
+      callbacks.openSpeciesOverlay(full)
+      return
+    }
     const item = speciesMap?.get(p.id as string)
     if (!item) return
+    const full = fullSpeciesMap?.get(item.id) ?? item
     const cb = callbacks.openSpeciesPreview ?? callbacks.openSpeciesOverlay
-    cb(item)
+    cb(full)
   }
 
   function dispatchCrew(p: Record<string, unknown>, coords: [number, number]) {
-    const t = p._type
-    if (t === 'crewLocation') return dispatchCrewLocation(p, coords)
-    if (t === 'crewBubble') return dispatchCrewBubble(p)
-    return dispatchCrewRegion(p, coords)
+    switch (p._type) {
+      case 'crewLocation': return dispatchCrewLocation(p, coords)
+      case 'crewBubble':   return dispatchCrewBubble(p)
+      default:             return dispatchCrewRegion(p, coords)
+    }
   }
 
   function dispatchCrewLocation(p: Record<string, unknown>, coords: [number, number]) {
@@ -323,10 +326,10 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   }
 
   function dispatchCrewBubble(p: Record<string, unknown>) {
-    const locations = (p.locations as Array<CrewLocation>) ?? []
-    if (locations.length === 0) return
+    const locs = p.locations as Array<CrewLocation> | undefined
+    if (!locs?.length) return
     const cb = callbacks.openCrewLocationOverlay ?? callbacks.openCrewOverlay
-    cb({ ...locations[0] })
+    cb({ ...locs[0] })
   }
 
   function dispatchCrewRegion(p: Record<string, unknown>, coords: [number, number]) {
@@ -349,7 +352,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     })
   }
 
-  /* ── 🏠 cell 8 · species index resolution ──────────────────────────── */
+  /* ── 🏠 SWARM 7 · SPECIES INDEX (1) ──────────────────────────────── */
 
   function resolveSpeciesIndex(a: RebuildArgs): SpeciesIndexItem[] {
     if (speciesIndexCache) return speciesIndexCache
@@ -363,7 +366,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   🏠 DATA CONVERTERS — the honeycomb cells
+   🏠 SWARM 8 · DATA CONVERTERS (8) — the honeycomb cells
    ══════════════════════════════════════════════════════════════════════════ */
 
 const GEOJSON_CONVERTERS: Record<MarkerDataset, (a: RebuildArgs) => GeoJSON.FeatureCollection> = {
@@ -376,8 +379,6 @@ const GEOJSON_CONVERTERS: Record<MarkerDataset, (a: RebuildArgs) => GeoJSON.Feat
 function toGeoJSON(ds: MarkerDataset, a: RebuildArgs): GeoJSON.FeatureCollection {
   return GEOJSON_CONVERTERS[ds](a)
 }
-
-/* ── 🏠 cell A · project grants ────────────────────────────────────── */
 
 function toProjectGeoJSON(projects: ProjectData[]): GeoJSON.FeatureCollection {
   return {
@@ -402,15 +403,8 @@ function toProjectGeoJSON(projects: ProjectData[]): GeoJSON.FeatureCollection {
   }
 }
 
-/* ── 🏠 cell B · endangered species ────────────────────────────────── */
-
-function toSpeciesGeoJSON(
-  index: SpeciesIndexItem[],
-  raw: Species[],
-  groups: string[],
-): GeoJSON.FeatureCollection {
+function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: string[]): GeoJSON.FeatureCollection {
   const idx = filterByGroups(buildSpeciesIndex(index, raw), groups)
-
   return {
     type: 'FeatureCollection',
     features: idx
@@ -432,8 +426,6 @@ function toSpeciesGeoJSON(
       }),
   }
 }
-
-/* ── 🏠 cell C · active crews ──────────────────────────────────────── */
 
 function toCrewGeoJSON(regions: CrewRegionData[], locations: CrewLocation[]): GeoJSON.FeatureCollection {
   return {
@@ -471,38 +463,41 @@ function buildCrewBubbles(locations: CrewLocation[]): GeoJSON.Feature[] {
 
   const sorted = [...valid].sort((a, b) => a.lng - b.lng)
   const chunkSize = Math.ceil(sorted.length / BUBBLE_COUNT)
+  const bubbles: GeoJSON.Feature[] = []
 
-  return Array.from({ length: BUBBLE_COUNT }, (_, i) => {
+  for (let i = 0; i < BUBBLE_COUNT; i++) {
     const chunk = sorted.slice(i * chunkSize, (i + 1) * chunkSize)
-    if (chunk.length === 0) return null
-
-    const avgLng = chunk.reduce((s, l) => s + l.lng, 0) / chunk.length
-    const avgLat = chunk.reduce((s, l) => s + l.lat, 0) / chunk.length
-    const activeCount = chunk.filter(l => l.status === 'active').length
-    const inactiveCount = chunk.filter(l => l.status === 'inactive').length
-
-    return {
-      type: 'Feature' as const,
-      geometry: { type: 'Point' as const, coordinates: [avgLng, avgLat] },
-      properties: {
-        id: `crew-bubble-${i}`, _type: 'crewBubble',
-        color: activeCount > inactiveCount ? '#22c55e' : '#f59e0b',
-        size: 5 + Math.min(chunk.length / 10, 5),
-        label: String(chunk.length),
-        locationCount: chunk.length,
-        activeCount,
-        inactiveCount,
-        locations: chunk.map(l => ({
-          name: l.name, country: l.country, city: l.city,
-          state: l.state, region: l.region, status: l.status,
-          lat: l.lat, lng: l.lng,
-        })),
-      },
-    }
-  }).filter(Boolean) as GeoJSON.Feature[]
+    if (chunk.length === 0) continue
+    bubbles.push(makeBubble(i, chunk))
+  }
+  return bubbles
 }
 
-/* ── 🏠 cell D · vulcan observatory ────────────────────────────────── */
+function makeBubble(i: number, chunk: CrewLocation[]): GeoJSON.Feature {
+  const avgLng = chunk.reduce((s, l) => s + l.lng, 0) / chunk.length
+  const avgLat = chunk.reduce((s, l) => s + l.lat, 0) / chunk.length
+  const activeCount = chunk.filter(l => l.status === 'active').length
+  const inactiveCount = chunk.filter(l => l.status === 'inactive').length
+
+  return {
+    type: 'Feature' as const,
+    geometry: { type: 'Point' as const, coordinates: [avgLng, avgLat] },
+    properties: {
+      id: `crew-bubble-${i}`, _type: 'crewBubble',
+      color: activeCount > inactiveCount ? '#22c55e' : '#f59e0b',
+      size: 5 + Math.min(chunk.length / 10, 5),
+      label: String(chunk.length),
+      locationCount: chunk.length,
+      activeCount,
+      inactiveCount,
+      locations: chunk.map(l => ({
+        name: l.name, country: l.country, city: l.city,
+        state: l.state, region: l.region, status: l.status,
+        lat: l.lat, lng: l.lng,
+      })),
+    },
+  }
+}
 
 function toRareEarthGeoJSON(features: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
   return {
@@ -523,7 +518,7 @@ function toRareEarthGeoJSON(features: GeoJSON.Feature[]): GeoJSON.FeatureCollect
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   🏠 STYLE HELPERS — the decorative trim
+   🏠 SWARM 8 · STYLE HELPERS + SHARED UTILITIES (4)
    ══════════════════════════════════════════════════════════════════════════ */
 
 function stepExpr(c: string[]): ExpressionSpecification {
@@ -533,10 +528,6 @@ function stepExpr(c: string[]): ExpressionSpecification {
 function radExpr(s: number): ExpressionSpecification {
   return ['*', ['interpolate', ['linear'], ['get', 'point_count'], 0, 12, 10, 16, 50, 20, 100, 26], s] as unknown as ExpressionSpecification
 }
-
-/* ══════════════════════════════════════════════════════════════════════════
-   🏠 SHARED UTILITIES — the common room
-   ══════════════════════════════════════════════════════════════════════════ */
 
 function buildSpeciesIndex(index: SpeciesIndexItem[], raw: Species[]): SpeciesIndexItem[] {
   if (index.length > 0) return index

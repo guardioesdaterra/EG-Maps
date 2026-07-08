@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Species } from '@/lib/types'
+import { useI18n } from '@/composables/useI18n'
 import { GROUP_COLORS } from '@/lib/map-utils'
 
 interface Props {

@@ -211,7 +211,8 @@ export function useMapBase(config: MapBaseConfig) {
   }
   function handleSpeciesSelected(species: SpeciesIndexItem) {
     speciesPanel.closePanel()
-    openSpeciesOverlay(species)
+    const full = speciesData.value.find(s => s.id === species.id) ?? species
+    openSpeciesOverlay(full)
   }
   function openRareEarthOverlay(feature: GeoJSON.Feature) {
     if (map) openRareEarthOverlayPopup(map, feature)
@@ -227,7 +228,8 @@ export function useMapBase(config: MapBaseConfig) {
   }
   function openSpeciesPreview(species: Species | SpeciesIndexItem) {
     if (!map) return
-    previewCard.openSpecies(species, map, {
+    const full = 'content' in species ? species : speciesData.value.find(s => s.id === species.id) ?? species
+    previewCard.openSpecies(full, map, {
       expandProject: () => {},
       expandSpecies: (s) => openSpeciesOverlay(s),
       expandCrew: () => {},

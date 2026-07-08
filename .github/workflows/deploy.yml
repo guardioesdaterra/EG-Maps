@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   build:
+    needs: sync
     runs-on: ubuntu-latest
     permissions:
       contents: read

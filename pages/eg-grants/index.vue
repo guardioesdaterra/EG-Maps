@@ -208,7 +208,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
 import { allProjectsData } from '~/lib/project-data'
 import type { ProjectData, DetailGrantData } from '~/lib/types'

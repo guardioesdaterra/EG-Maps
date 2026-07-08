@@ -318,12 +318,25 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   }
 
   function dispatchCrewLocation(p: Record<string, unknown>, coords: [number, number]) {
+    const origLat = (p._origLat as number) ?? coords[1]
+    const origLng = (p._origLng as number) ?? coords[0]
     const loc: CrewLocation = {
       name: p.name as string, country: p.country as string, city: p.city as string,
       state: p.state as string, region: p.region as string,
       status: (p.status as 'active' | 'inactive') ?? 'active',
-      lat: coords[1], lng: coords[0],
+      lat: origLat, lng: origLng,
     }
+
+    if (p._crewGroup != null && map) {
+      const z = map.getZoom()
+      map.flyTo({
+        center: [origLng, origLat],
+        zoom: Math.min(z + 2, map.getMaxZoom(), 14),
+        duration: 500,
+        essential: true,
+      })
+    }
+
     const cb = callbacks.openCrewLocationOverlay ?? callbacks.openCrewOverlay
     cb(loc)
   }
@@ -453,22 +466,55 @@ function buildCrewRegionMarkers(regions: CrewRegionData[]): GeoJSON.Feature[] {
 }
 
 function buildCrewLocationPoints(locations: CrewLocation[]): GeoJSON.Feature[] {
-  return locations
-    .filter(l => isValidCoordinate(l.lat, l.lng))
-    .map(l => ({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [l.lng, l.lat] },
-      properties: {
-        id: `${l.name}-${l.lat}-${l.lng}`,
-        _type: 'crewLocation',
-        color: l.status === 'active' ? '#22c55e' : '#f59e0b',
-        size: 6,
-        label: '',
-        name: l.name, country: l.country, city: l.city,
-        state: l.state, region: l.region, status: l.status,
-        lat: l.lat, lng: l.lng,
-      },
-    }))
+  const valid = locations.filter(l => isValidCoordinate(l.lat, l.lng))
+  const groups = groupCrewsByCoord(valid)
+
+  const features: GeoJSON.Feature[] = []
+  for (const group of groups) {
+    const [baseLat, baseLng] = [group[0].lat, group[0].lng]
+    const groupKey = `${baseLat.toFixed(3)},${baseLng.toFixed(3)}`
+    const isMulti = group.length > 1
+
+    group.forEach((loc, i) => {
+      let offsetLng = 0
+      let offsetLat = 0
+      if (isMulti) {
+        const angle = (i / group.length) * Math.PI * 2
+        const radius = 0.008
+        const latRad = baseLat * Math.PI / 180
+        const lngScale = Math.max(Math.cos(latRad), 0.1)
+        offsetLng = Math.cos(angle) * radius / lngScale
+        offsetLat = Math.sin(angle) * radius
+      }
+
+      features.push({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [baseLng + offsetLng, baseLat + offsetLat] },
+        properties: {
+          id: `${loc.name}-${loc.lat}-${loc.lng}`,
+          _type: 'crewLocation',
+          _crewGroup: isMulti ? groupKey : undefined,
+          _origLat: loc.lat, _origLng: loc.lng,
+          color: loc.status === 'active' ? '#22c55e' : '#f59e0b',
+          size: 6, label: '',
+          name: loc.name, country: loc.country, city: loc.city,
+          state: loc.state, region: loc.region, status: loc.status,
+          lat: loc.lat, lng: loc.lng,
+        },
+      })
+    })
+  }
+  return features
+}
+
+function groupCrewsByCoord(locations: CrewLocation[]): CrewLocation[][] {
+  const map = new Map<string, CrewLocation[]>()
+  for (const loc of locations) {
+    const key = `${loc.lat.toFixed(3)},${loc.lng.toFixed(3)}`
+    if (!map.has(key)) map.set(key, [])
+    map.get(key)!.push(loc)
+  }
+  return [...map.values()]
 }
 
 function toRareEarthGeoJSON(features: GeoJSON.Feature[]): GeoJSON.FeatureCollection {

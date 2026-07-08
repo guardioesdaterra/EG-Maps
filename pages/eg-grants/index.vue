@@ -593,6 +593,8 @@ function dismissCrewPopup() {
 }
 
 async function checkCrewMembership(email: string) {
+  // Managers auto-bypass crew check
+  if (isManager.value) return
   try {
     const { client } = useSupabase()
     const { data } = await client.from('members').select('id').eq('email', email).maybeSingle()

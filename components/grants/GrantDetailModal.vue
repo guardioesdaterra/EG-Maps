@@ -212,7 +212,7 @@ async function handleAddComment() {
     comments.value.push(result.comment)
     commentInput.value = ''
   } catch {
-    commentError.value = (t as any)('grantsPortal.commentError') || 'Failed to add comment'
+    commentError.value = t('grantsPortal.commentError')
   } finally {
     commentSending.value = false
   }
@@ -223,7 +223,7 @@ async function handleDeleteComment(commentId: string) {
     await deleteComment(commentId)
     comments.value = comments.value.filter(c => c.id !== commentId)
   } catch {
-    commentError.value = (t as any)('grantsPortal.commentDeleteError') || 'Failed to delete comment'
+    commentError.value = t('grantsPortal.commentDeleteError')
   }
 }
 

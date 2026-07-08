@@ -830,7 +830,20 @@
     "editFormCategories": "Categorías (separadas por comas)",
     "editFormCategoriesPlaceholder": "ej. medio ambiente, clima, jóvenes",
     "daysRemaining": "{count} días restantes",
-    "daysAgo": "hace {count} días"
+    "daysAgo": "hace {count} días",
+    "crewCheckTitle": "Únete al Equipo",
+    "crewCheckDesc": "Has iniciado sesión pero aún no eres miembro de Earth Guardians. Únete para enviar proyectos y votar.",
+    "signUpAsCrew": "Regístrate como Miembro →",
+    "continueAsViewer": "Continuar como Visitante",
+    "comments": "Comentarios",
+    "loading": "Cargando...",
+    "noComments": "Aún no hay comentarios. ¡Sé el primero!",
+    "deleteComment": "Eliminar comentario",
+    "commentPlaceholder": "Escribe un comentario...",
+    "send": "Enviar",
+    "signInToComment": "Inicia sesión para unirte a la conversación.",
+    "commentError": "Error al añadir comentario. Inténtalo de nuevo.",
+    "commentDeleteError": "Error al eliminar comentario. Inténtalo de nuevo."
   },
   "iframe": {
     "title": "Incrustar EG-Maps",

@@ -203,7 +203,7 @@
           class="gdash-page-btn"
           :disabled="currentPage <= 1"
           @click="currentPage = Math.max(1, currentPage - 1)"
-          :aria-label="t('grantsPortal.prevPage')"
+          :aria-label="t('grantsPortal.paginationPrev')"
         >‹</button>
         <template v-for="p in visiblePages" :key="p">
           <span v-if="p === '...'" class="gdash-page-ellipsis">…</span>
@@ -218,7 +218,7 @@
           class="gdash-page-btn"
           :disabled="currentPage >= totalPages"
           @click="currentPage = Math.min(totalPages, currentPage + 1)"
-          :aria-label="t('grantsPortal.nextPage')"
+          :aria-label="t('grantsPortal.paginationNext')"
         >›</button>
       </div>
     </div>
@@ -354,6 +354,7 @@ const statusLabel = computed(() => {
 })
 
 const emptyMessage = computed(() => {
+  if (props.searchQuery) return t('grantsPortal.dashboardEmptySearch')
   const map: Record<string, string> = {
     tabPending: t('grantsPortal.noGrants'),
     tabOpen: t('grantsPortal.noOpenGrants'),

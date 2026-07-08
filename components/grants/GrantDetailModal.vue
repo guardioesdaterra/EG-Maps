@@ -85,7 +85,7 @@
                   <div class="mt-3 flex gap-1">
                     <button v-for="n in 8" :key="n" @click="$emit('vote', n)" class="star-btn text-lg sm:text-xl" :class="n <= userVote ? 'active' : ''" :title="n + ' ' + t('grantsPortal.stars')">★</button>
                   </div>
-                  <p class="mt-2 text-[11px] text-white/40">{{ t('grantsPortal.yourVote', { count: userVote || t('grantsPortal.noVotes') }) }}</p>
+                  <p class="mt-2 text-[11px] text-white/40">{{ userVote ? t('grantsPortal.yourVote', { count: userVote }) : t('grantsPortal.noVotes') }}</p>
                 </div>
                 <div v-if="grant.categories?.length" class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
                   <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.categories') }}</h3>
@@ -115,7 +115,7 @@
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
                       <span class="text-[11px] font-semibold text-white/60 truncate">{{ c.author_name || c.email.split('@')[0] }}</span>
-                      <span class="text-[9px] text-white/20 shrink-0">{{ new Date(c.created_at).toLocaleDateString() }}</span>
+                      <span class="text-[9px] text-white/20 shrink-0">{{ c.created_at ? new Date(c.created_at).toLocaleDateString() : '' }}</span>
                     </div>
                     <p class="mt-0.5 text-xs text-white/70 leading-relaxed">{{ c.content }}</p>
                   </div>

@@ -529,7 +529,19 @@
     "dashboardCta": "VIEW PROJECT GRANTS ON 3D GLOBE →",
     "paginationPrev": "← Prev",
     "paginationNext": "Next →",
-    "apply": "APPLY ↗"
+    "apply": "APPLY ↗",
+    "crewCheckTitle": "Join the Crew",
+    "crewCheckDesc": "You're signed in but not yet an Earth Guardians crew member. Join the crew to submit projects and vote on grants.",
+    "signUpAsCrew": "Sign Up as Crew →",
+    "continueAsViewer": "Continue as Viewer",
+    "comments": "Comments",
+    "noComments": "No comments yet. Be the first to share your thoughts!",
+    "deleteComment": "Delete comment",
+    "commentPlaceholder": "Write a comment...",
+    "send": "Send",
+    "signInToComment": "Sign in to join the conversation.",
+    "commentError": "Failed to add comment. Please try again.",
+    "commentDeleteError": "Failed to delete comment. Please try again."
   },
   "iframe": {
     "title": "EG-Maps एम्बेड करें",

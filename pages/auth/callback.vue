@@ -28,7 +28,6 @@ const error = ref('')
 onMounted(async () => {
   const SIGN_UP_URL = 'https://www.earthguardians.org/crews-sign-up-1'
 
-  // --- PKCE flow (authorization code in query string) ---
   const code = route.query.code as string | undefined
 
   if (code || route.query.state) {
@@ -41,19 +40,16 @@ onMounted(async () => {
     if (authError) {
       const { data: { session } } = await client.auth.getSession()
       if (session) {
-        await syncCrewMember()
         await checkMembershipAndRedirect(SIGN_UP_URL)
         return
       }
       error.value = authError.message
       return
     }
-    await syncCrewMember()
     await checkMembershipAndRedirect(SIGN_UP_URL)
     return
   }
 
-  // --- Implicit grant flow (tokens in URL hash fragment) ---
   const hash = window.location.hash.substring(1)
   const hashParams = new URLSearchParams(hash)
   const accessToken = hashParams.get('access_token')
@@ -70,12 +66,10 @@ onMounted(async () => {
       error.value = sessionError.message
       return
     }
-    await syncCrewMember()
     await checkMembershipAndRedirect(SIGN_UP_URL)
     return
   }
 
-  // --- Check for existing session ---
   const { data: { session } } = await client.auth.getSession()
   if (session) {
     await checkMembershipAndRedirect(SIGN_UP_URL)
@@ -98,29 +92,14 @@ async function checkMembershipAndRedirect(signUpUrl: string) {
     return
   }
 
-  const { data: member, error: queryError } = await client
-    .from('members')
-    .select('id, is_active')
-    .eq('email', user.email)
-    .eq('is_active', true)
-    .maybeSingle()
+  // Secure check via edge function (no direct DB access)
+  const { data: result, error: fnError } = await client.functions.invoke('crew-sync')
 
-  if (queryError || !member) {
+  if (fnError || !result?.authorized) {
     window.location.href = signUpUrl
     return
   }
 
   navigateTo('/eg-grants')
-}
-
-async function syncCrewMember() {
-  try {
-    const { data: { user } } = await client.auth.getUser()
-    if (user) {
-      await client.functions.invoke('crew-sync', {
-        body: { email: user.email, name: user.user_metadata?.full_name || user.email },
-      })
-    }
-  } catch { /* crew-sync failed, non-critical */ }
 }
 </script>

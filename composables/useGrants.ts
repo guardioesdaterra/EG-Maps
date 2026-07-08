@@ -79,6 +79,15 @@ export interface ScrapedGrant {
   priority_score?: number
 }
 
+export interface GrantComment {
+  id: string
+  grant_id: string
+  email: string
+  author_name?: string
+  content: string
+  created_at: string
+}
+
 export interface LeaderboardEntry {
   id: string
   title: string
@@ -96,6 +105,8 @@ export interface LeaderboardEntry {
   source?: string
   deadline?: string
   amount_max?: string
+  priority_score?: number
+  relevance?: number
   created_at: string
 }
 
@@ -245,6 +256,36 @@ export function useGrants() {
     }
   }
 
+  async function getComments(grantId: string) {
+    try {
+      const data = await invoke(`grants?action=comment&grant_id=${encodeURIComponent(grantId)}`)
+      return data as { comments: GrantComment[] }
+    } catch (e: unknown) {
+      return { error: (e as Error).message, comments: [] as GrantComment[] }
+    }
+  }
+
+  async function addComment(grantId: string, content: string, authorName?: string) {
+    try {
+      const data = await invoke('grants?action=comment', {
+        method: 'POST',
+        body: { grant_id: grantId, content, author_name: authorName },
+      })
+      return data as { comment: GrantComment }
+    } catch (e: unknown) {
+      return { error: (e as Error).message }
+    }
+  }
+
+  async function deleteComment(commentId: string) {
+    try {
+      const data = await invoke(`grants?action=comment&comment_id=${encodeURIComponent(commentId)}`, { method: 'DELETE' })
+      return data as { deleted: boolean }
+    } catch (e: unknown) {
+      return { error: (e as Error).message }
+    }
+  }
+
   return {
     listGrants,
     listScrapedGrants,
@@ -257,5 +298,8 @@ export function useGrants() {
     voteScrapedGrant,
     deleteVote,
     getLeaderboard,
+    getComments,
+    addComment,
+    deleteComment,
   }
 }

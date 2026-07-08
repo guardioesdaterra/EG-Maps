@@ -16,6 +16,23 @@
     <div v-if="showScrollIndicator" class="scroll-indicator">{{ t('grantsPortal.scrollToExplore') }}</div>
     <GrantsAuth v-if="!isEmbed" :user="user" :is-manager="isManager" @sign-in="signIn" @sign-out="handleSignOut" />
 
+    <!-- Crew membership check popup -->
+    <Transition name="modal-fade">
+      <div v-if="showCrewPopup" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" :style="{ zIndex: 'var(--z-confirm)' }" @click.self="dismissCrewPopup">
+        <div class="bg-[#111] border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl text-center">
+          <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-yellow-400/10 flex items-center justify-center">
+            <svg class="w-6 h-6 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <h3 class="text-white font-bold text-sm mb-2">{{ t('grantsPortal.crewCheckTitle') }}</h3>
+          <p class="text-white/50 text-xs mb-5">{{ t('grantsPortal.crewCheckDesc') }}</p>
+          <div class="flex flex-col gap-2">
+            <a href="https://www.earthguardians.org/join" target="_blank" class="w-full px-3 py-2 text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors text-center" @click="dismissCrewPopup">{{ t('grantsPortal.signUpAsCrew') }}</a>
+            <button class="w-full px-3 py-2 text-xs font-semibold text-white/60 hover:text-white rounded-lg transition-colors" @click="dismissCrewPopup">{{ t('grantsPortal.continueAsViewer') }}</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Sign-out confirmation dialog -->
     <Transition name="modal-fade">
       <div v-if="confirmSignOut" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" :style="{ zIndex: 'var(--z-confirm)' }" @click.self="confirmSignOut = false">
@@ -170,6 +187,7 @@
       <GrantDetailModal
         :grant="detailGrant"
         :user-vote="detailUserVote"
+        :user="user"
         @close="closeGrantDetail"
         @vote="handleVoteDetail"
       />
@@ -223,6 +241,8 @@ useHead({
 const { t } = useI18n()
 const { user, isManager, signIn, signOut } = useSupabaseAuth()
 const confirmSignOut = ref(false)
+const showCrewPopup = ref(false)
+const viewerDismissed = ref(false)
 
 const isEmbed = computed(() => {
   if (import.meta.server) return false
@@ -566,6 +586,29 @@ async function handleVoteDetail(stars: number) {
 function handleSignOut() {
   confirmSignOut.value = true
 }
+
+function dismissCrewPopup() {
+  showCrewPopup.value = false
+  viewerDismissed.value = true
+}
+
+async function checkCrewMembership(email: string) {
+  try {
+    const { client } = useSupabase()
+    const { data } = await client.from('members').select('id').eq('email', email).maybeSingle()
+    if (!data) {
+      showCrewPopup.value = true
+    }
+  } catch {
+    // Silently fail — if we can't check, just proceed
+  }
+}
+
+watch(() => user.value?.email, (email) => {
+  if (email && !viewerDismissed.value) {
+    checkCrewMembership(email)
+  }
+})
 
 watch(activeTab, () => loadGrants())
 watch(activePortalTab, (tab) => {

@@ -211,7 +211,7 @@
             v-else
             class="gdash-page-num"
             :class="{ active: p === currentPage }"
-            @click="currentPage = p"
+            @click="goToPage(p)"
           >{{ p }}</button>
         </template>
         <button
@@ -290,6 +290,10 @@ const { t } = useI18n()
 const showLoginPopup = ref(false)
 const currentPage = ref(1)
 const perPage = 10
+
+function goToPage(p: number | string) {
+  if (typeof p === 'number') currentPage.value = p
+}
 
 watch(() => props.user, (newUser) => {
   if (newUser) showLoginPopup.value = false

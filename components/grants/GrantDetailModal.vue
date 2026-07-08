@@ -95,6 +95,57 @@
                 </div>
               </div>
             </div>
+
+            <!-- ── Comments section ───────────────────── -->
+            <div class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
+              <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40 flex items-center gap-2">
+                {{ t('grantsPortal.comments') }}
+                <span v-if="comments.length" class="text-white/30 text-[10px]">({{ comments.length }})</span>
+              </h3>
+
+              <div v-if="commentsLoading" class="mt-3 text-xs text-white/30">{{ t('grantsPortal.loading') }}</div>
+
+              <div v-else-if="comments.length === 0" class="mt-3 text-xs text-white/30">{{ t('grantsPortal.noComments') }}</div>
+
+              <div v-else class="mt-3 space-y-3 max-h-60 overflow-y-auto">
+                <div v-for="c in comments" :key="c.id" class="flex gap-2 items-start p-2 rounded-lg bg-white/[0.02]">
+                  <div class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white/50 shrink-0 mt-0.5">
+                    {{ (c.author_name || c.email)[0].toUpperCase() }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="text-[11px] font-semibold text-white/60 truncate">{{ c.author_name || c.email.split('@')[0] }}</span>
+                      <span class="text-[9px] text-white/20 shrink-0">{{ new Date(c.created_at).toLocaleDateString() }}</span>
+                    </div>
+                    <p class="mt-0.5 text-xs text-white/70 leading-relaxed">{{ c.content }}</p>
+                  </div>
+                  <button
+                    v-if="user?.email === c.email"
+                    class="shrink-0 text-white/20 hover:text-red-400 transition-colors p-0.5"
+                    :title="t('grantsPortal.deleteComment')"
+                    @click="handleDeleteComment(c.id)"
+                  >✕</button>
+                </div>
+              </div>
+
+              <div v-if="commentError" class="mt-2 text-xs text-red-400">{{ commentError }}</div>
+
+              <form v-if="user" class="mt-3 flex gap-2" @submit.prevent="handleAddComment">
+                <input
+                  v-model="commentInput"
+                  :placeholder="t('grantsPortal.commentPlaceholder')"
+                  class="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-xs text-white placeholder-white/20 outline-none focus:border-green-400/30 transition-colors"
+                  maxlength="2000"
+                />
+                <button
+                  type="submit"
+                  class="px-3 py-2 bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold rounded-lg hover:bg-green-500/20 transition-colors disabled:opacity-30"
+                  :disabled="!commentInput.trim() || commentSending"
+                >{{ t('grantsPortal.send') }}</button>
+              </form>
+              <p v-else class="mt-3 text-[11px] text-white/30">{{ t('grantsPortal.signInToComment') }}</p>
+            </div>
+
             <div class="flex justify-end pt-2 border-t border-white/5">
               <button class="px-4 py-2 rounded-lg bg-white/5 text-xs sm:text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors" @click="$emit('close')">{{ t('grantsPortal.close') }}</button>
             </div>
@@ -106,19 +157,74 @@
 </template>
 
 <script setup lang="ts">
-import type { DetailGrantData } from '~/lib/types'
+import { ref, watch } from 'vue'
+import type { DetailGrantData, GrantComment } from '~/composables/useGrants'
 
-defineProps<{
+const props = defineProps<{
   grant: DetailGrantData | null
   userVote: number
+  user: { email?: string } | null
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   close: []
   vote: [stars: number]
 }>()
 
 const { t } = useI18n()
+const { getComments, addComment, deleteComment } = useGrants()
+
+const comments = ref<GrantComment[]>([])
+const commentsLoading = ref(false)
+const commentInput = ref('')
+const commentSending = ref(false)
+const commentError = ref('')
+
+watch(() => props.grant?.id, async (id) => {
+  if (id) {
+    commentsLoading.value = true
+    commentError.value = ''
+    try {
+      const result = await getComments(id)
+      comments.value = result.comments ?? []
+    } catch {
+      comments.value = []
+    } finally {
+      commentsLoading.value = false
+    }
+  } else {
+    comments.value = []
+  }
+}, { immediate: true })
+
+async function handleAddComment() {
+  const content = commentInput.value.trim()
+  if (!content || !props.grant) return
+  commentSending.value = true
+  commentError.value = ''
+  try {
+    const result = await addComment(props.grant.id, content)
+    if ('error' in result && result.error) {
+      commentError.value = result.error as string
+      return
+    }
+    comments.value.push(result.comment)
+    commentInput.value = ''
+  } catch {
+    commentError.value = (t as any)('grantsPortal.commentError') || 'Failed to add comment'
+  } finally {
+    commentSending.value = false
+  }
+}
+
+async function handleDeleteComment(commentId: string) {
+  try {
+    await deleteComment(commentId)
+    comments.value = comments.value.filter(c => c.id !== commentId)
+  } catch {
+    commentError.value = (t as any)('grantsPortal.commentDeleteError') || 'Failed to delete comment'
+  }
+}
 
 function statusClass(status: string) {
   const map: Record<string, string> = {

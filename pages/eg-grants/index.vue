@@ -26,7 +26,7 @@
           <h3 class="text-white font-bold text-sm mb-2">{{ t('grantsPortal.crewCheckTitle') }}</h3>
           <p class="text-white/50 text-xs mb-5">{{ t('grantsPortal.crewCheckDesc') }}</p>
           <div class="flex flex-col gap-2">
-            <a href="https://www.earthguardians.org/join" target="_blank" class="w-full px-3 py-2 text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors text-center" @click="dismissCrewPopup">{{ t('grantsPortal.signUpAsCrew') }}</a>
+            <a href="https://www.earthguardians.org/crews-sign-up-1" target="_blank" class="w-full px-3 py-2 text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors text-center" @click="dismissCrewPopup">{{ t('grantsPortal.signUpAsCrew') }}</a>
             <button class="w-full px-3 py-2 text-xs font-semibold text-white/60 hover:text-white rounded-lg transition-colors" @click="dismissCrewPopup">{{ t('grantsPortal.continueAsViewer') }}</button>
           </div>
         </div>

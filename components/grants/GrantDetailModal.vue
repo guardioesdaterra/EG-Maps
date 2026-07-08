@@ -158,7 +158,8 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { DetailGrantData, GrantComment } from '~/composables/useGrants'
+import type { DetailGrantData } from '~/lib/types'
+import type { GrantComment } from '~/composables/useGrants'
 
 const props = defineProps<{
   grant: DetailGrantData | null
@@ -204,8 +205,8 @@ async function handleAddComment() {
   commentError.value = ''
   try {
     const result = await addComment(props.grant.id, content)
-    if ('error' in result && result.error) {
-      commentError.value = result.error as string
+    if ('error' in result) {
+      if (result.error) commentError.value = result.error
       return
     }
     comments.value.push(result.comment)

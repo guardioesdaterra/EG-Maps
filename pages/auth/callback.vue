@@ -91,6 +91,12 @@ async function checkMembershipAndRedirect(signUpUrl: string) {
     return
   }
 
+  // Managers auto-bypass crew check
+  if (user.email.endsWith('@earthguardians.org')) {
+    navigateTo('/eg-grants')
+    return
+  }
+
   const { data: member, error: queryError } = await client
     .from('members')
     .select('id, is_active')

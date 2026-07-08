@@ -841,7 +841,9 @@
     "editFormCategories": "Categories (comma-separated)",
     "editFormCategoriesPlaceholder": "e.g. environment, climate, youth",
     "daysRemaining": "{count} days remaining",
-    "daysAgo": "{count} days ago"
+    "daysAgo": "{count} days ago",
+    "commentError": "Failed to add comment. Please try again.",
+    "commentDeleteError": "Failed to delete comment. Please try again."
   },
   "iframe": {
     "title": "Embed EG-Maps",

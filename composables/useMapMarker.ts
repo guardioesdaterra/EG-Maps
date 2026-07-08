@@ -59,7 +59,7 @@ const CLUSTER_PALETTES: Record<MarkerDataset, readonly [string, string, string, 
   'vulcan-observatory':   ['#22c55e', '#f59e0b', '#ef4444', '#dc2626'],
 }
 
-const CLUSTERED_DATASETS = new Set<MarkerDataset>(['project-grants', 'endangered-species', 'vulcan-observatory'])
+const CLUSTERED_DATASETS = new Set<MarkerDataset>(['project-grants', 'endangered-species', 'active-crews', 'vulcan-observatory'])
 
 /* ══════════════════════════════════════════════════════════════════════════
    🏠 SWARM 2 · COMPOSABLE STATE + LIFECYCLE (8)
@@ -150,11 +150,12 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     if (!map) return
     removeSource(id)
     const isClustered = CLUSTERED_DATASETS.has(ds)
+    const clusterMaxZoom = ds === 'active-crews' ? 8 : 16
     map.addSource(id, {
       type: 'geojson', data,
       cluster: isClustered,
       clusterRadius: isClustered ? 50 : undefined,
-      clusterMaxZoom: isClustered ? 16 : undefined,
+      clusterMaxZoom: isClustered ? clusterMaxZoom : undefined,
     })
   }
 
@@ -187,32 +188,37 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     if (!map) return
     const pal = [...palette]
     map.addLayer({ id: `${id}_cg`, type: 'circle', source: id, filter: ['has', 'point_count'], paint: {
-      'circle-color': stepExpr(pal), 'circle-radius': radExpr(1.2), 'circle-blur': 0.9, 'circle-opacity': 0.25 } })
+      'circle-color': stepExpr(pal), 'circle-radius': radExpr(1.35),
+      'circle-blur': 0.75, 'circle-opacity': 0.30 } })
     map.addLayer({ id: `${id}_c`, type: 'circle', source: id, filter: ['has', 'point_count'], paint: {
-      'circle-color': 'rgba(0,0,0,0.82)', 'circle-radius': radExpr(0.8),
-      'circle-stroke-color': stepExpr(pal), 'circle-stroke-width': 2, 'circle-opacity': 0.92 } })
+      'circle-color': 'rgba(0,0,0,0.85)', 'circle-radius': radExpr(0.85),
+      'circle-stroke-color': stepExpr(pal), 'circle-stroke-width': 3, 'circle-opacity': 0.94 } })
     map.addLayer({ id: `${id}_cn`, type: 'symbol', source: id, filter: ['has', 'point_count'], layout: {
       'text-field': ['get', 'point_count_abbreviated'],
       'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
-      'text-size': ['interpolate', ['linear'], ['zoom'], 6, 0, 9, 9, 14, 11],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 2, 0, 6, 9, 10, 12, 16, 14],
       'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
-      'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.35)', 'text-halo-width': 1.5 } })
+      'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.40)', 'text-halo-width': 2 } })
   }
 
   function addPointLayers(id: string, filter?: FilterSpecification) {
     if (!map) return
     const opts = filter ? { filter } : {}
     map.addLayer({ id: `${id}_pg`, type: 'circle', source: id, ...opts, paint: {
-      'circle-color': ['get', 'color'], 'circle-radius': ['*', ['coalesce', ['get', 'size'], 7], 1.4],
-      'circle-blur': 0.8, 'circle-opacity': 0.25 } })
+      'circle-color': ['get', 'color'],
+      'circle-radius': ['*', ['coalesce', ['get', 'size'], 7], 1.8],
+      'circle-blur': 0.6, 'circle-opacity': 0.30 } })
     map.addLayer({ id: `${id}_p`, type: 'circle', source: id, ...opts, paint: {
-      'circle-color': 'rgba(0,0,0,0.82)', 'circle-radius': ['coalesce', ['get', 'size'], 7],
-      'circle-stroke-color': ['get', 'color'], 'circle-stroke-width': 1.5, 'circle-opacity': 0.95 } })
+      'circle-color': 'rgba(0,0,0,0.85)',
+      'circle-radius': ['coalesce', ['get', 'size'], 7],
+      'circle-stroke-color': ['get', 'color'],
+      'circle-stroke-width': 2.5, 'circle-opacity': 0.96 } })
     map.addLayer({ id: `${id}_pl`, type: 'symbol', source: id, ...opts, layout: {
       'text-field': ['coalesce', ['get', 'label'], ''],
       'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
-      'text-size': 8, 'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
-      'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.5)', 'text-halo-width': 1 } })
+      'text-size': ['interpolate', ['linear'], ['zoom'], 8, 7, 14, 10],
+      'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
+      'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.65)', 'text-halo-width': 1.5 } })
   }
 
   /* ── 🏠 SWARM 5 · EVENTS (7) ─────────────────────────────────────── */
@@ -223,11 +229,9 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     const pL = `${id}_p`
     const cL = `${id}_c`
     reg(pL, 'click', onPoint(ds, a))
-    if (ds !== 'active-crews') {
-      reg(cL, 'click', onCluster(id))
-      reg(cL, 'mouseenter', ptr)
-      reg(cL, 'mouseleave', nop)
-    }
+    reg(cL, 'click', onCluster(id))
+    reg(cL, 'mouseenter', ptr)
+    reg(cL, 'mouseleave', nop)
     reg(pL, 'mouseenter', ptr)
     reg(pL, 'mouseleave', nop)
   }
@@ -309,7 +313,6 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   function dispatchCrew(p: Record<string, unknown>, coords: [number, number]) {
     switch (p._type) {
       case 'crewLocation': return dispatchCrewLocation(p, coords)
-      case 'crewBubble':   return dispatchCrewBubble(p)
       default:             return dispatchCrewRegion(p, coords)
     }
   }
@@ -323,13 +326,6 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     }
     const cb = callbacks.openCrewLocationOverlay ?? callbacks.openCrewOverlay
     cb(loc)
-  }
-
-  function dispatchCrewBubble(p: Record<string, unknown>) {
-    const locs = p.locations as Array<CrewLocation> | undefined
-    if (!locs?.length) return
-    const cb = callbacks.openCrewLocationOverlay ?? callbacks.openCrewOverlay
-    cb({ ...locs[0] })
   }
 
   function dispatchCrewRegion(p: Record<string, unknown>, coords: [number, number]) {
@@ -432,7 +428,7 @@ function toCrewGeoJSON(regions: CrewRegionData[], locations: CrewLocation[]): Ge
     type: 'FeatureCollection',
     features: [
       ...buildCrewRegionMarkers(regions),
-      ...buildCrewBubbles(locations),
+      ...buildCrewLocationPoints(locations),
     ],
   }
 }
@@ -456,47 +452,23 @@ function buildCrewRegionMarkers(regions: CrewRegionData[]): GeoJSON.Feature[] {
     })
 }
 
-function buildCrewBubbles(locations: CrewLocation[]): GeoJSON.Feature[] {
-  const BUBBLE_COUNT = 5
-  const valid = locations.filter(l => isValidCoordinate(l.lat, l.lng))
-  if (valid.length === 0) return []
-
-  const sorted = [...valid].sort((a, b) => a.lng - b.lng)
-  const chunkSize = Math.ceil(sorted.length / BUBBLE_COUNT)
-  const bubbles: GeoJSON.Feature[] = []
-
-  for (let i = 0; i < BUBBLE_COUNT; i++) {
-    const chunk = sorted.slice(i * chunkSize, (i + 1) * chunkSize)
-    if (chunk.length === 0) continue
-    bubbles.push(makeBubble(i, chunk))
-  }
-  return bubbles
-}
-
-function makeBubble(i: number, chunk: CrewLocation[]): GeoJSON.Feature {
-  const avgLng = chunk.reduce((s, l) => s + l.lng, 0) / chunk.length
-  const avgLat = chunk.reduce((s, l) => s + l.lat, 0) / chunk.length
-  const activeCount = chunk.filter(l => l.status === 'active').length
-  const inactiveCount = chunk.filter(l => l.status === 'inactive').length
-
-  return {
-    type: 'Feature' as const,
-    geometry: { type: 'Point' as const, coordinates: [avgLng, avgLat] },
-    properties: {
-      id: `crew-bubble-${i}`, _type: 'crewBubble',
-      color: activeCount > inactiveCount ? '#22c55e' : '#f59e0b',
-      size: 5 + Math.min(chunk.length / 10, 5),
-      label: String(chunk.length),
-      locationCount: chunk.length,
-      activeCount,
-      inactiveCount,
-      locations: chunk.map(l => ({
+function buildCrewLocationPoints(locations: CrewLocation[]): GeoJSON.Feature[] {
+  return locations
+    .filter(l => isValidCoordinate(l.lat, l.lng))
+    .map(l => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [l.lng, l.lat] },
+      properties: {
+        id: `${l.name}-${l.lat}-${l.lng}`,
+        _type: 'crewLocation',
+        color: l.status === 'active' ? '#22c55e' : '#f59e0b',
+        size: 6,
+        label: '',
         name: l.name, country: l.country, city: l.city,
         state: l.state, region: l.region, status: l.status,
         lat: l.lat, lng: l.lng,
-      })),
-    },
-  }
+      },
+    }))
 }
 
 function toRareEarthGeoJSON(features: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
@@ -526,7 +498,7 @@ function stepExpr(c: string[]): ExpressionSpecification {
 }
 
 function radExpr(s: number): ExpressionSpecification {
-  return ['*', ['interpolate', ['linear'], ['get', 'point_count'], 0, 12, 10, 16, 50, 20, 100, 26], s] as unknown as ExpressionSpecification
+  return ['*', ['interpolate', ['linear'], ['get', 'point_count'], 0, 14, 10, 20, 50, 26, 100, 34], s] as unknown as ExpressionSpecification
 }
 
 function buildSpeciesIndex(index: SpeciesIndexItem[], raw: Species[]): SpeciesIndexItem[] {

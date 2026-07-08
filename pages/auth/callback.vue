@@ -41,6 +41,7 @@ onMounted(async () => {
     if (authError) {
       const { data: { session } } = await client.auth.getSession()
       if (session) {
+        await syncCrewMember()
         await checkMembershipAndRedirect(SIGN_UP_URL)
         return
       }

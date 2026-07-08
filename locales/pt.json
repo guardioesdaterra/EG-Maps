@@ -829,7 +829,20 @@
     "editFormCategories": "Categorias (separadas por vírgula)",
     "editFormCategoriesPlaceholder": "ex. meio ambiente, clima, jovens",
     "daysRemaining": "{count} dias restantes",
-    "daysAgo": "{count} dias atrás"
+    "daysAgo": "{count} dias atrás",
+    "crewCheckTitle": "Junte-se à Equipe",
+    "crewCheckDesc": "Você está conectado, mas ainda não é membro da equipe Earth Guardians. Junte-se para enviar projetos e votar em bolsas.",
+    "signUpAsCrew": "Cadastre-se como Membro →",
+    "continueAsViewer": "Continuar como Visitante",
+    "comments": "Comentários",
+    "loading": "Carregando...",
+    "noComments": "Nenhum comentário ainda. Seja o primeiro a compartilhar!",
+    "deleteComment": "Excluir comentário",
+    "commentPlaceholder": "Escreva um comentário...",
+    "send": "Enviar",
+    "signInToComment": "Faça login para participar da conversa.",
+    "commentError": "Erro ao adicionar comentário. Tente novamente.",
+    "commentDeleteError": "Erro ao excluir comentário. Tente novamente."
   },
   "iframe": {
     "title": "Incorporar EG-Maps",

@@ -143,15 +143,6 @@ export function useGrants() {
     }
   }
 
-  async function submitGrant(input: GrantInput) {
-    try {
-      const data = await invoke('grants?action=submit', { method: 'POST', body: input })
-      return data as { grant: GrantRecord }
-    } catch (e: unknown) {
-      return { error: (e as Error).message }
-    }
-  }
-
   async function reviewGrant(grantId: string, decision: 'open' | 'closed', notes?: string) {
     try {
       const data = await invoke('grants?action=manage', {
@@ -289,7 +280,6 @@ export function useGrants() {
   return {
     listGrants,
     listScrapedGrants,
-    submitGrant,
     reviewGrant,
     reviewScrapedGrant,
     updateScrapedGrant,

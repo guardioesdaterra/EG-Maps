@@ -208,7 +208,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
 import { allProjectsData } from '~/lib/project-data'
 import type { ProjectData, DetailGrantData } from '~/lib/types'
@@ -219,6 +219,7 @@ import GrantEditModal from '~/components/grants/GrantEditModal.vue'
 import RegistryModal from '~/components/grants/RegistryModal.vue'
 import GrantsFooter from '~/components/grants/GrantsFooter.vue'
 import GlobeView from '~/components/GlobeView.vue'
+import { useSupabase } from '~/composables/useSupabase'
 
 useHead({
   title: 'EG Grants | Earth Guardians',
@@ -248,11 +249,12 @@ const isEmbed = computed(() => {
   if (import.meta.server) return false
   return new URLSearchParams(window.location.search).get('embed') === 'true'
 })
+const { client } = useSupabase()
 const { listGrants, listScrapedGrants, reviewGrant: apiReviewGrant, reviewScrapedGrant: apiReviewScraped, updateScrapedGrant: apiUpdateScrapedGrant, getStats, voteGrant, voteScrapedGrant, deleteVote, getLeaderboard } = useGrants()
 
 // Internal grants
 const grants = ref<GrantRecord[]>([])
-const registry = ref<Array<GrantRecord & { relevante?: boolean }>>([])
+const registry = ref<Array<GrantRecord & { relevant?: boolean }>>([])
 const stats = reactive({ pending: 0, open: 0, closed: 0, hidden: 0, total: 0 })
 const loading = ref(true)
 const projectStats = computed(() => {
@@ -345,7 +347,7 @@ async function loadRegistry() {
   registryLoading.value = true
   try {
     const result = await listGrants('open')
-    registry.value = (result.grants ?? []).slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    registry.value = (result.grants ?? []).slice().sort((a, b) => (b.created_at ? new Date(b.created_at).getTime() : 0) - (a.created_at ? new Date(a.created_at).getTime() : 0))
   } catch (e) {
     console.error('Failed to load registry:', e)
   } finally {
@@ -545,7 +547,7 @@ async function handleVoteScraped(scrapedId: string, stars: number) {
   try {
     const current = scrapedUserVotes[scrapedId]
     if (current === stars) {
-      await deleteVote('', scrapedId)
+      await deleteVote(scrapedId, scrapedId)
       scrapedUserVotes[scrapedId] = 0
     } else {
       await voteScrapedGrant(scrapedId, stars)
@@ -592,13 +594,12 @@ function dismissCrewPopup() {
   viewerDismissed.value = true
 }
 
-async function checkCrewMembership(email: string) {
+async function checkCrewMembership() {
   // Managers auto-bypass crew check
   if (isManager.value) return
   try {
-    const { client } = useSupabase()
-    const { data } = await client.from('members').select('id').eq('email', email).maybeSingle()
-    if (!data) {
+    const { data, error: fnError } = await client.functions.invoke('crew-sync')
+    if (fnError || !data?.authorized) {
       showCrewPopup.value = true
     }
   } catch {
@@ -608,7 +609,7 @@ async function checkCrewMembership(email: string) {
 
 watch(() => user.value?.email, (email) => {
   if (email && !viewerDismissed.value) {
-    checkCrewMembership(email)
+    checkCrewMembership()
   }
 })
 

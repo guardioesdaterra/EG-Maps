@@ -73,7 +73,7 @@
           <button v-for="loc in availablePopupLocales" :key="loc" class="species-popup-lang-btn" :class="{ active: popupLocale === loc }" @click="popupLocale = loc" :aria-label="`Show in ${(localeNames as Record<string, string>)[loc] || loc}`">{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
         </div>
         <div class="species-popup-content-fixed">
-          <SpeciesPopup :species="speciesData" />
+          <MapSpeciesPopup :species="speciesData" />
         </div>
       </div>
     </Transition>
@@ -83,7 +83,7 @@
       <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Project details" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
         <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="project-popup-content-fixed">
-          <ProjectPopup :project="projectData" />
+          <MapProjectPopup :project="projectData" />
         </div>
       </div>
     </Transition>
@@ -93,7 +93,7 @@
       <div v-if="showCrewOverlay" ref="crewOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew region details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
         <button ref="crewCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="project-popup-content-fixed">
-          <CrewPopup :crew="crewData" :is-location="isCrewLocationData" />
+          <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" />
         </div>
       </div>
     </Transition>

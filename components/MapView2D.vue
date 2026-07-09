@@ -103,10 +103,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineAsyncComponent } from 'vue'
+import { ref, watch, defineAsyncComponent } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import type { MapBaseProps } from '@/composables/useMapBase'
 import { useMapBase } from '@/composables/useMapBase'
+import { useSpeciesIndex } from '~/composables/useSpeciesData'
 
 const SpeciesFilterPanel = defineAsyncComponent(() => import('~/components/SpeciesFilterPanel.vue'))
 const ProjectFilterPanel = defineAsyncComponent(() => import('~/components/ProjectFilterPanel.vue'))
@@ -127,6 +128,15 @@ const ctx = useMapBase({
   hexCanvasRef,
   onMapReady: (map) => emit('mapInit', map),
 })
+
+if (props.defaultDataset === 'endangered-species') {
+  const { data: speciesIdx } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
+  watch(speciesIdx, (val) => {
+    if (val.length > 0) {
+      ctx.speciesIndexData.value = val
+    }
+  })
+}
 
 const {
   t, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,

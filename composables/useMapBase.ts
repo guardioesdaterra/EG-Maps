@@ -59,7 +59,7 @@ export function useMapBase(config: MapBaseConfig) {
 
   const projectsData = computed(() => props.projects || allProjectsData)
   const speciesData = computed(() => props.species || [])
-  const speciesIndexData = computed(() => props.speciesIndex || [])
+  const speciesIndexData = ref<SpeciesIndexItem[]>(props.speciesIndex || [])
   const crewsData = computed(() => props.crews || [])
   const crewLocationsData = computed(() => props.crewLocations || [])
   const filteredProjectsList = ref<ProjectData[] | null>(null)

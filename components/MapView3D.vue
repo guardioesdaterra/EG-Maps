@@ -104,10 +104,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineAsyncComponent } from 'vue'
+import { ref, watch, defineAsyncComponent } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import type { MapBaseProps } from '@/composables/useMapBase'
 import { useMapBase } from '@/composables/useMapBase'
+import { useSpeciesIndex } from '~/composables/useSpeciesData'
 
 const DataBubble = defineAsyncComponent(() => import('~/components/DataBubble.vue'))
 const MapControls = defineAsyncComponent(() => import('~/components/MapControls.vue'))
@@ -210,6 +211,15 @@ const base = useMapBase({
     if (visibilityHandler) { document.removeEventListener('visibilitychange', visibilityHandler); visibilityHandler = null }
   },
 })
+
+if (props.defaultDataset === 'endangered-species') {
+  const { data: speciesIdx } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
+  watch(speciesIdx, (val) => {
+    if (val.length > 0) {
+      base.speciesIndexData.value = val
+    }
+  })
+}
 
 function initMap() {
   base.initMap()

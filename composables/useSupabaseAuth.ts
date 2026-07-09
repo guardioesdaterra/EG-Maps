@@ -1,7 +1,7 @@
 import { useSupabase } from './useSupabase'
 
 export function useSupabaseAuth() {
-  const { client, user } = useSupabase()
+  const { client, user, sessionReady } = useSupabase()
 
   const isManager = computed(() =>
     user.value?.email?.endsWith('@earthguardians.org') ?? false,
@@ -23,5 +23,5 @@ export function useSupabaseAuth() {
     await client.auth.signOut()
   }
 
-  return { user, isManager, signIn, signOut }
+  return { user, isManager, signIn, signOut, sessionReady }
 }

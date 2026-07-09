@@ -14,7 +14,10 @@
       glow-color="rgba(0, 255, 133, 0.08)"
     />
     <div v-if="showScrollIndicator" class="scroll-indicator">{{ t('grantsPortal.scrollToExplore') }}</div>
-    <GrantsAuth v-if="!isEmbed" :user="user" :is-manager="isManager" @sign-in="signIn" @sign-out="handleSignOut" />
+    <div v-if="!sessionReady" class="fixed inset-0 flex items-center justify-center bg-[#08080a]" style="z-index: 99999">
+      <div class="w-6 h-6 border-2 border-green-400/30 border-t-green-400 rounded-full animate-spin" />
+    </div>
+    <GrantsAuth v-if="!isEmbed && sessionReady" :user="user" :is-manager="isManager" @sign-in="signIn" @sign-out="handleSignOut" />
 
     <!-- Crew membership check popup -->
     <Transition name="modal-fade">
@@ -57,54 +60,69 @@
 
       <!-- Impact -->
       <section id="details" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
-        <span class="data-label">{{ t('grantsPortal.statsLabel') }}</span>
-        <h2 class="impact-heading">
-          {{ t('grantsPortal.impactHeading1') }}<br/>
-          <span class="impact-heading-accent">{{ t('grantsPortal.impactHeading2') }}</span>
-        </h2>
-        <p class="impact-desc">{{ t('grantsPortal.impactDesc') }}</p>
+        <div class="impact-grid">
+          <div class="impact-content">
+            <span class="data-label hero-reveal">{{ t('grantsPortal.statsLabel') }}</span>
+            <h2 class="impact-heading hero-reveal">
+              {{ t('grantsPortal.impactHeading1') }}
+              <span class="impact-heading-accent">{{ t('grantsPortal.impactHeading2') }}</span>
+            </h2>
+            <p class="impact-desc hero-reveal">{{ t('grantsPortal.impactDesc') }}</p>
+          </div>
 
-        <div class="impact-stats-grid">
-          <div class="impact-stat-card">
-            <span class="impact-stat-num">1M+</span>
-            <span class="impact-stat-label">{{ t('grantsPortal.impactStat1Label') }}</span>
-          </div>
-          <div class="impact-stat-card">
-            <span class="impact-stat-num">20K+</span>
-            <span class="impact-stat-label">{{ t('grantsPortal.impactStat2Label') }}</span>
-          </div>
-          <div class="impact-stat-card">
-            <span class="impact-stat-num">30+</span>
-            <span class="impact-stat-label">{{ t('grantsPortal.impactStat3Label') }}</span>
-          </div>
-          <div class="impact-stat-card">
-            <span class="impact-stat-num">100%</span>
-            <span class="impact-stat-label">{{ t('grantsPortal.impactStat4Label') }}</span>
+          <div class="impact-stats-wall">
+            <div class="impact-stat-tile" v-for="(stat, si) in impactStats" :key="si" :style="{ '--idx': si }">
+              <div class="impact-stat-tile-inner">
+                <span class="impact-stat-tile-num">{{ stat.num }}</span>
+                <span class="impact-stat-tile-label">{{ stat.label }}</span>
+              </div>
+              <div class="impact-stat-tile-glow" />
+            </div>
           </div>
         </div>
 
-        <div class="mission-quote-card">
-          <div class="mission-quote-mark">"</div>
-          <p class="mission-quote-text">{{ t('grantsPortal.missionQuote') }}</p>
-          <span class="mission-quote-attr">{{ t('grantsPortal.missionAttribution') }}</span>
+        <div class="impact-divider">
+          <svg viewBox="0 0 1200 2" preserveAspectRatio="none" class="divider-line"><path d="M0 1h1200" stroke="url(#dividerGrad)" stroke-width="1" fill="none"/></svg>
+          <svg width="0" height="0" class="sr-only"><defs><linearGradient id="dividerGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="transparent"/><stop offset="50%" stop-color="rgba(0,255,133,0.25)"/><stop offset="100%" stop-color="transparent"/></linearGradient></defs></svg>
         </div>
 
-        <div class="impact-carousel">
+        <div class="impact-mission">
+          <div class="mission-quote-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="quote-icon-svg"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+          </div>
+          <blockquote class="mission-quote-text">{{ t('grantsPortal.missionQuote') }}</blockquote>
+          <cite class="mission-quote-attr">{{ t('grantsPortal.missionAttribution') }}</cite>
+        </div>
+
+        <div class="impact-projects">
+          <h3 class="impact-projects-label">{{ t('grantsPortal.impactRingLabel') }}</h3>
           <div class="impact-track">
-            <div v-for="(p, i) in topProjects" :key="p.project_title" class="impact-card" :style="{ '--i': i }">
-              <div class="impact-ring">
+            <article v-for="(p, i) in topProjects" :key="p.project_title" class="impact-card" :style="{ '--i': i }">
+              <div class="impact-card-media">
                 <svg viewBox="0 0 120 120" class="impact-ring-svg">
-                  <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2" />
-                  <circle cx="60" cy="60" r="54" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="339.3" :stroke-dashoffset="339.3 - (339.3 * (p.direct_beneficiaries + p.indirect_beneficiaries) / maxBeneficiaries)" stroke-linecap="round" class="impact-ring-progress" />
+                  <defs>
+                    <linearGradient :id="'ringGrad' + i" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#00ff85"/>
+                      <stop offset="100%" stop-color="#00ccff"/>
+                    </linearGradient>
+                  </defs>
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
+                  <circle cx="60" cy="60" r="54" fill="none" :stroke="'url(#ringGrad' + i + ')'" stroke-width="2" stroke-dasharray="339.3" :stroke-dashoffset="339.3 - (339.3 * (p.direct_beneficiaries + p.indirect_beneficiaries) / maxBeneficiaries)" stroke-linecap="round" class="impact-ring-progress"/>
                 </svg>
-                <div class="impact-ring-inner">
-                  <span class="impact-ring-num">{{ formatCompact(p.direct_beneficiaries + p.indirect_beneficiaries) }}</span>
-                  <span class="impact-ring-label">{{ t('grantsPortal.impactRingLabel') }}</span>
+                <div class="impact-card-ring-inner">
+                  <span class="impact-card-ring-num">{{ formatCompact(p.direct_beneficiaries + p.indirect_beneficiaries) }}</span>
+                  <span class="impact-card-ring-unit">{{ t('grantsPortal.impactRingLabel') }}</span>
                 </div>
               </div>
-              <h4 class="impact-card-title">{{ p.project_title }}</h4>
-              <p class="impact-card-loc">{{ p.country_province }}</p>
-            </div>
+              <div class="impact-card-body">
+                <h4 class="impact-card-title">{{ p.project_title }}</h4>
+                <div class="impact-card-meta">
+                  <span class="impact-card-loc">{{ p.country_province.split(',').pop()?.trim() || p.country_province }}</span>
+                  <span class="impact-card-dot">·</span>
+                  <span class="impact-card-type">Project Grant</span>
+                </div>
+              </div>
+            </article>
           </div>
         </div>
       </section>
@@ -240,7 +258,14 @@ useHead({
 })
 
 const { t } = useI18n()
-const { user, isManager, signIn, signOut } = useSupabaseAuth()
+
+const impactStats = computed(() => [
+  { num: '1M+', label: t('grantsPortal.impactStat1Label') },
+  { num: '20K+', label: t('grantsPortal.impactStat2Label') },
+  { num: '30+', label: t('grantsPortal.impactStat3Label') },
+  { num: '100%', label: t('grantsPortal.impactStat4Label') },
+])
+const { user, isManager, signIn, signOut, sessionReady } = useSupabaseAuth()
 const confirmSignOut = ref(false)
 const showCrewPopup = ref(false)
 const viewerDismissed = ref(false)
@@ -647,6 +672,8 @@ onBeforeUnmount(() => {
 .revealed .data-label.hero-reveal { animation-delay: 0s; }
 .revealed h1.hero-reveal { animation-delay: 0.2s; }
 .revealed .hero-desc.hero-reveal { animation-delay: 0.4s; }
+.revealed .impact-heading.hero-reveal { animation-delay: 0.1s; }
+.revealed .impact-desc.hero-reveal { animation-delay: 0.25s; }
 
 @keyframes heroReveal {
   from { opacity: 0; transform: translateY(40px); }
@@ -729,142 +756,248 @@ h2 {
   font-size: 1rem;
 }
 
+.impact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+.impact-content { max-width: 540px; }
 .impact-heading {
   margin-top: 1rem;
   font-size: clamp(2rem, 5vw, 3.5rem);
-  line-height: 1;
+  line-height: 1.05;
   text-transform: uppercase;
   letter-spacing: -0.03em;
   color: var(--tectonic-white);
+  display: flex;
+  flex-direction: column;
 }
 .impact-heading-accent {
+  background: linear-gradient(135deg, #00ff85 0%, #00ccff 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+}
+.impact-desc {
+  margin-top: 1.5rem;
+  max-width: 480px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.95rem;
+}
+.impact-stats-wall {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  position: relative;
+}
+.impact-stat-tile {
+  position: relative;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
+}
+.impact-stat-tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0, 255, 133, 0.03), transparent);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.impact-stat-tile:hover::before { opacity: 1; }
+.impact-stat-tile:hover { background: rgba(255, 255, 255, 0.04); }
+.impact-stat-tile-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 255, 133, 0.04) 0%, transparent 70%);
+}
+.impact-stat-tile:hover .impact-stat-tile-glow { opacity: 1; }
+.impact-stat-tile-inner {
+  position: relative;
+  z-index: 1;
+}
+.impact-stat-tile-num {
+  display: block;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--tectonic-white);
+  margin-bottom: 0.35rem;
+  transition: color 0.3s ease;
+}
+.impact-stat-tile:hover .impact-stat-tile-num {
   background: linear-gradient(135deg, var(--accent) 0%, #00ccff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.impact-desc {
-  margin-top: 1.5rem;
-  max-width: 560px;
-  line-height: 1.8;
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 1rem;
-}
-.impact-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-top: 3rem;
-}
-.impact-stat-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 1.5rem 1rem;
-  text-align: center;
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-}
-.impact-stat-card:hover {
-  border-color: rgba(0, 255, 133, 0.25);
-  box-shadow: 0 0 40px rgba(0, 255, 133, 0.06);
-  transform: translateY(-3px);
-}
-.impact-stat-num {
+.impact-stat-tile-label {
   display: block;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--accent);
-  line-height: 1;
-  margin-bottom: 0.5rem;
-}
-.impact-stat-label {
-  display: block;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.55rem;
+  font-size: 0.6rem;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: rgba(255, 255, 255, 0.35);
-  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 500;
 }
-.mission-quote-card {
-  margin-top: 3rem;
-  padding: 2rem 2.5rem;
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 255, 133, 0.1);
-  border-left: 3px solid var(--accent);
-  border-radius: 0 10px 10px 0;
-  position: relative;
+.impact-divider {
+  margin: 4rem 0;
+  width: 100%;
 }
-.mission-quote-mark {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 4rem;
-  font-weight: 800;
+.divider-line { width: 100%; height: 2px; }
+.impact-mission {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  padding: 2rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.mission-quote-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 255, 133, 0.06);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+.quote-icon-svg {
+  width: 20px;
+  height: 20px;
   color: var(--accent);
-  opacity: 0.2;
-  line-height: 1;
-  position: absolute;
-  top: 0.5rem;
-  left: 1.2rem;
+  opacity: 0.7;
 }
 .mission-quote-text {
-  font-size: 1rem;
+  font-size: 1.05rem;
   line-height: 1.8;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.65);
   font-style: italic;
-  position: relative;
-  z-index: 1;
+  margin: 0;
 }
 .mission-quote-attr {
   display: block;
-  margin-top: 1rem;
+  margin-top: 0.75rem;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.25);
+  font-style: normal;
 }
-.impact-carousel { margin-top: 3rem; overflow: visible; }
+.impact-projects {
+  margin-top: 3rem;
+}
+.impact-projects-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: rgba(255, 255, 255, 0.25);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
 .impact-track {
   display: flex;
-  gap: 2rem;
+  gap: 1.25rem;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 1rem 0;
+  padding: 0.5rem 0 1rem;
 }
 .impact-track::-webkit-scrollbar { display: none; }
 .impact-card {
-  flex: 0 0 220px;
-  scroll-snap-align: center;
-  background: rgba(255, 255, 255, 0.03);
+  flex: 0 0 240px;
+  scroll-snap-align: start;
+  background: rgba(255, 255, 255, 0.02);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 2rem 1.5rem;
-  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 1.75rem 1.5rem;
   transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   overflow: visible;
+  cursor: default;
 }
 .impact-card:hover {
-  border-color: rgba(0, 255, 133, 0.25);
-  box-shadow: 0 0 40px rgba(0, 255, 133, 0.08);
-  transform: translateY(-4px);
+  border-color: rgba(0, 255, 133, 0.18);
+  box-shadow: 0 0 50px rgba(0, 255, 133, 0.04), 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.03);
 }
-.impact-ring { position: relative; width: 120px; height: 120px; margin: 0 auto 1.5rem; }
+.impact-card-media {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1.25rem;
+}
 .impact-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.impact-ring-progress { transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
-.impact-ring-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.impact-ring-num { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 800; color: var(--accent); line-height: 1; }
-.impact-ring-label { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.2em; color: rgba(255, 255, 255, 0.35); margin-top: 4px; }
-.impact-card-title { font-size: 0.8rem; font-weight: 700; color: var(--tectonic-white); line-height: 1.3; margin-bottom: 0.35rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.impact-card-loc { font-size: 0.65rem; color: rgba(255, 255, 255, 0.35); font-family: 'JetBrains Mono', monospace; }
+.impact-ring-progress { transition: stroke-dashoffset 1.5s cubic-bezier(0.16, 1, 0.3, 1); }
+.impact-card-ring-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.impact-card-ring-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent) 0%, #00ccff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.impact-card-ring-unit {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.25);
+  margin-top: 4px;
+}
+.impact-card-body { text-align: center; }
+.impact-card-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--tectonic-white);
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.impact-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.25);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.impact-card-dot { opacity: 0.4; }
+.impact-card-type {
+  color: rgba(0, 255, 133, 0.4);
+}
 
 .grants-section { min-height: auto; padding: 6rem 10%; position: relative; }
 .grants-inner { max-width: 1200px; margin: 0 auto; }
@@ -965,8 +1098,12 @@ h2 {
 @media (max-width: 768px) {
   section, .projects-section { padding: 4rem 5%; }
   .grants-section { padding: 4rem 5%; }
-  .impact-card { flex: 0 0 180px; }
-  .impact-stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .mission-quote-card { padding: 1.5rem; }
+  .impact-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .impact-content { max-width: 100%; }
+  .impact-desc { max-width: 100%; }
+  .impact-stat-tile { padding: 1.5rem; }
+  .impact-stat-tile-num { font-size: 2rem; }
+  .impact-mission { grid-template-columns: 1fr; gap: 1rem; }
+  .impact-card { flex: 0 0 200px; padding: 1.5rem 1rem; }
 }
 </style>

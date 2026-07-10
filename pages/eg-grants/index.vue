@@ -298,7 +298,7 @@ const scrapedUserVotes = reactive<Record<string, number>>({})
 
 const filteredScrapedGrants = computed(() => {
   const tab = activePortalTab.value
-  if (tab === 'tabPending') return scrapedGrants.value.filter(g => g.status === 'pending')
+  if (tab === 'tabPending') return scrapedGrants.value.filter(g => g.status === activeTab.value)
   if (tab === 'tabOpen') return grants.value.filter(g => g.reviewed === true)
   if (tab === 'tabClosed') return scrapedGrants.value.filter(g => g.status === 'closed')
   return scrapedGrants.value
@@ -358,9 +358,9 @@ const filteredGrants = computed(() => {
   return grants.value.filter(g => g.status === activeTab.value)
 })
 
-const scrapedPendingCount = computed(() => scrapedGrants.value.filter(g => g.status === 'pending').length)
+const scrapedPendingCount = computed(() => stats.pending)
 const scrapedOpenCount = computed(() => grants.value.filter(g => g.reviewed === true).length)
-const scrapedClosedCount = computed(() => scrapedGrants.value.filter(g => g.status === 'closed').length)
+const scrapedClosedCount = computed(() => stats.closed)
 const countryCount = computed(() => Math.max(stats.open > 0 ? 47 : 0, projectStats.value.countries) + '+')
 
 const contactEmailHtml = computed(() => {

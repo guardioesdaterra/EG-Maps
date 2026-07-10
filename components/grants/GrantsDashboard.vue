@@ -82,34 +82,8 @@
       <div v-if="isLoading" class="gdash-status">{{ t('grantsPortal.loadingGrants') }}</div>
       <div v-else-if="displayGrants.length === 0" class="gdash-status">{{ emptyMessage }}</div>
 
-      <!-- Manager submitted grants -->
-      <template v-if="activeTab === 'tabPending'">
-        <div
-          v-for="grant in filteredInternalGrants"
-          :key="String(grant.id)"
-          class="gdash-card glass"
-          :class="{ 'opacity-60': grant.status !== 'pending' }"
-        >
-          <div class="gdash-card-header">
-            <h4>{{ grant.title }}</h4>
-            <span class="gdash-badge" :class="grant.status">{{ grant.status }}</span>
-            <span v-if="grant.reviewed" class="gdash-badge reviewed">✓ {{ t('grantsPortal.reviewed') }}</span>
-            <span class="gdash-badge neutral">{{ grant.category }}</span>
-          </div>
-          <p class="gdash-card-desc">{{ grant.description }}</p>
-          <p class="gdash-card-meta">{{ grant.location_name }}</p>
-          <div v-if="isManager && grant.status === 'pending'" class="gdash-card-actions">
-            <button class="gdash-action approve" @click="$emit('review:grant', String(grant.id), 'open')">{{ t('grantsPortal.approve') }}</button>
-            <button class="gdash-action reject" @click="$emit('review:grant', String(grant.id), 'closed')">{{ t('grantsPortal.reject') }}</button>
-          </div>
-          <div v-if="isManager && showHistory && grant.status !== 'pending'" class="gdash-card-actions">
-            <button class="gdash-action restore" @click="$emit('review:grant', String(grant.id), 'pending')">↩ {{ t('grantsPortal.restore') }}</button>
-          </div>
-        </div>
-      </template>
-
-      <!-- Scraped grants (open/approved/closed/declined) -->
-      <template v-else>
+      <!-- All grants (scraped + internal) — renders pending/open/closed based on active tab -->
+      <template v-if="activeTab !== 'tabLeaderboard'">
         <div
           v-for="g in paginatedGrants"
           :key="g.id"

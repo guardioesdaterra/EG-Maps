@@ -16,58 +16,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useSupabase } from '~/composables/useSupabase'
 
 useHead({ title: 'Auth Callback | Earth Guardians' })
 
-const route = useRoute()
-const { client } = useSupabase()
+const { client, sessionReady } = useSupabase()
 const error = ref('')
 
-onMounted(async () => {
+// With detectSessionInUrl: true and flowType: 'pkce', the Supabase SDK
+// automatically detects the PKCE auth code in the URL during its
+// getSession() call in useSupabase's onMounted, exchanges it, and
+// sets the session. The callback just needs to wait for that to finish.
+watch(sessionReady, async (ready) => {
+  if (!ready) return
+
   const SIGN_UP_URL = 'https://www.earthguardians.org/crews-sign-up-1'
 
-  const code = route.query.code as string | undefined
-
-  if (code || route.query.state) {
-    const cleanUrl = window.location.pathname
-    window.history.replaceState({}, '', cleanUrl)
-  }
-
-  if (code) {
-    const { error: authError } = await client.auth.exchangeCodeForSession(code)
-    if (authError) {
-      const { data: { session } } = await client.auth.getSession()
-      if (session) {
-        await checkMembershipAndRedirect(SIGN_UP_URL)
-        return
-      }
-      error.value = authError.message
-      return
-    }
-    await checkMembershipAndRedirect(SIGN_UP_URL)
-    return
-  }
-
-  const hash = window.location.hash.substring(1)
-  const hashParams = new URLSearchParams(hash)
-  const accessToken = hashParams.get('access_token')
-
-  if (accessToken) {
-    const refreshToken = hashParams.get('refresh_token') || ''
+  // Clean PKCE params from URL after exchange
+  if (window.location.search || window.location.hash) {
     window.history.replaceState({}, '', window.location.pathname)
-
-    const { error: sessionError } = await client.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    })
-    if (sessionError) {
-      error.value = sessionError.message
-      return
-    }
-    await checkMembershipAndRedirect(SIGN_UP_URL)
-    return
   }
 
   const { data: { session } } = await client.auth.getSession()
@@ -76,8 +44,10 @@ onMounted(async () => {
     return
   }
 
+  // No session after PKCE exchange — user might have arrived here
+  // without an auth code (e.g. direct navigation)
   error.value = 'No authorization code received.'
-})
+}, { immediate: true })
 
 async function checkMembershipAndRedirect(signUpUrl: string) {
   const { data: { user } } = await client.auth.getUser()
@@ -86,13 +56,25 @@ async function checkMembershipAndRedirect(signUpUrl: string) {
     return
   }
 
-  // Managers auto-bypass crew check
-  if (user.email.endsWith('@earthguardians.org')) {
+  // Server-verified manager check via edge function (unspoofable)
+  let isManager = false
+  try {
+    const { data: mgrData, error: mgrErr } = await client.functions.invoke('is-manager', {
+      method: 'GET',
+    })
+    if (!mgrErr && mgrData?.isManager === true) {
+      isManager = true
+    }
+  } catch {
+    // Fall through to crew check below
+  }
+
+  if (isManager) {
     navigateTo('/eg-grants')
     return
   }
 
-  // Secure check via edge function (no direct DB access)
+  // Crew membership check via edge function
   const { data: result, error: fnError } = await client.functions.invoke('crew-sync')
 
   if (fnError || !result?.authorized) {

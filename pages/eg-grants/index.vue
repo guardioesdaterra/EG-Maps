@@ -206,8 +206,12 @@
         :grant="detailGrant"
         :user-vote="detailUserVote"
         :user="user"
+        :is-manager="isManager"
+        :saving="editSavingDetail"
+        :edit-error="editErrDetail"
         @close="closeGrantDetail"
         @vote="handleVoteDetail"
+        @save="handleSaveEditFromDetail"
       />
 
       <GrantEditModal
@@ -311,6 +315,8 @@ const leaderboardLoading = ref(false)
 // Edit state
 const editGrant = ref<ScrapedGrant | null>(null)
 const editSaving = ref(false)
+const editSavingDetail = ref(false)
+const editErrDetail = ref('')
 const editForm = reactive({
   title: '',
   funder: '',
@@ -565,6 +571,37 @@ async function handleSaveEdit() {
 function handleSaveEditFromModal(form: Record<string, string>) {
   Object.assign(editForm, form)
   handleSaveEdit()
+}
+
+async function handleSaveEditFromDetail(grantId: string, form: Record<string, string>) {
+  editSavingDetail.value = true
+  editErrDetail.value = ''
+  try {
+    const updates: Record<string, unknown> = {
+      title: form.title,
+      funder: form.funder,
+      description: form.description,
+      deadline: form.deadline,
+      amount_max: form.amount_max,
+      amount_min: form.amount_min,
+      currency: form.currency,
+      country: form.country,
+      url: form.url,
+      categories: form.categories.split(',').map(c => c.trim()).filter(Boolean),
+    }
+    const result = await apiUpdateScrapedGrant(grantId, updates)
+    if ('error' in result && result.error) {
+      editErrDetail.value = result.error as string
+      return
+    }
+    closeGrantDetail()
+    loadScrapedGrants()
+  } catch (e) {
+    editErrDetail.value = 'An unexpected error occurred. Please try again.'
+    console.error('Failed to save edit from detail:', e)
+  } finally {
+    editSavingDetail.value = false
+  }
 }
 
 async function handleVoteScraped(scrapedId: string, stars: number) {

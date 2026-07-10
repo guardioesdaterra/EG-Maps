@@ -2,18 +2,90 @@
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="grant" class="fixed inset-0 flex items-center justify-center p-2 sm:p-4 md:p-6 grant-detail-overlay" role="dialog" aria-modal="true" aria-label="Grant detail">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="$emit('close')" />
-        <div class="relative w-full max-w-[85vw] sm:max-w-[85vw] max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="handleBackdropClick" />
+        <div class="relative w-full max-w-[85vw] sm:max-w-[85vw] max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl grant-detail-scroll">
           <div class="sticky top-0 z-10 flex items-start justify-between gap-4 p-4 sm:p-6 md:p-8 border-b border-white/5 bg-[#0c0c0e]/95 backdrop-blur-sm">
             <div class="min-w-0 flex-1">
-              <h2 class="text-base sm:text-lg md:text-xl font-bold text-white leading-snug">{{ grant.title }}</h2>
-              <p class="text-xs sm:text-sm text-white/50 mt-1 truncate">{{ grant.funder || grant.location_name || grant.country }} • {{ new Date(grant.created_at || '').toLocaleDateString() }}</p>
+              <template v-if="editing">
+                <input
+                  v-model="editForm.title"
+                  class="w-full bg-transparent text-base sm:text-lg md:text-xl font-bold text-white leading-snug outline-none border-b border-green-400/40 pb-0.5"
+                  :placeholder="t('grantsPortal.editFormTitle')"
+                />
+              </template>
+              <template v-else>
+                <h2 class="text-base sm:text-lg md:text-xl font-bold text-white leading-snug">{{ grant.title }}</h2>
+              </template>
+              <p class="text-xs sm:text-sm text-white/50 mt-1 truncate">{{ grant.funder || grant.location_name || grant.country }} &bull; {{ new Date(grant.created_at || '').toLocaleDateString() }}</p>
             </div>
-            <button class="shrink-0 rounded-full p-2 text-white/50 hover:text-white hover:bg-white/10 transition-colors" aria-label="Close" @click="$emit('close')">
-              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
+            <div class="flex items-center gap-2 shrink-0">
+              <button
+                v-if="isManager && !editing"
+                class="rounded-lg px-3 py-1.5 text-[11px] font-semibold text-green-400 bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 transition-colors"
+                aria-label="Edit grant"
+                @click="startEditing"
+              >{{ t('grantsPortal.edit') }}</button>
+              <button class="shrink-0 rounded-full p-2 text-white/50 hover:text-white hover:bg-white/10 transition-colors" aria-label="Close" @click="handleClose">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
           </div>
-          <div class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
+
+          <div v-if="editing" class="p-4 sm:p-6 md:p-8 space-y-3">
+            <label class="edit-field">
+              <span>{{ t('grantsPortal.editFormFunder') }}</span>
+              <input v-model="editForm.funder" class="form-input" />
+            </label>
+            <label class="edit-field">
+              <span>{{ t('grantsPortal.editFormDescription') }}</span>
+              <textarea v-model="editForm.description" rows="4" class="form-input" />
+            </label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <label class="edit-field">
+                <span>{{ t('grantsPortal.editFormAmountMax') }}</span>
+                <input v-model="editForm.amount_max" class="form-input" />
+              </label>
+              <label class="edit-field">
+                <span>{{ t('grantsPortal.editFormAmountMin') }}</span>
+                <input v-model="editForm.amount_min" class="form-input" />
+              </label>
+              <label class="edit-field">
+                <span>{{ t('grantsPortal.editFormCurrency') }}</span>
+                <input v-model="editForm.currency" :placeholder="t('grantsPortal.editFormCurrencyPlaceholder')" class="form-input" />
+              </label>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="edit-field">
+                <span>{{ t('grantsPortal.editFormCountry') }}</span>
+                <input v-model="editForm.country" class="form-input" />
+              </label>
+              <label class="edit-field">
+                <span>{{ t('grantsPortal.editFormDeadline') }}</span>
+                <input v-model="editForm.deadline" :placeholder="t('grantsPortal.editFormDeadlinePlaceholder')" class="form-input" />
+              </label>
+            </div>
+            <label class="edit-field">
+              <span>{{ t('grantsPortal.editFormUrl') }}</span>
+              <input v-model="editForm.url" class="form-input" />
+            </label>
+            <label class="edit-field">
+              <span>{{ t('grantsPortal.editFormCategories') }}</span>
+              <input v-model="editForm.categories" :placeholder="t('grantsPortal.editFormCategoriesPlaceholder')" class="form-input" />
+            </label>
+            <div v-if="editError" class="text-[11px] text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{{ editError }}</div>
+            <div class="flex justify-end gap-2 pt-3 border-t border-white/5">
+              <button class="px-4 py-2 rounded-lg bg-white/5 text-xs sm:text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors" @click="cancelEditing">{{ t('grantsPortal.cancel') }}</button>
+              <button class="px-4 py-2 rounded-lg bg-green-500/15 text-green-400 text-xs sm:text-sm font-semibold hover:bg-green-500/25 transition-colors disabled:opacity-40" :disabled="saving" @click="handleSave">
+                <template v-if="saving">
+                  <span class="inline-block w-3 h-3 border-2 border-green-400/30 border-t-green-400 rounded-full animate-spin mr-1.5 align-middle" />
+                  {{ t('grantsPortal.saving') }}
+                </template>
+                <template v-else>{{ t('grantsPortal.saveChanges') }}</template>
+              </button>
+            </div>
+          </div>
+
+          <div v-else class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
               <div class="md:col-span-2 space-y-4">
                 <div class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
@@ -102,12 +174,9 @@
                 {{ t('grantsPortal.comments') }}
                 <span v-if="comments.length" class="text-white/30 text-[10px]">({{ comments.length }})</span>
               </h3>
-
               <div v-if="commentsLoading" class="mt-3 text-xs text-white/30">{{ t('grantsPortal.loading') }}</div>
-
               <div v-else-if="comments.length === 0" class="mt-3 text-xs text-white/30">{{ t('grantsPortal.noComments') }}</div>
-
-              <div v-else class="mt-3 space-y-3 max-h-60 overflow-y-auto">
+              <div v-else class="mt-3 space-y-3 max-h-60 overflow-y-auto thin-scroll">
                 <div v-for="c in comments" :key="c.id" class="flex gap-2 items-start p-2 rounded-lg bg-white/[0.02]">
                   <div class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold text-white/50 shrink-0 mt-0.5">
                     {{ (c.author_name || c.email)[0].toUpperCase() }}
@@ -127,9 +196,7 @@
                   >✕</button>
                 </div>
               </div>
-
               <div v-if="commentError" class="mt-2 text-xs text-red-400">{{ commentError }}</div>
-
               <form v-if="user" class="mt-3 flex gap-2" @submit.prevent="handleAddComment">
                 <input
                   v-model="commentInput"
@@ -157,7 +224,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import type { DetailGrantData } from '~/lib/types'
 import type { GrantComment } from '~/composables/useGrants'
 
@@ -165,16 +232,33 @@ const props = defineProps<{
   grant: DetailGrantData | null
   userVote: number
   user: { email?: string } | null
+  isManager?: boolean
+  saving?: boolean
+  editError?: string
 }>()
 
 const emit = defineEmits<{
   close: []
   vote: [stars: number]
+  save: [grantId: string, form: Record<string, string>]
 }>()
 
 const { t } = useI18n()
 const { getComments, addComment, deleteComment } = useGrants()
 
+const editing = ref(false)
+const editForm = reactive({
+  title: '',
+  funder: '',
+  description: '',
+  deadline: '',
+  amount_max: '',
+  amount_min: '',
+  currency: '',
+  country: '',
+  url: '',
+  categories: '',
+})
 const comments = ref<GrantComment[]>([])
 const commentsLoading = ref(false)
 const commentInput = ref('')
@@ -182,6 +266,7 @@ const commentSending = ref(false)
 const commentError = ref('')
 
 watch(() => props.grant?.id, async (id) => {
+  editing.value = false
   if (id) {
     commentsLoading.value = true
     commentError.value = ''
@@ -197,6 +282,43 @@ watch(() => props.grant?.id, async (id) => {
     comments.value = []
   }
 }, { immediate: true })
+
+function startEditing() {
+  if (!props.grant) return
+  editing.value = true
+  editForm.title = props.grant.title || ''
+  editForm.funder = props.grant.funder || ''
+  editForm.description = props.grant.description || ''
+  editForm.deadline = props.grant.deadline || ''
+  editForm.amount_max = props.grant.amount_max || ''
+  editForm.amount_min = ''
+  editForm.currency = props.grant.currency || ''
+  editForm.country = props.grant.country || ''
+  editForm.url = props.grant.url || ''
+  editForm.categories = (props.grant.categories || []).join(', ')
+}
+
+function cancelEditing() {
+  editing.value = false
+}
+
+function handleSave() {
+  if (!props.grant) return
+  emit('save', props.grant.id, { ...editForm })
+}
+
+function handleClose() {
+  if (editing.value) {
+    editing.value = false
+    return
+  }
+  emit('close')
+}
+
+function handleBackdropClick() {
+  if (editing.value) return
+  emit('close')
+}
 
 async function handleAddComment() {
   const content = commentInput.value.trim()
@@ -234,7 +356,7 @@ function statusClass(status: string) {
     rejected: 'text-red-400 bg-red-400/10',
     hidden: 'text-gray-400 bg-gray-400/10',
   }
-  return map[status] || 'text-white/50 bg-white/5'
+  return map[status as keyof typeof map] || 'text-white/50 bg-white/5'
 }
 
 function typeEmoji(type?: string): string {
@@ -277,6 +399,41 @@ function formatAmount(val: number): string {
   z-index: 9100 !important;
   isolation: isolate;
   pointer-events: auto;
+}
+
+.grant-detail-scroll {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.grant-detail-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.grant-detail-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.grant-detail-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+}
+.grant-detail-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+}
+.thin-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
 }
 
 .star-btn {
@@ -354,4 +511,39 @@ function formatAmount(val: number): string {
 .highlight-badge.scholarship   { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
 .highlight-badge.open          { background: rgba(34, 197, 94, 0.1);  color: #4ade80; }
 .highlight-badge.closed        { background: rgba(255, 255, 255, 0.05); color: rgba(255,255,255,0.4); }
+
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.edit-field > span {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.4);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #f0f0f0;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus {
+  border-color: rgba(0,255,133,0.4);
+}
+.form-input::placeholder {
+  color: rgba(255,255,255,0.2);
+}
+textarea.form-input {
+  resize: vertical;
+  font-family: inherit;
+}
 </style>

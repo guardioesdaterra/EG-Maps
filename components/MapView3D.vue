@@ -10,12 +10,20 @@
           </div>
         </div>
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('globe.loading') }}</p>
-        <p class="text-gray-500 text-xs xs:text-sm">{{ dataLabel ? t('globe.preparingData', { dataset: dataLabel }) : t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews').toLowerCase() : activeDataset === 'vulcan-observatory' ? t('home.observatoryOfVulcan').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
+        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews').toLowerCase() : activeDataset === 'vulcan-observatory' ? t('home.observatoryOfVulcan').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
         <div class="mt-3 xs:mt-4 flex gap-1">
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-3" />
         </div>
+      </div>
+    </Transition>
+
+    <!-- Non-blocking data loading indicator (shows on top of rendered map) -->
+    <Transition name="fade">
+      <div v-if="showDataLoading" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[99] flex items-center gap-2 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-sm border border-cyan-800/40 pointer-events-none">
+        <div class="w-3 h-3 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+        <span class="text-xs text-cyan-300 font-medium whitespace-nowrap">{{ dataStatusText }}</span>
       </div>
     </Transition>
 
@@ -126,8 +134,10 @@ const mapContainerRef = ref<HTMLElement | null>(null)
 const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
 const starCanvasRef = ref<HTMLCanvasElement | null>(null)
 
-const dataLoading = ref(true)
-const dataLabel = ref('')
+const showDataLoading = ref(false)
+const dataStatusText = ref('')
+let dataLoadedCount = 0
+const DATA_TOTAL = 2
 
 let starAnimationId: number | null = null
 let rotationAnimationId: number | null = null
@@ -217,8 +227,32 @@ const base = useMapBase({
 
 if (props.defaultDataset === 'endangered-species') {
   const { data: speciesIdx, loading: speciesLoading, currentDatasetLabel } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
-  watch(speciesLoading, (v) => { dataLoading.value = v })
-  watch(currentDatasetLabel, (v) => { dataLabel.value = v })
+  watch(currentDatasetLabel, (v) => {
+    if (v && speciesLoading.value) {
+      showDataLoading.value = true
+      dataStatusText.value = t('globe.preparingData', { dataset: v })
+    }
+  })
+  watch(speciesLoading, (v) => {
+    if (!v) {
+      dataLoadedCount++
+      if (dataLoadedCount >= DATA_TOTAL) {
+        dataStatusText.value = 'All species data loaded ✓'
+        setTimeout(() => { showDataLoading.value = false }, 2500)
+      } else {
+        showDataLoading.value = true
+        dataStatusText.value = `${currentDatasetLabel.value || ''} loaded → next dataset...`
+        setTimeout(() => {
+          if (dataLoadedCount < DATA_TOTAL) {
+            showDataLoading.value = false
+          }
+        }, 2000)
+      }
+    } else {
+      showDataLoading.value = true
+      dataStatusText.value = t('globe.preparingData', { dataset: currentDatasetLabel.value || '' })
+    }
+  })
   watch(speciesIdx, (val) => {
     if (val.length > 0) {
       base.speciesIndexData.value = val
@@ -261,7 +295,7 @@ const {
   toggleLegendGroup, navigateToLocation,
 } = base
 
-const isLoading = computed(() => base.isLoading.value || dataLoading.value)
+const isLoading = computed(() => base.isLoading.value)
 </script>
 
 <style>

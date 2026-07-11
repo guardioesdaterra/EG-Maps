@@ -1,5 +1,13 @@
 import { useSupabase } from './useSupabase'
 
+export interface ReviewScrapedResult {
+  grant_id: string
+  action: string
+  moved_to_grants?: boolean
+  status?: string
+  error?: string
+}
+
 export interface GrantInput {
   title: string
   description: string
@@ -167,7 +175,7 @@ export function useGrants() {
     }
   }
 
-  async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending', notes?: string) {
+  async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending', notes?: string): Promise<ReviewScrapedResult> {
     try {
       const actionMap: Record<string, string> = {
         approved: 'approve',
@@ -175,13 +183,27 @@ export function useGrants() {
         hidden: 'hide',
         pending: 'show',
       }
+      const action = actionMap[decision] || 'reject'
       const data = await invoke('grants?action=manage', {
         method: 'POST',
-        body: { grant_id: grantId, action: actionMap[decision] || 'reject', table: 'scraped_grants', notes },
+        body: {
+          grant_id: grantId,
+          action,
+          table: 'scraped_grants',
+          notes,
+          // Signal edge function to move grant to `grants` table on approval
+          move_to_grants: action === 'approve',
+        },
       })
-      return data as { grant_id: string; action: string }
+      const result = data as Record<string, unknown>
+      return {
+        grant_id: (result.grant_id as string) || grantId,
+        action: (result.action as string) || action,
+        moved_to_grants: (result.moved_to_grants as boolean) ?? action === 'approve',
+        status: (result.status as string) || undefined,
+      }
     } catch (e: unknown) {
-      return { error: (e as Error).message }
+      return { grant_id: grantId, action: decision, error: (e as Error).message }
     }
   }
 

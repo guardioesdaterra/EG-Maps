@@ -93,8 +93,14 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   /* ── 🏠 SWARM 3 · DATA + SOURCE MANAGEMENT (6) ───────────────────── */
 
   function rebuild(a: RebuildArgs) {
+    const label = `[perf] useMapMarker.rebuild ${a.dataset}`
+    console.time(label)
     const m = map
-    if (!m || !m.isStyleLoaded()) return
+    if (!m || !m.isStyleLoaded()) {
+      console.timeLog(label, 'skipped (map not ready)')
+      console.timeEnd(label)
+      return
+    }
     const ds = a.dataset as MarkerDataset
     speciesIndexCache = null
     if (currentDataset && currentDataset !== ds) {
@@ -102,19 +108,31 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       currentDataset = null
     }
     const geojson = toGeoJSON(ds, a)
-    if (!geojson.features.length || tryFastPath(ds, geojson, m, a)) return
+    console.timeLog(label, `GeoJSON: ${geojson.features.length} features`)
+    if (!geojson.features.length || tryFastPath(ds, geojson, m, a)) {
+      console.timeLog(label, 'fastPath')
+      console.timeEnd(label)
+      return
+    }
     fullSetup(ds, geojson, a)
+    console.timeLog(label, 'fullSetup done')
+    console.timeEnd(label)
   }
 
   function update(a: RebuildArgs) {
     const m = map
+    const label = `[perf] useMapMarker.update ${a.dataset}`
+    console.time(label)
     if (!m || currentDataset !== a.dataset || !m.getSource(SOURCE)) {
+      console.timeLog(label, 'falling back to rebuild')
+      console.timeEnd(label)
       rebuild(a)
       return
     }
     speciesIndexCache = null
     buildLookupMaps(a.dataset as MarkerDataset, a)
     updateData(SOURCE, toGeoJSON(a.dataset as MarkerDataset, a))
+    console.timeEnd(label)
   }
 
   function tryFastPath(ds: MarkerDataset, geojson: GeoJSON.FeatureCollection, m: MapLibreMap, a: RebuildArgs): boolean {
@@ -125,15 +143,20 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   }
 
   function fullSetup(ds: MarkerDataset, geojson: GeoJSON.FeatureCollection, a: RebuildArgs) {
+    const label = `[perf] fullSetup ${ds}`
+    console.time(label)
     detach()
     addSource(SOURCE, geojson, ds)
     addLayers(SOURCE, ds)
     setupEvents(SOURCE, ds, a)
     buildLookupMaps(ds, a)
     currentDataset = ds
+    console.timeEnd(label)
   }
 
   function buildLookupMaps(ds: MarkerDataset, a: RebuildArgs) {
+    const label = `[perf] buildLookupMaps ${ds}`
+    console.time(label)
     projectMap = ds === 'project-grants'
       ? new Map(a.projects.map(p => [p.project_title, p]))
       : null
@@ -143,12 +166,15 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     fullSpeciesMap = ds === 'endangered-species'
       ? new Map(a.species.map(s => [s.id, s]))
       : null
+    console.timeEnd(label)
   }
 
   /* ── source CRUD ──────────────────────────────────────────────────── */
 
   function addSource(id: string, data: GeoJSON.FeatureCollection, ds: MarkerDataset) {
     if (!map) return
+    const label = `[perf] addSource ${id} (features=${data.features.length})`
+    console.time(label)
     removeSource(id)
     const isClustered = CLUSTERED_DATASETS.has(ds)
     const clusterMaxZoom = ds === 'active-crews' ? 8 : 16
@@ -158,12 +184,16 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       clusterRadius: isClustered ? 50 : undefined,
       clusterMaxZoom: isClustered ? clusterMaxZoom : undefined,
     })
+    console.timeEnd(label)
   }
 
   function updateData(id: string, data: GeoJSON.FeatureCollection) {
     if (!map) return
+    const label = `[perf] updateData ${id} (features=${data.features.length})`
+    console.time(label)
     const s = map.getSource(id) as GeoJSONSource | undefined
     if (s && typeof s.setData === 'function') s.setData(data)
+    console.timeEnd(label)
   }
 
   function removeSource(id: string) {
@@ -179,10 +209,13 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
 
   function addLayers(id: string, ds: MarkerDataset) {
     if (!map) return
+    const label = `[perf] addLayers ${id}`
+    console.time(label)
     const isClustered = CLUSTERED_DATASETS.has(ds)
     if (isClustered) addClusterLayers(id, CLUSTER_PALETTES[ds])
     const pf = isClustered ? ['!', ['has', 'point_count']] as FilterSpecification : undefined
     addPointLayers(id, pf)
+    console.timeEnd(label)
   }
 
   function addClusterLayers(id: string, palette: readonly [string, string, string, string]) {
@@ -422,9 +455,11 @@ function toProjectGeoJSON(projects: ProjectData[]): GeoJSON.FeatureCollection {
 }
 
 function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: string[]): GeoJSON.FeatureCollection {
+  const label = `[perf] toSpeciesGeoJSON (idx=${index.length}, raw=${raw.length}, groups=${groups.length})`
+  console.time(label)
   const idx = filterByGroups(buildSpeciesIndex(index, raw), groups)
-  return {
-    type: 'FeatureCollection',
+  const result = {
+    type: 'FeatureCollection' as const,
     features: idx
       .filter(s => isValidCoordinate(s.lat, s.lng))
       .map(s => {
@@ -443,6 +478,9 @@ function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: str
         }
       }),
   }
+  console.timeLog(label, `features=${result.features.length}`)
+  console.timeEnd(label)
+  return result
 }
 
 function toCrewGeoJSON(regions: CrewRegionData[], locations: CrewLocation[]): GeoJSON.FeatureCollection {

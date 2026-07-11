@@ -296,7 +296,11 @@ export function useMapBase(config: MapBaseConfig) {
   /* ── marker rebuild (single entry-point for all datasets) ──────────── */
 
   function rebuildMarkers() {
-    if (!map) return
+    if (!map) {
+      console.warn('[perf] rebuildMarkers skipped — map not ready')
+      return
+    }
+    console.time(`[perf] rebuildMarkers ${activeDataset.value}`)
     const isRee = activeDataset.value === 'vulcan-observatory'
     marker.rebuild({
       dataset: activeDataset.value!,
@@ -309,10 +313,12 @@ export function useMapBase(config: MapBaseConfig) {
       rareEarthFeatures: isRee ? [] : (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
       culturalFeatures: isRee ? (props.rareEarthCultural?.features ?? []) : undefined,
     })
+    console.timeEnd(`[perf] rebuildMarkers ${activeDataset.value}`)
   }
 
   function updateMarkerData() {
     if (!map) return
+    console.time(`[perf] updateMarkerData ${activeDataset.value}`)
     const isRee = activeDataset.value === 'vulcan-observatory'
     marker.update({
       dataset: activeDataset.value!,
@@ -325,6 +331,7 @@ export function useMapBase(config: MapBaseConfig) {
       rareEarthFeatures: isRee ? [] : (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
       culturalFeatures: isRee ? (props.rareEarthCultural?.features ?? []) : undefined,
     })
+    console.timeEnd(`[perf] updateMarkerData ${activeDataset.value}`)
   }
 
   function navigateToLocation(lat: number, lng: number) {
@@ -368,6 +375,8 @@ export function useMapBase(config: MapBaseConfig) {
   /* ── map init ─────────────────────────────────────────────────────── */
 
   function initMap() {
+    console.time('[perf] initMap total')
+    console.time('[perf] initMap → MapLibre constructor')
     if (!mapContainerRef.value) return
 
     if (!detectWebGLSupport()) {
@@ -404,6 +413,10 @@ export function useMapBase(config: MapBaseConfig) {
         maxTileCacheZoomLevels: 5,
       } as maplibregl.MapOptions & { antialias?: boolean })
 
+      console.timeEnd('[perf] initMap → MapLibre constructor')
+      console.time('[perf] initMap → style.load')
+      console.time('[perf] initMap → map.load (tiles)')
+
       map.addControl(
         new maplibregl.AttributionControl({
           customAttribution: `EARTH GUARDIANS @ ${new Date().getFullYear()}`
@@ -415,11 +428,14 @@ export function useMapBase(config: MapBaseConfig) {
       }
 
       map.on('style.load', () => {
+        console.timeEnd('[perf] initMap → style.load')
         onStyleLoad?.(map!)
       })
 
       map.on('load', () => {
         if (!isMounted) return
+        console.timeEnd('[perf] initMap → map.load (tiles)')
+        console.time('[perf] initMap → rebuildMarkers')
         if (import.meta.dev) console.warn(`[useMapBase] map.on('load'): dataset=${activeDataset.value}`)
         isLoading.value = false
         if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null }
@@ -428,6 +444,8 @@ export function useMapBase(config: MapBaseConfig) {
           setupRareEarthLayers()
         }
         rebuildMarkers()
+        console.timeEnd('[perf] initMap → rebuildMarkers')
+        console.time('[perf] initMap → connections+hexGrid')
         if (activeDataset.value !== 'vulcan-observatory') {
           if (activeDataset.value === 'active-crews') {
             connections.addConnections('active-crews', [], [], crewLocationsData.value)
@@ -437,6 +455,8 @@ export function useMapBase(config: MapBaseConfig) {
           connections.startParticles()
         }
         hexGrid.setupHexGrid()
+        console.timeEnd('[perf] initMap → connections+hexGrid')
+        console.timeEnd('[perf] initMap total')
         onMapReady?.(map!)
       })
 
@@ -502,6 +522,7 @@ export function useMapBase(config: MapBaseConfig) {
   /* ── lifecycle ────────────────────────────────────────────────────── */
 
   onMounted(() => {
+    console.time('[perf] useMapBase onMounted → initMap')
     checkViewportSize()
     window.addEventListener('resize', checkViewportSize)
     showFilterPanel.value = false

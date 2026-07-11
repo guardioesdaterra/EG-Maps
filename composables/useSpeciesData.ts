@@ -79,20 +79,31 @@ function resolveDatasets(dataset?: DatasetParam): string[] {
 function preloadJSON(baseURL: string, dataset: string) {
   const href = `${baseURL}data/species/${dataset}.json`
   if (document.querySelector(`link[href="${href}"][rel="preload"]`)) return
+  console.time(`[perf] preloadJSON ${dataset}`)
   const link = document.createElement('link')
   link.rel = 'preload'
   link.as = 'fetch'
   link.href = href
   link.crossOrigin = 'anonymous'
   document.head.appendChild(link)
+  console.timeEnd(`[perf] preloadJSON ${dataset}`)
 }
 
 async function fetchDataset(baseURL: string, ds: string): Promise<Species[]> {
-  if (memCache.has(ds)) return memCache.get(ds)! as Species[]
+  const label = `[perf] fetchDataset ${ds}`
+  console.time(label)
+
+  if (memCache.has(ds)) {
+    console.timeLog(label, 'memCache HIT')
+    console.timeEnd(label)
+    return memCache.get(ds)! as Species[]
+  }
 
   const cached = await idbGet<Species[]>(ds)
   if (cached) {
     memCache.set(ds, cached)
+    console.timeLog(label, 'IndexedDB HIT')
+    console.timeEnd(label)
     return cached
   }
 
@@ -100,9 +111,11 @@ async function fetchDataset(baseURL: string, ds: string): Promise<Species[]> {
   const res = await fetch(url)
   if (!res.ok) throw new Error(`Failed to load species data: ${res.status}`)
   const data: Species[] = await res.json()
+  console.timeLog(label, `fetch OK (${data.length} items)`)
   memCache.set(ds, data)
 
   idbSet(ds, data)
+  console.timeEnd(label)
   return data
 }
 
@@ -110,14 +123,23 @@ async function fetchDataset(baseURL: string, ds: string): Promise<Species[]> {
 // IndexedDB-cached so repeat visits are instant.
 async function fetchSpeciesIndex(baseURL: string, ds: string): Promise<SpeciesIndexItem[]> {
   const cacheKey = `${ds}-index`
+  const label = `[perf] fetchSpeciesIndex ${ds}`
+  console.time(label)
+
   {
     const cachedEntry = memCache.get(cacheKey)
-    if (cachedEntry) return cachedEntry as SpeciesIndexItem[]
+    if (cachedEntry) {
+      console.timeLog(label, 'memCache HIT')
+      console.timeEnd(label)
+      return cachedEntry as SpeciesIndexItem[]
+    }
   }
 
   const cached = await idbGet<SpeciesIndexItem[]>(cacheKey)
   if (cached) {
     memCache.set(cacheKey, cached)
+    console.timeLog(label, 'IndexedDB HIT')
+    console.timeEnd(label)
     return cached
   }
 
@@ -125,15 +147,24 @@ async function fetchSpeciesIndex(baseURL: string, ds: string): Promise<SpeciesIn
   const res = await fetch(url)
   if (!res.ok) throw new Error(`Failed to load species index: ${res.status}`)
   const data: SpeciesIndexItem[] = await res.json()
+  console.timeLog(label, `fetch OK (${data.length} items)`)
   memCache.set(cacheKey, data)
 
   idbSet(cacheKey, data)
+  console.timeEnd(label)
   return data
 }
 
 // Fetch species-to-region lookup (185 KB, cached in IDB)
 async function fetchRegionLookup(baseURL: string): Promise<Map<string, string>> {
-  if (regionLookupCache.size > 0) return regionLookupCache
+  const label = '[perf] fetchRegionLookup'
+  console.time(label)
+
+  if (regionLookupCache.size > 0) {
+    console.timeLog(label, 'memCache HIT')
+    console.timeEnd(label)
+    return regionLookupCache
+  }
 
   const cacheKey = 'species-region-lookup'
   const cached = await idbGet<Record<string, string>>(cacheKey)
@@ -141,6 +172,8 @@ async function fetchRegionLookup(baseURL: string): Promise<Map<string, string>> 
     for (const [id, region] of Object.entries(cached)) {
       regionLookupCache.set(id, region)
     }
+    console.timeLog(label, `IndexedDB HIT (${Object.keys(cached).length} entries)`)
+    console.timeEnd(label)
     return regionLookupCache
   }
 
@@ -152,6 +185,8 @@ async function fetchRegionLookup(baseURL: string): Promise<Map<string, string>> 
     regionLookupCache.set(id, region)
   }
   idbSet(cacheKey, data)
+  console.timeLog(label, `fetch OK (${Object.keys(data).length} entries)`)
+  console.timeEnd(label)
   return regionLookupCache
 }
 
@@ -159,11 +194,20 @@ async function fetchRegionLookup(baseURL: string): Promise<Map<string, string>> 
 async function fetchRegionChunk(baseURL: string, region: string): Promise<Species[]> {
   const slug = region.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '')
   const cacheKey = `icmbio-brazil-region-${slug}`
-  if (memCache.has(cacheKey)) return memCache.get(cacheKey)! as Species[]
+  const label = `[perf] fetchRegionChunk ${slug}`
+  console.time(label)
+
+  if (memCache.has(cacheKey)) {
+    console.timeLog(label, 'memCache HIT')
+    console.timeEnd(label)
+    return memCache.get(cacheKey)! as Species[]
+  }
 
   const cached = await idbGet<Species[]>(cacheKey)
   if (cached) {
     memCache.set(cacheKey, cached)
+    console.timeLog(label, 'IndexedDB HIT')
+    console.timeEnd(label)
     return cached
   }
 
@@ -171,25 +215,37 @@ async function fetchRegionChunk(baseURL: string, region: string): Promise<Specie
   const res = await fetch(url)
   if (!res.ok) throw new Error(`Failed to load region chunk: ${res.status}`)
   const data: Species[] = await res.json()
+  console.timeLog(label, `fetch OK (${data.length} items)`)
   memCache.set(cacheKey, data)
   idbSet(cacheKey, data)
+  console.timeEnd(label)
   return data
 }
 
 // Fetch full species by ID — loads only the relevant region chunk (~1-6 MB)
 async function fetchSpeciesById(baseURL: string, ds: string, speciesId: string): Promise<Species | null> {
-  // For icmbio-brazil, use region-based loading (1-6 MB vs 32 MB)
+  const label = `[perf] fetchSpeciesById ${ds}/${speciesId}`
+  console.time(label)
+  let result: Species | null = null
+
   if (ds === 'icmbio-brazil') {
     const lookup = await fetchRegionLookup(baseURL)
     const region = lookup.get(speciesId)
-    if (!region) return null
+    if (!region) {
+      console.timeLog(label, 'region not found')
+      console.timeEnd(label)
+      return null
+    }
     const regionData = await fetchRegionChunk(baseURL, region)
-    return regionData.find(s => s.id === speciesId) || null
+    result = regionData.find(s => s.id === speciesId) || null
+  } else {
+    const fullData = await fetchDataset(baseURL, ds)
+    result = fullData.find(s => s.id === speciesId) || null
   }
 
-  // For other datasets (iucn etc.), load the full dataset (small enough)
-  const fullData = await fetchDataset(baseURL, ds)
-  return fullData.find(s => s.id === speciesId) || null
+  console.timeLog(label, result ? 'FOUND' : 'NOT_FOUND')
+  console.timeEnd(label)
+  return result
 }
 
 export function useSpeciesData(dataset?: DatasetParam) {
@@ -243,11 +299,12 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
   const baseURL = (useRuntimeConfig().app?.baseURL as string) || '/'
 
   async function load() {
+    const loadLabel = '[perf] useSpeciesIndex.load total'
+    console.time(loadLabel)
     loading.value = true
     error.value = null
     const collected: SpeciesIndexItem[] = []
     try {
-      // Sort by likely size: IUCN (43KB) before icmbio-brazil (1.2MB)
       const sorted = [...datasets].sort((a, b) => {
         if (a === 'iucn') return -1
         if (b === 'iucn') return 1
@@ -255,7 +312,11 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
       })
       for (const ds of sorted) {
         currentDatasetLabel.value = ds
+        const dsLabel = `[perf] loadDataset ${ds}`
+        console.time(dsLabel)
         const items = await fetchSpeciesIndex(baseURL, ds)
+        console.timeLog(dsLabel, `pushed ${items.length} items, total=${collected.length + items.length}`)
+        console.timeEnd(dsLabel)
         collected.push(...items)
         data.value = [...collected]
         loadedChunks.value = collected.length
@@ -266,6 +327,8 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
     } finally {
       loading.value = false
       currentDatasetLabel.value = ''
+      console.timeLog(loadLabel, `final item count=${collected.length}`)
+      console.timeEnd(loadLabel)
     }
   }
 

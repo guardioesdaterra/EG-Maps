@@ -87,8 +87,11 @@
         <div
           v-for="g in paginatedGrants"
           :key="g.id"
-          class="gdash-card glass"
-          :class="{ 'opacity-60': activeTab === 'tabClosed' }"
+           class="gdash-card glass"
+           :class="{
+             'opacity-60': activeTab === 'tabClosed',
+             removing: removingGrants.includes(g.id)
+           }"
         >
           <div class="gdash-card-header">
             <div class="gdash-card-title-row">
@@ -243,6 +246,7 @@ const props = defineProps<{
   userVotes: Record<string, number>
   leaderboard: LeaderboardEntry[]
   leaderboardLoading: boolean
+  removingGrants: string[]
 }>()
 
 defineEmits<{
@@ -1115,6 +1119,81 @@ function voteCount(grantId: string): number {
 .popup-fade-enter-from,
 .popup-fade-leave-to {
   opacity: 0;
+}
+
+/* ── Disintegration animation ───────────────────── */
+.gdash-card.removing {
+  animation: disintegrate 0.7s cubic-bezier(0.55, 0, 0.1, 1) forwards;
+  pointer-events: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.gdash-card.removing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(0,255,133,0.15) 0%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  animation: flash-burst 0.7s ease-out forwards;
+  border-radius: inherit;
+}
+
+@keyframes disintegrate {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    clip-path: inset(0);
+    filter: brightness(1);
+  }
+  15% {
+    transform: scale(1.03) rotate(-1deg);
+    filter: brightness(1.4);
+  }
+  30% {
+    transform: scale(0.97) rotate(1.5deg);
+    clip-path: polygon(
+      0% 0%, 100% 0%, 100% 100%, 0% 100%
+    );
+    filter: brightness(1.6) contrast(1.2);
+  }
+  50% {
+    transform: scale(0.82) rotate(-2.5deg) translateY(8px);
+    clip-path: polygon(
+      2% 1%, 98% 2%,
+      96% 40%, 97% 98%,
+      55% 96%, 1% 97%
+    );
+    opacity: 0.7;
+    filter: brightness(2) contrast(1.4) hue-rotate(20deg);
+  }
+  72% {
+    transform: scale(0.45) rotate(4deg) translateY(18px);
+    clip-path: polygon(
+      8% 5%, 94% 4%,
+      90% 45%, 92% 92%,
+      45% 90%, 6% 94%
+    );
+    opacity: 0.35;
+    filter: brightness(2.5) blur(1.5px);
+    box-shadow: 0 0 30px rgba(0,255,133,0.3);
+  }
+  100% {
+    transform: scale(0) rotate(12deg) translateY(40px);
+    opacity: 0;
+    filter: brightness(4) blur(5px);
+    clip-path: inset(45% 40% 45% 40%);
+    box-shadow: 0 0 60px rgba(0,255,133,0);
+  }
+}
+
+@keyframes flash-burst {
+  0% { opacity: 0; transform: scale(0.3); }
+  25% { opacity: 0.7; transform: scale(1.1); }
+  55% { opacity: 0.25; transform: scale(1.4); }
+  100% { opacity: 0; transform: scale(2); }
 }
 
 /* ── Responsive ────────────────────────────────────── */

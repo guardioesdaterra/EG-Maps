@@ -52,67 +52,36 @@
         @map-init="onMapInit"
       >
         <template #overlays>
-          <ObservatoryControls
-            :state="controls"
+          <ObservatoryLayout
+            :controls="controls"
             :stats="stats"
             :data="data"
             :on-rede-corporativa="() => showRedeCorporativa = true"
             :on-data-download="() => showDownload = true"
             :on-user-contribution="() => showUserContribution = true"
             :on-expand-to-full-brazil="() => expandToFullBrazil(loadFullBrazil)"
-            @toggle-enterprise="toggleEnterpriseLayer"
-          />
-
-          <!-- Tab navigation sidebar -->
-          <ObservatorySidebar
-            :active-tab="activeTab"
-            :danger-items="speculatorIndex"
-            :show-all="showAll"
-            class="absolute"
-            style="top: clamp(6.5rem, 18vh, 10rem); right: clamp(0.75rem, 2vw, 1rem);"
-            @update:active-tab="(tab) => activeTab = tab"
-            @update:show-all="(v) => showAll = v"
-            @fly-to-enterprise="zoomToDanger"
-            @fly-to-coord="flyToCoord"
-          />
-
-          <!-- My Territory Pin -->
-          <div
-            v-if="userPin" class="absolute z-[500] bg-[var(--obs-panel-bg-dark)] backdrop-blur border border-emerald-700/40 rounded-xl px-3 py-2.5 shadow-lg max-w-[clamp(14rem,35vw,18rem)]"
-            style="bottom: clamp(5rem, 12vh, 7.5rem); right: clamp(0.75rem, 2vw, 1rem);">
-            <div class="flex items-center justify-between gap-2 mb-1.5">
-              <div class="flex items-center gap-1.5">
-                <span class="text-fluid-sm">📍</span>
-                <h3 class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">{{ t('observatory.myTerritory.title') }}</h3>
-              </div>
-              <button type="button" class="text-zinc-500 hover:text-red-400 text-[12px] leading-none" :aria-label="t('observatory.myTerritory.clear')" @click="clearPin">×</button>
-            </div>
-            <div class="text-[9px] text-zinc-300 leading-snug mb-1 break-words">
-              <span v-if="userPinShared" class="inline-block text-[7px] font-bold uppercase text-amber-400 mr-1">{{ t('observatory.myTerritory.sharedBadge') }}</span>
-              <strong>{{ userPin.label }}</strong>
-            </div>
-            <div class="text-[8px] text-zinc-500 font-mono mb-2">
-              {{ userPin.lng.toFixed(4) }}, {{ userPin.lat.toFixed(4) }}
-            </div>
-            <div class="flex gap-1.5">
-              <button type="button" class="flex-1 px-2 py-1 text-[9px] font-bold rounded border border-emerald-700/50 text-emerald-300 hover:bg-emerald-900/30 transition-colors" @click="flyToUserPin">
-                {{ t('observatory.myTerritory.flyTo') }}
-              </button>
-              <button type="button" class="flex-1 px-2 py-1 text-[9px] font-bold rounded border border-zinc-700 text-zinc-300 hover:bg-zinc-800 transition-colors" @click="copyPinUrl" :aria-label="t('observatory.myTerritory.share')">
-                {{ shareCopied ? t('observatory.myTerritory.copied') : t('observatory.myTerritory.share') }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Drop Pin Floating Button -->
-          <button
-            type="button"
-            class="absolute z-[500] bg-[var(--obs-panel-bg-dark)] backdrop-blur border border-emerald-700/40 rounded-full px-3 py-2 text-fluid-xs font-bold text-emerald-300 hover:bg-emerald-900/30 hover:border-emerald-500 transition-all flex items-center gap-1.5 shadow-lg"
-            :style="pinPickerMode ? 'bottom: clamp(4rem, 10vh, 5.5rem); right: clamp(0.75rem, 2vw, 1rem); background: color-mix(in srgb, var(--obs-emerald) 25%, transparent); border-color: var(--obs-emerald); color: #fff;' : 'bottom: clamp(4rem, 10vh, 5.5rem); right: clamp(0.75rem, 2vw, 1rem);'"
-            @click="togglePinPicker">
-            <span>📍</span>
-            {{ pinPickerMode ? t('observatory.myTerritory.cancel') : t('observatory.myTerritory.dropPin') }}
-          </button>
+            :user-pin="userPin"
+            :user-pin-shared="userPinShared"
+            :pin-picker-mode="pinPickerMode"
+            :share-copied="shareCopied"
+            :toggle-pin-picker="togglePinPicker"
+            :fly-to-user-pin="flyToUserPin"
+            :copy-pin-url="copyPinUrl"
+            :clear-pin="clearPin"
+          >
+            <template #sidebar>
+              <ObservatorySidebar
+                :active-tab="activeTab"
+                :danger-items="speculatorIndex"
+                :show-all="showAll"
+                style="position: relative; height: 100%;"
+                @update:active-tab="(tab) => activeTab = tab"
+                @update:show-all="(v) => showAll = v"
+                @fly-to-enterprise="zoomToDanger"
+                @fly-to-coord="flyToCoord"
+              />
+            </template>
+          </ObservatoryLayout>
         </template>
       </MapView3D>
 
@@ -158,20 +127,9 @@ const {
   showClaimDetail, claimDetailProps, closeClaimDetail,
   userPin, userPinShared, pinPickerMode, shareCopied,
   togglePinPicker, flyToUserPin, copyPinUrl, loadingMessage,
-  toggleEnterpriseLayer, flyToEnterprise, zoomToDanger, flyToCoord, onGeoLocate, expandToFullBrazil,
+  flyToEnterprise, zoomToDanger, flyToCoord, onGeoLocate, expandToFullBrazil,
   activeTab, activeFilterSummary,
   showShortcuts, showDataTable, showTimeline, showExport, showGeoLocate, showClaimReport, reportClaim,
   mapContainerRef, filteredCount, clearPin,
 } = useVulcanObservatoryPage()
 </script>
-
-<style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

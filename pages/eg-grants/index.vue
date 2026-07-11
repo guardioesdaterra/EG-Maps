@@ -180,6 +180,7 @@
           :user-votes="scrapedUserVotes"
           :leaderboard="leaderboard"
           :leaderboard-loading="leaderboardLoading"
+          :removing-grants="removingGrants"
           @sign-in="signIn"
           @sign-out="handleSignOut"
           @update:active-tab="activePortalTab = $event"
@@ -299,6 +300,10 @@ const showHistory = ref(false)
 const scrapedGrants = ref<ScrapedGrant[]>([])
 const scrapedLoading = ref(false)
 const scrapedUserVotes = reactive<Record<string, number>>({})
+
+// Grants being animated out (disintegration)
+const removingGrants = ref<string[]>([])
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 const filteredScrapedGrants = computed(() => {
   const tab = activePortalTab.value
@@ -520,12 +525,22 @@ async function handleReview(grantId: string, decision: string) {
 }
 
 async function handleReviewScraped(grantId: string, decision: string) {
+  // Start disintegration animation
+  removingGrants.value = [...removingGrants.value, grantId]
   try {
-    await apiReviewScraped(grantId, decision as 'approved' | 'hidden' | 'pending')
-    loadScrapedGrants()
-    loadGrants()
+    // Fire API and animation simultaneously
+    const [apiResult] = await Promise.all([
+      apiReviewScraped(grantId, decision as 'approved' | 'hidden' | 'pending'),
+      sleep(700),
+    ])
+    // Remove from local arrays immediately after animation
+    scrapedGrants.value = scrapedGrants.value.filter(g => g.id !== grantId)
+    removingGrants.value = removingGrants.value.filter(id => id !== grantId)
+    // Refresh from server in background
+    Promise.all([loadScrapedGrants(), loadGrants()]).catch(console.error)
   } catch (e) {
     console.error('Failed to review scraped grant:', e)
+    removingGrants.value = removingGrants.value.filter(id => id !== grantId)
   }
 }
 

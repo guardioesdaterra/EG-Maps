@@ -1,5 +1,6 @@
 <template>
   <div class="w-full h-[100svh] relative overflow-hidden bg-black" role="main" aria-label="Interactive Map Visualization">
+    <!-- Full-screen loading overlay (only during map init) -->
     <Transition name="fade">
       <div v-if="isLoading" class="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center">
         <div class="relative mb-5 xs:mb-6">
@@ -7,12 +8,20 @@
           <div class="absolute inset-0 w-16 xs:w-20 h-16 xs:h-20 rounded-full border-4 border-white/10 border-b-white/50 animate-spin" style="animation-delay: 0.5s; animation-direction: reverse" />
         </div>
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('general.loading') }}</p>
-        <p class="text-gray-500 text-xs xs:text-sm">{{ dataLabel ? t('globe.preparingData', { dataset: dataLabel }) : t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'endangered-species' ? t('home.species').toLowerCase() : t('home.observatoryOfVulcan').toLowerCase() }) }}</p>
+        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'endangered-species' ? t('home.species').toLowerCase() : t('home.observatoryOfVulcan').toLowerCase() }) }}</p>
         <div class="mt-3 xs:mt-4 flex gap-1">
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-3" />
         </div>
+      </div>
+    </Transition>
+
+    <!-- Non-blocking data loading indicator (shows on top of rendered map) -->
+    <Transition name="fade">
+      <div v-if="showDataLoading" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[99] flex items-center gap-2 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-sm border border-cyan-800/40 pointer-events-none">
+        <div class="w-3 h-3 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+        <span class="text-xs text-cyan-300 font-medium whitespace-nowrap">{{ dataStatusText }}</span>
       </div>
     </Transition>
 
@@ -129,13 +138,39 @@ const ctx = useMapBase({
   onMapReady: (map) => emit('mapInit', map),
 })
 
-const dataLoading = ref(true)
-const dataLabel = ref('')
+const showDataLoading = ref(false)
+const dataStatusText = ref('')
+let dataLoadedCount = 0
+const DATA_TOTAL = 2
 
 if (props.defaultDataset === 'endangered-species') {
   const { data: speciesIdx, loading: speciesLoading, currentDatasetLabel } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
-  watch(speciesLoading, (v) => { dataLoading.value = v })
-  watch(currentDatasetLabel, (v) => { dataLabel.value = v })
+  watch(currentDatasetLabel, (v) => {
+    if (v && speciesLoading.value) {
+      showDataLoading.value = true
+      dataStatusText.value = t('globe.preparingData', { dataset: v })
+    }
+  })
+  watch(speciesLoading, (v) => {
+    if (!v) {
+      dataLoadedCount++
+      if (dataLoadedCount >= DATA_TOTAL) {
+        dataStatusText.value = 'All species data loaded ✓'
+        setTimeout(() => { showDataLoading.value = false }, 2500)
+      } else {
+        showDataLoading.value = true
+        dataStatusText.value = `${currentDatasetLabel.value || ''} loaded → next dataset...`
+        setTimeout(() => {
+          if (dataLoadedCount < DATA_TOTAL) {
+            showDataLoading.value = false
+          }
+        }, 2000)
+      }
+    } else {
+      showDataLoading.value = true
+      dataStatusText.value = t('globe.preparingData', { dataset: currentDatasetLabel.value || '' })
+    }
+  })
   watch(speciesIdx, (val) => {
     if (val.length > 0) {
       ctx.speciesIndexData.value = val
@@ -143,7 +178,7 @@ if (props.defaultDataset === 'endangered-species') {
   })
 }
 
-const isLoading = computed(() => ctx.isLoading.value || dataLoading.value)
+const isLoading = computed(() => ctx.isLoading.value)
 
 useHead({
   link: props.defaultDataset === 'endangered-species'

@@ -864,6 +864,14 @@
     "copied": "Copied!",
     "copyCode": "Copy embed code",
     "loadingPreview": "Scroll into view to load preview",
+    "picker": {
+      "title": "Quick Embed — Pick your view",
+      "description": "Choose 2D map or 3D globe, then select a dataset. Loads instantly with minimal UI (hideAll mode)."
+    },
+    "compare": {
+      "title": "2D vs 3D — Side by Side",
+      "description": "Compare the same dataset rendered in 2D map and 3D globe views."
+    },
     "fullScreen": {
       "title": "Full Screen Embed",
       "description": "Fills the entire browser viewport. Ideal for dedicated map pages."
@@ -891,6 +899,30 @@
     "fullScreenInteractive": {
       "title": "Interactive Embed with Controls",
       "description": "Full controls visible. Best for standalone integrations."
+    },
+    "activeCrews2d": {
+      "title": "Active Crews — 2D Map",
+      "description": "2D map view of Earth Guardians active crews worldwide."
+    },
+    "projectGrants3d": {
+      "title": "Project Grants — 3D Globe",
+      "description": "3D globe view of global project grants and their impact."
+    },
+    "projectGrants2d": {
+      "title": "Project Grants — 2D Map",
+      "description": "2D map view of global project grants."
+    },
+    "endangeredSpecies3d": {
+      "title": "Endangered Species — 3D Globe",
+      "description": "3D globe view of critically endangered species habitats."
+    },
+    "endangeredSpecies2d": {
+      "title": "Endangered Species — 2D Map",
+      "description": "2D map view of endangered species locations worldwide."
+    },
+    "observatory3d": {
+      "title": "Vulcan Observatory — 3D Globe",
+      "description": "3D globe view of the mining process visualization in Brazil."
     },
     "observatory": {
       "title": "Vulcan Observatory Embed",

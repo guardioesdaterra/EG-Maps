@@ -62,7 +62,7 @@ export interface ObservatoryAnimations {
 
 export interface ObservatoryData {
   allFeatures: Ref<unknown[]>
-  pointsData: Ref<GeoJSON.FeatureCollection>
+  pointsData: Ref<GeoJSON.FeatureCollection | undefined>
   filteredPoints: Ref<GeoJSON.FeatureCollection>
   polygonsData: Ref<unknown>
   protectedData: Ref<unknown>
@@ -79,7 +79,7 @@ export interface ObservatoryData {
   isRegional: Ref<boolean>
   setupObservatory: (data: {
     allFeatures: Ref<unknown[]>
-    pointsData: Ref<GeoJSON.FeatureCollection>
+    pointsData: Ref<GeoJSON.FeatureCollection | undefined>
     polygonsData: Ref<unknown>
     protectedData: Ref<unknown>
     waterData: Ref<unknown>
@@ -250,25 +250,25 @@ export function useObservatoryControls(): ObservatoryControls {
 
   // ---- data placeholders ----
   // Pages MUST provide these via setupObservatory(dataBindings)
-  let allFeatures = ref<unknown[]>([])
-  let pointsData = ref<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] })
-  let polygonsData = ref<unknown>(null)
-  let protectedData = ref<unknown>(null)
-  let waterData = ref<unknown>(null)
-  let culturalData = ref<unknown>(null)
-  let speculatorIndex = ref<unknown[]>([])
-  let deepAnalysis = ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null | undefined>(null)
-  let isLoading = ref(false)
-  let loadPhase = ref('idle')
-  let loadProgress = ref(0)
-  let error = ref<{ message?: string } | null | undefined>(null)
+  let allFeatures: Ref<unknown[]> = ref<unknown[]>([])
+  let pointsData: Ref<GeoJSON.FeatureCollection | undefined> = ref<GeoJSON.FeatureCollection | undefined>(undefined)
+  let polygonsData: Ref<unknown> = ref<unknown>(null)
+  let protectedData: Ref<unknown> = ref<unknown>(null)
+  let waterData: Ref<unknown> = ref<unknown>(null)
+  let culturalData: Ref<unknown> = ref<unknown>(null)
+  let speculatorIndex: Ref<unknown[]> = ref<unknown[]>([])
+  let deepAnalysis: Ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null | undefined> = ref<{ last_sync?: string; sigilo_stats?: { total: number; total_area_ha: number } } | null | undefined>(null)
+  let isLoading: Ref<boolean> = ref(false)
+  let loadPhase: Ref<string> = ref('idle')
+  let loadProgress: Ref<number> = ref(0)
+  let error: Ref<{ message?: string } | null | undefined> = ref<{ message?: string } | null | undefined>(null)
   let loadRareEarthData: () => Promise<void> | void = () => Promise.resolve()
   let loadFullBrazil: () => Promise<void> | void = () => Promise.resolve()
-  let isRegional = ref(true)
+  let isRegional: Ref<boolean> = ref(true)
 
   function setupObservatory(data: {
     allFeatures: Ref<unknown[]>
-    pointsData: Ref<GeoJSON.FeatureCollection>
+    pointsData: Ref<GeoJSON.FeatureCollection | undefined>
     polygonsData: Ref<unknown>
     protectedData: Ref<unknown>
     waterData: Ref<unknown>
@@ -283,28 +283,26 @@ export function useObservatoryControls(): ObservatoryControls {
     loadFullBrazil: () => Promise<void> | void
     isRegional: Ref<boolean>
   }) {
-    ;({
-      allFeatures: allFeatures as Ref<unknown[]>,
-      pointsData: pointsData as Ref<GeoJSON.FeatureCollection>,
-      polygonsData: polygonsData as Ref<unknown>,
-      protectedData: protectedData as Ref<unknown>,
-      waterData: waterData as Ref<unknown>,
-      culturalData: culturalData as Ref<unknown>,
-      speculatorIndex: speculatorIndex as Ref<unknown[]>,
-      deepAnalysis,
-      isLoading,
-      loadPhase,
-      loadProgress,
-      error,
-      loadRareEarthData,
-      loadFullBrazil,
-      isRegional,
-    } = data)
+    allFeatures = data.allFeatures
+    pointsData = data.pointsData
+    polygonsData = data.polygonsData
+    protectedData = data.protectedData
+    waterData = data.waterData
+    culturalData = data.culturalData
+    speculatorIndex = data.speculatorIndex
+    deepAnalysis = data.deepAnalysis
+    isLoading = data.isLoading
+    loadPhase = data.loadPhase
+    loadProgress = data.loadProgress
+    error = data.error
+    loadRareEarthData = data.loadRareEarthData
+    loadFullBrazil = data.loadFullBrazil
+    isRegional = data.isRegional
 
     // Initialize filteredPoints with the full dataset so the map has data immediately
     const raw = pointsData.value
     if (raw?.features?.length) {
-      filteredPoints.value = raw
+      filteredPoints.value = raw as GeoJSON.FeatureCollection
       filteredCount.value = raw.features.length
     }
   }

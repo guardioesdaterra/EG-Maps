@@ -11,6 +11,141 @@
         </p>
       </header>
 
+      <!-- Quick Picker — big 2D | 3D buttons, fast load with hideAll -->
+      <section class="mb-8 rounded-xl border-2 border-black/20 dark:border-[var(--border-color)] overflow-hidden">
+        <div class="border-b-2 border-black/20 dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
+          <h2 class="text-lg font-bold">{{ t('iframe.picker.title') }}</h2>
+          <p class="text-sm text-black/60 dark:text-[var(--text-secondary)]">
+            {{ t('iframe.picker.description') }}
+          </p>
+        </div>
+        <div class="p-6 flex flex-col items-center gap-6">
+          <!-- 2D | 3D buttons -->
+          <div class="flex gap-4 w-full max-w-md">
+            <button
+              @click="pickerMode = '2d'"
+              class="flex-1 text-3xl font-black py-8 rounded-xl border-2 transition-all duration-200"
+              :class="pickerMode === '2d'
+                ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105'
+                : 'bg-black/5 dark:bg-white/5 border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10'"
+            >
+              2D
+            </button>
+            <button
+              @click="pickerMode = '3d'"
+              class="flex-1 text-3xl font-black py-8 rounded-xl border-2 transition-all duration-200"
+              :class="pickerMode === '3d'
+                ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105'
+                : 'bg-black/5 dark:bg-white/5 border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10'"
+            >
+              3D
+            </button>
+          </div>
+          <!-- Dataset selector (appears after picking a view) -->
+          <div v-if="pickerMode" class="flex gap-2 flex-wrap justify-center">
+            <button
+              v-for="ds in pickerDatasets"
+              :key="ds.key"
+              @click="pickerDataset = ds.key"
+              class="px-5 py-2.5 rounded-lg text-sm font-medium border transition-colors"
+              :class="pickerDataset === ds.key
+                ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
+                : 'bg-black/5 dark:bg-white/5 border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10'"
+            >
+              {{ ds.label }}
+            </button>
+          </div>
+          <!-- Iframe (only rendered after selection) -->
+          <div v-if="pickerMode" class="w-full border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
+            <iframe
+              :src="pickerIframeSrc"
+              class="w-full h-[500px] border-0"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"
+              :title="pickerIframeTitle"
+            ></iframe>
+          </div>
+          <!-- Embed code -->
+          <div v-if="pickerMode" class="w-full relative">
+            <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+              <pre class="text-sm text-gray-100 font-mono whitespace-pre-wrap break-words">{{ pickerEmbedCode }}</pre>
+            </div>
+            <button
+              @click="copyToClipboard(pickerEmbedCode, 'picker')"
+              class="absolute top-2 right-2 px-3 py-1.5 rounded-md bg-black/20 hover:bg-black/30 dark:bg-white/10 dark:hover:bg-white/20 text-white text-xs font-medium transition-colors"
+              :aria-label="t('iframe.copyCode')"
+            >
+              {{ copiedId === 'picker' ? t('iframe.copied') : t('iframe.copy') }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2D vs 3D Comparison — side-by-side for every dataset -->
+      <section class="mb-8 rounded-xl border-2 border-black/20 dark:border-[var(--border-color)] overflow-hidden">
+        <div class="border-b-2 border-black/20 dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
+          <h2 class="text-lg font-bold">{{ t('iframe.compare.title') }}</h2>
+          <p class="text-sm text-black/60 dark:text-[var(--text-secondary)]">
+            {{ t('iframe.compare.description') }}
+          </p>
+        </div>
+        <div class="p-4 space-y-6">
+          <div
+            v-for="comp in compareConfigs"
+            :key="comp.key"
+            class="border border-black/10 dark:border-[var(--border-color)] rounded-lg p-4"
+          >
+            <h3 class="font-bold mb-3">{{ comp.label }}</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p class="text-xs font-medium text-black/50 dark:text-[var(--text-secondary)] mb-1">2D Map</p>
+                <div
+                  :ref="(el) => observeContainer(comp.key + '-2d', el as HTMLElement | null)"
+                  class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+                >
+                  <div
+                    v-if="!isVisible[comp.key + '-2d']"
+                    class="bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm h-64"
+                  >
+                    {{ t('iframe.loadingPreview') }}
+                  </div>
+                  <iframe
+                    v-else
+                    :src="comp.src2d"
+                    class="w-full h-64 border-0"
+                    loading="lazy"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"
+                    :title="comp.label + ' 2D'"
+                  ></iframe>
+                </div>
+              </div>
+              <div>
+                <p class="text-xs font-medium text-black/50 dark:text-[var(--text-secondary)] mb-1">3D Globe</p>
+                <div
+                  :ref="(el) => observeContainer(comp.key + '-3d', el as HTMLElement | null)"
+                  class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+                >
+                  <div
+                    v-if="!isVisible[comp.key + '-3d']"
+                    class="bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm h-64"
+                  >
+                    {{ t('iframe.loadingPreview') }}
+                  </div>
+                  <iframe
+                    v-else
+                    :src="comp.src3d"
+                    class="w-full h-64 border-0"
+                    loading="lazy"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"
+                    :title="comp.label + ' 3D'"
+                  ></iframe>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Embed Examples -->
       <div class="grid gap-8">
         <section
@@ -135,6 +270,74 @@ async function copyToClipboard(text: string, id: string) {
   }
 }
 
+// ── Quick Picker (2D | 3D) ────────────────────────────────────
+const pickerMode = ref<'2d' | '3d' | null>(null)
+const pickerDataset = ref('active-crews')
+
+const pickerDatasets = [
+  { key: 'active-crews', label: 'Active Crews' },
+  { key: 'project-grants', label: 'Project Grants' },
+  { key: 'endangered-species', label: 'Endangered Species' },
+  { key: 'vulcan-observatory', label: 'Observatory of Vulcan' },
+]
+
+const pickerIframeSrc = computed(() => {
+  if (!pickerMode.value) return ''
+  const path = pickerMode.value === '3d' ? `${pickerDataset.value}/3d` : pickerDataset.value
+  return `${baseURL}${path}?hideAll=true`
+})
+
+const pickerIframeTitle = computed(() => {
+  const ds = pickerDatasets.find(d => d.key === pickerDataset.value)
+  const mode = pickerMode.value?.toUpperCase()
+  return `${ds?.label ?? ''} ${mode}`
+})
+
+const pickerEmbedCode = computed(() => {
+  if (!pickerMode.value) return ''
+  const ds = pickerDatasets.find(d => d.key === pickerDataset.value)
+  const mode = pickerMode.value.toUpperCase()
+  const path = pickerMode.value === '3d' ? `${pickerDataset.value}/3d` : pickerDataset.value
+  const src = `${baseURL}${path}?hideAll=true`
+  const label = `${ds?.label ?? ''} — ${mode}`
+  return `<!-- ${label} Embed (Globe Only) -->\n<iframe\n  src="${src}"\n  style="width: 100%; height: 500px; border: none;"\n  loading="lazy"\n  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"\n  title="${label}"\n></iframe>`
+})
+
+// ── 2D vs 3D Comparison ──────────────────────────────────────
+interface CompareItem {
+  key: string
+  label: string
+  src2d: string
+  src3d: string
+}
+
+const compareConfigs: CompareItem[] = [
+  {
+    key: 'comp-active-crews',
+    label: 'Active Crews',
+    src2d: `${baseURL}active-crews?embed=true&hideAll=true`,
+    src3d: `${baseURL}active-crews/3d?embed=true&hideAll=true`,
+  },
+  {
+    key: 'comp-project-grants',
+    label: 'Project Grants',
+    src2d: `${baseURL}project-grants?embed=true&hideAll=true`,
+    src3d: `${baseURL}project-grants/3d?embed=true&hideAll=true`,
+  },
+  {
+    key: 'comp-endangered-species',
+    label: 'Endangered Species',
+    src2d: `${baseURL}endangered-species?embed=true&hideAll=true`,
+    src3d: `${baseURL}endangered-species/3d?embed=true&hideAll=true`,
+  },
+  {
+    key: 'comp-vulcan-observatory',
+    label: 'Observatory of Vulcan',
+    src2d: `${baseURL}vulcan-observatory?embed=true&hideAll=true`,
+    src3d: `${baseURL}vulcan-observatory/3d?embed=true&hideAll=true`,
+  },
+]
+
 // ── Iframe configuration (single source of truth) ─────────────
 interface IframeConfig {
   key: string
@@ -149,6 +352,7 @@ interface IframeConfig {
 }
 
 const iframeConfigs: IframeConfig[] = [
+  // ── Active Crews (3D) – size variations ──
   {
     key: 'fullScreen',
     src: `${baseURL}active-crews/3d`,
@@ -181,7 +385,6 @@ const iframeConfigs: IframeConfig[] = [
     embedLabel: 'Earth Guardians Active Crews',
     embedWidth: '100%',
     embedHeight: '100%',
-    // responsive wraps iframe in a 16:9 aspect container
   },
   {
     key: 'smallCard',
@@ -227,6 +430,83 @@ const iframeConfigs: IframeConfig[] = [
     embedWidth: '100%',
     embedHeight: '500px',
   },
+
+  // ── Active Crews (2D) ──
+  {
+    key: 'activeCrews2d',
+    src: `${baseURL}active-crews?embed=true`,
+    params: 'embed=true',
+    placeholderClass: 'h-[500px]',
+    iframeClass: 'h-[500px]',
+    allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
+    embedLabel: 'Earth Guardians Active Crews - 2D',
+    embedWidth: '100%',
+    embedHeight: '500px',
+  },
+
+  // ── Project Grants (3D) ──
+  {
+    key: 'projectGrants3d',
+    src: `${baseURL}project-grants/3d?embed=true`,
+    params: 'embed=true',
+    placeholderClass: 'h-[500px]',
+    iframeClass: 'h-[500px]',
+    allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
+    embedLabel: 'Project Grants - 3D Globe',
+    embedWidth: '100%',
+    embedHeight: '500px',
+  },
+  // ── Project Grants (2D) ──
+  {
+    key: 'projectGrants2d',
+    src: `${baseURL}project-grants?embed=true`,
+    params: 'embed=true',
+    placeholderClass: 'h-[500px]',
+    iframeClass: 'h-[500px]',
+    allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
+    embedLabel: 'Project Grants - 2D Map',
+    embedWidth: '100%',
+    embedHeight: '500px',
+  },
+
+  // ── Endangered Species (3D) ──
+  {
+    key: 'endangeredSpecies3d',
+    src: `${baseURL}endangered-species/3d?embed=true`,
+    params: 'embed=true',
+    placeholderClass: 'h-[500px]',
+    iframeClass: 'h-[500px]',
+    allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
+    embedLabel: 'Endangered Species - 3D Globe',
+    embedWidth: '100%',
+    embedHeight: '500px',
+  },
+  // ── Endangered Species (2D) ──
+  {
+    key: 'endangeredSpecies2d',
+    src: `${baseURL}endangered-species?embed=true`,
+    params: 'embed=true',
+    placeholderClass: 'h-[500px]',
+    iframeClass: 'h-[500px]',
+    allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
+    embedLabel: 'Endangered Species - 2D Map',
+    embedWidth: '100%',
+    embedHeight: '500px',
+  },
+
+  // ── Vulcan Observatory (3D) ──
+  {
+    key: 'observatory3d',
+    src: `${baseURL}vulcan-observatory/3d?embed=true`,
+    params: 'embed=true',
+    placeholderClass: 'h-[500px]',
+    iframeClass: 'h-[500px]',
+    allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
+    embedLabel: 'Vulcan Observatory - 3D Globe',
+    embedWidth: '100%',
+    embedHeight: '500px',
+  },
+  // ── Vulcan Observatory (2D) ──
   {
     key: 'observatory',
     src: `${baseURL}vulcan-observatory?embed=true`,
@@ -238,6 +518,8 @@ const iframeConfigs: IframeConfig[] = [
     embedWidth: '100%',
     embedHeight: '500px',
   },
+
+  // ── Parameter examples ──
   {
     key: 'noControl',
     src: `${baseURL}active-crews/3d?no-control=true`,
@@ -292,6 +574,10 @@ function buildEmbedCode(item: IframeConfig): string {
 
 const isVisible = reactive<Record<string, boolean>>({})
 for (const cfg of iframeConfigs) isVisible[cfg.key] = false
+for (const comp of compareConfigs) {
+  isVisible[comp.key + '-2d'] = false
+  isVisible[comp.key + '-3d'] = false
+}
 
 const containerMap = new Map<string, HTMLElement>()
 const timers = new Map<string, ReturnType<typeof setTimeout>>()

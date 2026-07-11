@@ -67,9 +67,15 @@ function formatArea(ha: number): string {
 }
 
 // Simple popup cache to avoid rebuilding identical popups
+// Use a WeakValue-style approach: tied to a generation counter so cleanup is possible
 const popupCache = new Map<string, RareEarthPopupContent>()
 const CACHE_MAX_SIZE = 200
 let lastCacheLocale = ''
+
+export function clearPopupCache() {
+  popupCache.clear()
+  lastCacheLocale = ''
+}
 
 function getCacheKey(props: Record<string, unknown>, locale?: string): string {
   const id = String(props.p ?? props.processo ?? props.id ?? JSON.stringify(props).slice(0, 100))

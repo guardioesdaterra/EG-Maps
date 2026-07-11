@@ -10,7 +10,7 @@
           </div>
         </div>
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('globe.loading') }}</p>
-        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews').toLowerCase() : activeDataset === 'vulcan-observatory' ? t('home.observatoryOfVulcan').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
+        <p class="text-gray-500 text-xs xs:text-sm">{{ dataLabel ? t('globe.preparingData', { dataset: dataLabel }) : t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews').toLowerCase() : activeDataset === 'vulcan-observatory' ? t('home.observatoryOfVulcan').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
         <div class="mt-3 xs:mt-4 flex gap-1">
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
@@ -104,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, defineAsyncComponent } from 'vue'
+import { ref, watch, computed, defineAsyncComponent } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import type { MapBaseProps } from '@/composables/useMapBase'
 import { useMapBase } from '@/composables/useMapBase'
@@ -125,6 +125,9 @@ const emit = defineEmits<{ mapInit: [map: maplibregl.Map] }>()
 const mapContainerRef = ref<HTMLElement | null>(null)
 const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
 const starCanvasRef = ref<HTMLCanvasElement | null>(null)
+
+const dataLoading = ref(true)
+const dataLabel = ref('')
 
 let starAnimationId: number | null = null
 let rotationAnimationId: number | null = null
@@ -213,13 +216,24 @@ const base = useMapBase({
 })
 
 if (props.defaultDataset === 'endangered-species') {
-  const { data: speciesIdx } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
+  const { data: speciesIdx, loading: speciesLoading, currentDatasetLabel } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
+  watch(speciesLoading, (v) => { dataLoading.value = v })
+  watch(currentDatasetLabel, (v) => { dataLabel.value = v })
   watch(speciesIdx, (val) => {
     if (val.length > 0) {
       base.speciesIndexData.value = val
     }
   })
 }
+
+useHead({
+  link: props.defaultDataset === 'endangered-species'
+    ? [
+        { rel: 'preload', href: `${useRuntimeConfig().app.baseURL}data/species/iucn-index.json`, as: 'fetch', crossorigin: 'anonymous' },
+        { rel: 'preload', href: `${useRuntimeConfig().app.baseURL}data/species/icmbio-brazil-index.json`, as: 'fetch', crossorigin: 'anonymous' },
+      ]
+    : [],
+})
 
 function initMap() {
   base.initMap()
@@ -229,7 +243,7 @@ const {
   t, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,
   activeDataset, projectsData, speciesIndexData, visibleProjects,
   selectedSpeciesGroups,
-  hasError, errorMessage, noWebglSupport, isLoading,
+  hasError, errorMessage, noWebglSupport,
   showHexGrid, showFilterPanel, speciesFilterPanelRef,
   showConnections, toggleConnections,
   showSpeciesOverlay, showProjectOverlay, showCrewOverlay,
@@ -246,6 +260,8 @@ const {
   handleSearchOpenChange, handleSpeciesGroupSelection,
   toggleLegendGroup, navigateToLocation,
 } = base
+
+const isLoading = computed(() => base.isLoading.value || dataLoading.value)
 </script>
 
 <style>

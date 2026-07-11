@@ -7,7 +7,7 @@
           <div class="absolute inset-0 w-16 xs:w-20 h-16 xs:h-20 rounded-full border-4 border-white/10 border-b-white/50 animate-spin" style="animation-delay: 0.5s; animation-direction: reverse" />
         </div>
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('general.loading') }}</p>
-        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'endangered-species' ? t('home.species').toLowerCase() : t('home.observatoryOfVulcan').toLowerCase() }) }}</p>
+        <p class="text-gray-500 text-xs xs:text-sm">{{ dataLabel ? t('globe.preparingData', { dataset: dataLabel }) : t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'endangered-species' ? t('home.species').toLowerCase() : t('home.observatoryOfVulcan').toLowerCase() }) }}</p>
         <div class="mt-3 xs:mt-4 flex gap-1">
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, defineAsyncComponent } from 'vue'
+import { ref, watch, computed, defineAsyncComponent } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import type { MapBaseProps } from '@/composables/useMapBase'
 import { useMapBase } from '@/composables/useMapBase'
@@ -129,8 +129,13 @@ const ctx = useMapBase({
   onMapReady: (map) => emit('mapInit', map),
 })
 
+const dataLoading = ref(true)
+const dataLabel = ref('')
+
 if (props.defaultDataset === 'endangered-species') {
-  const { data: speciesIdx } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
+  const { data: speciesIdx, loading: speciesLoading, currentDatasetLabel } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
+  watch(speciesLoading, (v) => { dataLoading.value = v })
+  watch(currentDatasetLabel, (v) => { dataLabel.value = v })
   watch(speciesIdx, (val) => {
     if (val.length > 0) {
       ctx.speciesIndexData.value = val
@@ -138,11 +143,22 @@ if (props.defaultDataset === 'endangered-species') {
   })
 }
 
+const isLoading = computed(() => ctx.isLoading.value || dataLoading.value)
+
+useHead({
+  link: props.defaultDataset === 'endangered-species'
+    ? [
+        { rel: 'preload', href: `${useRuntimeConfig().app.baseURL}data/species/iucn-index.json`, as: 'fetch', crossorigin: 'anonymous' },
+        { rel: 'preload', href: `${useRuntimeConfig().app.baseURL}data/species/icmbio-brazil-index.json`, as: 'fetch', crossorigin: 'anonymous' },
+      ]
+    : [],
+})
+
 const {
   t, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,
   projectsData, speciesIndexData, visibleProjects, crewsData, crewLocationsData,
   activeDataset, selectedSpeciesGroups,
-  hasError, errorMessage, noWebglSupport, isLoading,
+  hasError, errorMessage, noWebglSupport,
   showHexGrid, showFilterPanel, speciesFilterPanelRef,
   showConnections, toggleConnections,
   showSpeciesOverlay, showProjectOverlay, showCrewOverlay,

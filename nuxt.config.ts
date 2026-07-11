@@ -48,8 +48,8 @@ export default defineNuxtConfig({
   routeRules: {
     '/**': { prerender: true },
     '/globe': { redirect: `${baseURL}project-grants/3d` },
-    '/vulcan-observatory': { prerender: false },
-    '/vulcan-observatory/3d': { prerender: false },
+    '/vulcan-observatory': { prerender: true },
+    '/vulcan-observatory/3d': { prerender: true },
     '/endangered-species': { prerender: false },
     '/endangered-species/3d': { prerender: false },
     '/project-grants': { prerender: false },
@@ -122,7 +122,7 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: true,
       routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d', '/iframe'],
-      ignore: ['/EG-Maps/manifest.json', '/vulcan-observatory/**', '/EG-Maps/vulcan-observatory/**'],
+      ignore: ['/EG-Maps/manifest.json'],
     },
     compressPublicAssets: true,
   },

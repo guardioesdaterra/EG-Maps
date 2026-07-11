@@ -3,16 +3,12 @@ import type { Species } from '@/lib/types'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 
 const memCache = new Map<string, Species[] | SpeciesIndexItem[]>()
-const regionLookupCache = new Map<string, string>() // speciesId → region
+const regionLookupCache = new Map<string, string>()
 
 const DB_NAME = 'eg-maps-species'
 const DB_VERSION = 1
 const STORE_NAME = 'datasets'
 
-// Singleton IDBDatabase connection. Opening multiple connections to the
-// same database quickly exhausts the per-origin cap (~50) and triggers
-// QuotaExceededError on subsequent opens. We resolve a single shared
-// connection and reuse it for all transactions.
 let dbPromise: Promise<IDBDatabase> | null = null
 
 function openDB(): Promise<IDBDatabase> {
@@ -28,8 +24,6 @@ function openDB(): Promise<IDBDatabase> {
     }
     req.onsuccess = () => {
       const db = req.result
-      // If the connection is unexpectedly closed (e.g. by the browser under
-      // storage pressure), clear the cached promise so the next call reopens.
       db.onclose = () => { dbPromise = null }
       db.onversionchange = () => {
         try { db.close() } catch { /* empty */ }
@@ -54,7 +48,10 @@ async function idbGet<T>(key: string): Promise<T | undefined> {
       req.onsuccess = () => resolve(req.result ?? undefined)
       req.onerror = () => reject(req.error)
     })
-  } catch { return undefined }
+  } catch (e) {
+    console.warn('[useSpeciesData] idbGet failed:', e)
+    return undefined
+  }
 }
 
 async function idbSet(key: string, value: unknown): Promise<void> {
@@ -66,7 +63,9 @@ async function idbSet(key: string, value: unknown): Promise<void> {
       tx.oncomplete = () => resolve()
       tx.onerror = () => reject(tx.error)
     })
-  } catch { /* silently fail */ }
+  } catch (e) {
+    console.warn('[useSpeciesData] idbSet failed:', e)
+  }
 }
 
 type DatasetParam = string | string[]
@@ -111,11 +110,14 @@ async function fetchDataset(baseURL: string, ds: string): Promise<Species[]> {
 // IndexedDB-cached so repeat visits are instant.
 async function fetchSpeciesIndex(baseURL: string, ds: string): Promise<SpeciesIndexItem[]> {
   const cacheKey = `${ds}-index`
-  if (memCache.has(cacheKey)) return memCache.get(cacheKey) as SpeciesIndexItem[]
+  {
+    const cachedEntry = memCache.get(cacheKey)
+    if (cachedEntry) return cachedEntry as SpeciesIndexItem[]
+  }
 
   const cached = await idbGet<SpeciesIndexItem[]>(cacheKey)
   if (cached) {
-    memCache.set(cacheKey, cached as unknown as Species[])
+    memCache.set(cacheKey, cached)
     return cached
   }
 
@@ -123,7 +125,7 @@ async function fetchSpeciesIndex(baseURL: string, ds: string): Promise<SpeciesIn
   const res = await fetch(url)
   if (!res.ok) throw new Error(`Failed to load species index: ${res.status}`)
   const data: SpeciesIndexItem[] = await res.json()
-  memCache.set(cacheKey, data as unknown as Species[])  // Store as Species[] for compatibility
+  memCache.set(cacheKey, data)
 
   idbSet(cacheKey, data)
   return data
@@ -228,12 +230,14 @@ export function useSpeciesData(dataset?: DatasetParam) {
 }
 
 // Lightweight version that only loads marker index (for large datasets).
-// Fetches datasets in parallel and supports progressive chunk loading.
+// Loads datasets in priority order (smallest first) so the map renders
+// visible markers as fast as possible instead of waiting for all data.
 export function useSpeciesIndex(dataset?: DatasetParam) {
   const data = ref<SpeciesIndexItem[]>([])
   const loading = ref(true)
   const error = ref<Error | null>(null)
   const loadedChunks = ref(0)
+  const currentDatasetLabel = ref('')
 
   const datasets = resolveDatasets(dataset)
   const baseURL = (useRuntimeConfig().app?.baseURL as string) || '/'
@@ -241,18 +245,27 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
   async function load() {
     loading.value = true
     error.value = null
+    const collected: SpeciesIndexItem[] = []
     try {
-      // Fetch all datasets in parallel for faster initial load
-      const results = await Promise.all(
-        datasets.map(ds => fetchSpeciesIndex(baseURL, ds))
-      )
-      data.value = results.flat()
-      loadedChunks.value = results.length
+      // Sort by likely size: IUCN (43KB) before icmbio-brazil (1.2MB)
+      const sorted = [...datasets].sort((a, b) => {
+        if (a === 'iucn') return -1
+        if (b === 'iucn') return 1
+        return 0
+      })
+      for (const ds of sorted) {
+        currentDatasetLabel.value = ds
+        const items = await fetchSpeciesIndex(baseURL, ds)
+        collected.push(...items)
+        data.value = [...collected]
+        loadedChunks.value = collected.length
+      }
     } catch (e) {
       error.value = e as Error
       console.error('[useSpeciesIndex] Failed to load species index:', e)
     } finally {
       loading.value = false
+      currentDatasetLabel.value = ''
     }
   }
 
@@ -263,7 +276,7 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
     load()
   }
 
-  return { data, loading, error, reload: load, loadedChunks }
+  return { data, loading, error, reload: load, loadedChunks, currentDatasetLabel }
 }
 
 // Get full species details on demand

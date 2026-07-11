@@ -8,6 +8,7 @@ import { useSpeciesPopup, useProjectPopup, useCrewPopup, usePreviewCard } from '
 import { useMapConnections } from '@/composables/useMapConnections'
 import { useMapMarker } from '@/composables/useMapMarker'
 import { useRareEarthController } from '@/composables/useRareEarthController'
+import { getPopupContent } from '@/composables/useCulturalLayers'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { allProjectsData } from '@/lib/project-data'
 import { openRareEarthOverlayPopup } from '@/lib/map-utils'
@@ -246,12 +247,28 @@ export function useMapBase(config: MapBaseConfig) {
 
   /* ── marker system (replaces orchestrator) ─────────────────────────── */
 
+  let culturalPopup: maplibregl.Popup | null = null
+
+  function openCulturalOverlay(feature: GeoJSON.Feature) {
+    if (!map) return
+    culturalPopup?.remove()
+    const p = (feature.properties ?? {}) as Record<string, unknown>
+    const html = getPopupContent(p)
+    const coords = (feature.geometry as GeoJSON.Point).coordinates
+    culturalPopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+      .setLngLat([coords[0] as number, coords[1] as number])
+      .setHTML(html)
+      .setMaxWidth('none')
+      .addTo(map)
+  }
+
   const marker = useMapMarker({
     openProjectOverlay,
     openSpeciesOverlay,
     openCrewOverlay,
     openCrewLocationOverlay,
     openRareEarthOverlay,
+    openCulturalOverlay,
     openProjectPreview,
     openSpeciesPreview,
     openCrewPreview,
@@ -279,30 +296,34 @@ export function useMapBase(config: MapBaseConfig) {
   /* ── marker rebuild (single entry-point for all datasets) ──────────── */
 
   function rebuildMarkers() {
-    if (!map || activeDataset.value === 'vulcan-observatory') return
+    if (!map) return
+    const isRee = activeDataset.value === 'vulcan-observatory'
     marker.rebuild({
       dataset: activeDataset.value!,
-      projects: visibleProjects.value,
-      speciesIndex: speciesIndexData.value,
-      species: speciesData.value,
-      crews: crewsData.value,
-      crewLocations: crewLocationsData.value,
-      selectedSpeciesGroups: selectedSpeciesGroups.value,
-      rareEarthFeatures: (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
+      projects: isRee ? [] : visibleProjects.value,
+      speciesIndex: isRee ? [] : speciesIndexData.value,
+      species: isRee ? [] : speciesData.value,
+      crews: isRee ? [] : crewsData.value,
+      crewLocations: isRee ? [] : crewLocationsData.value,
+      selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
+      rareEarthFeatures: isRee ? [] : (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
+      culturalFeatures: isRee ? (props.rareEarthCultural?.features ?? []) : undefined,
     })
   }
 
   function updateMarkerData() {
-    if (!map || activeDataset.value === 'vulcan-observatory') return
+    if (!map) return
+    const isRee = activeDataset.value === 'vulcan-observatory'
     marker.update({
       dataset: activeDataset.value!,
-      projects: visibleProjects.value,
-      speciesIndex: speciesIndexData.value,
-      species: speciesData.value,
-      crews: crewsData.value,
-      crewLocations: crewLocationsData.value,
-      selectedSpeciesGroups: selectedSpeciesGroups.value,
-      rareEarthFeatures: (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
+      projects: isRee ? [] : visibleProjects.value,
+      speciesIndex: isRee ? [] : speciesIndexData.value,
+      species: isRee ? [] : speciesData.value,
+      crews: isRee ? [] : crewsData.value,
+      crewLocations: isRee ? [] : crewLocationsData.value,
+      selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
+      rareEarthFeatures: isRee ? [] : (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
+      culturalFeatures: isRee ? (props.rareEarthCultural?.features ?? []) : undefined,
     })
   }
 
@@ -538,6 +559,11 @@ export function useMapBase(config: MapBaseConfig) {
     if (!map || activeDataset.value !== 'vulcan-observatory') return
     setupRareEarthLayers()
   })
+
+  watch(() => props.rareEarthCultural, () => {
+    if (!map || activeDataset.value !== 'vulcan-observatory') return
+    rebuildMarkers()
+  }, { deep: false })
 
   watch(showHexGrid, async (visible) => {
     if (!visible) return

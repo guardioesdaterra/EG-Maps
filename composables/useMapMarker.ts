@@ -13,6 +13,7 @@ import { GROUP_COLORS, isValidCoordinate } from '@/lib/map-utils'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
 import { formatCompact } from '@/lib/utils'
 import { findSpeciesAtCoord as _findSpeciesAtCoord } from '@/lib/species-utils'
+import { SPECIES_COORD_TOLERANCE } from '@/lib/constants'
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
@@ -30,6 +31,7 @@ export interface MarkerCallbacks {
   openCrewOverlay:       (c: CrewRegionData | CrewLocation) => void
   openCrewLocationOverlay?: (c: CrewLocation) => void
   openRareEarthOverlay?:    (f: GeoJSON.Feature) => void
+  openCulturalOverlay?:     (f: GeoJSON.Feature) => void
   openProjectPreview?:   (p: ProjectData) => void
   openSpeciesPreview?:   (s: Species | SpeciesIndexItem) => void
   openCrewPreview?:      (c: CrewRegionData | CrewLocation) => void
@@ -44,13 +46,12 @@ export interface RebuildArgs {
   crewLocations:        CrewLocation[]
   selectedSpeciesGroups: string[]
   rareEarthFeatures?:   GeoJSON.Feature[]
+  culturalFeatures?:   GeoJSON.Feature[]
 }
 
 const SOURCE = 'markers'
 
 const LAYER_SUFFIXES = ['_cg', '_c', '_cn', '_pg', '_p', '_pl'] as const
-
-const SPECIES_COORD_TOLERANCE = 0.5
 
 const CLUSTER_PALETTES: Record<MarkerDataset, readonly [string, string, string, string]> = {
   'project-grants':       ['#06b6d4', '#22c55e', '#eab308', '#ef4444'],
@@ -354,6 +355,14 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   }
 
   function dispatchRareEarth(p: Record<string, unknown>, coords: [number, number]) {
+    if (p._markerType === 'cultural') {
+      callbacks.openCulturalOverlay?.({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: coords },
+        properties: p as Record<string, unknown>,
+      })
+      return
+    }
     callbacks.openRareEarthOverlay?.({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: coords },
@@ -382,7 +391,7 @@ const GEOJSON_CONVERTERS: Record<MarkerDataset, (a: RebuildArgs) => GeoJSON.Feat
   'project-grants':       a => toProjectGeoJSON(a.projects),
   'endangered-species':   a => toSpeciesGeoJSON(a.speciesIndex, a.species, a.selectedSpeciesGroups),
   'active-crews':         a => toCrewGeoJSON(a.crews, a.crewLocations),
-  'vulcan-observatory':   a => toRareEarthGeoJSON(a.rareEarthFeatures ?? []),
+  'vulcan-observatory':   a => toRareEarthGeoJSON(a.rareEarthFeatures ?? [], a.culturalFeatures ?? []),
 }
 
 function toGeoJSON(ds: MarkerDataset, a: RebuildArgs): GeoJSON.FeatureCollection {
@@ -517,21 +526,56 @@ function groupCrewsByCoord(locations: CrewLocation[]): CrewLocation[][] {
   return [...map.values()]
 }
 
-function toRareEarthGeoJSON(features: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
+const CULTURAL_SUBTYPE_COLORS: Record<string, string> = {
+  cultural_center: '#f39c12',
+  artist_group: '#9b59b6',
+  indigenous: '#e74c3c',
+  marginalized: '#e67e22',
+  rural: '#27ae60',
+  event: '#3498db',
+}
+
+const CULTURAL_TYPE_COLORS: Record<string, string> = {
+  school: '#3498db',
+  health: '#e74c3c',
+  cultural: '#f39c12',
+  water_access: '#2ecc71',
+  community: '#9b59b6',
+}
+
+function toRareEarthGeoJSON(rareEarthFeatures: GeoJSON.Feature[], culturalFeatures: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
+  const mining = rareEarthFeatures.map(f => {
+    const p = (f.properties ?? {}) as Record<string, unknown>
+    const ds = Number(p.ds ?? p.danger_score ?? 5)
+    return {
+      type: 'Feature' as const, geometry: f.geometry,
+      properties: {
+        id: (p.n as string) ?? 'unknown',
+        color: ds >= 8 ? '#e74c3c' : ds >= 6 ? '#f39c12' : '#27ae60',
+        size: 10, label: '', dangerScore: ds, category: p.c, ...p,
+      },
+    }
+  })
+
+  const cultural = culturalFeatures.map(f => {
+    const p = (f.properties ?? {}) as Record<string, unknown>
+    const subtype = String(p.subtype || '')
+    const type = String(p.type || '')
+    const color = CULTURAL_SUBTYPE_COLORS[subtype] ?? CULTURAL_TYPE_COLORS[type] ?? '#9b59b6'
+    return {
+      type: 'Feature' as const, geometry: f.geometry,
+      properties: {
+        id: (p.name as string) ?? (p.source_id as string) ?? 'cultural',
+        _markerType: 'cultural',
+        color, size: 8, label: '',
+        ...p,
+      },
+    }
+  })
+
   return {
     type: 'FeatureCollection',
-    features: features.map(f => {
-      const p = (f.properties ?? {}) as Record<string, unknown>
-      const ds = Number(p.ds ?? p.danger_score ?? 5)
-      return {
-        type: 'Feature' as const, geometry: f.geometry,
-        properties: {
-          id: (p.n as string) ?? 'unknown',
-          color: ds >= 8 ? '#e74c3c' : ds >= 6 ? '#f39c12' : '#27ae60',
-          size: 10, label: '', dangerScore: ds, category: p.c, ...p,
-        },
-      }
-    }),
+    features: [...mining, ...cultural],
   }
 }
 

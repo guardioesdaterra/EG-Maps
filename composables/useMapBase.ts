@@ -10,6 +10,7 @@ import { useMapMarker } from '@/composables/useMapMarker'
 import { useRareEarthController } from '@/composables/useRareEarthController'
 import { getPopupContent } from '@/composables/useCulturalLayers'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
+import { useAdaptiveQuality } from '@/composables/useAdaptiveQuality'
 import { allProjectsData } from '@/lib/project-data'
 import { openRareEarthOverlayPopup } from '@/lib/map-utils'
 import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
@@ -57,6 +58,8 @@ export function useMapBase(config: MapBaseConfig) {
   const isMobile = useMediaQuery('(max-width: 768px)')
   const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
   const MAP_STYLE = getMapStyle(MAPTILER_API_KEY)
+
+  const quality = useAdaptiveQuality()
 
   const projectsData = computed(() => props.projects || allProjectsData)
   const speciesData = computed(() => props.species || [])
@@ -114,18 +117,30 @@ export function useMapBase(config: MapBaseConfig) {
     return isEmbed.value || noControl.value || isSmallViewport.value
   })
 
-  const hexGrid = useMapHexGrid(hexCanvasRef, isGlobe ? {
-    mobileSize: HEX_GRID.mobileSizeGlobe,
-    desktopSize: HEX_GRID.desktopSizeGlobe,
-    strokeColor: HEX_GRID.strokeColorGlobe,
-    lineWidth: HEX_GRID.lineWidthGlobe,
-  } : undefined)
+  const hexGrid = useMapHexGrid(hexCanvasRef, {
+    ...(isGlobe ? {
+      mobileSize: HEX_GRID.mobileSizeGlobe,
+      desktopSize: HEX_GRID.desktopSizeGlobe,
+      strokeColor: HEX_GRID.strokeColorGlobe,
+      lineWidth: HEX_GRID.lineWidthGlobe,
+    } : {}),
+    qualityScale: quality.settings.value.hexGridScale,
+  })
   const onResize = hexGrid.debouncedSetup
 
   const connections = useMapConnections(
     () => map,
     mapContainerRef,
-    { zIndex: isGlobe ? 30 : 2 },
+    {
+      zIndex: isGlobe ? 30 : 2,
+      quality: {
+        particleMaxCount: quality.settings.value.particleMaxCount,
+        particleFps: quality.settings.value.particleFps,
+        particleTrailLength: quality.settings.value.particleTrailLength,
+        particleShadowBlur: quality.settings.value.particleShadowBlur,
+        particleSpawnRate: quality.settings.value.particleSpawnRate,
+      },
+    },
   )
   const { showConnections, toggleConnections } = connections
 
@@ -401,6 +416,8 @@ export function useMapBase(config: MapBaseConfig) {
     try {
       const isRee = activeDataset.value === 'vulcan-observatory'
 
+      const qSettings = quality.settings.value
+
       map = new maplibregl.Map({
         container: mapContainerRef.value,
         style: MAP_STYLE,
@@ -409,8 +426,9 @@ export function useMapBase(config: MapBaseConfig) {
         attributionControl: false,
         renderWorldCopies: !isGlobe,
         fadeDuration: 100,
-        maxTileCacheSize: 200,
-        maxTileCacheZoomLevels: 5,
+        maxTileCacheSize: qSettings.maxTileCacheSize,
+        maxTileCacheZoomLevels: qSettings.maxTileCacheZoomLevels,
+        antialias: qSettings.antialiasing,
       } as maplibregl.MapOptions & { antialias?: boolean })
 
       console.timeEnd('[perf] initMap → MapLibre constructor')
@@ -446,15 +464,22 @@ export function useMapBase(config: MapBaseConfig) {
         rebuildMarkers()
         console.timeEnd('[perf] initMap → rebuildMarkers')
         console.time('[perf] initMap → connections+hexGrid')
+        const qSettings = quality.settings.value
         if (activeDataset.value !== 'vulcan-observatory') {
-          if (activeDataset.value === 'active-crews') {
-            connections.addConnections('active-crews', [], [], crewLocationsData.value)
-          } else {
-            connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+          if (qSettings.showConnections) {
+            if (activeDataset.value === 'active-crews') {
+              connections.addConnections('active-crews', [], [], crewLocationsData.value)
+            } else {
+              connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+            }
+            if (qSettings.showParticles) {
+              connections.startParticles()
+            }
           }
-          connections.startParticles()
         }
-        hexGrid.setupHexGrid()
+        if (qSettings.showHexGrid) {
+          hexGrid.setupHexGrid()
+        }
         console.timeEnd('[perf] initMap → connections+hexGrid')
         console.timeEnd('[perf] initMap total')
         onMapReady?.(map!)
@@ -554,7 +579,7 @@ export function useMapBase(config: MapBaseConfig) {
     if (!map || activeDataset.value !== 'active-crews') return
     rebuildMarkers()
     connections.addConnections('active-crews', [], [], crewLocationsData.value)
-    if (connections.showConnections.value) connections.startParticles()
+    if (connections.showConnections.value && quality.settings.value.showParticles) connections.startParticles()
   })
 
   watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData], () => {
@@ -573,7 +598,7 @@ export function useMapBase(config: MapBaseConfig) {
     } else {
       connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
     }
-    if (connections.showConnections.value) connections.startParticles()
+    if (connections.showConnections.value && quality.settings.value.showParticles) connections.startParticles()
   })
 
   watch(() => [props.rareEarthPoints, props.rareEarthPolygons], () => {
@@ -595,7 +620,7 @@ export function useMapBase(config: MapBaseConfig) {
     } else {
       connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
     }
-    if (connections.showConnections.value) connections.startParticles()
+    if (connections.showConnections.value && quality.settings.value.showParticles) connections.startParticles()
   })
 
   watch(() => props.flyToTarget, (target) => {
@@ -644,5 +669,6 @@ export function useMapBase(config: MapBaseConfig) {
     handleSearchOpenChange, handleSpeciesGroupSelection, toggleLegendGroup,
     initMap, map, mapRef,
     isMounted,
+    quality,
   }
 }

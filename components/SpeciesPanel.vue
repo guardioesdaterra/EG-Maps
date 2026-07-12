@@ -92,6 +92,7 @@ onBeforeUnmount(() => {
         v-if="isOpen"
         ref="panelRef"
         class="fixed top-0 left-0 h-full w-full max-w-[min(26.25rem,90vw)] z-[9999] bg-[var(--bg-primary)] border-r border-[var(--border-color)] flex flex-col shadow-2xl"
+        style="padding-left: env(safe-area-inset-left, 0px)"
         role="dialog"
         aria-modal="true"
         :aria-label="t('species.panelTitle')"

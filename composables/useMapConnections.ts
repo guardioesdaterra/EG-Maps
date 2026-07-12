@@ -8,6 +8,7 @@ import {
   syncMapConnectionLayers,
   type MapConnectionFeature,
   type MapParticleSystem,
+  type ParticleQualityConfig,
 } from '@/lib/map-effects'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 
@@ -22,6 +23,7 @@ function resolveMap(getter: MapGetter): MapLibreMap | null {
 export interface ConnectionOptions {
   zIndex?: number
   isMounted?: () => boolean
+  quality?: ParticleQualityConfig
 }
 
 export function useMapConnections(
@@ -32,7 +34,7 @@ export function useMapConnections(
   const getMap = (): MapLibreMap | null =>
     map && typeof map === 'object' && 'value' in map ? (map as Ref<MapLibreMap | null>).value : resolveMap(map as MapGetter)
 
-  const { zIndex = 2, isMounted = () => true } = options
+  const { zIndex = 2, isMounted = () => true, quality } = options
   const showConnections = ref(true)
   const connectionFeatures = ref<MapConnectionFeature[]>([])
   let particleSystem: MapParticleSystem | null = null
@@ -189,6 +191,7 @@ export function useMapConnections(
       getFeatures: () => connectionFeatures.value,
       isMobile: () => isMobile.value,
       zIndex,
+      quality,
     })
     particleSystem.start()
     setupVisibilityTracking()

@@ -19,11 +19,18 @@ import { defineAsyncComponent } from 'vue'
 const MapView3D = defineAsyncComponent(() => import('~/components/MapView3D.vue'))
 
 const { t } = useI18n()
+const baseURL = (useRuntimeConfig().app?.baseURL as string) || '/'
 
 useHead({
   title: 'Endangered Species Globe (3D) | Earth Guardians',
   meta: [
     { name: 'description', content: 'Interactive 3D globe of critically endangered species around the world' },
+  ],
+  link: [
+    { rel: 'preconnect', href: 'https://api.maptiler.com' },
+    { rel: 'dns-prefetch', href: 'https://api.maptiler.com' },
+    { rel: 'preload', href: `${baseURL}data/species/iucn-index.json`, as: 'fetch', crossorigin: 'anonymous' },
+    { rel: 'preload', href: `${baseURL}data/species/icmbio-brazil-index.json`, as: 'fetch', crossorigin: 'anonymous' },
   ],
 })
 </script>

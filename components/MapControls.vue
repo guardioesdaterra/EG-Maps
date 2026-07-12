@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Main controls container - Mobile optimized -->
-    <div v-if="!isEmbed" :class="`absolute ${isMobile ? 'top-[clamp(5.5rem,12vh,7.5rem)] right-[max(0.5rem,env(safe-area-inset-right))]' : 'top-20 right-4'} z-[700] flex flex-col gap-1.5 xs:gap-2 map-tool-stack`">
+    <div v-if="!isEmbed" :class="`absolute ${isMobile ? 'top-[clamp(6.5rem,18vh,9rem)] right-[max(0.5rem,env(safe-area-inset-right))]' : 'top-20 right-4'} z-[700] flex flex-col gap-1.5 xs:gap-2 map-tool-stack`">
       <!-- Search Button -->
       <UiTooltip :side="isMobile ? 'right' : 'left'">
         <template #trigger>
@@ -90,7 +90,7 @@
     <Transition name="search-panel">
       <div 
         v-if="showSearch" 
-        :class="`absolute ${isMobile ? 'top-[clamp(5.5rem,12vh,7.5rem)] left-[max(0.5rem,env(safe-area-inset-left))] right-[max(0.5rem,env(safe-area-inset-right))] max-w-full max-h-[calc(100svh-10rem)]' : 'top-20 right-16 w-[min(20rem,calc(100vw-5rem))] max-h-[calc(100svh-8rem)]'} z-[700] panel-cyber p-2.5 xs:p-3 overflow-hidden`"
+        :class="`absolute ${isMobile ? 'top-[clamp(6.5rem,18vh,9rem)] left-[max(0.5rem,env(safe-area-inset-left))] right-[max(0.5rem,env(safe-area-inset-right))] max-w-full max-h-[calc(100svh-12rem)]' : 'top-20 right-16 w-[min(20rem,calc(100vw-5rem))] max-h-[calc(100svh-8rem)]'} z-[700] panel-cyber p-2.5 xs:p-3 overflow-hidden`"
         role="dialog"
         :aria-label="t('mapControls.search')"
       >

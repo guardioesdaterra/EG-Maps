@@ -6,582 +6,469 @@ This document defines the Supabase edge function architecture for EG-Maps, inclu
 
 ## Database Schema
 
-### Core Tables
+> **Note**: This schema was introspected from the live database on 2026-07-12. Tables not listed here (e.g. `crew_members`, `roles`, `user_roles`, `members`, `grants_audit`, `mining_processes`, `observatory_contributions`) do not exist in the current database.
 
-#### 1. `crew_members`
+### Table: `eg_intern_crew_members`
+Crew member registry — stores all Earth Guardians crew members synced from Google Sheets.
 
-```sql
-CREATE TABLE crew_members (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  crew_id TEXT NOT NULL,
-  crew_name TEXT NOT NULL,
-  country TEXT NOT NULL,
-  country_code TEXT NOT NULL,
-  region TEXT NOT NULL,
-  coordinates POINT NOT NULL,
-  lead_name TEXT,
-  lead_email TEXT,
-  lead_photo_url TEXT,
-  social_links JSONB DEFAULT '{}',
-  tags TEXT[] DEFAULT '{}',
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  created_by UUID REFERENCES auth.users(id),
-  updated_by UUID REFERENCES auth.users(id),
-  
-  -- Constraints
-  CONSTRAINT crew_members_crew_id_unique UNIQUE (crew_id),
-  CONSTRAINT crew_members_country_code_format CHECK (country_code ~ '^[A-Z]{2}$'),
-  CONSTRAINT crew_members_email_format CHECK (lead_email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
-);
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| crew_id | uuid | YES | |
+| full_name | text | YES | |
+| email | text | YES | |
+| phone | text | YES | |
+| role | text | YES | |
+| social | jsonb | YES | '{}'::jsonb |
+| is_active | boolean | YES | true |
+| joined_at | timestamptz | YES | |
+| user_id | uuid | YES | |
+| last_seen_at | timestamptz | YES | |
+| created_at | timestamptz | YES | now() |
+| _uid | text | YES | |
+| exposure | text | NO | 'internal'::text |
+| region_uid | text | YES | |
+| source_spreadsheet_id | text | YES | |
+| source_gid | integer | YES | |
+| source_sheet_name | text | YES | |
+| synced_at | timestamptz | YES | now() |
+| first_name | text | YES | |
+| last_name | text | YES | |
+| preferred_language | text | YES | 'en'::text |
+| phone_country | text | YES | |
+| phone_number | text | YES | |
+| address_country | text | YES | |
+| address_line1 | text | YES | |
+| address_line2 | text | YES | |
+| city | text | YES | |
+| state | text | YES | |
+| zip_code | text | YES | |
+| inspiration | text | YES | |
+| training_interest | text | YES | |
+| climate_experience | text | YES | |
+| indigenous_status | text | YES | 'N/A'::text |
+| tribal_nation | text | YES | |
+| crew_type | text | YES | 'member'::text |
+| is_leader | boolean | YES | false |
+| referrer | text | YES | |
+| notes | text | YES | |
 
--- Indexes for performance
-CREATE INDEX idx_crew_members_country ON crew_members(country);
-CREATE INDEX idx_crew_members_region ON crew_members(region);
-CREATE INDEX idx_crew_members_is_active ON crew_members(is_active);
-CREATE INDEX idx_crew_members_crew_name ON crew_members USING gin (crew_name gin_trgm_ops);
+**Constraints:**
+- PK: `eg_intern_crew_members_pkey` (id)
+- UNIQUE: `eg_intern_crew_members_email_key` (email)
+- FK: `crew_id` → `eg_intern_crews(id)` ON DELETE CASCADE
+- FK: `user_id` → `auth.users(id)` ON DELETE SET NULL
 
--- Enable PostGIS for spatial queries
-ALTER TABLE crew_members ADD COLUMN geom GEOMETRY(POINT, 4326);
-UPDATE crew_members SET geom = ST_SetSRID(ST_MakePoint(coordinates[0], coordinates[1]), 4326);
-CREATE INDEX idx_crew_members_geom ON crew_members USING gist (geom);
-```
+**RLS:** Service role only (ALL operations). Anonymous/anauthenticated users cannot access.
 
-#### 2. `crew_members_audit`
+---
 
-```sql
-CREATE TABLE crew_members_audit (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  crew_member_id UUID NOT NULL REFERENCES crew_members(id),
-  action TEXT NOT NULL CHECK (action IN ('INSERT', 'UPDATE', 'DELETE')),
-  old_data JSONB,
-  new_data JSONB,
-  changed_by UUID REFERENCES auth.users(id),
-  changed_at TIMESTAMPTZ DEFAULT NOW()
-);
+### Table: `eg_intern_crews`
+Crew groups — stores crew metadata (location, contacts, stats).
 
-CREATE INDEX idx_crew_members_audit_crew_member ON crew_members_audit(crew_member_id);
-CREATE INDEX idx_crew_members_audit_changed_at ON crew_members_audit(changed_at);
-```
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| crew_name | text | NO | |
+| town | text | YES | |
+| country | text | YES | |
+| region | text | YES | |
+| latitude | numeric | YES | |
+| longitude | numeric | YES | |
+| projects | jsonb | YES | '[]'::jsonb |
+| grants_received | jsonb | YES | '[]'::jsonb |
+| notes | text | YES | |
+| status | text | YES | 'active'::text |
+| created_at | timestamptz | YES | now() |
+| updated_at | timestamptz | YES | now() |
+| region_continent | text | YES | |
+| instagram | text | YES | |
+| facebook | text | YES | |
+| website_blog | text | YES | |
+| exposure | text | NO | 'internal'::text |
+| synced_at | timestamptz | YES | now() |
 
-#### 3. `roles`
+**Constraints:**
+- PK: `eg_intern_crews_pkey` (id)
+- CHECK: `status IN ('active', ...)`
+- CHECK: `exposure IN ('internal', ...)`
 
-```sql
-CREATE TABLE roles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL UNIQUE,
-  description TEXT,
-  permissions TEXT[] DEFAULT '{}',
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+**RLS:** Service role only (ALL operations).
 
--- Insert default roles
-INSERT INTO roles (name, description, permissions) VALUES
-  ('admin', 'Full system access', ARRAY['read', 'write', 'delete', 'manage_users']),
-  ('crew_lead', 'Crew leadership access', ARRAY['read', 'write_crew', 'manage_members']),
-  ('member', 'Basic crew member access', ARRAY['read', 'update_profile']),
-  ('viewer', 'Read-only access', ARRAY['read']);
-```
+---
 
-#### 4. `user_roles`
+### Table: `eg_public`
+Public-facing crew data (subset of eg_intern_crews, published to the map).
 
-```sql
-CREATE TABLE user_roles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-  crew_member_id UUID REFERENCES crew_members(id),
-  granted_at TIMESTAMPTZ DEFAULT NOW(),
-  granted_by UUID REFERENCES auth.users(id),
-  
-  CONSTRAINT user_roles_unique UNIQUE (user_id, role_id)
-);
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| crew_name | text | NO | |
+| town | text | YES | |
+| country | text | YES | |
+| region | text | YES | |
+| latitude | numeric | YES | |
+| longitude | numeric | YES | |
+| status | text | YES | 'active'::text |
+| updated_at | timestamptz | YES | now() |
 
-CREATE INDEX idx_user_roles_user ON user_roles(user_id);
-CREATE INDEX idx_user_roles_role ON user_roles(role_id);
-```
+**Constraints:**
+- PK: `eg_public_pkey` (id)
+- UNIQUE: `eg_public_crew_name_key` (crew_name)
 
-#### 9. `members`
+**RLS:**
+- `eg_public: anon select` — anyone can SELECT
+- `eg_public: service role write` — service_role can ALL
 
-```sql
-CREATE TABLE members (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT NOT NULL,
-  full_name TEXT,
-  crew_id TEXT REFERENCES crew_members(crew_id) ON DELETE SET NULL,
-  role TEXT DEFAULT 'member' CHECK (role IN ('admin', 'crew_lead', 'member', 'viewer')),
-  is_active BOOLEAN DEFAULT true,
-  joined_at TIMESTAMPTZ DEFAULT now(),
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
+---
 
-  CONSTRAINT members_email_unique UNIQUE (email),
-  CONSTRAINT members_email_format CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
-);
+### Table: `grants`
+Grant opportunities — submitted by crew or scraped from external sources.
 
-CREATE INDEX idx_members_email ON members(email);
-CREATE INDEX idx_members_user_id ON members(user_id);
-CREATE INDEX idx_members_crew_id ON members(crew_id);
-CREATE INDEX idx_members_is_active ON members(is_active);
-```
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| title | text | NO | |
+| description | text | NO | |
+| location_name | text | NO | |
+| latitude | numeric | NO | |
+| longitude | numeric | NO | |
+| category | text | NO | 'environment'::text |
+| submitted_by | uuid | NO | |
+| status | text | NO | 'pending'::text |
+| reviewed_by | uuid | YES | |
+| reviewed_at | timestamptz | YES | |
+| rejection_reason | text | YES | |
+| created_at | timestamptz | NO | now() |
+| updated_at | timestamptz | NO | now() |
+| source | text | YES | |
+| funder | text | YES | ''::text |
+| url | text | YES | ''::text |
+| amount_max | text | YES | ''::text |
+| amount_min | text | YES | ''::text |
+| currency | text | YES | ''::text |
+| country | text | YES | ''::text |
+| grant_type | text | YES | 'general'::text |
+| priority_score | integer | YES | 0 |
+| hidden | boolean | YES | false |
+| source_id | text | YES | |
+| reviewed | boolean | YES | |
 
-**Purpose**: Registry of individual Earth Guardians members. Used during login to verify if a user is an approved member. If their email is not found, they are redirected to the sign-up page.
+**Constraints:**
+- PK: `grants_pkey` (id)
+- CHECK: `category IN ('environment','social','art','education','health','socioenvironmental','sociocultural','artistic','community')`
+- CHECK: `status IN ('pending','open','closed')`
 
-### Grants Tables
+**RLS:**
+- `grants: public read open` — anyone can SELECT where status='open' AND hidden=false
+- `grants: manager read all` — @earthguardians.org users can SELECT all
+- `grants: manager update` — @earthguardians.org users can UPDATE
+- `grants: authenticated insert` — authenticated users can INSERT
+- `grants_insert_auth` — INSERT allowed only if submitted_by = auth.uid()
+- `grants_select_auth` — authenticated users can SELECT
+- `grants_update_own_pending` — users can UPDATE own grants with status='pending'
 
-#### 5. `grants`
+---
 
-```sql
-CREATE TABLE grants (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  description TEXT NOT NULL,
-  amount DECIMAL(10,2) NOT NULL CHECK (amount > 0),
-  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'submitted', 'under_review', 'approved', 'rejected', 'funded', 'completed')),
-  applicant_id UUID NOT NULL REFERENCES auth.users(id),
-  crew_member_id UUID REFERENCES crew_members(id),
-  category TEXT NOT NULL,
-  timeline JSONB NOT NULL DEFAULT '{}',
-  budget JSONB NOT NULL DEFAULT '{}',
-  attachments TEXT[] DEFAULT '{}',
-  review_notes TEXT,
-  reviewed_by UUID REFERENCES auth.users(id),
-  reviewed_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+### Table: `scraped_grants`
+Grants scraped from external sources (awaiting manager review).
 
-CREATE INDEX idx_grants_status ON grants(status);
-CREATE INDEX idx_grants_applicant ON grants(applicant_id);
-CREATE INDEX idx_grants_crew ON grants(crew_member_id);
-```
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| source_id | text | NO | |
+| title | text | NO | |
+| funder | text | NO | ''::text |
+| source | text | NO | |
+| url | text | NO | |
+| description | text | NO | ''::text |
+| deadline | text | NO | ''::text |
+| amount_max | text | NO | ''::text |
+| amount_min | text | NO | ''::text |
+| currency | text | NO | ''::text |
+| country | text | NO | ''::text |
+| region | text | NO | ''::text |
+| categories | text[] | YES | '{}'::text[] |
+| language | text | NO | 'en'::text |
+| relevance | integer | NO | 0 |
+| status | text | NO | 'pending'::text |
+| fetched_at | timestamptz | NO | now() |
+| created_at | timestamptz | NO | now() |
+| amount_usd | numeric | YES | |
+| deadline_days | integer | YES | |
+| viewed | boolean | YES | |
+| reviewed | boolean | YES | false |
 
-#### 6. `grants_audit`
+**Constraints:**
+- PK: `scraped_grants_pkey` (id)
+- CHECK: `status IN ('pending','open','closed','hidden')`
 
-```sql
-CREATE TABLE grants_audit (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  grant_id UUID NOT NULL REFERENCES grants(id),
-  action TEXT NOT NULL CHECK (action IN ('INSERT', 'UPDATE', 'DELETE', 'STATUS_CHANGE')),
-  old_status TEXT,
-  new_status TEXT,
-  old_data JSONB,
-  new_data JSONB,
-  changed_by UUID REFERENCES auth.users(id),
-  changed_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
+**RLS:**
+- `scraped_grants: public read open` — anyone can SELECT where status != 'hidden'
+- `scraped_grants: manager read all` — @earthguardians.org can SELECT all
+- `scraped_grants: manager update` — @earthguardians.org can UPDATE
+- `scraped_insert_anon` — anyone can INSERT
+- `scraped_select_auth` — authenticated users can SELECT
 
-### Observatory Tables
+---
 
-#### 7. `mining_processes`
+### Table: `grant_decisions`
+Audit log of manager decisions on grants.
 
-```sql
-CREATE TABLE mining_processes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  process_id TEXT NOT NULL UNIQUE,
-  process_name TEXT NOT NULL,
-  state_code TEXT NOT NULL,
-  municipality TEXT NOT NULL,
-  category TEXT NOT NULL,
-  phase TEXT NOT NULL,
-  area_hectares DECIMAL(12,2) NOT NULL,
-  coordinates POINT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| grant_id | uuid | NO | |
+| manager_id | uuid | NO | |
+| decision | text | NO | |
+| notes | text | YES | |
+| created_at | timestamptz | NO | now() |
 
-ALTER TABLE mining_processes ADD COLUMN geom GEOMETRY(POINT, 4326);
-UPDATE mining_processes SET geom = ST_SetSRID(ST_MakePoint(coordinates[0], coordinates[1]), 4326);
-CREATE INDEX idx_mining_processes_geom ON mining_processes USING gist (geom);
-CREATE INDEX idx_mining_processes_state ON mining_processes(state_code);
-CREATE INDEX idx_mining_processes_category ON mining_processes(category);
-```
+**Constraints:**
+- PK: `grant_decisions_pkey` (id)
+- CHECK: `decision IN ('approved','rejected','closed','hidden','shown')`
+- FK: `grant_id` → `grants(id)` ON DELETE CASCADE
 
-#### 8. `observatory_contributions`
+**RLS:**
+- `decisions_select_auth` — authenticated users can SELECT
 
-```sql
-CREATE TABLE observatory_contributions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  process_id TEXT NOT NULL REFERENCES mining_processes(process_id),
-  contribution_type TEXT NOT NULL CHECK (contribution_type IN ('cultural', 'environmental', 'geographic', 'historical', 'indigenous_knowledge')),
-  description TEXT NOT NULL,
-  coordinates POINT,
-  photos TEXT[] DEFAULT '{}',
-  submitted_by UUID NOT NULL REFERENCES auth.users(id),
-  verified BOOLEAN DEFAULT false,
-  verified_by UUID REFERENCES auth.users(id),
-  verified_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+---
 
-ALTER TABLE observatory_contributions ADD COLUMN geom GEOMETRY(POINT, 4326);
-UPDATE observatory_contributions SET geom = ST_SetSRID(ST_MakePoint(coordinates[0], coordinates[1]), 4326) WHERE coordinates IS NOT NULL;
-CREATE INDEX idx_observatory_contributions_process ON observatory_contributions(process_id);
-CREATE INDEX idx_observatory_contributions_type ON observatory_contributions(contribution_type);
-CREATE INDEX idx_observatory_contributions_submitted ON observatory_contributions(submitted_by);
-CREATE INDEX idx_observatory_contributions_geom ON observatory_contributions USING gist (geom);
-```
+### Table: `grant_votes`
+Community voting on grants (1–8 stars, one vote per user per grant).
+
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| grant_id | uuid | NO | |
+| voter_id | uuid | NO | |
+| stars | integer | NO | |
+| created_at | timestamptz | NO | now() |
+
+**Constraints:**
+- PK: `grant_votes_pkey` (id)
+- UNIQUE: `grant_votes_grant_id_voter_id_key` (grant_id, voter_id)
+- FK: `grant_id` → `grants(id)` ON DELETE CASCADE
+- CHECK: `stars BETWEEN 1 AND 8`
+
+**RLS:**
+- `votes_select_auth` — authenticated users can SELECT
+- `votes_insert_update_own` — INSERT allowed only if voter_id = auth.uid()
+- `votes_update_own` — UPDATE allowed only if voter_id = auth.uid()
+- `votes_delete_own` — DELETE allowed only if voter_id = auth.uid()
+
+---
+
+### Table: `grant_comments`
+User comments on grants.
+
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| grant_id | text | NO | |
+| user_id | uuid | YES | |
+| email | text | NO | |
+| author_name | text | YES | ''::text |
+| content | text | NO | |
+| created_at | timestamptz | YES | now() |
+
+**Constraints:**
+- PK: `grant_comments_pkey` (id)
+- CHECK: `content` length/format constraint
+
+**RLS:**
+- `Comments: public read` — anyone can SELECT
+- `Comments: auth insert` — authenticated users can INSERT (requires user_id = auth.uid())
+- `Comments: own delete` — authenticated users can DELETE own comments
+- `Comments: service role full access` — service_role can ALL
+
+---
+
+### Table: `grant_views`
+View tracking for grants.
+
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| grant_id | uuid | NO | |
+| viewer_id | uuid | YES | |
+| viewed_at | timestamptz | NO | now() |
+
+**Constraints:**
+- PK: `grant_views_pkey` (id)
+- FK: `grant_id` → `grants(id)` ON DELETE CASCADE
+
+**RLS:**
+- `views_select_auth` — authenticated users can SELECT
+- `views_insert_auth` — authenticated users can INSERT
+
+---
+
+### Table: `observatory_updates`
+Community-submitted observatory updates (eco-cultural observations).
+
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| user_id | uuid | YES | |
+| user_email | text | YES | |
+| user_name | text | YES | |
+| update_type | text | NO | |
+| description | text | NO | |
+| location_name | text | YES | |
+| lat | double precision | YES | |
+| lng | double precision | YES | |
+| photo_base64 | text[] | YES | '{}'::text[] |
+| photo_count | integer | YES | |
+| synced | boolean | YES | false |
+| created_at | timestamptz | NO | now() |
+
+**Constraints:**
+- PK: `observatory_updates_pkey` (id)
+- CHECK: `update_type IN (...)` — specific update types enforced
+
+**RLS:**
+- `updates_select_public` — anyone can SELECT
+- `updates_insert_auth` — authenticated users can INSERT (user_id = auth.uid())
+- `updates_update_own` — users can UPDATE own updates
+- `updates_delete_own` — users can DELETE own updates
+
+---
+
+### Table: `vulcan_observatory`
+Cultural agents data (synced from external sources for the observatory map).
+
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| id | text | NO | |
+| type | text | NO | |
+| name | text | NO | |
+| source | text | NO | |
+| external_id | text | YES | |
+| latitude | double precision | NO | |
+| longitude | double precision | NO | |
+| single_url | text | YES | |
+| status | text | YES | 'active'::text |
+| synced_at | timestamptz | YES | now() |
+| created_at | timestamptz | YES | now() |
+
+**Constraints:**
+- PK: `vulcan_observatory_pkey` (id)
+- CHECK: `type IN (...)` validation
+- CHECK: `latitude` range
+- CHECK: `longitude` range
+
+**RLS:**
+- `Vulcan observatory: public read` — anyone can SELECT
+- `Vulcan observatory: service role write` — service_role can ALL
+
+---
+
+### Table: `eg_sync_telemetry`
+Sync job telemetry for Google Sheets imports.
+
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| run_id | text | NO | |
+| sheet_name | text | YES | |
+| started_at | timestamptz | YES | |
+| finished_at | timestamptz | YES | |
+| duration_ms | integer | YES | |
+| status | text | YES | |
+| rows_total | integer | YES | 0 |
+| rows_synced | integer | YES | 0 |
+| rows_skipped | integer | YES | 0 |
+| rows_errored | integer | YES | 0 |
+| columns_created | text[] | YES | '{}'::text[] |
+| tables_touched | text[] | YES | '{}'::text[] |
+| errors | jsonb | YES | '[]'::jsonb |
+
+**Constraints:**
+- PK: `eg_sync_telemetry_pkey` (run_id)
+
+**RLS:**
+- `Service only` — open to all (no auth enforcement)
+
+---
+
+### Table: `alert_subscriptions`
+User subscriptions for location-based alerts.
+
+| Column | Type | Nullable | Default |
+|--------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| user_id | uuid | YES | |
+| email | text | NO | |
+| lat | double precision | NO | |
+| lng | double precision | NO | |
+| radius_km | double precision | NO | 45 |
+| phase_filter | text[] | YES | '{}'::text[] |
+| active | boolean | YES | true |
+| created_at | timestamptz | NO | now() |
+
+**RLS:**
+- `subscriptions_select_own` — authenticated users can SELECT own
+- `subscriptions_insert_auth` — authenticated users can INSERT
+- `subscriptions_delete_own` — authenticated users can DELETE own
 
 ## Row Level Security (RLS) Policies
 
-### Crew Members
+RLS policies are documented per-table in the Database Schema section above. The key principles are:
 
-```sql
--- Enable RLS
-ALTER TABLE crew_members ENABLE ROW LEVEL SECURITY;
-
--- Public read access
-CREATE POLICY "Public read access" ON crew_members
-  FOR SELECT USING (true);
-
--- Crew leads can update their own crew
-CREATE POLICY "Crew leads can update" ON crew_members
-  FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM user_roles ur
-      JOIN roles r ON ur.role_id = r.id
-      WHERE ur.user_id = auth.uid()
-        AND r.name = 'crew_lead'
-        AND ur.crew_member_id = crew_members.id
-    )
-  );
-
--- Admins can do everything
-CREATE POLICY "Admins full access" ON crew_members
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM user_roles ur
-      JOIN roles r ON ur.role_id = r.id
-      WHERE ur.user_id = auth.uid()
-        AND r.name = 'admin'
-    )
-  );
-```
-
-### Members
-
-```sql
-ALTER TABLE members ENABLE ROW LEVEL SECURITY;
-
--- Public email lookup (needed for login membership check)
-CREATE POLICY "Members: public email lookup" ON members
-  FOR SELECT USING (true);
-
--- Authenticated users can read their own record
-CREATE POLICY "Members: read own" ON members
-  FOR SELECT USING (auth.uid() = user_id);
-
--- Service role full access (synced via crew-sync or sign-up form)
-CREATE POLICY "Members: service role full access" ON members
-  FOR ALL USING (auth.role() = 'service_role');
-```
-
--- Audit trigger
-CREATE OR REPLACE FUNCTION audit_crew_members()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF TG_OP = 'INSERT' THEN
-    INSERT INTO crew_members_audit (crew_member_id, action, new_data, changed_by)
-    VALUES (NEW.id, 'INSERT', to_jsonb(NEW), auth.uid());
-  ELSIF TG_OP = 'UPDATE' THEN
-    INSERT INTO crew_members_audit (crew_member_id, action, old_data, new_data, changed_by)
-    VALUES (NEW.id, 'UPDATE', to_jsonb(OLD), to_jsonb(NEW), auth.uid());
-  ELSIF TG_OP = 'DELETE' THEN
-    INSERT INTO crew_members_audit (crew_member_id, action, old_data, changed_by)
-    VALUES (OLD.id, 'DELETE', to_jsonb(OLD), auth.uid());
-  END IF;
-  RETURN COALESCE(NEW, OLD);
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE TRIGGER crew_members_audit_trigger
-  AFTER INSERT OR UPDATE OR DELETE ON crew_members
-  FOR EACH ROW EXECUTE FUNCTION audit_crew_members();
-```
-
-### Grants
-
-```sql
-ALTER TABLE grants ENABLE ROW LEVEL SECURITY;
-
--- Applicants can read their own grants
-CREATE POLICY "Applicants read own" ON grants
-  FOR SELECT USING (applicant_id = auth.uid());
-
--- Applicants can insert their own grants
-CREATE POLICY "Applicants insert own" ON grants
-  FOR INSERT WITH CHECK (applicant_id = auth.uid());
-
--- Applicants can update draft grants
-CREATE POLICY "Applicants update draft" ON grants
-  FOR UPDATE USING (
-    applicant_id = auth.uid()
-    AND status = 'draft'
-  );
-
--- Admins and reviewers can read all
-CREATE POLICY "Admins read all" ON grants
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM user_roles ur
-      JOIN roles r ON ur.role_id = r.id
-      WHERE ur.user_id = auth.uid()
-        AND r.name IN ('admin', 'crew_lead')
-    )
-  );
-
--- Admins can update any grant
-CREATE POLICY "Admins update any" ON grants
-  FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM user_roles ur
-      JOIN roles r ON ur.role_id = r.id
-      WHERE ur.user_id = auth.uid()
-        AND r.name = 'admin'
-    )
-  );
-```
+- **Service role** (`auth.role() = 'service_role'`) bypasses all RLS — used by Edge Functions via `getAdminClient()`
+- **@earthguardians.org email domain** — manager access for grants tables (checked via JWT email claim)
+- **`auth.uid()` ownership** — users can only modify their own records
+- **Public tables** (`eg_public`, `vulcan_observatory`, `observatory_updates`) — open SELECT for anon users
 
 ## Edge Functions
 
+All Edge Functions are deployed under project `lfyvociptzyhjtrxwhhf`. Source code is in `supabase/functions/<name>/`. The `_shared/` directory is not auto-deployed — each function must import from it via relative path.
+
 ### 1. `crew-sync`
 
-**Purpose**: Synchronize crew data from static JSON to Supabase
+**Purpose**: Verify crew membership, register new crew members, and sync crew data.
 
-**Trigger**: Scheduled (daily) or manual
+**Actions** (via URL query param `?action=`):
+- `check` (default) — verify JWT and return crew member status from `eg_intern_crew_members`
+- `register` — create new crew member record from sign-up form
 
-**Logic**:
-```typescript
-// supabase/functions/crew-sync/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+**Imports**: `../_shared/auth.ts` for auth helpers + CORS headers.
 
-serve(async (req) => {
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
+**Key tables**: `eg_intern_crew_members`
 
-  // Fetch static crew data
-  const staticData = await fetch('https://eg-maps.example.com/data/crew-data.json')
-    .then(r => r.json())
+### 2. `is-manager`
 
-  // Upsert each crew
-  for (const crew of staticData.crews) {
-    const { error } = await supabase
-      .from('crew_members')
-      .upsert({
-        crew_id: crew.id,
-        crew_name: crew.name,
-        country: crew.country,
-        country_code: crew.countryCode,
-        region: crew.region,
-        coordinates: `(${crew.coordinates.lng}, ${crew.coordinates.lat})`,
-        lead_name: crew.lead?.name,
-        lead_email: crew.lead?.email,
-        lead_photo_url: crew.lead?.photo,
-        social_links: crew.socialLinks || {},
-        tags: crew.tags || [],
-        is_active: crew.isActive ?? true,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'crew_id' })
+**Purpose**: Check if the authenticated user has a @earthguardians.org email (manager).
 
-    if (error) console.error(`Failed to sync crew ${crew.id}:`, error)
-  }
+**Source**: `supabase/functions/is-manager/index.ts`
 
-  return new Response(JSON.stringify({ success: true }), {
-    headers: { 'Content-Type': 'application/json' }
-  })
-})
-```
+### 3. `grants`
 
-### 2. `grants-submit`
+**Purpose**: Unified grants CRUD — list, submit, manage, vote, leaderboard, comments.
 
-**Purpose**: Submit grant application with validation
+**Actions** (via URL query param `?action=`):
+- `list` — list grants (supports filters: status, source_table)
+- `submit` — submit a new grant from a crew member
+- `manage` — approve/reject/hide/show/close/edit/merge grants (manager-only)
+- `vote` — upvote/downvote grants (authenticated users)
+- `leaderboard` — ranked list of grants by priority_score
+- `comment` — add/list/delete comments on grants
 
-**Endpoint**: `POST /functions/v1/grants-submit`
+**Source**: `supabase/functions/grants/index.ts`
 
-**Logic**:
-```typescript
-// supabase/functions/grants-submit/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+**Key tables**: `grants`, `scraped_grants`, `grant_decisions`, `grant_votes`, `grant_comments`
 
-serve(async (req) => {
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
+### 4. `crews-create`
 
-  const { title, description, amount, category, timeline, budget, attachments } = await req.json()
+**Purpose**: Create new crew member records from sign-up forms.
 
-  // Validate
-  if (!title || !description || !amount || !category) {
-    return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    })
-  }
+**Source**: `supabase/functions/crews-create/index.ts`
 
-  // Get authenticated user
-  const authHeader = req.headers.get('Authorization')
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
-  }
+### 5. `register-pin`
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
-  if (authError || !user) {
-    return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401 })
-  }
+**Purpose**: Register community pins and batch-sync cultural agents via service role.
 
-  // Create grant
-  const { data, error } = await supabase
-    .from('grants')
-    .insert({
-      title,
-      description,
-      amount,
-      category,
-      timeline,
-      budget,
-      attachments,
-      applicant_id: user.id,
-      status: 'submitted'
-    })
-    .select()
-    .single()
-
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 })
-  }
-
-  return new Response(JSON.stringify({ grant: data }), {
-    headers: { 'Content-Type': 'application/json' }
-  })
-})
-```
-
-### 3. `grants-review`
-
-**Purpose**: Review and update grant status
-
-**Endpoint**: `PUT /functions/v1/grants-review`
-
-**Logic**:
-```typescript
-// supabase/functions/grants-review/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-serve(async (req) => {
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
-
-  const { grant_id, status, review_notes } = await req.json()
-
-  // Verify admin/reviewer role
-  const authHeader = req.headers.get('Authorization')
-  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader?.replace('Bearer ', '') || '')
-  
-  if (authError || !user) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
-  }
-
-  const { data: roleData } = await supabase
-    .from('user_roles')
-    .select('role:roles(name)')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!roleData?.role?.name || !['admin', 'crew_lead'].includes(roleData.role.name)) {
-    return new Response(JSON.stringify({ error: 'Insufficient permissions' }), { status: 403 })
-  }
-
-  // Update grant
-  const { data, error } = await supabase
-    .from('grants')
-    .update({
-      status,
-      review_notes,
-      reviewed_by: user.id,
-      reviewed_at: new Date().toISOString()
-    })
-    .eq('id', grant_id)
-    .select()
-    .single()
-
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 })
-  }
-
-  return new Response(JSON.stringify({ grant: data }), {
-    headers: { 'Content-Type': 'application/json' }
-  })
-})
-```
-
-### 4. `observatory-contributions`
-
-**Purpose**: Track cultural and environmental contributions
-
-**Endpoint**: `POST /functions/v1/observatory-contributions`
-
-**Logic**:
-```typescript
-// supabase/functions/observatory-contributions/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-serve(async (req) => {
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
-
-  const { process_id, contribution_type, description, coordinates, photos } = await req.json()
-
-  // Validate
-  if (!process_id || !contribution_type) {
-    return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 })
-  }
-
-  // Get authenticated user
-  const authHeader = req.headers.get('Authorization')
-  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader?.replace('Bearer ', '') || '')
-  
-  if (authError || !user) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
-  }
-
-  // Create contribution record
-  const { data, error } = await supabase
-    .from('observatory_contributions')
-    .insert({
-      process_id,
-      contribution_type,
-      description,
-      coordinates: coordinates ? `(${coordinates.lng}, ${coordinates.lat})` : null,
-      photos,
-      submitted_by: user.id
-    })
-    .select()
-    .single()
-
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 })
-  }
-
-  return new Response(JSON.stringify({ contribution: data }), {
-    headers: { 'Content-Type': 'application/json' }
-  })
-})
-```
+**Source**: `supabase/functions/register-pin/index.ts`
 
 ## Deployment Scripts
 

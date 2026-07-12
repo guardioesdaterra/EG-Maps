@@ -42,10 +42,10 @@
 
     <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-15" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
 
-    <div ref="mapContainerRef" class="w-full h-full" :style="{ zIndex: 'var(--z-map-base)' }" />
+    <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" :style="{ zIndex: 'var(--z-map-base)' }" />
     <slot name="overlays" />
 
-    <div v-if="isMobile && !hideAll" class="absolute top-2 xs:top-3 left-1/2 -translate-x-1/2 pointer-events-none px-2" :style="{ zIndex: 'var(--z-map-banner)' }">
+    <div v-if="isMobile && !hideAll" class="absolute top-[clamp(4.5rem,12vw,6rem)] xs:top-[clamp(4.5rem,12vw,6rem)] left-1/2 -translate-x-1/2 pointer-events-none px-2" :style="{ zIndex: 'var(--z-map-banner)' }">
       <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[10vh] xs:max-h-[12vh] max-w-[clamp(10rem,24vw,16rem)] object-contain" loading="lazy" />
     </div>
     <div v-else-if="!hideAll" class="absolute top-1/2 -translate-y-1/2 pointer-events-none hidden lg:block" :class="hideControls ? '-left-4' : 'left-0'" :style="{ zIndex: 'var(--z-map-banner)' }">
@@ -55,7 +55,7 @@
     <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" />
     <SpeciesFilterPanel v-if="activeDataset === 'endangered-species' && showFilterPanel" ref="speciesFilterPanelRef" :species="speciesIndexData" @filter-change="handleFilterChange" @group-selection-change="handleSpeciesGroupSelection" @close="showFilterPanel = false" />
 
-    <DataBubble v-if="!hideAll && activeDataset !== 'active-crews' && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" position-top="auto" position-bottom="clamp(1rem, 4vh, 2rem)" @toggle-group="toggleLegendGroup" />
+    <DataBubble v-if="!hideAll && activeDataset !== 'active-crews' && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" position-top="auto" :position-bottom="isMobile ? 'clamp(4.5rem, 10vh, 6rem)' : 'clamp(1rem, 4vh, 2rem)'" @toggle-group="toggleLegendGroup" />
 
     <MapControls v-if="activeDataset !== 'vulcan-observatory'" :is-globe-view="true" :show-hex-grid="showHexGrid" :show-connections="showConnections" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" :style="{ zIndex: 'var(--z-map-ui-controls)' }" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" />
 
@@ -151,7 +151,8 @@ function initStarCanvas() {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   const stars: { x: number; y: number; r: number; a: number; da: number }[] = []
-  const count = 120
+  const count = base.quality.settings.value.starCount
+  if (count === 0) return
   canvas.width = canvas.offsetWidth * devicePixelRatio
   canvas.height = canvas.offsetHeight * devicePixelRatio
   ctx.scale(devicePixelRatio, devicePixelRatio)
@@ -204,8 +205,12 @@ const base = useMapBase({
   },
   onMapReady: (map) => {
     emit('mapInit', map)
-    setTimeout(() => initStarCanvas(), 500)
-    startAutoRotate(map)
+    if (base.quality.settings.value.starCount > 0) {
+      setTimeout(() => initStarCanvas(), 500)
+    }
+    if (base.quality.settings.value.autoRotate) {
+      startAutoRotate(map)
+    }
     function pauseAutoRotate() { isUserInteracting = true; stopAutoRotate(); if (interactionTimeout) clearTimeout(interactionTimeout) }
     function resumeAutoRotate() {
       isUserInteracting = false
@@ -263,8 +268,7 @@ if (props.defaultDataset === 'endangered-species') {
 useHead({
   link: props.defaultDataset === 'endangered-species'
     ? [
-        { rel: 'preload', href: `${useRuntimeConfig().app.baseURL}data/species/iucn-index.json`, as: 'fetch', crossorigin: 'anonymous' },
-        { rel: 'preload', href: `${useRuntimeConfig().app.baseURL}data/species/icmbio-brazil-index.json`, as: 'fetch', crossorigin: 'anonymous' },
+        { rel: 'preconnect', href: 'https://api.maptiler.com' },
       ]
     : [],
 })

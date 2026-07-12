@@ -9,7 +9,6 @@ const DB_NAME = 'eg-maps-species'
 const DB_VERSION = 1
 const STORE_NAME = 'datasets'
 
-let dbPromise: Promise<IDBDatabase> | null = null
 
 function openDB(): Promise<IDBDatabase> {
   if (dbPromise) return dbPromise
@@ -76,18 +75,7 @@ function resolveDatasets(dataset?: DatasetParam): string[] {
   return [dataset]
 }
 
-function preloadJSON(baseURL: string, dataset: string) {
-  const href = `${baseURL}data/species/${dataset}.json`
-  if (document.querySelector(`link[href="${href}"][rel="preload"]`)) return
-  console.time(`[perf] preloadJSON ${dataset}`)
-  const link = document.createElement('link')
-  link.rel = 'preload'
-  link.as = 'fetch'
-  link.href = href
-  link.crossOrigin = 'anonymous'
-  document.head.appendChild(link)
-  console.timeEnd(`[perf] preloadJSON ${dataset}`)
-}
+
 
 async function fetchDataset(baseURL: string, ds: string): Promise<Species[]> {
   const label = `[perf] fetchDataset ${ds}`
@@ -123,23 +111,13 @@ async function fetchDataset(baseURL: string, ds: string): Promise<Species[]> {
 // IndexedDB-cached so repeat visits are instant.
 async function fetchSpeciesIndex(baseURL: string, ds: string): Promise<SpeciesIndexItem[]> {
   const cacheKey = `${ds}-index`
-  const label = `[perf] fetchSpeciesIndex ${ds}`
-  console.time(label)
 
-  {
-    const cachedEntry = memCache.get(cacheKey)
-    if (cachedEntry) {
-      console.timeLog(label, 'memCache HIT')
-      console.timeEnd(label)
-      return cachedEntry as SpeciesIndexItem[]
-    }
-  }
+  const cachedEntry = memCache.get(cacheKey)
+  if (cachedEntry) return cachedEntry as SpeciesIndexItem[]
 
   const cached = await idbGet<SpeciesIndexItem[]>(cacheKey)
   if (cached) {
     memCache.set(cacheKey, cached)
-    console.timeLog(label, 'IndexedDB HIT')
-    console.timeEnd(label)
     return cached
   }
 
@@ -147,12 +125,18 @@ async function fetchSpeciesIndex(baseURL: string, ds: string): Promise<SpeciesIn
   const res = await fetch(url)
   if (!res.ok) throw new Error(`Failed to load species index: ${res.status}`)
   const data: SpeciesIndexItem[] = await res.json()
-  console.timeLog(label, `fetch OK (${data.length} items)`)
   memCache.set(cacheKey, data)
 
-  idbSet(cacheKey, data)
-  console.timeEnd(label)
+  deferIdbWrite(cacheKey, data)
   return data
+}
+
+function deferIdbWrite(key: string, value: unknown) {
+  if (typeof requestIdleCallback !== 'undefined') {
+    requestIdleCallback(() => idbSet(key, value), { timeout: 5000 })
+  } else {
+    idbSet(key, value)
+  }
 }
 
 // Fetch species-to-region lookup (185 KB, cached in IDB)
@@ -274,11 +258,6 @@ export function useSpeciesData(dataset?: DatasetParam) {
   }
 
   if (import.meta.client) {
-    // Only preload index files (lightweight). Full datasets are loaded on-demand
-    // when a user clicks a species — no point preloading 32MB+ upfront.
-    for (const ds of datasets) {
-      preloadJSON(baseURL, `${ds}-index`)
-    }
     load()
   }
 
@@ -286,8 +265,9 @@ export function useSpeciesData(dataset?: DatasetParam) {
 }
 
 // Lightweight version that only loads marker index (for large datasets).
-// Loads datasets in priority order (smallest first) so the map renders
-// visible markers as fast as possible instead of waiting for all data.
+// Fires all fetches in parallel so wall-clock time = max(ds1, ds2) instead of
+// sum(ds1, ds2). Results are processed in priority order (smallest dataset first)
+// so the map renders visible markers incrementally.
 export function useSpeciesIndex(dataset?: DatasetParam) {
   const data = ref<SpeciesIndexItem[]>([])
   const loading = ref(true)
@@ -299,24 +279,22 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
   const baseURL = (useRuntimeConfig().app?.baseURL as string) || '/'
 
   async function load() {
-    const loadLabel = '[perf] useSpeciesIndex.load total'
-    console.time(loadLabel)
     loading.value = true
     error.value = null
     const collected: SpeciesIndexItem[] = []
     try {
+      // Sort: smaller/priority datasets first (iucn before icmbio-brazil)
       const sorted = [...datasets].sort((a, b) => {
         if (a === 'iucn') return -1
         if (b === 'iucn') return 1
         return 0
       })
-      for (const ds of sorted) {
-        currentDatasetLabel.value = ds
-        const dsLabel = `[perf] loadDataset ${ds}`
-        console.time(dsLabel)
-        const items = await fetchSpeciesIndex(baseURL, ds)
-        console.timeLog(dsLabel, `pushed ${items.length} items, total=${collected.length + items.length}`)
-        console.timeEnd(dsLabel)
+      // Fire all fetches in parallel immediately
+      const promises = sorted.map(ds => fetchSpeciesIndex(baseURL, ds))
+      // Process results in priority order (smallest datasets resolve first naturally)
+      for (let i = 0; i < sorted.length; i++) {
+        currentDatasetLabel.value = sorted[i]
+        const items = await promises[i]
         collected.push(...items)
         data.value = [...collected]
         loadedChunks.value = collected.length
@@ -327,15 +305,10 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
     } finally {
       loading.value = false
       currentDatasetLabel.value = ''
-      console.timeLog(loadLabel, `final item count=${collected.length}`)
-      console.timeEnd(loadLabel)
     }
   }
 
   if (import.meta.client) {
-    for (const ds of datasets) {
-      preloadJSON(baseURL, `${ds}-index`)
-    }
     load()
   }
 

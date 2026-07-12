@@ -49,7 +49,7 @@ const props = withDefaults(
 );
 
 const quality = useAdaptiveQuality();
-const isLowQuality = computed(() => quality.tier.value === 'low' || quality.tier.value === 'medium');
+const isLowQuality = computed(() => quality.level.value === 'low' || quality.level.value === 'medium');
 
 const effectiveDotSpacing = computed(() => isLowQuality.value ? props.dotSpacing * 2 : props.dotSpacing);
 const effectiveSparkle = computed(() => isLowQuality.value ? false : props.sparkle);
@@ -337,7 +337,7 @@ watch(
 );
 
 watch(
-  () => quality.tier.value,
+  () => quality.level.value,
   async () => {
     await nextTick();
 

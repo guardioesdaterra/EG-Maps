@@ -175,12 +175,13 @@ export function useGrants() {
     }
   }
 
-  async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'pending', notes?: string): Promise<ReviewScrapedResult> {
+  async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'closed' | 'pending', notes?: string, table = 'scraped_grants'): Promise<ReviewScrapedResult> {
     try {
       const actionMap: Record<string, string> = {
         approved: 'approve',
         rejected: 'reject',
         hidden: 'hide',
+        closed: 'close',
         pending: 'show',
       }
       const action = actionMap[decision] || 'reject'
@@ -189,9 +190,8 @@ export function useGrants() {
         body: {
           grant_id: grantId,
           action,
-          table: 'scraped_grants',
+          table,
           notes,
-          // Signal edge function to move grant to `grants` table on approval
           move_to_grants: action === 'approve',
         },
       })

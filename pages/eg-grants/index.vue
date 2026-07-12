@@ -556,11 +556,11 @@ async function refreshGrantsSilent() {
   }
 }
 
-async function handleReviewScraped(grantId: string, decision: string) {
+async function handleReviewScraped(grantId: string, decision: string, table = 'scraped_grants') {
   removingGrants.value = [...removingGrants.value, grantId]
   try {
     const [apiResult] = await Promise.all([
-      apiReviewScraped(grantId, decision as 'approved' | 'hidden' | 'pending'),
+      apiReviewScraped(grantId, decision as 'approved' | 'hidden' | 'closed' | 'pending', undefined, table),
       sleep(700),
     ])
     // Check for API errors

@@ -715,6 +715,7 @@
     "submitBtn": "SUBMIT — FUEL THE MOVEMENT",
     "submittedSuccess": "Your proposal is in! The crew will review it soon. We won't wait — and neither should you.",
     "pending": "Pending",
+    "awaitingReview": "Awaiting Review",
     "approved": "Approved",
     "rejected": "Rejected",
     "closed": "Closed",

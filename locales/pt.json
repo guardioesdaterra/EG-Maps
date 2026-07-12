@@ -705,6 +705,7 @@
     "submitBtn": "ENVIAR — ALIMENTE O MOVIMENTO",
     "submittedSuccess": "Sua proposta foi enviada! A equipe a analisará em breve. Nós não vamos esperar — e você também não deveria.",
     "pending": "Pendente",
+    "awaitingReview": "Aguardando revisão",
     "approved": "Aprovado",
     "rejected": "Rejeitado",
     "closed": "Fechado",

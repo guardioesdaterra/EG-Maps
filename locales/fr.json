@@ -614,6 +614,7 @@
     "submitBtn": "SOUMETTRE — ALIMENTER LE MOUVEMENT",
     "submittedSuccess": "Votre proposition est envoyée ! L'équipe l'examinera bientôt. Nous n'attendrons pas — et vous ne devriez pas non plus.",
     "pending": "En attente",
+    "awaitingReview": "En attente d'examen",
     "approved": "Approuvé",
     "rejected": "Rejeté",
     "closed": "Fermé",

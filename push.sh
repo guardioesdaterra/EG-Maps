@@ -1,1 +1,1 @@
-npm run supabase:deploy && git add . && git commit -m 'update' && git push
+npm run supabase:deploy || true; git add . && git diff --cached --quiet || git commit -m 'update' && git push

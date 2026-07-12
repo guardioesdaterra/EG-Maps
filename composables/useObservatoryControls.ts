@@ -191,7 +191,13 @@ export function useObservatoryControls(): ObservatoryControls {
         }
       }
     }
-    debouncedFilter()
+    // Only trigger data filter when toggling a category that affects point visibility.
+    // Non-category layers (polygons, water, heatmap, cultural, network, sites, cities,
+    // protected_ti, protected_quilombo, overlaps) are pure layer-visibility — they
+    // don't change which features appear in filteredPoints.
+    if (key in RARE_EARTH_CATEGORIES) {
+      debouncedFilter()
+    }
   }
 
   function toggleEnterpriseLayer() {
@@ -421,6 +427,8 @@ export function useObservatoryControls(): ObservatoryControls {
   // ---- derived points data ----
   const filteredPoints = ref<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] })
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
+  let lastFilterCriteria = ''
+  let lastFilterResult: GeoJSON.FeatureCollection | null = null
 
   function debouncedFilter() {
     if (debounceTimer) clearTimeout(debounceTimer)
@@ -431,6 +439,12 @@ export function useObservatoryControls(): ObservatoryControls {
     const term = searchTerm.value.toLowerCase().trim()
     const catKeys = Object.keys(RARE_EARTH_CATEGORIES) as string[]
     const visKeys = Object.entries(layerVis.value).filter(([k, v]) => v && catKeys.includes(k)).map(([k]) => k)
+    // Build a stable criteria string to detect actual changes
+    const criteria = JSON.stringify({ term, yearMin: yearMin.value, yearMax: yearMax.value, phases: [...selectedPhases.value].sort(), sobDemanda: sobDemandaOnly.value, visKeys: visKeys.sort() })
+    if (criteria === lastFilterCriteria && lastFilterResult) {
+      return
+    }
+    lastFilterCriteria = criteria
     const allFeaturesTyped = allFeatures.value as Array<{ c: string; n: string; s: string; u: string; p: string; f: string; lo: number; la: number; net?: string; y?: number; dsprocesso?: string }>
     const filtered = allFeaturesTyped.filter((d) => {
       if (!visKeys.includes(d.c)) return false
@@ -447,7 +461,7 @@ export function useObservatoryControls(): ObservatoryControls {
       return true
     })
     filteredCount.value = filtered.length
-    filteredPoints.value = {
+    const result: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
       features: filtered.map((d, i) => ({
         type: 'Feature',
@@ -456,6 +470,8 @@ export function useObservatoryControls(): ObservatoryControls {
         geometry: { type: 'Point', coordinates: [d.lo, d.la] },
       })),
     }
+    lastFilterResult = result
+    filteredPoints.value = result
   }
 
   watch(pointsData, () => {

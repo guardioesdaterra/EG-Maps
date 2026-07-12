@@ -32,16 +32,19 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
   const { combinedData: culturalAgentsCombined, sourceCounts: culturalAgentCounts, load: loadCulturalAgents, submitPin: submitCommunityPin } = useCulturalAgentsData(baseURL)
 
   // Cast data to match component prop types
-  const pointsData = computed(() => (_rawPointsData.value ?? { type: 'FeatureCollection', features: [] } as GeoJSON.FeatureCollection))
+  const EMPTY_FC: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] }
+  const pointsData = computed(() => _rawPointsData.value ?? EMPTY_FC)
   const polygonsData = computed(() => _rawPolygonsData.value)
   const protectedData = computed(() => _rawProtectedData.value)
   const waterData = computed(() => _rawWaterData.value)
   const culturalData = computed<GeoJSON.FeatureCollection | undefined>(() => {
     if (!_rawCulturalData.value && !culturalAgentsCombined.value?.features?.length) return undefined
-    const base = _rawCulturalData.value ?? { type: 'FeatureCollection', features: [] } as GeoJSON.FeatureCollection
+    const base = _rawCulturalData.value ?? EMPTY_FC
     const agents = culturalAgentsCombined.value?.features ?? []
     if (!agents.length) return _rawCulturalData.value
-    return { ...base, features: [...base.features, ...agents] }
+    // Only create new object when agents actually exist (avoids unnecessary watcher triggers)
+    const merged = base.features.length ? [...base.features, ...agents] : agents
+    return { ...base, features: merged }
   })
 
   // Wire data into composable — refs are compatible types (Ref<T|undefined> matches Ref<T> at runtime)

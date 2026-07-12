@@ -58,7 +58,6 @@ export function useMapBase(config: MapBaseConfig) {
   const baseURL = useRuntimeConfig().app.baseURL
   const isMobile = useMediaQuery('(max-width: 768px)')
   const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
-  const MAP_STYLE = getMapStyle(MAPTILER_API_KEY)
 
   const quality = useAdaptiveQuality()
 
@@ -430,14 +429,17 @@ export function useMapBase(config: MapBaseConfig) {
       const isRee = activeDataset.value === 'vulcan-observatory'
       const qs = quality.settings.value
 
+      const mapStyle = getMapStyle(MAPTILER_API_KEY, qs.tileResolution)
+      const tileMaxZoom = qs.tileResolution === 'low' ? 14 : qs.tileResolution === 'medium' ? 17 : 22
       map = new maplibregl.Map({
         container: mapContainerRef.value,
-        style: MAP_STYLE,
+        style: mapStyle,
         zoom: isRee ? (isGlobe ? 4.2 : 9.5) : isMobile.value ? (isGlobe ? 1.5 : 1.8) : (isGlobe ? 2.5 : 3),
         center: isRee ? (isGlobe ? [-48, -15] : [-46.533, -21.914]) : (isGlobe ? [0, 20] : [0, 0]),
         attributionControl: false,
         renderWorldCopies: !isGlobe,
         fadeDuration: 100,
+        maxZoom: tileMaxZoom,
         maxTileCacheSize: qs.maxTileCacheSize,
         maxTileCacheZoomLevels: qs.maxTileCacheZoomLevels,
         antialias: qs.antialiasing,
@@ -516,7 +518,7 @@ export function useMapBase(config: MapBaseConfig) {
 
       function tryFallback() {
         if (usedFallback || !map) return
-        if (!MAP_STYLE.includes('maptiler.com')) return
+        if (!mapStyle.includes('maptiler.com')) return
         usedFallback = true
         console.warn('MapTiler style failed, falling back to demotiles style')
         map.setStyle(DEMOTILES_STYLE)

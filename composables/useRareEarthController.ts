@@ -54,6 +54,7 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
   let flyToHighlightTimer: ReturnType<typeof setTimeout> | null = null
   let waterCleanup: (() => void) | null = null
   let culturalCleanup: (() => void) | null = null
+  let layersSetup = false
 
   function addFlyToHighlight(lng: number, lat: number) {
     const m = map.value
@@ -82,6 +83,7 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
   }
 
   function setupLayers() {
+    if (layersSetup) return
     const m = map.value
     if (!m) return
     if (!m.isStyleLoaded()) return
@@ -95,6 +97,7 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       networkFeatures: buildEnterpriseNetworkLines(p.rareEarthPoints),
       popup: options.popup,
     })
+    layersSetup = true
 
     // Setup water layers if data is available
     if (p.rareEarthWater?.features?.length && !waterCleanup) {

@@ -475,7 +475,12 @@ export function useMapBase(config: MapBaseConfig) {
         if (activeDataset.value === 'vulcan-observatory') {
           setupRareEarthLayers()
         }
-        rebuildMarkers()
+        // Skip rebuild if species dataset has no index data yet —
+        // the watcher on speciesIndexData will rebuild when data arrives
+        const shouldRebuild = activeDataset.value !== 'endangered-species' || speciesIndexData.value.length > 0
+        if (shouldRebuild) {
+          rebuildMarkers()
+        }
         console.timeEnd('[perf] initMap → rebuildMarkers')
         console.time('[perf] initMap → connections+hexGrid')
         const qNow = quality.settings.value

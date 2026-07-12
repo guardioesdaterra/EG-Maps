@@ -9,6 +9,7 @@ const DB_NAME = 'eg-maps-species'
 const DB_VERSION = 1
 const STORE_NAME = 'datasets'
 
+let dbPromise: Promise<IDBDatabase> | null = null
 
 function openDB(): Promise<IDBDatabase> {
   if (dbPromise) return dbPromise
@@ -283,20 +284,18 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
     error.value = null
     const collected: SpeciesIndexItem[] = []
     try {
-      // Sort: smaller/priority datasets first (iucn before icmbio-brazil)
       const sorted = [...datasets].sort((a, b) => {
         if (a === 'iucn') return -1
         if (b === 'iucn') return 1
         return 0
       })
-      // Fire all fetches in parallel immediately
       const promises = sorted.map(ds => fetchSpeciesIndex(baseURL, ds))
-      // Process results in priority order (smallest datasets resolve first naturally)
       for (let i = 0; i < sorted.length; i++) {
         currentDatasetLabel.value = sorted[i]
         const items = await promises[i]
         collected.push(...items)
-        data.value = [...collected]
+        // Assign once per dataset resolution (not per item) — avoids O(n²) copies
+        data.value = collected
         loadedChunks.value = collected.length
       }
     } catch (e) {

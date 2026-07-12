@@ -172,6 +172,7 @@ if (props.defaultDataset === 'endangered-species') {
     }
   })
   watch(speciesIdx, (val) => {
+    // Only write data when non-empty — avoids wasted rebuild with 0 features
     if (val.length > 0) {
       ctx.speciesIndexData.value = val
     }

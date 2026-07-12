@@ -58,24 +58,7 @@
     </div>
     <p v-else class="gdash-signin-hint">{{ t('grantsPortal.signInDashboardDesc') }}</p>
 
-    <!-- ── Manager: scraped-grant status sub-filters ── -->
-    <div v-if="user && isManager && activeTab === 'tabPending'" class="gdash-subtabs">
-      <button
-        v-for="s in (['pending', 'open', 'closed'] as const)"
-        :key="s"
-        class="gdash-subtab"
-        :class="{ active: managerSubTab === s }"
-        @click="$emit('update:managerSubTab', s)"
-      >{{ s === 'pending' ? t('grantsPortal.awaitingReview') : s === 'open' ? t('grantsPortal.approved') : t('grantsPortal.closed') }}</button>
-      <button
-        class="gdash-subtab ml-auto"
-        :class="{ active: showHistory }"
-        @click="$emit('toggle:showHistory')"
-      >
-        <svg class="inline-block w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        {{ t('grantsPortal.history') }}
-      </button>
-    </div>
+
 
     <!-- ── Grant list ────────────────────────────────── -->
     <div class="gdash-list">
@@ -235,7 +218,6 @@ const props = defineProps<{
   openCount: number
   closedCount: number
   activeTab: string
-  managerSubTab: string
   showHistory: boolean
   searchQuery: string
   isLoading: boolean
@@ -253,7 +235,6 @@ defineEmits<{
   signIn: []
   signOut: []
   'update:activeTab': [tab: string]
-  'update:managerSubTab': [sub: string]
   'update:searchQuery': [q: string]
   'toggle:showHistory': []
   vote: [id: string, stars: number]

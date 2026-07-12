@@ -19,22 +19,24 @@
     </div>
     <GrantsAuth v-if="!isEmbed && sessionReady" :user="user" :is-manager="isManager" @sign-in="signIn" @sign-out="handleSignOut" />
 
-    <!-- Crew membership check popup -->
+    <!-- Crew membership check popup (stepping stone to signup modal) -->
     <Transition name="modal-fade">
-      <div v-if="showCrewPopup" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" :style="{ zIndex: 'var(--z-confirm)' }" @click.self="dismissCrewPopup">
+      <div v-if="showCrewPopup && !showCrewSignup" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" :style="{ zIndex: 'var(--z-confirm)' }" @click.self="dismissCrewPopup">
         <div class="bg-[#111] border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl text-center">
-          <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-yellow-400/10 flex items-center justify-center">
-            <svg class="w-6 h-6 text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-green-500/10 flex items-center justify-center">
+            <svg class="w-6 h-6 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           </div>
           <h3 class="text-white font-bold text-sm mb-2">{{ t('grantsPortal.crewCheckTitle') }}</h3>
           <p class="text-white/50 text-xs mb-5">{{ t('grantsPortal.crewCheckDesc') }}</p>
           <div class="flex flex-col gap-2">
-            <a href="https://www.earthguardians.org/crews-sign-up-1" target="_blank" class="w-full px-3 py-2 text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors text-center" @click="dismissCrewPopup">{{ t('grantsPortal.signUpAsCrew') }}</a>
+            <button class="w-full px-3 py-2 text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors" @click="openCrewSignup">{{ t('grantsPortal.signUpAsCrew') }}</button>
             <button class="w-full px-3 py-2 text-xs font-semibold text-white/60 hover:text-white rounded-lg transition-colors" @click="dismissCrewPopup">{{ t('grantsPortal.continueAsViewer') }}</button>
           </div>
         </div>
       </div>
     </Transition>
+
+    <CrewSignupModal :show="showCrewSignup" :user-email="user?.email" @close="closeCrewSignup" @registered="onCrewRegistered" />
 
     <!-- Sign-out confirmation dialog -->
     <Transition name="modal-fade">
@@ -241,6 +243,7 @@ import GrantDetailModal from '~/components/grants/GrantDetailModal.vue'
 import GrantEditModal from '~/components/grants/GrantEditModal.vue'
 import RegistryModal from '~/components/grants/RegistryModal.vue'
 import GrantsFooter from '~/components/grants/GrantsFooter.vue'
+import CrewSignupModal from '~/components/grants/CrewSignupModal.vue'
 import GlobeView from '~/components/GlobeView.vue'
 import { useSupabase } from '~/composables/useSupabase'
 
@@ -273,6 +276,7 @@ const impactStats = computed(() => [
 const { user, isManager, signIn, signOut, sessionReady } = useSupabaseAuth()
 const confirmSignOut = ref(false)
 const showCrewPopup = ref(false)
+const showCrewSignup = ref(false)
 const viewerDismissed = ref(false)
 
 const isEmbed = computed(() => {
@@ -671,6 +675,20 @@ function dismissCrewPopup() {
   viewerDismissed.value = true
 }
 
+function openCrewSignup() {
+  showCrewPopup.value = false
+  showCrewSignup.value = true
+}
+
+function closeCrewSignup() {
+  showCrewSignup.value = false
+}
+
+function onCrewRegistered(_memberId: string) {
+  showCrewSignup.value = false
+  viewerDismissed.value = true
+}
+
 async function checkCrewMembership() {
   // Managers auto-bypass crew check
   if (isManager.value) return
@@ -685,7 +703,11 @@ async function checkCrewMembership() {
 }
 
 watch(() => user.value?.email, (email) => {
-  if (email && !viewerDismissed.value) {
+  if (!email || viewerDismissed.value) return
+  const route = useRoute()
+  if (route.query.signup === '1') {
+    openCrewSignup()
+  } else {
     checkCrewMembership()
   }
 })
@@ -699,6 +721,10 @@ watch(activePortalTab, (tab) => {
 onMounted(async () => {
   await Promise.all([loadGrants(), loadStats(), loadScrapedGrants()])
   window.addEventListener('scroll', onPageScroll, { passive: true })
+  const route = useRoute()
+  if (route.query.signup === '1' && user.value?.email) {
+    openCrewSignup()
+  }
 })
 
 function onGlobeReady() {

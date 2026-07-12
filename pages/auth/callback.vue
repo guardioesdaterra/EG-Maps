@@ -31,7 +31,7 @@ const error = ref('')
 watch(sessionReady, async (ready) => {
   if (!ready) return
 
-  const SIGN_UP_URL = 'https://www.earthguardians.org/crews-sign-up-1'
+  const SIGN_UP_URL = '/eg-grants?signup=1'
 
   // Clean PKCE params from URL after exchange
   if (window.location.search || window.location.hash) {
@@ -44,41 +44,33 @@ watch(sessionReady, async (ready) => {
     return
   }
 
-  // No session after PKCE exchange — user might have arrived here
-  // without an auth code (e.g. direct navigation)
   error.value = 'No authorization code received.'
 }, { immediate: true })
 
 async function checkMembershipAndRedirect(signUpUrl: string) {
   const { data: { user } } = await client.auth.getUser()
   if (!user?.email) {
-    window.location.href = signUpUrl
+    navigateTo(signUpUrl)
     return
   }
 
-  // Server-verified manager check via edge function (unspoofable)
   let isManager = false
   try {
-    const { data: mgrData, error: mgrErr } = await client.functions.invoke('is-manager', {
-      method: 'GET',
-    })
+    const { data: mgrData, error: mgrErr } = await client.functions.invoke('is-manager', { method: 'GET' })
     if (!mgrErr && mgrData?.isManager === true) {
       isManager = true
     }
-  } catch {
-    // Fall through to crew check below
-  }
+  } catch {}
 
   if (isManager) {
     navigateTo('/eg-grants')
     return
   }
 
-  // Crew membership check via edge function
-  const { data: result, error: fnError } = await client.functions.invoke('crew-sync')
+  const { data: result, error: fnError } = await client.functions.invoke('crew-sync?action=check')
 
   if (fnError || !result?.authorized) {
-    window.location.href = signUpUrl
+    navigateTo(signUpUrl)
     return
   }
 

@@ -1,8 +1,10 @@
-import { ref, computed, watch, onMounted, onUnmounted, type Ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
 import { useDeviceCapabilities, type DeviceTier } from '@/composables/useDeviceCapabilities'
 import { usePerformance } from '@/composables/usePerformance'
+import { QUALITY_PRESETS as BASE_PRESETS } from '@/lib/constants'
+import type { QualityLevel } from '@/lib/constants'
 
-export type QualityLevel = 'low' | 'medium' | 'high' | 'ultra'
+export type { QualityLevel }
 
 export interface QualitySettings {
   level: QualityLevel
@@ -27,95 +29,31 @@ export interface QualitySettings {
   autoRotate: boolean
 }
 
-const QUALITY_PRESETS: Record<QualityLevel, QualitySettings> = {
-  low: {
-    level: 'low',
-    tileResolution: 'low',
-    hexGridScale: 0.5,
-    particleMaxCount: 0,
-    particleFps: 15,
-    particleTrailLength: 0,
-    particleShadowBlur: 0,
-    particleSpawnRate: 0,
-    connectionLineBlur: 0,
-    showConnections: false,
-    showParticles: false,
-    showHexGrid: false,
-    maxMarkerCount: 200,
-    maxTileCacheSize: 50,
-    maxTileCacheZoomLevels: 2,
-    antialiasing: false,
-    shadowQuality: 'off',
-    dprCap: 1,
-    starCount: 0,
-    autoRotate: false,
-  },
-  medium: {
-    level: 'medium',
-    tileResolution: 'medium',
-    hexGridScale: 0.75,
-    particleMaxCount: 20,
-    particleFps: 20,
-    particleTrailLength: 3,
-    particleShadowBlur: 2,
-    particleSpawnRate: 0.2,
-    connectionLineBlur: 1.5,
-    showConnections: true,
-    showParticles: true,
-    showHexGrid: true,
-    maxMarkerCount: 500,
-    maxTileCacheSize: 100,
-    maxTileCacheZoomLevels: 3,
-    antialiasing: false,
-    shadowQuality: 'low',
-    dprCap: 1.5,
-    starCount: 40,
-    autoRotate: true,
-  },
-  high: {
-    level: 'high',
-    tileResolution: 'high',
-    hexGridScale: 1,
-    particleMaxCount: 60,
-    particleFps: 30,
-    particleTrailLength: 5,
-    particleShadowBlur: 4,
-    particleSpawnRate: 0.35,
-    connectionLineBlur: 3,
-    showConnections: true,
-    showParticles: true,
-    showHexGrid: true,
-    maxMarkerCount: 2000,
-    maxTileCacheSize: 200,
-    maxTileCacheZoomLevels: 5,
-    antialiasing: true,
-    shadowQuality: 'high',
-    dprCap: 2,
-    starCount: 80,
-    autoRotate: true,
-  },
-  ultra: {
-    level: 'ultra',
-    tileResolution: 'high',
-    hexGridScale: 1,
-    particleMaxCount: 90,
-    particleFps: 36,
-    particleTrailLength: 7,
-    particleShadowBlur: 6,
-    particleSpawnRate: 0.45,
-    connectionLineBlur: 5.6,
-    showConnections: true,
-    showParticles: true,
-    showHexGrid: true,
-    maxMarkerCount: 5000,
-    maxTileCacheSize: 300,
-    maxTileCacheZoomLevels: 6,
-    antialiasing: true,
-    shadowQuality: 'high',
-    dprCap: 3,
-    starCount: 120,
-    autoRotate: true,
-  },
+// Build full QualitySettings from base presets (adds computed fields)
+function buildSettings(level: QualityLevel): QualitySettings {
+  const base = BASE_PRESETS[level]
+  return {
+    level,
+    tileResolution: level === 'low' ? 'low' : level === 'medium' ? 'medium' : 'high',
+    hexGridScale: base.hexScale,
+    particleMaxCount: base.particleMaxCount,
+    particleFps: base.particleFps,
+    particleTrailLength: base.particleTrailLength,
+    particleShadowBlur: base.particleShadowBlur,
+    particleSpawnRate: base.particleSpawnRate,
+    connectionLineBlur: level === 'low' ? 0 : level === 'medium' ? 1.5 : level === 'high' ? 3 : 5.6,
+    showConnections: base.showConnections,
+    showParticles: base.showParticles,
+    showHexGrid: base.showHexGrid,
+    maxMarkerCount: base.maxMarkerCount,
+    maxTileCacheSize: base.maxTileCacheSize,
+    maxTileCacheZoomLevels: base.maxTileCacheZoomLevels,
+    antialiasing: level === 'high' || level === 'ultra',
+    shadowQuality: level === 'low' ? 'off' : level === 'medium' ? 'low' : 'high',
+    dprCap: base.dprCap,
+    starCount: base.starCount,
+    autoRotate: base.autoRotate,
+  }
 }
 
 const TIER_TO_QUALITY: Record<DeviceTier, QualityLevel> = {
@@ -125,56 +63,93 @@ const TIER_TO_QUALITY: Record<DeviceTier, QualityLevel> = {
   ultra: 'ultra',
 }
 
-// Singleton shared state
+// ── Singleton shared state ──
 const currentLevel = ref<QualityLevel>('high')
-const currentSettings = ref<QualitySettings>({ ...QUALITY_PRESETS.high })
+const currentSettings = ref<QualitySettings>(buildSettings('high'))
 const isAutoAdjusting = ref(true)
-let adjustTimer: ReturnType<typeof setTimeout> | null = null
+let adjustTimer: ReturnType<typeof setInterval> | null = null
 let lastAdjustTime = 0
-const ADJUST_COOLDOWN_MS = 5000
+const ADJUST_COOLDOWN_MS = 2000
 
-function computeQualityFromMetrics(
-  tier: DeviceTier,
-  fps: number,
-  avgFps: number,
-  isMemoryPressure: boolean,
-  jankCount: number,
-  isThrottled: boolean,
-): QualityLevel {
-  let base = TIER_TO_QUALITY[tier]
+// Weak ref to performance metrics (set during init)
+let perfFps: Ref<number> | null = null
+let perfFpsStddev: Ref<number> | null = null
+let perfFrameTimeP95: Ref<number> | null = null
+let perfIsMemoryPressure: Ref<boolean> | null = null
+let perfJankCount: Ref<number> | null = null
+let perfIsThrottled: Ref<boolean> | null = null
+let perfIsIdle: Ref<boolean> | null = null
+let deviceTier: DeviceTier = 'high'
+let devicePrefersReducedMotion = false
+let devicePrefersReducedData = false
+let deviceSaveData = false
+let deviceConnectionDownlink = 10
 
-  // Downgrade if performance is poor
-  if (fps < 24 || isThrottled) {
-    base = 'low'
-  } else if (fps < 40 || avgFps < 45) {
-    base = base === 'ultra' ? 'high' : base === 'high' ? 'medium' : base
+function computeQualityFromMetrics(): QualityLevel {
+  const fps = perfFps?.value ?? 60
+  const stddev = perfFpsStddev?.value ?? 0
+  const p95 = perfFrameTimeP95?.value ?? 16.67
+  const memPressure = perfIsMemoryPressure?.value ?? false
+  const jank = perfJankCount?.value ?? 0
+  const throttled = perfIsThrottled?.value ?? false
+
+  // Start from device tier
+  let level: QualityLevel = TIER_TO_QUALITY[deviceTier]
+
+  // ── Hard overrides (immediate downgrade to low) ──
+  if (throttled || fps < 15 || (p95 > 64 && fps < 30)) {
+    return 'low'
   }
 
-  // Downgrade on memory pressure
-  if (isMemoryPressure) {
-    if (base === 'ultra') base = 'high'
-    else if (base === 'high') base = 'medium'
+  // ── User preference overrides ──
+  if (devicePrefersReducedMotion) {
+    return level === 'ultra' ? 'high' : level === 'high' ? 'medium' : 'low'
+  }
+  if (devicePrefersReducedData || deviceSaveData) {
+    if (level === 'ultra') level = 'high'
+    if (level === 'high') level = 'medium'
   }
 
-  // Downgrade on excessive jank (more than 30 janks in the window)
-  if (jankCount > 30) {
-    if (base === 'ultra') base = 'high'
-    else if (base === 'high') base = 'medium'
+  // ── Network-aware: throttle on slow connections ──
+  if (deviceConnectionDownlink < 1) {
+    if (level === 'ultra') level = 'high'
+    if (level === 'high') level = 'medium'
   }
 
-  // Upgrade if we have headroom
-  if (fps > 55 && avgFps > 50 && !isMemoryPressure && jankCount < 5) {
-    if (base === 'low') base = 'medium'
-    else if (base === 'medium') base = 'high'
+  // ── Performance-based downgrade ──
+  if (fps < 30 || p95 > 40) {
+    level = level === 'ultra' ? 'high' : level === 'high' ? 'medium' : level === 'medium' ? 'low' : 'low'
+  } else if (fps < 45 || p95 > 28) {
+    level = level === 'ultra' ? 'high' : level === 'high' ? 'medium' : level
   }
 
-  return base
+  // ── Frame time variance penalty ──
+  if (stddev > 15 && level !== 'low') {
+    level = level === 'ultra' ? 'high' : level === 'high' ? 'medium' : level
+  }
+
+  // ── Memory pressure penalty ──
+  if (memPressure) {
+    level = level === 'ultra' ? 'high' : level === 'high' ? 'medium' : level
+  }
+
+  // ── Jank accumulation penalty ──
+  if (jank > 50) {
+    level = level === 'ultra' ? 'high' : level === 'high' ? 'medium' : level
+  }
+
+  // ── Upgrade if we have headroom ──
+  if (fps > 55 && stddev < 5 && p95 < 20 && !memPressure && jank < 10) {
+    level = level === 'low' ? 'medium' : level === 'medium' ? 'high' : level
+  }
+
+  return level
 }
 
 function applyLevel(level: QualityLevel) {
   if (currentLevel.value === level) return
   currentLevel.value = level
-  currentSettings.value = { ...QUALITY_PRESETS[level] }
+  currentSettings.value = buildSettings(level)
 }
 
 function adjust() {
@@ -182,28 +157,11 @@ function adjust() {
   if (now - lastAdjustTime < ADJUST_COOLDOWN_MS) return
   lastAdjustTime = now
 
-  // Import dynamic refs — these are from the shared singletons
-  const fps = SHARED_FPS_REF.value
-  const avgFps = SHARED_AVG_FPS_REF.value
-  const memPressure = SHARED_MEM_PRESSURE_REF.value
-  const jank = SHARED_JANK_REF.value
-  const throttled = SHARED_THROTTLED_REF.value
-  const tier = SHARED_TIER_REF.value
-
-  const newLevel = computeQualityFromMetrics(tier, fps, avgFps, memPressure, jank, throttled)
-  applyLevel(newLevel)
+  applyLevel(computeQualityFromMetrics())
 }
 
-// These refs are set once during init from the external singletons
-let SHARED_FPS_REF: Ref<number> = { value: 60 } as Ref<number>
-let SHARED_AVG_FPS_REF: Ref<number> = { value: 60 } as Ref<number>
-let SHARED_MEM_PRESSURE_REF: Ref<boolean> = { value: false } as Ref<boolean>
-let SHARED_JANK_REF: Ref<number> = { value: 0 } as Ref<number>
-let SHARED_THROTTLED_REF: Ref<boolean> = { value: false } as Ref<boolean>
-let SHARED_TIER_REF: Ref<DeviceTier> = { value: 'high' } as Ref<DeviceTier>
-
 /**
- * Adaptive quality controller — monitors FPS/memory and auto-adjusts
+ * Adaptive quality controller — monitors FPS/memory/device and auto-adjusts
  * rendering quality to maintain smooth 60fps on all devices.
  *
  * Singleton: first call initializes, subsequent calls share state.
@@ -213,32 +171,35 @@ export function useAdaptiveQuality() {
   const perf = usePerformance()
 
   onMounted(() => {
-    // Link shared refs
-    SHARED_FPS_REF = perf.fps
-    SHARED_AVG_FPS_REF = perf.avgFps
-    SHARED_MEM_PRESSURE_REF = perf.isMemoryPressure
-    SHARED_JANK_REF = perf.jankCount
-    SHARED_THROTTLED_REF = perf.isThrottled
+    // Link performance refs
+    perfFps = perf.fps
+    perfFpsStddev = perf.fpsStddev
+    perfFrameTimeP95 = perf.frameTimeP95
+    perfIsMemoryPressure = perf.isMemoryPressure
+    perfJankCount = perf.jankCount
+    perfIsThrottled = perf.isThrottled
+    perfIsIdle = perf.isIdle
 
-    // Set initial quality from device capabilities
+    // Read device capabilities
     if (capabilities.value) {
-      SHARED_TIER_REF = { value: capabilities.value.tier } as Ref<DeviceTier>
-      applyLevel(TIER_TO_QUALITY[capabilities.value.tier])
+      deviceTier = capabilities.value.tier
+      devicePrefersReducedMotion = capabilities.value.prefersReducedMotion
+      devicePrefersReducedData = capabilities.value.prefersReducedData
+      deviceSaveData = capabilities.value.saveData
+      deviceConnectionDownlink = capabilities.value.connectionDownlink
+      applyLevel(TIER_TO_QUALITY[deviceTier])
     }
 
     // Start adaptive loop
     if (!adjustTimer) {
       adjustTimer = setInterval(() => {
         if (isAutoAdjusting.value) adjust()
-      }, 2000)
+      }, ADJUST_COOLDOWN_MS)
     }
   })
 
   onUnmounted(() => {
-    if (adjustTimer) {
-      clearInterval(adjustTimer)
-      adjustTimer = null
-    }
+    // Don't tear down singleton timer on individual component unmount
   })
 
   const settings = computed(() => currentSettings.value)
@@ -253,22 +214,12 @@ export function useAdaptiveQuality() {
     adjust()
   }
 
-  function getTileUrl(style: string, apiKey: string): string {
-    const res = currentSettings.value.tileResolution
-    if (res === 'low') {
-      // Use a lighter style or add source-specific resolution params
-      return style
-    }
-    return style
-  }
-
   return {
     level: currentLevel,
     settings,
     isAutoAdjusting,
     setManual,
     enableAuto,
-    getTileUrl,
-    QUALITY_PRESETS,
+    QUALITY_PRESETS: BASE_PRESETS,
   }
 }

@@ -55,13 +55,11 @@ function buildProjectConnectionFeatures(projects: ProjectData[], isMobile: boole
   const edgeKeys = new Set<string>()
   const features: MapConnectionFeature[] = []
 
-  // Pre-compute colors to avoid repeated calls
   const colorCache = new Map<ProjectData, string>()
   for (const p of projectsToProcess) {
     colorCache.set(p, getProjectColorByBeneficiaries(p.direct_beneficiaries, p.indirect_beneficiaries))
   }
 
-  // Group valid projects by color for O(N) target lookup
   const byColor = new Map<string, string[]>()
   for (const p of projectsToProcess) {
     if (!isValidCoordinate(p.latitude, p.longitude)) continue
@@ -111,7 +109,6 @@ function buildSpeciesConnectionFeatures(species: SpeciesLike[], isMobile: boolea
   const edgeKeys = new Set<string>()
   const features: MapConnectionFeature[] = []
 
-  // Group species by taxonomic group for O(N) lookup per group
   const byGroup = new Map<string, string[]>()
   for (const s of speciesToProcess) {
     if (!isValidCoordinate(s.lat, s.lng)) continue
@@ -195,7 +192,6 @@ function buildCrewConnectionFeatures(locations: CrewLocationLike[], isMobile: bo
       const source = processLocs[i]
       const sourceKey = `${source.name}|${source.city}`
 
-      // Connect to 1-2 random locations in the same region
       const targets = processLocs.filter((_, j) => {
         if (j === i) return false
         const targetKey = `${processLocs[j].name}|${processLocs[j].city}`
@@ -261,20 +257,23 @@ function createConnectionFeature({
   }
 }
 
-export function syncMapConnectionLayers(map: MapLibreMap, features: MapConnectionFeature[]) {
+export function syncMapConnectionLayers(
+  map: MapLibreMap,
+  features: MapConnectionFeature[],
+  qualityBlur?: number,
+) {
   removeMapConnectionLayers(map)
 
   if (features.length === 0) return
-
   if (!map.isStyleLoaded()) return
 
   map.addSource(CONNECTION_SOURCE_ID, {
     type: 'geojson',
-    data: {
-      type: 'FeatureCollection',
-      features,
-    },
+    data: { type: 'FeatureCollection', features },
   })
+
+  // Use quality-adjusted blur to reduce GPU cost on low-end devices
+  const glowBlur = qualityBlur ?? 5.6
 
   map.addLayer({
     id: CONNECTION_GLOW_LAYER_ID,
@@ -289,8 +288,8 @@ export function syncMapConnectionLayers(map: MapLibreMap, features: MapConnectio
       ],
       'line-opacity': ['*', ['get', 'opacity'], 0.55],
       'line-blur': ['interpolate', ['linear'], ['zoom'],
-        5, 2.8,
-        12, 5.6,
+        5, glowBlur * 0.5,
+        12, glowBlur,
       ],
     },
   })
@@ -318,6 +317,38 @@ export function removeMapConnectionLayers(map: MapLibreMap) {
   if (map.getSource(CONNECTION_SOURCE_ID)) map.removeSource(CONNECTION_SOURCE_ID)
 }
 
+// ── Circular buffer for particle trails (O(1) push/shift) ──
+class CircularBuffer<T> {
+  private buffer: T[]
+  private head = 0
+  private size = 0
+  private capacity: number
+
+  constructor(capacity: number) {
+    this.capacity = capacity
+    this.buffer = new Array(capacity)
+  }
+
+  push(item: T): void {
+    this.buffer[(this.head + this.size) % this.capacity] = item
+    if (this.size < this.capacity) {
+      this.size++
+    } else {
+      this.head = (this.head + 1) % this.capacity
+    }
+  }
+
+  forEach(cb: (item: T, index: number) => void): void {
+    for (let i = 0; i < this.size; i++) {
+      cb(this.buffer[(this.head + i) % this.capacity], i)
+    }
+  }
+
+  get length(): number { return this.size }
+
+  clear(): void { this.size = 0; this.head = 0 }
+}
+
 interface Particle {
   from: [number, number]
   control: [number, number]
@@ -327,7 +358,7 @@ interface Particle {
   size: number
   color: string
   group?: string
-  trail: { x: number; y: number }[]
+  trail: CircularBuffer<{ x: number; y: number }>
 }
 
 interface ParticleSystemOptions {
@@ -341,6 +372,7 @@ interface ParticleSystemOptions {
 export interface MapParticleSystem {
   start: () => void
   stop: () => void
+  updateQuality: (config: ParticleQualityConfig) => void
 }
 
 export interface ParticleQualityConfig {
@@ -357,38 +389,37 @@ export function createMapParticleSystem({
   getFeatures,
   isMobile,
   zIndex = 2,
-  quality,
+  quality: initialQuality,
 }: ParticleSystemOptions & { quality?: ParticleQualityConfig }): MapParticleSystem {
   let particleCanvas: HTMLCanvasElement | null = null
   let particleAnimationFrame: number | null = null
   let particles: Particle[] = []
   let activeGroup: string | null = null
-  let groupChangeTimer: ReturnType<typeof setTimeout> | null = null
   let cancelled = false
+
+  // Mutable quality config — can be updated at runtime
+  let quality = { ...initialQuality }
 
   function stop() {
     cancelled = true
-    if (particleAnimationFrame) {
-      cancelAnimationFrame(particleAnimationFrame)
-      particleAnimationFrame = null
-    }
-    if (groupChangeTimer) {
-      clearTimeout(groupChangeTimer)
-      groupChangeTimer = null
-    }
+    if (particleAnimationFrame) { cancelAnimationFrame(particleAnimationFrame); particleAnimationFrame = null }
     particles = []
     activeGroup = null
-    if (particleCanvas?.parentNode) {
-      particleCanvas.parentNode.removeChild(particleCanvas)
-    }
+    if (particleCanvas?.parentNode) particleCanvas.parentNode.removeChild(particleCanvas)
     particleCanvas = null
+  }
+
+  function updateQuality(config: ParticleQualityConfig) {
+    quality = { ...quality, ...config }
   }
 
   function spawnParticle() {
     const features = getFeatures()
     const mobile = isMobile()
-    const maxParticles = quality?.particleMaxCount ?? (mobile ? 45 : 90)
-    if (!features.length || particles.length > maxParticles) return
+    const maxParticles = quality.particleMaxCount ?? (mobile ? 45 : 90)
+    if (maxParticles <= 0 || !features.length || particles.length >= maxParticles) return
+
+    const trailLen = quality.particleTrailLength ?? (mobile ? 4 : 7)
 
     const speciesFeatures = features.filter(f => f.properties?.dataset === 'endangered-species')
     if (!speciesFeatures.length) {
@@ -397,23 +428,19 @@ export function createMapParticleSystem({
       if (!from || !control || !to) return
 
       particles.push({
-        from,
-        control,
-        to,
+        from, control, to,
         progress: 0,
         speed: mobile ? 0.006 + Math.random() * 0.008 : 0.004 + Math.random() * 0.007,
         size: mobile ? 1.2 : 1.5 + Math.random() * 1.2,
         color: feature.properties?.color || '#ffffff',
-        trail: [],
+        trail: new CircularBuffer(trailLen),
       })
       return
     }
 
     if (!activeGroup || Math.random() < 0.15) {
       const groups = [...new Set(speciesFeatures.map(f => f.properties?.group).filter(Boolean))]
-      if (groups.length) {
-        activeGroup = groups[Math.floor(Math.random() * groups.length)] as string
-      }
+      if (groups.length) activeGroup = groups[Math.floor(Math.random() * groups.length)] as string
     }
 
     const groupFeatures = activeGroup
@@ -427,15 +454,13 @@ export function createMapParticleSystem({
     if (!from || !control || !to) return
 
     particles.push({
-      from,
-      control,
-      to,
+      from, control, to,
       progress: 0,
       speed: mobile ? 0.006 + Math.random() * 0.008 : 0.004 + Math.random() * 0.007,
       size: mobile ? 1.2 : 1.5 + Math.random() * 1.2,
       color: feature.properties?.color || '#ffffff',
       group: activeGroup || undefined,
-      trail: [],
+      trail: new CircularBuffer(trailLen),
     })
   }
 
@@ -445,35 +470,28 @@ export function createMapParticleSystem({
     stop()
     cancelled = false
 
-    // Ensure container is positioned so the absolute canvas overlays correctly
     const computedPosition = window.getComputedStyle(container).position
-    if (computedPosition === 'static') {
-      container.style.position = 'relative'
-    }
+    if (computedPosition === 'static') container.style.position = 'relative'
 
     particleCanvas = document.createElement('canvas')
     particleCanvas.className = 'map-particle-canvas'
-    particleCanvas.style.position = 'absolute'
-    particleCanvas.style.inset = '0'
-    particleCanvas.style.width = '100%'
-    particleCanvas.style.height = '100%'
-    particleCanvas.style.pointerEvents = 'none'
+    particleCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;will-change:transform'
     particleCanvas.style.zIndex = String(zIndex)
     container.appendChild(particleCanvas)
 
-    const ctx = particleCanvas.getContext('2d')
+    const ctx = particleCanvas.getContext('2d', { alpha: true, desynchronized: true })
     if (!ctx) return
 
     let lastFrame = 0
     const mobile = isMobile()
-    const targetFps = quality?.particleFps ?? (mobile ? 24 : 36)
+    const targetFps = quality.particleFps ?? (mobile ? 24 : 36)
     const frameInterval = 1000 / targetFps
 
     let lastRectW = 0; let lastRectH = 0; let lastDpr = 1
 
     const resizeCanvas = () => {
       if (!particleCanvas) return
-      const dpr = window.devicePixelRatio || 1
+      const dpr = Math.min(window.devicePixelRatio || 1, 2) // Cap DPR
       const rect = container.getBoundingClientRect()
       const w = Math.max(1, Math.floor(rect.width * dpr))
       const h = Math.max(1, Math.floor(rect.height * dpr))
@@ -486,32 +504,25 @@ export function createMapParticleSystem({
 
     resizeCanvas()
 
-    // Skip first few frames to let map style finish loading
-    let warmupFrames = 0
-
     const animate = (timestamp: number) => {
       if (cancelled || !particleCanvas) return
       particleAnimationFrame = requestAnimationFrame(animate)
       if (timestamp - lastFrame < frameInterval) return
       lastFrame = timestamp
 
-      const dpr = window.devicePixelRatio || 1
-      if (dpr !== lastDpr) {
-        resizeCanvas()
-      }
-
-      // Allow particles to render — map.project() will throw if style not loaded,
-      // and individual particles will be filtered out by the visibility check
-      warmupFrames++
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      if (dpr !== lastDpr) resizeCanvas()
 
       ctx.clearRect(0, 0, lastRectW, lastRectH)
 
-      const mobile = isMobile()
-      const spawnRate = quality?.particleSpawnRate ?? (mobile ? 0.32 : 0.45)
+      const spawnRate = quality.particleSpawnRate ?? (mobile ? 0.32 : 0.45)
       const spawnAttempts = mobile ? 1 : 2
       for (let i = 0; i < spawnAttempts; i++) {
-        if (Math.random() < spawnRate) spawnParticle()
+        if (spawnRate > 0 && Math.random() < spawnRate) spawnParticle()
       }
+
+      const maxTrail = quality.particleTrailLength ?? (mobile ? 4 : 7)
+      const shadowBlur = quality.particleShadowBlur ?? (mobile ? 3 : 6)
 
       particles = particles.filter((particle) => {
         particle.progress += particle.speed
@@ -529,21 +540,25 @@ export function createMapParticleSystem({
         if (!visible) return true
 
         particle.trail.push({ x: point.x, y: point.y })
-        const maxTrail = quality?.particleTrailLength ?? (mobile ? 4 : 7)
-        if (particle.trail.length > maxTrail) particle.trail.shift()
 
         const fade = particle.progress > 0.8 ? 1 - (particle.progress - 0.8) / 0.2 : 1
         ctx.save()
         ctx.globalAlpha = 0.75 * fade
         ctx.strokeStyle = particle.color
         ctx.lineWidth = particle.size * 0.75
-        ctx.shadowColor = particle.color
-        ctx.shadowBlur = quality?.particleShadowBlur ?? (mobile ? 3 : 6)
+
+        if (shadowBlur > 0) {
+          ctx.shadowColor = particle.color
+          ctx.shadowBlur = shadowBlur
+        }
 
         if (particle.trail.length > 1) {
           ctx.beginPath()
-          ctx.moveTo(particle.trail[0].x, particle.trail[0].y)
-          particle.trail.slice(1).forEach(p => ctx.lineTo(p.x, p.y))
+          let first = true
+          particle.trail.forEach((p) => {
+            if (first) { ctx.moveTo(p.x, p.y); first = false }
+            else ctx.lineTo(p.x, p.y)
+          })
           ctx.stroke()
         }
 
@@ -561,7 +576,7 @@ export function createMapParticleSystem({
     particleAnimationFrame = requestAnimationFrame(animate)
   }
 
-  return { start, stop }
+  return { start, stop, updateQuality }
 }
 
 function getBezierPoint(from: [number, number], control: [number, number], to: [number, number], t: number): [number, number] {

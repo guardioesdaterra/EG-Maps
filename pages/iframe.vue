@@ -59,7 +59,7 @@
           <div v-if="pickerMode" class="w-full border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
             <iframe
               :src="pickerIframeSrc"
-              class="w-full h-[500px] border-0"
+              class="w-full h-[min(500px,80vw)] border-0"
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"
               :title="pickerIframeTitle"

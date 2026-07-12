@@ -293,21 +293,21 @@ function barColor(count: number) {
 .obs-table-controls { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px; background: rgba(255,255,255,0.04); border-radius: 3px; }
 .obs-table-sort { display: flex; align-items: center; gap: 4px; font-size: 9px; color: #999; }
 .obs-table-sort__label { font-weight: 600; }
-.obs-table-sort__select { background: rgba(0,0,0,0.4); color: #ddd; border: 1px solid rgba(255,255,255,0.1); border-radius: 2px; padding: 1px 4px; font-size: 9px; font-family: inherit; cursor: pointer; }
+.obs-table-sort__select { background: rgba(0,0,0,0.4); color: #ddd; border: 1px solid rgba(255,255,255,0.1); border-radius: 2px; padding: 1px 4px; font-size: 9px; font-family: inherit; cursor: pointer; min-height: 24px; }
 .obs-table-count { font-size: 9px; color: #888; }
 
-.obs-table-wrap { max-height: 420px; overflow: auto; border: 1px solid rgba(255,255,255,0.06); border-radius: 3px; }
+.obs-table-wrap { max-height: min(420px, 60vh); overflow: auto; border: 1px solid rgba(255,255,255,0.06); border-radius: 3px; }
 .obs-table { width: 100%; border-collapse: collapse; font-size: 9.5px; }
 .obs-table th { position: sticky; top: 0; background: rgba(0,0,0,0.9); text-align: left; padding: 4px 6px; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.04em; color: #888; border-bottom: 1px solid rgba(255,255,255,0.08); z-index: 1; }
 .obs-table td { padding: 3px 6px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 .obs-table-row { cursor: pointer; transition: background 0.1s; }
 .obs-table-row:hover { background: rgba(231,76,60,0.08); }
 .obs-table-num { text-align: right; font-variant-numeric: tabular-nums; }
-.obs-table-name { font-weight: 600; color: #e0e0e0; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.obs-table-ufs { font-size: 8.5px; color: #888; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.obs-table-name { font-weight: 600; color: #e0e0e0; max-width: min(120px, 30vw); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.obs-table-ufs { font-size: 8.5px; color: #888; max-width: min(80px, 20vw); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .obs-table-pager { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 6px 0 0; }
-.obs-table-pager__btn { background: rgba(255,255,255,0.06); color: #ddd; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; padding: 2px 10px; font-size: 11px; cursor: pointer; font-family: inherit; }
+.obs-table-pager__btn { background: rgba(255,255,255,0.06); color: #ddd; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; padding: clamp(4px, 1vw, 6px) clamp(6px, 1.5vw, 10px); font-size: 11px; cursor: pointer; font-family: inherit; min-height: 28px; }
 .obs-table-pager__btn:hover:not(:disabled) { background: rgba(231,76,60,0.2); border-color: #e74c3c; }
 .obs-table-pager__btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .obs-table-pager__info { font-size: 10px; color: #888; font-variant-numeric: tabular-nums; }

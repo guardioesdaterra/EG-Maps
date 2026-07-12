@@ -309,12 +309,24 @@ const scrapedUserVotes = reactive<Record<string, number>>({})
 const removingGrants = ref<string[]>([])
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
+function matchSearch(g: { title?: string; funder?: string; country?: string; description?: string; source?: string; categories?: string[] }, q: string): boolean {
+  if (!q) return true
+  const lq = q.toLowerCase()
+  return (g.title?.toLowerCase() || '').includes(lq)
+    || (g.funder?.toLowerCase() || '').includes(lq)
+    || (g.country?.toLowerCase() || '').includes(lq)
+    || (g.description?.toLowerCase() || '').includes(lq)
+    || (g.source?.toLowerCase() || '').includes(lq)
+    || (g.categories?.some(c => c.toLowerCase().includes(lq)) ?? false)
+}
+
 const filteredScrapedGrants = computed(() => {
+  const q = dashboardSearch.value
   const tab = activePortalTab.value
-  if (tab === 'tabPending') return scrapedGrants.value.filter(g => g.status === activeTab.value)
-  if (tab === 'tabOpen') return grants.value.filter(g => g.reviewed === true)
-  if (tab === 'tabClosed') return scrapedGrants.value.filter(g => g.status === 'closed')
-  return scrapedGrants.value
+  if (tab === 'tabPending') return scrapedGrants.value.filter(g => g.status === activeTab.value && matchSearch(g, q))
+  if (tab === 'tabOpen') return grants.value.filter(g => g.reviewed === true && matchSearch(g, q))
+  if (tab === 'tabClosed') return scrapedGrants.value.filter(g => g.status === 'closed' && matchSearch(g, q))
+  return scrapedGrants.value.filter(g => matchSearch(g, q))
 })
 
 // Leaderboard
@@ -369,8 +381,9 @@ function onPageScroll() {
 }
 
 const filteredGrants = computed(() => {
-  if (!isManager.value) return grants.value
-  return grants.value.filter(g => g.status === activeTab.value)
+  const q = dashboardSearch.value
+  if (!isManager.value) return grants.value.filter(g => matchSearch(g, q))
+  return grants.value.filter(g => g.status === activeTab.value && matchSearch(g, q))
 })
 
 const scrapedPendingCount = computed(() => stats.pending)
@@ -520,28 +533,55 @@ function setManagerSubTab(tab: string) {
 async function handleReview(grantId: string, decision: string) {
   try {
     await apiReviewGrant(grantId, decision as 'open' | 'closed')
-    loadGrants()
-    loadStats()
-    if (showRegistry.value) loadRegistry()
+    await Promise.all([refreshGrantsSilent(), loadStats()])
+    if (showRegistry.value) await loadRegistry()
   } catch (e) {
     console.error('Failed to review grant:', e)
   }
 }
 
+async function refreshScrapedGrantsSilent() {
+  try {
+    const result = await listScrapedGrants()
+    scrapedGrants.value = result.grants ?? []
+    if (scrapedGrants.value.length === 0) {
+      scrapedGrants.value = allProjectsData.map(projectToScrapedGrant)
+    }
+  } catch (e) {
+    console.error('Failed to refresh scraped grants:', e)
+    if (scrapedGrants.value.length === 0) {
+      scrapedGrants.value = allProjectsData.map(projectToScrapedGrant)
+    }
+  }
+}
+
+async function refreshGrantsSilent() {
+  try {
+    const result = await listGrants()
+    grants.value = result.grants ?? []
+  } catch (e) {
+    console.error('Failed to refresh grants:', e)
+  }
+}
+
 async function handleReviewScraped(grantId: string, decision: string) {
-  // Start disintegration animation
   removingGrants.value = [...removingGrants.value, grantId]
   try {
-    // Fire API and animation simultaneously
     const [apiResult] = await Promise.all([
       apiReviewScraped(grantId, decision as 'approved' | 'hidden' | 'pending'),
       sleep(700),
     ])
-    // Remove from local arrays immediately after animation
+    // Check for API errors
+    if (apiResult.error) {
+      console.error('Review scraped grant failed:', apiResult.error)
+      removingGrants.value = removingGrants.value.filter(id => id !== grantId)
+      return
+    }
+    // Remove from local arrays after animation
     scrapedGrants.value = scrapedGrants.value.filter(g => g.id !== grantId)
     removingGrants.value = removingGrants.value.filter(id => id !== grantId)
-    // Refresh from server in background
-    Promise.all([loadScrapedGrants(), loadGrants()]).catch(console.error)
+    // Refresh from server (silent — no loading spinners)
+    await Promise.all([refreshScrapedGrantsSilent(), refreshGrantsSilent(), loadStats()])
   } catch (e) {
     console.error('Failed to review scraped grant:', e)
     removingGrants.value = removingGrants.value.filter(id => id !== grantId)
@@ -578,7 +618,7 @@ async function handleSaveEdit() {
       return
     }
     closeEditScraped()
-    loadScrapedGrants()
+    await refreshScrapedGrantsSilent()
   } catch (e) {
     editErr.value = 'An unexpected error occurred. Please try again.'
     console.error('Failed to save edit:', e)
@@ -614,7 +654,7 @@ async function handleSaveEditFromDetail(grantId: string, form: Record<string, st
       return
     }
     closeGrantDetail()
-    loadScrapedGrants()
+    await refreshScrapedGrantsSilent()
   } catch (e) {
     editErrDetail.value = 'An unexpected error occurred. Please try again.'
     console.error('Failed to save edit from detail:', e)
@@ -634,7 +674,7 @@ async function handleVoteScraped(scrapedId: string, stars: number) {
       await voteScrapedGrant(scrapedId, stars)
       scrapedUserVotes[scrapedId] = stars
     }
-    loadLeaderboardData()
+    await loadLeaderboardData()
   } catch (e) {
     console.error('Failed to vote:', e)
   }
@@ -660,7 +700,7 @@ async function handleVoteDetail(stars: number) {
       }
       detailUserVote.value = stars
     }
-    loadLeaderboardData()
+    await loadLeaderboardData()
   } catch (e) {
     console.error('Failed to vote on detail:', e)
   }

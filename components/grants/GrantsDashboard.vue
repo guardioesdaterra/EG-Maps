@@ -58,7 +58,7 @@
     </div>
     <p v-else class="gdash-signin-hint">{{ t('grantsPortal.signInDashboardDesc') }}</p>
 
-    <!-- ── Manager: submitted grants sub-tabs ────────── -->
+    <!-- ── Manager: scraped-grant status sub-filters ── -->
     <div v-if="user && isManager && activeTab === 'tabPending'" class="gdash-subtabs">
       <button
         v-for="s in (['pending', 'open', 'closed'] as const)"
@@ -66,7 +66,7 @@
         class="gdash-subtab"
         :class="{ active: managerSubTab === s }"
         @click="$emit('update:managerSubTab', s)"
-      >{{ t(`grantsPortal.${s}`) }}</button>
+      >{{ s === 'pending' ? t('grantsPortal.awaitingReview') : s === 'open' ? t('grantsPortal.approved') : t('grantsPortal.closed') }}</button>
       <button
         class="gdash-subtab ml-auto"
         :class="{ active: showHistory }"

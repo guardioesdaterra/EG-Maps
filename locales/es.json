@@ -705,6 +705,7 @@
     "submitBtn": "ENVIAR — IMPULSA EL MOVIMIENTO",
     "submittedSuccess": "¡Tu propuesta fue recibida! El crew la revisará pronto. No vamos a esperar — y tú tampoco deberías.",
     "pending": "Pendiente",
+    "awaitingReview": "Pendiente de revisión",
     "approved": "Aprobado",
     "rejected": "Rechazado",
     "closed": "Cerrado",

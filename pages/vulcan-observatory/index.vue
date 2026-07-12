@@ -1,5 +1,5 @@
 <template>
-  <div id="main-content" class="relative w-full h-dvh overflow-hidden">
+  <div id="main-content" class="relative w-full h-[100svh] overflow-hidden">
     <!-- Loading overlay -->
     <Transition name="fade">
       <div v-if="isLoading || error" class="fixed inset-0 z-[9998] bg-zinc-950/90 backdrop-blur-md flex flex-col items-center justify-center gap-4">

@@ -1211,8 +1211,8 @@ h2 {
 .modal-fade-leave-to { opacity: 0; }
 
 @media (max-width: 768px) {
-  section, .projects-section { padding: 4rem 5%; }
-  .grants-section { padding: 4rem 5%; }
+  section, .projects-section { padding: 4rem 6%; }
+  .grants-section { padding: 4rem 6%; }
   .impact-grid { grid-template-columns: 1fr; gap: 2rem; }
   .impact-content { max-width: 100%; }
   .impact-desc { max-width: 100%; }

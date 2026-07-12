@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-viewport bg-[var(--bg-secondary)]">
+  <div :class="[isMapRoute ? 'h-[100svh]' : 'min-h-viewport', 'bg-[var(--bg-secondary)]']">
     <slot />
 
     <!-- Unified Top Header - 2D/3D + Utilities + Theme -->

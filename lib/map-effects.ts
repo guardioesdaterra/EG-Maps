@@ -343,13 +343,22 @@ export interface MapParticleSystem {
   stop: () => void
 }
 
+export interface ParticleQualityConfig {
+  particleMaxCount?: number
+  particleFps?: number
+  particleTrailLength?: number
+  particleShadowBlur?: number
+  particleSpawnRate?: number
+}
+
 export function createMapParticleSystem({
   map,
   container,
   getFeatures,
   isMobile,
   zIndex = 2,
-}: ParticleSystemOptions): MapParticleSystem {
+  quality,
+}: ParticleSystemOptions & { quality?: ParticleQualityConfig }): MapParticleSystem {
   let particleCanvas: HTMLCanvasElement | null = null
   let particleAnimationFrame: number | null = null
   let particles: Particle[] = []
@@ -378,7 +387,8 @@ export function createMapParticleSystem({
   function spawnParticle() {
     const features = getFeatures()
     const mobile = isMobile()
-    if (!features.length || particles.length > (mobile ? 45 : 90)) return
+    const maxParticles = quality?.particleMaxCount ?? (mobile ? 45 : 90)
+    if (!features.length || particles.length > maxParticles) return
 
     const speciesFeatures = features.filter(f => f.properties?.dataset === 'endangered-species')
     if (!speciesFeatures.length) {
@@ -455,7 +465,9 @@ export function createMapParticleSystem({
     if (!ctx) return
 
     let lastFrame = 0
-    const frameInterval = isMobile() ? 1000 / 24 : 1000 / 36
+    const mobile = isMobile()
+    const targetFps = quality?.particleFps ?? (mobile ? 24 : 36)
+    const frameInterval = 1000 / targetFps
 
     let lastRectW = 0; let lastRectH = 0; let lastDpr = 1
 
@@ -495,9 +507,10 @@ export function createMapParticleSystem({
       ctx.clearRect(0, 0, lastRectW, lastRectH)
 
       const mobile = isMobile()
+      const spawnRate = quality?.particleSpawnRate ?? (mobile ? 0.32 : 0.45)
       const spawnAttempts = mobile ? 1 : 2
       for (let i = 0; i < spawnAttempts; i++) {
-        if (Math.random() < (mobile ? 0.32 : 0.45)) spawnParticle()
+        if (Math.random() < spawnRate) spawnParticle()
       }
 
       particles = particles.filter((particle) => {
@@ -516,7 +529,8 @@ export function createMapParticleSystem({
         if (!visible) return true
 
         particle.trail.push({ x: point.x, y: point.y })
-        if (particle.trail.length > (mobile ? 4 : 7)) particle.trail.shift()
+        const maxTrail = quality?.particleTrailLength ?? (mobile ? 4 : 7)
+        if (particle.trail.length > maxTrail) particle.trail.shift()
 
         const fade = particle.progress > 0.8 ? 1 - (particle.progress - 0.8) / 0.2 : 1
         ctx.save()
@@ -524,7 +538,7 @@ export function createMapParticleSystem({
         ctx.strokeStyle = particle.color
         ctx.lineWidth = particle.size * 0.75
         ctx.shadowColor = particle.color
-        ctx.shadowBlur = mobile ? 3 : 6
+        ctx.shadowBlur = quality?.particleShadowBlur ?? (mobile ? 3 : 6)
 
         if (particle.trail.length > 1) {
           ctx.beginPath()

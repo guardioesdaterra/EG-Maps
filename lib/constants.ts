@@ -60,6 +60,80 @@ export const HEX_GRID = {
   debounceMs: 150,
 } as const
 
+/** Adaptive quality presets for old/low-end devices */
+export const QUALITY_PRESETS = {
+  low: {
+    hexScale: 0.5,
+    particleMaxCount: 0,
+    particleFps: 15,
+    particleTrailLength: 0,
+    particleShadowBlur: 0,
+    particleSpawnRate: 0,
+    showConnections: false,
+    showParticles: false,
+    showHexGrid: false,
+    maxMarkerCount: 200,
+    maxTileCacheSize: 50,
+    maxTileCacheZoomLevels: 2,
+    dprCap: 1,
+    starCount: 0,
+    autoRotate: false,
+  },
+  medium: {
+    hexScale: 0.75,
+    particleMaxCount: 20,
+    particleFps: 20,
+    particleTrailLength: 3,
+    particleShadowBlur: 2,
+    particleSpawnRate: 0.2,
+    showConnections: true,
+    showParticles: true,
+    showHexGrid: true,
+    maxMarkerCount: 500,
+    maxTileCacheSize: 100,
+    maxTileCacheZoomLevels: 3,
+    dprCap: 1.5,
+    starCount: 40,
+    autoRotate: true,
+  },
+  high: {
+    hexScale: 1,
+    particleMaxCount: 60,
+    particleFps: 30,
+    particleTrailLength: 5,
+    particleShadowBlur: 4,
+    particleSpawnRate: 0.35,
+    showConnections: true,
+    showParticles: true,
+    showHexGrid: true,
+    maxMarkerCount: 2000,
+    maxTileCacheSize: 200,
+    maxTileCacheZoomLevels: 5,
+    dprCap: 2,
+    starCount: 80,
+    autoRotate: true,
+  },
+  ultra: {
+    hexScale: 1,
+    particleMaxCount: 90,
+    particleFps: 36,
+    particleTrailLength: 7,
+    particleShadowBlur: 6,
+    particleSpawnRate: 0.45,
+    showConnections: true,
+    showParticles: true,
+    showHexGrid: true,
+    maxMarkerCount: 5000,
+    maxTileCacheSize: 300,
+    maxTileCacheZoomLevels: 6,
+    dprCap: 3,
+    starCount: 120,
+    autoRotate: true,
+  },
+} as const
+
+export type QualityLevel = keyof typeof QUALITY_PRESETS
+
 /** Species overlay tolerance (degrees) for coordinate matching */
 export const SPECIES_COORD_TOLERANCE = 0.001
 

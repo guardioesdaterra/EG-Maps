@@ -11,6 +11,8 @@ export interface HexGridOptions {
   strokeColor?: string
   /** Line width (default: HEX_GRID.lineWidth) */
   lineWidth?: number
+  /** Quality scale factor (0-1) — reduces hex density on low-end devices */
+  qualityScale?: number
 }
 
 export function useMapHexGrid(
@@ -32,6 +34,7 @@ export function useMapHexGrid(
     desktopSize: options.desktopSize ?? HEX_GRID.desktopSize,
     strokeColor: options.strokeColor ?? HEX_GRID.strokeColor,
     lineWidth: options.lineWidth ?? HEX_GRID.lineWidth,
+    qualityScale: options.qualityScale ?? 1,
   }
 
   function setupHexGrid() {
@@ -58,7 +61,8 @@ export function useMapHexGrid(
       if (!ctx) return
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-      const hexSize = isMobile.value ? cfg.mobileSize : cfg.desktopSize
+      const baseHexSize = isMobile.value ? cfg.mobileSize : cfg.desktopSize
+      const hexSize = Math.round(baseHexSize / Math.max(cfg.qualityScale, 0.3))
       const hexHeight = hexSize * Math.sqrt(3)
       const hexWidth = hexSize * 2
       const hexVerticalOffset = hexHeight * 0.75

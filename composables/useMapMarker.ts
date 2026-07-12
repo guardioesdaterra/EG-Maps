@@ -458,27 +458,25 @@ function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: str
   const label = `[perf] toSpeciesGeoJSON (idx=${index.length}, raw=${raw.length}, groups=${groups.length})`
   console.time(label)
   const idx = filterByGroups(buildSpeciesIndex(index, raw), groups)
-  const result = {
-    type: 'FeatureCollection' as const,
-    features: idx
-      .filter(s => isValidCoordinate(s.lat, s.lng))
-      .map(s => {
-        const cat = (s.category ?? '').toUpperCase()
-        const cf = cat === 'CR' ? 5 : cat === 'EN' ? 3.5 : cat === 'VU' ? 2 : 1
-        return {
-          type: 'Feature' as const,
-          geometry: { type: 'Point' as const, coordinates: [s.lng, s.lat] },
-          properties: {
-            id: s.id,
-            color: GROUP_COLORS[s.taxonomicGroup ?? ''] ?? '#B64032',
-            size: 5 + cf * 2,
-            label: '1',
-            ...s as unknown as Record<string, unknown>,
-          },
-        }
-      }),
+  const validCoords = idx.filter(s => isValidCoordinate(s.lat, s.lng))
+  const features: GeoJSON.Feature[] = new Array(validCoords.length)
+  for (let i = 0; i < validCoords.length; i++) {
+    const s = validCoords[i]
+    const cat = (s.category ?? '').toUpperCase()
+    const cf = cat === 'CR' ? 5 : cat === 'EN' ? 3.5 : cat === 'VU' ? 2 : 1
+    features[i] = {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [s.lng, s.lat] },
+      properties: {
+        id: s.id,
+        color: GROUP_COLORS[s.taxonomicGroup ?? ''] ?? '#B64032',
+        size: 5 + cf * 2,
+        label: '1',
+      },
+    }
   }
-  console.timeLog(label, `features=${result.features.length}`)
+  const result = { type: 'FeatureCollection' as const, features }
+  console.timeLog(label, `features=${features.length}`)
   console.timeEnd(label)
   return result
 }

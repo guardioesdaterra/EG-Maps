@@ -250,7 +250,7 @@ import { useAdaptiveQuality } from '~/composables/useAdaptiveQuality'
 const deviceCaps = useDeviceCapabilities()
 const quality = useAdaptiveQuality()
 
-const isLowQuality = computed(() => quality.tier.value === 'low' || quality.tier.value === 'medium')
+const isLowQuality = computed(() => quality.level.value === 'low' || quality.level.value === 'medium')
 
 useHead({
   title: 'EG Grants | Earth Guardians',
@@ -267,7 +267,7 @@ useHead({
     { rel: 'preload', href: 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', as: 'script' },
     { rel: 'preload', href: 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', as: 'script' },
     ...(isLowQuality.value ? [] : [
-      { rel: 'preload', href: 'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg', as: 'image' },
+      { rel: 'preload', href: 'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg', as: 'image' as const },
     ]),
   ],
 })

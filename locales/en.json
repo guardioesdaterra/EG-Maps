@@ -901,7 +901,7 @@
     "crewSignupError": "Something went wrong. Please try again.",
     "crewSignupAlreadyRegistered": "You're already registered!",
     "crewSignupContactCrews": "Have trouble with the form? Reach out to",
-    "crewSignupContactEmail": "crews@earthguardians.org",
+    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "Privacy Policy",
     "crewSignupRequired": "required",
     "crewSignupBackToPortal": "Back to Dashboard"

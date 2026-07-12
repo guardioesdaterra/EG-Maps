@@ -60,7 +60,7 @@ async function checkMembershipAndRedirect(signUpUrl: string) {
     if (!mgrErr && mgrData?.isManager === true) {
       isManager = true
     }
-  } catch {}
+  } catch { /* ignored */ }
 
   if (isManager) {
     navigateTo('/eg-grants')

@@ -613,7 +613,9 @@ export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<strin
   }
 
   const showPoints = vis['points'] !== false
-  ;['ree-point-glow', 'ree-point-circle', 'ree-cluster-circle', 'ree-cluster-count', 'ree-point-hover', 'ree-overlap-glow'].forEach(id => setVis(id, showPoints))
+  ;['ree-point-glow', 'ree-point-circle', 'ree-cluster-circle', 'ree-cluster-count', 'ree-point-hover'].forEach(id => setVis(id, showPoints))
+
+  setVis('ree-overlap-glow', vis['overlaps'] !== false)
 
   setVis('ree-heat-layer', vis['heatmap'] !== false)
 
@@ -633,6 +635,10 @@ export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<strin
   ;['ree-protected-quilombo-fill', 'ree-protected-quilombo-line', 'ree-protected-quilombo-label'].forEach(id => setVis(id, vis['protected_quilombo'] !== false))
 
   setVis('ree-cities-label', vis['cities'] !== false)
+
+  ;['ree-cultural-glow', 'ree-cultural-point', 'ree-cultural-hover', 'ree-cultural-label', 'ree-cultural-cluster', 'ree-cultural-cluster-count'].forEach(
+    id => setVis(id, vis['cultural'] !== false)
+  )
 
 }
 

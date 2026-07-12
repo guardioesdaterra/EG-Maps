@@ -1,21 +1,24 @@
 <template>
-  <div class="flex flex-col gap-1.5">
-    <div class="flex items-center justify-between">
-      <h3 class="text-[8px] font-bold uppercase tracking-wider text-zinc-500">{{ t('observatory.yearSlider.title') }}</h3>
-      <div class="flex items-center gap-1.5">
-        <span class="text-[10px] font-mono font-bold text-zinc-300">{{ yearMin }}</span>
-        <span class="text-[8px] text-zinc-600">—</span>
-        <span class="text-[10px] font-mono font-bold text-zinc-300">{{ yearMax }}</span>
+  <div class="obs-slider">
+    <div class="obs-slider__header">
+      <h3 class="obs-slider__title">
+        <Icon name="lucide:calendar" class="obs-slider__title-icon" />
+        {{ t('observatory.yearSlider.title') }}
+      </h3>
+      <div class="obs-slider__years">
+        <span class="obs-slider__year-value">{{ yearMin }}</span>
+        <span class="obs-slider__year-sep">—</span>
+        <span class="obs-slider__year-value">{{ yearMax }}</span>
       </div>
     </div>
 
-    <div class="relative h-6 flex items-center">
+    <div class="obs-slider__track-wrap">
       <input
         type="range"
         :min="MIN_YEAR"
         :max="MAX_YEAR"
         :value="yearMin"
-        class="year-slider range-slider"
+        class="obs-slider__input"
         :style="{ '--fill-pct': ((yearMin - MIN_YEAR) / (MAX_YEAR - MIN_YEAR)) * 100 + '%' }"
         :aria-label="t('observatory.yearSlider.minYear')"
         @input="$emit('update:yearMin', Number(($event.target as HTMLInputElement).value))"
@@ -25,40 +28,39 @@
         :min="MIN_YEAR"
         :max="MAX_YEAR"
         :value="yearMax"
-        class="year-slider range-slider"
+        class="obs-slider__input"
         :style="{ '--fill-pct': ((yearMax - MIN_YEAR) / (MAX_YEAR - MIN_YEAR)) * 100 + '%' }"
         :aria-label="t('observatory.yearSlider.maxYear')"
         @input="$emit('update:yearMax', Number(($event.target as HTMLInputElement).value))"
       />
     </div>
 
-    <div class="flex items-center justify-between text-[8px] text-zinc-600 font-mono">
+    <div class="obs-slider__range-labels">
       <span>{{ MIN_YEAR }}</span>
       <span>{{ MAX_YEAR }}</span>
     </div>
 
-    <div class="flex items-center gap-1.5 mt-0.5">
+    <div class="obs-slider__controls">
       <button
         type="button"
-        class="flex items-center gap-1 px-2 py-1 text-[9px] font-bold rounded border transition-all"
-        :class="isPlaying
-          ? 'bg-red-900/30 border-red-500/40 text-red-400'
-          : 'bg-zinc-800/50 border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500'"
+        class="obs-slider__btn"
+        :class="{ 'obs-slider__btn--active': isPlaying }"
         :aria-label="isPlaying ? t('observatory.yearSlider.pause') : t('observatory.yearSlider.play')"
         @click="togglePlay"
       >
-        <span>{{ isPlaying ? '⏹' : '▶' }}</span>
+        <Icon :name="isPlaying ? 'lucide:square' : 'lucide:play'" class="obs-slider__btn-icon" />
         {{ isPlaying ? t('observatory.yearSlider.pause') : t('observatory.yearSlider.play') }}
       </button>
       <button
         type="button"
-        class="flex items-center gap-1 px-2 py-1 text-[9px] font-bold rounded border bg-zinc-800/50 border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-all"
+        class="obs-slider__btn"
         :aria-label="t('observatory.yearSlider.reset')"
         @click="resetRange"
       >
-        ↺ {{ t('observatory.yearSlider.reset') }}
+        <Icon name="lucide:rotate-ccw" class="obs-slider__btn-icon" />
+        {{ t('observatory.yearSlider.reset') }}
       </button>
-      <span class="ml-auto text-[8px] text-zinc-600 font-mono" aria-live="polite">
+      <span class="obs-slider__count" aria-live="polite">
         {{ filteredCount.toLocaleString() }} {{ t('observatory.yearSlider.claims') }}
       </span>
     </div>
@@ -136,7 +138,67 @@ watch(() => [props.yearMin, props.yearMax], ([min, max]) => {
 </script>
 
 <style scoped>
-.year-slider {
+.obs-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: var(--obs-panel-bg-dark);
+  border: 1px solid var(--obs-panel-border);
+  border-radius: 8px;
+}
+
+.obs-slider__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.obs-slider__title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--obs-text-label);
+}
+
+.obs-slider__title-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--obs-red);
+}
+
+.obs-slider__years {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.obs-slider__year-value {
+  font-size: 11px;
+  font-weight: 800;
+  font-family: ui-monospace, monospace;
+  color: var(--obs-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.obs-slider__year-sep {
+  font-size: 10px;
+  color: var(--obs-text-dim);
+}
+
+.obs-slider__track-wrap {
+  position: relative;
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.obs-slider__input {
   position: absolute;
   width: 100%;
   height: 4px;
@@ -145,47 +207,117 @@ watch(() => [props.yearMin, props.yearMax], ([min, max]) => {
   background: transparent;
   pointer-events: none;
 }
-.year-slider::-webkit-slider-runnable-track {
+
+.obs-slider__input::-webkit-slider-runnable-track {
   height: 4px;
   background: linear-gradient(
     to right,
-    #e74c3c var(--fill-pct, 100%),
+    var(--obs-red) var(--fill-pct, 100%),
     rgba(255, 255, 255, 0.06) var(--fill-pct, 100%)
   );
   border-radius: 2px;
 }
-.year-slider::-webkit-slider-thumb {
+
+.obs-slider__input::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: #e74c3c;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 6px rgba(231, 76, 60, 0.4);
+  background: var(--obs-red);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 8px rgba(231, 76, 60, 0.4);
   cursor: pointer;
   pointer-events: auto;
-  margin-top: -4px;
-  position: relative;
-  z-index: 2;
+  margin-top: -5px;
+  transition: box-shadow 0.15s, transform 0.15s;
 }
-.year-slider::-moz-range-track {
+
+.obs-slider__input::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 14px rgba(231, 76, 60, 0.6);
+}
+
+.obs-slider__input::-moz-range-track {
   height: 4px;
   background: transparent;
   border-radius: 2px;
 }
-.year-slider::-moz-range-progress {
+
+.obs-slider__input::-moz-range-progress {
   height: 4px;
-  background: #e74c3c;
+  background: var(--obs-red);
   border-radius: 2px;
 }
-.year-slider::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
+
+.obs-slider__input::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: #e74c3c;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 6px rgba(231, 76, 60, 0.4);
+  background: var(--obs-red);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 8px rgba(231, 76, 60, 0.4);
   cursor: pointer;
   pointer-events: auto;
+}
+
+.obs-slider__range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: var(--obs-text-dim);
+  font-family: ui-monospace, monospace;
+  margin-top: -4px;
+}
+
+.obs-slider__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.obs-slider__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--obs-panel-border);
+  color: var(--obs-text-body);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.obs-slider__btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--obs-text-primary);
+}
+
+.obs-slider__btn--active {
+  background: rgba(231, 76, 60, 0.1);
+  border-color: rgba(231, 76, 60, 0.3);
+  color: var(--obs-red);
+}
+
+.obs-slider__btn--active:hover {
+  background: rgba(231, 76, 60, 0.16);
+  border-color: rgba(231, 76, 60, 0.4);
+}
+
+.obs-slider__btn-icon {
+  width: 10px;
+  height: 10px;
+}
+
+.obs-slider__count {
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--obs-text-dim);
+  font-family: ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
 }
 </style>

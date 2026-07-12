@@ -11,7 +11,9 @@ function closeActivePopup(map: MapLibreMap) {
 
 export const CULTURAL_SOURCE = 'ree-cultural'
 export const CULTURAL_LAYER_IDS = [
+  'ree-cultural-glow',
   'ree-cultural-point',
+  'ree-cultural-hover',
   'ree-cultural-label',
   'ree-cultural-cluster',
   'ree-cultural-cluster-count',
@@ -253,6 +255,26 @@ export function setupCulturalLayers(
     },
   })
 
+  // Status glow for critical/threatened/at-risk cultural points
+  map.addLayer({
+    id: 'ree-cultural-glow',
+    type: 'circle',
+    source: CULTURAL_SOURCE,
+    filter: ['all', ['!', ['has', 'point_count']],
+      ['any', ['==', ['get', 'status'], 'critical'], ['==', ['get', 'status'], 'threatened'], ['==', ['get', 'status'], 'at_risk']]
+    ],
+    paint: {
+      'circle-color': [
+        'case',
+        ['any', ['==', ['get', 'status'], 'critical'], ['==', ['get', 'status'], 'threatened']], '#e74c3c',
+        '#e67e22',
+      ],
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 8, 12, 14, 16, 20],
+      'circle-opacity': 0.12,
+      'circle-blur': 0.85,
+    },
+  })
+
   // Individual cultural points — data-driven color by subtype
   map.addLayer({
     id: 'ree-cultural-point',
@@ -296,6 +318,21 @@ export function setupCulturalLayers(
     },
   })
 
+  // Hover highlight layer for cultural points
+  map.addLayer({
+    id: 'ree-cultural-hover',
+    type: 'circle',
+    source: CULTURAL_SOURCE,
+    filter: ['all', ['!', ['has', 'point_count']]],
+    paint: {
+      'circle-color': 'transparent',
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 5, 12, 8, 16, 11],
+      'circle-stroke-color': '#fff',
+      'circle-stroke-width': ['case', ['boolean', ['feature-state', 'hover'], false], 1.5, 0],
+      'circle-stroke-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.6, 0],
+    },
+  })
+
   // Labels for cultural points
   map.addLayer({
     id: 'ree-cultural-label',
@@ -333,10 +370,20 @@ export function setupCulturalLayers(
       .addTo(map))
   }
 
-  const onCulturalEnter = () => { map.getCanvas().style.cursor = 'pointer' }
-  const onCulturalLeave = () => { map.getCanvas().style.cursor = '' }
+  const onCulturalEnter = (e: MapLayerMouseEvent) => {
+    map.getCanvas().style.cursor = 'pointer'
+    if (e.features?.length) {
+      map.setFeatureState({ source: CULTURAL_SOURCE, id: e.features[0].id! }, { hover: true })
+    }
+  }
+  const onCulturalLeave = (e: MapLayerMouseEvent) => {
+    map.getCanvas().style.cursor = ''
+    if (e.features?.length) {
+      map.setFeatureState({ source: CULTURAL_SOURCE, id: e.features[0].id! }, { hover: false })
+    }
+  }
 
-  for (const layerId of ['ree-cultural-point', 'ree-cultural-cluster']) {
+  for (const layerId of ['ree-cultural-point', 'ree-cultural-glow', 'ree-cultural-hover', 'ree-cultural-cluster']) {
     map.on('click', layerId, onCulturalClick)
     map.on('mouseenter', layerId, onCulturalEnter)
     map.on('mouseleave', layerId, onCulturalLeave)

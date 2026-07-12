@@ -161,6 +161,10 @@ export function useObservatoryControls(): ObservatoryControls {
   layerVis.value['heatmap'] = false
   layerVis.value['cultural'] = false
   layerVis.value['sites'] = false
+  layerVis.value['polygons'] = true
+  layerVis.value['water'] = true
+  layerVis.value['network'] = true
+  layerVis.value['cities'] = true
 
   const extraLayers = [
     { key: 'polygons', labelKey: 'observatory.layers.polygons', color: '#e74c3c' },

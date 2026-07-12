@@ -1,11 +1,15 @@
 <template>
-  <div class="ree-tab">
-    <div class="ree-tab__head">
-      <h3 class="ree-tab__title">{{ t('observatory.dangerPanel.title') }}</h3>
+  <div class="obs-tab">
+    <!-- HEADER -->
+    <div class="obs-tab__head">
+      <h3 class="obs-tab__title">
+        <Icon name="lucide:radar" class="obs-tab__title-icon" />
+        {{ t('observatory.dangerPanel.title') }}
+      </h3>
       <button
         v-if="items.length > 20"
         type="button"
-        class="ree-tab__toggle"
+        class="obs-tab__toggle"
         @click="$emit('update:showAll', !showAll)"
       >
         {{ showAll
@@ -15,78 +19,161 @@
       </button>
     </div>
 
-    <div v-if="items.length === 0" class="ree-tab__empty">
+    <!-- EDUCATIONAL: What is the Speculator Index? -->
+    <div class="obs-expand">
+      <button
+        type="button"
+        class="obs-expand__btn"
+        :aria-expanded="infoOpen"
+        @click="infoOpen = !infoOpen"
+      >
+        <Icon :name="infoOpen ? 'lucide:chevron-down' : 'lucide:help-circle'" class="obs-expand__icon" />
+        {{ infoOpen ? t('observatory.dangerPanel.hideInfo') : t('observatory.dangerPanel.whatIsThis') }}
+      </button>
+      <Transition name="obs-fade">
+        <div v-if="infoOpen" class="obs-expand__body">
+          <p>{{ t('observatory.dangerPanel.infoIntro') }}</p>
+          <ul class="obs-expand__legend">
+            <li><span class="obs-legend-dot" style="background:#e74c3c" /> <strong>8–10 Critical</strong> — {{ t('observatory.dangerPanel.criticalDesc') }}</li>
+            <li><span class="obs-legend-dot" style="background:#f39c12" /> <strong>6–7.9 High</strong> — {{ t('observatory.dangerPanel.highDesc') }}</li>
+            <li><span class="obs-legend-dot" style="background:#27ae60" /> <strong>0–5.9 Medium</strong> — {{ t('observatory.dangerPanel.mediumDesc') }}</li>
+          </ul>
+          <p class="obs-expand__footnote">{{ t('observatory.dangerPanel.infoFooter') }}</p>
+        </div>
+      </Transition>
+    </div>
+
+    <!-- EMPTY -->
+    <div v-if="items.length === 0" class="obs-tab__empty">
+      <Icon name="lucide:search-x" class="obs-tab__empty-icon" />
       {{ t('observatory.dangerPanel.empty') }}
     </div>
 
-    <ol v-else class="ree-tab__list" role="list">
-      <li
-        v-for="d in pagedItems"
-        :key="d.normalizedName"
-        class="ree-card"
-      >
-        <button
-          type="button"
-          class="ree-card__btn"
-          :aria-label="t('observatory.dangerPanel.flyTo', { name: d.displayName })"
-          @click="$emit('fly-to-enterprise', d.displayName)"
-        >
-          <div class="ree-card__head">
-            <span class="ree-card__rank">#{{ d.count }}</span>
-            <span
-              class="ree-card__score"
-              :style="{ background: dangerColor(d.suspicionScore) }"
-            >{{ d.suspicionScore.toFixed(1) }}</span>
-            <span class="ree-card__name" :title="d.displayName">{{ d.displayName }}</span>
-            <span
-              v-if="d.suspicionFlags?.length"
-              class="ree-card__flags"
-              :title="d.suspicionFlags.join(', ')"
-            >{{ d.suspicionFlags.length }}!</span>
-          </div>
-          <div class="ree-card__bar" :aria-hidden="true">
-            <div
-              class="ree-card__bar-fill"
-              :style="{
-                width: `${d.suspicionScore * 10}%`,
-                background: dangerColor(d.suspicionScore),
-              }"
-            />
-          </div>
-          <div class="ree-card__meta">
-            <span><strong>{{ d.count }}</strong> {{ t('observatory.dangerPanel.processes') }}</span>
-            <span>{{ formatArea(d.totalAreaHa) }} ha</span>
-            <span v-if="d.ufs.length" class="ree-card__ufs">{{ d.ufs.slice(0, 4).join(' · ') }}</span>
-          </div>
-          <div v-if="d.subs?.length" class="ree-card__subs">
-            {{ d.subs.slice(0, 4).join(' · ') }}
-          </div>
-        </button>
-      </li>
-    </ol>
+    <!-- ENTERPRISES BY TIER -->
+    <template v-else>
+      <template v-for="(tier, tIdx) in sortedTiers" :key="tier.label">
+        <div class="obs-tier-head">
+          <div class="obs-tier-head__accent" :style="{ background: tier.color }" />
+          <span class="obs-tier-head__label" :style="{ color: tier.color }">{{ tier.label }}</span>
+          <span class="obs-tier-head__count">{{ tier.items.length }}</span>
+          <button
+            type="button"
+            class="obs-tier-head__toggle"
+            :aria-label="tierCollapsed[tIdx] ? 'Expand' : 'Collapse'"
+            @click="tierCollapsed[tIdx] = !tierCollapsed[tIdx]"
+          >
+            <Icon :name="tierCollapsed[tIdx] ? 'lucide:chevron-right' : 'lucide:chevron-down'" class="obs-tier-head__toggle-icon" />
+          </button>
+        </div>
 
-    <nav v-if="showAll && totalPages > 1" class="ree-pager" :aria-label="t('observatory.dangerPanel.pager')">
-      <button
-        type="button"
-        class="ree-pager__btn"
-        :disabled="page === 1"
-        :aria-label="t('observatory.dangerPanel.prevPage')"
-        @click="page--"
-      >←</button>
-      <span class="ree-pager__info">{{ page }} / {{ totalPages }}</span>
-      <button
-        type="button"
-        class="ree-pager__btn"
-        :disabled="page >= totalPages"
-        :aria-label="t('observatory.dangerPanel.nextPage')"
-        @click="page++"
-      >→</button>
-    </nav>
+        <ol v-if="!tierCollapsed[tIdx]" class="obs-card-list" role="list">
+          <li
+            v-for="(d, idx) in pagedTierItems(tier.items)"
+            :key="d.normalizedName"
+            class="obs-card"
+            :class="{ 'obs-card--highlighted': highlighted === d.normalizedName }"
+            :style="{ '--anim-delay': `${idx * 0.03}s` }"
+            @mouseenter="onHighlight(d.normalizedName)"
+            @mouseleave="onClearHighlight"
+          >
+            <button
+              type="button"
+              class="obs-card__btn"
+              :aria-label="t('observatory.dangerPanel.flyTo', { name: d.displayName })"
+              @click="onFlyTo(d.displayName)"
+            >
+              <div class="obs-card__btn-accent" :style="{ background: dangerColor(d.suspicionScore) }" />
+              <div class="obs-card__btn-body">
+                <div class="obs-card__btn-top">
+                  <span
+                    class="obs-card__btn-score"
+                    :style="{ background: dangerColor(d.suspicionScore) }"
+                  >{{ d.suspicionScore.toFixed(1) }}</span>
+                  <span class="obs-card__btn-name" :title="d.displayName">{{ d.displayName }}</span>
+                  <span class="obs-card__btn-count">#{{ d.count }}</span>
+                  <Icon v-if="d.recentPct >= 90" name="lucide:trending-up" class="obs-card__trend-icon" :title="`${d.recentPct.toFixed(0)}% recent`" />
+                </div>
+                <div class="obs-card__btn-bar" :aria-hidden="true">
+                  <div
+                    class="obs-card__btn-bar-fill"
+                    :style="{
+                      width: `${d.suspicionScore * 10}%`,
+                      background: dangerColor(d.suspicionScore),
+                    }"
+                  />
+                </div>
+                <div class="obs-card__btn-meta">
+                  <span :title="t('observatory.dangerPanel.processes')">
+                    <Icon name="lucide:file-text" class="obs-card__meta-icon" />
+                    {{ d.count }}
+                  </span>
+                  <span :title="t('observatory.dangerPanel.area')">
+                    <Icon name="lucide:maximize-2" class="obs-card__meta-icon" />
+                    {{ formatArea(d.totalAreaHa) }} ha
+                  </span>
+                  <span v-if="d.ufs.length" :title="t('observatory.dangerPanel.states')">
+                    <Icon name="lucide:map-pin" class="obs-card__meta-icon" />
+                    {{ d.ufs.slice(0, 4).join(' · ') }}
+                  </span>
+                </div>
+                <div v-if="d.subs?.length" class="obs-card__btn-subs" :title="t('observatory.dangerPanel.substances')">
+                  <Icon name="lucide:package" class="obs-card__subs-icon" />
+                  {{ d.subs.slice(0, 4).join(' · ') }}
+                </div>
+                <div v-if="d.suspicionFlags?.length" class="obs-card__btn-flags">
+                  <span
+                    v-for="flag in d.suspicionFlags.slice(0, 3)"
+                    :key="flag"
+                    class="obs-card__flag-badge"
+                    :title="flagTooltip(flag)"
+                  >{{ flagLabel(flag) }}</span>
+                  <span
+                    v-if="d.suspicionFlags.length > 3"
+                    class="obs-card__flag-badge obs-card__flag-badge--more"
+                    :title="`${d.suspicionFlags.length - 3} more flags`"
+                  >+{{ d.suspicionFlags.length - 3 }}</span>
+                </div>
+              </div>
+            </button>
+            <div class="obs-card__actions">
+              <button
+                type="button"
+                class="obs-card__action-btn"
+                :title="t('observatory.dangerPanel.showOnMap')"
+                :aria-label="t('observatory.dangerPanel.showOnMap')"
+                @click="onFlyTo(d.displayName)"
+              >
+                <Icon name="lucide:map-pin" class="obs-card__action-icon" />
+              </button>
+              <button
+                type="button"
+                class="obs-card__action-btn"
+                :title="t('observatory.dangerPanel.report')"
+                :aria-label="t('observatory.dangerPanel.report')"
+                @click="openReport(d)"
+              >
+                <Icon name="lucide:flag" class="obs-card__action-icon" />
+              </button>
+            </div>
+          </li>
+        </ol>
+
+        <nav v-if="!tierCollapsed[tIdx] && needPagination(tier.items)" class="obs-pager">
+          <button type="button" class="obs-pager__btn" :disabled="tierPages[tIdx] === 1" @click="tierPages[tIdx]--">
+            <Icon name="lucide:chevron-left" class="obs-pager__icon" />
+          </button>
+          <span class="obs-pager__info">{{ tierPages[tIdx] }} / {{ Math.ceil(tier.items.length / pageSize) }}</span>
+          <button type="button" class="obs-pager__btn" :disabled="tierPages[tIdx] >= Math.ceil(tier.items.length / pageSize)" @click="tierPages[tIdx]++">
+            <Icon name="lucide:chevron-right" class="obs-pager__icon" />
+          </button>
+        </nav>
+      </template>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, reactive, watch } from 'vue'
 import type { SpeculatorIndexEntry } from '@/lib/observatory-analysis'
 
 const { t } = useI18n()
@@ -94,18 +181,28 @@ const { t } = useI18n()
 const props = defineProps<{
   items: SpeculatorIndexEntry[]
   showAll: boolean
+  highlight?: string | null
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   'fly-to-enterprise': [name: string]
   'update:showAll': [v: boolean]
+  'update:highlight': [v: string | null]
+  'report-enterprise': [name: string, score: number, flags: string[]]
 }>()
 
-const page = ref(1)
 const pageSize = 20
+const infoOpen = ref(false)
+const highlighted = ref<string | null>(null)
+const tierCollapsed = reactive([false, false, false])
+const tierPages = reactive([1, 1, 1])
 
-watch(() => props.showAll, () => { page.value = 1 })
-watch(() => props.items, () => { page.value = 1 })
+watch(() => props.showAll, () => { tierPages.fill(1) })
+watch(() => props.items, () => { tierPages.fill(1) })
+
+const criticalItems = computed(() => sortedItems.value.filter(d => d.suspicionScore >= 8))
+const highItems = computed(() => sortedItems.value.filter(d => d.suspicionScore >= 6 && d.suspicionScore < 8))
+const mediumItems = computed(() => sortedItems.value.filter(d => d.suspicionScore < 6))
 
 const sortedItems = computed(() => {
   return [...props.items].sort((a, b) => {
@@ -114,13 +211,39 @@ const sortedItems = computed(() => {
   })
 })
 
-const pagedItems = computed(() => {
-  if (!props.showAll) return sortedItems.value.slice(0, 20)
-  const start = (page.value - 1) * pageSize
-  return sortedItems.value.slice(start, start + pageSize)
+const visibleItems = computed(() => {
+  return props.showAll ? sortedItems.value : sortedItems.value.slice(0, 20)
 })
 
+// For backward compat with the "show all" toggle mode, also compute old-style paging
 const totalPages = computed(() => Math.max(1, Math.ceil(sortedItems.value.length / pageSize)))
+
+const sortedTiers = computed(() => {
+  const tiers = [
+    { label: t('observatory.dangerPanel.critical'), color: '#e74c3c', items: criticalItems.value },
+    { label: t('observatory.dangerPanel.high'), color: '#f39c12', items: highItems.value },
+    { label: t('observatory.dangerPanel.medium'), color: '#27ae60', items: mediumItems.value },
+  ]
+  return tiers.filter(t => t.items.length > 0)
+})
+
+function pagedTierItems(items: SpeculatorIndexEntry[]) {
+  if (!props.showAll) return items.slice(0, 20)
+  const idx = sortedTiers.value.findIndex(t => t.label === findTierLabelForItem(items[0]))
+  const page = idx >= 0 ? tierPages[idx] : 1
+  const start = (page - 1) * pageSize
+  return items.slice(start, start + pageSize)
+}
+
+function findTierLabelForItem(item: SpeculatorIndexEntry): string {
+  if (item.suspicionScore >= 8) return t('observatory.dangerPanel.critical')
+  if (item.suspicionScore >= 6) return t('observatory.dangerPanel.high')
+  return t('observatory.dangerPanel.medium')
+}
+
+function needPagination(items: SpeculatorIndexEntry[]) {
+  return props.showAll && items.length > pageSize
+}
 
 function dangerColor(score: number) {
   if (score >= 8) return '#e74c3c'
@@ -133,176 +256,272 @@ function formatArea(ha: number) {
   if (ha >= 1000) return `${Math.round(ha / 1000)}K`
   return `${ha}`
 }
+
+function flagLabel(flag: string): string {
+  const map: Record<string, string> = {
+    RECENT_RUSH: 'Rush',
+    CARPET_BOMBING: 'Carpet',
+    HIGH_VOLUME: 'High Vol',
+    LARGE_AREA_FEW_SUBS: 'Few Subs',
+    MULTI_UF: 'Multi-UF',
+  }
+  return map[flag] || flag.slice(0, 6)
+}
+
+function flagTooltip(flag: string): string {
+  const map: Record<string, string> = {
+    RECENT_RUSH: t('observatory.dangerPanel.flagRecentRush'),
+    CARPET_BOMBING: t('observatory.dangerPanel.flagCarpet'),
+    HIGH_VOLUME: t('observatory.dangerPanel.flagHighVol'),
+    LARGE_AREA_FEW_SUBS: t('observatory.dangerPanel.flagFewSubs'),
+    MULTI_UF: t('observatory.dangerPanel.flagMultiUf'),
+  }
+  return map[flag] || flag
+}
+
+function onHighlight(name: string) {
+  highlighted.value = name
+  emit('update:highlight', name)
+}
+
+function onClearHighlight() {
+  highlighted.value = null
+  emit('update:highlight', null)
+}
+
+function onFlyTo(name: string) {
+  emit('fly-to-enterprise', name)
+}
+
+function openReport(d: SpeculatorIndexEntry) {
+  emit('report-enterprise', d.displayName, d.suspicionScore, d.suspicionFlags)
+}
 </script>
 
 <style scoped>
-.ree-tab { display: flex; flex-direction: column; gap: 6px; }
-.ree-tab__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.obs-tab { display: flex; flex-direction: column; gap: 6px; }
+
+.obs-tab__head {
+  display: flex; align-items: center; justify-content: space-between;
   padding: 4px 4px 6px;
 }
-.ree-tab__title {
-  margin: 0;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.5);
+
+.obs-tab__title {
+  margin: 0; display: flex; align-items: center; gap: 6px;
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--obs-text-label);
 }
-.ree-tab__toggle {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 9px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: inherit;
+
+.obs-tab__title-icon { width: 12px; height: 12px; color: var(--obs-red); }
+
+.obs-tab__toggle {
+  background: transparent; border: 1px solid var(--obs-panel-border);
+  color: var(--obs-text-label); font-size: 8px; font-weight: 700;
+  padding: 3px 8px; border-radius: 4px; cursor: pointer; font-family: inherit;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
-.ree-tab__toggle:hover {
+
+.obs-tab__toggle:hover {
   background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #fff;
-}
-.ree-tab__empty {
-  padding: 24px 12px;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 11px;
+  border-color: rgba(255, 255, 255, 0.16);
+  color: var(--obs-text-primary);
 }
 
-.ree-tab__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.obs-tab__empty {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 28px 12px; text-align: center;
+  color: var(--obs-text-dim); font-size: 10px;
 }
 
-.ree-card__btn {
-  display: block;
-  width: 100%;
-  text-align: left;
+.obs-tab__empty-icon { width: 20px; height: 20px; opacity: 0.4; }
+
+/* Expandable info section */
+.obs-expand { margin: 0 2px; }
+
+.obs-expand__btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 8px; font-weight: 600; color: var(--obs-text-dim);
+  background: none; border: none; cursor: pointer; font-family: inherit;
+  padding: 3px 6px; border-radius: 3px;
+  transition: color 0.12s, background 0.12s;
+}
+
+.obs-expand__btn:hover { color: var(--obs-text-body); background: rgba(255,255,255,0.03); }
+
+.obs-expand__icon { width: 10px; height: 10px; }
+
+.obs-expand__body {
+  font-size: 9px; color: var(--obs-text-body); line-height: 1.5;
+  padding: 6px 8px; margin-top: 2px;
+  background: rgba(255,255,255,0.02); border-radius: 5px;
+  border: 1px solid var(--obs-panel-border);
+}
+
+.obs-expand__legend {
+  list-style: none; margin: 6px 0; padding: 0;
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+.obs-expand__legend li { display: flex; align-items: center; gap: 6px; }
+
+.obs-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.obs-expand__footnote {
+  font-size: 8px; color: var(--obs-text-dim); font-style: italic; margin: 6px 0 0;
+}
+
+/* Tier headers */
+.obs-tier-head {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 4px 3px; margin-top: 2px;
+}
+
+.obs-tier-head__accent { width: 3px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+
+.obs-tier-head__label {
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.06em; flex: 1;
+}
+
+.obs-tier-head__count {
+  font-size: 8px; font-weight: 700; font-family: ui-monospace, monospace;
+  color: var(--obs-text-dim); background: rgba(255,255,255,0.04);
+  padding: 1px 5px; border-radius: 3px;
+}
+
+.obs-tier-head__toggle {
+  background: none; border: none; color: var(--obs-text-dim);
+  cursor: pointer; padding: 2px; border-radius: 3px;
+  display: flex; align-items: center;
+  transition: color 0.12s;
+}
+
+.obs-tier-head__toggle:hover { color: var(--obs-text-primary); }
+
+.obs-tier-head__toggle-icon { width: 11px; height: 11px; }
+
+.obs-card-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+
+.obs-card {
+  display: flex; gap: 1px;
+  animation: obs-card-enter 0.3s ease both;
+  animation-delay: var(--anim-delay, 0s);
+  border-radius: 7px;
+  transition: box-shadow 0.15s;
+}
+
+.obs-card--highlighted {
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 16px rgba(255,255,255,0.06);
+}
+
+@keyframes obs-card-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.obs-card__btn {
+  flex: 1; display: flex; text-align: left;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  padding: 7px 9px;
-  cursor: pointer;
-  font-family: inherit;
-  color: inherit;
-  transition: background 0.1s, border-color 0.1s;
-}
-.ree-card__btn:hover {
-  background: rgba(231, 76, 60, 0.06);
-  border-color: rgba(231, 76, 60, 0.25);
-}
-.ree-card__btn:focus-visible {
-  outline: 2px solid #5dade2;
-  outline-offset: 2px;
-}
-
-.ree-card__head {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.ree-card__rank {
-  font-size: 8px;
-  color: rgba(255, 255, 255, 0.35);
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.ree-card__score {
-  display: inline-block;
-  font-size: 9px;
-  font-weight: 800;
-  padding: 1px 5px;
-  border-radius: 3px;
-  color: #fff;
-}
-.ree-card__name {
-  flex: 1;
-  font-size: 11px;
-  font-weight: 600;
-  color: #e8e8e8;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  border: 1px solid var(--obs-panel-border);
+  border-radius: 7px; overflow: hidden; cursor: pointer;
+  font-family: inherit; color: inherit; padding: 0;
+  transition: background 0.12s, border-color 0.12s;
   min-width: 0;
 }
-.ree-card__flags {
-  font-size: 8px;
-  font-weight: 800;
-  padding: 1px 4px;
-  border-radius: 2px;
-  background: rgba(93, 173, 226, 0.18);
-  color: #5dade2;
+
+.obs-card__btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
-.ree-card__bar {
-  height: 3px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 2px;
-  overflow: hidden;
-  margin: 5px 0;
-}
-.ree-card__bar-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.2s;
+.obs-card--highlighted .obs-card__btn {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.ree-card__meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.5);
-  font-variant-numeric: tabular-nums;
-}
-.ree-card__ufs { color: rgba(255, 255, 255, 0.4); }
+.obs-card__btn:focus-visible { outline: 2px solid var(--obs-blue); outline-offset: 2px; }
 
-.ree-card__subs {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.35);
-  margin-top: 3px;
-  line-height: 1.35;
+.obs-card__btn-accent { width: 3px; flex-shrink: 0; }
+
+.obs-card__btn-body { flex: 1; padding: 6px 8px; min-width: 0; }
+
+.obs-card__btn-top { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+
+.obs-card__btn-score {
+  display: inline-block; font-size: 8px; font-weight: 800;
+  padding: 1px 4px; border-radius: 3px; color: #fff;
+  font-family: ui-monospace, monospace; line-height: 1.3;
 }
 
-.ree-pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 0 0;
+.obs-card__btn-name {
+  flex: 1; font-size: 10px; font-weight: 600; color: var(--obs-text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
 }
-.ree-pager__btn {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e0e0e0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  padding: 3px 10px;
-  font-size: 11px;
-  cursor: pointer;
-  font-family: inherit;
+
+.obs-card__btn-count {
+  font-size: 7px; font-weight: 700; color: var(--obs-text-dim);
+  font-family: ui-monospace, monospace;
 }
-.ree-pager__btn:hover:not(:disabled) {
-  background: rgba(231, 76, 60, 0.15);
-  border-color: #e74c3c;
+
+.obs-card__trend-icon {
+  width: 10px; height: 10px; color: var(--obs-amber); flex-shrink: 0;
 }
-.ree-pager__btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.ree-pager__info {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.5);
-  font-variant-numeric: tabular-nums;
+
+.obs-card__btn-bar { height: 2px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; margin: 4px 0; }
+
+.obs-card__btn-bar-fill { height: 100%; border-radius: 2px; transition: width 0.25s ease; }
+
+.obs-card__btn-meta { display: flex; gap: 6px; flex-wrap: wrap; font-size: 8px; color: var(--obs-text-muted); font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+.obs-card__meta-icon { width: 7px; height: 7px; margin-right: 1px; vertical-align: middle; opacity: 0.6; }
+
+.obs-card__btn-subs { display: flex; align-items: center; gap: 3px; font-size: 8px; color: var(--obs-text-dim); margin-top: 2px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.obs-card__subs-icon { width: 7px; height: 7px; flex-shrink: 0; opacity: 0.5; }
+
+.obs-card__btn-flags { display: flex; gap: 2px; flex-wrap: wrap; margin-top: 3px; }
+
+.obs-card__flag-badge { font-size: 7px; font-weight: 800; padding: 1px 4px; border-radius: 2px; background: rgba(93,173,226,0.12); color: var(--obs-blue-light); letter-spacing: 0.02em; cursor: help; }
+
+.obs-card__flag-badge--more { background: rgba(255,255,255,0.05); color: var(--obs-text-dim); }
+
+.obs-card__actions {
+  display: flex; flex-direction: column; gap: 2px; padding: 6px 4px;
+  flex-shrink: 0; align-self: center;
 }
+
+.obs-card__action-btn {
+  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid transparent; border-radius: 4px;
+  color: var(--obs-text-dim); cursor: pointer; font-family: inherit;
+  transition: all 0.12s;
+}
+
+.obs-card__action-btn:hover { background: rgba(255,255,255,0.06); color: var(--obs-text-primary); border-color: var(--obs-panel-border); }
+
+.obs-card__action-icon { width: 11px; height: 11px; }
+
+.obs-pager { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 0 2px; }
+
+.obs-pager__btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 20px; background: rgba(255,255,255,0.04);
+  color: var(--obs-text-body); border: 1px solid var(--obs-panel-border);
+  border-radius: 4px; cursor: pointer; font-family: inherit;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.obs-pager__btn:hover:not(:disabled) { background: rgba(231,76,60,0.1); border-color: rgba(231,76,60,0.25); color: var(--obs-red); }
+.obs-pager__btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.obs-pager__icon { width: 10px; height: 10px; }
+.obs-pager__info { font-size: 8px; font-weight: 600; color: var(--obs-text-muted); font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+.obs-fade-enter-active, .obs-fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.obs-fade-enter-from, .obs-fade-leave-to { opacity: 0; transform: translateY(-4px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .ree-card__btn, .ree-card__bar-fill, .ree-pager__btn { transition: none; }
+  .obs-card { animation: none; }
+  .obs-card__btn-bar-fill, .obs-card, .obs-card__btn, .obs-expand__body { transition: none; }
+  .obs-fade-enter-active, .obs-fade-leave-active { transition: none; }
 }
 </style>

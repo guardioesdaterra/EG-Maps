@@ -2,14 +2,10 @@
 import { computed } from 'vue'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 
-interface Props {
+const props = defineProps<{
   crew: CrewRegionData | CrewLocation | null
   isLocation?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  isLocation: false,
-})
+}>()
 
 const { t } = useI18n()
 
@@ -19,7 +15,7 @@ const color = computed(() => {
   return c.activeCrews > 20 ? '#22c55e' : c.activeCrews > 5 ? '#3b82f6' : '#a855f7'
 })
 
-const region = computed(() => {
+const regionName = computed(() => {
   if (!props.crew) return ''
   return props.isLocation
     ? (props.crew as CrewLocation).name || (props.crew as CrewLocation).region
@@ -46,6 +42,11 @@ const growth = computed(() => {
   if (!h2022 || h2022.activeCrews === 0) return null
   return Math.round(((c.activeCrews - h2022.activeCrews) / h2022.activeCrews) * 100)
 })
+
+const mapsUrl = computed(() => {
+  if (!props.crew || props.isLocation) return '#'
+  return `https://www.google.com/maps?q=${(props.crew as CrewRegionData).latitude},${(props.crew as CrewRegionData).longitude}`
+})
 </script>
 
 <template>
@@ -57,50 +58,79 @@ const growth = computed(() => {
     />
 
     <header class="crew-popup__head">
-      <p class="crew-popup__eyebrow">Earth Guardians Crew</p>
-      <h2 class="crew-popup__title">{{ region }}</h2>
+      <div class="crew-popup__group-row">
+        <span class="crew-popup__group" :style="{ borderColor: color, color }">
+          Earth Guardians Crew
+        </span>
+        <span
+          v-if="isLocation"
+          class="crew-popup__status"
+          :style="{ background: statusColor + '18', color: statusColor, borderColor: statusColor + '40' }"
+        >
+          <span class="crew-popup__status-dot" :style="{ background: statusColor }" />
+          {{ isActive ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+      <h2 class="crew-popup__title">{{ regionName }}</h2>
       <p v-if="isLocation && locationParts" class="crew-popup__location">
-        <Icon name="lucide:map-pin" class="h-3.5 w-3.5" />
+        <Icon name="lucide:map-pin" size="0.75rem" />
         <span>{{ locationParts }}</span>
       </p>
-      <div v-if="isLocation" class="crew-popup__status">
-        <span class="crew-popup__status-dot" :style="{ background: statusColor }" />
-        <span :style="{ color: statusColor }">{{ isActive ? 'Active' : 'Inactive' }}</span>
-      </div>
     </header>
 
     <template v-if="!isLocation">
-      <dl class="crew-popup__stats">
-        <div class="crew-popup__stat">
-          <dt>{{ t('crews.activeCrews') }}</dt>
-          <dd :style="{ color }">{{ (crew as CrewRegionData).activeCrews }}</dd>
+      <div class="crew-popup__body">
+        <div class="crew-popup__stats">
+          <div class="crew-popup__stat">
+            <Icon name="lucide:users" size="0.75rem" class="crew-popup__stat-icon" />
+            <div class="crew-popup__stat-body">
+              <span class="crew-popup__stat-label">{{ t('crews.activeCrews') }}</span>
+              <span class="crew-popup__stat-value" :style="{ color }">
+                {{ (crew as CrewRegionData).activeCrews }}
+              </span>
+            </div>
+          </div>
+          <div class="crew-popup__stat">
+            <Icon name="lucide:clock" size="0.75rem" class="crew-popup__stat-icon" />
+            <div class="crew-popup__stat-body">
+              <span class="crew-popup__stat-label">{{ t('crews.totalMembers') }}</span>
+              <span class="crew-popup__stat-value">{{ (crew as CrewRegionData).totalMembers.toLocaleString() }}</span>
+            </div>
+          </div>
+          <div class="crew-popup__stat">
+            <Icon name="lucide:globe" size="0.75rem" class="crew-popup__stat-icon" />
+            <div class="crew-popup__stat-body">
+              <span class="crew-popup__stat-label">{{ t('crews.countries') }}</span>
+              <span class="crew-popup__stat-value">{{ (crew as CrewRegionData).countries }}</span>
+            </div>
+          </div>
+          <div
+            v-if="growth !== null"
+            class="crew-popup__stat crew-popup__stat--growth"
+            :style="{ background: '#22c55e12', borderColor: '#22c55e30' }"
+          >
+            <Icon name="lucide:trending-up" size="0.75rem" class="crew-popup__stat-icon" style="color:#22c55e" />
+            <div class="crew-popup__stat-body">
+              <span class="crew-popup__stat-label">{{ t('crews.growthSince2022') }}</span>
+              <span class="crew-popup__stat-value" style="color:#22c55e">+{{ growth }}%</span>
+            </div>
+          </div>
         </div>
-        <div class="crew-popup__stat">
-          <dt>{{ t('crews.totalMembers') }}</dt>
-          <dd>{{ (crew as CrewRegionData).totalMembers.toLocaleString() }}</dd>
-        </div>
-        <div class="crew-popup__stat">
-          <dt>{{ t('crews.countries') }}</dt>
-          <dd>{{ (crew as CrewRegionData).countries }}</dd>
-        </div>
-        <div v-if="growth !== null" class="crew-popup__stat crew-popup__stat--growth">
-          <dt>{{ t('crews.growthSince2022') }}</dt>
-          <dd class="crew-popup__growth">+{{ growth }}%</dd>
-        </div>
-      </dl>
-    </template>
+      </div>
 
-    <footer v-if="!isLocation" class="crew-popup__footer">
-      <a
-        :href="`https://www.google.com/maps?q=${(crew as CrewRegionData).latitude},${(crew as CrewRegionData).longitude}`"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="crew-popup__link"
-      >
-        <Icon name="lucide:external-link" class="h-3 w-3" />
-        <span>{{ t('project.openInMaps') }}</span>
-      </a>
-    </footer>
+      <footer class="crew-popup__footer">
+        <a
+          :href="mapsUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="crew-popup__action"
+          :style="{ '--action-clr': color }"
+        >
+          <Icon name="lucide:external-link" size="0.75rem" />
+          <span>Open in Google Maps</span>
+        </a>
+      </footer>
+    </template>
   </article>
 </template>
 
@@ -108,13 +138,11 @@ const growth = computed(() => {
 .crew-popup {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  color: #fafafa;
+  color: #e2e2e2;
   font-family: 'Inter', system-ui, sans-serif;
   position: relative;
-  min-width: 18rem;
-  max-width: 26rem;
 }
+
 .crew-popup__accent {
   position: absolute;
   top: 0;
@@ -122,96 +150,156 @@ const growth = computed(() => {
   width: 4px;
   height: 100%;
   border-radius: 4px 0 0 4px;
+  transition: background 0.25s ease;
 }
-.crew-popup__head { display: flex; flex-direction: column; gap: 0.25rem; }
-.crew-popup__eyebrow {
-  font-size: 9px;
+
+.crew-popup__head {
+  padding-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.crew-popup__group-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.crew-popup__group {
+  font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: rgba(255, 255, 255, 0.45);
-  font-weight: 800;
-  margin: 0;
+  font-weight: 700;
+  border: 1px solid;
+  padding: 0.1rem 0.55rem;
+  border-radius: 4px;
+  display: inline-block;
+  line-height: 1.4;
 }
-.crew-popup__title {
-  font-size: 1.05rem;
-  font-weight: 800;
-  line-height: 1.3;
-  margin: 0;
-}
-.crew-popup__location {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.65);
-  margin: 0;
-}
+
 .crew-popup__status {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 0.6875rem;
-  font-weight: 600;
+  gap: 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  line-height: 1.4;
 }
+
 .crew-popup__status-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   flex-shrink: 0;
 }
+
+.crew-popup__title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0;
+  color: #fff;
+  letter-spacing: -0.01em;
+  overflow-wrap: break-word;
+}
+
+.crew-popup__location {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  margin-top: 0.15rem;
+}
+
+.crew-popup__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
 .crew-popup__stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
-  margin: 0;
 }
+
 .crew-popup__stat {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 0.6rem 0.75rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: flex-start;
+  gap: 0.55rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 0.7rem;
 }
+
 .crew-popup__stat--growth {
   grid-column: 1 / -1;
-  background: rgba(34, 197, 94, 0.08);
-  border-color: rgba(34, 197, 94, 0.2);
 }
-.crew-popup__stat dt {
-  font-size: 9px;
+
+.crew-popup__stat-icon {
+  color: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.crew-popup__stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.crew-popup__stat-label {
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.4);
   font-weight: 700;
 }
-.crew-popup__stat dd {
+
+.crew-popup__stat-value {
   font-size: 1rem;
   font-weight: 800;
-  margin: 0;
+  color: #fff;
   font-variant-numeric: tabular-nums;
 }
-.crew-popup__growth {
-  color: #22c55e;
-}
+
 .crew-popup__footer {
   display: flex;
-  gap: 0.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 0.85rem;
+  margin-top: 0.5rem;
 }
-.crew-popup__link {
+
+.crew-popup__action {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.6875rem;
-  color: #5dade2;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--action-clr, #5dade2);
   text-decoration: none;
   font-weight: 600;
-  padding: 0.3rem 0.65rem;
-  border-radius: 6px;
-  transition: background 0.15s;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  line-height: 1.4;
+  transition: background 0.15s, border-color 0.2s, color 0.15s;
 }
-.crew-popup__link:hover { background: rgba(93, 173, 226, 0.12); }
+
+.crew-popup__action:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--action-clr, #5dade2);
+}
 </style>

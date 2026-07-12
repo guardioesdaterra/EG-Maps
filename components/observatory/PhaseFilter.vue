@@ -1,39 +1,49 @@
 <template>
-  <div class="flex flex-col gap-1.5">
-    <h3 class="text-[8px] font-bold uppercase tracking-wider text-zinc-500">{{ t('observatory.phaseFilter.title') }}</h3>
-    <div class="flex flex-wrap gap-1" role="group" :aria-label="t('observatory.phaseFilter.title')">
+  <div class="obs-phase-filter">
+    <h3 class="obs-phase-filter__title">
+      <Icon name="lucide:layers" class="obs-phase-filter__title-icon" />
+      {{ t('observatory.phaseFilter.title') }}
+    </h3>
+    <div class="obs-phase-filter__chips" role="group" :aria-label="t('observatory.phaseFilter.title')">
       <button
         v-for="phase in phases"
         :key="phase.key"
         type="button"
-        class="px-2 py-1 text-[8px] font-bold rounded border transition-all"
-        :class="selectedPhases.has(phase.key)
-          ? 'opacity-100'
-          : 'opacity-30 hover:opacity-60'"
+        class="obs-phase-filter__chip"
+        :class="{ 'obs-phase-filter__chip--active': selectedPhases.has(phase.key) }"
         :style="{
-          borderColor: phase.color,
-          background: selectedPhases.has(phase.key) ? phase.color + '22' : 'transparent',
-          color: phase.color,
+          '--chip-color': phase.color,
         }"
         :aria-pressed="selectedPhases.has(phase.key)"
         :aria-label="phase.label"
         @click="togglePhase(phase.key)"
       >
+        <Icon
+          name="lucide:check"
+          class="obs-phase-filter__chip-check"
+          :style="{ opacity: selectedPhases.has(phase.key) ? 1 : 0 }"
+        />
         {{ phase.shortLabel }}
       </button>
     </div>
-    <div class="flex items-center gap-1 mt-0.5">
+    <div class="obs-phase-filter__actions">
       <button
         type="button"
-        class="text-[8px] text-zinc-500 hover:text-zinc-300 transition-colors"
+        class="obs-phase-filter__action"
         @click="selectAll"
-      >{{ t('observatory.phaseFilter.all') }}</button>
-      <span class="text-zinc-700">·</span>
+      >
+        <Icon name="lucide:check-square" class="obs-phase-filter__action-icon" />
+        {{ t('observatory.phaseFilter.all') }}
+      </button>
+      <span class="obs-phase-filter__sep">·</span>
       <button
         type="button"
-        class="text-[8px] text-zinc-500 hover:text-zinc-300 transition-colors"
+        class="obs-phase-filter__action"
         @click="selectNone"
-      >{{ t('observatory.phaseFilter.none') }}</button>
+      >
+        <Icon name="lucide:square" class="obs-phase-filter__action-icon" />
+        {{ t('observatory.phaseFilter.none') }}
+      </button>
     </div>
   </div>
 </template>
@@ -59,7 +69,6 @@ const phases = Object.entries(RARE_EARTH_PHASES).map(([key, val]) => ({
 
 const selectedPhases = reactive(new Set(props.selected))
 
-// Sync local state when parent changes the prop (e.g., reset)
 watch(() => props.selected, (newVal) => {
   selectedPhases.clear()
   newVal.forEach(v => selectedPhases.add(v))
@@ -85,3 +94,112 @@ function selectNone() {
   emit('update:selected', new Set(selectedPhases))
 }
 </script>
+
+<style scoped>
+.obs-phase-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--obs-panel-bg-dark);
+  border: 1px solid var(--obs-panel-border);
+  border-radius: 8px;
+}
+
+.obs-phase-filter__title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--obs-text-label);
+}
+
+.obs-phase-filter__title-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--obs-blue);
+}
+
+.obs-phase-filter__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.obs-phase-filter__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 5px;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(255, 255, 255, 0.45);
+  transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.obs-phase-filter__chip:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.obs-phase-filter__chip--active {
+  background: color-mix(in srgb, var(--chip-color) 12%, transparent);
+  border-color: color-mix(in srgb, var(--chip-color) 30%, transparent);
+  color: var(--chip-color);
+  opacity: 1;
+}
+
+.obs-phase-filter__chip-check {
+  width: 9px;
+  height: 9px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.obs-phase-filter__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.obs-phase-filter__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--obs-text-dim);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.obs-phase-filter__action:hover {
+  color: var(--obs-text-body);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.obs-phase-filter__action-icon {
+  width: 9px;
+  height: 9px;
+}
+
+.obs-phase-filter__sep {
+  color: var(--obs-text-dim);
+  font-size: 8px;
+}
+</style>

@@ -3,7 +3,6 @@ import { computed, ref, toRefs, onMounted } from 'vue'
 import { useI18n } from '@/composables/useI18n'
 import type { ObservatoryControls as OControls, ObservatoryData } from '@/composables/useObservatoryControls'
 import type { UserPin } from '@/composables/useUserPin'
-import YearSlider from './YearSlider.vue'
 import PhaseFilter from './PhaseFilter.vue'
 
 const props = defineProps<{
@@ -11,7 +10,6 @@ const props = defineProps<{
   stats: {
     categoryStats: OControls['categoryStats']
     totalCount: OControls['totalCount']
-    filteredCount: OControls['filteredCount']
     activeFilterCount: OControls['activeFilterCount']
     activeFilterSummary: OControls['activeFilterSummary']
     formatSyncDate: (iso?: string) => string
@@ -52,19 +50,8 @@ onMounted(() => {
 
 const categoryStats = computed(() => props.stats.categoryStats.value)
 const totalCount = computed(() => props.stats.totalCount.value)
-const filteredCount = computed(() => props.stats.filteredCount.value)
 const deepAnalysis = computed(() => props.data.deepAnalysis.value)
 const isRegional = computed(() => props.data.isRegional.value)
-
-function updateYearMin(value: number) {
-  props.controls.yearMin.value = value
-  props.controls.debouncedFilter()
-}
-
-function updateYearMax(value: number) {
-  props.controls.yearMax.value = value
-  props.controls.debouncedFilter()
-}
 
 function updatePhases(value: Set<string>) {
   props.controls.selectedPhases.value = value
@@ -152,16 +139,6 @@ function updatePhases(value: Set<string>) {
             <span class="obs-search__icon" aria-hidden="true">🔍</span>
             <input v-model="controls.searchTerm.value" :placeholder="t('observatory.search')" class="obs-search__input" :aria-label="t('observatory.search')" @input="controls.debouncedFilter()">
             <button v-if="controls.searchTerm.value" type="button" class="obs-search__clear" :aria-label="t('observatory.clearSearch')" @click="controls.searchTerm.value = ''; controls.debouncedFilter()">×</button>
-          </div>
-
-          <div class="mt-2">
-            <YearSlider
-              :year-min="controls.yearMin.value"
-              :year-max="controls.yearMax.value"
-              :filtered-count="filteredCount"
-              @update:year-min="updateYearMin"
-              @update:year-max="updateYearMax"
-            />
           </div>
 
           <div class="mt-2">

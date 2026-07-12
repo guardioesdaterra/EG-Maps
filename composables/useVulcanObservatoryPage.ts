@@ -222,8 +222,12 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
       if (s.yearMin) yearMin.value = s.yearMin as number
       if (s.yearMax) yearMax.value = s.yearMax as number
       if (s.phases) selectedPhases.value = new Set(s.phases as string[])
-      if (s.heatmap) layerVis.value['heatmap'] = true
-      if (s.enterprise) layerVis.value['enterprise_hq'] = true
+      if (s.heatmap || s.enterprise) {
+        const patch: Record<string, boolean> = {}
+        if (s.heatmap) patch['heatmap'] = true
+        if (s.enterprise) patch['enterprise_hq'] = true
+        layerVis.value = { ...layerVis.value, ...patch }
+      }
       if (s.tab) activeTab.value = s.tab as ObservatoryTabKey
       debouncedFilter()
     } else {

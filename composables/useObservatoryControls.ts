@@ -178,9 +178,10 @@ export function useObservatoryControls(): ObservatoryControls {
   const enterpriseLayerVisible = ref(false)
 
   function toggleLayer(key: string) {
-    layerVis.value[key] = !layerVis.value[key]
+    const newVal = !layerVis.value[key]
+    layerVis.value = { ...layerVis.value, [key]: newVal }
     if (key === 'enterprise_hq') {
-      enterpriseLayerVisible.value = layerVis.value[key]
+      enterpriseLayerVisible.value = newVal
       const m = mapRef.value
       if (m) {
         if (enterpriseLayerVisible.value) {

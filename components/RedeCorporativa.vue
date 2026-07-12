@@ -323,27 +323,27 @@ onUnmounted(() => {
   position: fixed; inset: 0; z-index: 2147483647;
   background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
   display: flex; align-items: center; justify-content: center;
-  padding: 20px;
+  padding: clamp(10px, 3vw, 20px);
 }
 .rede-modal {
-  width: 100%; max-width: 800px; max-height: 90vh;
+  width: 100%; max-width: min(800px, 95vw); max-height: 90vh;
   background: #0a0a0f; border: 1px solid rgba(52,152,219,0.2);
   border-radius: 16px; overflow: hidden;
   display: flex; flex-direction: column;
 }
 .rede-header {
   display: flex; justify-content: space-between; align-items: flex-start;
-  padding: 16px 20px 12px; border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: clamp(10px, 2.5vw, 16px) clamp(12px, 3vw, 20px) clamp(8px, 2vw, 12px); border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .rede-badge {
   font-size: 9px; font-weight: 800; letter-spacing: 0.1em;
   color: #5dade2; padding: 2px 6px; border-radius: 4px;
   background: rgba(52,152,219,0.12);
 }
-.rede-title { font-size: 16px; font-weight: 800; color: #eee; margin: 2px 0 0; }
-.rede-subtitle { font-size: 10px; color: #666; margin: 0; }
+.rede-title { font-size: clamp(12px, 3vw, 16px); font-weight: 800; color: #eee; margin: 2px 0 0; }
+.rede-subtitle { font-size: clamp(8px, 2vw, 10px); color: #666; margin: 0; }
 .rede-close {
-  background: none; border: none; color: #666; font-size: 24px;
+  background: none; border: none; color: #666; font-size: clamp(18px, 4vw, 24px);
   cursor: pointer; padding: 0 4px; line-height: 1;
 }
 .rede-close:hover { color: #fff; }
@@ -367,7 +367,7 @@ onUnmounted(() => {
 }
 .rede-toolbar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 6px 20px; gap: 12px;
+  padding: clamp(4px, 1vw, 6px) clamp(10px, 3vw, 20px); gap: 12px;
   border-top: 1px solid rgba(255,255,255,0.04);
   background: rgba(255,255,255,0.015);
 }
@@ -382,7 +382,7 @@ onUnmounted(() => {
 
 .rede-legend {
   display: flex; flex-wrap: wrap; gap: 8px;
-  padding: 10px 20px; border-top: 1px solid rgba(255,255,255,0.06);
+  padding: clamp(6px, 2vw, 10px) clamp(10px, 3vw, 20px); border-top: 1px solid rgba(255,255,255,0.06);
 }
 .rede-legend-item {
   font-size: 10px; color: #999; display: flex; align-items: center; gap: 4px;
@@ -392,7 +392,7 @@ onUnmounted(() => {
 }
 .rede-detail-bar {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 20px; border-top: 1px solid rgba(255,255,255,0.06);
+  padding: clamp(6px, 2vw, 10px) clamp(10px, 3vw, 20px); border-top: 1px solid rgba(255,255,255,0.06);
   background: rgba(255,255,255,0.02);
 }
 .rede-detail-info {

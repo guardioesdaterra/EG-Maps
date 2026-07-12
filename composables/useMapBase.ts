@@ -20,6 +20,7 @@ import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import type { Map as MapLibreMap } from 'maplibre-gl'
+import type { ParticleQualityConfig } from '@/lib/map-effects'
 
 export interface MapBaseProps {
   projects?: ProjectData[]
@@ -60,6 +61,17 @@ export function useMapBase(config: MapBaseConfig) {
   const MAP_STYLE = getMapStyle(MAPTILER_API_KEY)
 
   const quality = useAdaptiveQuality()
+
+  // Derive reactive particle quality config from quality settings
+  const particleQuality = computed<ParticleQualityConfig>(() => ({
+    particleMaxCount: quality.settings.value.particleMaxCount,
+    particleFps: quality.settings.value.particleFps,
+    particleTrailLength: quality.settings.value.particleTrailLength,
+    particleShadowBlur: quality.settings.value.particleShadowBlur,
+    particleSpawnRate: quality.settings.value.particleSpawnRate,
+  }))
+
+  const connectionBlur = computed(() => quality.settings.value.connectionLineBlur)
 
   const projectsData = computed(() => props.projects || allProjectsData)
   const speciesData = computed(() => props.species || [])
@@ -128,18 +140,18 @@ export function useMapBase(config: MapBaseConfig) {
   })
   const onResize = hexGrid.debouncedSetup
 
+  // Watch quality changes and update hex grid dynamically
+  watch(() => quality.settings.value.hexGridScale, (newScale) => {
+    hexGrid.updateQualityScale(newScale)
+  })
+
   const connections = useMapConnections(
     () => map,
     mapContainerRef,
     {
       zIndex: isGlobe ? 30 : 2,
-      quality: {
-        particleMaxCount: quality.settings.value.particleMaxCount,
-        particleFps: quality.settings.value.particleFps,
-        particleTrailLength: quality.settings.value.particleTrailLength,
-        particleShadowBlur: quality.settings.value.particleShadowBlur,
-        particleSpawnRate: quality.settings.value.particleSpawnRate,
-      },
+      qualityRef: particleQuality,
+      qualityBlur: connectionBlur,
     },
   )
   const { showConnections, toggleConnections } = connections
@@ -260,7 +272,7 @@ export function useMapBase(config: MapBaseConfig) {
     })
   }
 
-  /* ── marker system (replaces orchestrator) ─────────────────────────── */
+  /* ── marker system ─────────────────────────────────────────────────── */
 
   let culturalPopup: maplibregl.Popup | null = null
 
@@ -308,7 +320,7 @@ export function useMapBase(config: MapBaseConfig) {
     rareEarthController.setupLayers()
   }
 
-  /* ── marker rebuild (single entry-point for all datasets) ──────────── */
+  /* ── marker rebuild ────────────────────────────────────────────────── */
 
   function rebuildMarkers() {
     if (!map) {
@@ -415,8 +427,7 @@ export function useMapBase(config: MapBaseConfig) {
 
     try {
       const isRee = activeDataset.value === 'vulcan-observatory'
-
-      const qSettings = quality.settings.value
+      const qs = quality.settings.value
 
       map = new maplibregl.Map({
         container: mapContainerRef.value,
@@ -426,10 +437,13 @@ export function useMapBase(config: MapBaseConfig) {
         attributionControl: false,
         renderWorldCopies: !isGlobe,
         fadeDuration: 100,
-        maxTileCacheSize: qSettings.maxTileCacheSize,
-        maxTileCacheZoomLevels: qSettings.maxTileCacheZoomLevels,
-        antialias: qSettings.antialiasing,
-      } as maplibregl.MapOptions & { antialias?: boolean })
+        maxTileCacheSize: qs.maxTileCacheSize,
+        maxTileCacheZoomLevels: qs.maxTileCacheZoomLevels,
+        antialias: qs.antialiasing,
+        preferCanvas: true,                       // GPU-accelerated markers
+        crossSourceCollisions: false,             // Skip cross-source collision checks
+        maxPitch: qs.antialiasing ? 60 : 45,     // Limit pitch on low-end
+      } as maplibregl.MapOptions & { antialias?: boolean; preferCanvas?: boolean; crossSourceCollisions?: boolean; maxPitch?: number })
 
       console.timeEnd('[perf] initMap → MapLibre constructor')
       console.time('[perf] initMap → style.load')
@@ -464,28 +478,26 @@ export function useMapBase(config: MapBaseConfig) {
         rebuildMarkers()
         console.timeEnd('[perf] initMap → rebuildMarkers')
         console.time('[perf] initMap → connections+hexGrid')
-        const qSettings = quality.settings.value
+        const qNow = quality.settings.value
         if (activeDataset.value !== 'vulcan-observatory') {
-          if (qSettings.showConnections) {
+          if (qNow.showConnections) {
             if (activeDataset.value === 'active-crews') {
               connections.addConnections('active-crews', [], [], crewLocationsData.value)
             } else {
               connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
             }
-            if (qSettings.showParticles) {
+            if (qNow.showParticles) {
               connections.startParticles()
             }
           }
         }
-        if (qSettings.showHexGrid) {
+        if (qNow.showHexGrid) {
           hexGrid.setupHexGrid()
         }
         console.timeEnd('[perf] initMap → connections+hexGrid')
         console.timeEnd('[perf] initMap total')
         onMapReady?.(map!)
       })
-
-      /* no move/moveend handlers needed — GeoJSON layers auto-reposition */
 
       map.on('resize', () => {
         hexGrid.debouncedSetup()
@@ -606,8 +618,6 @@ export function useMapBase(config: MapBaseConfig) {
     setupRareEarthLayers()
   })
 
-  // Cultural data updates handled by useRareEarthController watcher
-
   watch(showHexGrid, async (visible) => {
     if (!visible) return
     await nextTick()
@@ -636,7 +646,7 @@ export function useMapBase(config: MapBaseConfig) {
   watch([showSpeciesOverlay, showProjectOverlay, showCrewOverlay], ([speciesOpen, projectOpen, crewOpen]) => {
     if (speciesOpen || projectOpen || crewOpen) {
       connections.cleanupParticles()
-    } else if (connections.showConnections.value) {
+    } else if (connections.showConnections.value && quality.settings.value.showParticles) {
       connections.startParticles()
     }
   })

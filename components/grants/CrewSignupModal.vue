@@ -2,7 +2,7 @@
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="show" class="fixed inset-0 z-[10000] flex items-start justify-center overflow-y-auto bg-black/70 backdrop-blur-sm py-8 px-4" @click.self="$emit('close')">
-        <div class="w-full max-w-xl glass rounded-2xl p-8 my-auto" @click.stop>
+        <div class="w-full max-w-xl glass rounded-2xl p-5 sm:p-8 my-auto" @click.stop>
           <!-- Header -->
           <div class="flex items-center justify-between mb-6">
             <div>
@@ -19,8 +19,8 @@
           <!-- Error / Success states -->
           <div v-if="error" class="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">{{ error }}</div>
           <div v-if="success" class="text-center py-8">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/15 flex items-center justify-center">
-              <svg class="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full bg-green-500/15 flex items-center justify-center">
+              <svg class="w-6 h-6 sm:w-8 sm:h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <h3 class="text-white font-bold text-base mb-2">{{ t('grantsPortal.crewSignupSuccess') }}</h3>
             <p class="text-white/50 text-xs mb-6">{{ t('grantsPortal.crewSignupSuccessDesc') }}</p>
@@ -66,7 +66,7 @@
             </FormField>
 
             <!-- Phone -->
-            <div class="grid grid-cols-[100px_1fr] gap-3">
+            <div class="grid grid-cols-[min(25vw,100px)_1fr] gap-3">
               <FormField :label="t('grantsPortal.crewSignupCountry')">
                 <input v-model="form.phone_country" type="text" placeholder="US" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors" />
               </FormField>

@@ -1,7 +1,7 @@
 <template>
   <Transition name="modal-fade">
     <div v-if="visible" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm" @click.self="$emit('close')" @keydown.escape="$emit('close')" tabindex="0" ref="modalRef">
-      <div class="obs-panel w-[min(92vw,520px)] max-h-[88vh] overflow-y-auto" @click.stop>
+      <div class="obs-panel w-[min(92vw,min(520px,92vw))] max-h-[88vh] overflow-y-auto" @click.stop>
         <!-- Header -->
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
@@ -313,7 +313,7 @@
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="confirmDialog" class="fixed inset-0 z-[10001] flex items-center justify-center bg-black/80" @click.self="confirmDialog = null">
-        <div class="obs-panel w-[min(85vw,360px)] text-center">
+        <div class="obs-panel w-[min(85vw,min(360px,85vw))] text-center">
           <p class="text-[12px] text-zinc-200 mb-4">{{ confirmDialog.message }}</p>
           <div class="flex gap-2 justify-center">
             <button type="button" class="obs-btn obs-btn--danger" @click="confirmDialog.action(); confirmDialog = null">Confirm</button>
@@ -726,7 +726,7 @@ defineExpose({ onMapClick })
   -webkit-backdrop-filter: blur(20px) saturate(1.3);
   border: 1px solid var(--obs-panel-border);
   border-radius: 14px;
-  padding: 16px;
+  padding: clamp(10px, 3vw, 16px);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
@@ -748,8 +748,8 @@ defineExpose({ onMapClick })
 .obs-textarea { resize: vertical; min-height: 60px; }
 .obs-select { appearance: none; cursor: pointer; }
 .obs-btn {
-  padding: 6px 12px;
-  font-size: 10px;
+  padding: clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px);
+  font-size: clamp(8px, 1.8vw, 10px);
   font-weight: 700;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);

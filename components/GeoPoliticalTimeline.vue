@@ -237,13 +237,13 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 20px;
+  padding: clamp(10px, 3vw, 20px);
   overflow-y: auto;
 }
 .geotimeline-modal {
-  max-width: 900px;
+  max-width: min(900px, 95vw);
   width: 100%;
-  margin: 20px auto;
+  margin: clamp(10px, 3vw, 20px) auto;
   background: #0a0a0f;
   border: 1px solid rgba(231, 76, 60, 0.2);
   border-radius: 16px;
@@ -252,16 +252,16 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 }
 .geotimeline-close {
   position: fixed;
-  top: 24px;
-  right: 24px;
+  top: clamp(12px, 3vw, 24px);
+  right: clamp(12px, 3vw, 24px);
   z-index: 10;
-  width: 44px;
-  height: 44px;
+  width: clamp(32px, 8vw, 44px);
+  height: clamp(32px, 8vw, 44px);
   border: 2px solid rgba(231, 76, 60, 0.3);
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.8);
   color: #e74c3c;
-  font-size: 24px;
+  font-size: clamp(16px, 4vw, 24px);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -277,7 +277,7 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 /* Hero */
 .geotimeline-hero {
   position: relative;
-  padding: 48px 32px 36px;
+  padding: clamp(24px, 6vw, 48px) clamp(16px, 4vw, 32px) clamp(18px, 4.5vw, 36px);
   overflow: hidden;
 }
 .geotimeline-hero-bg {
@@ -301,33 +301,33 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   margin-bottom: 16px;
 }
 .geotimeline-title {
-  font-size: 32px;
+  font-size: clamp(20px, 5vw, 32px);
   font-weight: 900;
   color: #f0f0f0;
   margin: 0 0 8px;
   letter-spacing: -0.02em;
 }
 .geotimeline-subtitle {
-  font-size: 14px;
+  font-size: clamp(11px, 2.5vw, 14px);
   color: #888;
   line-height: 1.5;
-  margin: 0 0 24px;
-  max-width: 720px;
+  margin: 0 0 clamp(12px, 3vw, 24px);
+  max-width: min(720px, 90vw);
 }
 .geotimeline-hero-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: clamp(6px, 2vw, 12px);
 }
 .hero-stat {
-  padding: 12px;
+  padding: clamp(8px, 2vw, 12px);
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
 }
 .hero-stat-value {
   display: block;
-  font-size: 24px;
+  font-size: clamp(16px, 4vw, 24px);
   font-weight: 900;
   color: #e74c3c;
   margin-bottom: 2px;
@@ -340,46 +340,46 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 
 /* Sections */
 .geotimeline-section {
-  padding: 28px 32px;
+  padding: clamp(14px, 3.5vw, 28px) clamp(16px, 4vw, 32px);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 .section-title {
-  font-size: 18px;
+  font-size: clamp(14px, 3vw, 18px);
   font-weight: 800;
   color: #e0e0e0;
-  margin: 0 0 16px;
+  margin: 0 0 clamp(10px, 2.5vw, 16px);
   letter-spacing: -0.01em;
 }
 
 /* Executive Summary */
 .exec-summary p {
-  font-size: 13px;
+  font-size: clamp(10px, 2.2vw, 13px);
   color: #999;
   line-height: 1.7;
-  margin: 0 0 12px;
+  margin: 0 0 clamp(8px, 2vw, 12px);
 }
 .exec-summary strong {
   color: #ddd;
 }
 .exec-callout {
-  padding: 14px 18px;
+  padding: clamp(8px, 2vw, 14px) clamp(10px, 2.5vw, 18px);
   background: rgba(231, 76, 60, 0.08);
   border-left: 3px solid #e74c3c;
   border-radius: 4px;
-  font-size: 13px;
+  font-size: clamp(10px, 2.5vw, 13px);
   color: #ccc;
   line-height: 1.5;
-  margin-top: 16px;
+  margin-top: clamp(10px, 2.5vw, 16px);
 }
 
 /* Geo Grid */
 .geo-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(8px, 2vw, 12px);
 }
 .geo-card {
-  padding: 16px;
+  padding: clamp(10px, 2.5vw, 16px);
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.02);
@@ -389,9 +389,9 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 .geo-card.brazil { border-left: 3px solid #27ae60; }
 .geo-card.australia { border-left: 3px solid #2980b9; }
 .geo-card-header {
-  font-size: 13px;
+  font-size: clamp(10px, 2.2vw, 13px);
   font-weight: 800;
-  margin-bottom: 10px;
+  margin-bottom: clamp(6px, 1.5vw, 10px);
   color: #ddd;
 }
 .geo-stat {
@@ -401,17 +401,17 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   margin-bottom: 4px;
 }
 .geo-stat-val {
-  font-size: 11px;
+  font-size: clamp(9px, 2vw, 11px);
   font-weight: 700;
   color: #e74c3c;
-  min-width: 50px;
+  min-width: clamp(36px, 10vw, 50px);
 }
 .geo-stat-lbl {
-  font-size: 10px;
+  font-size: clamp(8px, 1.8vw, 10px);
   color: #777;
 }
 .geo-desc {
-  font-size: 10px;
+  font-size: clamp(8px, 1.8vw, 10px);
   color: #666;
   line-height: 1.4;
   margin: 8px 0 0;
@@ -423,14 +423,14 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
-  padding: 20px;
+  padding: clamp(10px, 3vw, 20px);
 }
 .network-intro {
-  font-size: 12px;
+  font-size: clamp(10px, 2.2vw, 12px);
   color: #999;
   line-height: 1.5;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  margin-bottom: clamp(10px, 3vw, 20px);
+  padding-bottom: clamp(10px, 2.5vw, 16px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 .network-intro strong {
@@ -445,7 +445,7 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   margin-bottom: 20px;
 }
 .network-node {
-  padding: 12px 14px;
+  padding: clamp(8px, 2vw, 12px) clamp(10px, 2.5vw, 14px);
   border-radius: 8px;
   font-size: 10px;
   font-weight: 700;
@@ -455,8 +455,8 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 }
 .network-node.central {
   background: #c0392b;
-  padding: 16px 20px;
-  font-size: 12px;
+  padding: clamp(10px, 2.5vw, 16px) clamp(12px, 3vw, 20px);
+  font-size: clamp(10px, 2.2vw, 12px);
   box-shadow: 0 0 20px rgba(192, 57, 43, 0.3);
 }
 .network-line {
@@ -471,13 +471,13 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 }
 .network-footer {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: clamp(4px, 1vw, 6px);
 }
 .network-investor {
-  font-size: 10px;
+  font-size: clamp(8px, 1.8vw, 10px);
   color: #888;
-  padding: 6px 10px;
+  padding: clamp(4px, 1vw, 6px) clamp(6px, 1.5vw, 10px);
   background: rgba(255, 255, 255, 0.02);
   border-radius: 4px;
   line-height: 1.4;
@@ -491,8 +491,8 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 }
 .timeline-item {
   display: flex;
-  gap: 14px;
-  padding: 10px 14px;
+  gap: clamp(8px, 2vw, 14px);
+  padding: clamp(6px, 1.5vw, 10px) clamp(8px, 2vw, 14px);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
@@ -524,24 +524,24 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   align-items: center;
   gap: 8px;
   margin-bottom: 4px;
-  font-size: 12px;
+  font-size: clamp(10px, 2.2vw, 12px);
   font-weight: 700;
 }
 .timeline-significance {
-  font-size: 8px;
+  font-size: clamp(7px, 1.5vw, 8px);
   padding: 1px 6px;
   border-radius: 3px;
   font-weight: 700;
   letter-spacing: 0.05em;
 }
 .timeline-title {
-  font-size: 13px;
+  font-size: clamp(10px, 2.5vw, 13px);
   font-weight: 700;
   color: #ddd;
   margin: 0 0 4px;
 }
 .timeline-desc {
-  font-size: 11px;
+  font-size: clamp(9px, 2vw, 11px);
   color: #888;
   line-height: 1.5;
   margin: 0;
@@ -550,13 +550,13 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 /* Phases */
 .phases-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: clamp(6px, 1.5vw, 10px);
 }
 .phase-card {
   display: flex;
-  gap: 10px;
-  padding: 14px;
+  gap: clamp(6px, 1.5vw, 10px);
+  padding: clamp(8px, 2vw, 14px);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -576,7 +576,7 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   margin-bottom: 6px;
 }
 .phase-label {
-  font-size: 11px;
+  font-size: clamp(9px, 2vw, 11px);
   font-weight: 700;
 }
 .phase-risk {
@@ -590,24 +590,24 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 .phase-risk.medium { background: rgba(243, 156, 18, 0.15); color: #f39c12; }
 .phase-risk.low { background: rgba(39, 174, 96, 0.15); color: #27ae60; }
 .phase-desc {
-  font-size: 10px;
+  font-size: clamp(8px, 1.8vw, 10px);
   color: #888;
   line-height: 1.5;
   margin: 0 0 6px;
 }
 .phase-meta {
-  font-size: 9px;
+  font-size: clamp(7px, 1.5vw, 9px);
   color: #666;
 }
 
 /* CTA */
 .cta-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: clamp(6px, 1.5vw, 10px);
 }
 .cta-card {
-  padding: 16px;
+  padding: clamp(10px, 2.5vw, 16px);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -619,17 +619,17 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   border-color: rgba(231, 76, 60, 0.15);
 }
 .cta-icon {
-  font-size: 28px;
+  font-size: clamp(20px, 5vw, 28px);
   margin-bottom: 8px;
 }
 .cta-card h3 {
-  font-size: 13px;
+  font-size: clamp(10px, 2.5vw, 13px);
   font-weight: 700;
   color: #ddd;
   margin: 0 0 8px;
 }
 .cta-card p {
-  font-size: 10px;
+  font-size: clamp(8px, 1.8vw, 10px);
   color: #888;
   line-height: 1.5;
   margin: 0;
@@ -642,17 +642,17 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 
 /* Footer */
 .geotimeline-footer {
-  padding: 20px 32px;
+  padding: clamp(10px, 3vw, 20px) clamp(16px, 4vw, 32px);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   text-align: center;
 }
 .geotimeline-footer p {
-  font-size: 10px;
+  font-size: clamp(8px, 1.8vw, 10px);
   color: #555;
   margin: 0;
 }
 .footer-sub {
-  font-size: 9px;
+  font-size: clamp(7px, 1.5vw, 9px);
   margin-top: 4px !important;
   font-style: italic;
 }

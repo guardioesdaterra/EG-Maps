@@ -3,15 +3,11 @@ import { useMediaQuery } from '@/composables/useMediaQuery'
 import { HEX_GRID } from '@/lib/constants'
 
 export interface HexGridOptions {
-  /** Hex size for mobile (default: HEX_GRID.mobileSize) */
   mobileSize?: number
-  /** Hex size for desktop (default: HEX_GRID.desktopSize) */
   desktopSize?: number
-  /** Stroke color (default: HEX_GRID.strokeColor) */
   strokeColor?: string
-  /** Line width (default: HEX_GRID.lineWidth) */
   lineWidth?: number
-  /** Quality scale factor (0-1) — reduces hex density on low-end devices */
+  /** Quality scale factor (0-1) — higher = coarser hexes = fewer = less work */
   qualityScale?: number
 }
 
@@ -28,6 +24,7 @@ export function useMapHexGrid(
   let lastWidth = 0
   let lastHeight = 0
   let lastDpr = 0
+  let lastQualityScale = 1
 
   const cfg = {
     mobileSize: options.mobileSize ?? HEX_GRID.mobileSize,
@@ -42,27 +39,37 @@ export function useMapHexGrid(
     const canvas = canvasRef.value
     if (!canvas) return
 
-    const dpr = window.devicePixelRatio || 1
+    const dpr = Math.min(window.devicePixelRatio || 1, 2) // Cap DPR for canvas
     const w = window.innerWidth
     const h = window.innerHeight
-    if (dpr === lastDpr && w === lastWidth && h === lastHeight) return
+    const qs = cfg.qualityScale
+    if (dpr === lastDpr && w === lastWidth && h === lastHeight && qs === lastQualityScale) return
     lastDpr = dpr
     lastWidth = w
     lastHeight = h
+    lastQualityScale = qs
 
     isDrawing = true
     try {
-      canvas.width = w * dpr
-      canvas.height = h * dpr
+      const cw = w * dpr
+      const ch = h * dpr
+      canvas.width = cw
+      canvas.height = ch
       canvas.style.width = `${w}px`
       canvas.style.height = `${h}px`
 
-      const ctx = canvas.getContext('2d')
+      const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true })
       if (!ctx) return
+
+      // DPR-aware transform
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
+      // Disable image smoothing for crisp lines
+      ctx.imageSmoothingEnabled = false
+
+      // Scale hex size inversely with quality (lower quality = bigger hexes = fewer)
       const baseHexSize = isMobile.value ? cfg.mobileSize : cfg.desktopSize
-      const hexSize = Math.round(baseHexSize / Math.max(cfg.qualityScale, 0.3))
+      const hexSize = Math.round(baseHexSize / Math.max(qs, 0.3))
       const hexHeight = hexSize * Math.sqrt(3)
       const hexWidth = hexSize * 2
       const hexVerticalOffset = hexHeight * 0.75
@@ -71,6 +78,7 @@ export function useMapHexGrid(
       const rows = Math.ceil(h / hexVerticalOffset) + 1
 
       ctx.strokeStyle = cfg.strokeColor
+      // DPR-aware line width: render at 1px visual regardless of DPR
       ctx.lineWidth = cfg.lineWidth
 
       for (let row = 0; row < rows; row++) {
@@ -109,6 +117,12 @@ export function useMapHexGrid(
     }, HEX_GRID.debounceMs)
   }
 
+  function updateQualityScale(scale: number) {
+    cfg.qualityScale = scale
+    lastQualityScale = -1 // Force redraw
+    setupHexGrid()
+  }
+
   async function onVisibilityChange(visible: boolean) {
     if (!visible) return
     await nextTick()
@@ -117,14 +131,8 @@ export function useMapHexGrid(
 
   function cleanup() {
     cancelled = true
-    if (debounceTimer) {
-      clearTimeout(debounceTimer)
-      debounceTimer = null
-    }
-    if (rafHandle) {
-      cancelAnimationFrame(rafHandle)
-      rafHandle = null
-    }
+    if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null }
+    if (rafHandle) { cancelAnimationFrame(rafHandle); rafHandle = null }
   }
 
   onScopeDispose(cleanup)
@@ -133,6 +141,7 @@ export function useMapHexGrid(
     showHexGrid,
     setupHexGrid,
     debouncedSetup,
+    updateQualityScale,
     onVisibilityChange,
     cleanup,
   }

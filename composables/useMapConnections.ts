@@ -1,4 +1,4 @@
-import { ref, onUnmounted, type Ref } from 'vue'
+import { ref, onUnmounted, watch, type Ref } from 'vue'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { ProjectData, Species } from '@/lib/types'
 import type { CrewLocation } from '@/lib/crew-data'
@@ -23,7 +23,12 @@ function resolveMap(getter: MapGetter): MapLibreMap | null {
 export interface ConnectionOptions {
   zIndex?: number
   isMounted?: () => boolean
+  /** Static quality config (used at construction) */
   quality?: ParticleQualityConfig
+  /** Reactive quality settings — watcher will update running particle system */
+  qualityRef?: Ref<ParticleQualityConfig | null>
+  /** Reactive quality blur for connection line layers */
+  qualityBlur?: Ref<number>
 }
 
 export function useMapConnections(
@@ -34,7 +39,7 @@ export function useMapConnections(
   const getMap = (): MapLibreMap | null =>
     map && typeof map === 'object' && 'value' in map ? (map as Ref<MapLibreMap | null>).value : resolveMap(map as MapGetter)
 
-  const { zIndex = 2, isMounted = () => true, quality } = options
+  const { zIndex = 2, isMounted = () => true, quality, qualityRef, qualityBlur } = options
   const showConnections = ref(true)
   const connectionFeatures = ref<MapConnectionFeature[]>([])
   let particleSystem: MapParticleSystem | null = null
@@ -111,7 +116,7 @@ export function useMapConnections(
     if (!showConnections.value) {
       if (import.meta.dev) console.warn(`[useMapConnections] addConnections: disabled, clearing features`)
       connectionFeatures.value = []
-      syncMapConnectionLayers(m, [])
+      syncMapConnectionLayers(m, [], qualityBlur?.value)
       return
     }
 
@@ -125,11 +130,10 @@ export function useMapConnections(
 
     if (import.meta.dev) console.warn(`[useMapConnections] addConnections: dataset=${dataset}, projects=${projects.length}, species=${species.length}, crewLocations=${crewLocations?.length ?? 0}, features=${connectionFeatures.value.length}`)
 
-    // Try to sync layers immediately; if map style isn't loaded yet, retry on style.load
     if (connectionFeatures.value.length > 0 && !m.isStyleLoaded()) {
       scheduleDeferredSync(m)
     } else {
-      syncMapConnectionLayers(m, connectionFeatures.value)
+      syncMapConnectionLayers(m, connectionFeatures.value, qualityBlur?.value)
     }
   }
 
@@ -141,7 +145,7 @@ export function useMapConnections(
       deferredSyncRetries++
       if (m.isStyleLoaded() || deferredSyncRetries >= MAX_DEFERRED_SYNC_RETRIES) {
         cleanupDeferredSync()
-        syncMapConnectionLayers(m, connectionFeatures.value)
+        syncMapConnectionLayers(m, connectionFeatures.value, qualityBlur?.value)
         return
       }
     }
@@ -173,7 +177,6 @@ export function useMapConnections(
     }
     if (!isMounted()) return
 
-    // Wait for map readiness — map.project() won't work before style is loaded
     if (!m.isStyleLoaded() && startRetries < MAX_START_RETRIES) {
       startRetries++
       if (import.meta.dev) console.warn(`[useMapConnections] startParticles: map not ready, retry ${startRetries}/${MAX_START_RETRIES}`)
@@ -191,7 +194,7 @@ export function useMapConnections(
       getFeatures: () => connectionFeatures.value,
       isMobile: () => isMobile.value,
       zIndex,
-      quality,
+      quality: qualityRef?.value ?? quality,
     })
     particleSystem.start()
     setupVisibilityTracking()
@@ -206,10 +209,22 @@ export function useMapConnections(
     teardownVisibilityTracking()
     cleanupDeferredSync()
     const m = getMap()
-    if (m) {
-      syncMapConnectionLayers(m, [])
-    }
+    if (m) syncMapConnectionLayers(m, [])
     connectionFeatures.value = []
+  }
+
+  // Watch reactive quality changes and update running particle system + connection layers
+  if (qualityRef) {
+    watch(qualityRef, (newQ) => {
+      if (particleSystem && newQ) {
+        particleSystem.updateQuality(newQ)
+      }
+      // Re-sync connection layers if blur changed
+      const m = getMap()
+      if (m && connectionFeatures.value.length && qualityBlur) {
+        syncMapConnectionLayers(m, connectionFeatures.value, qualityBlur.value)
+      }
+    }, { deep: true })
   }
 
   onUnmounted(() => {

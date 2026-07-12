@@ -7,6 +7,7 @@ import {
   addPolygonLayersToMap,
 } from '@/composables/useRareEarthLayers'
 import { setupWaterLayers } from '@/composables/useWaterLayers'
+import { setupCulturalLayers, cleanupCulturalLayers, CULTURAL_SOURCE } from '@/composables/useCulturalLayers'
 import { buildEnterpriseNetworkLines } from '@/lib/enterprise-data'
 
 export interface RareEarthControllerProps {
@@ -52,6 +53,7 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
   let flyToHighlightMarker: maplibregl.Marker | null = null
   let flyToHighlightTimer: ReturnType<typeof setTimeout> | null = null
   let waterCleanup: (() => void) | null = null
+  let culturalCleanup: (() => void) | null = null
 
   function addFlyToHighlight(lng: number, lat: number) {
     const m = map.value
@@ -97,6 +99,11 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     // Setup water layers if data is available
     if (p.rareEarthWater?.features?.length && !waterCleanup) {
       waterCleanup = setupWaterLayers(m, p.rareEarthWater)
+    }
+
+    // Setup cultural layers with clustering, subtype colors, labels
+    if (p.rareEarthCultural?.features?.length && !culturalCleanup) {
+      culturalCleanup = setupCulturalLayers(m, p.rareEarthCultural)
     }
 
     syncRareEarthLayerVisibilityInternal(m, p.layerVisibility || {})
@@ -184,6 +191,26 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     },
   )
 
+  // Watcher: cultural data updates (community pins, static reload)
+  const stopCulturalWatch = watch(
+    () => getProps().rareEarthCultural,
+    (newVal) => {
+      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
+      const m = map.value
+      if (!newVal?.features?.length) {
+        if (culturalCleanup) { culturalCleanup(); culturalCleanup = null }
+        return
+      }
+      const src = m.getSource(CULTURAL_SOURCE) as maplibregl.GeoJSONSource | undefined
+      if (src) {
+        src.setData(newVal)
+      } else if (!culturalCleanup) {
+        culturalCleanup = setupCulturalLayers(m, newVal)
+        syncRareEarthLayerVisibilityInternal(m, getProps().layerVisibility || {})
+      }
+    },
+  )
+
   onScopeDispose(() => {
     stopVisWatch()
     stopPointsWatch()
@@ -191,11 +218,13 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     stopPolygonsWatch()
     stopFlyToWatch()
     stopWaterWatch()
+    stopCulturalWatch()
     if (pointsDebounceTimer) clearTimeout(pointsDebounceTimer)
     if (flyToHighlightTimer) clearTimeout(flyToHighlightTimer)
     if (flyToHighlightMarker) { flyToHighlightMarker.remove(); flyToHighlightMarker = null }
     if (polyCleanup) { polyCleanup(); polyCleanup = null }
     if (waterCleanup) { waterCleanup(); waterCleanup = null }
+    if (culturalCleanup) { culturalCleanup(); culturalCleanup = null }
   })
 
   return { setupLayers, addFlyToHighlight }

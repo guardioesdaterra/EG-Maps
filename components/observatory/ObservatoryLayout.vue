@@ -81,14 +81,14 @@ function updatePhases(value: Set<string>) {
         <h1 class="text-fluid-xs font-black text-red-400 uppercase tracking-tight whitespace-nowrap">Terras Raras Brasil</h1>
       </div>
 
-      <div class="obs-topbar__center">
-        <div v-for="s in categoryStats" :key="s.key" class="obs-topbar__stat" role="status">
+      <div class="obs-topbar__center" role="status">
+        <div v-for="s in categoryStats" :key="s.key" class="obs-topbar__stat">
           <span class="obs-topbar__stat-dot" :style="{ background: s.color }" aria-hidden="true" />
           <span class="font-bold text-zinc-200 tabular-nums">{{ controls.animatedCount?.(s.key, s.count) ?? s.count }}</span>
           <span class="text-zinc-500 hidden sm:inline">{{ s.label }}</span>
         </div>
         <div class="w-px h-3 bg-zinc-700 flex-shrink-0" aria-hidden="true" />
-        <span class="text-[9px] font-bold text-zinc-300 tabular-nums whitespace-nowrap" role="status">{{ totalCount }} total</span>
+        <span class="text-[9px] font-bold text-zinc-300 tabular-nums whitespace-nowrap">{{ totalCount }} total</span>
       </div>
 
       <div class="obs-topbar__right">
@@ -314,7 +314,7 @@ function updatePhases(value: Set<string>) {
       </button>
 
       <div v-if="userPin" class="obs-bottombar__pin">
-        <div class="flex items-center gap-1.5 min-w-0">
+        <div class="flex items-center gap-1.5 min-w-0 truncate">
           <span v-if="userPinShared" class="text-[7px] font-bold uppercase text-amber-400 flex-shrink-0">{{ t('observatory.myTerritory.sharedBadge') }}</span>
           <strong class="text-[10px] text-zinc-200 truncate max-w-[120px]">{{ userPin.label }}</strong>
           <span class="text-[8px] text-zinc-500 font-mono flex-shrink-0 hidden sm:inline">{{ userPin.lng.toFixed(3) }}, {{ userPin.lat.toFixed(3) }}</span>
@@ -328,7 +328,7 @@ function updatePhases(value: Set<string>) {
 
       <div class="obs-bottombar__spacer" />
 
-      <div class="sm:hidden obs-search" style="width: auto; flex: 1; max-width: 180px;" role="search">
+      <div class="sm:hidden obs-search" style="width: auto; flex: 1; max-width: 160px;" role="search">
         <span class="obs-search__icon" aria-hidden="true">🔍</span>
         <input v-model="controls.searchTerm.value" :placeholder="t('observatory.search')" class="obs-search__input" :aria-label="t('observatory.search')" @input="controls.debouncedFilter()">
       </div>
@@ -337,12 +337,25 @@ function updatePhases(value: Set<string>) {
 </template>
 
 <style>
+/* ── Layout shell ── */
 .obs-shell {
+  --obs-topbar-h: clamp(2.5rem, 5.5vh, 2.75rem);
+  --obs-bottombar-h: 2.5rem;
+  --obs-leftbar-w: 260px;
+
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 490;
   isolation: isolate;
+}
+
+@media (max-width: 768px) {
+  .obs-shell { --obs-leftbar-w: 240px; }
+}
+
+@media (max-width: 640px) {
+  .obs-shell { --obs-leftbar-w: calc(100vw - 3rem); }
 }
 
 /* ---- Top Bar ---- */
@@ -351,7 +364,7 @@ function updatePhases(value: Set<string>) {
   top: 0;
   left: 0;
   right: 0;
-  height: clamp(2.5rem, 5vh, 2.75rem);
+  height: var(--obs-topbar-h);
   pointer-events: auto;
   z-index: 550;
   background: var(--obs-panel-bg-dark);
@@ -377,8 +390,13 @@ function updatePhases(value: Set<string>) {
   gap: 6px;
   flex: 1;
   justify-content: center;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+
+.obs-topbar__center::-webkit-scrollbar { display: none; }
 
 .obs-topbar__stat {
   display: flex;
@@ -386,6 +404,7 @@ function updatePhases(value: Set<string>) {
   gap: 4px;
   font-size: 9px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .obs-topbar__stat-dot {
@@ -485,10 +504,10 @@ function updatePhases(value: Set<string>) {
 /* ---- Left Sidebar ---- */
 .obs-leftbar {
   position: absolute;
-  top: clamp(2.5rem, 5vh, 2.75rem);
+  top: var(--obs-topbar-h);
   left: 0;
-  bottom: 2.5rem;
-  width: 260px;
+  bottom: var(--obs-bottombar-h);
+  width: var(--obs-leftbar-w);
   pointer-events: auto;
   z-index: 520;
   background: var(--obs-panel-bg-dark);
@@ -509,9 +528,9 @@ function updatePhases(value: Set<string>) {
 .obs-leftbar__toggle {
   position: absolute;
   top: 0;
-  right: -44px;
-  width: 44px;
-  height: 44px;
+  right: -2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -522,7 +541,7 @@ function updatePhases(value: Set<string>) {
   border-radius: 0 10px 10px 0;
   cursor: pointer;
   font-family: inherit;
-  font-size: 18px;
+  font-size: 1.125rem;
   color: var(--obs-text-body);
   transition: color 0.15s, background 0.15s;
 }
@@ -543,6 +562,7 @@ function updatePhases(value: Set<string>) {
   padding: 8px 10px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  overflow-wrap: break-word;
 }
 
 .obs-leftbar__scroll::-webkit-scrollbar { width: 4px; }
@@ -574,14 +594,11 @@ function updatePhases(value: Set<string>) {
 }
 
 @media (max-width: 768px) {
-  .obs-leftbar { width: 240px; }
   .obs-leftbar__scroll { padding: 6px 8px; }
 }
 
 @media (max-width: 640px) {
   .obs-leftbar {
-    width: calc(100vw - 3rem);
-    max-width: 300px;
     z-index: 560;
   }
 }
@@ -589,9 +606,9 @@ function updatePhases(value: Set<string>) {
 /* ---- Right Sidebar Slot ---- */
 .obs-rightslot {
   position: absolute;
-  top: clamp(2.75rem, 5.5vh, 3rem);
+  top: calc(var(--obs-topbar-h) + 0.25rem);
   right: clamp(0.5rem, 1vw, 0.75rem);
-  bottom: 2.75rem;
+  bottom: calc(var(--obs-bottombar-h) + 0.25rem);
   pointer-events: auto;
   z-index: 510;
   --obs-panel-max-height: 100%;
@@ -607,7 +624,7 @@ function updatePhases(value: Set<string>) {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 2.5rem;
+  height: var(--obs-bottombar-h);
   pointer-events: auto;
   z-index: 550;
   background: var(--obs-panel-bg-dark);
@@ -623,7 +640,7 @@ function updatePhases(value: Set<string>) {
 }
 
 .obs-bottombar--sidebar-open {
-  left: 260px;
+  left: var(--obs-leftbar-w);
 }
 
 @media (max-width: 640px) {
@@ -766,6 +783,7 @@ function updatePhases(value: Set<string>) {
   font-size: 11px;
   font-family: inherit;
   padding: 0;
+  min-width: 0;
 }
 
 .obs-search__input::placeholder {
@@ -854,6 +872,8 @@ function updatePhases(value: Set<string>) {
   font-size: 10px;
   color: var(--obs-text-label);
   font-weight: 500;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .obs-filter-checkbox:hover .obs-filter-checkbox__label {

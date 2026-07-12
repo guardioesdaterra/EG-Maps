@@ -67,15 +67,34 @@
             v-if="activeTab === 'danger'"
             :items="dangerItems"
             :show-all="showAll"
+            :highlight="tabHighlight"
             @fly-to-enterprise="onFlyToEnterprise"
+            @update:highlight="onHighlight"
+            @report-enterprise="onReportEnterprise"
           />
-          <MilitaryTab v-else-if="activeTab === 'military'" />
-          <IllegalTab v-else-if="activeTab === 'illegal'" />
+          <MilitaryTab
+            v-else-if="activeTab === 'military'"
+            :highlight="tabHighlight"
+            @update:highlight="onHighlight"
+          />
+          <IllegalTab
+            v-else-if="activeTab === 'illegal'"
+            :highlight="tabHighlight"
+            @update:highlight="onHighlight"
+            @report-pattern="onReportPattern"
+          />
           <EnvironmentTab
             v-else-if="activeTab === 'env'"
+            :highlight="tabHighlight"
             @fly-to-coord="onFlyToCoord"
+            @update:highlight="onHighlight"
+            @add-observation="onAddObservation"
           />
-          <NetworkTab v-else-if="activeTab === 'network'" />
+          <NetworkTab
+            v-else-if="activeTab === 'network'"
+            :highlight="tabHighlight"
+            @update:highlight="onHighlight"
+          />
           <TimelineTab v-else-if="activeTab === 'timeline'" />
           <div v-else class="obs-panel__empty">
             {{ t('observatory.selectTab') }}
@@ -87,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { OBSERVATORY_TABS, type ObservatoryTab } from '@/lib/observatory-tabs'
 import type { SpeculatorIndexEntry } from '@/lib/observatory-analysis'
 import { useUrlState } from '@/composables/useUrlState'
@@ -155,7 +174,16 @@ watch(() => obsSel.selection.value.tab, (tab) => {
   }
 })
 
+// Highlight state for map interaction
+const tabHighlight = ref<string | null>(null)
+
+function onHighlight(name: string | null) {
+  tabHighlight.value = name
+  obsSel.highlightedFeature.value = name
+}
+
 function onTabClick(key: ObservatoryTab['key']) {
+  onHighlight(null)
   emit('update:activeTab', key)
 }
 
@@ -167,6 +195,7 @@ function onTabKeydown(e: KeyboardEvent, key: ObservatoryTab['key']) {
     const next = e.key === 'ArrowRight'
       ? tabs[(idx + 1) % tabs.length]
       : tabs[(idx - 1 + tabs.length) % tabs.length]
+    onHighlight(null)
     emit('update:activeTab', next.key)
   }
 }
@@ -178,6 +207,30 @@ function onFlyToEnterprise(name: string) {
 
 function onFlyToCoord(coord: [number, number]) {
   emit('fly-to-coord', coord)
+}
+
+function onReportEnterprise(name: string, score: number, flags: string[]) {
+  const subject = encodeURIComponent(`[Observatory Report] Suspicious enterprise: ${name}`)
+  const body = encodeURIComponent(
+    `Enterprise: ${name}\nSuspicion Score: ${score}\nFlags: ${flags.join(', ')}\n\n---\nReported via Earth Guardians Observatory`
+  )
+  window.open(`mailto:observatory@earthguardians.org?subject=${subject}&body=${body}`, '_blank')
+}
+
+function onReportPattern(key: string) {
+  const subject = encodeURIComponent(`[Observatory Report] Illegal pattern: ${key}`)
+  const body = encodeURIComponent(
+    `Pattern: ${key}\n\n---\nReported via Earth Guardians Observatory`
+  )
+  window.open(`mailto:observatory@earthguardians.org?subject=${subject}&body=${body}`, '_blank')
+}
+
+function onAddObservation(region: string) {
+  const subject = encodeURIComponent(`[Field Observation] Region: ${region}`)
+  const body = encodeURIComponent(
+    `Region: ${region}\n\nObservation:\n\n---\nSubmitted via Earth Guardians Observatory`
+  )
+  window.open(`mailto:observatory@earthguardians.org?subject=${subject}&body=${body}`, '_blank')
 }
 
 // Focus trap when expanded
@@ -208,21 +261,9 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 }
 
-@media (max-width: 768px) {
-  .obs-tabstrip {
-    gap: 2px;
-    padding: 3px;
-    border-radius: 8px;
-  }
-  .obs-tabstrip__btn {
-    width: 36px;
-    height: 36px;
-    font-size: 14px;
-  }
-}
 .obs-tabstrip__btn {
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -230,32 +271,49 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   border: 1px solid transparent;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.55);
-  font-size: 16px;
+  font-size: 1rem;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
+
 .obs-tabstrip__btn:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #fafafa;
   transform: scale(1.08);
 }
+
 .obs-tabstrip__btn[aria-pressed="true"] {
   background: rgba(231, 76, 60, 0.2);
   border-color: rgba(231, 76, 60, 0.4);
   color: #fff;
   box-shadow: 0 0 12px rgba(231, 76, 60, 0.15);
 }
+
 .obs-tabstrip__btn--expand {
   margin-top: 4px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+@media (max-width: 768px) {
+  .obs-tabstrip {
+    gap: 2px;
+    padding: 3px;
+    border-radius: 8px;
+  }
+  .obs-tabstrip__btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 0.875rem;
+  }
+}
+
 .obs-panel {
   display: flex;
   flex-direction: column;
-  width: 340px;
-  max-height: var(--obs-panel-max-height, calc(100vh - 12rem));
+  width: clamp(18rem, 22vw, 21rem);
+  max-height: calc(100vh - 10rem);
   background: rgba(0, 0, 0, 0.92);
   backdrop-filter: blur(16px) saturate(1.2);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
@@ -267,8 +325,8 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
 
 @media (max-width: 768px) {
   .obs-panel {
-    width: min(280px, calc(100vw - 4rem));
-    max-height: calc(100vh - 10rem);
+    width: min(280px, calc(100vw - 3rem));
+    max-height: calc(100svh - 8rem);
   }
 }
 
@@ -306,25 +364,17 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   position: relative;
 }
 
-@media (max-width: 768px) {
-  .obs-panel__tab {
-    padding: 8px 6px;
-    font-size: 9px;
-    gap: 2px;
-  }
-  .obs-panel__tab-icon {
-    font-size: 10px;
-  }
-}
 .obs-panel__tab:hover {
   color: #fafafa;
   background: rgba(255, 255, 255, 0.04);
 }
+
 .obs-panel__tab.is-active {
   color: #fff;
   border-bottom-color: #e74c3c;
   background: rgba(231, 76, 60, 0.08);
 }
+
 .obs-panel__tab.is-active::after {
   content: '';
   position: absolute;
@@ -336,8 +386,20 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   border-radius: 1px;
   box-shadow: 0 0 8px rgba(231, 76, 60, 0.4);
 }
+
 .obs-panel__tab-icon { font-size: 12px; }
 .obs-panel__tab-label { font-size: 10px; }
+
+@media (max-width: 768px) {
+  .obs-panel__tab {
+    padding: 8px 6px;
+    font-size: 9px;
+    gap: 2px;
+  }
+  .obs-panel__tab-icon {
+    font-size: 10px;
+  }
+}
 
 .obs-panel__collapse {
   padding: 0 12px;
@@ -352,6 +414,7 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   align-self: stretch;
   transition: all 0.15s ease;
 }
+
 .obs-panel__collapse:hover { color: #fafafa; background: rgba(255, 255, 255, 0.04); }
 
 .obs-panel__body {
@@ -362,14 +425,15 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
+.obs-panel__body::-webkit-scrollbar { width: 4px; }
+.obs-panel__body::-webkit-scrollbar-track { background: transparent; }
+.obs-panel__body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
+
 @media (max-width: 768px) {
   .obs-panel__body {
     padding: 4px;
   }
 }
-.obs-panel__body::-webkit-scrollbar { width: 4px; }
-.obs-panel__body::-webkit-scrollbar-track { background: transparent; }
-.obs-panel__body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
 
 .obs-panel__empty {
   padding: 24px 16px;

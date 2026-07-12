@@ -311,7 +311,7 @@ export function useMapBase(config: MapBaseConfig) {
       crewLocations: isRee ? [] : crewLocationsData.value,
       selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
       rareEarthFeatures: isRee ? [] : (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
-      culturalFeatures: isRee ? (props.rareEarthCultural?.features ?? []) : undefined,
+      culturalFeatures: undefined,
     })
     console.timeEnd(`[perf] rebuildMarkers ${activeDataset.value}`)
   }
@@ -329,7 +329,7 @@ export function useMapBase(config: MapBaseConfig) {
       crewLocations: isRee ? [] : crewLocationsData.value,
       selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
       rareEarthFeatures: isRee ? [] : (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
-      culturalFeatures: isRee ? (props.rareEarthCultural?.features ?? []) : undefined,
+      culturalFeatures: undefined,
     })
     console.timeEnd(`[perf] updateMarkerData ${activeDataset.value}`)
   }
@@ -581,10 +581,7 @@ export function useMapBase(config: MapBaseConfig) {
     setupRareEarthLayers()
   })
 
-  watch(() => props.rareEarthCultural, () => {
-    if (!map || activeDataset.value !== 'vulcan-observatory') return
-    rebuildMarkers()
-  }, { deep: false })
+  // Cultural data updates handled by useRareEarthController watcher
 
   watch(showHexGrid, async (visible) => {
     if (!visible) return

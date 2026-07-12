@@ -4,14 +4,9 @@ import type { Species } from '@/lib/types'
 import { useI18n } from '@/composables/useI18n'
 import { GROUP_COLORS } from '@/lib/map-utils'
 
-interface Props {
+const props = defineProps<{
   species: Species | null
-  visible?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  visible: false,
-})
+}>()
 
 const { t, locale } = useI18n()
 
@@ -31,11 +26,37 @@ const ecosystemNeeds = computed(() => content.value?.ecosystemNeeds ?? props.spe
 const actions = computed(() => content.value?.actions ?? props.species?.actions ?? '')
 const region = computed(() => content.value?.region ?? props.species?.region ?? '')
 
-const baseURL = useRuntimeConfig().app.baseURL
+const baseURL = (useRuntimeConfig().app.baseURL || '/').replace(/\/$/, '')
 const imageSrc = computed(() => {
   if (!props.species?.imageUrl) return ''
   if (props.species.imageUrl.startsWith('http')) return props.species.imageUrl
-  return `${baseURL}${props.species.imageUrl.replace(/^\//, '')}`
+  return `${baseURL}/${props.species.imageUrl.replace(/^\//, '')}`
+})
+
+const endangermentLevel = computed(() => {
+  const e = endangerment.value.toLowerCase()
+  if (e.includes('critically') || e.includes('critical')) return 'critical'
+  if (e.includes('endangered')) return 'endangered'
+  if (e.includes('vulnerable')) return 'vulnerable'
+  if (e.includes('near') && e.includes('threatened')) return 'near'
+  return 'default'
+})
+
+const endangermentColors: Record<string, string> = {
+  critical: '#dc2626',
+  endangered: '#ea580c',
+  vulnerable: '#d97706',
+  near: '#a3a3a3',
+  default: '#a3a3a3',
+}
+
+const endangermentColor = computed(() => endangermentColors[endangermentLevel.value] ?? color.value)
+
+const coords = computed(() => {
+  if (!props.species) return ''
+  const latDir = props.species.lat >= 0 ? 'N' : 'S'
+  const lngDir = props.species.lng >= 0 ? 'E' : 'W'
+  return `${Math.abs(props.species.lat).toFixed(2)}°${latDir}, ${Math.abs(props.species.lng).toFixed(2)}°${lngDir}`
 })
 </script>
 
@@ -48,9 +69,18 @@ const imageSrc = computed(() => {
     />
 
     <header class="species-popup__head">
-      <p class="species-popup__group" :style="{ color }">
-        {{ t(`taxonomy.${species.taxonomicGroup}`) }}
-      </p>
+      <div class="species-popup__group-row">
+        <span class="species-popup__group" :style="{ borderColor: color, color }">
+          {{ t(`taxonomy.${species.taxonomicGroup}`) }}
+        </span>
+        <span
+          v-if="species.category"
+          class="species-popup__cat"
+          :style="{ background: color }"
+        >
+          {{ species.category }}
+        </span>
+      </div>
       <h2 class="species-popup__title">{{ species.commonName }}</h2>
       <p class="species-popup__sci">{{ species.scientificName }}</p>
     </header>
@@ -67,60 +97,83 @@ const imageSrc = computed(() => {
       </figcaption>
     </figure>
 
-    <section v-if="endangerment" class="species-popup__section">
-      <h3 class="species-popup__h3">{{ t('species.endangerment') }}</h3>
-      <p class="species-popup__p">{{ endangerment }}</p>
-    </section>
+    <div class="species-popup__body">
+      <section v-if="endangerment" class="species-popup__section">
+        <h3 class="species-popup__h3">{{ t('species.endangerment') }}</h3>
+        <p class="species-popup__p" :style="{ color: endangermentColor }">
+          {{ endangerment }}
+        </p>
+      </section>
 
-    <section v-if="description" class="species-popup__section">
-      <h3 class="species-popup__h3">{{ t('species.about') }}</h3>
-      <p class="species-popup__p">{{ description }}</p>
-    </section>
+      <section v-if="description" class="species-popup__section">
+        <h3 class="species-popup__h3">{{ t('species.about') }}</h3>
+        <p class="species-popup__p">{{ description }}</p>
+      </section>
 
-    <section v-if="ecosystemNeeds" class="species-popup__section">
-      <h3 class="species-popup__h3">{{ t('species.ecosystem') }}</h3>
-      <p class="species-popup__p">{{ ecosystemNeeds }}</p>
-    </section>
+      <section v-if="ecosystemNeeds" class="species-popup__section">
+        <h3 class="species-popup__h3">{{ t('species.ecosystem') }}</h3>
+        <p class="species-popup__p">{{ ecosystemNeeds }}</p>
+      </section>
 
-    <section v-if="actions" class="species-popup__section">
-      <h3 class="species-popup__h3">{{ t('species.actions') }}</h3>
-      <p class="species-popup__p">{{ actions }}</p>
-    </section>
+      <section v-if="actions" class="species-popup__section">
+        <h3 class="species-popup__h3">{{ t('species.actions') }}</h3>
+        <p class="species-popup__p">{{ actions }}</p>
+      </section>
+
+      <section v-if="species.threatTypes?.length" class="species-popup__section">
+        <h3 class="species-popup__h3">{{ t('species.threatTypes') }}</h3>
+        <div class="species-popup__threats">
+          <span
+            v-for="threat in species.threatTypes"
+            :key="threat"
+            class="species-popup__threat"
+            :style="{ borderColor: color + '40', color, background: color + '0d' }"
+          >
+            {{ threat }}
+          </span>
+        </div>
+      </section>
+    </div>
 
     <footer class="species-popup__footer">
       <div v-if="region" class="species-popup__chip">
-        <Icon name="lucide:map-pin" class="h-3 w-3" />
+        <Icon name="lucide:map-pin" size="0.75rem" />
         <span>{{ region }}</span>
       </div>
       <div v-if="species.ecosystem" class="species-popup__chip">
-        <Icon name="lucide:leaf" class="h-3 w-3" />
+        <Icon name="lucide:leaf" size="0.75rem" />
         <span>{{ species.ecosystem }}</span>
       </div>
-      <a
-        v-if="species.iucnUrl"
-        :href="species.iucnUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="species-popup__link"
-      >
-        <Icon name="lucide:external-link" class="h-3 w-3" />
-        <span>{{ t('species.iucnProfile') }}</span>
-      </a>
+      <div class="species-popup__chip">
+        <Icon name="lucide:crosshair" size="0.75rem" />
+        <span>{{ coords }}</span>
+      </div>
+      <div v-if="species.iucnUrl" class="species-popup__footer-right">
+        <a
+          :href="species.iucnUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="species-popup__link"
+          :style="{ '--link-clr': color }"
+        >
+          <Icon name="lucide:external-link" size="0.75rem" />
+          <span>{{ t('species.iucnProfile') }}</span>
+        </a>
+      </div>
     </footer>
   </article>
 </template>
 
 <style scoped>
 .species-popup {
+  --popup-radius: 10px;
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
-  color: #fafafa;
+  color: #e2e2e2;
   font-family: 'Inter', system-ui, sans-serif;
   position: relative;
-  max-width: 28rem;
-  min-width: 20rem;
 }
+
 .species-popup__accent {
   position: absolute;
   top: 0;
@@ -128,89 +181,182 @@ const imageSrc = computed(() => {
   width: 4px;
   height: 100%;
   border-radius: 4px 0 0 4px;
+  transition: background 0.25s ease;
 }
-.species-popup__head { display: flex; flex-direction: column; gap: 0.25rem; }
+
+.species-popup__head {
+  padding-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.species-popup__group-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+}
+
 .species-popup__group {
-  font-size: 9px;
+  font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  font-weight: 800;
-  margin: 0;
+  font-weight: 700;
+  border: 1px solid;
+  padding: 0.1rem 0.55rem;
+  border-radius: 4px;
+  display: inline-block;
+  line-height: 1.4;
 }
+
+.species-popup__cat {
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  color: #fff;
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+  display: inline-block;
+  line-height: 1.4;
+}
+
 .species-popup__title {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 800;
   line-height: 1.2;
   margin: 0;
+  color: #fff;
+  letter-spacing: -0.01em;
+  overflow-wrap: break-word;
 }
+
 .species-popup__sci {
-  font-size: 0.8125rem;
+  font-size: 0.85rem;
   font-style: italic;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.4);
   margin: 0;
+  overflow-wrap: break-word;
 }
+
 .species-popup__media {
-  margin: 0;
-  border-radius: 8px;
+  margin: 0 0 1rem 0;
+  border-radius: var(--popup-radius);
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
+
 .species-popup__img {
   width: 100%;
-  height: 12rem;
+  height: clamp(10rem, 30vh, 14rem);
   object-fit: cover;
   display: block;
+  transition: transform 0.3s ease;
 }
+
+.species-popup__img:hover {
+  transform: scale(1.02);
+}
+
 .species-popup__credit {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.45);
-  padding: 0.4rem 0.6rem;
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 0.35rem 0.7rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
-.species-popup__section { display: flex; flex-direction: column; gap: 0.25rem; }
+
+.species-popup__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.species-popup__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
 .species-popup__h3 {
-  font-size: 9px;
+  font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.45);
-  font-weight: 800;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 700;
   margin: 0;
 }
+
 .species-popup__p {
-  font-size: 0.8125rem;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
   margin: 0;
+  overflow-wrap: break-word;
 }
+
+.species-popup__threats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.1rem;
+}
+
+.species-popup__threat {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid;
+  line-height: 1.5;
+}
+
 .species-popup__footer {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.4rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 0.85rem;
+  margin-top: 0.5rem;
 }
+
+.species-popup__footer-right {
+  margin-left: auto;
+}
+
 .species-popup__chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.6875rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 999px;
-  padding: 0.3rem 0.65rem;
-  color: rgba(255, 255, 255, 0.7);
+  padding: 0.25rem 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
 }
+
 .species-popup__link {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.6875rem;
-  color: #5dade2;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--link-clr, #5dade2);
   text-decoration: none;
   font-weight: 600;
-  padding: 0.3rem 0.65rem;
+  padding: 0.25rem 0.65rem;
   border-radius: 999px;
-  background: rgba(93, 173, 226, 0.08);
-  border: 1px solid rgba(93, 173, 226, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  line-height: 1.4;
+  transition: background 0.15s, border-color 0.2s, color 0.15s;
 }
-.species-popup__link:hover { background: rgba(93, 173, 226, 0.15); }
+
+.species-popup__link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--link-clr, #5dade2);
+}
 </style>

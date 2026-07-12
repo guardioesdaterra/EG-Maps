@@ -722,7 +722,13 @@ function onCrewRegistered(_memberId: string) {
 }
 
 async function checkCrewMembership() {
-  // Managers auto-bypass crew check
+  // Wait for manager status to resolve first
+  if (!isManagerReady.value) {
+    for (let i = 0; i < 100; i++) {
+      await new Promise(r => setTimeout(r, 50))
+      if (isManagerReady.value) break
+    }
+  }
   if (isManager.value) return
   try {
     const { data, error: fnError } = await client.functions.invoke('crew-sync')

@@ -201,6 +201,7 @@ export function useMapBase(config: MapBaseConfig) {
   let loadingTimeout: ReturnType<typeof setTimeout> | null = null
   let lastFocusedEl: HTMLElement | null = null
   let rebuildPending = false
+  let initialRebuildDone = false
 
   const mapRef = computed(() => map)
 
@@ -481,6 +482,7 @@ export function useMapBase(config: MapBaseConfig) {
         if (shouldRebuild) {
           rebuildMarkers()
         }
+        initialRebuildDone = true
         console.timeEnd('[perf] initMap → rebuildMarkers')
         console.time('[perf] initMap → connections+hexGrid')
         const qNow = quality.settings.value

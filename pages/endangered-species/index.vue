@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <MapView2D :species-index="speciesIndex" :default-dataset="'endangered-species'" />
+    <MapView2D :default-dataset="'endangered-species'" />
     <template #fallback>
       <div class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
         <LoadingSpinner
@@ -26,6 +26,4 @@ useHead({
     { name: 'description', content: 'Interactive 2D map of critically endangered species around the world' },
   ],
 })
-
-const { data: speciesIndex } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
 </script>

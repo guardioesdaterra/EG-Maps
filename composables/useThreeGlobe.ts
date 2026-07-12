@@ -225,11 +225,45 @@ export function useThreeGlobe(
     camera.position.z = 10
 
     let mouseX = 0, mouseY = 0
+    let isDragging = false
+    let lastTouchX = 0, lastTouchY = 0
+
     const mouseHandler = (e: MouseEvent) => {
       mouseX = (e.clientX / window.innerWidth - 0.5) * 0.2
       mouseY = (e.clientY / window.innerHeight - 0.5) * 0.2
     }
     window.addEventListener('mousemove', mouseHandler)
+
+    const touchStartHandler = (e: TouchEvent) => {
+      const t = e.touches[0]
+      if (!t) return
+      isDragging = true
+      lastTouchX = t.clientX
+      lastTouchY = t.clientY
+    }
+
+    const touchMoveHandler = (e: TouchEvent) => {
+      const t = e.touches[0]
+      if (!t) return
+      if (isDragging) {
+        const dx = t.clientX - lastTouchX
+        const dy = t.clientY - lastTouchY
+        scene.rotation.y += dx * 0.005
+        scene.rotation.x += dy * 0.005
+        lastTouchX = t.clientX
+        lastTouchY = t.clientY
+      }
+      mouseX = (t.clientX / window.innerWidth - 0.5) * 0.2
+      mouseY = (t.clientY / window.innerHeight - 0.5) * 0.2
+    }
+
+    const touchEndHandler = () => {
+      isDragging = false
+    }
+
+    canvas.addEventListener('touchstart', touchStartHandler, { passive: true })
+    canvas.addEventListener('touchmove', touchMoveHandler, { passive: true })
+    canvas.addEventListener('touchend', touchEndHandler, { passive: true })
 
     gsap.to(globe.rotation, { y: Math.PI * 2, scrollTrigger: { trigger: '#ui-overlay', start: 'top top', end: 'bottom bottom', scrub: 1.5 } })
     gsap.to(globe.scale, { x: 2.5, y: 2.5, z: 2.5, ease: 'power2.out', scrollTrigger: { trigger: '#details', start: 'bottom center', endTrigger: '#grants-portal', end: 'bottom bottom', scrub: 3, invalidateOnRefresh: true } })
@@ -327,6 +361,9 @@ export function useThreeGlobe(
     cleanup = () => {
       window.removeEventListener('resize', resizeHandler)
       window.removeEventListener('mousemove', mouseHandler)
+      canvas.removeEventListener('touchstart', touchStartHandler)
+      canvas.removeEventListener('touchmove', touchMoveHandler)
+      canvas.removeEventListener('touchend', touchEndHandler)
       cancelAnimationFrame(rafId)
       ctx.revert()
       panels.forEach((p) => {

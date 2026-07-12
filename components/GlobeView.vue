@@ -1,7 +1,7 @@
 <template>
   <canvas
     ref="canvasRef"
-    class="fixed inset-0 pointer-events-none"
+    class="fixed inset-0 cursor-grab active:cursor-grabbing touch-none"
     :style="{ zIndex: 'var(--z-canvas)' }"
     aria-hidden="true"
   />

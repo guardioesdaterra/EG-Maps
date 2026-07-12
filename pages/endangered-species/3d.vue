@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <MapView3D :species-index="speciesIndex" :default-dataset="'endangered-species'" />
+    <MapView3D :default-dataset="'endangered-species'" />
     <template #fallback>
       <div class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
         <LoadingSpinner
@@ -26,6 +26,4 @@ useHead({
     { name: 'description', content: 'Interactive 3D globe of critically endangered species around the world' },
   ],
 })
-
-const { data: speciesIndex } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
 </script>

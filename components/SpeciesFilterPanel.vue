@@ -245,7 +245,6 @@ const searchQuery = ref('')
 const showAllGroups = ref(false)
 const taxonomicGroupCollapsed = ref(true)
 const selectedTaxonomicGroups = ref<string[]>([])
-// Extract unique filter values from species data (single pass)
 const filterOptions = computed(() => {
   const groups = new Set<string>()
   const regionSet = new Set<string>()
@@ -253,13 +252,10 @@ const filterOptions = computed(() => {
   const threatsSet = new Set<string>()
   for (const s of props.species) {
     groups.add(s.taxonomicGroup)
-    const r = (s as unknown as Record<string, unknown>).region
-    if (r) regionSet.add(r as string)
-    const e = (s as unknown as Record<string, unknown>).ecosystem
-    if (e) ecosystemSet.add(e as string)
-    const tt = (s as unknown as Record<string, unknown>).threatTypes as string[] | undefined
-    if (tt) {
-      for (const t of tt) threatsSet.add(t)
+    if (s.region) regionSet.add(s.region)
+    if (s.ecosystem) ecosystemSet.add(s.ecosystem)
+    if (s.threatTypes) {
+      for (const t of s.threatTypes) threatsSet.add(t)
     }
   }
   return {
@@ -331,24 +327,16 @@ const filteredSpecies = computed(() => {
 
   return props.species.filter(s => {
     if (hasGroupFilter && !groupFilter.includes(s.taxonomicGroup)) return false
-    if (regionFilter) {
-      const r = (s as unknown as Record<string, unknown>).region
-      if (r !== regionFilter) return false
-    }
-    if (ecosystemFilter) {
-      const e = (s as unknown as Record<string, unknown>).ecosystem
-      if (e !== ecosystemFilter) return false
-    }
-    if (threatFilter && !((s as unknown as Record<string, unknown>).threatTypes as string[] | undefined)?.includes(threatFilter)) return false
+    if (regionFilter && s.region !== regionFilter) return false
+    if (ecosystemFilter && s.ecosystem !== ecosystemFilter) return false
+    if (threatFilter && !s.threatTypes?.includes(threatFilter)) return false
     if (query) {
-      const r = (s as unknown as Record<string, unknown>).region as string | undefined
-      const e = (s as unknown as Record<string, unknown>).ecosystem as string | undefined
       if (!s.commonName.toLowerCase().includes(query) &&
           !s.scientificName.toLowerCase().includes(query) &&
-          !(r && r.toLowerCase().includes(query)) &&
+          !(s.region && s.region.toLowerCase().includes(query)) &&
           !s.taxonomicGroup.toLowerCase().includes(query) &&
           !(labels[s.taxonomicGroup] && labels[s.taxonomicGroup].includes(query)) &&
-          !(e && e.toLowerCase().includes(query))) return false
+          !(s.ecosystem && s.ecosystem.toLowerCase().includes(query))) return false
     }
     return true
   })

@@ -8,6 +8,7 @@ import { useSpeciesPopup, useProjectPopup, useCrewPopup, usePreviewCard } from '
 import { useMapConnections } from '@/composables/useMapConnections'
 import { useMapMarker } from '@/composables/useMapMarker'
 import { useRareEarthController } from '@/composables/useRareEarthController'
+import { getPopupContent } from '@/composables/useCulturalLayers'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { allProjectsData } from '@/lib/project-data'
 import { openRareEarthOverlayPopup } from '@/lib/map-utils'
@@ -59,7 +60,7 @@ export function useMapBase(config: MapBaseConfig) {
 
   const projectsData = computed(() => props.projects || allProjectsData)
   const speciesData = computed(() => props.species || [])
-  const speciesIndexData = computed(() => props.speciesIndex || [])
+  const speciesIndexData = ref<SpeciesIndexItem[]>(props.speciesIndex || [])
   const crewsData = computed(() => props.crews || [])
   const crewLocationsData = computed(() => props.crewLocations || [])
   const filteredProjectsList = ref<ProjectData[] | null>(null)
@@ -246,12 +247,28 @@ export function useMapBase(config: MapBaseConfig) {
 
   /* ── marker system (replaces orchestrator) ─────────────────────────── */
 
+  let culturalPopup: maplibregl.Popup | null = null
+
+  function openCulturalOverlay(feature: GeoJSON.Feature) {
+    if (!map) return
+    culturalPopup?.remove()
+    const p = (feature.properties ?? {}) as Record<string, unknown>
+    const html = getPopupContent(p)
+    const coords = (feature.geometry as GeoJSON.Point).coordinates
+    culturalPopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+      .setLngLat([coords[0] as number, coords[1] as number])
+      .setHTML(html)
+      .setMaxWidth('none')
+      .addTo(map)
+  }
+
   const marker = useMapMarker({
     openProjectOverlay,
     openSpeciesOverlay,
     openCrewOverlay,
     openCrewLocationOverlay,
     openRareEarthOverlay,
+    openCulturalOverlay,
     openProjectPreview,
     openSpeciesPreview,
     openCrewPreview,
@@ -279,31 +296,42 @@ export function useMapBase(config: MapBaseConfig) {
   /* ── marker rebuild (single entry-point for all datasets) ──────────── */
 
   function rebuildMarkers() {
-    if (!map || activeDataset.value === 'vulcan-observatory') return
+    if (!map) {
+      console.warn('[perf] rebuildMarkers skipped — map not ready')
+      return
+    }
+    console.time(`[perf] rebuildMarkers ${activeDataset.value}`)
+    const isRee = activeDataset.value === 'vulcan-observatory'
     marker.rebuild({
       dataset: activeDataset.value!,
-      projects: visibleProjects.value,
-      speciesIndex: speciesIndexData.value,
-      species: speciesData.value,
-      crews: crewsData.value,
-      crewLocations: crewLocationsData.value,
-      selectedSpeciesGroups: selectedSpeciesGroups.value,
-      rareEarthFeatures: (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
+      projects: isRee ? [] : visibleProjects.value,
+      speciesIndex: isRee ? [] : speciesIndexData.value,
+      species: isRee ? [] : speciesData.value,
+      crews: isRee ? [] : crewsData.value,
+      crewLocations: isRee ? [] : crewLocationsData.value,
+      selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
+      rareEarthFeatures: isRee ? [] : (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
+      culturalFeatures: isRee ? (props.rareEarthCultural?.features ?? []) : undefined,
     })
+    console.timeEnd(`[perf] rebuildMarkers ${activeDataset.value}`)
   }
 
   function updateMarkerData() {
-    if (!map || activeDataset.value === 'vulcan-observatory') return
+    if (!map) return
+    console.time(`[perf] updateMarkerData ${activeDataset.value}`)
+    const isRee = activeDataset.value === 'vulcan-observatory'
     marker.update({
       dataset: activeDataset.value!,
-      projects: visibleProjects.value,
-      speciesIndex: speciesIndexData.value,
-      species: speciesData.value,
-      crews: crewsData.value,
-      crewLocations: crewLocationsData.value,
-      selectedSpeciesGroups: selectedSpeciesGroups.value,
-      rareEarthFeatures: (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
+      projects: isRee ? [] : visibleProjects.value,
+      speciesIndex: isRee ? [] : speciesIndexData.value,
+      species: isRee ? [] : speciesData.value,
+      crews: isRee ? [] : crewsData.value,
+      crewLocations: isRee ? [] : crewLocationsData.value,
+      selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
+      rareEarthFeatures: isRee ? [] : (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
+      culturalFeatures: isRee ? (props.rareEarthCultural?.features ?? []) : undefined,
     })
+    console.timeEnd(`[perf] updateMarkerData ${activeDataset.value}`)
   }
 
   function navigateToLocation(lat: number, lng: number) {
@@ -347,6 +375,8 @@ export function useMapBase(config: MapBaseConfig) {
   /* ── map init ─────────────────────────────────────────────────────── */
 
   function initMap() {
+    console.time('[perf] initMap total')
+    console.time('[perf] initMap → MapLibre constructor')
     if (!mapContainerRef.value) return
 
     if (!detectWebGLSupport()) {
@@ -383,6 +413,10 @@ export function useMapBase(config: MapBaseConfig) {
         maxTileCacheZoomLevels: 5,
       } as maplibregl.MapOptions & { antialias?: boolean })
 
+      console.timeEnd('[perf] initMap → MapLibre constructor')
+      console.time('[perf] initMap → style.load')
+      console.time('[perf] initMap → map.load (tiles)')
+
       map.addControl(
         new maplibregl.AttributionControl({
           customAttribution: `EARTH GUARDIANS @ ${new Date().getFullYear()}`
@@ -394,11 +428,14 @@ export function useMapBase(config: MapBaseConfig) {
       }
 
       map.on('style.load', () => {
+        console.timeEnd('[perf] initMap → style.load')
         onStyleLoad?.(map!)
       })
 
       map.on('load', () => {
         if (!isMounted) return
+        console.timeEnd('[perf] initMap → map.load (tiles)')
+        console.time('[perf] initMap → rebuildMarkers')
         if (import.meta.dev) console.warn(`[useMapBase] map.on('load'): dataset=${activeDataset.value}`)
         isLoading.value = false
         if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null }
@@ -407,6 +444,8 @@ export function useMapBase(config: MapBaseConfig) {
           setupRareEarthLayers()
         }
         rebuildMarkers()
+        console.timeEnd('[perf] initMap → rebuildMarkers')
+        console.time('[perf] initMap → connections+hexGrid')
         if (activeDataset.value !== 'vulcan-observatory') {
           if (activeDataset.value === 'active-crews') {
             connections.addConnections('active-crews', [], [], crewLocationsData.value)
@@ -416,6 +455,8 @@ export function useMapBase(config: MapBaseConfig) {
           connections.startParticles()
         }
         hexGrid.setupHexGrid()
+        console.timeEnd('[perf] initMap → connections+hexGrid')
+        console.timeEnd('[perf] initMap total')
         onMapReady?.(map!)
       })
 
@@ -481,6 +522,7 @@ export function useMapBase(config: MapBaseConfig) {
   /* ── lifecycle ────────────────────────────────────────────────────── */
 
   onMounted(() => {
+    console.time('[perf] useMapBase onMounted → initMap')
     checkViewportSize()
     window.addEventListener('resize', checkViewportSize)
     showFilterPanel.value = false
@@ -538,6 +580,11 @@ export function useMapBase(config: MapBaseConfig) {
     if (!map || activeDataset.value !== 'vulcan-observatory') return
     setupRareEarthLayers()
   })
+
+  watch(() => props.rareEarthCultural, () => {
+    if (!map || activeDataset.value !== 'vulcan-observatory') return
+    rebuildMarkers()
+  }, { deep: false })
 
   watch(showHexGrid, async (visible) => {
     if (!visible) return

@@ -19,6 +19,14 @@
       </div>
     </Transition>
 
+    <!-- Non-blocking data loading indicator (shows on top of rendered map) -->
+    <Transition name="fade">
+      <div v-if="showDataLoading" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[99] flex items-center gap-2 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-sm border border-cyan-800/40 pointer-events-none">
+        <div class="w-3 h-3 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+        <span class="text-xs text-cyan-300 font-medium whitespace-nowrap">{{ dataStatusText }}</span>
+      </div>
+    </Transition>
+
     <canvas ref="starCanvasRef" class="absolute inset-0 z-0 pointer-events-none" aria-hidden="true"></canvas>
 
     <div class="absolute inset-0 pointer-events-none z-10 bg-black/20"></div>
@@ -74,7 +82,7 @@
           <button v-for="loc in availablePopupLocales" :key="loc" class="species-popup-lang-btn" :class="{ active: popupLocale === loc }" @click="popupLocale = loc" :aria-label="`Show in ${(localeNames as Record<string, string>)[loc] || loc}`">{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
         </div>
         <div class="species-popup-content-fixed">
-          <SpeciesPopup :species="speciesData" />
+          <MapSpeciesPopup :species="speciesData" />
         </div>
       </div>
     </Transition>
@@ -84,7 +92,7 @@
       <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Project details" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
         <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="project-popup-content-fixed">
-          <ProjectPopup :project="projectData" />
+          <MapProjectPopup :project="projectData" />
         </div>
       </div>
     </Transition>
@@ -94,7 +102,7 @@
       <div v-if="showCrewOverlay" ref="crewOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
         <button ref="crewCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="project-popup-content-fixed">
-          <CrewPopup :crew="crewData" :is-location="isCrewLocationData" />
+          <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" />
         </div>
       </div>
     </Transition>
@@ -104,10 +112,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineAsyncComponent } from 'vue'
+import { ref, watch, computed, defineAsyncComponent } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import type { MapBaseProps } from '@/composables/useMapBase'
 import { useMapBase } from '@/composables/useMapBase'
+import { useSpeciesIndex } from '~/composables/useSpeciesData'
 
 const DataBubble = defineAsyncComponent(() => import('~/components/DataBubble.vue'))
 const MapControls = defineAsyncComponent(() => import('~/components/MapControls.vue'))
@@ -124,6 +133,11 @@ const emit = defineEmits<{ mapInit: [map: maplibregl.Map] }>()
 const mapContainerRef = ref<HTMLElement | null>(null)
 const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
 const starCanvasRef = ref<HTMLCanvasElement | null>(null)
+
+const showDataLoading = ref(false)
+const dataStatusText = ref('')
+let dataLoadedCount = 0
+const DATA_TOTAL = 2
 
 let starAnimationId: number | null = null
 let rotationAnimationId: number | null = null
@@ -211,6 +225,50 @@ const base = useMapBase({
   },
 })
 
+if (props.defaultDataset === 'endangered-species') {
+  const { data: speciesIdx, loading: speciesLoading, currentDatasetLabel } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
+  watch(currentDatasetLabel, (v) => {
+    if (v && speciesLoading.value) {
+      showDataLoading.value = true
+      dataStatusText.value = t('globe.preparingData', { dataset: v })
+    }
+  })
+  watch(speciesLoading, (v) => {
+    if (!v) {
+      dataLoadedCount++
+      if (dataLoadedCount >= DATA_TOTAL) {
+        dataStatusText.value = 'All species data loaded ✓'
+        setTimeout(() => { showDataLoading.value = false }, 2500)
+      } else {
+        showDataLoading.value = true
+        dataStatusText.value = `${currentDatasetLabel.value || ''} loaded → next dataset...`
+        setTimeout(() => {
+          if (dataLoadedCount < DATA_TOTAL) {
+            showDataLoading.value = false
+          }
+        }, 2000)
+      }
+    } else {
+      showDataLoading.value = true
+      dataStatusText.value = t('globe.preparingData', { dataset: currentDatasetLabel.value || '' })
+    }
+  })
+  watch(speciesIdx, (val) => {
+    if (val.length > 0) {
+      base.speciesIndexData.value = val
+    }
+  })
+}
+
+useHead({
+  link: props.defaultDataset === 'endangered-species'
+    ? [
+        { rel: 'preload', href: `${useRuntimeConfig().app.baseURL}data/species/iucn-index.json`, as: 'fetch', crossorigin: 'anonymous' },
+        { rel: 'preload', href: `${useRuntimeConfig().app.baseURL}data/species/icmbio-brazil-index.json`, as: 'fetch', crossorigin: 'anonymous' },
+      ]
+    : [],
+})
+
 function initMap() {
   base.initMap()
 }
@@ -219,7 +277,7 @@ const {
   t, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,
   activeDataset, projectsData, speciesIndexData, visibleProjects,
   selectedSpeciesGroups,
-  hasError, errorMessage, noWebglSupport, isLoading,
+  hasError, errorMessage, noWebglSupport,
   showHexGrid, showFilterPanel, speciesFilterPanelRef,
   showConnections, toggleConnections,
   showSpeciesOverlay, showProjectOverlay, showCrewOverlay,
@@ -236,6 +294,8 @@ const {
   handleSearchOpenChange, handleSpeciesGroupSelection,
   toggleLegendGroup, navigateToLocation,
 } = base
+
+const isLoading = computed(() => base.isLoading.value)
 </script>
 
 <style>

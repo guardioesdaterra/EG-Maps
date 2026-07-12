@@ -93,7 +93,7 @@ function getIndigenousBadge(): string {
   return '<span style="font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px;background:#e74c3c;color:#fff;margin-left:4px">INDIGENOUS</span>'
 }
 
-function getPopupContent(p: Record<string, unknown>): string {
+export function getPopupContent(p: Record<string, unknown>): string {
   const typeName = String(p.type || 'community')
   const typeLabel = TYPE_LABELS[typeName] || typeName.charAt(0).toUpperCase() + typeName.slice(1).replace('_', ' ')
   const subtype = String(p.subtype || '')

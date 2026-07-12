@@ -255,7 +255,7 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   display: flex;
   flex-direction: column;
   width: 340px;
-  max-height: calc(100vh - 12rem);
+  max-height: var(--obs-panel-max-height, calc(100vh - 12rem));
   background: rgba(0, 0, 0, 0.92);
   backdrop-filter: blur(16px) saturate(1.2);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);

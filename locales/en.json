@@ -614,7 +614,7 @@
     "heroLabel": "SINCE 1992 // YOUTH-LED. INTERGENERATIONAL. CLIMATE JUSTICE.",
     "heroTitle1": "WE WON'T WAIT.",
     "heroTitle2": "FUND OUR FUTURE.",
-    "heroDesc": "Two grant streams powering the next generation of climate leaders: {strong1}Community Collaborative Open Grants{strong2} — worldwide opportunities curated by youth, for youth. And {strong3}Earth Guardians Project Grants{strong4} — real impact data from our global grassroots movement. {strong5}You C.A.N. choose action now.{strong6}",
+    "heroDesc": "Two grant streams for the next generation of climate leaders: {strong1}Community Collaborative Open Grants{strong2} — global opportunities curated by youth. And {strong3}Earth Guardians Project Grants{strong4} — real impact data from our grassroots movement. {strong5}You C.A.N. choose action now.{strong6}",
     "statsLabel": "REAL YOUTH. REAL COMMUNITIES. REAL CHANGE.",
     "impactHeading1": "1M+ LIVES",
     "impactHeading2": "CHANGED",
@@ -749,6 +749,7 @@
     "reject": "Reject",
     "restore": "Restore",
     "editGrant": "Edit Grant",
+    "edit": "Edit",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "votes": "votes",
@@ -854,7 +855,55 @@
     "send": "Send",
     "signInToComment": "Sign in to join the conversation.",
     "commentError": "Failed to add comment. Please try again.",
-    "commentDeleteError": "Failed to delete comment. Please try again."
+    "commentDeleteError": "Failed to delete comment. Please try again.",
+    "crewSignupTitle": "Become an Earth Guardian",
+    "crewSignupSubtitle": "Tell us about your inspiration for becoming an Earth Guardian and share any projects you are working on so we can better pair you with resources.",
+    "crewSignupAnyAge": "Anyone of any age, location, or group size can be an Earth Guardian.",
+    "crewSignupDirector": "Our global crew director will contact you to get you started with onboarding.",
+    "crewSignupRole": "Are you interested in being a Crew leader or a Crew member?",
+    "crewSignupRoleLeader": "Crew leader! I want to lead my own projects with EG's global support",
+    "crewSignupRoleLeaderGroup": "Crew leader & I have a group! I want to lead a Crew of peers or mentors",
+    "crewSignupRoleMember": "Crew member! I want to join an established Crew near me",
+    "crewSignupFirstName": "First Name",
+    "crewSignupLastName": "Last Name",
+    "crewSignupLanguage": "What is your preferred language?",
+    "crewSignupLanguageEn": "English",
+    "crewSignupLanguageEs": "Español",
+    "crewSignupLanguageFr": "Français",
+    "crewSignupLanguagePt": "Português",
+    "crewSignupAge": "Age",
+    "crewSignupAgeHint": "Any age is welcome! (we prioritize resources to youth ages 30 and under)",
+    "crewSignupPhone": "Phone",
+    "crewSignupEmail": "Email",
+    "crewSignupAddress": "Address",
+    "crewSignupAddressLine1": "Address Line 1",
+    "crewSignupAddressLine2": "Address Line 2",
+    "crewSignupCity": "City",
+    "crewSignupState": "State",
+    "crewSignupZip": "ZIP Code",
+    "crewSignupCountry": "Country",
+    "crewSignupInspiration": "What inspired you to become an Earth Guardian?",
+    "crewSignupInspirationHint": "We'd love to hear your story that led you to champion climate justice",
+    "crewSignupTraining": "Would you be interested in attending digital training and engagement calls?",
+    "crewSignupTrainingYes": "Yes, of course!",
+    "crewSignupTrainingCapacity": "When I have capacity",
+    "crewSignupTrainingResources": "When I have the resources",
+    "crewSignupTrainingNoCapacity": "No, I don't have capacity",
+    "crewSignupTrainingNoResources": "No, I don't have the resources",
+    "crewSignupExperience": "Do you have experience in climate or social justice action or research?",
+    "crewSignupExperienceHint": "If so, please give us examples so we can better elevate your current goals & work",
+    "crewSignupIndigenous": "Are you Indigenous to North America?",
+    "crewSignupIndigenousHint": "If yes, what Tribal nation will you represent? If no, please put N/A",
+    "crewSignupSubmit": "Start your Crew journey",
+    "crewSignupSuccess": "Welcome to the Crew!",
+    "crewSignupSuccessDesc": "Your application has been submitted. Our global crew director will reach out to you soon.",
+    "crewSignupError": "Something went wrong. Please try again.",
+    "crewSignupAlreadyRegistered": "You're already registered!",
+    "crewSignupContactCrews": "Have trouble with the form? Reach out to",
+    "crewSignupContactEmail": "crews@earthguardians.org",
+    "crewSignupPrivacyPolicy": "Privacy Policy",
+    "crewSignupRequired": "required",
+    "crewSignupBackToPortal": "Back to Dashboard"
   },
   "iframe": {
     "title": "Embed EG-Maps",
@@ -863,6 +912,14 @@
     "copied": "Copied!",
     "copyCode": "Copy embed code",
     "loadingPreview": "Scroll into view to load preview",
+    "picker": {
+      "title": "Quick Embed — Pick your view",
+      "description": "Choose 2D map or 3D globe, then select a dataset. Loads instantly with minimal UI (hideAll mode)."
+    },
+    "compare": {
+      "title": "2D vs 3D — Side by Side",
+      "description": "Compare the same dataset rendered in 2D map and 3D globe views."
+    },
     "fullScreen": {
       "title": "Full Screen Embed",
       "description": "Fills the entire browser viewport. Ideal for dedicated map pages."
@@ -890,6 +947,30 @@
     "fullScreenInteractive": {
       "title": "Interactive Embed with Controls",
       "description": "Full controls visible. Best for standalone integrations."
+    },
+    "activeCrews2d": {
+      "title": "Active Crews — 2D Map",
+      "description": "2D map view of Earth Guardians active crews worldwide."
+    },
+    "projectGrants3d": {
+      "title": "Project Grants — 3D Globe",
+      "description": "3D globe view of global project grants and their impact."
+    },
+    "projectGrants2d": {
+      "title": "Project Grants — 2D Map",
+      "description": "2D map view of global project grants."
+    },
+    "endangeredSpecies3d": {
+      "title": "Endangered Species — 3D Globe",
+      "description": "3D globe view of critically endangered species habitats."
+    },
+    "endangeredSpecies2d": {
+      "title": "Endangered Species — 2D Map",
+      "description": "2D map view of endangered species locations worldwide."
+    },
+    "observatory3d": {
+      "title": "Vulcan Observatory — 3D Globe",
+      "description": "3D globe view of the mining process visualization in Brazil."
     },
     "observatory": {
       "title": "Vulcan Observatory Embed",

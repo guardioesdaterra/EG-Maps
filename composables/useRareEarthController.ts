@@ -7,7 +7,6 @@ import {
   addPolygonLayersToMap,
 } from '@/composables/useRareEarthLayers'
 import { setupWaterLayers } from '@/composables/useWaterLayers'
-import { setupCulturalLayers } from '@/composables/useCulturalLayers'
 import { buildEnterpriseNetworkLines } from '@/lib/enterprise-data'
 
 export interface RareEarthControllerProps {
@@ -53,7 +52,6 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
   let flyToHighlightMarker: maplibregl.Marker | null = null
   let flyToHighlightTimer: ReturnType<typeof setTimeout> | null = null
   let waterCleanup: (() => void) | null = null
-  let culturalCleanup: (() => void) | null = null
 
   function addFlyToHighlight(lng: number, lat: number) {
     const m = map.value
@@ -99,11 +97,6 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     // Setup water layers if data is available
     if (p.rareEarthWater?.features?.length && !waterCleanup) {
       waterCleanup = setupWaterLayers(m, p.rareEarthWater)
-    }
-
-    // Setup cultural layers if data is available
-    if (p.rareEarthCultural?.features?.length && !culturalCleanup) {
-      culturalCleanup = setupCulturalLayers(m, p.rareEarthCultural)
     }
 
     syncRareEarthLayerVisibilityInternal(m, p.layerVisibility || {})
@@ -168,14 +161,14 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     },
   )
 
-  // Watcher: fly-to target from parent
+  // Watcher: fly-to target from parent — only add highlight marker
+  // (flyTo itself is handled by useMapBase's watcher to avoid double calls)
   const stopFlyToWatch = watch(
     () => getProps().flyToTarget,
     (target) => {
       if (!target) return
       const m = map.value
       if (!m) return
-      m.flyTo({ center: [target.lng, target.lat], zoom: target.zoom ?? 9, duration: 1500 })
       m.once('moveend', () => addFlyToHighlight(target.lng, target.lat))
     },
   )
@@ -191,22 +184,6 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     },
   )
 
-  // Watcher: cultural data updates
-  const stopCulturalWatch = watch(
-    () => getProps().rareEarthCultural,
-    (newVal) => {
-      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
-      if (!newVal?.features?.length) return
-      if (!culturalCleanup) {
-        culturalCleanup = setupCulturalLayers(map.value, newVal)
-        return
-      }
-      // Update source data in-place if already set up
-      const src = map.value.getSource('ree-cultural') as maplibregl.GeoJSONSource | undefined
-      if (src) src.setData(newVal)
-    },
-  )
-
   onScopeDispose(() => {
     stopVisWatch()
     stopPointsWatch()
@@ -214,13 +191,11 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     stopPolygonsWatch()
     stopFlyToWatch()
     stopWaterWatch()
-    stopCulturalWatch()
     if (pointsDebounceTimer) clearTimeout(pointsDebounceTimer)
     if (flyToHighlightTimer) clearTimeout(flyToHighlightTimer)
     if (flyToHighlightMarker) { flyToHighlightMarker.remove(); flyToHighlightMarker = null }
     if (polyCleanup) { polyCleanup(); polyCleanup = null }
     if (waterCleanup) { waterCleanup(); waterCleanup = null }
-    if (culturalCleanup) { culturalCleanup(); culturalCleanup = null }
   })
 
   return { setupLayers, addFlyToHighlight }

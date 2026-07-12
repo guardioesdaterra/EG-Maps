@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch, computed } from 'vue';
+import { useAdaptiveQuality } from '~/composables/useAdaptiveQuality';
 
 const TWO_PI = Math.PI * 2;
 
@@ -47,6 +48,13 @@ const props = withDefaults(
   }
 );
 
+const quality = useAdaptiveQuality();
+const isLowQuality = computed(() => quality.tier.value === 'low' || quality.tier.value === 'medium');
+
+const effectiveDotSpacing = computed(() => isLowQuality.value ? props.dotSpacing * 2 : props.dotSpacing);
+const effectiveSparkle = computed(() => isLowQuality.value ? false : props.sparkle);
+const effectiveBulgeStrength = computed(() => isLowQuality.value ? props.bulgeStrength * 0.5 : props.bulgeStrength);
+
 const root = ref<HTMLDivElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
 const glowEl = ref<SVGCircleElement | null>(null);
@@ -79,7 +87,7 @@ let speedInterval: ReturnType<typeof setInterval>;
 let frameCount = 0;
 
 function buildDots(w: number, h: number) {
-  const step = props.dotRadius + props.dotSpacing;
+  const step = props.dotRadius + effectiveDotSpacing.value;
 
   const cols = Math.floor(w / step);
   const rows = Math.floor(h / step);
@@ -170,10 +178,13 @@ function setupCanvas() {
   if (!root.value || !canvas.value) return;
 
   ctx = canvas.value.getContext('2d', {
-    alpha: true
+    alpha: true,
+    desynchronized: true
   });
 
   if (!ctx) return;
+
+  ctx.imageSmoothingEnabled = false;
 
   dpr = Math.min(window.devicePixelRatio || 1, 2);
 
@@ -235,7 +246,7 @@ function setupCanvas() {
         if (props.bulgeOnly) {
           const falloff = 1 - dist / props.cursorRadius;
 
-          const push = falloff * falloff * props.bulgeStrength * engagement;
+          const push = falloff * falloff * effectiveBulgeStrength.value * engagement;
 
           d.sx += (d.ax - Math.cos(angle) * push - d.sx) * 0.15;
           d.sy += (d.ay - Math.sin(angle) * push - d.sy) * 0.15;
@@ -272,7 +283,7 @@ function setupCanvas() {
         drawX += Math.cos(d.ay * 0.03 + t * 0.7) * props.waveAmplitude * 0.5;
       }
 
-      if (props.sparkle) {
+      if (effectiveSparkle.value) {
         const hash = ((i * 2654435761) ^ (frameCount >> 3)) >>> 0;
 
         if (hash % 100 < 3) {
@@ -315,7 +326,18 @@ function cleanup() {
 }
 
 watch(
-  () => [props.dotRadius, props.dotSpacing],
+  () => [props.dotRadius, effectiveDotSpacing.value],
+  async () => {
+    await nextTick();
+
+    if (size.w > 0 && size.h > 0) {
+      buildDots(size.w, size.h);
+    }
+  }
+);
+
+watch(
+  () => quality.tier.value,
   async () => {
     await nextTick();
 
@@ -336,7 +358,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="root" class="relative w-full h-full overflow-hidden" :class="className">
-    <canvas ref="canvas" class="absolute inset-0 w-full h-full" aria-hidden="true" />
+    <canvas ref="canvas" class="absolute inset-0 w-full h-full" style="will-change: transform" aria-hidden="true" />
 
     <svg class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true">
       <defs>
@@ -353,7 +375,7 @@ onBeforeUnmount(() => {
         cy="-9999"
         :r="glowRadius"
         :fill="`url(#${glowId})`"
-        style="opacity: 0; will-change: opacity"
+        style="opacity: 0; will-change: opacity, transform"
       />
     </svg>
   </div>

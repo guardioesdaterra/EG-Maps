@@ -244,6 +244,13 @@ import GrantsFooter from '~/components/grants/GrantsFooter.vue'
 import CrewSignupModal from '~/components/grants/CrewSignupModal.vue'
 import GlobeView from '~/components/GlobeView.vue'
 import { useSupabase } from '~/composables/useSupabase'
+import { useDeviceCapabilities } from '~/composables/useDeviceCapabilities'
+import { useAdaptiveQuality } from '~/composables/useAdaptiveQuality'
+
+const deviceCaps = useDeviceCapabilities()
+const quality = useAdaptiveQuality()
+
+const isLowQuality = computed(() => quality.tier.value === 'low' || quality.tier.value === 'medium')
 
 useHead({
   title: 'EG Grants | Earth Guardians',
@@ -259,7 +266,9 @@ useHead({
     { rel: 'preload', href: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', as: 'script' },
     { rel: 'preload', href: 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', as: 'script' },
     { rel: 'preload', href: 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js', as: 'script' },
-    { rel: 'preload', href: 'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg', as: 'image' },
+    ...(isLowQuality.value ? [] : [
+      { rel: 'preload', href: 'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg', as: 'image' },
+    ]),
   ],
 })
 
@@ -780,6 +789,7 @@ onBeforeUnmount(() => {
   opacity: 0;
   transform: translateY(40px);
   will-change: opacity, transform;
+  backface-visibility: hidden;
 }
 .revealed .hero-reveal {
   animation: heroReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -914,6 +924,8 @@ h2 {
   background: rgba(255, 255, 255, 0.02);
   transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   overflow: hidden;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 .impact-stat-tile::before {
   content: '';
@@ -1045,6 +1057,8 @@ h2 {
   transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   overflow: visible;
   cursor: default;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 .impact-card:hover {
   border-color: rgba(0, 255, 133, 0.18);
@@ -1199,6 +1213,7 @@ h2 {
   z-index: var(--z-ui);
   animation: bounce-arrow 2s infinite;
   color: rgba(255,255,255,0.5);
+  will-change: transform;
 }
 @keyframes bounce-arrow {
   0%, 100% { transform: translateX(-50%) translateY(0); }

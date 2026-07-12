@@ -171,7 +171,6 @@
           :open-count="scrapedOpenCount"
           :closed-count="scrapedClosedCount"
           :active-tab="activePortalTab"
-          :manager-sub-tab="activeTab"
           :show-history="showHistory"
           :search-query="dashboardSearch"
           :is-loading="scrapedLoading"
@@ -186,7 +185,6 @@
           @sign-in="signIn"
           @sign-out="handleSignOut"
           @update:active-tab="activePortalTab = $event"
-          @update:manager-sub-tab="setManagerSubTab"
           @update:search-query="dashboardSearch = $event"
           @toggle:show-history="showHistory = !showHistory"
           @vote="handleVoteScraped"
@@ -297,7 +295,6 @@ const projectStats = computed(() => {
   const indirect = allProjectsData.reduce((s, p) => s + (p.indirect_beneficiaries || 0), 0)
   return { total: allProjectsData.length, countries: countries.size, beneficiaries: direct + indirect }
 })
-const activeTab = ref<'pending' | 'open' | 'closed'>('pending')
 const showHistory = ref(false)
 
 // Scraped (open) grants
@@ -323,8 +320,8 @@ function matchSearch(g: { title?: string; funder?: string; country?: string; des
 const filteredScrapedGrants = computed(() => {
   const q = dashboardSearch.value
   const tab = activePortalTab.value
-  if (tab === 'tabPending') return scrapedGrants.value.filter(g => g.status === activeTab.value && matchSearch(g, q))
-  if (tab === 'tabOpen') return grants.value.filter(g => g.reviewed === true && matchSearch(g, q))
+  if (tab === 'tabPending') return scrapedGrants.value.filter(g => g.status === 'pending' && matchSearch(g, q))
+  if (tab === 'tabOpen') return grants.value.filter(g => g.status === 'open' && matchSearch(g, q))
   if (tab === 'tabClosed') return scrapedGrants.value.filter(g => g.status === 'closed' && matchSearch(g, q))
   return scrapedGrants.value.filter(g => matchSearch(g, q))
 })
@@ -382,12 +379,11 @@ function onPageScroll() {
 
 const filteredGrants = computed(() => {
   const q = dashboardSearch.value
-  if (!isManager.value) return grants.value.filter(g => matchSearch(g, q))
-  return grants.value.filter(g => g.status === activeTab.value && matchSearch(g, q))
+  return grants.value.filter(g => g.status === 'open' && matchSearch(g, q))
 })
 
 const scrapedPendingCount = computed(() => stats.pending)
-const scrapedOpenCount = computed(() => grants.value.filter(g => g.reviewed === true).length)
+const scrapedOpenCount = computed(() => grants.value.filter(g => g.status === 'open').length)
 const scrapedClosedCount = computed(() => stats.closed)
 const countryCount = computed(() => Math.max(stats.open > 0 ? 47 : 0, projectStats.value.countries) + '+')
 
@@ -524,10 +520,6 @@ async function loadLeaderboardData() {
   } finally {
     leaderboardLoading.value = false
   }
-}
-
-function setManagerSubTab(tab: string) {
-  activeTab.value = tab as 'pending' | 'open' | 'closed'
 }
 
 async function handleReview(grantId: string, decision: string) {
@@ -752,7 +744,6 @@ watch(() => user.value?.email, (email) => {
   }
 })
 
-watch(activeTab, () => loadGrants())
 watch(activePortalTab, (tab) => {
   if (['tabPending', 'tabOpen', 'tabClosed'].includes(tab)) loadScrapedGrants()
   if (tab === 'tabLeaderboard') loadLeaderboardData()

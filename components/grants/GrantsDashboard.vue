@@ -125,10 +125,11 @@
               <button class="gdash-link-btn" @click="$emit('view-detail', g)">{{ t('grantsPortal.details') }}</button>
               <a v-if="isSafeUrl(g.url)" :href="g.url" target="_blank" class="gdash-link-btn apply" rel="noopener noreferrer">{{ t('grantsPortal.apply') }} ↗</a>
               <template v-if="isManager">
-                <button v-if="activeTab === 'tabPending'" class="gdash-action approve text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'approved')">✓ {{ t('grantsPortal.approve') }}</button>
-                <button v-if="activeTab === 'tabPending'" class="gdash-action reject text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'hidden')">✗ {{ t('grantsPortal.reject') }}</button>
-                <button v-if="activeTab === 'tabOpen'" class="gdash-action reject text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'hidden')">✗ {{ t('grantsPortal.reject') }}</button>
-                <button v-if="activeTab === 'tabClosed'" class="gdash-action restore text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'pending')">↩ {{ t('grantsPortal.restore') }}</button>
+                <button v-if="activeTab === 'tabPending'" class="gdash-action approve text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'approved', 'scraped_grants')">✓ {{ t('grantsPortal.approve') }}</button>
+                <button v-if="activeTab === 'tabPending'" class="gdash-action reject text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'hidden', 'scraped_grants')">✗ {{ t('grantsPortal.reject') }}</button>
+                <button v-if="activeTab === 'tabOpen'" class="gdash-action reject text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'hidden', 'grants')">✗ {{ t('grantsPortal.reject') }}</button>
+                <button v-if="activeTab === 'tabOpen'" class="gdash-action close text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'closed', 'grants')">🔒 {{ t('grantsPortal.closeGrant') }}</button>
+                <button v-if="activeTab === 'tabClosed'" class="gdash-action restore text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'pending', 'scraped_grants')">↩ {{ t('grantsPortal.restore') }}</button>
               </template>
             </div>
           </div>
@@ -241,7 +242,7 @@ defineEmits<{
   'view-detail': [grant: ScrapedGrant | GrantRecord]
   leaderboardDetail: [entry: LeaderboardEntry]
   'review:grant': [id: string, decision: 'pending' | 'open' | 'closed']
-  'review:scraped': [id: string, decision: 'approved' | 'hidden' | 'pending']
+  'review:scraped': [id: string, decision: 'approved' | 'hidden' | 'closed' | 'pending', table: string]
 }>()
 
 const { t } = useI18n()
@@ -944,6 +945,8 @@ function voteCount(grantId: string): number {
 .gdash-action.reject:hover { background: rgba(239, 68, 68, 0.25); }
 .gdash-action.restore { background: rgba(250, 204, 21, 0.15); color: #facc15; }
 .gdash-action.restore:hover { background: rgba(250, 204, 21, 0.25); }
+.gdash-action.close { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.gdash-action.close:hover { background: rgba(59, 130, 246, 0.25); }
 
 /* ── Leaderboard ───────────────────────────────────── */
 .gdash-lb-rank {

@@ -749,6 +749,7 @@
     "approve": "Approve",
     "reject": "Reject",
     "restore": "Restore",
+    "closeGrant": "Close Grant",
     "editGrant": "Edit Grant",
     "edit": "Edit",
     "saveChanges": "Save Changes",

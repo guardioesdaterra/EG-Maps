@@ -271,7 +271,7 @@ const impactStats = computed(() => [
   { num: '30+', label: t('grantsPortal.impactStat3Label') },
   { num: '100%', label: t('grantsPortal.impactStat4Label') },
 ])
-const { user, isManager, signIn, signOut, sessionReady } = useSupabaseAuth()
+const { user, isManager, isManagerReady, signIn, signOut, sessionReady } = useSupabaseAuth()
 const confirmSignOut = ref(false)
 const showCrewPopup = ref(false)
 const showCrewSignup = ref(false)

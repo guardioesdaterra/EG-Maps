@@ -129,7 +129,7 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
   }
 
   watch(datasets, (all) => {
-    const m = map.value
+    const m = map.value as MapLibreMap | null
     if (!m || !m.getStyle()) return
     const currentIds = new Set(all.map(d => d.id))
     for (const oldId of lastIds) {
@@ -172,7 +172,7 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
   }
 
   function resyncAll() {
-    const m = map.value
+    const m = map.value as MapLibreMap | null
     if (!m || !m.getStyle()) return
     const all = datasets.value
     const currentIds = new Set(all.map(d => d.id))

@@ -242,7 +242,7 @@ const base = useMapBase({
   },
 })
 
-const customLayerCtx = useMapCustomLayers(base.map)
+const customLayerCtx = useMapCustomLayers(base.mapRef)
 
 if (props.defaultDataset === 'endangered-species') {
   const { data: speciesIdx, loading: speciesLoading, currentDatasetLabel } = useSpeciesIndex(['iucn', 'icmbio-brazil'])

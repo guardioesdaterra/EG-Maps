@@ -114,7 +114,7 @@ import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const { t } = useI18n()
 
-defineProps<{
+const props = defineProps<{
   visible: boolean
 }>()
 

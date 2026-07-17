@@ -21,7 +21,7 @@ export function parseGeoJSON(text: string, fileName: string): ParseResult {
   }
   let features: GeoJSON.Feature[] = []
   if (data.type === 'FeatureCollection' && Array.isArray(data.features)) {
-    features = data.features.filter(f => f && f.type === 'Feature' && f.geometry)
+    features = data.features.filter((f: GeoJSON.Feature) => f && f.type === 'Feature' && f.geometry)
   } else if (data.type === 'Feature' && data.geometry) {
     features = [data]
   } else if (data.type === 'GeometryCollection' && Array.isArray(data.geometries)) {

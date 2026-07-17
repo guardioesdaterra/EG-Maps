@@ -152,7 +152,7 @@ const ctx = useMapBase({
   },
 })
 
-const customLayerCtx = useMapCustomLayers(ctx.map)
+const customLayerCtx = useMapCustomLayers(ctx.mapRef)
 
 const showDataLoading = ref(false)
 const dataStatusText = ref('')

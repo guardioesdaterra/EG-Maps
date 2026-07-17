@@ -1,5 +1,5 @@
 
-/* eslint-disable no-console */
+ 
 /**
  * Build per-species icon mappings using the multi-algorithm
  * matching system from lib/game-icons-map.

@@ -232,7 +232,8 @@
     "retry": "Riprova",
     "close": "Chiudi",
     "save": "Salva",
-    "cancel": "Annulla"
+    "cancel": "Annulla",
+    "imageNotAvailable": "Immagine non disponibile"
   },
   "observatory": {
     "tabs": {
@@ -539,8 +540,6 @@
     "howGrantsWork": "COME FINANZIIAMO IL CAMBIAMENTO",
     "impactRingLabel": "VITE",
     "grantsSectionLabel": "SOVVENZIONI PER PROGETTI EG",
-    "grantsCopy1": "Offriamo sovvenzioni da 300 a 500 dollari per supportare i nostri promotori del cambiamento globale, con priorità data ai nostri team.",
-    "grantsCopy1Strong": "Sovvenzioni da $ 300 a $ 500",
     "grantsCopy2": "Dal 2021, il nostro programma Project Grants sostiene gli sforzi di base nell'educazione alla giustizia climatica, nell'agricoltura rigenerativa, nella piantagione di alberi, nell'azione diretta non violenta, nella politica climatica, nella sicurezza alimentare, nell'arte-vismo e altro ancora.",
     "grantsCopy3": "Grazie a formazione, tutoraggio e finanziamenti, il nostro programma Project Grants ti consente di dare vita alle tue idee e ispirare gli altri. Il processo di sovvenzione di progetto insegna anche capacità di scrittura di sovvenzioni, coordinamento di progetti e analisi dei dati.",
     "grantsCopy4": "Unisciti a noi per rafforzare la resilienza e affrontare la crisi climatica a livello locale!",

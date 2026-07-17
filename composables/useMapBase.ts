@@ -75,6 +75,9 @@ export function useMapBase(config: MapBaseConfig) {
   const projectsData = computed(() => props.projects || allProjectsData)
   const speciesData = computed(() => props.species || [])
   const speciesIndexData = ref<SpeciesIndexItem[]>(props.speciesIndex || [])
+  watch(() => props.speciesIndex, (val) => {
+    if (val) speciesIndexData.value = val
+  }, { immediate: false })
   const crewsData = computed(() => props.crews || [])
   const crewLocationsData = computed(() => props.crewLocations || [])
   const filteredProjectsList = ref<ProjectData[] | null>(null)
@@ -332,7 +335,7 @@ export function useMapBase(config: MapBaseConfig) {
     marker.rebuild({
       dataset: activeDataset.value!,
       projects: isRee ? [] : visibleProjects.value,
-      speciesIndex: isRee ? [] : speciesIndexData.value,
+      speciesIndex: isRee ? [] : visibleSpecies.value,
       species: isRee ? [] : speciesData.value,
       crews: isRee ? [] : crewsData.value,
       crewLocations: isRee ? [] : crewLocationsData.value,
@@ -350,7 +353,7 @@ export function useMapBase(config: MapBaseConfig) {
     marker.update({
       dataset: activeDataset.value!,
       projects: isRee ? [] : visibleProjects.value,
-      speciesIndex: isRee ? [] : speciesIndexData.value,
+      speciesIndex: isRee ? [] : visibleSpecies.value,
       species: isRee ? [] : speciesData.value,
       crews: isRee ? [] : crewsData.value,
       crewLocations: isRee ? [] : crewLocationsData.value,

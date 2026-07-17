@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Species } from '@/lib/types'
 import { useI18n } from '@/composables/useI18n'
 import { GROUP_COLORS } from '@/lib/map-utils'
+import { getMarkerPlaceholder } from '@/lib/image-utils'
 
 const props = defineProps<{
   species: Species | null
 }>()
 
 const { t, locale } = useI18n()
+
+const imageError = ref(false)
+const imageLoading = ref(true)
 
 const color = computed(() => {
   if (!props.species) return '#5dade2'
@@ -31,6 +35,27 @@ const imageSrc = computed(() => {
   if (!props.species?.imageUrl) return ''
   if (props.species.imageUrl.startsWith('http')) return props.species.imageUrl
   return `${baseURL}/${props.species.imageUrl.replace(/^\//, '')}`
+})
+
+const fallbackPlaceholder = computed(() => getMarkerPlaceholder(props.species?.taxonomicGroup))
+
+function handleImageError() {
+  imageError.value = true
+  imageLoading.value = false
+}
+
+function handleImageLoad() {
+  imageLoading.value = false
+  imageError.value = false
+}
+
+function resetImageState() {
+  imageError.value = false
+  imageLoading.value = true
+}
+
+watch(() => props.species, () => {
+  if (props.species) resetImageState()
 })
 
 const endangermentLevel = computed(() => {
@@ -86,13 +111,22 @@ const coords = computed(() => {
     </header>
 
     <figure v-if="imageSrc" class="species-popup__media">
+      <div v-if="imageLoading && !imageError" class="species-popup__img-shimmer" :style="{ '--shimmer-color': color + '20' }" />
       <img
+        v-show="!imageError"
         :src="imageSrc"
         :alt="species.commonName"
         loading="lazy"
         class="species-popup__img"
+        :class="{ 'species-popup__img--loaded': !imageLoading }"
+        @error="handleImageError"
+        @load="handleImageLoad"
       />
-      <figcaption v-if="species.imageCredit" class="species-popup__credit">
+      <div v-if="imageError" class="species-popup__img-fallback" :style="{ borderColor: color + '30' }">
+        <div class="species-popup__img-fallback-icon" :style="{ backgroundImage: `url(${fallbackPlaceholder})` }" />
+        <span class="species-popup__img-fallback-label">{{ t('general.imageNotAvailable') }}</span>
+      </div>
+      <figcaption v-if="species.imageCredit && !imageError" class="species-popup__credit">
         {{ species.imageCredit }}
       </figcaption>
     </figure>
@@ -242,11 +276,13 @@ const coords = computed(() => {
 }
 
 .species-popup__media {
+  position: relative;
   margin: 0 0 1rem 0;
   border-radius: var(--popup-radius);
   overflow: hidden;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
+  min-height: clamp(10rem, 30vh, 14rem);
 }
 
 .species-popup__img {
@@ -254,11 +290,67 @@ const coords = computed(() => {
   height: clamp(10rem, 30vh, 14rem);
   object-fit: cover;
   display: block;
-  transition: transform 0.3s ease;
+  transition: opacity 0.4s ease, transform 0.3s ease;
+  opacity: 0;
+}
+
+.species-popup__img--loaded {
+  opacity: 1;
 }
 
 .species-popup__img:hover {
   transform: scale(1.02);
+}
+
+.species-popup__img-shimmer {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    var(--shimmer-color, rgba(255,255,255,0.06)) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.species-popup__img-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: clamp(10rem, 30vh, 14rem);
+  gap: 0.5rem;
+  border: 1px dashed;
+  border-radius: calc(var(--popup-radius) - 1px);
+  margin: 0.5rem;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.species-popup__img-fallback-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.25;
+}
+
+.species-popup__img-fallback-label {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.25);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
 }
 
 .species-popup__credit {

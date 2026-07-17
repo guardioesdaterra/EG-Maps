@@ -232,7 +232,8 @@
     "retry": "Opnieuw proberen",
     "close": "Sluiten",
     "save": "Opslaan",
-    "cancel": "Annuleren"
+    "cancel": "Annuleren",
+    "imageNotAvailable": "Afbeelding niet beschikbaar"
   },
   "observatory": {
     "tabs": {
@@ -539,8 +540,6 @@
     "howGrantsWork": "HOE WIJ VERANDERING FINANCIEREN",
     "impactRingLabel": "LEVEN",
     "grantsSectionLabel": "BIJV. PROJECTSUBSIDIES",
-    "grantsCopy1": "We bieden subsidies van $300 tot $500 aan om onze mondiale changemakers te ondersteunen, waarbij prioriteit wordt gegeven aan onze Crews.",
-    "grantsCopy1Strong": "Subsidies van $ 300 - $ 500",
     "grantsCopy2": "Sinds 2021 ondersteunt ons Project Grants-programma basisinspanningen op het gebied van onderwijs over klimaatrechtvaardigheid, regeneratieve landbouw, het planten van bomen, geweldloze directe actie, klimaatbeleid, voedselzekerheid, kunstvisisme en meer.",
     "grantsCopy3": "Met onderwijs, mentorschap en financiering stelt ons Project Grants-programma u in staat uw ideeën tot leven te brengen en anderen te inspireren. Het Project Grant-proces leert ook vaardigheden op het gebied van het schrijven van subsidies, projectcoördinatie en data-analyse.",
     "grantsCopy4": "Bouw samen met ons aan veerkracht en pak de klimaatcrisis lokaal aan!",

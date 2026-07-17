@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 /**
  * i18n Scanner Script
  * Scans all Vue and TS files for hardcoded text strings that should use i18n keys

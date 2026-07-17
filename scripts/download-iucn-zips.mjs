@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { chromium } from 'playwright'
 import { writeFileSync, mkdirSync } from 'fs'
 import { join } from 'path'

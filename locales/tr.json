@@ -232,7 +232,8 @@
     "retry": "Tekrar Dene",
     "close": "Kapat",
     "save": "Kaydet",
-    "cancel": "İptal"
+    "cancel": "İptal",
+    "imageNotAvailable": "Görsel mevcut değil"
   },
   "observatory": {
     "tabs": {
@@ -539,8 +540,6 @@
     "howGrantsWork": "DEĞİŞİMİ NASIL FİNANSE EDİYORUZ",
     "impactRingLabel": "HAYATLAR",
     "grantsSectionLabel": "Örn. PROJE HİBELERİ",
-    "grantsCopy1": "Mürettebatlarımıza öncelik vererek küresel değişim yaratanlarımızı desteklemek için 300-500 ABD Doları tutarında hibe sunuyoruz.",
-    "grantsCopy1Strong": "300$–500$ hibeler",
     "grantsCopy2": "Proje Hibeleri programımız 2021'den bu yana iklim adaleti eğitimi, onarıcı tarım, ağaç dikimleri, şiddetsiz doğrudan eylem, iklim politikası, gıda güvenliği, sanat vizyonu ve daha pek çok alanda tabandan gelen çabaları destekliyor.",
     "grantsCopy3": "Eğitim, mentorluk ve finansmanla Proje Hibeleri programımız, fikirlerinizi hayata geçirmeniz ve başkalarına ilham vermeniz için size güç verir. Proje Hibe süreci aynı zamanda hibe yazma, proje koordinasyonu ve veri analizi becerilerini de öğretir.",
     "grantsCopy4": "Direnç oluşturma ve iklim kriziyle yerel olarak mücadele etme konusunda bize katılın!",

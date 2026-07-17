@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
+ 
 /**
  * Converts Overpass API JSON output to GeoJSON.
  * Handles ways (polygons/lines) and relations (multipolygons).

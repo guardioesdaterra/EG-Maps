@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 
 const srcPath = './public/data/species/icmbio-brazil.json';

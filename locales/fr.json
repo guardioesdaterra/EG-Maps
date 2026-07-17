@@ -232,7 +232,8 @@
     "retry": "Réessayer",
     "close": "Fermer",
     "save": "Enregistrer",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "imageNotAvailable": "Image non disponible"
   },
   "observatory": {
     "tabs": {
@@ -539,8 +540,6 @@
     "howGrantsWork": "COMMENT NOUS FINANÇONS LE CHANGEMENT",
     "impactRingLabel": "VIES",
     "grantsSectionLabel": "SUBVENTIONS DE PROJET EG",
-    "grantsCopy1": "Nous offrons des subventions de 300 à 500 $ pour soutenir nos acteurs du changement mondial, en donnant la priorité à nos équipes.",
-    "grantsCopy1Strong": "subventions de 300 à 500 $",
     "grantsCopy2": "Depuis 2021, notre programme de Subventions de Projet soutient les efforts communautaires en éducation à la justice climatique, agriculture régénérative, plantation d'arbres, action directe non violente, politique climatique, sécurité alimentaire, artivisme et plus encore.",
     "grantsCopy3": "Avec l'éducation, le mentorat et le financement, notre programme de Subventions de Projet vous permet de donner vie à vos idées et d'inspirer les autres. Le processus de Subvention de Projet enseigne également la rédaction de demandes de subvention, la coordination de projets et l'analyse de données.",
     "grantsCopy4": "Rejoignez-nous pour construire la résilience et affronter la crise climatique localement !",

@@ -26,7 +26,7 @@ const GROUP_COLORS_HEX: Record<string, string> = GROUP_COLORS
 // Content-hash cache so filter changes with same data hit the cache
 const speciesGeoCache = new Map<string, GeoJSON.FeatureCollection>()
 const projectsGeoCache = new Map<string, GeoJSON.FeatureCollection>()
-const MAX_CACHE_SIZE = 10
+const MAX_CACHE_SIZE = 20
 
 function hashSpeciesIndex(items: SpeciesIndexItem[]): string {
   if (items.length === 0) return 'empty'

@@ -479,6 +479,7 @@ function toProjectGeoJSON(projects: ProjectData[]): GeoJSON.FeatureCollection {
 }
 
 const speciesGeoCache = new Map<string, GeoJSON.FeatureCollection>()
+const SPECIES_GEO_CACHE_MAX = 20
 
 function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: string[]): GeoJSON.FeatureCollection {
   const cacheKey = `${index.length}:${raw.length}:${groups.sort().join(',')}`
@@ -507,6 +508,10 @@ function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: str
   const result = { type: 'FeatureCollection' as const, features }
   console.timeLog(label, `features=${features.length}`)
   console.timeEnd(label)
+  if (speciesGeoCache.size >= SPECIES_GEO_CACHE_MAX) {
+    const first = speciesGeoCache.keys().next().value
+    if (first) speciesGeoCache.delete(first)
+  }
   speciesGeoCache.set(cacheKey, result)
   return result
 }

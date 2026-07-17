@@ -135,8 +135,7 @@
           <span class="data-label">{{ t('grantsPortal.grantsSectionLabel') }}</span>
           <h2 class="grants-heading">{{ t('grantsPortal.howGrantsWork') }}</h2>
           <div class="grants-body">
-            <div class="grants-copy">              <p>{{ t('grantsPortal.grantsCopy1').split(t('grantsPortal.grantsCopy1Strong'))[0] }}<strong>{{ t('grantsPortal.grantsCopy1Strong') }}</strong>{{ t('grantsPortal.grantsCopy1').split(t('grantsPortal.grantsCopy1Strong'))[1] }}</p>
-              <p>{{ t('grantsPortal.grantsCopy2') }}</p>
+            <div class="grants-copy">              <p>{{ t('grantsPortal.grantsCopy2') }}</p>
               <p>{{ t('grantsPortal.grantsCopy3') }}</p>
               <p>{{ t('grantsPortal.grantsCopy4') }}</p>
               <NuxtLink to="https://www.earthguardians.org/project-grants" target="_blank" class="grants-cta-btn">
@@ -162,6 +161,10 @@
           <span class="dash-label">{{ t('grantsPortal.dashboardLabel') }}</span>
           <h2>{{ t('grantsPortal.portalTitle') }}</h2>
           <p class="projects-subtitle">{{ t('grantsPortal.dashboardSubtitle') }}</p>
+          <NuxtLink to="/eg-grants/fullscreen#no-dock" class="fs-toggle-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-3.5 h-3.5"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+            <span>Full Screen</span>
+          </NuxtLink>
         </div>
 
         <GrantsDashboard
@@ -243,12 +246,15 @@ import RegistryModal from '~/components/grants/RegistryModal.vue'
 import GrantsFooter from '~/components/grants/GrantsFooter.vue'
 import CrewSignupModal from '~/components/grants/CrewSignupModal.vue'
 import GlobeView from '~/components/GlobeView.vue'
+import { useToast } from '~/composables/useToast'
 import { useSupabase } from '~/composables/useSupabase'
+import { useI18n } from '~/composables/useI18n'
 import { useDeviceCapabilities } from '~/composables/useDeviceCapabilities'
 import { useAdaptiveQuality } from '~/composables/useAdaptiveQuality'
 
 const deviceCaps = useDeviceCapabilities()
 const quality = useAdaptiveQuality()
+const toast = useToast()
 
 const isLowQuality = computed(() => quality.level.value === 'low' || quality.level.value === 'medium')
 
@@ -272,7 +278,7 @@ useHead({
   ],
 })
 
-const { t } = useI18n()
+const { t, locale, localeNames } = useI18n()
 
 const impactStats = computed(() => [
   { num: '1M+', label: t('grantsPortal.impactStat1Label') },
@@ -771,6 +777,15 @@ onMounted(async () => {
   if (route.query.signup === '1' && user.value?.email) {
     openCrewSignup()
   }
+  setTimeout(() => {
+    if (!import.meta.client) return
+    try {
+      if (localStorage.getItem('langToastSeen')) return
+      const name = localeNames[locale.value] || locale.value
+      toast.info(`Viewing in ${name}`, 'Need a different language? Click the translation icon in the dock to change.')
+      localStorage.setItem('langToastSeen', '1')
+    } catch { /* localStorage unavailable */ }
+  }, 3000)
 })
 
 function onGlobeReady() {
@@ -1189,6 +1204,40 @@ h2 {
   margin-bottom: 1rem;
 }
 .projects-subtitle { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: rgba(255, 255, 255, 0.5); letter-spacing: 0.2em; text-transform: uppercase; }
+
+.fs-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(16px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fs-toggle-btn:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+}
+
+.fs-toggle-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.fs-toggle-btn:hover svg {
+  transform: scale(1.1);
+}
 
 .nebula-bg {
   position: absolute;

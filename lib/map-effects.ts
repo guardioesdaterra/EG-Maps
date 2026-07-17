@@ -424,7 +424,9 @@ export function createMapParticleSystem({
     const speciesFeatures = features.filter(f => f.properties?.dataset === 'endangered-species')
     if (!speciesFeatures.length) {
       const feature = features[Math.floor(Math.random() * features.length)]
-      const [from, control, to] = feature.geometry.coordinates as [number, number][]
+      const coords = feature.geometry.coordinates as [number, number][]
+      if (!coords || coords.length < 3) return
+      const [from, control, to] = coords
       if (!from || !control || !to) return
 
       particles.push({
@@ -450,7 +452,9 @@ export function createMapParticleSystem({
     if (!groupFeatures.length) return
 
     const feature = groupFeatures[Math.floor(Math.random() * groupFeatures.length)]
-    const [from, control, to] = feature.geometry.coordinates as [number, number][]
+    const coords = feature.geometry.coordinates as [number, number][]
+    if (!coords || coords.length < 3) return
+    const [from, control, to] = coords
     if (!from || !control || !to) return
 
     particles.push({

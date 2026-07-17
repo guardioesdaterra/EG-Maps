@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+ 
 import { chromium } from 'playwright'
 import { spawn } from 'child_process'
 import { mkdirSync, writeFileSync } from 'fs'

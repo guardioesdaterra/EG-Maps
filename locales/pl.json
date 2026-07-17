@@ -232,7 +232,8 @@
     "retry": "Spróbuj ponownie",
     "close": "Zamknij",
     "save": "Zapisz",
-    "cancel": "Anuluj"
+    "cancel": "Anuluj",
+    "imageNotAvailable": "Obraz niedostępny"
   },
   "observatory": {
     "tabs": {
@@ -539,8 +540,6 @@
     "howGrantsWork": "JAK FINANSUJEMY ZMIANY",
     "impactRingLabel": "ŻYJE",
     "grantsSectionLabel": "Np. DOTACJE PROJEKTOWE",
-    "grantsCopy1": "Oferujemy dotacje w wysokości 300–500 dolarów na wsparcie naszych globalnych twórców zmian, przy czym pierwszeństwo mają nasze załogi.",
-    "grantsCopy1Strong": "Dotacje w wysokości 300–500 dolarów",
     "grantsCopy2": "Od 2021 r. nasz program dotacji projektowych wspiera oddolne wysiłki w zakresie edukacji na rzecz sprawiedliwości klimatycznej, rolnictwa regeneracyjnego, sadzenia drzew, pokojowych działań bezpośrednich, polityki klimatycznej, bezpieczeństwa żywnościowego, sztuki i nie tylko.",
     "grantsCopy3": "Dzięki edukacji, mentoringowi i finansowaniu nasz program grantów projektowych umożliwia wcielanie pomysłów w życie i inspirowanie innych. Proces dotacji na projekt uczy także pisania dotacji, koordynacji projektu i umiejętności analizy danych.",
     "grantsCopy4": "Dołącz do nas w budowaniu odporności i walce z kryzysem klimatycznym lokalnie!",

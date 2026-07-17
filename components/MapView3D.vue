@@ -75,7 +75,7 @@
     </Transition>
 
     <!-- Species overlay -->
-    <Transition name="fade">
+    <Transition name="scale-fade">
       <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Species details" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
         <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" aria-label="Close species details"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div v-if="availablePopupLocales.length > 0" class="species-popup-lang-bar">
@@ -88,7 +88,7 @@
     </Transition>
 
     <!-- Project overlay -->
-    <Transition name="fade">
+    <Transition name="scale-fade">
       <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Project details" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
         <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="project-popup-content-fixed">
@@ -98,7 +98,7 @@
     </Transition>
 
     <!-- Crew overlay -->
-    <Transition name="fade">
+    <Transition name="scale-fade">
       <div v-if="showCrewOverlay" ref="crewOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
         <button ref="crewCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="project-popup-content-fixed">

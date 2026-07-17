@@ -40,7 +40,7 @@ function englishFallback(key: string): string | undefined {
  */
 export function useI18n() {
   const nuxtApp = useNuxtApp()
-  const i18n = (nuxtApp as { $i18n?: { t: (_key: string, ..._args: unknown[]) => string; locale: import('vue').Ref<string> } }).$i18n
+  const i18n = (nuxtApp as Record<string, unknown>).$i18n as { t: (_key: string, ..._args: unknown[]) => string; locale: import('vue').Ref<string> } | undefined
 
   const ui = useUiStore()
 

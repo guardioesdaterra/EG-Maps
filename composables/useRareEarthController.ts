@@ -1,3 +1,11 @@
+/**
+ * composables/useRareEarthController.ts
+ * @why Rare earth elements 3D controller — orbit, zoom, and selection in the 3D scene
+ * @functions useRareEarthController
+ * @interfaces RareEarthControllerProps, RareEarthPopupConfig, RareEarthControllerOptions
+ * @deps vue (watch, onScopeDispose, type Ref); @/composables/useRareEarthLayers (setupRareEarthLayers, syncRareEarthLayerVisibility, addPolygonLayersToMap, ); @/composables/useWaterLayers (setupWaterLayers); @/composables/useCulturalLayers (setupCulturalLayers, cleanupCulturalLayers, CULTURAL_SOURCE); @/lib/enterprise-data (buildEnterpriseNetworkLines)
+ * @connections composables/useMapBase.ts
+ */
 import { watch, onScopeDispose, type Ref } from 'vue'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
@@ -99,12 +107,10 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     })
     layersSetup = true
 
-    // Setup water layers if data is available
     if (p.rareEarthWater?.features?.length && !waterCleanup) {
       waterCleanup = setupWaterLayers(m, p.rareEarthWater)
     }
 
-    // Setup cultural layers with clustering, subtype colors, labels
     if (p.rareEarthCultural?.features?.length && !culturalCleanup) {
       culturalCleanup = setupCulturalLayers(m, p.rareEarthCultural)
     }
@@ -112,7 +118,6 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     syncRareEarthLayerVisibilityInternal(m, p.layerVisibility || {})
   }
 
-  // Watcher: layer visibility toggles (parent-driven state)
   const stopVisWatch = watch(
     () => getProps().layerVisibility,
     () => {
@@ -123,8 +128,6 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     },
   )
 
-  // Watcher: points data updates (e.g. from search filtering)
-  // Debounced to avoid rapid setData calls during fast filter changes
   let pointsDebounceTimer: ReturnType<typeof setTimeout> | null = null
   const stopPointsWatch = watch(
     () => getProps().rareEarthPoints,
@@ -139,11 +142,10 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
           const netSrc = map.value?.getSource('ree-network') as maplibregl.GeoJSONSource | undefined
           if (netSrc) netSrc.setData(netFc)
         } catch { /* ignore */ }
-      }, 16) // ~1 frame debounce
+      }, 16)
     },
   )
 
-  // Watcher: protected areas data updates
   const stopProtectedWatch = watch(
     () => getProps().rareEarthProtected,
     (newVal) => {
@@ -155,7 +157,6 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     },
   )
 
-  // Watcher: polygon data updates (loads after points, needs late layer setup)
   let polyCleanup: (() => void) | null = null
   let polysAdded = false
   const stopPolygonsWatch = watch(
@@ -171,8 +172,6 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     },
   )
 
-  // Watcher: fly-to target from parent — only add highlight marker
-  // (flyTo itself is handled by useMapBase's watcher to avoid double calls)
   const stopFlyToWatch = watch(
     () => getProps().flyToTarget,
     (target) => {
@@ -183,18 +182,16 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     },
   )
 
-  // Watcher: water data updates
   const stopWaterWatch = watch(
     () => getProps().rareEarthWater,
     (newVal) => {
       if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
       if (!newVal?.features?.length) return
-      if (waterCleanup) return // already set up
+      if (waterCleanup) return
       waterCleanup = setupWaterLayers(map.value, newVal)
     },
   )
 
-  // Watcher: cultural data updates (community pins, static reload)
   const stopCulturalWatch = watch(
     () => getProps().rareEarthCultural,
     (newVal) => {

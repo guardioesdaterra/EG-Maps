@@ -1,11 +1,17 @@
+/**
+ * pages/vulcan-observatory/index.vue
+ * @why Vulcan observatory 2D map — observatory claims with phase filters, search, data table
+ * @component index
+ * @deps @/composables/useI18n (useI18n); @/composables/useVulcanObservatoryPage (useVulcanObservatoryPage)
+ */
 <template>
   <div id="main-content" class="relative w-full h-[100svh] overflow-hidden">
-    <!-- Loading overlay -->
+    
     <Transition name="fade">
-      <div v-if="isLoading || error" class="fixed inset-0 z-[9998] bg-zinc-950/90 backdrop-blur-md flex flex-col items-center justify-center gap-4">
+      <div v-if="isLoading || error" class="obs-loading-overlay fixed inset-0 bg-zinc-950/90 backdrop-blur-md flex flex-col items-center justify-center gap-4">
         <template v-if="error && !isLoading">
           <div class="text-center">
-            <span class="text-4xl mb-3 block">⚠️</span>
+            <Icon name="lucide:alert-triangle" class="text-4xl mb-3 mx-auto text-red-400" />
             <h2 class="text-fluid-sm font-bold text-red-400 uppercase tracking-wider mb-1">{{ t('observatory.error.loadFailed') }}</h2>
             <p class="text-fluid-xs text-zinc-500 mb-4">{{ error.message }}</p>
             <button
@@ -20,7 +26,7 @@
           <div class="relative">
             <div class="w-[clamp(3.5rem,10vw,5rem)] h-[clamp(3.5rem,10vw,5rem)] border-4 border-zinc-800 border-t-red-500 rounded-full animate-spin" />
             <div class="absolute inset-0 flex items-center justify-center">
-              <span class="text-fluid-xl">🌋</span>
+              <Icon name="lucide:volcano" class="text-fluid-xl text-red-500" />
             </div>
           </div>
           <div class="text-center">
@@ -85,7 +91,7 @@
         </template>
       </MapView2D>
 
-      <!-- Modals -->
+      
       <GeoPoliticalTimeline :visible="showTimeline" @close="showTimeline = false" />
       <RedeCorporativa :visible="showRedeCorporativa" @close="showRedeCorporativa = false" @fly-to-enterprise="flyToEnterprise" />
       <DataDownloadPanel :visible="showDownload" @close="showDownload = false" />
@@ -107,6 +113,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { useI18n } from '@/composables/useI18n'
 import { useVulcanObservatoryPage } from '@/composables/useVulcanObservatoryPage'
 
@@ -132,4 +139,9 @@ const {
   showShortcuts, showDataTable, showTimeline, showExport, showGeoLocate, showClaimReport, reportClaim,
   mapContainerRef, filteredCount, clearPin,
 } = useVulcanObservatoryPage('pococaldas')
+
 </script>
+
+<style>
+.obs-loading-overlay { z-index: calc(var(--obs-z-modal-backdrop) - 1); }
+</style>

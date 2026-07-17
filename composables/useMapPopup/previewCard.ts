@@ -1,3 +1,11 @@
+/**
+ * composables/useMapPopup/previewCard.ts
+ * @why Preview card HTML builder — compact popup variant for clustered/unclustered states
+ * @functions usePreviewCard
+ * @interfaces PreviewCardCallbacks
+ * @types PreviewItem
+ * @deps vue (ref, nextTick); @/lib/map-utils (buildProjectPreviewHTML, buildSpeciesPreviewHTML, buildCrewPreviewHTML); @/composables/useI18n (useI18n)
+ */
 import { ref, nextTick } from 'vue'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'

@@ -1,3 +1,11 @@
+/**
+ * stores/map.ts
+ * @why Pinia store for map state — current view, active layers, marker preferences
+ * @consts useFiltersStore, useMapStore, useLayersStore
+ * @interfaces FilterState, MapViewState, LayerState
+ * @types DatasetKey
+ * @deps pinia (defineStore)
+ */
 import { defineStore } from 'pinia'
 
 export type DatasetKey = 'project-grants' | 'endangered-species' | 'endangered-species-3d' | 'vulcan-observatory' | 'vulcan-observatory-3d' | 'active-crews' | 'active-crews-3d'

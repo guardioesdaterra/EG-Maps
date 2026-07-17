@@ -1,4 +1,13 @@
+/**
+ * components/ui/Sheet.vue
+ * @why Slide-out sheet/drawer from left or right with backdrop overlay
+ * @component Sheet
+ * @emits 'update:open': [v: boolean]
+  close: []
+ * @deps reka-ui (DialogContent, DialogDescription, DialogTitle, DialogPortal, DialogRoot, VisuallyHidden)
+ */
 <script setup lang="ts">
+
 import { DialogContent, DialogDescription, DialogTitle, DialogPortal, DialogRoot, VisuallyHidden } from 'reka-ui'
 
 interface Props {
@@ -54,6 +63,7 @@ function handlePointerDownOutside(e: Event) {
     e.preventDefault()
   }
 }
+
 </script>
 
 <template>
@@ -169,7 +179,6 @@ function handlePointerDownOutside(e: Event) {
   color: #fafafa;
 }
 
-/* Animations */
 .sheet-fade-enter-active,
 .sheet-fade-leave-active { transition: opacity 0.2s ease; }
 .sheet-fade-enter-from,

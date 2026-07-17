@@ -1,3 +1,8 @@
+/**
+ * tests/globe-panels.spec.ts
+ * @why E2E globe panel tests — verifies 3D globe panel interactions and rendering
+ * @deps @playwright/test (test, expect, type Page)
+ */
 import { test, expect, type Page } from '@playwright/test'
 
 const IRRELEVANT_ERRORS = [

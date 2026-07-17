@@ -1,3 +1,11 @@
+/**
+ * stores/ui.ts
+ * @why Pinia store for UI state — dark mode, sidebar, mobile nav, search, modals
+ * @functions useUiStore
+ * @types SupportedLocale
+ * @deps vue (ref, watch)
+ * @connections composables/useDarkMode.ts, composables/useI18n.ts
+ */
 import { ref, watch } from 'vue'
 
 const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'pt', 'ar', 'hi', 'ja', 'zh', 'nl', 'de'] as const
@@ -59,7 +67,6 @@ export function useUiStore() {
     applyDarkClass(value)
   }
 
-  // ── Locale ────────────────────────────────────────────────────────────────
   const locales = SUPPORTED_LOCALES
 
   function getInitialLocale(): SupportedLocale {

@@ -1,3 +1,8 @@
+/**
+ * tests/map-rendering.spec.ts
+ * @why E2E map rendering tests — verifies 2D map loads tiles, markers, and popups
+ * @deps @playwright/test (test, expect)
+ */
 import { test, expect } from '@playwright/test'
 
 const IRRELEVANT_ERRORS = [
@@ -36,7 +41,6 @@ test.describe('Page loads', () => {
       expect(resp?.status()).toBe(200)
       await page.waitForTimeout(2000)
 
-      // Page should have content (not blank)
       const body = page.locator('body')
       await expect(body).toBeAttached({ timeout: 10000 })
     })
@@ -50,7 +54,6 @@ test.describe('Map canvas rendering', () => {
     await page.waitForTimeout(5000)
     const canvas = page.locator('canvas').first()
     const canvasCount = await canvas.count()
-    // Canvas may not render in headless CI (no WebGL), that's OK
     if (canvasCount > 0) {
       await expect(canvas).toBeAttached({ timeout: 10000 })
     }

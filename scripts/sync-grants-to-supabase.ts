@@ -1,9 +1,13 @@
+/**
+ * scripts/sync-grants-to-supabase.ts
+ * @why CLI sync tool — reads grant/agent JSON exports, upserts to Supabase with hash-based change detection
+ * @deps node:fs (readFileSync, readdirSync); @supabase/supabase-js (createClient, type SupabaseClient)
+ */
 #!/usr/bin/env -S npx tsx
 
 import { readFileSync, readdirSync } from "node:fs";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-// ── Types ────────────────────────────────────────────────────
 type SupabaseDB = Record<string, never>;
 type SupabaseTable = { id: string } & Record<string, unknown>;
 interface Grant {
@@ -59,7 +63,6 @@ interface VulcanRow {
   synced_at: string;
 }
 
-// ── Grants helpers ───────────────────────────────────────────
 function loadGrants(filePath: string): Grant[] {
   const raw = readFileSync(filePath, "utf-8");
   const parsed = JSON.parse(raw);
@@ -73,7 +76,6 @@ function toUUID(shortId: string): string {
   return shortId;
 }
 
-// ── Cultural agents helpers ──────────────────────────────────
 function loadAgents(filePath: string): CulturalAgent[] {
   const raw = readFileSync(filePath, "utf-8");
   const parsed = JSON.parse(raw);
@@ -104,7 +106,6 @@ function toVulcanRow(agent: CulturalAgent): VulcanRow {
   };
 }
 
-// ── Schema introspection (only upsert columns that exist) ────
 async function existingColumns(
   supabase: SupabaseClient<SupabaseDB>,
   table: string,
@@ -123,7 +124,6 @@ async function existingColumns(
   return existing;
 }
 
-// ── Batch upsert core ────────────────────────────────────────
 async function batchUpsert(
   supabase: SupabaseClient<SupabaseDB>,
   table: string,
@@ -137,7 +137,7 @@ async function batchUpsert(
   let skipped = 0;
   const errors: string[] = [];
 
-  const hashFn = (r: Record<string, unknown>) => hashFields.map((f) => r[f]).join("||");
+  const hashFn = (r: Record<string, unknown>) => JSON.stringify(hashFields.map((f) => r[f] ?? ''));
 
   for (let i = 0; i < records.length; i += BATCH_SIZE) {
     const batch = records.slice(i, i + BATCH_SIZE);
@@ -180,14 +180,12 @@ async function batchUpsert(
   return { inserted, updated, skipped, errors };
 }
 
-// ── Sync grants ──────────────────────────────────────────────
 async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string) {
   const grants = loadGrants(filePath);
   if (grants.length === 0) { console.warn("No grants to sync."); return; }
 
   console.warn(`Loaded ${grants.length} grants from ${filePath}`);
 
-  // Introspect which of our wanted columns actually exist in the table
   const allWanted = new Set([
     "id", "title", "funder", "source", "source_id", "url", "description",
     "deadline", "amount_max", "amount_min", "currency", "country", "region",
@@ -197,7 +195,6 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
   ]);
   const cols = await existingColumns(supabase, "scraped_grants", allWanted);
 
-  // Build records from grants, dropping any column absent from the DB
   const records: Record<string, unknown>[] = grants.map((g) => {
     const r: Record<string, unknown> = {};
     if (cols.has("id"))                r.id = toUUID(g.id);
@@ -230,7 +227,7 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
     return r;
   });
 
-  const hashFields = ["title", "funder", "url", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories", "status"];
+  const hashFields = ["title", "funder", "source", "url", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories", "language", "relevance", "status", "grant_status", "grant_type", "grant_types", "highlights", "urgency", "deadline_days", "amount_usd", "priority_score", "is_standing"];
   const selectCols = "id, " + hashFields.join(", ");
 
   const { inserted, updated, skipped, errors } = await batchUpsert(
@@ -243,7 +240,6 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
   if (errors.length > 0) process.exit(2);
 }
 
-// ── Sync cultural agents ─────────────────────────────────────
 async function syncAgents(supabase: SupabaseClient<SupabaseDB>, filePath: string) {
   const agents = loadAgents(filePath);
   if (agents.length === 0) { console.warn("No cultural agents to sync."); return; }
@@ -254,15 +250,14 @@ async function syncAgents(supabase: SupabaseClient<SupabaseDB>, filePath: string
 
   const { inserted, updated, skipped, errors } = await batchUpsert(
     supabase, "vulcan_observatory", records,
-    ["name", "source", "latitude", "longitude"],
-    "id, name, source, latitude, longitude",
+    ["name", "source", "external_id", "latitude", "longitude", "single_url", "status", "synced_at"],
+    "id, type, name, source, external_id, latitude, longitude, single_url, status, synced_at",
   );
 
   printResult("Cultural agents", inserted, updated, skipped, agents.length, errors);
   if (errors.length > 0) process.exit(2);
 }
 
-// ── Shared ───────────────────────────────────────────────────
 function printResult(label: string, inserted: number, updated: number, skipped: number, total: number, errors: string[]) {
   console.warn(`\n─── ${label} Result ───`);
   console.warn(`  Inserted: ${inserted}`);
@@ -281,9 +276,8 @@ function findLatest(pattern: string): string | null {
   } catch { return null; }
 }
 
-// ── Main ─────────────────────────────────────────────────────
 async function main() {
-  const mode = process.argv[2]; // "grants" or "agents"
+  const mode = process.argv[2];
   const filePath = process.argv[3];
 
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL;

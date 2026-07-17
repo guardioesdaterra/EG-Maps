@@ -1,7 +1,8 @@
 /**
- * Reactive state backed by a URL hash fragment (`#key=...`).
- * Survives page reloads and is shareable.
- * Works on SSR (no-op) and client.
+ * composables/useUrlState.ts
+ * @why URL query parameter state binding — reads/writes reactive state to URL search params
+ * @functions useUrlState
+ * @connections components/observatory/ObservatorySidebar.vue
  */
 export function useUrlState<T extends Record<string, string | number | boolean | null | undefined>>(
   key: string,
@@ -63,18 +64,14 @@ export function useUrlState<T extends Record<string, string | number | boolean |
     const url = new URL(window.location.href)
     if (newHash !== url.hash) {
       url.hash = newHash
-      // Use replaceState to avoid flooding history on every change
       window.history.replaceState({}, '', url.toString())
     }
   }
 
-  // Read on init
   if (isClient()) readFromHash()
 
-  // Sync to URL on change
   if (isClient()) {
     watch(state, () => writeToHash(), { deep: true })
-    // Listen for back/forward navigation
     const handler = () => readFromHash()
     window.addEventListener('hashchange', handler)
     if (typeof onScopeDispose === 'function') {

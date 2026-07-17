@@ -1,3 +1,9 @@
+/**
+ * composables/useMapLibre.ts
+ * @why MapLibre GL instance lifecycle — create, destroy, resize, load handlers
+ * @functions getMapStyle, detectWebGLSupport
+ * @connections composables/useMapBase.ts
+ */
 export function getMapStyle(apiKey: string, tileResolution?: 'low' | 'medium' | 'high'): string {
   const resParam = tileResolution && tileResolution !== 'high' ? `&res=${tileResolution}` : ''
   return apiKey

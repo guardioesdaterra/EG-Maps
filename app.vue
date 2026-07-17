@@ -1,3 +1,9 @@
+/**
+ * app.vue
+ * @why Root Vue app component — mounts the Nuxt layout and global providers
+ * @component app
+ * @deps vue (computed, onMounted, watch); @/composables/useI18n (useI18n); vue-router (useRoute)
+ */
 <template>
   <div>
     <a href="#main-content" class="skip-link">{{ skipLabel }}</a>
@@ -17,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed, onMounted, watch } from 'vue'
 import { useI18n } from '@/composables/useI18n'
 import { useRoute } from 'vue-router'
@@ -28,9 +35,6 @@ const config = useRuntimeConfig()
 const plausibleDomain = config.public.plausibleDomain as string | undefined
 const route = useRoute()
 
-// Track page views on client-side route changes. The static <script> tag in
-// app.head is the primary mechanism — this is a fallback for SPA-style
-// navigation between pages.
 function trackPageview(url: string) {
   if (typeof window === 'undefined') return
   const w = window as unknown as { plausible?: (_eventName: string, _options?: { u: string }) => void }
@@ -54,8 +58,6 @@ watch(
   },
 )
 
-// Inject Plausible analytics script if a domain is configured. Privacy-friendly
-// and lightweight (no cookies, no personal data).
 useHead({
   script: plausibleDomain
     ? [
@@ -67,6 +69,7 @@ useHead({
       ]
     : [],
 })
+
 </script>
 
 <style>
@@ -89,7 +92,6 @@ useHead({
   outline-offset: 2px;
 }
 
-/* Page transition */
 .page-enter-active,
 .page-leave-active {
   transition: opacity 200ms ease, transform 200ms ease;

@@ -1,8 +1,10 @@
 /**
- * Reactive, i18n-aware popup content for Rare Earth Observatory features.
- * Replaces the raw HTML string builder with a structured data model that
- * can be rendered reactively and rebuilt on locale change.
- * Optimized with popup caching and minimal DOM operations.
+ * composables/useObservatoryPopup.ts
+ * @why Observatory popup display — builds HTML popup content for claim/agent markers
+ * @functions clearPopupCache, buildRareEarthPopupContent, renderRareEarthPopup, openRareEarthPopup, attachRareEarthPopupHandler
+ * @interfaces RareEarthPopupBadge, RareEarthPopupAction, RareEarthPopupOverlap, RareEarthPopupContent
+ * @deps @/lib/observatory-analysis (isMilitaryInterest, isHighEnvRisk, isSuspiciousBasic, buildAnmVerifyUrl, buildClaimReportMailtoUrl); @/lib/map-utils (RARE_EARTH_CATEGORIES); @/composables/useObservatorySelection (useObservatorySelection)
+ * @connections composables/useRareEarthLayers.ts
  */
 import type { Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
@@ -66,8 +68,6 @@ function formatArea(ha: number): string {
   return `${ha.toLocaleString()} ha`
 }
 
-// Simple popup cache to avoid rebuilding identical popups
-// Use a WeakValue-style approach: tied to a generation counter so cleanup is possible
 const popupCache = new Map<string, RareEarthPopupContent>()
 const CACHE_MAX_SIZE = 200
 let lastCacheLocale = ''
@@ -93,7 +93,6 @@ export function buildRareEarthPopupContent(
   t: (_key: string, _params?: Record<string, unknown>) => string,
   locale: { value: string },
 ): RareEarthPopupContent {
-  // Clear cache on locale change
   if (lastCacheLocale && lastCacheLocale !== locale.value) {
     popupCache.clear()
   }
@@ -181,7 +180,6 @@ export function buildRareEarthPopupContent(
     variant: 'danger',
     icon: '⚑',
   })
-  // Sidebar bridge action
   actions.push({
     kind: 'event',
     label: t('observatory.actions.openInSidebar'),
@@ -203,7 +201,6 @@ export function buildRareEarthPopupContent(
     sourceFeatureId: typeof props.id === 'string' || typeof props.id === 'number' ? props.id : null,
   }
 
-  // Cache the result
   if (popupCache.size >= CACHE_MAX_SIZE) {
     const firstKey = popupCache.keys().next().value
     if (firstKey) popupCache.delete(firstKey)
@@ -321,13 +318,11 @@ export function openRareEarthPopup(
   const content = buildRareEarthPopupContent(props, lngLat, t, locale)
   const node = renderRareEarthPopup(content, t, { className: 'ree-popup' })
 
-  // Wire sidebar action
   node.querySelectorAll<HTMLButtonElement>('[data-event="observatory:open"]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault()
       const payload = btn.dataset.payload ? JSON.parse(btn.dataset.payload) : null
       if (payload && handlers.onSidebarOpen) handlers.onSidebarOpen(payload)
-      // Also update global selection state
       const sel = useObservatorySelection()
       sel.select({
         processo: payload?.processo ?? null,

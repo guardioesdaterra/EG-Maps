@@ -1,3 +1,9 @@
+/**
+ * components/GooeyNav.vue
+ * @why Animated navigation menu using SVG gooey filter effect
+ * @component GooeyNav
+ * @deps vue (ref, onMounted, onUnmounted, watch, useTemplateRef); ~/composables/useI18n (useI18n)
+ */
 <template>
   <div class="gooey-nav relative overflow-visible" ref="containerRef">
     <nav class="flex overflow-visible relative">
@@ -19,7 +25,7 @@
             class="group relative flex flex-col items-center outline-none px-2.5 py-1.5"
           >
             <div
-              class="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[10px] font-medium rounded-md opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-lg whitespace-nowrap z-10 bg-gray-900 text-white border border-white/10"
+              class="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[clamp(10px,1.5vw,13px)] font-medium rounded-md opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-lg whitespace-nowrap z-10 bg-gray-900 text-white border border-white/10"
             >
               {{ t(item.labelKey) }}
               <div class="absolute top-full left-1/2 -translate-x-1/2 border-[4px] border-transparent border-t-gray-900" />
@@ -35,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, onMounted, onUnmounted, watch, useTemplateRef } from 'vue'
 import { useI18n } from '~/composables/useI18n'
 
@@ -145,7 +152,6 @@ const makeParticles = (element: HTMLElement) => {
         try {
           element.removeChild(particle)
         } catch {
-          // already removed
         }
       }, t)
     }, 30)
@@ -182,7 +188,6 @@ onMounted(() => {
   activeIndex.value = computeActiveIndex()
 
   resizeObserver = new ResizeObserver(() => {
-    // nothing to update — effect only shows during click animation
   })
   if (containerRef.value) {
     resizeObserver.observe(containerRef.value)
@@ -194,6 +199,7 @@ onUnmounted(() => {
     resizeObserver.disconnect()
   }
 })
+
 </script>
 
 <style>
@@ -279,7 +285,6 @@ onUnmounted(() => {
   }
 }
 
-/* macOS-style active dot indicator */
 .gooey-nav li.gooey-active::after {
   content: '';
   position: absolute;

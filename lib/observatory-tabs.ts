@@ -1,3 +1,10 @@
+/**
+ * lib/observatory-tabs.ts
+ * @why Observatory tab definitions — tab configuration, labels, icons, and content component mapping
+ * @consts OBSERVATORY_TABS, MILITARY_ASSETS, US_INVESTMENTS, ILLEGAL_PATTERNS, ENV_REGIONS, NETWORK_NOTES, TIMELINE_HIGHLIGHTS
+ * @interfaces ObservatoryTab, MilitaryAsset, InvestmentFlow, IllegalPattern, EnvRegion, NetworkNote, TimelineHighlight
+ * @connections components/ObservatoryTabPanels.vue, components/observatory/ObservatorySidebar.vue, components/observatory/tabs/EnvironmentTab.vue, components/observatory/tabs/IllegalTab.vue, components/observatory/tabs/MilitaryTab.vue, components/observatory/tabs/NetworkTab.vue, components/observatory/tabs/TimelineTab.vue
+ */
 export interface ObservatoryTab {
   key: 'danger' | 'military' | 'illegal' | 'env' | 'network' | 'timeline'
   labelKey: string

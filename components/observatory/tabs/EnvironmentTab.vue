@@ -1,3 +1,13 @@
+/**
+ * components/observatory/tabs/EnvironmentTab.vue
+ * @why Environmental data tab — shows biomes, vegetation, water bodies
+ * @component EnvironmentTab
+ * @props highlight?: string | null
+ * @emits 'fly-to-coord': [coord: [number, number]]
+  'update:highlight': [v: string | null]
+  'add-observation': [region: string]
+ * @deps vue (ref); @/lib/observatory-tabs (ENV_REGIONS)
+ */
 <template>
   <div class="obs-tab">
     <h3 class="obs-tab__title">
@@ -5,7 +15,7 @@
       {{ t('observatory.envPanel.title') }}
     </h3>
 
-    <!-- Risk legend -->
+    
     <div class="obs-expand">
       <button
         type="button"
@@ -92,6 +102,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref } from 'vue'
 import { ENV_REGIONS } from '@/lib/observatory-tabs'
 import type { EnvRegion } from '@/lib/observatory-tabs'
@@ -134,6 +145,7 @@ function onFlyTo(r: EnvRegion) {
 function openObservation(r: EnvRegion) {
   emit('add-observation', r.regionKey)
 }
+
 </script>
 
 <style scoped>
@@ -141,7 +153,7 @@ function openObservation(r: EnvRegion) {
 
 .obs-tab__title {
   margin: 0; display: flex; align-items: center; gap: 6px;
-  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  font-size: clamp(9px, 1.4vw, 12px); font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.06em; color: var(--obs-text-label);
   padding: 4px 4px 2px;
 }
@@ -152,9 +164,9 @@ function openObservation(r: EnvRegion) {
 
 .obs-expand__btn {
   display: inline-flex; align-items: center; gap: 4px;
-  font-size: 8px; font-weight: 600; color: var(--obs-text-dim);
+  font-size: clamp(8px, 1.3vw, 11px); font-weight: 600; color: var(--obs-text-dim);
   background: none; border: none; cursor: pointer; font-family: inherit;
-  padding: 3px 6px; border-radius: 3px;
+  padding: 3px clamp(4px, 1vw, 8px); border-radius: 3px;
   transition: color 0.12s, background 0.12s;
 }
 
@@ -163,14 +175,14 @@ function openObservation(r: EnvRegion) {
 .obs-expand__icon { width: 10px; height: 10px; }
 
 .obs-expand__body {
-  font-size: 9px; color: var(--obs-text-body); line-height: 1.5;
-  padding: 6px 8px; margin-top: 2px;
+  font-size: clamp(9px, 1.4vw, 12px); color: var(--obs-text-body); line-height: 1.5;
+  padding: clamp(4px, 1vw, 8px) clamp(6px, 1.2vw, 12px); margin-top: 2px;
   background: rgba(255,255,255,0.02); border-radius: 5px;
   border: 1px solid var(--obs-panel-border);
 }
 
 .obs-expand__legend { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.obs-expand__legend li { display: flex; align-items: center; gap: 6px; font-size: 9px; }
+.obs-expand__legend li { display: flex; align-items: center; gap: 6px; font-size: clamp(9px, 1.4vw, 12px); }
 
 .obs-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
@@ -197,23 +209,23 @@ function openObservation(r: EnvRegion) {
 .obs-card__btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .obs-card__btn-accent { width: 3px; flex-shrink: 0; }
-.obs-card__btn-body { flex: 1; padding: 7px 8px; min-width: 0; }
+.obs-card__btn-body { flex: 1; padding: clamp(5px, 1.1vw, 10px) clamp(6px, 1.2vw, 12px); min-width: 0; }
 
 .obs-card__btn-head { display: flex; align-items: center; gap: 6px; }
 
-.obs-card__btn-score { font-size: 10px; font-weight: 800; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.obs-card__btn-score { font-size: clamp(10px, 1.5vw, 13px); font-weight: 800; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 
-.obs-card__btn-name { font-size: 10px; font-weight: 600; color: var(--obs-text-primary); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.obs-card__btn-name { font-size: clamp(10px, 1.5vw, 13px); font-weight: 600; color: var(--obs-text-primary); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .obs-card__tags { list-style: none; margin: 3px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 3px; }
 
-.obs-card__tag { display: inline-flex; align-items: center; gap: 2px; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; background: rgba(93,173,226,0.1); color: var(--obs-blue-light); }
+.obs-card__tag { display: inline-flex; align-items: center; gap: 2px; font-size: clamp(8px, 1.3vw, 11px); font-weight: 600; padding: 1px 4px; border-radius: 3px; background: rgba(93,173,226,0.1); color: var(--obs-blue-light); }
 
 .obs-card__tag-icon { width: 7px; height: 7px; }
 
 .obs-card__risks { list-style: none; margin: 3px 0 0; padding: 0; }
 
-.obs-card__risk { display: flex; align-items: flex-start; gap: 4px; font-size: 8px; color: var(--obs-text-body); line-height: 1.4; margin-top: 1px; }
+.obs-card__risk { display: flex; align-items: flex-start; gap: 4px; font-size: clamp(8px, 1.3vw, 11px); color: var(--obs-text-body); line-height: 1.4; margin-top: 1px; }
 
 .obs-card__risk-icon { width: 7px; height: 7px; margin-top: 2px; flex-shrink: 0; color: var(--obs-amber); }
 
@@ -221,11 +233,11 @@ function openObservation(r: EnvRegion) {
 
 .obs-card__actions {
   display: flex; flex-direction: column; justify-content: center; gap: 2px;
-  padding: 6px 4px; flex-shrink: 0;
+  padding: clamp(4px, 1vw, 8px) 4px; flex-shrink: 0;
 }
 
 .obs-card__action-btn {
-  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  width: clamp(20px, 4vw, 28px); height: clamp(20px, 4vw, 28px); display: flex; align-items: center; justify-content: center;
   background: transparent; border: 1px solid transparent; border-radius: 4px;
   color: var(--obs-text-dim); cursor: pointer; font-family: inherit;
   transition: all 0.12s;

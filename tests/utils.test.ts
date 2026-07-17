@@ -1,3 +1,8 @@
+/**
+ * tests/utils.test.ts
+ * @why Unit tests for general utilities — formatCompact, escapeHtml, clamp, debounce, throttle
+ * @deps vitest (describe, it, expect); ../lib/utils (cn, formatCompact); ../lib/colors (getProjectColorByBeneficiaries, getProjectColor); ../lib/map-utils (isValidCoordinate, getGroupColor, calculateDistance, escapeHtml, buildProjectPopupHTML)
+ */
 import { describe, it, expect } from 'vitest'
 import { cn, formatCompact } from '../lib/utils'
 import { getProjectColorByBeneficiaries, getProjectColor } from '../lib/colors'

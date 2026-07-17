@@ -1,3 +1,11 @@
+/**
+ * composables/usePerformance.ts
+ * @why Runtime performance monitoring — FPS counter, memory usage, render time tracking
+ * @functions usePerformance
+ * @interfaces PerformanceMetrics
+ * @deps vue (ref, onMounted, onUnmounted)
+ * @connections composables/useAdaptiveQuality.ts
+ */
 import { ref, onMounted, onUnmounted } from 'vue'
 
 export interface PerformanceMetrics {
@@ -15,7 +23,6 @@ export interface PerformanceMetrics {
   isIdle: boolean
 }
 
-// ── Shared singleton state ──
 const SHARED_FPS = ref(60)
 const SHARED_AVG_FPS = ref(60)
 const SHARED_FPS_STDDEV = ref(0)
@@ -36,13 +43,12 @@ let memoryObserver: PerformanceObserver | null = null
 let visibilityHandler: (() => void) | null = null
 let idleCallbackId: number | null = null
 
-// ── FPS tracking via exponential moving average ──
 const FPS_EMA_ALPHA = 0.2
 const FPS_SAMPLE_WINDOW_MS = 1000
-const JANK_THRESHOLD_MS = 20 // >1.2 frames at 60fps
+const JANK_THRESHOLD_MS = 20
 const MEMORY_PRESSURE_RATIO = 0.85
-const FRAME_TIME_HISTORY_SIZE = 120 // 2 seconds at 60fps
-const LONG_TASK_THRESHOLD_MS = 16 // One frame budget
+const FRAME_TIME_HISTORY_SIZE = 120
+const LONG_TASK_THRESHOLD_MS = 16
 
 const frameTimeHistory: number[] = []
 const fpsHistory: number[] = []
@@ -81,42 +87,33 @@ function startTracking() {
     const delta = now - lastFrameTime
     lastFrameTime = now
 
-    // Guard against tab-switch large deltas
     if (delta > 200) return
 
     frameCountInSample++
 
-    // Track frame time
     frameTimeHistory.push(delta)
     if (frameTimeHistory.length > FRAME_TIME_HISTORY_SIZE) frameTimeHistory.shift()
 
-    // Jank detection (>1.2 frames at 60fps)
     if (delta > JANK_THRESHOLD_MS) {
       SHARED_JANK_COUNT.value++
     }
 
-    // FPS sampling every second
     if (now - lastFpsSampleTime >= FPS_SAMPLE_WINDOW_MS) {
       const elapsed = now - lastFpsSampleTime
       const instantFps = Math.min(Math.round((frameCountInSample * 1000) / elapsed), 144)
 
-      // Exponential moving average for smooth, responsive FPS
       emaFps = FPS_EMA_ALPHA * instantFps + (1 - FPS_EMA_ALPHA) * emaFps
       SHARED_FPS.value = Math.round(emaFps)
 
-      // Track FPS history for stddev
       fpsHistory.push(instantFps)
       if (fpsHistory.length > 30) fpsHistory.shift()
       SHARED_FPS_STDDEV.value = Math.round(computeStddev(fpsHistory) * 10) / 10
 
-      // Average FPS (lifetime)
       SHARED_AVG_FPS.value = Math.round((SHARED_AVG_FPS.value * (fpsHistory.length - 1) + instantFps) / fpsHistory.length)
 
-      // Frame time metrics
       SHARED_FRAME_TIME.value = frameCountInSample > 0 ? Math.round((elapsed / frameCountInSample) * 10) / 10 : 16.67
       SHARED_FRAME_TIME_P95.value = Math.round(computeP95(frameTimeHistory) * 10) / 10
 
-      // Throttling detection: sustained low FPS
       SHARED_IS_THROTTLED.value = SHARED_FPS.value < 20 && fpsHistory.length > 3
 
       frameCountInSample = 0
@@ -126,9 +123,7 @@ function startTracking() {
 
   rafId = requestAnimationFrame(tick)
 
-  // ── Memory monitoring ──
   const updateMemory = () => {
-    // Chrome: performance.memory (non-standard but widely available)
     const perf = performance as { memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number; totalJSHeapSize: number } }
     if (perf.memory) {
       const used = perf.memory.usedJSHeapSize
@@ -139,13 +134,11 @@ function startTracking() {
       return
     }
 
-    // Chrome 109+: performance.measureUserAgentSpecificMemory() (accurate)
     if ('measureUserAgentSpecificMemory' in performance) {
       (performance as { measureUserAgentSpecificMemory: () => Promise<{ bytes: number }> })
         .measureUserAgentSpecificMemory()
         .then((result) => {
           SHARED_MEMORY_USAGE.value = result.bytes
-          // Estimate limit as 4x used (rough heuristic)
           SHARED_MEMORY_LIMIT.value = Math.max(result.bytes * 4, 512 * 1024 * 1024)
           SHARED_IS_MEMORY_PRESSURE.value = false
         })
@@ -156,7 +149,6 @@ function startTracking() {
   updateMemory()
   const memoryInterval = setInterval(updateMemory, 3000)
 
-  // ── Long task detection ──
   try {
     longTaskObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
@@ -167,31 +159,24 @@ function startTracking() {
     })
     longTaskObserver.observe({ type: 'longtask', buffered: true } as PerformanceObserverInit)
   } catch {
-    // Longtask API not supported
   }
 
-  // ── Layout shift tracking (CLS) ──
   try {
     memoryObserver = new PerformanceObserver((list) => {
-      // Layout shifts are another indicator of jank
       for (const entry of list.getEntries()) {
         if ((entry as { hadRecentInput?: boolean }).hadRecentInput) continue
-        // Each layout shift contributes to perceived jank
         const value = (entry as { value?: number }).value ?? 0
         if (value > 0.1) SHARED_JANK_COUNT.value++
       }
     })
     memoryObserver.observe({ type: 'layout-shift', buffered: true } as PerformanceObserverInit)
   } catch {
-    // layout-shift not supported
   }
 
-  // ── Visibility-based pause/resume ──
   visibilityHandler = () => {
     if (document.hidden) {
       if (rafId != null) { cancelAnimationFrame(rafId); rafId = null }
     } else {
-      // Reset timing to avoid large delta spike
       lastFrameTime = 0
       lastFpsSampleTime = performance.now()
       frameCountInSample = 0
@@ -200,7 +185,6 @@ function startTracking() {
   }
   document.addEventListener('visibilitychange', visibilityHandler)
 
-  // ── Idle state via requestIdleCallback ──
   const scheduleIdle = () => {
     if (typeof requestIdleCallback !== 'undefined') {
       idleCallbackId = requestIdleCallback((deadline) => {
@@ -235,7 +219,6 @@ export function usePerformance() {
   })
 
   onUnmounted(() => {
-    // Don't stop on individual component unmount — app lifetime
   })
 
   return {

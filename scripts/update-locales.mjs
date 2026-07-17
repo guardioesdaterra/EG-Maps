@@ -1,5 +1,10 @@
+/**
+ * scripts/update-locales.mjs
+ * @why Locale updater — synchronizes translation keys across all locale files from en.json
+ * @deps node:fs (readFileSync, writeFileSync); node:path (resolve)
+ */
 #!/usr/bin/env node
- 
+
 /**
  * One-shot script to merge new i18n keys into the existing locale files.
  * Preserves existing keys, adds new ones, and keeps proper JSON formatting.
@@ -10,7 +15,6 @@ import { resolve } from 'node:path'
 const LOCALES_DIR = resolve(process.cwd(), 'locales')
 const FILES = ['en', 'es', 'fr', 'pt', 'ar', 'hi', 'ja', 'zh']
 
-// Per-locale overrides for non-English locales
 const OVERRIDES = {
   es: {
     palette: {
@@ -346,7 +350,6 @@ for (const code of FILES) {
   const path = resolve(LOCALES_DIR, `${code}.json`)
   const data = JSON.parse(readFileSync(path, 'utf8'))
 
-  // Use override if available, else English fallback
   const additions = OVERRIDES[code] || {
     palette: {
       title: 'Command palette',

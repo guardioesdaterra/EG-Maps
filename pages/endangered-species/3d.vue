@@ -1,3 +1,9 @@
+/**
+ * pages/endangered-species/3d.vue
+ * @why Endangered species 3D globe — species locations on globe with connection arcs
+ * @component 3d
+ * @deps vue (defineAsyncComponent)
+ */
 <template>
   <ClientOnly>
     <MapView3D :default-dataset="'endangered-species'" />
@@ -14,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { defineAsyncComponent } from 'vue'
 
 const MapView3D = defineAsyncComponent(() => import('~/components/MapView3D.vue'))
@@ -30,4 +37,5 @@ useHead({
     { rel: 'dns-prefetch', href: 'https://api.maptiler.com' },
   ],
 })
+
 </script>

@@ -1,3 +1,12 @@
+/**
+ * composables/useObservatoryControls.ts
+ * @why Observatory filter state — search, phase, year, category filters with URL sync
+ * @functions useObservatoryControls
+ * @interfaces ObservatoryFilters, ObservatoryLayers, ObservatoryMap, ObservatoryAnimations, ObservatoryData, ObservatoryStats, ObservatoryHash, ObservatoryKeyboard, ObservatoryFilterLogic, ObservatoryControls
+ * @types ObservatoryTabKey
+ * @deps vue (ref, shallowRef, computed, onMounted, onUnmounted, watch, type Ref); @/lib/enterprise-data (ENTERPRISES); @/composables/useEnterpriseMarkers (setupEnterpriseLayer, cleanupEnterpriseLayer); @/lib/map-utils (RARE_EARTH_CATEGORIES); @/composables/useStateHash (useStateHash)
+ * @connections composables/useVulcanObservatoryPage.ts
+ */
 import { ref, shallowRef, computed, onMounted, onUnmounted, watch, type Ref } from 'vue'
 import type { Map as MapInstance, MapOptions } from 'maplibre-gl'
 import type { EnterpriseHQ } from '@/lib/enterprise-data'
@@ -123,7 +132,6 @@ export interface ObservatoryFilterLogic {
 export interface ObservatoryControls extends ObservatoryFilters, ObservatoryLayers, ObservatoryMap, ObservatoryAnimations, ObservatoryData, ObservatoryStats, ObservatoryHash, ObservatoryKeyboard, ObservatoryFilterLogic {}
 
 export function useObservatoryControls(): ObservatoryControls {
-  // ---- filters ----
   const yearMin = ref(1935)
   const yearMax = ref(2026)
   const selectedPhases = ref(new Set<string>([
@@ -150,7 +158,6 @@ export function useObservatoryControls(): ObservatoryControls {
   const mapContainerRef = ref<HTMLElement | null>(null)
   const filteredCount = ref(0)
 
-  // ---- layers ----
   const layerVis = ref<Record<string, boolean>>({})
   const categories = Object.entries(RARE_EARTH_CATEGORIES) as [string, { label: string; color: string }][]
   categories.forEach(([key]) => { layerVis.value[key] = true })
@@ -191,10 +198,6 @@ export function useObservatoryControls(): ObservatoryControls {
         }
       }
     }
-    // Only trigger data filter when toggling a category that affects point visibility.
-    // Non-category layers (polygons, water, heatmap, cultural, network, sites, cities,
-    // protected_ti, protected_quilombo, overlaps) are pure layer-visibility — they
-    // don't change which features appear in filteredPoints.
     if (key in RARE_EARTH_CATEGORIES) {
       debouncedFilter()
     }
@@ -205,10 +208,8 @@ export function useObservatoryControls(): ObservatoryControls {
   }
 
   const onEnterpriseClick = ((_enterprise: EnterpriseHQ) => {
-    // Handled by page-level flyToEnterprise callback
   }) as (_enterprise: EnterpriseHQ) => void
 
-  // ---- map ----
   const flyToTarget = ref<{ lng: number; lat: number; zoom?: number } | null>(null)
   const mapRef = shallowRef<MapInstance | null>(null)
 
@@ -259,8 +260,6 @@ export function useObservatoryControls(): ObservatoryControls {
     }
   }
 
-  // ---- data placeholders ----
-  // Pages MUST provide these via setupObservatory(dataBindings)
   let allFeatures: Ref<unknown[]> = ref<unknown[]>([])
   let pointsData: Ref<GeoJSON.FeatureCollection | undefined> = ref<GeoJSON.FeatureCollection | undefined>(undefined)
   let polygonsData: Ref<unknown> = ref<unknown>(null)
@@ -310,7 +309,6 @@ export function useObservatoryControls(): ObservatoryControls {
     loadFullBrazil = data.loadFullBrazil
     isRegional = data.isRegional
 
-    // Initialize filteredPoints with the full dataset so the map has data immediately
     const raw = pointsData.value
     if (raw?.features?.length) {
       filteredPoints.value = raw as GeoJSON.FeatureCollection
@@ -318,7 +316,6 @@ export function useObservatoryControls(): ObservatoryControls {
     }
   }
 
-  // ---- animations ----
   const displayCounts = ref<Record<string, number>>({})
   let counterRaf: number | null = null
 
@@ -352,7 +349,6 @@ export function useObservatoryControls(): ObservatoryControls {
     counterRaf = requestAnimationFrame(tick)
   }
 
-  // ---- stats ----
   const categoryStats = computed(() => {
     const counts: Record<string, number> = {}
     categories.forEach(([key]) => { counts[key] = 0 })
@@ -398,7 +394,6 @@ export function useObservatoryControls(): ObservatoryControls {
     return `${ha}`
   }
 
-  // ---- hash / URL state ----
   const { restoredState, updateHash } = useStateHash()
 
   let hashTimer: ReturnType<typeof setTimeout> | null = null
@@ -424,7 +419,6 @@ export function useObservatoryControls(): ObservatoryControls {
   watch(activeTab, scheduleHashUpdate)
   watch(totalCount, () => { animateCounters() })
 
-  // ---- derived points data ----
   const filteredPoints = ref<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] })
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
   let lastFilterCriteria = ''
@@ -439,7 +433,6 @@ export function useObservatoryControls(): ObservatoryControls {
     const term = searchTerm.value.toLowerCase().trim()
     const catKeys = Object.keys(RARE_EARTH_CATEGORIES) as string[]
     const visKeys = Object.entries(layerVis.value).filter(([k, v]) => v && catKeys.includes(k)).map(([k]) => k)
-    // Build a stable criteria string to detect actual changes
     const criteria = JSON.stringify({ term, yearMin: yearMin.value, yearMax: yearMax.value, phases: [...selectedPhases.value].sort(), sobDemanda: sobDemandaOnly.value, visKeys: visKeys.sort() })
     if (criteria === lastFilterCriteria && lastFilterResult) {
       return
@@ -478,7 +471,6 @@ export function useObservatoryControls(): ObservatoryControls {
     updateFilter()
   })
 
-  // ---- keyboard ----
   function handleKeydown(e: KeyboardEvent) {
     if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'TEXTAREA') return
 
@@ -515,27 +507,18 @@ export function useObservatoryControls(): ObservatoryControls {
   })
 
   return {
-    // filters
     yearMin, yearMax, selectedPhases, searchTerm, sobDemandaOnly, filtersExpanded, activeTab,
     showShortcuts, showDataTable, showTimeline, showExport, showGeoLocate, showClaimReport,
     reportClaim, userLocationRadius, mapContainerRef, filteredCount,
-    // layers
     layerVis, enterpriseLayerVisible, extraLayers, toggleLayer, toggleEnterpriseLayer, onEnterpriseClick,
-    // map
     flyToTarget, mapRef, onMapInit, flyToCoord, onGeoLocate, expandToFullBrazil, zoomToDanger, flyToEnterprise,
-    // data
     allFeatures, pointsData, filteredPoints, polygonsData, protectedData, waterData, culturalData,
     speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error,
     loadRareEarthData, loadFullBrazil, isRegional, setupObservatory,
-    // stats
     categoryStats, totalCount, activeFilterCount, activeFilterSummary, formatSyncDate, formatHa,
-    // animations
     displayCounts, startCounterAnimation, animatedCount, animateCounters,
-    // hash
     restoredState, updateHash,
-    // keyboard
     handleKeydown,
-    // filter logic
     debouncedFilter, updateFilter,
   }
 }

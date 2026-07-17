@@ -1,4 +1,12 @@
+/**
+ * components/DotField.vue
+ * @why Animated dot grid background pattern used in hero sections
+ * @component DotField
+ * @props dotRadius?: number, dotSpacing?: number, cursorRadius?: number, cursorForce?: number, bulgeOnly?: boolean, bulgeStrength?: number, glowRadius?: number, sparkle?: boolean, waveAmplitude?: number, gradientFrom?: string, gradientTo?: string, glowColor?: string, className?: string
+ * @deps vue (nextTick, onBeforeUnmount, onMounted, ref, watch, computed); ~/composables/useAdaptiveQuality (useAdaptiveQuality)
+ */
 <script setup lang="ts">
+
 import { nextTick, onBeforeUnmount, onMounted, ref, watch, computed } from 'vue';
 import { useAdaptiveQuality } from '~/composables/useAdaptiveQuality';
 
@@ -354,6 +362,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   cleanup();
 });
+
 </script>
 
 <template>

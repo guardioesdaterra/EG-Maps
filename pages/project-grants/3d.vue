@@ -1,3 +1,9 @@
+/**
+ * pages/project-grants/3d.vue
+ * @why Project grants 3D globe — grants on globe with particle effects and connection lines
+ * @component 3d
+ * @deps vue (defineAsyncComponent)
+ */
 <template>
   <ClientOnly>
     <MapView3D :default-dataset="'project-grants'" />
@@ -14,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { defineAsyncComponent } from 'vue'
 
 const MapView3D = defineAsyncComponent(() => import('~/components/MapView3D.vue'))
@@ -26,4 +33,5 @@ useHead({
     { name: 'description', content: 'Interactive 3D globe showing Earth Guardians project grants worldwide' },
   ],
 })
+
 </script>

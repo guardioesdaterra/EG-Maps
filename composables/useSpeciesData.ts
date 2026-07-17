@@ -1,3 +1,9 @@
+/**
+ * composables/useSpeciesData.ts
+ * @why Endangered species data — fetches from /data/species/index.json, filters by region/ecosystem/threat
+ * @functions useSpeciesData, useSpeciesIndex, useSpeciesDetails, getSpeciesCache, clearSpeciesCache
+ * @deps vue (ref)
+ */
 import { ref } from 'vue'
 import type { Species } from '@/lib/types'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
@@ -76,8 +82,6 @@ function resolveDatasets(dataset?: DatasetParam): string[] {
   return [dataset]
 }
 
-
-
 async function fetchDataset(baseURL: string, ds: string): Promise<Species[]> {
   const label = `[perf] fetchDataset ${ds}`
   console.time(label)
@@ -108,8 +112,6 @@ async function fetchDataset(baseURL: string, ds: string): Promise<Species[]> {
   return data
 }
 
-// Fetch lightweight index for map markers (loads in seconds vs minutes).
-// IndexedDB-cached so repeat visits are instant.
 async function fetchSpeciesIndex(baseURL: string, ds: string): Promise<SpeciesIndexItem[]> {
   const cacheKey = `${ds}-index`
 
@@ -140,7 +142,6 @@ function deferIdbWrite(key: string, value: unknown) {
   }
 }
 
-// Fetch species-to-region lookup (185 KB, cached in IDB)
 async function fetchRegionLookup(baseURL: string): Promise<Map<string, string>> {
   const label = '[perf] fetchRegionLookup'
   console.time(label)
@@ -175,7 +176,6 @@ async function fetchRegionLookup(baseURL: string): Promise<Map<string, string>> 
   return regionLookupCache
 }
 
-// Fetch a single region chunk (1-6 MB) instead of the full 32 MB dataset
 async function fetchRegionChunk(baseURL: string, region: string): Promise<Species[]> {
   const slug = region.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '')
   const cacheKey = `icmbio-brazil-region-${slug}`
@@ -207,7 +207,6 @@ async function fetchRegionChunk(baseURL: string, region: string): Promise<Specie
   return data
 }
 
-// Fetch full species by ID — loads only the relevant region chunk (~1-6 MB)
 async function fetchSpeciesById(baseURL: string, ds: string, speciesId: string): Promise<Species | null> {
   const label = `[perf] fetchSpeciesById ${ds}/${speciesId}`
   console.time(label)
@@ -245,7 +244,6 @@ export function useSpeciesData(dataset?: DatasetParam) {
     loading.value = true
     error.value = null
     try {
-      // Fetch all datasets in parallel
       const results = await Promise.all(
         datasets.map(ds => fetchDataset(baseURL, ds))
       )
@@ -265,10 +263,6 @@ export function useSpeciesData(dataset?: DatasetParam) {
   return { data, loading, error, reload: load }
 }
 
-// Lightweight version that only loads marker index (for large datasets).
-// Fires all fetches in parallel so wall-clock time = max(ds1, ds2) instead of
-// sum(ds1, ds2). Results are processed in priority order (smallest dataset first)
-// so the map renders visible markers incrementally.
 export function useSpeciesIndex(dataset?: DatasetParam) {
   const data = ref<SpeciesIndexItem[]>([])
   const loading = ref(true)
@@ -294,7 +288,6 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
         currentDatasetLabel.value = sorted[i]
         const items = await promises[i]
         collected.push(...items)
-        // Assign once per dataset resolution (not per item) — avoids O(n²) copies
         data.value = collected
         loadedChunks.value = collected.length
       }
@@ -314,18 +307,15 @@ export function useSpeciesIndex(dataset?: DatasetParam) {
   return { data, loading, error, reload: load, loadedChunks, currentDatasetLabel }
 }
 
-// Get full species details on demand
 export function useSpeciesDetails(dataset?: DatasetParam) {
   const baseURL = (useRuntimeConfig().app?.baseURL as string) || '/'
   const datasets = resolveDatasets(dataset)
-  
+
   const cache = new Map<string, Species>()
 
   async function getSpecies(speciesId: string): Promise<Species | null> {
-    // Check memory cache first
     if (cache.has(speciesId)) return cache.get(speciesId)!
-    
-    // Try to find in cached full datasets
+
     for (const ds of datasets) {
       try {
         const species = await fetchSpeciesById(baseURL, ds, speciesId)
@@ -334,10 +324,9 @@ export function useSpeciesDetails(dataset?: DatasetParam) {
           return species
         }
       } catch {
-        // Try next dataset
       }
     }
-    
+
     return null
   }
 
@@ -360,6 +349,5 @@ export async function clearSpeciesCache() {
       tx.onerror = () => reject(tx.error)
     })
   } catch {
-    // IndexedDB might not be available, ignore errors
   }
 }

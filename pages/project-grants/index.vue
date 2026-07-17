@@ -1,3 +1,9 @@
+/**
+ * pages/project-grants/index.vue
+ * @why Project grants 2D map — grant markers with filtering by category, funder, region
+ * @component index
+ * @deps vue (defineAsyncComponent)
+ */
 <template>
   <ClientOnly>
     <MapView2D :default-dataset="'project-grants'" />
@@ -20,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { defineAsyncComponent } from 'vue'
 
 const MapView2D = defineAsyncComponent(() => import('~/components/MapView2D.vue'))
@@ -32,4 +39,5 @@ useHead({
     { name: 'description', content: 'Interactive 2D map showing Earth Guardians project grants worldwide' },
   ],
 })
+
 </script>

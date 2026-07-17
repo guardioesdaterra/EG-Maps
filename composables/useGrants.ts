@@ -1,3 +1,10 @@
+/**
+ * composables/useGrants.ts
+ * @why Grants API client — fetch grant lists, submit new grants, approve, vote, and comment via edge function
+ * @functions useGrants
+ * @interfaces ReviewScrapedResult, GrantInput, GrantRecord, ScrapedGrant, GrantComment, LeaderboardEntry
+ * @deps ./useSupabase (useSupabase)
+ */
 import { useSupabase } from './useSupabase'
 
 export interface ReviewScrapedResult {

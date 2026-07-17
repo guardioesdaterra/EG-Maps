@@ -1,6 +1,10 @@
 /**
- * Browser geolocation + OpenStreetMap Nominatim geocoding (no API key).
- * Provides locate → reverse geocode, and city name → forward geocode.
+ * composables/useGeoLocate.ts
+ * @why Geolocation — reverse geocoding (coordinates to address) via Nominatim
+ * @functions getBrowserLocation, reverseGeocode, forwardGeocode, useGeoLocate
+ * @interfaces GeoLocation, GeoAddress, CitySuggestion
+ * @deps vue (ref)
+ * @connections components/observatory/GeoLocateModal.vue
  */
 import { ref } from 'vue'
 
@@ -51,12 +55,9 @@ export function getBrowserLocation(): Promise<GeoLocation | null> {
         })
       },
       (err) => {
-        // err.code: 1=PERMISSION_DENIED, 2=POSITION_UNAVAILABLE, 3=TIMEOUT
         if (err.code === 1) {
-          // Permission denied — user blocked it, return null gracefully
           resolve(null)
         } else {
-          // Position unavailable or timeout — also return null
           resolve(null)
         }
       },

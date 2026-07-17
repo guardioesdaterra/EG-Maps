@@ -1,17 +1,25 @@
+/**
+ * components/observatory/UserContributionModal.vue
+ * @why Modal for users to submit new observatory data points
+ * @component UserContributionModal
+ * @props visible: boolean, mapClickMode?: boolean, existingFeatureNames?: LocationSuggestion[]
+ * @emits close: [], 'pin-placed': [lat: number, lng: number], 'map-click-mode-change': [active: boolean]
+ * @deps vue (ref, computed, watch, onMounted, onUnmounted, nextTick); ~/composables/useCulturalAgentsData (useCulturalAgentsData)
+ */
 <template>
   <Transition name="modal-fade">
-    <div v-if="visible" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm" @click.self="$emit('close')" @keydown.escape="$emit('close')" tabindex="0" ref="modalRef">
+    <div v-if="visible" class="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm uc-backdrop" @click.self="$emit('close')" @keydown.escape="$emit('close')" tabindex="0" ref="modalRef">
       <div class="obs-panel w-[min(92vw,min(520px,92vw))] max-h-[88vh] overflow-y-auto" @click.stop>
-        <!-- Header -->
+        
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <h2 class="text-sm font-black text-emerald-400 uppercase tracking-wider">Community Monitoring</h2>
-            <span v-if="contributions.length" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">{{ contributions.length }}</span>
+            <span v-if="contributions.length" class="text-[clamp(9px,1.4vw,12px)] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">{{ contributions.length }}</span>
           </div>
           <div class="flex items-center gap-1.5">
-            <button type="button" class="text-[9px] text-zinc-500 hover:text-emerald-400 px-2 py-1 rounded border border-zinc-800 hover:border-emerald-500/30 transition-colors" @click="exportContributions" title="Export as JSON">Export</button>
-            <label class="text-[9px] text-zinc-500 hover:text-emerald-400 px-2 py-1 rounded border border-zinc-800 hover:border-emerald-500/30 transition-colors cursor-pointer" title="Import from JSON">
+            <button type="button" class="text-[clamp(9px,1.4vw,12px)] text-zinc-500 hover:text-emerald-400 px-2 py-1 rounded border border-zinc-800 hover:border-emerald-500/30 transition-colors" @click="exportContributions" title="Export as JSON">Export</button>
+            <label class="text-[clamp(9px,1.4vw,12px)] text-zinc-500 hover:text-emerald-400 px-2 py-1 rounded border border-zinc-800 hover:border-emerald-500/30 transition-colors cursor-pointer" title="Import from JSON">
               Import
               <input type="file" accept=".json" class="hidden" @change="importContributions" />
             </label>
@@ -19,29 +27,29 @@
           </div>
         </div>
 
-        <!-- Mode Toggle -->
+        
         <div class="flex gap-1 mb-4 p-0.5 rounded-lg border border-zinc-800 bg-zinc-900/50">
           <button
             type="button"
-            class="flex-1 text-[9px] font-bold py-1.5 rounded-md transition-all"
+            class="flex-1 text-[clamp(9px,1.4vw,12px)] font-bold py-1.5 rounded-md transition-all"
             :class="formMode === 'update' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-zinc-500 hover:text-zinc-300 border border-transparent'"
             @click="formMode = 'update'"
           >Monitoring Update</button>
           <button
             type="button"
-            class="flex-1 text-[9px] font-bold py-1.5 rounded-md transition-all"
+            class="flex-1 text-[clamp(9px,1.4vw,12px)] font-bold py-1.5 rounded-md transition-all"
             :class="formMode === 'pin' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'text-zinc-500 hover:text-zinc-300 border border-transparent'"
             @click="formMode = 'pin'"
           >Community Pin</button>
         </div>
 
-        <!-- Contribution Form -->
+        
         <div class="mb-4 p-3 rounded-lg border border-zinc-800 bg-zinc-900/50">
-          <h3 class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Add Monitoring Update</h3>
+          <h3 class="text-[clamp(10px,1.5vw,13px)] font-bold text-zinc-400 uppercase tracking-wider mb-3">Add Monitoring Update</h3>
 
-          <!-- Location -->
+          
           <div class="mb-3">
-            <label class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 block">Location <span class="text-red-400">*</span></label>
+            <label class="text-[clamp(9px,1.4vw,12px)] text-zinc-500 uppercase tracking-wider mb-1 block">Location <span class="text-red-400">*</span></label>
             <div class="flex gap-2">
               <div class="flex-1 relative">
                 <input
@@ -58,7 +66,7 @@
                     v-for="(suggestion, i) in locationSuggestions"
                     :key="i"
                     type="button"
-                    class="w-full text-left px-3 py-2 text-[10px] text-zinc-300 hover:bg-zinc-800 transition-colors border-b border-zinc-800/50 last:border-0"
+                    class="w-full text-left px-3 py-2 text-[clamp(10px,1.5vw,13px)] text-zinc-300 hover:bg-zinc-800 transition-colors border-b border-zinc-800/50 last:border-0"
                     @mousedown.prevent="selectSuggestion(suggestion)"
                   >
                     <span class="font-bold">{{ suggestion.name }}</span>
@@ -85,16 +93,16 @@
                 🗺️
               </button>
             </div>
-            <div v-if="pinMode" class="text-[8px] text-emerald-400 mt-1 animate-pulse">Click anywhere on the map to place your pin</div>
+            <div v-if="pinMode" class="text-[clamp(8px,1.3vw,11px)] text-emerald-400 mt-1 animate-pulse">Click anywhere on the map to place your pin</div>
             <div v-if="form.lat && form.lng" class="flex items-center gap-2 mt-1">
-              <span class="text-[8px] text-zinc-600 font-mono">{{ form.lat.toFixed(4) }}, {{ form.lng.toFixed(4) }}</span>
-              <button type="button" class="text-[8px] text-red-400/60 hover:text-red-400" @click="clearCoords">clear</button>
+              <span class="text-[clamp(8px,1.3vw,11px)] text-zinc-600 font-mono">{{ form.lat.toFixed(4) }}, {{ form.lng.toFixed(4) }}</span>
+              <button type="button" class="text-[clamp(8px,1.3vw,11px)] text-red-400/60 hover:text-red-400" @click="clearCoords">clear</button>
             </div>
           </div>
 
-          <!-- Type -->
+          
           <div class="mb-3">
-            <label class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 block">Type <span class="text-red-400">*</span></label>
+            <label class="text-[clamp(9px,1.4vw,12px)] text-zinc-500 uppercase tracking-wider mb-1 block">Type <span class="text-red-400">*</span></label>
             <select v-model="form.type" class="obs-select">
               <option value="observation">General Observation</option>
               <option value="contamination">Water/Soil Contamination</option>
@@ -103,12 +111,12 @@
               <option value="community">Community Impact</option>
               <option value="heritage">Cultural Heritage</option>
             </select>
-            <p class="text-[8px] text-zinc-600 mt-1">{{ typeGuidance }}</p>
+            <p class="text-[clamp(8px,1.3vw,11px)] text-zinc-600 mt-1">{{ typeGuidance }}</p>
           </div>
 
-          <!-- Description -->
+          
           <div class="mb-3">
-            <label class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 block">Description <span class="text-red-400">*</span></label>
+            <label class="text-[clamp(9px,1.4vw,12px)] text-zinc-500 uppercase tracking-wider mb-1 block">Description <span class="text-red-400">*</span></label>
             <textarea
               v-model="form.description"
               :placeholder="typePlaceholder"
@@ -116,15 +124,15 @@
               rows="3"
             />
             <div class="flex items-center justify-between mt-1">
-              <span v-if="form.description.length > 0 && form.description.length < 10" class="text-[8px] text-amber-400">Minimum 10 characters ({{ form.description.length }}/10)</span>
-              <span v-else-if="form.description.length >= 10" class="text-[8px] text-emerald-400">{{ form.description.length }} characters</span>
-              <span v-else class="text-[8px] text-zinc-600">Describe what you observed</span>
+              <span v-if="form.description.length > 0 && form.description.length < 10" class="text-[clamp(8px,1.3vw,11px)] text-amber-400">Minimum 10 characters ({{ form.description.length }}/10)</span>
+              <span v-else-if="form.description.length >= 10" class="text-[clamp(8px,1.3vw,11px)] text-emerald-400">{{ form.description.length }} characters</span>
+              <span v-else class="text-[clamp(8px,1.3vw,11px)] text-zinc-600">Describe what you observed</span>
             </div>
           </div>
 
-          <!-- Photos -->
+          
           <div class="mb-3">
-            <label class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 block">Photos</label>
+            <label class="text-[clamp(9px,1.4vw,12px)] text-zinc-500 uppercase tracking-wider mb-1 block">Photos</label>
             <div class="flex flex-wrap gap-2">
               <div
                 v-for="(photo, i) in form.photos"
@@ -143,14 +151,14 @@
                 class="w-16 h-16 rounded-lg border-2 border-dashed border-zinc-700 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 transition-colors"
               >
                 <span class="text-zinc-500 text-lg">+</span>
-                <span class="text-[7px] text-zinc-600">Photo</span>
+                <span class="text-[clamp(7px,1.2vw,10px)] text-zinc-600">Photo</span>
                 <input type="file" accept="image/*" class="hidden" @change="onPhotoUpload" multiple />
               </label>
             </div>
-            <p class="text-[8px] text-zinc-600 mt-1">Max 5 photos, 10MB each. Images compressed on upload.</p>
+            <p class="text-[clamp(8px,1.3vw,11px)] text-zinc-600 mt-1">Max 5 photos, 10MB each. Images compressed on upload.</p>
           </div>
 
-          <!-- Actions -->
+          
           <div class="flex gap-2">
             <button
               type="button"
@@ -166,19 +174,19 @@
             </button>
             <button type="button" class="obs-btn" @click="resetForm">Clear</button>
           </div>
-          <div v-if="submitResult" class="mt-2 text-[8px]" :class="submitResult.synced ? 'text-emerald-400' : submitResult.error ? 'text-amber-400' : 'text-zinc-500'">
+          <div v-if="submitResult" class="mt-2 text-[clamp(8px,1.3vw,11px)]" :class="submitResult.synced ? 'text-emerald-400' : submitResult.error ? 'text-amber-400' : 'text-zinc-500'">
             {{ submitResult.synced ? '✓ Synced to cloud' : submitResult.error ? `⚠ Saved locally: ${submitResult.error}` : 'Saved locally (sign in to sync)' }}
           </div>
         </div>
 
-        <!-- Community Pin Form (shown when formMode === 'pin') -->
+        
         <div v-if="formMode === 'pin'" class="mb-4 p-3 rounded-lg border border-amber-800/30 bg-amber-900/10">
-          <h3 class="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-3">Add Community Pin</h3>
-          <p class="text-[8px] text-zinc-500 mb-3">Register a cultural agent, venue, event, or point of attention on the Vulcan Observatory map.</p>
+          <h3 class="text-[clamp(10px,1.5vw,13px)] font-bold text-amber-400 uppercase tracking-wider mb-3">Add Community Pin</h3>
+          <p class="text-[clamp(8px,1.3vw,11px)] text-zinc-500 mb-3">Register a cultural agent, venue, event, or point of attention on the Vulcan Observatory map.</p>
 
-          <!-- Pin Type -->
+          
           <div class="mb-3">
-            <label class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 block">Pin Type <span class="text-red-400">*</span></label>
+            <label class="text-[clamp(9px,1.4vw,12px)] text-zinc-500 uppercase tracking-wider mb-1 block">Pin Type <span class="text-red-400">*</span></label>
             <select v-model="pinForm.pin_type" class="obs-select">
               <option value="cultural_agent">Cultural Agent (pessoa/organização)</option>
               <option value="cultural_avenue">Cultural Avenue / Space</option>
@@ -188,21 +196,21 @@
             </select>
           </div>
 
-          <!-- Name -->
+          
           <div class="mb-3">
-            <label class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 block">Name <span class="text-red-400">*</span></label>
+            <label class="text-[clamp(9px,1.4vw,12px)] text-zinc-500 uppercase tracking-wider mb-1 block">Name <span class="text-red-400">*</span></label>
             <input v-model="pinForm.name" placeholder="Agent name, venue, event..." class="obs-input" />
           </div>
 
-          <!-- Description -->
+          
           <div class="mb-3">
-            <label class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 block">Description</label>
+            <label class="text-[clamp(9px,1.4vw,12px)] text-zinc-500 uppercase tracking-wider mb-1 block">Description</label>
             <textarea v-model="pinForm.description" placeholder="Brief description of the cultural agent or activity..." class="obs-textarea" rows="2" />
           </div>
 
-          <!-- Location -->
+          
           <div class="mb-3">
-            <label class="text-[9px] text-zinc-500 uppercase tracking-wider mb-1 block">Location <span class="text-red-400">*</span></label>
+            <label class="text-[clamp(9px,1.4vw,12px)] text-zinc-500 uppercase tracking-wider mb-1 block">Location <span class="text-red-400">*</span></label>
             <div class="flex gap-2">
               <button type="button" class="obs-btn-sm flex-1" @click="getCurrentLocationPin" :disabled="geoPending">
                 {{ geoPending ? 'Locating...' : '📍 Use my location' }}
@@ -211,14 +219,14 @@
                 🗺️ Click on map
               </button>
             </div>
-            <div v-if="pinMode" class="text-[8px] text-amber-400 mt-1 animate-pulse">Click anywhere on the map to place your pin</div>
+            <div v-if="pinMode" class="text-[clamp(8px,1.3vw,11px)] text-amber-400 mt-1 animate-pulse">Click anywhere on the map to place your pin</div>
             <div v-if="pinForm.latitude && pinForm.longitude" class="flex items-center gap-2 mt-1">
-              <span class="text-[8px] text-zinc-600 font-mono">{{ pinForm.latitude.toFixed(4) }}, {{ pinForm.longitude.toFixed(4) }}</span>
-              <button type="button" class="text-[8px] text-red-400/60 hover:text-red-400" @click="clearPinCoords">clear</button>
+              <span class="text-[clamp(8px,1.3vw,11px)] text-zinc-600 font-mono">{{ pinForm.latitude.toFixed(4) }}, {{ pinForm.longitude.toFixed(4) }}</span>
+              <button type="button" class="text-[clamp(8px,1.3vw,11px)] text-red-400/60 hover:text-red-400" @click="clearPinCoords">clear</button>
             </div>
           </div>
 
-          <!-- Submit -->
+          
           <div class="flex gap-2">
             <button type="button" class="obs-btn obs-btn--primary obs-btn--amber flex-1" :disabled="!canSubmitPin || pinSubmitting" @click="submitPin">
               <span v-if="pinSubmitting" class="flex items-center gap-1.5">
@@ -229,28 +237,28 @@
             </button>
             <button type="button" class="obs-btn" @click="resetPinForm">Clear</button>
           </div>
-          <div v-if="pinSubmitResult" class="mt-2 text-[8px]" :class="pinSubmitResult.success ? 'text-emerald-400' : 'text-amber-400'">
+          <div v-if="pinSubmitResult" class="mt-2 text-[clamp(8px,1.3vw,11px)]" :class="pinSubmitResult.success ? 'text-emerald-400' : 'text-amber-400'">
             {{ pinSubmitResult.success ? '✓ Pin created — pending approval' : `⚠ ${pinSubmitResult.error}` }}
           </div>
         </div>
 
-        <!-- Existing Contributions -->
+        
         <div>
           <div class="flex items-center justify-between mb-2">
-            <h3 class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+            <h3 class="text-[clamp(10px,1.5vw,13px)] font-bold text-zinc-400 uppercase tracking-wider">
               Your Updates ({{ contributions.length }})
             </h3>
             <button
               v-if="contributions.length > 0"
               type="button"
-              class="text-[9px] text-zinc-600 hover:text-red-400 transition-colors"
+              class="text-[clamp(9px,1.4vw,12px)] text-zinc-600 hover:text-red-400 transition-colors"
               @click="confirmClearAll"
             >Clear all</button>
           </div>
 
           <div v-if="contributions.length === 0" class="text-center py-6">
             <span class="text-2xl mb-2 block">📝</span>
-            <p class="text-[10px] text-zinc-500">No monitoring updates yet. Be the first to contribute!</p>
+            <p class="text-[clamp(10px,1.5vw,13px)] text-zinc-500">No monitoring updates yet. Be the first to contribute!</p>
           </div>
 
           <div
@@ -261,14 +269,14 @@
             <div class="flex items-start justify-between gap-2">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1.5 mb-1">
-                  <span class="text-[8px] font-bold px-1.5 py-0.5 rounded" :style="{ background: typeColor(contrib.update_type), color: '#fff' }">
+                  <span class="text-[clamp(8px,1.3vw,11px)] font-bold px-1.5 py-0.5 rounded" :style="{ background: typeColor(contrib.update_type), color: '#fff' }">
                     {{ typeLabel(contrib.update_type) }}
                   </span>
-                  <span class="text-[8px] text-zinc-500">{{ formatDate(contrib.created_at) }}</span>
+                  <span class="text-[clamp(8px,1.3vw,11px)] text-zinc-500">{{ formatDate(contrib.created_at) }}</span>
                 </div>
-                <h4 class="text-[11px] font-bold text-zinc-200 truncate">{{ contrib.location_name || 'Unnamed location' }}</h4>
-                <p class="text-[9px] text-zinc-400 mt-0.5 line-clamp-2">{{ contrib.description }}</p>
-                <div v-if="contrib.lat && contrib.lng" class="text-[8px] text-zinc-600 font-mono mt-1">
+                <h4 class="text-[clamp(11px,1.6vw,14px)] font-bold text-zinc-200 truncate">{{ contrib.location_name || 'Unnamed location' }}</h4>
+                <p class="text-[clamp(9px,1.4vw,12px)] text-zinc-400 mt-0.5 line-clamp-2">{{ contrib.description }}</p>
+                <div v-if="contrib.lat && contrib.lng" class="text-[clamp(8px,1.3vw,11px)] text-zinc-600 font-mono mt-1">
                   {{ contrib.lat.toFixed(4) }}, {{ contrib.lng.toFixed(4) }}
                 </div>
               </div>
@@ -291,15 +299,15 @@
           </div>
         </div>
 
-        <!-- Keyboard hint -->
+        
         <div class="mt-3 text-center">
-          <p class="text-[7px] text-zinc-700">ESC to close · Enter to submit</p>
+          <p class="text-[clamp(7px,1.2vw,10px)] text-zinc-700">ESC to close · Enter to submit</p>
         </div>
       </div>
     </div>
   </Transition>
 
-  <!-- Photo Preview Modal -->
+  
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="previewPhoto" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/90" @click.self="previewPhoto = null" @keydown.escape="previewPhoto = null">
@@ -309,12 +317,12 @@
     </Transition>
   </Teleport>
 
-  <!-- Confirmation Dialog -->
+  
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="confirmDialog" class="fixed inset-0 z-[10001] flex items-center justify-center bg-black/80" @click.self="confirmDialog = null">
         <div class="obs-panel w-[min(85vw,min(360px,85vw))] text-center">
-          <p class="text-[12px] text-zinc-200 mb-4">{{ confirmDialog.message }}</p>
+          <p class="text-[clamp(12px,1.8vw,15px)] text-zinc-200 mb-4">{{ confirmDialog.message }}</p>
           <div class="flex gap-2 justify-center">
             <button type="button" class="obs-btn obs-btn--danger" @click="confirmDialog.action(); confirmDialog = null">Confirm</button>
             <button type="button" class="obs-btn" @click="confirmDialog = null">Cancel</button>
@@ -326,6 +334,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import type { ObservatoryUpdate } from '~/composables/useObservatoryUpdates'
 import { useCulturalAgentsData } from '~/composables/useCulturalAgentsData'
@@ -540,7 +549,6 @@ async function submitContribution() {
 
     submitResult.value = { synced: result.synced ?? false, error: result.error }
 
-    // Refresh contributions list
     contributions.value = getLocalUpdates()
 
     if (!result.error) {
@@ -644,7 +652,6 @@ function importContributions(e: Event) {
       if (!Array.isArray(imported)) throw new Error('Invalid format')
       const valid = imported.filter(c => c.description && c.update_type && c.created_at)
       contributions.value = [...valid, ...contributions.value]
-      // Note: imported items stay local only, not synced
     } catch { /* invalid file */ }
   }
   reader.readAsText(file)
@@ -717,6 +724,7 @@ watch(() => props.visible, async (v) => {
 })
 
 defineExpose({ onMapClick })
+
 </script>
 
 <style scoped>
@@ -735,9 +743,9 @@ defineExpose({ onMapClick })
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  padding: 6px 10px;
+  padding: clamp(4px, 0.8vw, 8px) clamp(6px, 1.2vw, 12px);
   color: var(--obs-text-primary);
-  font-size: 11px;
+  font-size: clamp(11px, 1.6vw, 14px);
   font-family: inherit;
   outline: none;
   transition: border-color 0.15s;
@@ -781,8 +789,8 @@ defineExpose({ onMapClick })
 }
 .obs-btn--danger:hover { background: rgba(231, 76, 60, 0.25); }
 .obs-btn-sm {
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: clamp(2px, 0.5vw, 6px) clamp(6px, 1.2vw, 12px);
+  font-size: clamp(11px, 1.6vw, 14px);
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
@@ -796,6 +804,7 @@ defineExpose({ onMapClick })
   border-color: rgba(46, 204, 113, 0.4);
 }
 
+.uc-backdrop { z-index: var(--obs-z-modal-backdrop); }
 .modal-fade-enter-active { transition: opacity 0.2s ease; }
 .modal-fade-leave-active { transition: opacity 0.15s ease; }
 .modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }

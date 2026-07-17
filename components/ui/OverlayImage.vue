@@ -1,3 +1,9 @@
+/**
+ * components/ui/OverlayImage.vue
+ * @why Fullscreen image overlay with zoom, pan, and close on backdrop click
+ * @component OverlayImage
+ * @deps @/lib/utils (cn)
+ */
 <template>
   <img
     :src="src"
@@ -12,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -27,4 +34,5 @@ const props = withDefaults(defineProps<Props>(), {
   class: '',
   style: () => ({}),
 })
+
 </script>

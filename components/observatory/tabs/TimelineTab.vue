@@ -1,3 +1,9 @@
+/**
+ * components/observatory/tabs/TimelineTab.vue
+ * @why Chronological timeline tab — ordered events with date filtering
+ * @component TimelineTab
+ * @deps vue (computed, ref); @/lib/observatory-tabs (TIMELINE_HIGHLIGHTS)
+ */
 <template>
   <div class="obs-tab">
     <h3 class="obs-tab__title">
@@ -5,7 +11,7 @@
       {{ t('observatory.timelinePanel.title') }}
     </h3>
 
-    <!-- EDUCATIONAL: Narrative intro -->
+    
     <div class="obs-expand">
       <button
         type="button"
@@ -75,6 +81,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed, ref } from 'vue'
 import { TIMELINE_HIGHLIGHTS } from '@/lib/observatory-tabs'
 
@@ -101,6 +108,7 @@ function barColor(count: number) {
   if (count > 800) return '#f39c12'
   return '#27ae60'
 }
+
 </script>
 
 <style scoped>
@@ -108,7 +116,7 @@ function barColor(count: number) {
 
 .obs-tab__title {
   margin: 0; display: flex; align-items: center; gap: 6px;
-  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  font-size: clamp(9px, 1.4vw, 12px); font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.06em; color: var(--obs-text-label);
   padding: 4px 4px 2px;
 }
@@ -119,9 +127,9 @@ function barColor(count: number) {
 
 .obs-expand__btn {
   display: inline-flex; align-items: center; gap: 4px;
-  font-size: 8px; font-weight: 600; color: var(--obs-text-dim);
+  font-size: clamp(8px, 1.3vw, 11px); font-weight: 600; color: var(--obs-text-dim);
   background: none; border: none; cursor: pointer; font-family: inherit;
-  padding: 3px 6px; border-radius: 3px;
+  padding: 3px clamp(4px, 1vw, 8px); border-radius: 3px;
   transition: color 0.12s, background 0.12s;
 }
 
@@ -130,8 +138,8 @@ function barColor(count: number) {
 .obs-expand__icon { width: 10px; height: 10px; }
 
 .obs-expand__body {
-  font-size: 9px; color: var(--obs-text-body); line-height: 1.5;
-  padding: 6px 8px; margin-top: 2px;
+  font-size: clamp(9px, 1.4vw, 12px); color: var(--obs-text-body); line-height: 1.5;
+  padding: clamp(4px, 1vw, 8px) clamp(6px, 1.2vw, 12px); margin-top: 2px;
   background: rgba(255,255,255,0.02); border-radius: 5px;
   border: 1px solid var(--obs-panel-border);
 }
@@ -142,7 +150,7 @@ function barColor(count: number) {
 .obs-timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 
 .obs-timeline__event {
-  display: flex; gap: 8px; align-items: flex-start;
+  display: flex; gap: clamp(6px, 1.2vw, 14px); align-items: flex-start;
   padding: 4px 4px; border-radius: 5px;
   transition: background 0.12s;
 }
@@ -155,11 +163,11 @@ function barColor(count: number) {
   border-radius: 0 5px 5px 0;
 }
 
-.obs-timeline__event--peak { /* extra emphasis for peak years */ }
+.obs-timeline__event--peak {  }
 
 .obs-timeline__year {
-  width: 34px; flex-shrink: 0;
-  font-size: 9px; font-weight: 700; font-family: ui-monospace, monospace;
+  width: clamp(28px, 5vw, 40px); flex-shrink: 0;
+  font-size: clamp(9px, 1.4vw, 12px); font-weight: 700; font-family: ui-monospace, monospace;
   color: var(--obs-text-muted); padding-top: 1px;
 }
 
@@ -173,30 +181,30 @@ function barColor(count: number) {
 
 .obs-timeline__meta { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
 
-.obs-timeline__count { font-size: 9px; font-weight: 700; font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.obs-timeline__count { font-size: clamp(9px, 1.4vw, 12px); font-weight: 700; font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
 
-.obs-timeline__count-label { font-size: 7px; font-weight: 600; color: var(--obs-text-dim); margin-left: 2px; }
+.obs-timeline__count-label { font-size: clamp(7px, 1.2vw, 10px); font-weight: 600; color: var(--obs-text-dim); margin-left: 2px; }
 
-.obs-timeline__cumulative { display: inline-flex; align-items: center; gap: 3px; font-size: 8px; color: var(--obs-text-dim); font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.obs-timeline__cumulative { display: inline-flex; align-items: center; gap: 3px; font-size: clamp(8px, 1.3vw, 11px); color: var(--obs-text-dim); font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
 
 .obs-timeline__cumulative-icon { width: 7px; height: 7px; }
 
-.obs-timeline__cumulative-label { font-size: 7px; color: var(--obs-text-dim); margin-left: 1px; }
+.obs-timeline__cumulative-label { font-size: clamp(7px, 1.2vw, 10px); color: var(--obs-text-dim); margin-left: 1px; }
 
 .obs-timeline__event-badge {
   display: flex; align-items: flex-start; gap: 4px;
-  margin-top: 3px; padding: 3px 5px; border-radius: 4px;
+  margin-top: 3px; padding: 3px clamp(4px, 1vw, 8px); border-radius: 4px;
   background: rgba(231,76,60,0.07);
   border: 1px solid rgba(231,76,60,0.12);
-  font-size: 8px; line-height: 1.4; color: var(--obs-red);
+  font-size: clamp(8px, 1.3vw, 11px); line-height: 1.4; color: var(--obs-red);
 }
 
 .obs-timeline__event-icon { width: 8px; height: 8px; margin-top: 1px; flex-shrink: 0; color: var(--obs-amber); }
 
 .obs-timeline__footer {
   display: flex; align-items: center; gap: 4px;
-  font-size: 8px; color: var(--obs-text-dim); font-style: italic;
-  padding: 6px 4px 2px; text-align: center; justify-content: center;
+  font-size: clamp(8px, 1.3vw, 11px); color: var(--obs-text-dim); font-style: italic;
+  padding: clamp(4px, 1vw, 8px) 4px 2px; text-align: center; justify-content: center;
 }
 
 .obs-timeline__footer-icon { width: 9px; height: 9px; }

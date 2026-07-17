@@ -1,7 +1,9 @@
 /**
- * Shared selection state between the volcano map popups and the sidebar.
- * When a feature is selected on the map, the sidebar can react (scroll to it,
- * open the relevant tab) — and vice versa.
+ * composables/useObservatorySelection.ts
+ * @why Observatory selection state — manages selected claims, multi-select, and detail panel
+ * @functions useObservatorySelection
+ * @interfaces ObservatorySelection
+ * @connections components/observatory/ObservatorySidebar.vue, composables/useObservatoryPopup.ts, composables/useVulcanObservatoryPage.ts
  */
 export interface ObservatorySelection {
   /** Selected claim process id (processo) */

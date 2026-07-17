@@ -1,6 +1,14 @@
+/**
+ * components/observatory/tabs/MilitaryTab.vue
+ * @why Military activity tab — shows armed conflicts, base locations, restricted zones
+ * @component MilitaryTab
+ * @props highlight?: string | null
+ * @emits 'update:highlight': [v: string | null]
+ * @deps vue (ref); @/lib/observatory-tabs (MILITARY_ASSETS, US_INVESTMENTS)
+ */
 <template>
   <div class="obs-tab">
-    <!-- EDUCATIONAL: Military interest explainer -->
+    
     <div class="obs-expand">
       <button
         type="button"
@@ -21,7 +29,7 @@
       </Transition>
     </div>
 
-    <!-- DANGER CALLOUT -->
+    
     <div class="obs-callout obs-callout--danger">
       <div class="obs-callout__head">
         <Icon name="lucide:shield" class="obs-callout__icon" />
@@ -30,7 +38,7 @@
       <p class="obs-callout__body">{{ t('observatory.military.headlineBody') }}</p>
     </div>
 
-    <!-- DOD ASSETS -->
+    
     <h4 class="obs-section-title">
       <Icon name="lucide:building-2" class="obs-section-title__icon" />
       {{ t('observatory.military.dodTitle') }}
@@ -69,7 +77,7 @@
       </li>
     </ul>
 
-    <!-- INVESTMENTS -->
+    
     <h4 class="obs-section-title">
       <Icon name="lucide:dollar-sign" class="obs-section-title__icon" />
       {{ t('observatory.military.stateDeptTitle') }}
@@ -94,7 +102,7 @@
       </li>
     </ul>
 
-    <!-- CHINA BAN CALLOUT -->
+    
     <div class="obs-callout obs-callout--warn">
       <div class="obs-callout__head">
         <Icon name="lucide:ban" class="obs-callout__icon" />
@@ -111,6 +119,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref } from 'vue'
 import { MILITARY_ASSETS, US_INVESTMENTS } from '@/lib/observatory-tabs'
 
@@ -136,6 +145,7 @@ function onClearHighlight() {
   highlighted.value = null
   emit('update:highlight', null)
 }
+
 </script>
 
 <style scoped>
@@ -145,9 +155,9 @@ function onClearHighlight() {
 
 .obs-expand__btn {
   display: inline-flex; align-items: center; gap: 4px;
-  font-size: 8px; font-weight: 600; color: var(--obs-text-dim);
+  font-size: clamp(8px, 1.3vw, 11px); font-weight: 600; color: var(--obs-text-dim);
   background: none; border: none; cursor: pointer; font-family: inherit;
-  padding: 3px 6px; border-radius: 3px;
+  padding: 3px clamp(4px, 1vw, 8px); border-radius: 3px;
   transition: color 0.12s, background 0.12s;
 }
 
@@ -156,8 +166,8 @@ function onClearHighlight() {
 .obs-expand__icon { width: 10px; height: 10px; }
 
 .obs-expand__body {
-  font-size: 9px; color: var(--obs-text-body); line-height: 1.5;
-  padding: 6px 8px; margin-top: 2px;
+  font-size: clamp(9px, 1.4vw, 12px); color: var(--obs-text-body); line-height: 1.5;
+  padding: clamp(4px, 1vw, 8px) clamp(6px, 1.2vw, 12px); margin-top: 2px;
   background: rgba(255,255,255,0.02); border-radius: 5px;
   border: 1px solid var(--obs-panel-border);
 }
@@ -166,14 +176,14 @@ function onClearHighlight() {
 
 .obs-expand__tag {
   display: inline-flex; align-items: center; gap: 3px;
-  font-size: 8px; font-weight: 700; padding: 2px 6px;
+  font-size: clamp(8px, 1.3vw, 11px); font-weight: 700; padding: 2px clamp(4px, 1vw, 8px);
   border-radius: 3px; background: rgba(231,76,60,0.1); color: var(--obs-red);
 }
 
 .obs-expand__tag-icon { width: 8px; height: 8px; }
 
 .obs-callout {
-  padding: 10px; background: rgba(231,76,60,0.05);
+  padding: clamp(8px, 1.5vw, 14px); background: rgba(231,76,60,0.05);
   border: 1px solid rgba(231,76,60,0.12);
   border-radius: 8px; border-left: 3px solid var(--obs-red);
 }
@@ -185,14 +195,14 @@ function onClearHighlight() {
 .obs-callout__icon { width: 13px; height: 13px; color: var(--obs-red); flex-shrink: 0; }
 .obs-callout--warn .obs-callout__icon { color: var(--obs-amber); }
 
-.obs-callout__title { margin: 0; font-size: 10px; font-weight: 700; color: var(--obs-red); }
+.obs-callout__title { margin: 0; font-size: clamp(10px, 1.5vw, 13px); font-weight: 700; color: var(--obs-red); }
 .obs-callout--warn .obs-callout__title { color: var(--obs-amber); }
 
-.obs-callout__body { margin: 0; font-size: 9.5px; color: var(--obs-text-body); line-height: 1.5; }
+.obs-callout__body { margin: 0; font-size: clamp(9.5px, 1.5vw, 12.5px); color: var(--obs-text-body); line-height: 1.5; }
 
 .obs-section-title {
   margin: 2px 0 0; display: flex; align-items: center; gap: 5px;
-  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  font-size: clamp(9px, 1.4vw, 12px); font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.06em; color: var(--obs-text-label);
 }
 
@@ -211,31 +221,31 @@ function onClearHighlight() {
 .obs-card--highlighted { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 16px rgba(255,255,255,0.06); }
 
 .obs-card__accent { width: 3px; flex-shrink: 0; }
-.obs-card__body { flex: 1; padding: 8px 9px; min-width: 0; }
+.obs-card__body { flex: 1; padding: clamp(6px, 1.2vw, 12px) clamp(7px, 1.4vw, 14px); min-width: 0; }
 
 .obs-card__head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
-.obs-card__flag { font-size: 12px; line-height: 1; }
+.obs-card__flag { font-size: clamp(12px, 1.8vw, 15px); line-height: 1; }
 
-.obs-card__name { font-size: 10px; font-weight: 600; color: var(--obs-text-primary); flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.obs-card__name { font-size: clamp(10px, 1.5vw, 13px); font-weight: 600; color: var(--obs-text-primary); flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 
 .obs-card__arrow { width: 9px; height: 9px; color: var(--obs-text-dim); flex-shrink: 0; }
 
-.obs-card__tag { display: inline-flex; align-items: center; gap: 3px; font-size: 8px; font-weight: 700; padding: 2px 5px; border-radius: 3px; white-space: nowrap; }
+.obs-card__tag { display: inline-flex; align-items: center; gap: 3px; font-size: clamp(8px, 1.3vw, 11px); font-weight: 700; padding: 2px 5px; border-radius: 3px; white-space: nowrap; }
 
 .obs-card__tag--red { background: rgba(231,76,60,0.12); color: var(--obs-red); }
 .obs-card__tag--amber { background: rgba(243,156,18,0.12); color: var(--obs-amber); }
 .obs-card__tag-icon { width: 8px; height: 8px; }
 
-.obs-card__desc { margin: 3px 0 0; font-size: 9px; color: var(--obs-text-body); line-height: 1.45; }
+.obs-card__desc { margin: 3px 0 0; font-size: clamp(9px, 1.4vw, 12px); color: var(--obs-text-body); line-height: 1.45; }
 
 .obs-card__actions {
   display: flex; flex-direction: column; justify-content: center;
-  padding: 6px 4px; flex-shrink: 0;
+  padding: clamp(4px, 1vw, 8px) 4px; flex-shrink: 0;
 }
 
 .obs-card__action-btn {
-  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  width: clamp(20px, 4vw, 28px); height: clamp(20px, 4vw, 28px); display: flex; align-items: center; justify-content: center;
   background: transparent; border: 1px solid transparent; border-radius: 4px;
   color: var(--obs-text-dim); cursor: pointer; font-family: inherit;
   transition: all 0.12s;
@@ -247,7 +257,7 @@ function onClearHighlight() {
 
 .obs-tab__footnote {
   display: flex; align-items: center; gap: 4px;
-  font-size: 8px; color: var(--obs-text-dim); font-style: italic;
+  font-size: clamp(8px, 1.3vw, 11px); color: var(--obs-text-dim); font-style: italic;
   padding: 4px; text-align: center; justify-content: center;
 }
 

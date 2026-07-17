@@ -1,3 +1,10 @@
+/**
+ * components/ui/Button.vue
+ * @why Reusable button with multiple variants (primary, secondary, ghost, danger) and sizes
+ * @component Button
+ * @emits click: [event: MouseEvent]
+ * @deps vue (computed, ref); @/lib/utils (cn)
+ */
 <template>
   <button
     ref="buttonRef"
@@ -11,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed, ref } from 'vue'
 import { cn } from '@/lib/utils'
 
@@ -45,7 +53,6 @@ const buttonClasses = computed(() => {
     secondary: 'bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-80',
     ghost: 'hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]',
     link: 'text-[var(--primary)] underline-offset-4 hover:underline',
-    // EG-Maps custom variants
     cyber: 'bg-black/70 border border-white/20 text-white/70 hover:bg-white/10 hover:text-white',
     'cyber-primary': 'bg-[var(--text-primary)] text-[var(--bg-primary)] hover:opacity-80',
   }
@@ -63,4 +70,5 @@ const buttonClasses = computed(() => {
 function handleClick(event: MouseEvent) {
   emit('click', event)
 }
+
 </script>

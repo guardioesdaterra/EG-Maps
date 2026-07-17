@@ -1,13 +1,12 @@
 /**
- * Unified marker system — single source of truth for all map datasets.
- *
- * • GPU-accelerated vector rendering via MapLibre GeoJSON source/layers
- * • Dark-circle + colored-border + glow aesthetic (matches old DOM markers)
- * • Automatic repositioning on pan/zoom — no manual moveend rebuilds
- * • Replaces: useMapMarkers.ts, useGeoJSONMarkers.ts, useMapCluster.ts,
- *             useMapMarkerOrchestrator.ts
+ * composables/useMapMarker.ts
+ * @why Individual map marker factory — creates and styles a single DOM marker element
+ * @functions useMapMarker
+ * @interfaces MarkerCallbacks, RebuildArgs
+ * @types MarkerDataset
+ * @deps @/lib/map-utils (GROUP_COLORS, isValidCoordinate); @/lib/colors (getProjectColorByBeneficiaries); @/lib/utils (formatCompact); @/lib/species-utils (findSpeciesAtCoord); @/lib/constants (SPECIES_COORD_TOLERANCE)
+ * @connections composables/useMapBase.ts
  */
-
 import type { Map as MapLibreMap, GeoJSONSource, ExpressionSpecification, FilterSpecification, MapLayerMouseEvent, MapLayerEventType } from 'maplibre-gl'
 import { GROUP_COLORS, isValidCoordinate } from '@/lib/map-utils'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'

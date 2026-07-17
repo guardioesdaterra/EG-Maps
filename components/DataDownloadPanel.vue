@@ -1,3 +1,11 @@
+/**
+ * components/DataDownloadPanel.vue
+ * @why Data export panel — downloads filtered data as CSV, GeoJSON, or image
+ * @component DataDownloadPanel
+ * @props visible: boolean
+ * @emits close: []
+ * @deps vue (ref, computed); @/composables/useDataDownload (DOWNLOADABLE_DATASETS, downloadData, downloadAllDatasets, type DownloadableDataset); @/composables/useFocusTrap (useFocusTrap)
+ */
 <template>
   <Transition name="fade">
     <div v-if="visible" class="download-overlay" @click.self="close" @keydown.esc="close">
@@ -50,6 +58,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, computed } from 'vue'
 import { DOWNLOADABLE_DATASETS, downloadData, downloadAllDatasets, type DownloadableDataset } from '@/composables/useDataDownload'
 import { useFocusTrap } from '@/composables/useFocusTrap'
@@ -82,33 +91,34 @@ async function downloadAll() {
     toast.error('Bulk download failed')
   }
 }
+
 </script>
 
 <style scoped>
 .download-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2147483646;
+  z-index: var(--obs-z-modal-backdrop);
   background: rgba(0,0,0,0.8);
   backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: clamp(12px, 1.5vw, 20px);
 }
 .download-panel {
-  width: 520px;
+  width: min(520px, 92vw);
   max-width: 100vw;
   max-height: 90vh;
-  background: #0a0a0f;
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--obs-panel-bg-dark, #0a0a0f);
+  border: 1px solid var(--obs-panel-border);
   border-radius: 14px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 .download-header {
-  padding: 24px 20px 16px;
+  padding: clamp(14px, 2vw, 24px) clamp(12px, 2vw, 20px) clamp(10px, 1.5vw, 16px);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -116,7 +126,7 @@ async function downloadAll() {
 }
 .download-badge {
   display: inline-block;
-  font-size: 9px;
+  font-size: clamp(9px, 1.4vw, 12px);
   font-weight: 800;
   letter-spacing: 0.12em;
   padding: 3px 8px;
@@ -126,13 +136,13 @@ async function downloadAll() {
   margin-bottom: 8px;
 }
 .download-title {
-  font-size: 20px;
+  font-size: clamp(20px, 3.5vw, 30px);
   font-weight: 800;
   color: #f0f0f0;
   margin: 0 0 4px;
 }
 .download-subtitle {
-  font-size: 11px;
+  font-size: clamp(11px, 1.6vw, 14px);
   color: #777;
   margin: 0;
 }
@@ -153,14 +163,14 @@ async function downloadAll() {
 .download-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px;
+  padding: clamp(10px, 1.5vw, 16px) clamp(12px, 2vw, 20px);
 }
 .download-all-row {
-  margin-bottom: 16px;
+  margin-bottom: clamp(10px, 1.5vw, 16px);
 }
 .download-all-btn {
   width: 100%;
-  padding: 14px;
+  padding: clamp(8px, 1.5vw, 14px);
   border: 2px dashed rgba(39,174,96,0.3);
   border-radius: 10px;
   background: rgba(39,174,96,0.05);
@@ -169,7 +179,7 @@ async function downloadAll() {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: clamp(6px, 1.5vw, 10px);
   transition: background-color 0.2s, border-color 0.2s;
   font-family: inherit;
 }
@@ -178,18 +188,18 @@ async function downloadAll() {
   border-color: #27ae60;
 }
 .download-all-icon {
-  font-size: 20px;
+  font-size: clamp(20px, 3.5vw, 30px);
 }
 .download-all-text {
-  font-size: 14px;
+  font-size: clamp(14px, 2vw, 18px);
   font-weight: 700;
 }
 .download-divider {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-  font-size: 9px;
+  gap: clamp(7px, 1.5vw, 12px);
+  margin-bottom: clamp(8px, 1.5vw, 14px);
+  font-size: clamp(9px, 1.4vw, 12px);
   color: #555;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -204,13 +214,13 @@ async function downloadAll() {
 .download-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: clamp(6px, 0.5vw, 9px);
 }
 .download-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  padding: clamp(6px, 1.5vw, 10px) clamp(7px, 1.5vw, 12px);
   border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.04);
   cursor: pointer;
@@ -223,11 +233,11 @@ async function downloadAll() {
 .download-item-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: clamp(6px, 1.5vw, 10px);
   min-width: 0;
 }
 .download-item-format {
-  font-size: 8px;
+  font-size: clamp(8px, 1.3vw, 11px);
   font-weight: 800;
   padding: 3px 6px;
   border-radius: 3px;
@@ -240,16 +250,16 @@ async function downloadAll() {
 .download-item-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: clamp(2px, 0.5vw, 3px);
   min-width: 0;
 }
 .download-item-title {
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
   font-weight: 600;
   color: #ddd;
 }
 .download-item-desc {
-  font-size: 10px;
+  font-size: clamp(10px, 1.5vw, 13px);
   color: #777;
   white-space: nowrap;
   overflow: hidden;
@@ -269,9 +279,9 @@ async function downloadAll() {
   color: #27ae60;
 }
 .download-footer {
-  padding: 12px 20px;
+  padding: clamp(7px, 1.5vw, 12px) clamp(12px, 2vw, 20px);
   border-top: 1px solid rgba(255,255,255,0.04);
-  font-size: 9px;
+  font-size: clamp(9px, 1.4vw, 12px);
   color: #555;
   text-align: center;
 }

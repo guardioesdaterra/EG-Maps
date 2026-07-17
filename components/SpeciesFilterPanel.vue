@@ -1,16 +1,25 @@
+/**
+ * components/SpeciesFilterPanel.vue
+ * @why Sidebar filter panel for endangered species — region, ecosystem, threat, text search
+ * @component SpeciesFilterPanel
+ * @emits 'filter-change': [filteredSpecies: SpeciesIndexItem[]]
+  'group-selection-change': [groups: string[]]
+  'close': []
+ * @deps vue (ref, reactive, computed, watch); @/composables/useMediaQuery (useMediaQuery); @/composables/useI18n (useI18n)
+ */
 <template>
   <div
     :class="`fixed ${isMobile ? 'top-[clamp(5.5rem,12vh,7.5rem)] left-[max(0.5rem,env(safe-area-inset-left))] right-[max(0.5rem,env(safe-area-inset-right))] max-w-full' : 'top-20 right-16 w-[min(21.25rem,calc(100vw-5rem))]'} panel-cyber map-filter-panel rounded-lg p-2.5 xs:p-3 species-filter-panel transition-all duration-300`"
     :style="{ zIndex: '10001' }"
   >
-    <!-- Header -->
+    
     <div class="flex justify-between items-center mb-3">
       <div class="flex items-center gap-2">
         <iconify-icon icon="lucide:filter" class="h-4 w-4 text-cyan-400" />
         <h2 class="text-xs font-heading font-bold text-[var(--text-primary)] tracking-wider uppercase">
           {{ t('filter.filterSpecies') }}
         </h2>
-        <span v-if="hasActiveFilters" class="px-1.5 py-0.5 rounded text-[10px] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+        <span v-if="hasActiveFilters" class="px-1.5 py-0.5 rounded text-[clamp(10px,1.5vw,13px)] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
           {{ activeFilterCount }}
         </span>
       </div>
@@ -27,7 +36,7 @@
     </div>
 
     <div :class="isMobile ? 'max-h-[calc(100svh-11rem)] overflow-y-auto overflow-x-hidden pr-1 space-y-2' : 'max-h-[calc(100svh-9rem)] overflow-y-auto pr-1'">
-    <!-- Search Input with enhanced UX -->
+    
     <div :class="isMobile ? 'mb-2' : 'mb-3'">
       <div class="relative">
         <iconify-icon icon="lucide:search" class="absolute left-2.5 top-2 h-4 w-4 text-white/50 pointer-events-none" />
@@ -48,13 +57,13 @@
       </div>
     </div>
 
-    <!-- Quick Filter Chips (Top 4 taxonomic groups) -->
+    
     <div :class="isMobile ? 'mb-2 flex flex-wrap gap-1' : 'mb-3 flex flex-wrap gap-1.5'" v-if="taxonomicGroups.length > 0">
       <button
         v-for="(group, index) in taxonomicGroups.slice(0, 4)"
         :key="group"
         @click="toggleTaxonomicGroup(group)"
-        :class="`px-2 py-1 rounded text-[10px] font-medium transition-all duration-200 whitespace-nowrap ${
+        :class="`px-2 py-1 rounded text-[clamp(10px,1.5vw,13px)] font-medium transition-all duration-200 whitespace-nowrap ${
           selectedTaxonomicGroups.includes(group)
             ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50'
             : 'bg-black/30 text-gray-400 border border-gray-700/50 hover:border-cyan-700/50 hover:text-cyan-400'
@@ -66,19 +75,19 @@
       <button
         v-if="taxonomicGroups.length > 4"
         @click="showAllGroups = !showAllGroups"
-        class="px-2 py-1 rounded text-[10px] font-medium bg-black/30 text-gray-500 border border-gray-700/50 hover:text-gray-300 transition-colors whitespace-nowrap"
+        class="px-2 py-1 rounded text-[clamp(10px,1.5vw,13px)] font-medium bg-black/30 text-gray-500 border border-gray-700/50 hover:text-gray-300 transition-colors whitespace-nowrap"
       >
         {{ t('filter.moreGroups', { count: taxonomicGroups.length - 4 }) }}
       </button>
     </div>
 
-    <!-- Expandable all groups -->
+    
     <div v-if="showAllGroups && taxonomicGroups.length > 4" :class="isMobile ? 'mb-2 flex flex-wrap gap-1 animate-fade-in' : 'mb-3 flex flex-wrap gap-1.5 animate-fade-in'">
       <button
         v-for="group in taxonomicGroups.slice(4)"
         :key="group"
         @click="toggleTaxonomicGroup(group)"
-        :class="`px-2 py-1 rounded text-[10px] font-medium transition-all duration-200 whitespace-nowrap ${
+        :class="`px-2 py-1 rounded text-[clamp(10px,1.5vw,13px)] font-medium transition-all duration-200 whitespace-nowrap ${
           selectedTaxonomicGroups.includes(group)
             ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50'
             : 'bg-black/30 text-gray-400 border border-gray-700/50 hover:border-cyan-700/50 hover:text-cyan-400'
@@ -88,7 +97,7 @@
       </button>
     </div>
 
-    <!-- Taxonomic Group Filter (collapsible) -->
+    
     <div :class="isMobile ? 'filter-group mb-2' : 'filter-group mb-2.5'">
       <button
         @click="taxonomicGroupCollapsed = !taxonomicGroupCollapsed"
@@ -98,10 +107,10 @@
           :icon="taxonomicGroupCollapsed ? 'lucide:chevron-right' : 'lucide:chevron-down'"
           class="h-4 w-4 text-white/70 transition-transform"
         />
-        <span class="text-[10px] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+        <span class="text-[clamp(10px,1.5vw,13px)] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
           {{ t('filter.taxonomicGroup') }}
         </span>
-        <span v-if="selectedTaxonomicGroups.length" class="ml-auto px-1.5 py-0.5 rounded text-[10px] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+        <span v-if="selectedTaxonomicGroups.length" class="ml-auto px-1.5 py-0.5 rounded text-[clamp(10px,1.5vw,13px)] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
           {{ selectedTaxonomicGroups.length }}
         </span>
       </button>
@@ -121,7 +130,7 @@
           <button
             v-for="group in selectedTaxonomicGroups"
             :key="`selected-${group}`"
-            class="inline-flex items-center gap-1 rounded border border-cyan-500/40 bg-cyan-500/15 px-1.5 py-0.5 text-[10px] text-cyan-300 whitespace-nowrap"
+            class="inline-flex items-center gap-1 rounded border border-cyan-500/40 bg-cyan-500/15 px-1.5 py-0.5 text-[clamp(10px,1.5vw,13px)] text-cyan-300 whitespace-nowrap"
             @click="toggleTaxonomicGroup(group)"
           >
             {{ groupLabel(group) }}
@@ -131,9 +140,9 @@
       </div>
     </div>
 
-    <!-- Region Filter -->
+    
     <div v-if="regions.length > 0" :class="isMobile ? 'filter-group mb-2' : 'filter-group mb-2.5'">
-      <label class="filter-label block text-[10px] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+      <label class="filter-label block text-[clamp(10px,1.5vw,13px)] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
         {{ t('filter.region') }}
       </label>
       <select
@@ -146,9 +155,9 @@
       </select>
     </div>
 
-    <!-- Ecosystem Filter -->
+    
     <div v-if="ecosystems.length > 0" :class="isMobile ? 'filter-group mb-2' : 'filter-group mb-2.5'">
-      <label class="filter-label block text-[10px] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+      <label class="filter-label block text-[clamp(10px,1.5vw,13px)] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
         {{ t('filter.ecosystem') }}
       </label>
       <select
@@ -161,9 +170,9 @@
       </select>
     </div>
 
-    <!-- Threat Type Filter -->
+    
     <div :class="isMobile ? 'filter-group mb-2' : 'filter-group mb-3'">
-      <label class="filter-label block text-[10px] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+      <label class="filter-label block text-[clamp(10px,1.5vw,13px)] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
         {{ t('filter.threatType') }}
       </label>
       <select
@@ -176,17 +185,17 @@
       </select>
     </div>
 
-    <!-- Filter Count with progress bar -->
+    
     <div class="filter-count pt-2 border-t border-cyan-900/30">
       <div class="flex items-center justify-between mb-1.5">
-        <p class="text-[10px] font-heading font-semibold text-[var(--text-secondary)] tracking-wider" aria-live="polite" aria-atomic="true">
+        <p class="text-[clamp(10px,1.5vw,13px)] font-heading font-semibold text-[var(--text-secondary)] tracking-wider" aria-live="polite" aria-atomic="true">
           {{ t('filter.showing', { count: filteredCount, total: totalCount }) }}
         </p>
-        <span class="text-[10px] font-medium text-cyan-400">
+        <span class="text-[clamp(10px,1.5vw,13px)] font-medium text-cyan-400">
           {{ filteredPercent }}%
         </span>
       </div>
-      <!-- Progress bar -->
+      
       <div class="h-1 bg-gray-800 rounded-full overflow-hidden">
         <div
           class="h-full bg-[var(--text-primary)] transition-all duration-300 ease-out"
@@ -196,7 +205,7 @@
     </div>
     </div>
 
-    <!-- Close button -->
+    
     <div :class="isMobile ? 'mt-2' : 'mt-3'">
       <button
         class="w-full py-2 rounded text-xs font-medium transition-all duration-200 border border-cyan-900/50 text-gray-400 hover:text-white hover:border-cyan-500/50 hover:bg-cyan-500/10 flex items-center justify-center gap-1.5"
@@ -210,6 +219,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, reactive, computed, watch } from 'vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
@@ -231,10 +241,8 @@ const emit = defineEmits<{
 
 const isMobile = useMediaQuery('(max-width: 768px)')
 
-// i18n
 const { t } = useI18n()
 
-// Filter state
 const filters = reactive({
   region: '',
   ecosystem: '',
@@ -271,7 +279,6 @@ const regions = computed(() => filterOptions.value.regions)
 const ecosystems = computed(() => filterOptions.value.ecosystems)
 const threatTypes = computed(() => filterOptions.value.threatTypes)
 
-// Count active filters
 const activeFilterCount = computed(() => {
   let count = 0
   if (selectedTaxonomicGroups.value.length) count++
@@ -282,7 +289,6 @@ const activeFilterCount = computed(() => {
   return count
 })
 
-// Check if any filters are active
 const hasActiveFilters = computed(() => activeFilterCount.value > 0)
 
 function groupLabel(group: string) {
@@ -304,7 +310,6 @@ function handleTaxonomicSelect(event: Event) {
   ;(event.target as HTMLSelectElement).value = ''
 }
 
-// Precomputed group labels for filter matching
 const groupLabels = computed(() => {
   const map: Record<string, string> = {}
   for (const s of props.species) {
@@ -315,7 +320,6 @@ const groupLabels = computed(() => {
   return map
 })
 
-// Apply filters to species (single pass, no intermediate arrays)
 const filteredSpecies = computed(() => {
   const groupFilter = selectedTaxonomicGroups.value
   const regionFilter = filters.region
@@ -346,7 +350,6 @@ const filteredCount = computed(() => filteredSpecies.value.length)
 const totalCount = computed(() => props.species.length)
 const filteredPercent = computed(() => totalCount.value ? Math.round((filteredCount.value / totalCount.value) * 100) : 0)
 
-// Emit filtered species when filters change
 watch(filteredSpecies, (newFiltered) => {
   emit('filter-change', newFiltered)
 }, { immediate: true })
@@ -355,7 +358,6 @@ watch(selectedTaxonomicGroups, (groups) => {
   emit('group-selection-change', groups)
 }, { immediate: true })
 
-// Reset all filters
 function resetFilters() {
   selectedTaxonomicGroups.value = []
   filters.region = ''
@@ -369,6 +371,7 @@ defineExpose({
   toggleTaxonomicGroup,
   resetFilters,
 })
+
 </script>
 
 <style scoped>

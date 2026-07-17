@@ -1,5 +1,9 @@
+/**
+ * scripts/overpass-to-geojson.cjs
+ * @why Overpass API converter — parses Overpass XML/JSON responses into GeoJSON FeatureCollection
+ */
 #!/usr/bin/env node
- 
+
 /**
  * Converts Overpass API JSON output to GeoJSON.
  * Handles ways (polygons/lines) and relations (multipolygons).
@@ -23,7 +27,6 @@ const forcedType = typeFlag !== -1 ? args[typeFlag + 1] : 'auto';
 const data = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
 const elements = data.elements || [];
 
-// Build node lookup
 const nodeLookup = new Map();
 for (const el of elements) {
   if (el.type === 'node') {
@@ -60,7 +63,6 @@ function isClosed(coords) {
 }
 
 function computeAreaKm2(coords) {
-  // Shoelace formula for polygon area
   if (!isClosed(coords)) return 0;
   const pts = coords.slice(0, -1);
   let area = 0;
@@ -95,7 +97,6 @@ for (const el of elements) {
   const name = tags.name || tags['name:pt'] || tags['name:en'] || '';
   const waterType = classifyWater(tags);
 
-  // Determine geometry type
   let geomType;
   let coords;
 
@@ -104,17 +105,15 @@ for (const el of elements) {
     if (coords.length < 2) continue;
     if (isClosed(coords) && (forcedType === 'polygon' || forcedType === 'auto')) {
       geomType = 'Polygon';
-      coords = [coords]; // GeoJSON polygon wrapping
+      coords = [coords];
     } else if (forcedType === 'line' || (!isClosed(coords))) {
       geomType = 'LineString';
     } else {
       geomType = 'LineString';
     }
   } else if (el.type === 'relation') {
-    // Simple relation handling - skip complex multipolygons for now
-    // Relations with outer ways
     if (tags.type === 'multipolygon' || tags.type === 'boundary') {
-      continue; // Skip complex multipolygons
+      continue;
     }
     continue;
   }
@@ -157,7 +156,6 @@ const geojson = {
 fs.writeFileSync(outputPath, JSON.stringify(geojson, null, 2));
 console.log(`Converted ${elements.length} elements → ${features.length} GeoJSON features → ${outputPath}`);
 
-// Stats by type
 const byType = {};
 for (const f of features) {
   const t = f.properties.water_type;

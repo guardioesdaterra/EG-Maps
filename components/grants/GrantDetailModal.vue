@@ -1,3 +1,12 @@
+/**
+ * components/grants/GrantDetailModal.vue
+ * @why Full grant detail view in a modal — shows all fields, comments, votes
+ * @component GrantDetailModal
+ * @emits close: []
+  vote: [stars: number]
+  save: [grantId: string, form: Record<string, string>]
+ * @deps vue (ref, reactive, watch)
+ */
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
@@ -168,7 +177,7 @@
               </div>
             </div>
 
-            <!-- ── Comments section ───────────────────── -->
+            
             <div class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
               <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40 flex items-center gap-2">
                 {{ t('grantsPortal.comments') }}
@@ -224,6 +233,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, reactive, watch } from 'vue'
 import type { DetailGrantData } from '~/lib/types'
 import type { GrantComment } from '~/composables/useGrants'
@@ -382,6 +392,7 @@ function formatAmount(val: number): string {
   if (val >= 1000) return (val / 1000).toFixed(val >= 10000 ? 0 : 1) + 'K'
   return val.toFixed(0)
 }
+
 </script>
 
 <style scoped>

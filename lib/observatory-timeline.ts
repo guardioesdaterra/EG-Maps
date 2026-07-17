@@ -1,3 +1,11 @@
+/**
+ * lib/observatory-timeline.ts
+ * @why Observatory timeline data — chronological event definitions with dates and metadata
+ * @functions getSignificanceColor
+ * @consts GEOPOLITICAL_TIMELINE, MINING_PHASE_TIMELINE
+ * @interfaces TimelineEvent, PhaseTimeline
+ * @connections components/GeoPoliticalTimeline.vue, composables/useDataDownload.ts
+ */
 export interface TimelineEvent {
   year: number
   type: 'geopolitical' | 'enterprise' | 'regulation' | 'military' | 'environmental'

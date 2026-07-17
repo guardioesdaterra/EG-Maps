@@ -1,11 +1,20 @@
+/**
+ * components/observatory/GeoLocateModal.vue
+ * @why Modal for searching locations by name with geocoding
+ * @component GeoLocateModal
+ * @props visible: boolean
+ * @emits 'close': []
+  'locate': [lat: number, lng: number, city: string]
+ * @deps vue (ref, nextTick); @/composables/useGeoLocate (useGeoLocate, type CitySuggestion)
+ */
 <template>
   <Teleport to="body">
     <Transition name="geo-modal">
-      <div v-if="visible" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 backdrop-blur-md" @click.self="onDismiss">
-        <div class="obs-geo-modal" role="dialog" :aria-label="t('observatory.geoLocate.title')">
-          <!-- Step 1: Initial prompt -->
+      <div v-if="visible" class="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-md geo-locate-backdrop" @click.self="onDismiss">
+        <div class="obs-geo-modal" role="dialog" :aria-label="t('observatory.geoLocate.title')" ref="geoModalRef">
+          
           <template v-if="step === 'prompt'">
-            <div class="obs-geo-modal__icon">🌍</div>
+            <Icon name="lucide:globe" class="obs-geo-modal__icon w-9 h-9" />
             <h2 class="obs-geo-modal__title">{{ t('observatory.geoLocate.title') }}</h2>
             <p class="obs-geo-modal__desc">{{ t('observatory.geoLocate.description') }}</p>
 
@@ -16,7 +25,7 @@
               @click="onLocate"
             >
               <span v-if="isLocating" class="obs-geo-modal__spinner" />
-              <span v-else>📍</span>
+              <Icon v-else name="lucide:map-pin" class="w-3.5 h-3.5" />
               {{ isLocating ? t('observatory.geoLocate.locating') : t('observatory.geoLocate.useLocation') }}
             </button>
 
@@ -44,7 +53,7 @@
               </button>
             </div>
 
-            <!-- City suggestions -->
+            
             <div v-if="suggestions.length > 0" class="obs-geo-modal__suggestions">
               <button
                 v-for="(s, i) in suggestions"
@@ -58,7 +67,7 @@
               </button>
             </div>
 
-            <!-- Error -->
+            
             <div v-if="geoError" class="obs-geo-modal__error">
               ⚠️ {{ geoError }}
             </div>
@@ -68,9 +77,9 @@
             </button>
           </template>
 
-          <!-- Step 2: Confirmation -->
+          
           <template v-else-if="step === 'confirm'">
-            <div class="obs-geo-modal__icon">📍</div>
+            <Icon name="lucide:map-pin" class="obs-geo-modal__icon w-9 h-9" />
             <h2 class="obs-geo-modal__title">{{ t('observatory.geoLocate.foundTitle') }}</h2>
             <div class="obs-geo-modal__location-card">
               <div class="obs-geo-modal__location-city">{{ detectedCity }}</div>
@@ -98,8 +107,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+
+import { ref, computed, nextTick } from 'vue'
 import { useGeoLocate, type CitySuggestion } from '@/composables/useGeoLocate'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const { t } = useI18n()
 
@@ -114,6 +125,10 @@ const emit = defineEmits<{
 
 const geo = useGeoLocate()
 
+const geoModalRef = ref<HTMLElement | null>(null)
+const isActive = computed(() => props.visible)
+useFocusTrap(geoModalRef, { active: isActive })
+
 const step = ref<'prompt' | 'confirm'>('prompt')
 const cityQuery = ref('')
 const cityInput = ref<HTMLInputElement | null>(null)
@@ -126,7 +141,6 @@ const detectedLng = ref(0)
 const geoError = ref<string | null>(null)
 const suggestions = ref<CitySuggestion[]>([])
 
-// Auto-focus city input when modal opens
 nextTick(() => { cityInput.value?.focus() })
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null
@@ -197,6 +211,7 @@ function onConfirm() {
 function onDismiss() {
   emit('close')
 }
+
 </script>
 
 <style scoped>
@@ -207,7 +222,7 @@ function onDismiss() {
   border-radius: 18px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
   width: clamp(300px, 40vw, 380px);
-  padding: 28px 24px 20px;
+  padding: clamp(16px, 2.5vw, 28px) clamp(16px, 2.5vw, 28px) clamp(10px, 1.5vw, 20px);
   text-align: center;
   font-family: inherit;
 }
@@ -217,14 +232,14 @@ function onDismiss() {
 }
 .obs-geo-modal__title {
   margin: 0 0 6px;
-  font-size: 15px;
+  font-size: clamp(15px, 2.2vw, 20px);
   font-weight: 800;
   color: #e8e8e8;
   letter-spacing: -0.01em;
 }
 .obs-geo-modal__desc {
   margin: 0 0 18px;
-  font-size: 11px;
+  font-size: clamp(11px, 1.6vw, 14px);
   color: rgba(255, 255, 255, 0.4);
   line-height: 1.5;
 }
@@ -235,9 +250,9 @@ function onDismiss() {
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 10px 16px;
+  padding: clamp(6px, 1.2vw, 12px) clamp(10px, 2vw, 20px);
   border-radius: 10px;
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
   font-weight: 700;
   border: 1px solid transparent;
   cursor: pointer;
@@ -272,9 +287,9 @@ function onDismiss() {
 .obs-geo-modal__divider {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 14px 0;
-  font-size: 9px;
+  gap: clamp(6px, 1.2vw, 12px);
+  margin: clamp(10px, 1.5vw, 20px) 0;
+  font-size: clamp(9px, 1.4vw, 12px);
   color: rgba(255, 255, 255, 0.25);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -289,15 +304,15 @@ function onDismiss() {
 
 .obs-geo-modal__city-input-wrap {
   display: flex;
-  gap: 6px;
+  gap: clamp(4px, 0.8vw, 8px);
 }
 .obs-geo-modal__city-input {
   flex: 1;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: clamp(6px, 1.2vw, 12px);
+  font-size: clamp(12px, 1.8vw, 15px);
   color: rgba(255, 255, 255, 0.85);
   outline: none;
   font-family: inherit;
@@ -319,7 +334,7 @@ function onDismiss() {
   border: 1px solid rgba(231, 76, 60, 0.3);
   border-radius: 8px;
   color: #e74c3c;
-  font-size: 14px;
+  font-size: clamp(14px, 2vw, 18px);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
@@ -340,9 +355,9 @@ function onDismiss() {
 .obs-geo-modal__suggestion {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: clamp(6px, 1.2vw, 12px);
   width: 100%;
-  padding: 8px 10px;
+  padding: clamp(6px, 1.2vw, 12px);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
@@ -356,47 +371,47 @@ function onDismiss() {
   border-color: rgba(231, 76, 60, 0.2);
 }
 .obs-geo-modal__suggestion-city {
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
 }
 .obs-geo-modal__suggestion-detail {
-  font-size: 10px;
+  font-size: clamp(10px, 1.5vw, 13px);
   color: rgba(255, 255, 255, 0.35);
 }
 
 .obs-geo-modal__error {
   margin-top: 10px;
-  padding: 8px 12px;
+  padding: clamp(6px, 1.2vw, 12px);
   background: rgba(231, 76, 60, 0.1);
   border: 1px solid rgba(231, 76, 60, 0.2);
   border-radius: 8px;
-  font-size: 10px;
+  font-size: clamp(10px, 1.5vw, 13px);
   color: #e74c3c;
 }
 
 .obs-geo-modal__location-card {
-  margin: 12px 0;
-  padding: 12px 16px;
+  margin: clamp(8px, 1.5vw, 16px) 0;
+  padding: clamp(8px, 1.5vw, 16px) clamp(10px, 2vw, 20px);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
 }
 .obs-geo-modal__location-city {
-  font-size: 16px;
+  font-size: clamp(16px, 2.5vw, 22px);
   font-weight: 800;
   color: #e8e8e8;
   margin-bottom: 2px;
 }
 .obs-geo-modal__location-detail {
-  font-size: 10px;
+  font-size: clamp(10px, 1.5vw, 13px);
   color: rgba(255, 255, 255, 0.35);
 }
 
 .obs-geo-modal__actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: clamp(6px, 1.2vw, 12px);
 }
 
 .obs-geo-modal__skip {
@@ -405,7 +420,7 @@ function onDismiss() {
   background: transparent;
   border: 0;
   color: rgba(255, 255, 255, 0.3);
-  font-size: 10px;
+  font-size: clamp(10px, 1.5vw, 13px);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -430,6 +445,7 @@ function onDismiss() {
   to { transform: rotate(360deg); }
 }
 
+.geo-locate-backdrop { z-index: var(--obs-z-modal-backdrop); }
 .geo-modal-enter-active { transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
 .geo-modal-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; }
 .geo-modal-enter-from { opacity: 0; transform: scale(0.95) translateY(8px); }

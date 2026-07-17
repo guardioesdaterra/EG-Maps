@@ -1,3 +1,10 @@
+/**
+ * composables/useCulturalAgentsData.ts
+ * @why Cultural agents data fetching — loads from vulcan_observatory table, caches results
+ * @functions useCulturalAgentsData
+ * @deps vue (ref, shallowRef, computed, onMounted); ~/lib/supabase (getSupabaseClient, isSupabaseConfigured)
+ * @connections composables/useVulcanObservatoryPage.ts
+ */
 import { ref, shallowRef, computed, onMounted } from 'vue'
 import type { CulturalAgentFeatureCollection, CommunityPin, CulturalAgentFeature } from '~/lib/types'
 import { getSupabaseClient, isSupabaseConfigured } from '~/lib/supabase'
@@ -146,7 +153,6 @@ export function useCulturalAgentsData(baseURL: string) {
         return { success: false, error: result.error || 'Submission failed' }
       }
 
-      // Add the new pin to local state immediately
       const newPin: CommunityPin = {
         ...result.pin,
         status: 'pending',

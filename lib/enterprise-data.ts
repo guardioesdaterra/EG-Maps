@@ -1,3 +1,12 @@
+/**
+ * lib/enterprise-data.ts
+ * @why Enterprise partner data — partner organization definitions, locations, and descriptions
+ * @functions getPhaseColor, getEnterpriseByName, getEnterpriseConnections, buildEnterpriseNetworkLines, buildEnterpriseHQGeoJSON
+ * @consts ENTERPRISES, CORPORATE_CONNECTIONS, MINING_PHASES
+ * @interfaces EnterpriseHQ, CorporateConnection, MiningClaim
+ * @deps @/lib/observatory-analysis (normalizeName)
+ * @connections components/RedeCorporativa.vue, composables/useDataDownload.ts, composables/useEnterpriseMarkers.ts, composables/useObservatoryControls.ts, composables/useRareEarthController.ts
+ */
 import { normalizeName } from '@/lib/observatory-analysis'
 
 export interface EnterpriseHQ {

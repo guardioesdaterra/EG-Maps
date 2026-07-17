@@ -1,3 +1,9 @@
+/**
+ * composables/useMapPopup/crewPopup.ts
+ * @why Crew member popup HTML builder — constructs popup content for crew markers
+ * @functions useCrewPopup
+ * @deps vue (ref, computed, nextTick)
+ */
 import { ref, computed, nextTick } from 'vue'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 

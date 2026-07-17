@@ -1,10 +1,16 @@
+/**
+ * pages/info.vue
+ * @why Info and feedback page — about the project, team, submission form, FAQ
+ * @component info
+ * @deps vue (computed, ref, onMounted, onBeforeUnmount); @/lib/project-data (allProjectsData); @/lib/utils (formatCompact)
+ */
 <template>
   <main class="flex min-h-[100svh] items-center justify-center bg-black section-padding-x py-[max(4.75rem,8vh)] pb-[max(7rem,env(safe-area-inset-bottom))] text-white">
     <section class="w-container-narrow max-h-[calc(100svh-9rem)] overflow-hidden rounded-fluid-lg border-2 border-white bg-white text-black shadow-[0_0_0_1px_#000]">
       <header class="border-b-2 border-black card-padding-lg">
         <div class="flex flex-col gap-fluid sm:flex-row sm:items-start sm:justify-between">
           <div class="min-w-0 flex-1">
-            <p class="text-[10px] xs:text-xs font-black uppercase tracking-[0.24em] text-black/55">{{ t('home.title') }}</p>
+            <p class="text-[clamp(10px,1.5vw,13px)] xs:text-xs font-black uppercase tracking-[0.24em] text-black/55">{{ t('home.title') }}</p>
             <h1 class="mt-1.5 xs:mt-2 text-fluid-4xl font-black leading-tight tracking-normal">{{ t('home.title') }}</h1>
             <p class="mt-1.5 xs:mt-2 max-w-[min(100%,44rem)] text-fluid-sm leading-6 text-black/65">{{ t('home.subtitle') }}</p>
           </div>
@@ -23,7 +29,7 @@
           v-for="tab in tabs"
           :key="tab.id"
           type="button"
-          class="flex min-w-0 items-center justify-center gap-1.5 xs:gap-2 border-b border-r border-black px-2 xs:px-3 py-2.5 xs:py-3 text-[11px] xs:text-sm font-black transition-colors even:border-r-0 sm:border-b-0 sm:border-r sm:last:border-r-0"
+          class="flex min-w-0 items-center justify-center gap-1.5 xs:gap-2 border-b border-r border-black px-2 xs:px-3 py-2.5 xs:py-3 text-[clamp(11px,1.6vw,14px)] xs:text-sm font-black transition-colors even:border-r-0 sm:border-b-0 sm:border-r sm:last:border-r-0"
           :class="activeTab === tab.id ? 'bg-black text-white' : 'bg-white text-black hover:bg-black/5'"
           :aria-pressed="activeTab === tab.id"
           @click="activeTab = tab.id"
@@ -44,19 +50,19 @@
           <div class="grid min-w-0 grid-cols-2 border-2 border-black text-center">
             <div class="border-b border-r border-black p-3 xs:p-4">
               <p class="text-fluid-3xl font-black leading-none">{{ projectCount }}</p>
-              <p class="mt-1 text-[10px] xs:text-[11px] font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.projects') }}</p>
+              <p class="mt-1 text-[clamp(10px,1.5vw,13px)] xs:text-[clamp(11px,1.6vw,14px)] font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.projects') }}</p>
             </div>
             <div class="border-b border-black p-3 xs:p-4">
               <p class="text-fluid-3xl font-black leading-none">{{ speciesCount }}</p>
-              <p class="mt-1 text-[10px] xs:text-[11px] font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.speciesLabel') }}</p>
+              <p class="mt-1 text-[clamp(10px,1.5vw,13px)] xs:text-[clamp(11px,1.6vw,14px)] font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.speciesLabel') }}</p>
             </div>
             <div class="border-r border-black p-3 xs:p-4">
               <p class="text-fluid-3xl font-black leading-none">{{ taxonomicGroupCount }}</p>
-              <p class="mt-1 text-[10px] xs:text-[11px] font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.taxonomicGroups') }}</p>
+              <p class="mt-1 text-[clamp(10px,1.5vw,13px)] xs:text-[clamp(11px,1.6vw,14px)] font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.taxonomicGroups') }}</p>
             </div>
             <div class="p-3 xs:p-4">
               <p class="text-fluid-3xl font-black leading-none">{{ compactBeneficiaries }}</p>
-              <p class="mt-1 text-[10px] xs:text-[11px] font-black uppercase tracking-[0.16em] text-black/55">{{ t('home.beneficiariesCount') }}</p>
+              <p class="mt-1 text-[clamp(10px,1.5vw,13px)] xs:text-[clamp(11px,1.6vw,14px)] font-black uppercase tracking-[0.16em] text-black/55">{{ t('home.beneficiariesCount') }}</p>
             </div>
           </div>
         </section>
@@ -69,11 +75,11 @@
             </p>
             <dl class="mt-4 xs:mt-5 grid gap-fluid sm:grid-cols-2">
               <div class="min-w-0 rounded-fluid-lg border-2 border-black p-3 xs:p-4">
-                <dt class="text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.directBeneficiaries') }}</dt>
+                <dt class="text-[clamp(10px,1.5vw,13px)] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.directBeneficiaries') }}</dt>
                 <dd class="mt-1.5 xs:mt-2 break-words text-fluid-xl font-black">{{ totalDirectBeneficiaries }}</dd>
               </div>
               <div class="min-w-0 rounded-fluid-lg border-2 border-black p-3 xs:p-4">
-                <dt class="text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.indirectBeneficiaries') }}</dt>
+                <dt class="text-[clamp(10px,1.5vw,13px)] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.indirectBeneficiaries') }}</dt>
                 <dd class="mt-1.5 xs:mt-2 break-words text-fluid-xl font-black">{{ totalIndirectBeneficiaries }}</dd>
               </div>
             </dl>
@@ -124,11 +130,11 @@
             <p class="mt-2 xs:mt-3 text-fluid-sm leading-7 text-black/70">{{ t('info.mainsDesc') }}</p>
             <dl class="mt-4 xs:mt-5 grid gap-fluid sm:grid-cols-2">
               <div class="min-w-0 rounded-fluid-lg border-2 border-black p-3 xs:p-4">
-                <dt class="text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.rccLoukaLabel') }}</dt>
+                <dt class="text-[clamp(10px,1.5vw,13px)] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.rccLoukaLabel') }}</dt>
                 <dd class="mt-1.5 xs:mt-2 break-words font-black">{{ t('info.rccLouka') }}</dd>
               </div>
               <div class="min-w-0 rounded-fluid-lg border-2 border-black p-3 xs:p-4">
-                <dt class="text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.rccTupaLeviLabel') }}</dt>
+                <dt class="text-[clamp(10px,1.5vw,13px)] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.rccTupaLeviLabel') }}</dt>
                 <dd class="mt-1.5 xs:mt-2 break-words font-black">{{ t('info.rccTupaLevi') }}</dd>
               </div>
             </dl>
@@ -154,7 +160,7 @@
 
           <form class="space-y-fluid" @submit.prevent="submitFeedback">
             <label class="block">
-              <span class="mb-1 block text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.feedbackName') }}</span>
+              <span class="mb-1 block text-[clamp(10px,1.5vw,13px)] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.feedbackName') }}</span>
               <input
                 v-model="feedback.name"
                 type="text"
@@ -163,7 +169,7 @@
               />
             </label>
             <label class="block">
-              <span class="mb-1 block text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.feedbackType') }}</span>
+              <span class="mb-1 block text-[clamp(10px,1.5vw,13px)] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.feedbackType') }}</span>
               <select
                 v-model="feedback.type"
                 class="w-full rounded-fluid-lg border-2 border-black bg-white px-2.5 xs:px-3 py-1.5 xs:py-2 text-xs xs:text-sm text-black focus:outline-none focus:ring-4 focus:ring-black/15"
@@ -175,7 +181,7 @@
               </select>
             </label>
             <label class="block">
-              <span class="mb-1 block text-[10px] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.yourFeedback') }}</span>
+              <span class="mb-1 block text-[clamp(10px,1.5vw,13px)] xs:text-xs font-black uppercase tracking-[0.16em] text-black/55">{{ t('info.yourFeedback') }}</span>
               <textarea
                 v-model="feedback.message"
                 maxlength="2000"
@@ -185,7 +191,7 @@
               />
             </label>
             <div class="flex items-center justify-between gap-2 xs:gap-3">
-              <p class="text-[10px] xs:text-xs font-bold text-black/55">{{ feedback.message.length }}/2000</p>
+              <p class="text-[clamp(10px,1.5vw,13px)] xs:text-xs font-bold text-black/55">{{ feedback.message.length }}/2000</p>
               <button type="submit" class="rounded-fluid bg-black px-4 xs:px-5 py-2 xs:py-2.5 text-xs xs:text-sm font-black text-white">
                 {{ t('info.submitFeedback') }}
               </button>
@@ -201,6 +207,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { allProjectsData } from '@/lib/project-data'
 import { formatCompact } from '@/lib/utils'
@@ -254,7 +261,6 @@ onMounted(async () => {
       taxonomicGroupCount.value = allGroups.size
     }
   } catch {
-    // Species data might not be available
   }
 })
 
@@ -300,4 +306,5 @@ function submitFeedback() {
     feedback.value = { name: '', type: 'general', message: '' }
   }, 5000)
 }
+
 </script>

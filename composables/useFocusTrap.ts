@@ -1,8 +1,9 @@
 /**
- * Lightweight focus trap for modals/sidebars.
- * - Traps Tab/Shift+Tab within the container
- * - Restores focus on deactivate
- * - Optionally auto-activates on first focusable element
+ * composables/useFocusTrap.ts
+ * @why Focus trapping for modals — keeps keyboard focus within a container element
+ * @functions useFocusTrap
+ * @interfaces FocusTrapOptions
+ * @connections components/DataDownloadPanel.vue, components/GeoPoliticalTimeline.vue, components/RedeCorporativa.vue, components/observatory/ClaimReportModal.vue, components/observatory/ExportModal.vue, components/observatory/ObservatorySidebar.vue, composables/useMapBase.ts
  */
 export interface FocusTrapOptions {
   active?: Ref<boolean> | boolean

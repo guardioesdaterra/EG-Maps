@@ -1,3 +1,12 @@
+/**
+ * composables/useDeviceCapabilities.ts
+ * @why Device capability detection — GPU tier, memory, core count, touch vs mouse
+ * @functions useDeviceCapabilities
+ * @interfaces DeviceCapabilities
+ * @types DeviceTier
+ * @deps vue (ref, onMounted, onUnmounted)
+ * @connections composables/useAdaptiveQuality.ts
+ */
 import { ref, onMounted, onUnmounted } from 'vue'
 
 export type DeviceTier = 'low' | 'medium' | 'high' | 'ultra'
@@ -91,7 +100,6 @@ function getWebGLInfo(): { version: number; vendor: string; renderer: string; ma
       return { version: 1, vendor, renderer, maxTextureSize }
     }
   } catch {
-    // WebGL not available
   } finally {
     canvas = null
   }
@@ -142,39 +150,31 @@ function classifyTier(caps: {
 
   let score = 0
 
-  // CPU cores (0-3)
   if (cpuCores >= 8) score += 3
   else if (cpuCores >= 4) score += 2
   else score += 1
 
-  // Memory (0-3)
   if (deviceMemory >= 8) score += 3
   else if (deviceMemory >= 4) score += 2
   else if (deviceMemory >= 2) score += 1
 
-  // WebGL (0-2)
   if (webglVersion >= 2) score += 2
   else if (webglVersion === 1) score += 1
 
-  // GPU renderer (±2)
   const lowEndGPUs = ['swiftshader', 'llvmpipe', 'softpipe', 'mesa', 'intel iris', 'intel hd', 'intel uhd', 'adreno 3', 'adreno 4', 'mali-4', 'mali-t', 'powervr']
   const highEndGPUs = ['nvidia', 'radeon', 'amd rx', 'amd na', 'apple m', 'adreno 6', 'adreno 7', 'mali-g', 'mali-b', 'rtx', 'geforce']
   const rendererLower = gpuRenderer.toLowerCase()
   if (lowEndGPUs.some(g => rendererLower.includes(g))) score -= 2
   if (highEndGPUs.some(g => rendererLower.includes(g))) score += 2
 
-  // Network speed (0-1, -1)
   if (connectionDownlink >= 5) score += 1
   else if (connectionDownlink < 1) score -= 1
 
-  // Screen resolution (0-1, -1)
   if (screenResolution > 4000000) score += 1
   if (screenResolution < 1000000) score -= 1
 
-  // Mobile penalty (-1)
   if (isMobile) score -= 1
 
-  // User preferences (-1 each)
   if (prefersReducedMotion) score -= 2
   if (isBatterySaving) score -= 2
 
@@ -242,7 +242,6 @@ export function useDeviceCapabilities() {
       detected.value = await detect()
     }
 
-    // Watch for devicePixelRatio changes (e.g. pinch-zoom on iPad changes effective DPR)
     if (typeof window !== 'undefined' && window.matchMedia) {
       const mqString = `(resolution: ${window.devicePixelRatio}dppx)`
       dprMediaQuery = window.matchMedia(mqString)
@@ -250,7 +249,6 @@ export function useDeviceCapabilities() {
         if (detected.value) {
           detected.value = { ...detected.value, devicePixelRatio: window.devicePixelRatio || 1 }
         }
-        // Re-register with new DPR
         dprMediaQuery?.removeEventListener('change', handler)
         if (typeof window !== 'undefined' && window.matchMedia) {
           const newMqString = `(resolution: ${window.devicePixelRatio}dppx)`
@@ -263,7 +261,6 @@ export function useDeviceCapabilities() {
   })
 
   onUnmounted(() => {
-    // Don't tear down — shared singleton
   })
 
   return {

@@ -1,3 +1,10 @@
+/**
+ * composables/useSpeciesPanel.ts
+ * @why Species detail panel state — tracks selected species, loads detail data, manages panel visibility
+ * @functions useSpeciesPanel
+ * @deps vue (ref)
+ * @connections components/SpeciesPanel.vue, composables/useMapBase.ts
+ */
 import { ref } from 'vue'
 import type { SpeciesIndexItem } from './useGeoJSONMarkers'
 

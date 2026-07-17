@@ -1,3 +1,11 @@
+/**
+ * components/grants/GrantsAuth.vue
+ * @why Authentication gate for EG grants section — checks manager status via is-manager edge function
+ * @component GrantsAuth
+ * @emits signIn: []
+  signOut: []
+ * @deps vue (ref)
+ */
 <template>
   <div class="top-right-auth">
     <div v-if="user" class="relative">
@@ -30,6 +38,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref } from 'vue'
 
 defineProps<{
@@ -44,6 +53,7 @@ defineEmits<{
 
 const { t } = useI18n()
 const showDropdown = ref(false)
+
 </script>
 
 <style scoped>

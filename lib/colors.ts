@@ -1,3 +1,9 @@
+/**
+ * lib/colors.ts
+ * @why Color palette — category-to-color mappings, species status colors, theme color tokens
+ * @consts COLOR_MAMMAL, getProjectColorByBeneficiaries, getProjectColor
+ * @connections components/map/ProjectPopup.vue, composables/useGeoJSONMarkers.ts, composables/useMapMarker.ts
+ */
 import type { ProjectData } from "./types";
 
 const COLOR_BLUE = "#3b82f6";

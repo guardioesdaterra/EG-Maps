@@ -1,3 +1,11 @@
+/**
+ * composables/useMapConnections.ts
+ * @why GeoJSON connection lines between map locations — bezier curves with animation
+ * @functions useMapConnections
+ * @interfaces ConnectionOptions
+ * @deps vue (ref, onUnmounted, watch, type Ref); @/lib/map-effects (buildMapConnectionFeatures, createMapParticleSystem, syncMapConnectionLayers, type MapConnectionFeature, type MapParticleSystem, type ParticleQualityConfig, ); @/composables/useMediaQuery (useMediaQuery)
+ * @connections composables/useMapBase.ts
+ */
 import { ref, onUnmounted, watch, type Ref } from 'vue'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { ProjectData, Species } from '@/lib/types'
@@ -49,7 +57,6 @@ export function useMapConnections(
   const MAX_DEFERRED_SYNC_RETRIES = 5
   const isMobile = useMediaQuery('(max-width: 768px)')
 
-  // Pause particles when off-screen
   let intersectionObserver: IntersectionObserver | null = null
   let visibilityHandler: (() => void) | null = null
 
@@ -213,13 +220,11 @@ export function useMapConnections(
     connectionFeatures.value = []
   }
 
-  // Watch reactive quality changes and update running particle system + connection layers
   if (qualityRef) {
     watch(qualityRef, (newQ) => {
       if (particleSystem && newQ) {
         particleSystem.updateQuality(newQ)
       }
-      // Re-sync connection layers if blur changed
       const m = getMap()
       if (m && connectionFeatures.value.length && qualityBlur) {
         syncMapConnectionLayers(m, connectionFeatures.value, qualityBlur.value)

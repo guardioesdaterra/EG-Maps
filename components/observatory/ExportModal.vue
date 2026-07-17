@@ -1,8 +1,17 @@
+/**
+ * components/observatory/ExportModal.vue
+ * @why Modal for exporting observatory data in various formats
+ * @component ExportModal
+ * @props visible: boolean
+  mapContainer
+ * @emits close: []
+ * @deps vue (ref, computed); @/lib/map-export (exportMapToImage); @/composables/useFocusTrap (useFocusTrap)
+ */
 <template>
   <Teleport to="body">
-    <div v-if="visible" class="fixed inset-0 z-[9999] flex items-center justify-center p-4" role="dialog" :aria-modal="true" :aria-label="t('observatory.export.title')">
+    <div v-if="visible" class="fixed inset-0 flex items-center justify-center p-4 export-modal-backdrop" role="dialog" :aria-modal="true" :aria-label="t('observatory.export.title')">
       <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="$emit('close')" />
-      <div class="relative bg-zinc-900 border border-zinc-700/50 rounded-2xl shadow-2xl w-full max-w-sm z-10" ref="modalRef">
+      <div class="export-modal-panel w-full max-w-sm" ref="modalRef">
         <div class="p-5">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-bold text-zinc-100 uppercase tracking-wider">{{ t('observatory.export.title') }}</h2>
@@ -11,11 +20,11 @@
 
           <div class="space-y-4">
             <div>
-              <label class="block text-[10px] text-zinc-500 uppercase tracking-wider font-bold mb-1.5">{{ t('observatory.export.format') }}</label>
+              <label class="block text-[clamp(10px,1.5vw,13px)] text-zinc-500 uppercase tracking-wider font-bold mb-1.5">{{ t('observatory.export.format') }}</label>
               <div class="flex gap-2">
                 <button
 v-for="fmt in formats" :key="fmt.key" type="button"
-                  class="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg border transition-all text-center"
+                  class="flex-1 px-3 py-2 text-[clamp(10px,1.5vw,13px)] font-bold rounded-lg border transition-all text-center"
                   :class="selectedFormat === fmt.key
                     ? 'border-green-500/40 bg-green-500/15 text-green-400'
                     : 'border-zinc-700 bg-zinc-800/50 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500'"
@@ -26,11 +35,11 @@ v-for="fmt in formats" :key="fmt.key" type="button"
             </div>
 
             <div v-if="selectedFormat === 'png'">
-              <label class="block text-[10px] text-zinc-500 uppercase tracking-wider font-bold mb-1.5">{{ t('observatory.export.resolution') }}</label>
+              <label class="block text-[clamp(10px,1.5vw,13px)] text-zinc-500 uppercase tracking-wider font-bold mb-1.5">{{ t('observatory.export.resolution') }}</label>
               <div class="flex gap-2">
                 <button
 v-for="res in resolutions" :key="res.key" type="button"
-                  class="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg border transition-all text-center"
+                  class="flex-1 px-3 py-2 text-[clamp(10px,1.5vw,13px)] font-bold rounded-lg border transition-all text-center"
                   :class="selectedResolution === res.key
                     ? 'border-blue-500/40 bg-blue-500/15 text-blue-400'
                     : 'border-zinc-700 bg-zinc-800/50 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500'"
@@ -41,11 +50,11 @@ v-for="res in resolutions" :key="res.key" type="button"
             </div>
 
             <div v-if="selectedFormat === 'pdf'">
-              <label class="block text-[10px] text-zinc-500 uppercase tracking-wider font-bold mb-1.5">{{ t('observatory.export.paperSize') }}</label>
+              <label class="block text-[clamp(10px,1.5vw,13px)] text-zinc-500 uppercase tracking-wider font-bold mb-1.5">{{ t('observatory.export.paperSize') }}</label>
               <div class="flex gap-2">
                 <button
 v-for="ps in paperSizes" :key="ps.key" type="button"
-                  class="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg border transition-all text-center"
+                  class="flex-1 px-3 py-2 text-[clamp(10px,1.5vw,13px)] font-bold rounded-lg border transition-all text-center"
                   :class="selectedPaperSize === ps.key
                     ? 'border-blue-500/40 bg-blue-500/15 text-blue-400'
                     : 'border-zinc-700 bg-zinc-800/50 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500'"
@@ -58,11 +67,11 @@ v-for="ps in paperSizes" :key="ps.key" type="button"
             <div class="space-y-2">
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" v-model="includeLegend" class="rounded" />
-                <span class="text-[10px] text-zinc-400">{{ t('observatory.export.includeLegend') }}</span>
+                <span class="text-[clamp(10px,1.5vw,13px)] text-zinc-400">{{ t('observatory.export.includeLegend') }}</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" v-model="includeTitle" class="rounded" />
-                <span class="text-[10px] text-zinc-400">{{ t('observatory.export.includeTitle') }}</span>
+                <span class="text-[clamp(10px,1.5vw,13px)] text-zinc-400">{{ t('observatory.export.includeTitle') }}</span>
               </label>
             </div>
           </div>
@@ -70,13 +79,13 @@ v-for="ps in paperSizes" :key="ps.key" type="button"
           <div class="flex gap-2 mt-5">
             <button
 type="button"
-              class="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
+              class="flex-1 px-3 py-2 text-[clamp(10px,1.5vw,13px)] font-bold rounded-lg border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
               @click="$emit('close')">
               {{ t('observatory.export.cancel') }}
             </button>
             <button
 type="button"
-              class="flex-1 px-3 py-2 text-[10px] font-bold rounded-lg border border-green-500/40 bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-colors"
+              class="flex-1 px-3 py-2 text-[clamp(10px,1.5vw,13px)] font-bold rounded-lg border border-green-500/40 bg-green-500/15 text-green-400 hover:bg-green-500/25 transition-colors"
               :disabled="isExporting"
               @click="doExport">
               {{ isExporting ? t('observatory.export.exporting') : t('observatory.export.download') }}
@@ -89,6 +98,7 @@ type="button"
 </template>
 
 <script setup lang="ts">
+
 import { ref, computed } from 'vue'
 import { exportMapToImage } from '@/lib/map-export'
 import { useFocusTrap } from '@/composables/useFocusTrap'
@@ -145,9 +155,19 @@ async function doExport() {
     })
     emit('close')
   } catch {
-    // Export failed — silently ignore
   } finally {
     isExporting.value = false
   }
 }
 </script>
+
+<style scoped>
+.export-modal-backdrop { z-index: var(--obs-z-modal-backdrop); }
+.export-modal-panel {
+  background: var(--obs-panel-bg-dark);
+  backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid var(--obs-panel-border);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+</style>

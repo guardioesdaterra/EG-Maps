@@ -1,3 +1,12 @@
+/**
+ * lib/map-effects.ts
+ * @why Visual map effects — particle systems, glow effects, animated connection lines
+ * @functions buildMapConnectionFeatures, syncMapConnectionLayers, removeMapConnectionLayers, createMapParticleSystem
+ * @interfaces ConnectionProperties, MapParticleSystem, ParticleQualityConfig
+ * @types DatasetKey, MapConnectionFeature
+ * @deps ./colors (getProjectColorByBeneficiaries); ./map-utils (GROUP_COLORS, generateCurvedPath, isValidCoordinate)
+ * @connections composables/useMapConnections.ts
+ */
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { Feature, LineString } from 'geojson'
 import type { ProjectData, Species } from './types'
@@ -272,7 +281,6 @@ export function syncMapConnectionLayers(
     data: { type: 'FeatureCollection', features },
   })
 
-  // Use quality-adjusted blur to reduce GPU cost on low-end devices
   const glowBlur = qualityBlur ?? 5.6
 
   map.addLayer({
@@ -317,7 +325,6 @@ export function removeMapConnectionLayers(map: MapLibreMap) {
   if (map.getSource(CONNECTION_SOURCE_ID)) map.removeSource(CONNECTION_SOURCE_ID)
 }
 
-// ── Circular buffer for particle trails (O(1) push/shift) ──
 class CircularBuffer<T> {
   private buffer: T[]
   private head = 0
@@ -397,7 +404,6 @@ export function createMapParticleSystem({
   let activeGroup: string | null = null
   let cancelled = false
 
-  // Mutable quality config — can be updated at runtime
   let quality = { ...initialQuality }
 
   function stop() {
@@ -495,7 +501,7 @@ export function createMapParticleSystem({
 
     const resizeCanvas = () => {
       if (!particleCanvas) return
-      const dpr = Math.min(window.devicePixelRatio || 1, 2) // Cap DPR
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
       const rect = container.getBoundingClientRect()
       const w = Math.max(1, Math.floor(rect.width * dpr))
       const h = Math.max(1, Math.floor(rect.height * dpr))

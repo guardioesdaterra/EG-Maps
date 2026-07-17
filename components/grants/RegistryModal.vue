@@ -1,3 +1,12 @@
+/**
+ * components/grants/RegistryModal.vue
+ * @why Grant registry browser — searchable grid of all grants with advanced filters
+ * @component RegistryModal
+ * @props show: boolean
+  loading
+ * @emits close: []
+  'view-detail': [grant: GrantRecord]
+ */
 <template>
   <Teleport to="body">
     <div v-if="show" class="fixed inset-0 bg-black/90 p-4 overflow-y-auto registry-modal-overlay" role="dialog" aria-modal="true" :aria-label="t('grantsPortal.approvedGrants')">
@@ -28,6 +37,7 @@
 </template>
 
 <script setup lang="ts">
+
 import type { GrantRecord } from '~/composables/useGrants'
 
 defineProps<{
@@ -42,6 +52,7 @@ defineEmits<{
 }>()
 
 const { t } = useI18n()
+
 </script>
 
 <style scoped>

@@ -1,4 +1,11 @@
+/**
+ * components/CommandPalette.vue
+ * @why Search command palette overlay — fuzzy search across routes, datasets, and actions
+ * @component CommandPalette
+ * @deps vue (computed, nextTick, onMounted, onUnmounted, ref, watch); @/composables/useCommandPalette (useCommandPalette, filterPaletteItems, groupPaletteItems, type CommandPaletteItem, )
+ */
 <script setup lang="ts">
+
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import {
   useCommandPalette,
@@ -121,6 +128,7 @@ onUnmounted(() => {
     window.removeEventListener('keydown', onGlobalKeydown)
   }
 })
+
 </script>
 
 <template>

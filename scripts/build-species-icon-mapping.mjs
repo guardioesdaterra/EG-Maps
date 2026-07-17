@@ -1,13 +1,8 @@
-
- 
 /**
- * Build per-species icon mappings using the multi-algorithm
- * matching system from lib/game-icons-map.
- *
- * Usage:
- *   node scripts/build-species-icon-mapping.mjs [species-dir] [output-dir]
+ * scripts/build-species-icon-mapping.mjs
+ * @why Icon mapping builder — generates JSON mapping of species to game-icons
+ * @deps fs (readFileSync, writeFileSync, existsSync, readdirSync); path (resolve, dirname); url (fileURLToPath)
  */
-
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'

@@ -1,10 +1,18 @@
+/**
+ * components/GeoPoliticalTimeline.vue
+ * @why Interactive timeline of geopolitical events relevant to conservation
+ * @component GeoPoliticalTimeline
+ * @props visible: boolean
+ * @emits close: []
+ * @deps vue (h, ref, computed); @/lib/observatory-timeline (GEOPOLITICAL_TIMELINE, MINING_PHASE_TIMELINE, type TimelineEvent); @/composables/useFocusTrap (useFocusTrap)
+ */
 <template>
   <Transition name="fade-scale">
     <div v-if="visible" class="geotimeline-overlay" @click.self="close" @keydown.esc="close">
       <div ref="modalRef" class="geotimeline-modal" role="dialog" aria-modal="true" aria-labelledby="geotimeline-title">
         <button class="geotimeline-close" @click="close" aria-label="Close timeline"><Icon name="lucide:x" class="w-4 h-4" /></button>
 
-        <!-- Hero header -->
+        
         <div class="geotimeline-hero">
           <div class="geotimeline-hero-bg" />
           <div class="geotimeline-hero-content">
@@ -20,7 +28,7 @@
           </div>
         </div>
 
-        <!-- Executive Summary -->
+        
         <div class="geotimeline-section">
           <h2 class="section-title">Executive Summary</h2>
           <div class="exec-summary">
@@ -33,7 +41,7 @@
           </div>
         </div>
 
-        <!-- Geopolitical Context Map -->
+        
         <div class="geotimeline-section">
           <h2 class="section-title">The Geopolitical Landscape</h2>
           <div class="geo-grid">
@@ -80,7 +88,7 @@
           </div>
         </div>
 
-        <!-- The Corporate Network -->
+        
         <div class="geotimeline-section">
           <h2 class="section-title">The Corporate Network</h2>
           <div class="network-visual">
@@ -109,7 +117,7 @@
           </div>
         </div>
 
-        <!-- Full Timeline -->
+        
         <div class="geotimeline-section">
           <h2 class="section-title">Historical Timeline: The Road to Crisis</h2>
           <div class="timeline-container">
@@ -120,7 +128,7 @@
           </div>
         </div>
 
-        <!-- Mining Phases -->
+        
         <div class="geotimeline-section">
           <h2 class="section-title">Mining Phase Breakdown</h2>
           <div class="phases-container">
@@ -140,7 +148,7 @@
           </div>
         </div>
 
-        <!-- Call to Action -->
+        
         <div class="geotimeline-section cta-section">
           <h2 class="section-title">What Must Be Done</h2>
           <div class="cta-grid">
@@ -177,7 +185,7 @@
           </div>
         </div>
 
-        <!-- Footer -->
+        
         <div class="geotimeline-footer">
           <p>Earth Guardians — Observatory of Vulcan | Data sources: ANM, SICM, DFC, USGS, Pentagon, MPF</p>
           <p class="footer-sub">This is an educational resource. Verify all data independently. The truth belongs to the people.</p>
@@ -188,6 +196,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { h, ref, computed } from 'vue'
 import { GEOPOLITICAL_TIMELINE, MINING_PHASE_TIMELINE, type TimelineEvent } from '@/lib/observatory-timeline'
 import { useFocusTrap } from '@/composables/useFocusTrap'
@@ -225,13 +234,14 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
     ]),
   ])
 }
+
 </script>
 
 <style scoped>
 .geotimeline-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2147483647;
+  z-index: var(--obs-z-modal-backdrop);
   background: rgba(0, 0, 0, 0.88);
   backdrop-filter: blur(8px);
   display: flex;
@@ -244,17 +254,16 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   max-width: min(900px, 95vw);
   width: 100%;
   margin: clamp(10px, 3vw, 20px) auto;
-  background: #0a0a0f;
-  border: 1px solid rgba(231, 76, 60, 0.2);
-  border-radius: 16px;
+  background: var(--obs-panel-bg-dark);
+  border: 1px solid var(--obs-panel-border);
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 0 80px rgba(231, 76, 60, 0.1);
 }
 .geotimeline-close {
   position: fixed;
   top: clamp(12px, 3vw, 24px);
   right: clamp(12px, 3vw, 24px);
-  z-index: 10;
+  z-index: calc(var(--obs-z-modal-backdrop) + 1);
   width: clamp(32px, 8vw, 44px);
   height: clamp(32px, 8vw, 44px);
   border: 2px solid rgba(231, 76, 60, 0.3);
@@ -274,7 +283,6 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   transform: scale(1.1);
 }
 
-/* Hero */
 .geotimeline-hero {
   position: relative;
   padding: clamp(24px, 6vw, 48px) clamp(16px, 4vw, 32px) clamp(18px, 4.5vw, 36px);
@@ -291,7 +299,7 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 }
 .geotimeline-badge {
   display: inline-block;
-  font-size: 10px;
+  font-size: clamp(10px, 1.5vw, 13px);
   font-weight: 800;
   letter-spacing: 0.15em;
   padding: 4px 12px;
@@ -333,12 +341,11 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   margin-bottom: 2px;
 }
 .hero-stat-label {
-  font-size: 9px;
+  font-size: clamp(9px, 1.4vw, 12px);
   color: #666;
   line-height: 1.3;
 }
 
-/* Sections */
 .geotimeline-section {
   padding: clamp(14px, 3.5vw, 28px) clamp(16px, 4vw, 32px);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -351,7 +358,6 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   letter-spacing: -0.01em;
 }
 
-/* Executive Summary */
 .exec-summary p {
   font-size: clamp(10px, 2.2vw, 13px);
   color: #999;
@@ -372,7 +378,6 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   margin-top: clamp(10px, 2.5vw, 16px);
 }
 
-/* Geo Grid */
 .geo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -418,7 +423,6 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   font-style: italic;
 }
 
-/* Network Visual */
 .network-visual {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -442,12 +446,12 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   justify-content: center;
   flex-wrap: wrap;
   gap: 0;
-  margin-bottom: 20px;
+  margin-bottom: clamp(12px, 2vw, 20px);
 }
 .network-node {
   padding: clamp(8px, 2vw, 12px) clamp(10px, 2.5vw, 14px);
   border-radius: 8px;
-  font-size: 10px;
+  font-size: clamp(10px, 1.5vw, 13px);
   font-weight: 700;
   text-align: center;
   line-height: 1.3;
@@ -483,11 +487,10 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   line-height: 1.4;
 }
 
-/* Timeline */
 .timeline-container {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: clamp(6px, 0.5vw, 9px);
 }
 .timeline-item {
   display: flex;
@@ -547,7 +550,6 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   margin: 0;
 }
 
-/* Phases */
 .phases-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -580,7 +582,7 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   font-weight: 700;
 }
 .phase-risk {
-  font-size: 7px;
+  font-size: clamp(7px, 1.2vw, 10px);
   padding: 1px 5px;
   border-radius: 3px;
   font-weight: 700;
@@ -600,7 +602,6 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   color: #666;
 }
 
-/* CTA */
 .cta-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -640,7 +641,6 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 }
 .cta-uni-vos h3 { color: #e74c3c; }
 
-/* Footer */
 .geotimeline-footer {
   padding: clamp(10px, 3vw, 20px) clamp(16px, 4vw, 32px);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -657,7 +657,6 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
   font-style: italic;
 }
 
-/* Transitions */
 .fade-scale-enter-active, .fade-scale-leave-active {
   transition: opacity 0.3s ease;
 }
@@ -668,7 +667,6 @@ const TimelineEvent = ({ event }: { event: TimelineEvent }) => {
 .fade-scale-enter-from .geotimeline-modal { transform: scale(0.95) translateY(20px); }
 .fade-scale-leave-to .geotimeline-modal { transform: scale(0.95) translateY(20px); }
 
-/* Responsive */
 @media (max-width: 768px) {
   .geotimeline-hero { padding: 32px 20px 24px; }
   .geotimeline-title { font-size: 24px; }

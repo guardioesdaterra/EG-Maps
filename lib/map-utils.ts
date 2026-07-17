@@ -1,3 +1,12 @@
+/**
+ * lib/map-utils.ts
+ * @why Map utility functions — coordinate math, boundary detection, viewport calculations, marker placement
+ * @functions buildProjectPopupHTML, buildCrewPopupHTML, buildCrewLocationPopupHTML, buildSpeciesPopupHTML, buildProjectPreviewHTML, buildSpeciesPreviewHTML, buildCrewPreviewHTML, isValidCoordinate, getGroupColor, generateCurvedPath, calculateDistance, getPhaseShortLabel, getPhaseColor, getCategoryColor, isSuspicious, buildRareEarthPopupHTML, openRareEarthOverlayPopup
+ * @consts escapeHtml, GROUP_COLORS, RARE_EARTH_CATEGORIES, RARE_EARTH_PHASES, isMilitaryInterest, isHighEnvRisk
+ * @interfaces PopupTranslations, SpeciesPopupTranslations, CrewPopupTranslations, CrewLocationPopupTranslations, PreviewTranslations
+ * @deps ./colors (getProjectColorByBeneficiaries, COLOR_MAMMAL); ./observatory-analysis (isMilitaryInterest, isHighEnvRisk, isSuspiciousBasic, buildAnmVerifyUrl, buildClaimReportMailtoUrl, type SpeculatorIndexEntry); ./utils (escapeHtml, formatCompact); ./image-utils (getPreviewImageUrl, getProjectPlaceholder, getMarkerPlaceholder)
+ * @connections components/DataBubble.vue, components/SpeciesPanel.vue, components/map/SpeciesPopup.vue, components/observatory/ClaimDetailModal.vue, components/observatory/ClaimPopup.vue, components/observatory/ClaimsDataTable.vue, components/observatory/PhaseFilter.vue, composables/useCulturalLayers.ts, composables/useDataDownload.ts, composables/useGeoJSONMarkers.ts, composables/useMapBase.ts, composables/useMapMarker.ts, composables/useMapPopup/previewCard.ts, composables/useObservatoryControls.ts, composables/useObservatoryPopup.ts, composables/useRareEarthLayers.ts
+ */
 import maplibregl from 'maplibre-gl'
 import { getProjectColorByBeneficiaries, COLOR_MAMMAL } from './colors'
 import type { ProjectData, Species } from './types'
@@ -258,7 +267,7 @@ export function buildCrewLocationPopupHTML(crew: { name: string; country: string
 export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPopupTranslations, baseURL?: string): string {
   const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64032'
   const endangerment = species.endangerment ?? 'Unknown'
-  const endangermentColor = endangerment.toLowerCase().includes('critical') ? '#dc2626' : 
+  const endangermentColor = endangerment.toLowerCase().includes('critical') ? '#dc2626' :
                             endangerment.toLowerCase().includes('endangered') ? '#ea580c' : '#d97706'
   const t = translations || {
     scientificName: 'Scientific Name',
@@ -269,7 +278,7 @@ export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPo
     ecosystem: 'Ecosystem'
   }
   const groupLabel = t.groupLabels?.[species.taxonomicGroup] ?? species.taxonomicGroup
-  
+
   let imageHTML = ''
   if (species.imageUrl) {
     let thumbUrl = species.imageUrl
@@ -289,7 +298,7 @@ export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPo
       const separator = species.imageUrl.includes('?') ? '&' : '?'
       thumbUrl = `${species.imageUrl}${separator}width=560`
     }
-    
+
     imageHTML = `
       <div class="species-image-frame" style="border-color: ${color}55;">
         <img src="${escapeHtml(thumbUrl)}" alt="${escapeHtml(species.commonName)}" class="species-image" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentElement.style.display='none'" />
@@ -370,8 +379,6 @@ export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPo
     </div>
   `
 }
-
-// ── Preview card HTML builders (compact on-map cards) ──
 
 export interface PreviewTranslations {
   expand: string
@@ -508,7 +515,6 @@ export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
 }
 
-// ── Rare Earth popup constants ──
 export const RARE_EARTH_CATEGORIES: Record<string, { label: string; color: string }> = {
   direct_ree: { label: 'Terras Raras Diretas', color: '#ef4444' },
   carbonatite_associated: { label: 'Carbonatito/Alcalino', color: '#f97316' },
@@ -681,5 +687,4 @@ export function openRareEarthOverlayPopup(map: maplibregl.Map, feature: GeoJSON.
     .setMaxWidth('none')
     .addTo(map)
 }
-
 

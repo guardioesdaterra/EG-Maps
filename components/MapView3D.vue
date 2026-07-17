@@ -1,3 +1,10 @@
+/**
+ * components/MapView3D.vue
+ * @why 3D globe container — instantiates GlobeView with dataset-appropriate configuration
+ * @component MapView3D
+ * @emits mapInit: [map: maplibregl.Map]
+ * @deps vue (ref, watch, computed, defineAsyncComponent); @/composables/useMapBase (useMapBase); ~/composables/useSpeciesData (useSpeciesIndex)
+ */
 <template>
   <div class="w-full h-[100svh] relative overflow-hidden bg-black" role="main" aria-label="3D Globe Visualization">
     <Transition name="fade">
@@ -19,7 +26,7 @@
       </div>
     </Transition>
 
-    <!-- Non-blocking data loading indicator (shows on top of rendered map) -->
+    
     <Transition name="fade">
       <div v-if="showDataLoading" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[99] flex items-center gap-2 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-sm border border-cyan-800/40 pointer-events-none">
         <div class="w-3 h-3 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
@@ -55,7 +62,7 @@
     <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" />
     <SpeciesFilterPanel v-if="activeDataset === 'endangered-species' && showFilterPanel" ref="speciesFilterPanelRef" :species="speciesIndexData" @filter-change="handleFilterChange" @group-selection-change="handleSpeciesGroupSelection" @close="showFilterPanel = false" />
 
-    <DataBubble v-if="!hideAll && activeDataset !== 'active-crews' && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" position-top="auto" :position-bottom="isMobile ? 'clamp(4.5rem, 10vh, 6rem)' : 'clamp(1rem, 4vh, 2rem)'" @toggle-group="toggleLegendGroup" />
+    <DataBubble v-if="!hideAll && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" :position-bottom="isMobile ? 'clamp(4.5rem, 10vh, 6rem)' : 'clamp(1rem, 4vh, 2rem)'" @toggle-group="toggleLegendGroup" />
 
     <MapControls v-if="activeDataset !== 'vulcan-observatory'" :is-globe-view="true" :show-hex-grid="showHexGrid" :show-connections="showConnections" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" :style="{ zIndex: 'var(--z-map-ui-controls)' }" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" />
 
@@ -74,7 +81,7 @@
       </div>
     </Transition>
 
-    <!-- Species overlay -->
+    
     <Transition name="scale-fade">
       <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Species details" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
         <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" aria-label="Close species details"><Icon name="lucide:x" class="h-6 w-6" /></button>
@@ -87,7 +94,7 @@
       </div>
     </Transition>
 
-    <!-- Project overlay -->
+    
     <Transition name="scale-fade">
       <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Project details" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
         <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
@@ -97,7 +104,7 @@
       </div>
     </Transition>
 
-    <!-- Crew overlay -->
+    
     <Transition name="scale-fade">
       <div v-if="showCrewOverlay" ref="crewOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
         <button ref="crewCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
@@ -108,15 +115,19 @@
     </Transition>
 
     <SpeciesPanel @species-selected="handleSpeciesSelected" />
+    <ImportDataWidget v-if="!hideAll" />
   </div>
 </template>
 
 <script setup lang="ts">
+
 import { ref, watch, computed, defineAsyncComponent } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import type { MapBaseProps } from '@/composables/useMapBase'
 import { useMapBase } from '@/composables/useMapBase'
 import { useSpeciesIndex } from '~/composables/useSpeciesData'
+import { useMapCustomLayers } from '~/composables/useMapCustomLayers'
+import ImportDataWidget from '~/components/ImportDataWidget.vue'
 
 const DataBubble = defineAsyncComponent(() => import('~/components/DataBubble.vue'))
 const MapControls = defineAsyncComponent(() => import('~/components/MapControls.vue'))
@@ -205,6 +216,7 @@ const base = useMapBase({
   },
   onMapReady: (map) => {
     emit('mapInit', map)
+    customLayerCtx.syncNow()
     if (base.quality.settings.value.starCount > 0) {
       setTimeout(() => initStarCanvas(), 500)
     }
@@ -229,6 +241,8 @@ const base = useMapBase({
     if (visibilityHandler) { document.removeEventListener('visibilitychange', visibilityHandler); visibilityHandler = null }
   },
 })
+
+const customLayerCtx = useMapCustomLayers(base.map)
 
 if (props.defaultDataset === 'endangered-species') {
   const { data: speciesIdx, loading: speciesLoading, currentDatasetLabel } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
@@ -279,7 +293,7 @@ function initMap() {
 
 const {
   t, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,
-  activeDataset, projectsData, speciesIndexData, visibleProjects,
+  activeDataset, projectsData, speciesIndexData, visibleProjects, crewsData, crewLocationsData,
   selectedSpeciesGroups,
   hasError, errorMessage, noWebglSupport,
   showHexGrid, showFilterPanel, speciesFilterPanelRef,
@@ -300,6 +314,7 @@ const {
 } = base
 
 const isLoading = computed(() => base.isLoading.value)
+
 </script>
 
 <style>

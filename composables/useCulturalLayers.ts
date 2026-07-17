@@ -1,3 +1,12 @@
+/**
+ * composables/useCulturalLayers.ts
+ * @why Cultural agent map layers — GeoJSON sources and paint properties for cultural point data
+ * @functions getPopupContent, setupCulturalLayers, cleanupCulturalLayers, setCulturalLayersVisibility, setCulturalFilter, clearCulturalFilter, getActiveCulturalFilter, getMunicipalitiesFromData, getTypesFromData, getSubtypesFromData, getStatusesFromData, getFeatureCountByType, getFeatureCountByMunicipality
+ * @consts CULTURAL_SOURCE, CULTURAL_LAYER_IDS, SUBTYPE_COLORS, TYPE_COLORS, LEGEND_ITEMS
+ * @types CulturalTypeFilter
+ * @deps @/lib/map-utils (escapeHtml)
+ * @connections composables/useMapBase.ts, composables/useRareEarthController.ts, composables/useRareEarthLayers.ts
+ */
 import type { Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 import { escapeHtml } from '@/lib/map-utils'
@@ -195,7 +204,6 @@ export function setupCulturalLayers(
     clusterRadius: 40,
   })
 
-  // Inject pulse animation CSS
   const styleId = 'ree-cultural-pulse-style'
   if (!document.getElementById(styleId)) {
     const style = document.createElement('style')
@@ -213,7 +221,6 @@ export function setupCulturalLayers(
     document.head.appendChild(style)
   }
 
-  // Cluster circles
   map.addLayer({
     id: 'ree-cultural-cluster',
     type: 'circle',
@@ -237,7 +244,6 @@ export function setupCulturalLayers(
     },
   })
 
-  // Cluster count
   map.addLayer({
     id: 'ree-cultural-cluster-count',
     type: 'symbol',
@@ -255,7 +261,6 @@ export function setupCulturalLayers(
     },
   })
 
-  // Status glow for critical/threatened/at-risk cultural points
   map.addLayer({
     id: 'ree-cultural-glow',
     type: 'circle',
@@ -275,7 +280,6 @@ export function setupCulturalLayers(
     },
   })
 
-  // Individual cultural points — data-driven color by subtype
   map.addLayer({
     id: 'ree-cultural-point',
     type: 'circle',
@@ -318,7 +322,6 @@ export function setupCulturalLayers(
     },
   })
 
-  // Hover highlight layer for cultural points
   map.addLayer({
     id: 'ree-cultural-hover',
     type: 'circle',
@@ -333,7 +336,6 @@ export function setupCulturalLayers(
     },
   })
 
-  // Labels for cultural points
   map.addLayer({
     id: 'ree-cultural-label',
     type: 'symbol',
@@ -356,7 +358,6 @@ export function setupCulturalLayers(
     },
   })
 
-  // Click handler for cultural points
   const onCulturalClick = (e: MapLayerMouseEvent) => {
     if (!e.features?.length) return
     const p = e.features[0].properties
@@ -394,7 +395,6 @@ export function setupCulturalLayers(
     })
   }
 
-  // Cluster zoom on click
   const onClusterClick = (e: MapLayerMouseEvent) => {
     if (!e.features?.length) return
     const clusterId = e.features[0].properties?.cluster_id

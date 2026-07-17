@@ -1,3 +1,10 @@
+/**
+ * components/ui/Tooltip.vue
+ * @why Tooltip popover that appears on hover/focus with configurable position and delay
+ * @component Tooltip
+ * @emits 'update:modelValue': [value: boolean]
+ * @deps vue (ref, computed, onMounted, onUnmounted, onActivated, onDeactivated, watch, nextTick); @/lib/utils (cn)
+ */
 <template>
   <div class="relative inline-block">
     <div ref="triggerWrapperRef" @focusin="onTriggerFocus" @focusout="onTriggerBlur">
@@ -28,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, computed, onMounted, onUnmounted, onActivated, onDeactivated, watch, nextTick } from 'vue'
 import { cn } from '@/lib/utils'
 
@@ -110,7 +118,6 @@ function updatePosition() {
       break
   }
 
-  // Keep tooltip within viewport
   const viewportWidth = window.innerWidth
   const viewportHeight = window.innerHeight
 
@@ -167,4 +174,5 @@ onActivated(() => {
 })
 
 defineExpose({ show, hide })
+
 </script>

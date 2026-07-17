@@ -1,3 +1,9 @@
+/**
+ * pages/active-crews/3d.vue
+ * @why Active crews 3D globe — crew member locations rendered on interactive globe
+ * @component 3d
+ * @deps vue (defineAsyncComponent); @/lib/crew-data (allCrewRegionsData, type CrewLocation)
+ */
 <template>
   <ClientOnly>
     <MapView3D :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" />
@@ -20,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { defineAsyncComponent } from 'vue'
 import { allCrewRegionsData, type CrewLocation } from '@/lib/crew-data'
 
@@ -48,7 +55,6 @@ onMounted(async () => {
       }))
     }
   } catch {
-    // Silently handle crew locations fetch failure — globe falls back to region-level markers
   }
 })
 
@@ -58,4 +64,5 @@ useHead({
     { name: 'description', content: 'Interactive 3D globe showing Earth Guardians active crews worldwide' },
   ],
 })
+
 </script>

@@ -1,4 +1,8 @@
- 
+/**
+ * scripts/launch-iucn-browser.mjs
+ * @why IUCN browser launcher — opens browser-based IUCN data collection workflow
+ * @deps playwright (chromium); child_process (spawn); fs (mkdirSync, writeFileSync); path (join)
+ */
 import { chromium } from 'playwright'
 import { spawn } from 'child_process'
 import { mkdirSync, writeFileSync } from 'fs'
@@ -132,7 +136,7 @@ function buildDashboardHTML() {
       rows += '</tr>'
     })
   })
-  
+
   return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>IUCN Spatial Data Downloader</title>'
     + '<style>'
     + '*{box-sizing:border-box;margin:0;padding:0}'
@@ -199,7 +203,7 @@ async function main() {
   console.log('Display:', DISPLAY)
   console.log('Download dir:', DOWNLOAD_DIR)
   console.log('')
-  
+
   spawn('x11vnc', [
     '-display', DISPLAY,
     '-rfbport', '5900',
@@ -210,10 +214,10 @@ async function main() {
     '-nopw',
     '-quiet',
   ], { stdio: 'inherit' })
-  
+
   console.log('x11vnc started on port 5900 (localhost only)')
   console.log('Launching Chrome...')
-  
+
   var browser = await chromium.launch({
     headless: false,
     args: [
@@ -225,32 +229,30 @@ async function main() {
       '--disable-blink-features=AutomationControlled',
     ],
   })
-  
+
   var page = await browser.newPage({
     viewport: { width: 1920, height: 900 },
     userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
   })
-  
-  // Step 1: Navigate to IUCN page to establish session
+
   console.log('Navigating to IUCN spatial data page...')
   await page.goto('https://www.iucnredlist.org/resources/spatial-data-download', {
     waitUntil: 'domcontentloaded',
     timeout: 30000,
   }).catch(function(e) { console.log('Nav warning:', e.message) })
-  
+
   console.log('Page loaded:', await page.title())
-  
-  // Step 2: Inject the curated download dashboard
+
   var dashboardHTML = buildDashboardHTML()
   var dashboardPath = '/tmp/iucn-dashboard.html'
   writeFileSync(dashboardPath, dashboardHTML)
-  
+
   console.log('Navigating to curated download dashboard...')
   await page.goto('file://' + dashboardPath, {
     waitUntil: 'domcontentloaded',
     timeout: 10000,
   })
-  
+
   console.log('\n=======================================================')
   console.log('BROWSER READY — connect via VNC:')
   console.log('=======================================================')
@@ -265,8 +267,7 @@ async function main() {
   console.log('')
   console.log('  Files save to: /tmp/iucn-downloads/')
   console.log('=======================================================\n')
-  
-  // Monitor all pages for downloads
+
   browser.on('page', function(p) {
     p.on('download', async function(download) {
       var dest = join(DOWNLOAD_DIR, download.suggestedFilename())
@@ -274,14 +275,13 @@ async function main() {
       console.log('\n*** DOWNLOAD COMPLETE: ' + dest + ' (' + download.suggestedFilename() + ') ***\n')
     })
   })
-  
-  // Also monitor the main page
+
   page.on('download', async function(download) {
     var dest = join(DOWNLOAD_DIR, download.suggestedFilename())
     await download.saveAs(dest)
     console.log('\n*** DOWNLOAD COMPLETE: ' + dest + ' (' + download.suggestedFilename() + ') ***\n')
   })
-  
+
   await new Promise(function() {})
 }
 

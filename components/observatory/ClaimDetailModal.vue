@@ -1,3 +1,12 @@
+/**
+ * components/observatory/ClaimDetailModal.vue
+ * @why Full detail view for an observatory claim in a modal
+ * @component ClaimDetailModal
+ * @props visible: boolean
+  claim
+ * @emits close: []
+ * @deps vue (ref, watch, computed); @/lib/map-utils (buildRareEarthPopupHTML)
+ */
 <template>
   <Teleport to="body">
     <Transition name="fade">
@@ -12,6 +21,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, watch, computed } from 'vue'
 import { buildRareEarthPopupHTML } from '@/lib/map-utils'
 
@@ -40,6 +50,7 @@ watch(() => props.visible, (v) => {
     import('vue').then(({ nextTick }) => nextTick(() => closeBtnRef.value?.focus()))
   }
 })
+
 </script>
 
 <style scoped>

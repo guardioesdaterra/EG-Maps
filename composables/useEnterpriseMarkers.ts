@@ -1,3 +1,10 @@
+/**
+ * composables/useEnterpriseMarkers.ts
+ * @why Enterprise partner map markers — fetches and renders partner organization locations
+ * @functions setupEnterpriseLayer, cleanupEnterpriseLayer
+ * @deps @/lib/enterprise-data (ENTERPRISES, CORPORATE_CONNECTIONS, buildEnterpriseHQGeoJSON, type EnterpriseHQ)
+ * @connections composables/useObservatoryControls.ts
+ */
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 import { ENTERPRISES, CORPORATE_CONNECTIONS, buildEnterpriseHQGeoJSON, type EnterpriseHQ } from '@/lib/enterprise-data'
@@ -220,7 +227,6 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (_enterprise: E
 
     addEnterpriseConnections(map)
   } catch {
-    // Failed to setup enterprise layer — silently ignore
   }
 }
 

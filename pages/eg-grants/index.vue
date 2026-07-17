@@ -1,3 +1,9 @@
+/**
+ * pages/eg-grants/index.vue
+ * @why EG grants dashboard — table of grants with status badges, approve/close actions, search
+ * @component index
+ * @deps vue (ref, reactive, computed, watch, onMounted, onBeforeUnmount); ~/lib/project-data (allProjectsData); ~/composables/useToast (useToast); ~/composables/useSupabase (useSupabase); ~/composables/useI18n (useI18n); ~/composables/useDeviceCapabilities (useDeviceCapabilities); ~/composables/useAdaptiveQuality (useAdaptiveQuality)
+ */
 <template>
   <div class="grants-portal relative min-h-screen overflow-hidden bg-[#08080a]">
     <GlobeView :projects="allProjectsData" @ready="onGlobeReady" />
@@ -19,7 +25,7 @@
     </div>
     <GrantsAuth v-if="!isEmbed && sessionReady" :user="user" :is-manager="isManager" @sign-in="signIn" @sign-out="handleSignOut" />
 
-    <!-- Crew membership check popup (stepping stone to signup modal) -->
+    
     <Transition name="modal-fade">
       <div v-if="showCrewPopup && !showCrewSignup" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" :style="{ zIndex: 'var(--z-confirm)' }" @click.self="dismissCrewPopup">
         <div class="bg-[#111] border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl text-center">
@@ -38,7 +44,7 @@
 
     <CrewSignupModal :show="showCrewSignup" :user-email="user?.email" @close="closeCrewSignup" @registered="onCrewRegistered" />
 
-    <!-- Sign-out confirmation dialog -->
+    
     <Transition name="modal-fade">
       <div v-if="confirmSignOut" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" :style="{ zIndex: 'var(--z-confirm)' }" @click.self="confirmSignOut = false">
         <div class="bg-[#111] border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
@@ -53,14 +59,14 @@
     </Transition>
 
     <div id="ui-overlay" class="relative" :style="{ zIndex: 'var(--z-ui)' }">
-      <!-- Hero -->
+      
       <section id="hero" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
         <span class="data-label hero-reveal">{{ t('grantsPortal.heroLabel') }}</span>
         <h1 class="hero-reveal">{{ t('grantsPortal.heroTitle1') }}<br/>{{ t('grantsPortal.heroTitle2') }}</h1>
         <p class="hero-desc hero-reveal" v-html="t('grantsPortal.heroDesc', { strong1: '<strong>', strong2: '</strong>', strong3: '<strong>', strong4: '</strong>', strong5: '<strong>', strong6: '</strong>' })" />
       </section>
 
-      <!-- Impact -->
+      
       <section id="details" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
         <div class="impact-grid">
           <div class="impact-content">
@@ -129,7 +135,7 @@
         </div>
       </section>
 
-      <!-- How Grants Work -->
+      
       <section class="grants-section" id="join">
         <div class="grants-inner">
           <span class="data-label">{{ t('grantsPortal.grantsSectionLabel') }}</span>
@@ -154,7 +160,7 @@
         </div>
       </section>
 
-      <!-- Unified Dashboard -->
+      
       <section class="projects-section" id="grants-portal">
         <div class="nebula-bg" />
         <div class="projects-header">
@@ -234,6 +240,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
 import { allProjectsData } from '~/lib/project-data'
@@ -299,7 +306,6 @@ const isEmbed = computed(() => {
 const { client } = useSupabase()
 const { listGrants, listScrapedGrants, reviewGrant: apiReviewGrant, reviewScrapedGrant: apiReviewScraped, updateScrapedGrant: apiUpdateScrapedGrant, getStats, voteGrant, voteScrapedGrant, deleteVote, getLeaderboard } = useGrants()
 
-// Internal grants
 const grants = ref<GrantRecord[]>([])
 const registry = ref<Array<GrantRecord & { relevant?: boolean }>>([])
 const stats = reactive({ pending: 0, open: 0, closed: 0, hidden: 0, total: 0 })
@@ -312,12 +318,10 @@ const projectStats = computed(() => {
 })
 const showHistory = ref(false)
 
-// Scraped (open) grants
 const scrapedGrants = ref<ScrapedGrant[]>([])
 const scrapedLoading = ref(false)
 const scrapedUserVotes = reactive<Record<string, number>>({})
 
-// Grants being animated out (disintegration)
 const removingGrants = ref<string[]>([])
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -341,11 +345,9 @@ const filteredScrapedGrants = computed(() => {
   return scrapedGrants.value.filter(g => matchSearch(g, q))
 })
 
-// Leaderboard
 const leaderboard = ref<LeaderboardEntry[]>([])
 const leaderboardLoading = ref(false)
 
-// Edit state
 const editGrant = ref<ScrapedGrant | null>(null)
 const editSaving = ref(false)
 const editSavingDetail = ref(false)
@@ -363,14 +365,12 @@ const editForm = reactive({
   categories: '',
 })
 
-// UI state
 const activePortalTab = ref('tabOpen')
 const showRegistry = ref(false)
 const registryLoading = ref(false)
 const detailGrant = ref<DetailGrantData | null>(null)
 const detailUserVote = ref(0)
 
-// Dashboard state
 const dashboardSearch = ref('')
 
 const topProjects = computed(() =>
@@ -578,16 +578,13 @@ async function handleReviewScraped(grantId: string, decision: string, table = 's
       apiReviewScraped(grantId, decision as 'approved' | 'hidden' | 'closed' | 'pending', undefined, table),
       sleep(700),
     ])
-    // Check for API errors
     if (apiResult.error) {
       console.error('Review scraped grant failed:', apiResult.error)
       removingGrants.value = removingGrants.value.filter(id => id !== grantId)
       return
     }
-    // Remove from local arrays after animation
     scrapedGrants.value = scrapedGrants.value.filter(g => g.id !== grantId)
     removingGrants.value = removingGrants.value.filter(id => id !== grantId)
-    // Refresh from server (silent — no loading spinners)
     await Promise.all([refreshScrapedGrantsSilent(), refreshGrantsSilent(), loadStats()])
   } catch (e) {
     console.error('Failed to review scraped grant:', e)
@@ -737,7 +734,6 @@ function onCrewRegistered(_memberId: string) {
 }
 
 async function checkCrewMembership() {
-  // Wait for manager status to resolve first
   if (!isManagerReady.value) {
     for (let i = 0; i < 100; i++) {
       await new Promise(r => setTimeout(r, 50))
@@ -751,7 +747,6 @@ async function checkCrewMembership() {
       showCrewPopup.value = true
     }
   } catch {
-    // Silently fail — if we can't check, just proceed
   }
 }
 
@@ -797,6 +792,7 @@ function onGlobeReady() {
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onPageScroll)
 })
+
 </script>
 
 <style scoped>

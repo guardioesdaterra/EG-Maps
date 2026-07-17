@@ -1,3 +1,8 @@
+/**
+ * tests/routes.spec.ts
+ * @why E2E route rendering tests — verifies all prerendered routes load without errors
+ * @deps @playwright/test (test, expect, type Page)
+ */
 import { test, expect, type Page } from '@playwright/test'
 
 const BASE_URL = 'https://guardioesdaterra.github.io'

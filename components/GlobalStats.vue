@@ -1,3 +1,11 @@
+/**
+ * components/GlobalStats.vue
+ * @why Statistics panel showing aggregate metrics — total grants, species, countries covered
+ * @component GlobalStats
+ * @props projects: ProjectData[]
+ * @emits close: []
+ * @deps vue (computed, ref, watch); @/composables/useMediaQuery (useMediaQuery); @/composables/useI18n (useI18n)
+ */
 <template>
   <div
     v-if="isVisible"
@@ -81,6 +89,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed, ref, watch } from 'vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
@@ -132,6 +141,7 @@ function formatNumber(num: number): string {
   if (num >= 1000) return (num / 1000).toFixed(1).replace('.0', '') + 'K'
   return num.toString()
 }
+
 </script>
 
 <style scoped>

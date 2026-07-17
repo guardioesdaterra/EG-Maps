@@ -1,3 +1,11 @@
+/**
+ * components/RedeCorporativa.vue
+ * @why Corporate/enterprise partner network visualization with connection graph
+ * @component RedeCorporativa
+ * @props visible: boolean
+ * @emits close: [], flyToEnterprise: [_name: string]
+ * @deps vue (ref, computed, onMounted, watch, onUnmounted); @/lib/enterprise-data (ENTERPRISES, CORPORATE_CONNECTIONS, type EnterpriseHQ); @/composables/useFocusTrap (useFocusTrap); @/composables/useForceLayout (computeForceLayout, type ForceNode); @/composables/useI18n (useI18n)
+ */
 <template>
   <Transition name="fade">
     <div v-if="visible" class="rede-overlay" @click.self="close" @keydown.esc="close">
@@ -36,7 +44,7 @@
         <div v-if="focusedEnterprise" class="rede-detail-bar">
           <div class="rede-detail-info">
             <strong :style="{ color: focusedEnterprise.color }">{{ focusedEnterprise.name }}</strong>
-            <span class="text-zinc-400 text-[10px]">{{ focusedEnterprise.country }} · {{ focusedEnterprise.sector }}</span>
+            <span class="text-zinc-400 text-[clamp(10px,1.5vw,13px)]">{{ focusedEnterprise.country }} · {{ focusedEnterprise.sector }}</span>
           </div>
           <button class="rede-detail-fly" @click="flyTo(focusedEnterprise)">📍 Fly to</button>
         </div>
@@ -46,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { ENTERPRISES, CORPORATE_CONNECTIONS, type EnterpriseHQ } from '@/lib/enterprise-data'
 import { useFocusTrap } from '@/composables/useFocusTrap'
@@ -88,7 +97,6 @@ function getConnectionColor(type: string): string {
 interface LayoutNode { id: string; x: number; y: number; ent: EnterpriseHQ; connections: number }
 
 function layoutGraph(cw: number, ch: number): LayoutNode[] {
-  // Pre-compute per-node connection count (used for node radius)
   const connectionCounts = new Map<string, number>()
   for (const e of ENTERPRISES) connectionCounts.set(e.name, 0)
   for (const conn of CORPORATE_CONNECTIONS) {
@@ -96,10 +104,9 @@ function layoutGraph(cw: number, ch: number): LayoutNode[] {
     connectionCounts.set(conn.to, (connectionCounts.get(conn.to) || 0) + 1)
   }
 
-  // Seed input for the force layout — Fruchterman-Reingold handles the rest
   const inputNodes: ForceNode[] = ENTERPRISES.map(e => ({
     id: e.name,
-    x: 0, y: 0, // will be placed by the layout
+    x: 0, y: 0,
     mass: 1 + (connectionCounts.get(e.name) || 0) * 0.2,
   }))
   const inputEdges = CORPORATE_CONNECTIONS.map(c => ({
@@ -213,7 +220,6 @@ function drawGraph() {
   cachedNodes = layoutGraph(w, h)
   const nodeMap = new Map(cachedNodes.map(n => [n.ent.name, n]))
 
-  // Draw edges with hierarchical styling
   CORPORATE_CONNECTIONS.forEach(conn => {
     const from = nodeMap.get(conn.from)
     const to = nodeMap.get(conn.to)
@@ -240,7 +246,6 @@ function drawGraph() {
     ctx.setLineDash([])
   })
 
-  // Highlight focused node
   cachedNodes.forEach(n => {
     if (focusedEnterprise.value && n.ent.name === focusedEnterprise.value.name) {
       const r = Math.min(12 + n.connections * 2, 32)
@@ -252,7 +257,6 @@ function drawGraph() {
     }
   })
 
-  // Draw nodes
   cachedNodes.forEach(n => {
     const r = Math.min(12 + n.connections * 2, 32)
     const grad = ctx.createRadialGradient(n.x - r * 0.3, n.y - r * 0.3, 0, n.x, n.y, r)
@@ -266,7 +270,6 @@ function drawGraph() {
     ctx.lineWidth = 1.5
     ctx.stroke()
 
-    // Label
     const label = n.ent.name.slice(0, 2).toUpperCase()
     ctx.fillStyle = '#fff'
     ctx.font = `bold ${Math.max(9, r * 0.55)}px sans-serif`
@@ -316,19 +319,20 @@ onUnmounted(() => {
     canvas.removeEventListener('mouseleave', onCanvasLeave)
   }
 })
+
 </script>
 
 <style scoped>
 .rede-overlay {
-  position: fixed; inset: 0; z-index: 2147483647;
+  position: fixed; inset: 0; z-index: var(--obs-z-modal-backdrop);
   background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
   display: flex; align-items: center; justify-content: center;
   padding: clamp(10px, 3vw, 20px);
 }
 .rede-modal {
   width: 100%; max-width: min(800px, 95vw); max-height: 90vh;
-  background: #0a0a0f; border: 1px solid rgba(52,152,219,0.2);
-  border-radius: 16px; overflow: hidden;
+  background: var(--obs-panel-bg-dark); border: 1px solid var(--obs-panel-border);
+  border-radius: 14px; overflow: hidden;
   display: flex; flex-direction: column;
 }
 .rede-header {
@@ -336,7 +340,7 @@ onUnmounted(() => {
   padding: clamp(10px, 2.5vw, 16px) clamp(12px, 3vw, 20px) clamp(8px, 2vw, 12px); border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .rede-badge {
-  font-size: 9px; font-weight: 800; letter-spacing: 0.1em;
+  font-size: clamp(9px, 1.4vw, 12px); font-weight: 800; letter-spacing: 0.1em;
   color: #5dade2; padding: 2px 6px; border-radius: 4px;
   background: rgba(52,152,219,0.12);
 }
@@ -356,36 +360,36 @@ onUnmounted(() => {
   display: block;
 }
 .rede-tooltip {
-  position: absolute; padding: 6px 10px; border-radius: 8px;
+  position: absolute; padding: clamp(4px, 1.5vw, 6px) clamp(6px, 1.5vw, 10px); border-radius: 8px;
   background: rgba(0,0,0,0.9); border: 1px solid rgba(255,255,255,0.1);
-  color: #ddd; font-size: 11px; pointer-events: none;
+  color: #ddd; font-size: clamp(11px, 1.6vw, 14px); pointer-events: none;
   white-space: nowrap; transform: translate(-50%, -120%);
 }
 .rede-edge-type {
   display: inline-block; margin-left: 6px; padding: 1px 5px;
-  border-radius: 3px; color: #fff; font-size: 9px; font-weight: 700;
+  border-radius: 3px; color: #fff; font-size: clamp(9px, 1.4vw, 12px); font-weight: 700;
 }
 .rede-toolbar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: clamp(4px, 1vw, 6px) clamp(10px, 3vw, 20px); gap: 12px;
+  padding: clamp(4px, 1vw, 6px) clamp(10px, 3vw, 20px); gap: clamp(7px, 1.5vw, 12px);
   border-top: 1px solid rgba(255,255,255,0.04);
   background: rgba(255,255,255,0.015);
 }
 .rede-toolbar-btn {
   background: rgba(52,152,219,0.1); border: 1px solid rgba(52,152,219,0.25);
   color: #5dade2; padding: 3px 9px; border-radius: 5px;
-  font-size: 10px; font-weight: 700; cursor: pointer;
+  font-size: clamp(10px, 1.5vw, 13px); font-weight: 700; cursor: pointer;
   display: inline-flex; align-items: center; gap: 4px;
 }
 .rede-toolbar-btn:hover { background: rgba(52,152,219,0.2); }
-.rede-toolbar-hint { font-size: 9px; color: #555; }
+.rede-toolbar-hint { font-size: clamp(9px, 1.4vw, 12px); color: #555; }
 
 .rede-legend {
-  display: flex; flex-wrap: wrap; gap: 8px;
+  display: flex; flex-wrap: wrap; gap: clamp(5px, 1.5vw, 8px);
   padding: clamp(6px, 2vw, 10px) clamp(10px, 3vw, 20px); border-top: 1px solid rgba(255,255,255,0.06);
 }
 .rede-legend-item {
-  font-size: 10px; color: #999; display: flex; align-items: center; gap: 4px;
+  font-size: clamp(10px, 1.5vw, 13px); color: #999; display: flex; align-items: center; gap: clamp(4px, 0.5vw, 6px);
 }
 .rede-legend-dot {
   width: 8px; height: 8px; border-radius: 50%; display: inline-block;
@@ -401,7 +405,7 @@ onUnmounted(() => {
 .rede-detail-fly {
   background: rgba(52,152,219,0.15); border: 1px solid rgba(52,152,219,0.3);
   color: #5dade2; padding: 4px 10px; border-radius: 6px;
-  font-size: 10px; font-weight: 700; cursor: pointer;
+  font-size: clamp(10px, 1.5vw, 13px); font-weight: 700; cursor: pointer;
 }
 .rede-detail-fly:hover { background: rgba(52,152,219,0.25); }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }

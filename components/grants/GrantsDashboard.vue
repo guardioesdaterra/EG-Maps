@@ -1,6 +1,22 @@
+/**
+ * components/grants/GrantsDashboard.vue
+ * @why Grants management dashboard — lists grants with status, filters, approve/close actions
+ * @component GrantsDashboard
+ * @emits signIn: []
+  signOut: []
+  'update:activeTab': [tab: string]
+  'update:searchQuery': [q: string]
+  'toggle:showHistory': []
+  vote: [id: string, stars: number]
+  'view-detail': [grant: ScrapedGrant | GrantRecord]
+  leaderboardDetail: [entry: LeaderboardEntry]
+  'review:grant': [id: string, decision: 'pending' | 'open' | 'closed']
+  'review:scraped': [id: string, decision: 'approved' | 'hidden' | 'closed' | 'pending', table: string]
+ * @deps vue (computed, ref, watch)
+ */
 <template>
   <div class="gdash">
-    <!-- ── User bar ──────────────────────────────────── -->
+    
     <div class="gdash-user glass">
       <template v-if="user">
         <div class="gdash-user-info">
@@ -28,9 +44,9 @@
       </template>
     </div>
 
-    <!--     ── Stats row ─────────────────────────────────── -->
+    
 
-    <!-- ── Tabs + Search ─────────────────────────────── -->
+    
     <div v-if="user" class="gdash-controls">
       <div class="gdash-tabs">
         <button
@@ -58,14 +74,12 @@
     </div>
     <p v-else class="gdash-signin-hint">{{ t('grantsPortal.signInDashboardDesc') }}</p>
 
-
-
-    <!-- ── Grant list ────────────────────────────────── -->
+    
     <div class="gdash-list">
       <div v-if="isLoading" class="gdash-status">{{ t('grantsPortal.loadingGrants') }}</div>
       <div v-else-if="displayGrants.length === 0" class="gdash-status">{{ emptyMessage }}</div>
 
-      <!-- All grants (scraped + internal) — renders pending/open/closed based on active tab -->
+      
       <template v-if="activeTab !== 'tabLeaderboard'">
         <div
           v-for="g in paginatedGrants"
@@ -136,7 +150,7 @@
         </div>
       </template>
 
-      <!-- Leaderboard -->
+      
       <template v-if="activeTab === 'tabLeaderboard'">
         <div v-if="leaderboardLoading" class="gdash-status">{{ t('grantsPortal.loadingLeaderboard') }}</div>
         <div v-else-if="leaderboard.length === 0" class="gdash-status">{{ t('grantsPortal.noLeaderboard') }}</div>
@@ -158,7 +172,7 @@
         </div>
       </template>
 
-      <!-- ── Pagination ──────────────────────────── -->
+      
       <div v-if="totalPages > 1" class="gdash-pagination glass">
         <button
           class="gdash-page-btn"
@@ -185,7 +199,7 @@
     </div>
   </div>
 
-  <!-- Login popup for non-authenticated actions -->
+  
   <Teleport to="body">
     <Transition name="popup-fade">
       <div v-if="showLoginPopup" class="gdash-login-overlay" role="dialog" aria-modal="true" :aria-label="t('grantsPortal.signInTitle')" @click.self="showLoginPopup = false">
@@ -209,6 +223,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed, ref, watch } from 'vue'
 import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
 
@@ -389,6 +404,7 @@ function voteCount(grantId: string): number {
   const entry = props.leaderboard.find(e => e.id === grantId)
   return entry?.vote_count || 0
 }
+
 </script>
 
 <style scoped>
@@ -404,7 +420,6 @@ function voteCount(grantId: string): number {
   margin: 0 auto;
 }
 
-/* ── Glass panels ──────────────────────────────────── */
 .glass {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(20px);
@@ -417,7 +432,6 @@ function voteCount(grantId: string): number {
   border-color: rgba(255, 255, 255, 0.15);
 }
 
-/* ── User bar ──────────────────────────────────────── */
 .gdash-user {
   display: flex;
   align-items: center;
@@ -464,7 +478,6 @@ function voteCount(grantId: string): number {
   background: rgba(255,255,255,0.08);
 }
 
-/* Sign-in state */
 .gdash-signin-inner {
   text-align: center;
   padding: 2.5rem 2rem;
@@ -526,7 +539,6 @@ function voteCount(grantId: string): number {
 }
 .gdash-join-link:hover { color: rgba(255,255,255,0.6); }
 
-/* ── Stats row ─────────────────────────────────────── */
 .gdash-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -569,7 +581,6 @@ function voteCount(grantId: string): number {
   position: relative;
 }
 
-/* ── Controls (tabs + search) ──────────────────────── */
 .gdash-controls {
   display: flex;
   flex-direction: column;
@@ -651,7 +662,6 @@ function voteCount(grantId: string): number {
   margin-bottom: 1rem;
 }
 
-/* ── Sub-tabs (manager) ────────────────────────────── */
 .gdash-subtabs {
   display: flex;
   flex-wrap: wrap;
@@ -672,7 +682,6 @@ function voteCount(grantId: string): number {
 .gdash-subtab:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.06); }
 .gdash-subtab.active { color: #fff; background: rgba(255,255,255,0.1); }
 
-/* ── Grant list ────────────────────────────────────── */
 .gdash-list {
   display: flex;
   flex-direction: column;
@@ -685,7 +694,6 @@ function voteCount(grantId: string): number {
   color: rgba(255, 255, 255, 0.4);
 }
 
-/* ── Grant card (unified) ──────────────────────────── */
 .gdash-card {
   padding: 1.25rem;
   transition: all 0.2s;
@@ -738,7 +746,6 @@ function voteCount(grantId: string): number {
   margin-top: 0.75rem;
 }
 
-/* ── Badges ────────────────────────────────────────── */
 .gdash-badge {
   display: inline-flex;
   align-items: center;
@@ -757,7 +764,6 @@ function voteCount(grantId: string): number {
 .gdash-badge.reviewed { background: rgba(0, 255, 133, 0.12); color: #00ff85; }
 .gdash-badge.neutral { background: rgba(255, 255, 255, 0.06); color: rgba(255,255,255,0.5); }
 
-/* ── Type badges ───────────────────────────────────── */
 .gdash-type-badge {
   display: inline-flex;
   align-items: center;
@@ -778,7 +784,6 @@ function voteCount(grantId: string): number {
 .gdash-type-badge.youth            { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
 .gdash-type-badge.general          { background: rgba(255, 255, 255, 0.08); color: rgba(255,255,255,0.6); }
 
-/* ── Priority ──────────────────────────────────────── */
 .gdash-priority {
   display: inline-flex;
   align-items: center;
@@ -794,7 +799,6 @@ function voteCount(grantId: string): number {
 .gdash-priority.mid  { background: rgba(234, 179, 8, 0.2); color: #facc15; }
 .gdash-priority.low  { background: rgba(255, 255, 255, 0.06); color: rgba(255,255,255,0.5); }
 
-/* ── Highlights ────────────────────────────────────── */
 .gdash-highlights {
   display: flex;
   flex-wrap: wrap;
@@ -822,7 +826,6 @@ function voteCount(grantId: string): number {
 .gdash-highlight.indigenous    { background: rgba(234, 179, 8, 0.15); color: #facc15; }
 .gdash-highlight.scholarship   { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
 
-/* ── Urgency ───────────────────────────────────────── */
 .gdash-urgency {
   font-size: 0.7rem;
   font-weight: 600;
@@ -832,7 +835,6 @@ function voteCount(grantId: string): number {
 .gdash-urgency.soon { color: #facc15; }
 .gdash-urgency.expired { color: #dc2626; }
 
-/* ── Meta row ──────────────────────────────────────── */
 .gdash-card-meta-row {
   display: flex;
   flex-wrap: wrap;
@@ -855,7 +857,6 @@ function voteCount(grantId: string): number {
   color: rgba(255,255,255,0.6);
 }
 
-/* ── Card footer ───────────────────────────────────── */
 .gdash-card-footer {
   display: flex;
   align-items: center;
@@ -872,7 +873,6 @@ function voteCount(grantId: string): number {
   flex-wrap: wrap;
 }
 
-/* ── Stars ─────────────────────────────────────────── */
 .gdash-stars {
   display: inline-flex;
   align-items: center;
@@ -897,7 +897,6 @@ function voteCount(grantId: string): number {
   margin-left: 0.375rem;
 }
 
-/* ── Link buttons ──────────────────────────────────── */
 .gdash-link-btn {
   background: none;
   border: none;
@@ -929,7 +928,6 @@ function voteCount(grantId: string): number {
   border-color: var(--accent);
 }
 
-/* ── Action buttons ────────────────────────────────── */
 .gdash-action {
   border: none;
   cursor: pointer;
@@ -948,7 +946,6 @@ function voteCount(grantId: string): number {
 .gdash-action.close { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
 .gdash-action.close:hover { background: rgba(59, 130, 246, 0.25); }
 
-/* ── Leaderboard ───────────────────────────────────── */
 .gdash-lb-rank {
   font-size: 1.1rem;
   font-weight: 900;
@@ -972,7 +969,6 @@ function voteCount(grantId: string): number {
 .gdash-source-badge.open { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
 .gdash-source-badge.crew { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
 
-/* ── Login popup ──────────────────────────────────── */
 .gdash-login-overlay {
   position: fixed;
   inset: 0;
@@ -1036,7 +1032,6 @@ function voteCount(grantId: string): number {
   color: var(--tectonic-white);
 }
 
-/* ── Pagination ──────────────────────────────────── */
 .gdash-pagination {
   display: flex;
   align-items: center;
@@ -1095,7 +1090,6 @@ function voteCount(grantId: string): number {
   letter-spacing: 0.1em;
 }
 
-/* ── Popup transition ────────────────────────────── */
 .popup-fade-enter-active,
 .popup-fade-leave-active {
   transition: opacity 0.2s ease;
@@ -1105,7 +1099,6 @@ function voteCount(grantId: string): number {
   opacity: 0;
 }
 
-/* ── Disintegration animation ───────────────────── */
 .gdash-card.removing {
   animation: disintegrate 0.7s cubic-bezier(0.55, 0, 0.1, 1) forwards;
   pointer-events: none;
@@ -1180,7 +1173,6 @@ function voteCount(grantId: string): number {
   100% { opacity: 0; transform: scale(2); }
 }
 
-/* ── Responsive ────────────────────────────────────── */
 @media (max-width: 768px) {
   .gdash-stats {
     grid-template-columns: repeat(2, 1fr);

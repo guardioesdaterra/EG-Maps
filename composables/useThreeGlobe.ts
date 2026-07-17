@@ -1,3 +1,10 @@
+/**
+ * composables/useThreeGlobe.ts
+ * @why Three.js globe — spherical geometry, texture mapping, rotation, raycasting for interaction
+ * @functions latLngToVector3, useThreeGlobe
+ * @interfaces GlobeProject
+ * @deps vue (onBeforeUnmount)
+ */
 import { onBeforeUnmount } from 'vue'
 import type { Ref } from 'vue'
 
@@ -52,9 +59,7 @@ export function useThreeGlobe(
     await Promise.all(SCRIPTS.map(loadScript))
 
     const win = window as unknown as { THREE: unknown; gsap: unknown; ScrollTrigger: unknown }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const THREE: any = win.THREE
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const gsap: any = win.gsap
     if (!THREE || !gsap) { resolveReady?.(); return }
 
@@ -83,7 +88,6 @@ export function useThreeGlobe(
     const globe = new THREE.Mesh(geo, mat)
     scene.add(globe)
 
-    // ── Neon glowing markers ──────────────────────────────────
     const NEON_COLOR = 0x00ff85
     const markerGroup = new THREE.Group()
     globe.add(markerGroup)
@@ -98,14 +102,12 @@ export function useThreeGlobe(
       const total = (project.direct_beneficiaries || 0) + (project.indirect_beneficiaries || 0)
       const intensity = Math.max(0.3, Math.min(1, total / maxBeneficiaries))
 
-      // Core dot
       const dotGeo = new THREE.SphereGeometry(0.018 * (0.6 + intensity * 0.8), 12, 12)
       const dotMat = new THREE.MeshBasicMaterial({ color: NEON_COLOR })
       const dot = new THREE.Mesh(dotGeo, dotMat)
       dot.position.set(pos.x, pos.y, pos.z)
       markerGroup.add(dot)
 
-      // Outer glow ring
       const ringGeo = new THREE.RingGeometry(0.025 * (0.6 + intensity * 0.8), 0.04 * (0.6 + intensity * 0.8), 24)
       const ringMat = new THREE.MeshBasicMaterial({
         color: NEON_COLOR,
@@ -118,7 +120,6 @@ export function useThreeGlobe(
       ring.lookAt(0, 0, 0)
       markerGroup.add(ring)
 
-      // Pulsing outer glow
       const pulseGeo = new THREE.RingGeometry(0.04 * (0.6 + intensity * 0.8), 0.06 * (0.6 + intensity * 0.8), 24)
       const pulseMat = new THREE.MeshBasicMaterial({
         color: NEON_COLOR,
@@ -133,7 +134,6 @@ export function useThreeGlobe(
       markerGroup.add(pulse)
     })
 
-    // ── Photo panels inside the globe ──────────────────────────
     const PANEL_COUNT = 21
     const panelGroup = new THREE.Group()
     globe.add(panelGroup)
@@ -150,14 +150,12 @@ export function useThreeGlobe(
       { src: `${baseURL}images/grant-5.jpg`, w: 1024, h: 683 },
     ]
 
-    // Duplicate images to fill all panels (5 images → 21 panels)
     const panelImages: { src: string; w: number; h: number }[] = []
     while (panelImages.length < PANEL_COUNT) {
       panelImages.push(...GRANT_IMAGES)
     }
     panelImages.length = PANEL_COUNT
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const panels: any[] = []
     const MAX_PANEL_W = 0.4
     const MAX_PANEL_H = 0.35

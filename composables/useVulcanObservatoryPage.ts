@@ -1,3 +1,10 @@
+/**
+ * composables/useVulcanObservatoryPage.ts
+ * @why Vulcan observatory page state — combines observatory data, filters, selection, and map layers
+ * @functions useVulcanObservatoryPage
+ * @deps vue (ref, computed, watch, onMounted, onUnmounted); @/composables/useObservatoryControls (useObservatoryControls, type ObservatoryData, type ObservatoryTabKey); @/composables/useObservatorySelection (useObservatorySelection); @/composables/useRareEarthData (useRareEarthData, type DataRegion); @/composables/useCulturalAgentsData (useCulturalAgentsData)
+ * @connections pages/vulcan-observatory/3d.vue, pages/vulcan-observatory/index.vue
+ */
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import { useObservatoryControls, type ObservatoryData, type ObservatoryTabKey } from '@/composables/useObservatoryControls'
@@ -9,7 +16,6 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
   const { t } = useI18n()
   const baseURL = useRuntimeConfig().app.baseURL
 
-  // ---- Composable (all state + logic) ----
   const controls = useObservatoryControls()
   const {
     yearMin, yearMax, selectedPhases, searchTerm, sobDemandaOnly, filtersExpanded, activeTab,
@@ -25,13 +31,10 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     debouncedFilter, updateFilter,
   } = controls
 
-  // ---- Data ----
   const { pointsData: _rawPointsData, polygonsData: _rawPolygonsData, protectedData: _rawProtectedData, waterData: _rawWaterData, culturalData: _rawCulturalData, features: allFeatures, speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL, initialRegion)
 
-  // ---- Cultural Agents (Mapa Cultura + Floresta Ativista + Community pins) ----
   const { combinedData: culturalAgentsCombined, sourceCounts: culturalAgentCounts, load: loadCulturalAgents, submitPin: submitCommunityPin } = useCulturalAgentsData(baseURL)
 
-  // Cast data to match component prop types
   const EMPTY_FC: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] }
   const pointsData = computed(() => _rawPointsData.value ?? EMPTY_FC)
   const polygonsData = computed(() => _rawPolygonsData.value)
@@ -42,12 +45,10 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     const base = _rawCulturalData.value ?? EMPTY_FC
     const agents = culturalAgentsCombined.value?.features ?? []
     if (!agents.length) return _rawCulturalData.value
-    // Only create new object when agents actually exist (avoids unnecessary watcher triggers)
     const merged = base.features.length ? [...base.features, ...agents] : agents
     return { ...base, features: merged }
   })
 
-  // Wire data into composable — refs are compatible types (Ref<T|undefined> matches Ref<T> at runtime)
   controls.setupObservatory({
     allFeatures,
     pointsData: _rawPointsData,
@@ -66,7 +67,6 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     isRegional,
   })
 
-  // ---- Stats (composable-provided) ----
   const stats = { categoryStats, totalCount, filteredCount, activeFilterCount, activeFilterSummary, formatSyncDate, formatHa }
   const data: ObservatoryData = {
     allFeatures,
@@ -88,13 +88,11 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     setupObservatory: () => {},
   }
 
-  // ---- Modals (page-level, not in composable) ----
   const showRedeCorporativa = ref(false)
   const showDownload = ref(false)
   const showUserContribution = ref(false)
   const showAll = ref(false)
 
-  // ---- Claim full-screen overlay ----
   const showClaimDetail = ref(false)
   const claimDetailProps = ref<Record<string, unknown> | null>(null)
   const obsSel = useObservatorySelection()
@@ -118,7 +116,6 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     claimDetailProps.value = null
   }
 
-  // ---- My Territory pin ----
   const { pin: userPin, sharedFromUrl: userPinShared, setPin: setUserPin, clearPin, getShareUrl, copyShareUrl } = useUserPin()
   const pinPickerMode = ref(false)
   const shareCopied = ref(false)
@@ -185,7 +182,6 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     }
   }
 
-  // ---- Loading message ----
   const loadingMessage = computed(() => {
     const regionLabel = isRegional.value ? 'Poços de Caldas region' : 'Brazil'
     switch (loadPhase.value) {
@@ -198,7 +194,6 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     }
   })
 
-  // ---- Keyboard: handle Escape for page-level modals ----
   function handleKeydownPage(e: KeyboardEvent) {
     if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'TEXTAREA') return
     if (e.key === 'Escape') {
@@ -211,14 +206,12 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     }
   }
 
-  // ---- Lifecycle ----
   onMounted(async () => {
     startCounterAnimation()
     await Promise.all([loadRareEarthData(), loadCulturalAgents()])
     filteredCount.value = allFeatures.value.length
     mapContainerRef.value = document.querySelector('.maplibregl-canvas-container')?.closest('.relative') as HTMLElement | null
 
-    // Restore state from URL hash
     if (restoredState.value) {
       const s = restoredState.value as Record<string, unknown>
       if (s.center) flyToTarget.value = { lng: (s.center as number[])[0], lat: (s.center as number[])[1], zoom: (s.zoom as number) ?? 6 }

@@ -1,7 +1,13 @@
+/**
+ * components/observatory/KeyboardShortcuts.vue
+ * @component KeyboardShortcuts
+ * @props visible: boolean
+ * @emits 'close': []
+ */
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
-      <div v-if="visible" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="$emit('close')">
+      <div v-if="visible" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm kbd-backdrop" @click.self="$emit('close')">
         <div class="obs-shortcuts-panel" role="dialog" aria-label="Keyboard shortcuts">
           <div class="obs-shortcuts-panel__header">
             <h2 class="obs-shortcuts-panel__title">⌨️ Keyboard Shortcuts</h2>
@@ -25,6 +31,7 @@
 </template>
 
 <script setup lang="ts">
+
 defineProps<{
   visible: boolean
 }>()
@@ -67,6 +74,7 @@ const shortcutGroups = [
     ],
   },
 ]
+
 </script>
 
 <style scoped>
@@ -87,12 +95,12 @@ const shortcutGroups = [
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: clamp(8px, 1.5vw, 16px) clamp(10px, 2vw, 20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 .obs-shortcuts-panel__title {
   margin: 0;
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
   font-weight: 700;
   color: #e8e8e8;
 }
@@ -100,10 +108,10 @@ const shortcutGroups = [
   background: transparent;
   border: 0;
   color: rgba(255, 255, 255, 0.4);
-  font-size: 18px;
+  font-size: clamp(18px, 3vw, 26px);
   cursor: pointer;
   line-height: 1;
-  padding: 2px 6px;
+  padding: clamp(2px, 0.5vw, 6px);
   border-radius: 4px;
   transition: all 0.15s;
 }
@@ -112,7 +120,7 @@ const shortcutGroups = [
   background: rgba(231, 76, 60, 0.1);
 }
 .obs-shortcuts-panel__body {
-  padding: 12px 16px;
+  padding: clamp(8px, 1.5vw, 16px) clamp(10px, 2vw, 20px);
   overflow-y: auto;
 }
 .obs-shortcuts-panel__group {
@@ -123,7 +131,7 @@ const shortcutGroups = [
 }
 .obs-shortcuts-panel__group-label {
   margin: 0 0 6px;
-  font-size: 9px;
+  font-size: clamp(9px, 1.4vw, 12px);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -133,7 +141,7 @@ const shortcutGroups = [
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 0;
+  padding: clamp(2px, 0.5vw, 6px) 0;
 }
 .obs-shortcuts-panel__keys {
   display: flex;
@@ -145,20 +153,21 @@ const shortcutGroups = [
   justify-content: center;
   min-width: 22px;
   height: 20px;
-  padding: 0 5px;
+  padding: 0 clamp(2px, 0.5vw, 6px);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  font-size: 9px;
+  font-size: clamp(9px, 1.4vw, 12px);
   font-weight: 600;
   color: rgba(255, 255, 255, 0.7);
   font-family: inherit;
 }
 .obs-shortcuts-panel__desc {
-  font-size: 10px;
+  font-size: clamp(10px, 1.5vw, 13px);
   color: rgba(255, 255, 255, 0.5);
 }
 
+.kbd-backdrop { z-index: var(--obs-z-modal-backdrop); }
 .modal-fade-enter-active {
   transition: opacity 0.2s ease;
 }

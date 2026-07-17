@@ -1,3 +1,10 @@
+/**
+ * composables/useOfflineTiles.ts
+ * @why Offline map tiles — caches tile blobs in IndexedDB for offline map viewing
+ * @functions useOfflineTiles
+ * @interfaces OfflineTileStats
+ * @deps vue (ref, onScopeDispose, type Ref)
+ */
 import { ref, onScopeDispose, type Ref } from 'vue'
 
 export interface OfflineTileStats {
@@ -87,7 +94,6 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
       await statsP
       isInitialized.value = true
     } catch {
-      // IndexedDB not available, falling back to memory cache only
       isInitialized.value = true
     }
   }
@@ -147,7 +153,6 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
       stats.value.cacheSizeFormatted = formatBytes(stats.value.cacheSizeBytes)
       tx.oncomplete = () => maybeEvict()
     } catch {
-      // Silently fail store - memory cache still works
     }
   }
 
@@ -191,7 +196,6 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
         }
       }
     } catch {
-      // Best effort
     }
   }
 
@@ -203,7 +207,6 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
       const store = tx.objectStore(STORE_NAME)
       store.clear()
     } catch {
-      // Best effort
     }
     stats.value.cachedTiles = 0
     stats.value.cacheSizeBytes = 0
@@ -310,7 +313,6 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
               await setTile(z, clampedX, y, buf, resp.headers.get('content-type') || 'image/jpeg')
             }
           } catch {
-            // Skip failed tiles
           }
           done++
           prefetchProgress.value = done

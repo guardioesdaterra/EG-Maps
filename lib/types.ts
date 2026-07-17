@@ -1,3 +1,9 @@
+/**
+ * lib/types.ts
+ * @why TypeScript interface and type definitions — Grant, Species, Project, Agent, and map-related types
+ * @interfaces ProjectData, Species, RareEarthClaimProperties, RareEarthPointFeature, RareEarthPointCollection, ToastMessage, CommandPaletteItem, DetailGrantData, CulturalAgent, CommunityPin, CulturalAgentFeature, CulturalAgentFeatureCollection
+ * @types RareEarthCategory, CommunityPinType
+ */
 export interface ProjectData {
   project_title: string;
   country_province: string;
@@ -149,8 +155,6 @@ export interface DetailGrantData {
   priority_score?: number
   relevance?: number
 }
-
-// ── Vulcan Observatory: Cultural Agents & Community Pins ──
 
 export type CommunityPinType =
   | 'cultural_agent'

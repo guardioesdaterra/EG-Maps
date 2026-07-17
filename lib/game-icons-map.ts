@@ -1,17 +1,10 @@
 /**
- * Game Icons — Iconify Collection (game-icons)
- * Master keyword-to-icon mapping with multi-algorithm species match system.
- *
- * Collection: https://icon-sets.iconify.design/game-icons/
- * Author: GameIcons (CC BY 3.0)
- * Total: 4,133 icons
- *
- * This file powers the SSG build-time icon selection for species markers.
+ * lib/game-icons-map.ts
+ * @why Game-icons to species category mapping — maps species groups to icon names from game-icons.net
+ * @functions findBestIcon, buildIconMapping
+ * @consts TAXONOMIC_GROUP_ICONS, ECOSYSTEM_ICONS, KEYWORD_ICON_MAP
+ * @interfaces SpeciesIconMatch, SpeciesIconMapping
  */
-
-// ---------------------------------------------------------------------------
-// TAXONOMIC GROUP FALLBACKS — used when per-species matching fails
-// ---------------------------------------------------------------------------
 export const TAXONOMIC_GROUP_ICONS: Record<string, string> = {
   Mammal:       'paw',
   Bird:         'bird-claw',
@@ -23,9 +16,6 @@ export const TAXONOMIC_GROUP_ICONS: Record<string, string> = {
   Default:      'leaf-skeleton',
 }
 
-// ---------------------------------------------------------------------------
-// ECOSYSTEM FALLBACKS
-// ---------------------------------------------------------------------------
 export const ECOSYSTEM_ICONS: Record<string, string> = {
   Forest:      'pine-tree',
   Marine:      'fish-escape',
@@ -41,11 +31,7 @@ export const ECOSYSTEM_ICONS: Record<string, string> = {
   Cave:        'bat',
   Urban:       'bird-house',
 }
-// ---------------------------------------------------------------------------
-// MASTER KEYWORD → ICON MAPPING
-// ---------------------------------------------------------------------------
 export const KEYWORD_ICON_MAP: Record<string, string> = {
-  // ---- Mammals ----
   leopard: 'lion', panther: 'lion', cat: 'cat', tiger: 'saber-toothed-cat-head',
   lion: 'lion', jaguar: 'lion', cheetah: 'lion', wildcat: 'cat',
   orangutan: 'monkey', monkey: 'monkey', ape: 'gorilla', gorilla: 'gorilla',
@@ -68,7 +54,6 @@ export const KEYWORD_ICON_MAP: Record<string, string> = {
   badger: 'bear-face', skunk: 'fox-tail', raccoon: 'fox-head', mongoose: 'fox-tail',
   hyena: 'wolf-head', aardvark: 'snout',
 
-  // ---- Birds ----
   bird: 'bird-claw', parrot: 'parrot-head', macaw: 'parrot-head',
   toucan: 'bird-claw', owl: 'owl', eagle: 'eagle-head', hawk: 'eagle-head',
   falcon: 'eagle-head', vulture: 'bird-claw', stork: 'bird-claw',
@@ -85,7 +70,6 @@ export const KEYWORD_ICON_MAP: Record<string, string> = {
   swallow: 'bird-twitter', swift: 'bird-twitter', tanager: 'bird-twitter',
   condor: 'eagle-head',
 
-  // ---- Reptiles ----
   reptile: 'snake', snake: 'snake', serpent: 'snake', viper: 'snake',
   rattlesnake: 'rattlesnake', python: 'snake', cobra: 'snake',
   lizard: 'lizardman', iguana: 'lizardman', gecko: 'lizardman',
@@ -94,11 +78,9 @@ export const KEYWORD_ICON_MAP: Record<string, string> = {
   alligator: 'horned-reptile', caiman: 'horned-reptile', gharial: 'horned-reptile',
   tuatara: 'horned-reptile', amphisbaena: 'worm-mouth',
 
-  // ---- Amphibians ----
   amphibian: 'frog', frog: 'frog', toad: 'frog', salamander: 'frog',
   newt: 'frog', caecilian: 'worm-mouth', axolotl: 'frog',
 
-  // ---- Fish ----
   fish: 'fish-escape', shark: 'shark-jaws', ray: 'flatfish', skate: 'flatfish',
   salmon: 'fish-escape', trout: 'fish-escape', tuna: 'fish-escape',
   cod: 'fish-escape', bass: 'fish-escape', perch: 'fish-escape',
@@ -109,7 +91,6 @@ export const KEYWORD_ICON_MAP: Record<string, string> = {
   jellyfish: 'jellyfish', octopus: 'spyglass', squid: 'giant-squid',
   cuttlefish: 'spiral-shell', nautilus: 'nautilus-shell',
 
-  // ---- Invertebrates ----
   invertebrate: 'spider-alt', insect: 'spider-alt', spider: 'spider-alt',
   scorpion: 'spider-alt', beetle: 'beetle-shell', butterfly: 'butterfly',
   moth: 'butterfly', dragonfly: 'dragonfly', bee: 'bee', wasp: 'wasp-sting',
@@ -123,7 +104,6 @@ export const KEYWORD_ICON_MAP: Record<string, string> = {
   barnacle: 'shell', coral: 'coral', anemone: 'tentacles', starfish: 'starfish',
   sponge: 'coral', centipede: 'worm-mouth', millipede: 'worm-mouth',
 
-  // ---- Plants ----
   plant: 'plant-seed', tree: 'pine-tree', flower: 'flower-star',
   leaf: 'leaf-skeleton', seed: 'seedling', root: 'plant-roots',
   grass: 'grass-mushroom', fern: 'vine-leaf', moss: 'vine-leaf',
@@ -136,7 +116,6 @@ export const KEYWORD_ICON_MAP: Record<string, string> = {
   fruit: 'fruit-tree', nut: 'acorn', berry: 'berries-bowl',
   carnivorous: 'carnivorous-plant',
 
-  // ---- Generic Nature / Regions ----
   nature: 'leaf-skeleton', wildlife: 'paw-print', fauna: 'paw-print',
   flora: 'flower-star', forest: 'pine-tree', ocean: 'fish-escape',
   river: 'fish-escape', lake: 'fish-escape', wetland: 'frog',
@@ -150,7 +129,6 @@ export const KEYWORD_ICON_MAP: Record<string, string> = {
   fin: 'shark-fin', beak: 'bird-claw', snout: 'snout', paw: 'paw-print',
   hoof: 'horse-head',
 
-  // ---- Regional Ecosystems ----
   amazon: 'palm-tree', atlantic: 'fish-escape', pantanal: 'frog',
   cerrado: 'grass-mushroom', caatinga: 'cactus', pampa: 'grass-mushroom',
   mata: 'pine-tree', costal: 'coral', marine: 'fish-escape',
@@ -162,16 +140,12 @@ export const KEYWORD_ICON_MAP: Record<string, string> = {
   riparian: 'oak-leaf', coastal: 'coral', pelagic: 'whale-tail',
   benthic: 'flatfish',
 
-  // ---- Threat keywords ----
   threat: 'warning-triangle', endangered: 'extinction', extinct: 'extinction',
   poaching: 'hunting-horn', habitat: 'tree-house', deforestation: 'burning-tree',
   pollution: 'waste', climate: 'lightning-tree', invasive: 'alien-bug',
   overfishing: 'fishing-net', bycatch: 'fishing-net', hunting: 'hunting-horn',
   trafficking: 'shackle',
 }
-// ---------------------------------------------------------------------------
-// MATCHING ALGORITHMS
-// ---------------------------------------------------------------------------
 
 function normalize(text: string): string {
   return text.toLowerCase().normalize('NFD')
@@ -253,14 +227,10 @@ function algoCommonNameBigram(commonName: string): { icon: string; score: number
   return best
 }
 
-// ---------------------------------------------------------------------------
-// PUBLIC API
-// ---------------------------------------------------------------------------
-
 export interface SpeciesIconMatch {
-  icon: string              // e.g., "paw"
-  iconifyName: string       // e.g., "game-icons:paw"
-  algorithm: string         // Which algo matched
+  icon: string
+  iconifyName: string
+  algorithm: string
   score: number
   taxonomicFallback: string
 }
@@ -289,10 +259,6 @@ export function findBestIcon(species: {
   if (best) return { icon: best.icon, iconifyName: `game-icons:${best.icon}`, algorithm: best.algorithm, score: best.score, taxonomicFallback }
   return { icon: taxonomicFallback, iconifyName: `game-icons:${taxonomicFallback}`, algorithm: 'taxonomic_fallback', score: 1, taxonomicFallback }
 }
-
-// ---------------------------------------------------------------------------
-// BUILD-TIME BATCH PROCESSOR
-// ---------------------------------------------------------------------------
 
 export interface SpeciesIconMapping {
   [speciesId: string]: SpeciesIconMatch

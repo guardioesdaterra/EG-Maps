@@ -1,4 +1,12 @@
+/**
+ * components/map/SpeciesPopup.vue
+ * @why Endangered species popup for map markers — shows common name, scientific name, IUCN status, image
+ * @component SpeciesPopup
+ * @props species: Species | null
+ * @deps vue (ref, computed, watch); @/composables/useI18n (useI18n); @/lib/map-utils (GROUP_COLORS); @/lib/image-utils (getMarkerPlaceholder)
+ */
 <script setup lang="ts">
+
 import { ref, computed, watch } from 'vue'
 import type { Species } from '@/lib/types'
 import { useI18n } from '@/composables/useI18n'
@@ -83,6 +91,7 @@ const coords = computed(() => {
   const lngDir = props.species.lng >= 0 ? 'E' : 'W'
   return `${Math.abs(props.species.lat).toFixed(2)}°${latDir}, ${Math.abs(props.species.lng).toFixed(2)}°${lngDir}`
 })
+
 </script>
 
 <template>

@@ -1,3 +1,9 @@
+/**
+ * components/ui/StatCard.vue
+ * @why Statistics display card with icon, label, value, and optional trend indicator
+ * @component StatCard
+ * @deps vue (computed)
+ */
 <template>
   <div
     class="flex min-w-0 flex-col items-center rounded-md border p-2 transition-all duration-200 group"
@@ -32,6 +38,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed } from 'vue'
 
 interface Props {
@@ -53,4 +60,5 @@ const iconSizeClass = computed(() => props.isMobile ? 'h-5 w-5' : 'h-4 w-4')
 const valueTextSize = computed(() => props.isMobile ? 'text-lg' : 'text-xl')
 const labelTextSize = computed(() => props.isMobile ? 'text-xs' : 'text-[11px]')
 const glowRgbString = computed(() => props.glowColorRGB.join(','))
+
 </script>

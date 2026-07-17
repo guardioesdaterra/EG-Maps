@@ -1,3 +1,8 @@
+/**
+ * eslint.config.mjs
+ * @why ESLint flat config for TypeScript and Vue linting
+ * @defaults withNuxt
+ */
 import withNuxt from './.nuxt/eslint.config.mjs'
 
 export default withNuxt(

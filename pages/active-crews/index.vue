@@ -1,3 +1,9 @@
+/**
+ * pages/active-crews/index.vue
+ * @why Active crews 2D map — shows crew member locations with clustering and detail popups
+ * @component index
+ * @deps vue (defineAsyncComponent); @/lib/crew-data (allCrewRegionsData, type CrewLocation)
+ */
 <template>
   <ClientOnly>
     <MapView2D :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" />
@@ -20,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { defineAsyncComponent } from 'vue'
 import { allCrewRegionsData, type CrewLocation } from '@/lib/crew-data'
 
@@ -48,7 +55,6 @@ onMounted(async () => {
       }))
     }
   } catch {
-    // Silently handle crew locations fetch failure — map falls back to region-level markers
   }
 })
 
@@ -58,4 +64,5 @@ useHead({
     { name: 'description', content: 'Interactive 2D map showing Earth Guardians active crews worldwide' },
   ],
 })
+
 </script>

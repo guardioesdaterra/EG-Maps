@@ -1,5 +1,9 @@
+/**
+ * scripts/download-tiles.mjs
+ * @why Tile downloader — downloads MapTiler tiles for offline map use
+ * @deps fs (readFileSync, existsSync, mkdirSync, writeFileSync, createWriteStream, readdirSync, rmSync); path (resolve, dirname); https (get)
+ */
 #!/usr/bin/env node
- 
 
 /**
  * MapTiler Satellite Tile Downloader
@@ -16,7 +20,6 @@
 import { readFileSync, existsSync, mkdirSync, writeFileSync, createWriteStream, readdirSync, rmSync  } from 'fs'
 import { resolve, dirname } from 'path'
 import { get } from 'https'
-
 
 function loadEnv() {
   const envPath = resolve(process.cwd(), '.env')
@@ -197,7 +200,6 @@ async function main() {
 
     const tiles = []
     for (let x = minX; x <= maxX; x++) {
-      // Clamp x to valid range
       const clampedX = ((x % Math.pow(2, z)) + Math.pow(2, z)) % Math.pow(2, z)
       for (let y = minY; y <= maxY; y++) {
         if (y < 0 || y >= Math.pow(2, z)) continue
@@ -205,7 +207,6 @@ async function main() {
       }
     }
 
-    // Process with limited concurrency
     let zoomDownloaded = 0
     let zoomSkipped = 0
     let zoomErrors = 0
@@ -254,7 +255,6 @@ async function main() {
   console.log(`  Output:     ${output}/`)
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`)
 
-  // Generate tile index for the web app
   generateTileIndex(output, minZoom, maxZoom)
 }
 

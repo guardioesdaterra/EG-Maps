@@ -1,3 +1,9 @@
+/**
+ * pages/eg-grants/fullscreen.vue
+ * @why Fullscreen grant detail view — immersive layout with map, detail panel, comments
+ * @component fullscreen
+ * @deps vue (ref, reactive, computed, watch, onMounted); ~/lib/project-data (allProjectsData); ~/composables/useI18n (useI18n); ~/composables/useSupabase (useSupabase); ~/composables/useSupabaseAuth (useSupabaseAuth)
+ */
 <template>
   <div class="fs-grants min-h-screen bg-black text-white">
     <div v-if="!sessionReady" class="fixed inset-0 flex items-center justify-center bg-black" style="z-index: 99999">
@@ -112,6 +118,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
 import { allProjectsData } from '~/lib/project-data'
@@ -483,6 +490,7 @@ onMounted(async () => {
     window.dispatchEvent(new HashChangeEvent('hashchange'))
   }
 })
+
 </script>
 
 <style>
@@ -505,15 +513,11 @@ onMounted(async () => {
   border-radius: 8px;
 }
 
-/* ── Container ── */
-
 .fs-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 2rem;
 }
-
-/* ── Header ── */
 
 .fs-header {
   padding: 1.25rem 0 1rem;
@@ -619,8 +623,6 @@ onMounted(async () => {
 .fs-main {
   min-height: 0;
 }
-
-/* ── GrantsDashboard Theme Overrides ── */
 
 .fs-grants .gdash {
   --gdash-bg: transparent;

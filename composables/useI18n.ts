@@ -1,3 +1,12 @@
+/**
+ * composables/useI18n.ts
+ * @why Internationalization — loads locale JSON, provides t() global translation function
+ * @functions useI18n
+ * @interfaces Translation
+ * @types Locale
+ * @deps @/stores/ui (useUiStore, type SupportedLocale)
+ * @connections app.vue, components/DataBubble.vue, components/GlobalStats.vue, components/MapControls.vue, components/ProjectFilterPanel.vue, components/RedeCorporativa.vue, components/SpeciesFilterPanel.vue, components/SpeciesPanel.vue, components/map/SpeciesPopup.vue, components/observatory/ObservatoryLayout.vue, composables/useMapBase.ts, composables/useMapPopup/previewCard.ts, composables/useMapPopup/speciesPopup.ts, layouts/default.vue, pages/vulcan-observatory/3d.vue, pages/vulcan-observatory/index.vue, plugins/command-palette.client.ts
+ */
 import enTranslations from '../locales/en.json'
 import { useUiStore, type SupportedLocale } from '@/stores/ui'
 
@@ -9,7 +18,6 @@ export interface Translation {
 
 const localeIds: Locale[] = ['en', 'es', 'pt', 'fr', 'ja', 'zh', 'ar', 'hi', 'nl', 'de']
 
-// English fallback (used when a key is missing in the current locale)
 function deepGet(obj: Translation | undefined, path: string[]): string | undefined {
   if (!obj) return undefined
   let current: string | Translation = obj
@@ -44,15 +52,12 @@ export function useI18n() {
 
   const ui = useUiStore()
 
-  // vue-i18n might not be initialized during certain tests or builds. In that
-  // case, fall back to a passthrough that performs English fallback.
   const vt = i18n?.t ?? ((k: string, ...args: unknown[]): string => {
     const v = englishFallback(k) ?? k
     return interpolate(v, args)
   })
   const vLocale = i18n?.locale ?? ref<Locale>('en')
 
-  // Sync vue-i18n locale with UI store
   watch(
     ui.locale,
     (val) => {

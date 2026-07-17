@@ -1,3 +1,9 @@
+/**
+ * components/ToastHost.vue
+ * @why Fixed-position container that renders active toast notifications
+ * @component ToastHost
+ * @props position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
+ */
 <template>
   <Teleport to="body">
     <div
@@ -48,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+
 const { t } = useI18n()
 
 withDefaults(defineProps<{
@@ -62,6 +69,7 @@ function runAction(id: string, onClick: () => void) {
   try { onClick() } catch { /* toast action error — silently ignore */ }
   void dismiss(id)
 }
+
 </script>
 
 <style scoped>
@@ -70,7 +78,7 @@ function runAction(id: string, onClick: () => void) {
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: clamp(6px, 1.2vw, 12px);
   pointer-events: none;
   max-width: min(92vw, 360px);
 }
@@ -82,14 +90,14 @@ function runAction(id: string, onClick: () => void) {
 .toast {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: clamp(6px, 1.2vw, 12px);
+  padding: clamp(6px, 1.2vw, 12px);
   border-radius: 10px;
   background: rgba(15, 15, 18, 0.96);
   color: #f5f5f5;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
   line-height: 1.4;
   pointer-events: auto;
   backdrop-filter: blur(12px);
@@ -101,7 +109,7 @@ function runAction(id: string, onClick: () => void) {
 .toast--error { border-left: 3px solid #e74c3c; }
 
 .toast__icon {
-  font-size: 14px;
+  font-size: clamp(14px, 2vw, 18px);
   font-weight: 800;
   line-height: 1;
   padding-top: 1px;
@@ -122,8 +130,8 @@ function runAction(id: string, onClick: () => void) {
   color: #fafafa;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 11px;
+  padding: clamp(2px, 0.5vw, 6px) clamp(6px, 1.2vw, 12px);
+  font-size: clamp(11px, 1.6vw, 14px);
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
@@ -136,7 +144,7 @@ function runAction(id: string, onClick: () => void) {
   border: 0;
   color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  font-size: 16px;
+  font-size: clamp(16px, 2.5vw, 22px);
   line-height: 1;
   padding: 0 4px;
   font-family: inherit;

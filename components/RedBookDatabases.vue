@@ -1,3 +1,9 @@
+/**
+ * components/RedBookDatabases.vue
+ * @why Links panel to IUCN Red List, national red book databases, and species resources
+ * @component RedBookDatabases
+ * @deps vue (ref, onMounted, onUnmounted)
+ */
 <template>
   <section
     v-motion
@@ -33,7 +39,7 @@
             <div class="flex h-[clamp(2rem,6vw,2.5rem)] w-[clamp(2rem,6vw,2.5rem)] shrink-0 items-center justify-center rounded-full border-2 border-black bg-black dark:bg-[var(--text-primary)] text-white dark:text-black">
               <Icon :name="db.icon" class="h-3.5 w-3.5 xs:h-4 xs:w-4" />
             </div>
-            <span class="truncate rounded-full border border-black dark:border-[var(--border-color)] px-2 py-0.5 sm:chip-fluid text-[10px] sm:text-[11px] font-black uppercase tracking-[0.16em]">
+            <span class="truncate rounded-full border border-black dark:border-[var(--border-color)] px-2 py-0.5 sm:chip-fluid text-[clamp(10px,1.5vw,13px)] sm:text-[clamp(11px,1.6vw,14px)] font-black uppercase tracking-[0.16em]">
               {{ db.scope }}
             </span>
           </div>
@@ -71,6 +77,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, onMounted, onUnmounted } from 'vue'
 
 interface DatasetInfo {
@@ -134,4 +141,5 @@ onMounted(async () => {
 function datasetKeyId(id: string): string {
   return id === 'icmbio-brazil' ? 'icmbio' : id
 }
+
 </script>

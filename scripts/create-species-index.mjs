@@ -1,4 +1,8 @@
- 
+/**
+ * scripts/create-species-index.mjs
+ * @why Species index builder — aggregates raw species data into a searchable index.json
+ * @deps fs (readFileSync, writeFileSync)
+ */
 import { readFileSync, writeFileSync } from 'fs';
 
 const DATASETS = [
@@ -9,10 +13,8 @@ const DATASETS = [
 /** Deterministic offset per species within a coordinate group.
  *  Spreads co-located species in a ~6 km radius so MapLibre can un-cluster on zoom. */
 function spreadOffset(index, total) {
-  // Use golden angle and index to produce well-distributed 2D offsets
-  const goldenAngle = 2.399963; // radians
+  const goldenAngle = 2.399963;
   const angle = goldenAngle * index;
-  // Radius grows with index so distant indices don't overlap
   const radius = 0.0008 + 0.035 * Math.sqrt(index / Math.max(total, 1));
   return {
     latOffset: radius * Math.cos(angle),
@@ -26,7 +28,6 @@ for (const ds of DATASETS) {
 
   const fullData = JSON.parse(readFileSync(srcPath, 'utf8'));
 
-  // Group species by coordinate to apply offsets within each group
   const coordMap = new Map();
   for (const s of fullData) {
     const key = `${s.lat},${s.lng}`;
@@ -48,14 +49,12 @@ for (const ds of DATASETS) {
         lat: Number((s.lat + latOffset).toFixed(6)),
         lng: Number((s.lng + lngOffset).toFixed(6)),
         imageUrl: s.imageUrl || null,
-        // description/endangerment/threatTypes omitted — loaded on-demand for detail popups
       });
     }
   }
 
   writeFileSync(outPath, JSON.stringify(lightweight, null, 0));
 
-  // Also update coordinates in the full data file so detail lookups match
   const offsetMap = new Map();
   for (const s of fullData) {
     offsetMap.set(s.id, s);

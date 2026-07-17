@@ -1,3 +1,10 @@
+/**
+ * components/ui/Input.vue
+ * @why Reusable text input with label, placeholder, validation error, and icon slot
+ * @component Input
+ * @emits 'update:modelValue': [value: string | number]
+ * @deps vue (computed, ref); @/lib/utils (cn)
+ */
 <template>
   <input
     ref="inputRef"
@@ -10,6 +17,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed, ref } from 'vue'
 import { cn } from '@/lib/utils'
 
@@ -49,4 +57,5 @@ function handleInput(event: Event) {
 }
 
 defineExpose({ inputRef })
+
 </script>

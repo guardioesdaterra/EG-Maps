@@ -1,3 +1,13 @@
+/**
+ * components/grants/GrantEditModal.vue
+ * @why Modal for creating or editing a grant — title, description, amount, category
+ * @component GrantEditModal
+ * @props grant: ScrapedGrant | null
+  saving
+ * @emits close: []
+  save: [form: Record<string, string>]
+ * @deps vue (reactive, watch)
+ */
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
@@ -71,6 +81,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { reactive, watch } from 'vue'
 import type { ScrapedGrant } from '~/composables/useGrants'
 
@@ -113,6 +124,7 @@ watch(() => props.grant, (g) => {
   form.url = g.url || ''
   form.categories = (g.categories || []).join(', ')
 }, { immediate: true })
+
 </script>
 
 <style scoped>

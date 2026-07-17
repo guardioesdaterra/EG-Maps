@@ -1,3 +1,9 @@
+/**
+ * components/KeyboardShortcuts.vue
+ * @why Overlay displaying available keyboard shortcuts for the current view
+ * @component KeyboardShortcuts
+ * @deps vue (computed, onMounted, onUnmounted, ref)
+ */
 <template>
   <Teleport to="body">
     <Transition name="kbd-fade">
@@ -32,6 +38,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 const { t } = useI18n()
@@ -62,7 +69,6 @@ function open_() { open.value = true }
 function close() { open.value = false }
 
 function onGlobalKeydown(e: KeyboardEvent) {
-  // Don't trigger when typing in inputs
   const target = e.target as HTMLElement | null
   if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
     if (e.key === 'Escape') open.value = false
@@ -87,6 +93,7 @@ onUnmounted(() => {
     window.removeEventListener('keydown', onGlobalKeydown)
   }
 })
+
 </script>
 
 <style scoped>

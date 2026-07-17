@@ -1,3 +1,8 @@
+/**
+ * scripts/build-regional-data.ts
+ * @why Regional data builder — processes raw species data into region-split JSON files
+ * @deps fs (readFileSync, writeFileSync, mkdirSync, existsSync); path (join)
+ */
 #!/usr/bin/env npx tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
@@ -14,7 +19,6 @@ import { join } from 'path'
 
 const CENTER = { lat: -21.914138005195028, lng: -46.53311955736603 }
 
-// Haversine distance in km
 function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371
   const dLat = (lat2 - lat1) * Math.PI / 180
@@ -47,7 +51,6 @@ function getCentroid(geometry: any): { lat: number; lng: number } | null {
 function filterByRadius(features: any[], radiusKm: number) {
   return features.filter(f => {
     let lat: number, lng: number
-    // Try geometry centroid first (works for Point, Polygon, MultiPolygon)
     const centroid = getCentroid(f.geometry)
     if (centroid) {
       lat = centroid.lat
@@ -71,7 +74,6 @@ if (!existsSync(OUTPUT)) mkdirSync(OUTPUT, { recursive: true })
 
 console.log(`Center: ${CENTER.lat}, ${CENTER.lng}`)
 
-// 1. Points (8.5 MB)
 console.log('\n--- Points ---')
 const pointsRaw = JSON.parse(readFileSync(join(PUBLIC, 'points.geojson'), 'utf8'))
 console.log(`Total features: ${pointsRaw.features.length}`)
@@ -80,13 +82,11 @@ const points100 = filterByRadius(pointsRaw.features, 100)
 console.log(`Within 100km: ${points100.length}`)
 writeFileSync(join(OUTPUT, 'points.geojson'), JSON.stringify({ type: 'FeatureCollection', features: points100 }, null, 2))
 
-// Also save zone-specific subsets for reference
 const points50 = filterByRadius(pointsRaw.features, 50)
 const points25 = filterByRadius(pointsRaw.features, 25)
 console.log(`Within 50km: ${points50.length}`)
 console.log(`Within 25km: ${points25.length}`)
 
-// 2. Overlaps
 console.log('\n--- Overlaps ---')
 const overlapsPath = join(PUBLIC, 'points_with_overlaps.geojson')
 if (existsSync(overlapsPath)) {
@@ -98,7 +98,6 @@ if (existsSync(overlapsPath)) {
   console.log('Skipping overlaps (file not found)')
 }
 
-// 3. Polygons
 console.log('\n--- Polygons ---')
 const polysPath = join(PUBLIC, 'polygons.geojson')
 if (existsSync(polysPath)) {
@@ -111,7 +110,6 @@ if (existsSync(polysPath)) {
   console.log('Skipping polygons (file not found)')
 }
 
-// 4. Protected Areas
 console.log('\n--- Protected Areas ---')
 const protectedPath = join(PUBLIC, 'protected-areas.geojson')
 if (existsSync(protectedPath)) {
@@ -124,7 +122,6 @@ if (existsSync(protectedPath)) {
   console.log('Skipping protected areas (file not found)')
 }
 
-// 5. Deep Analysis (copy with regional stats)
 console.log('\n--- Deep Analysis ---')
 const analysisPath = join(PUBLIC, 'deep_analysis.json')
 if (existsSync(analysisPath)) {
@@ -145,7 +142,6 @@ if (existsSync(analysisPath)) {
   console.log(`Regional analysis written`)
 }
 
-// Summary
 console.log('\n=== Summary ===')
 const files = [
   'points.geojson',

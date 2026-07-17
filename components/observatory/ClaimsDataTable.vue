@@ -1,11 +1,24 @@
+/**
+ * components/observatory/ClaimsDataTable.vue
+ * @why Tabular view of observatory claims with sort, filter, and pagination
+ * @component ClaimsDataTable
+ * @props visible: boolean
+  data
+ * @emits 'close': []
+  'fly-to': [coords: [number, number]]
+ * @deps vue (ref, computed, watch); @/lib/map-utils (RARE_EARTH_CATEGORIES)
+ */
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
-      <div v-if="visible" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="$emit('close')">
-        <div class="obs-datatable" role="dialog" aria-label="Claims data table">
+      <div v-if="visible" class="claims-dt-backdrop fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="$emit('close')">
+        <div class="obs-datatable" role="dialog" aria-label="Claims data table" ref="panelRef">
           <div class="obs-datatable__header">
             <div class="flex items-center gap-3">
-              <h2 class="obs-datatable__title">📊 Claims Data</h2>
+              <h2 class="obs-datatable__title">
+                <Icon name="lucide:table" class="w-3 h-3 inline mr-1" />
+                Claims Data
+              </h2>
               <span class="obs-datatable__count">{{ sortedData.length.toLocaleString() }} claims</span>
             </div>
             <div class="flex items-center gap-2">
@@ -36,7 +49,7 @@
                     <span class="obs-datatable__cat-dot" :style="{ background: catColor(row.c) }" />
                   </td>
                   <td class="obs-datatable__td obs-datatable__td--name">{{ row.n || '—' }}</td>
-                  <td class="obs-datatable__td font-mono text-[8px]">{{ row.p || '—' }}</td>
+                  <td class="obs-datatable__td font-mono text-[clamp(8px,1.3vw,11px)]">{{ row.p || '—' }}</td>
                   <td class="obs-datatable__td">{{ row.u || '—' }}</td>
                   <td class="obs-datatable__td font-mono">{{ row.y || '—' }}</td>
                   <td class="obs-datatable__td">{{ row.f || '—' }}</td>
@@ -55,9 +68,11 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, computed, watch } from 'vue'
 import type { RareEarthFeatureSummary } from '@/composables/useRareEarthData'
 import { RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const props = defineProps<{
   visible: boolean
@@ -75,6 +90,9 @@ const sortKey = ref<string>('ds')
 const sortDir = ref<'asc' | 'desc'>('desc')
 const PAGE_SIZE = 50
 const visibleCount = ref(PAGE_SIZE)
+const panelRef = ref<HTMLElement | null>(null)
+const isActive = computed(() => props.visible)
+useFocusTrap(panelRef, { active: isActive })
 
 const columns = [
   { key: 'c', label: '' },
@@ -144,6 +162,7 @@ function formatHa(ha: number): string {
 watch(() => props.visible, (v) => {
   if (v) visibleCount.value = PAGE_SIZE
 })
+
 </script>
 
 <style scoped>
@@ -164,29 +183,29 @@ watch(() => props.visible, (v) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: clamp(8px, 1.5vw, 16px) clamp(10px, 2vw, 20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  gap: 8px;
+  gap: clamp(6px, 1.2vw, 12px);
 }
 .obs-datatable__title {
   margin: 0;
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
   font-weight: 700;
   color: #e8e8e8;
 }
 .obs-datatable__count {
-  font-size: 9px;
+  font-size: clamp(9px, 1.4vw, 12px);
   color: rgba(255, 255, 255, 0.35);
   background: rgba(255, 255, 255, 0.06);
-  padding: 2px 6px;
+  padding: clamp(2px, 0.5vw, 6px);
   border-radius: 4px;
 }
 .obs-datatable__search {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
-  padding: 4px 8px;
-  font-size: 10px;
+  padding: clamp(2px, 0.5vw, 6px) clamp(6px, 1.2vw, 12px);
+  font-size: clamp(10px, 1.5vw, 13px);
   color: rgba(255, 255, 255, 0.8);
   outline: none;
   width: 120px;
@@ -200,10 +219,10 @@ watch(() => props.visible, (v) => {
   background: transparent;
   border: 0;
   color: rgba(255, 255, 255, 0.4);
-  font-size: 18px;
+  font-size: clamp(18px, 3vw, 26px);
   cursor: pointer;
   line-height: 1;
-  padding: 2px 6px;
+  padding: clamp(2px, 0.5vw, 6px);
   border-radius: 4px;
   transition: all 0.15s;
 }
@@ -225,8 +244,8 @@ watch(() => props.visible, (v) => {
   z-index: 1;
 }
 .obs-datatable__th {
-  padding: 6px 8px;
-  font-size: 8px;
+  padding: clamp(4px, 0.8vw, 8px) clamp(6px, 1.2vw, 12px);
+  font-size: clamp(8px, 1.3vw, 11px);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -250,8 +269,8 @@ watch(() => props.visible, (v) => {
   background: rgba(231, 76, 60, 0.06);
 }
 .obs-datatable__td {
-  padding: 5px 8px;
-  font-size: 10px;
+  padding: clamp(4px, 0.8vw, 8px) clamp(6px, 1.2vw, 12px);
+  font-size: clamp(10px, 1.5vw, 13px);
   color: rgba(255, 255, 255, 0.6);
   white-space: nowrap;
 }
@@ -270,9 +289,10 @@ watch(() => props.visible, (v) => {
 }
 .obs-datatable__danger {
   font-weight: 700;
-  font-size: 9px;
+  font-size: clamp(9px, 1.4vw, 12px);
 }
 
+.claims-dt-backdrop { z-index: var(--obs-z-modal-backdrop); }
 .modal-fade-enter-active { transition: opacity 0.2s ease; }
 .modal-fade-leave-active { transition: opacity 0.15s ease; }
 .modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }

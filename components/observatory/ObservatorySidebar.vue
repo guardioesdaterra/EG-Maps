@@ -1,3 +1,15 @@
+/**
+ * components/observatory/ObservatorySidebar.vue
+ * @why Sidebar for vulcan observatory — search, filters, phase selection, results list
+ * @component ObservatorySidebar
+ * @props activeTab: string | null
+  dangerItems
+ * @emits 'update:activeTab': [tab: ObservatoryTab['key']]
+  'update:showAll': [v: boolean]
+  'fly-to-enterprise': [name: string]
+  'fly-to-coord': [coord: [number, number]]
+ * @deps vue (computed, onMounted, ref, watch); @/lib/observatory-tabs (OBSERVATORY_TABS, type ObservatoryTab); @/composables/useUrlState (useUrlState); @/composables/useFocusTrap (useFocusTrap); @/composables/useObservatorySelection (useObservatorySelection)
+ */
 <template>
   <section
     class="obs-sidebar"
@@ -5,7 +17,7 @@
     role="region"
     :aria-label="t('observatory.sidebarLabel')"
   >
-    <!-- Collapsed tab strip -->
+    
     <Transition name="obs-strip">
       <nav v-if="collapsed" class="obs-tabstrip" :aria-label="t('observatory.sidebarLabel')">
         <button
@@ -31,7 +43,7 @@
       </nav>
     </Transition>
 
-    <!-- Expanded panel -->
+    
     <Transition name="obs-panel">
       <div v-if="!collapsed" class="obs-panel" ref="panelEl" :aria-hidden="false">
         <header class="obs-panel__head">
@@ -106,6 +118,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed, onMounted, ref, watch } from 'vue'
 import { OBSERVATORY_TABS, type ObservatoryTab } from '@/lib/observatory-tabs'
 import type { SpeculatorIndexEntry } from '@/lib/observatory-analysis'
@@ -140,7 +153,6 @@ const emit = defineEmits<{
 const tabs: ObservatoryTab[] = OBSERVATORY_TABS
 const collapsed = ref(true)
 
-// URL state sync for active tab + selected feature
 const urlState = useUrlState<{ tab: string; feature: string | null; showAll: string | null }>('obs', {
   tab: '',
   feature: null,
@@ -148,13 +160,10 @@ const urlState = useUrlState<{ tab: string; feature: string | null; showAll: str
 })
 
 onMounted(() => {
-  // If URL has a tab, sync to parent
   if (urlState.state.value.tab && urlState.state.value.tab !== props.activeTab) {
     emit('update:activeTab', urlState.state.value.tab as ObservatoryTab['key'])
   }
 })
-
-// Sidebar starts collapsed on all screen sizes
 
 watch(() => props.activeTab, (v) => {
   if (v) urlState.set('tab', v)
@@ -165,7 +174,6 @@ watch(() => props.showAll, (v) => {
   urlState.set('showAll', v ? '1' : null)
 })
 
-// Auto-expand sidebar when a marker selects "Open in sidebar" from the map popup
 const obsSel = useObservatorySelection()
 watch(() => obsSel.selection.value.tab, (tab) => {
   if (tab) {
@@ -174,7 +182,6 @@ watch(() => obsSel.selection.value.tab, (tab) => {
   }
 })
 
-// Highlight state for map interaction
 const tabHighlight = ref<string | null>(null)
 
 function onHighlight(name: string | null) {
@@ -233,10 +240,9 @@ function onAddObservation(region: string) {
   window.open(`mailto:observatory@earthguardians.org?subject=${subject}&body=${body}`, '_blank')
 }
 
-// Focus trap when expanded
 const panelEl = ref<HTMLElement | null>(null)
-// useFocusTrap is registered on the panel (side-effect only)
 useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activeTab) })
+
 </script>
 
 <style scoped>
@@ -251,8 +257,8 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
 .obs-tabstrip {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 4px;
+  gap: clamp(3px, 0.5vw, 4px);
+  padding: clamp(3px, 0.5vw, 4px);
   background: rgba(0, 0, 0, 0.88);
   backdrop-filter: blur(16px) saturate(1.2);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
@@ -292,14 +298,14 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
 }
 
 .obs-tabstrip__btn--expand {
-  margin-top: 4px;
+  margin-top: clamp(3px, 0.5vw, 4px);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 @media (max-width: 768px) {
   .obs-tabstrip {
-    gap: 2px;
-    padding: 3px;
+    gap: clamp(1px, 0.5vw, 2px);
+    padding: clamp(2px, 0.5vw, 3px);
     border-radius: 8px;
   }
   .obs-tabstrip__btn {
@@ -347,13 +353,13 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
 .obs-panel__tab {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 10px 10px;
+  gap: clamp(3px, 0.5vw, 4px);
+  padding: clamp(8px, 1.5vw, 12px) clamp(8px, 1.5vw, 12px);
   background: transparent;
   border: 0;
   border-bottom: 2px solid transparent;
   color: rgba(255, 255, 255, 0.5);
-  font-size: 10px;
+  font-size: clamp(10px, 1.5vw, 13px);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -387,27 +393,27 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   box-shadow: 0 0 8px rgba(231, 76, 60, 0.4);
 }
 
-.obs-panel__tab-icon { font-size: 12px; }
-.obs-panel__tab-label { font-size: 10px; }
+.obs-panel__tab-icon { font-size: clamp(12px, 1.8vw, 15px); }
+.obs-panel__tab-label { font-size: clamp(10px, 1.5vw, 13px); }
 
 @media (max-width: 768px) {
   .obs-panel__tab {
-    padding: 8px 6px;
-    font-size: 9px;
-    gap: 2px;
+    padding: clamp(6px, 1.5vw, 10px) clamp(4px, 1vw, 8px);
+    font-size: clamp(9px, 1.4vw, 12px);
+    gap: clamp(1px, 0.5vw, 2px);
   }
   .obs-panel__tab-icon {
-    font-size: 10px;
+    font-size: clamp(10px, 1.5vw, 13px);
   }
 }
 
 .obs-panel__collapse {
-  padding: 0 12px;
+  padding: 0 clamp(8px, 1.5vw, 14px);
   background: transparent;
   border: 0;
   border-left: 1px solid rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.45);
-  font-size: 14px;
+  font-size: clamp(14px, 2vw, 18px);
   cursor: pointer;
   font-family: inherit;
   height: 100%;
@@ -420,7 +426,7 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
 .obs-panel__body {
   flex: 1;
   overflow-y: auto;
-  padding: 6px;
+  padding: clamp(4px, 1vw, 8px);
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
@@ -431,18 +437,17 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
 
 @media (max-width: 768px) {
   .obs-panel__body {
-    padding: 4px;
+    padding: clamp(3px, 0.5vw, 4px);
   }
 }
 
 .obs-panel__empty {
-  padding: 24px 16px;
+  padding: clamp(16px, 2vw, 28px) clamp(12px, 1.5vw, 20px);
   text-align: center;
   color: rgba(255, 255, 255, 0.4);
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
 }
 
-/* Transitions */
 .obs-strip-enter-active,
 .obs-strip-leave-active {
   transition: all 0.2s ease;

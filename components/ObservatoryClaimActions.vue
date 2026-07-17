@@ -1,3 +1,11 @@
+/**
+ * components/ObservatoryClaimActions.vue
+ * @why Action buttons for observatory claims — approve, reject, request changes
+ * @component ObservatoryClaimActions
+ * @props processo: string | null | undefined
+  ano
+ * @deps vue (computed); @/lib/observatory-analysis (buildAnmVerifyUrl)
+ */
 <template>
   <div class="ree-claim-actions">
     <a v-if="anmUrl" :href="anmUrl" target="_blank" rel="noopener" class="ree-claim-action ree-claim-action--primary">
@@ -12,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed } from 'vue'
 import { buildAnmVerifyUrl } from '@/lib/observatory-analysis'
 
@@ -45,6 +54,7 @@ const mailtoUrl = computed(() => {
   ]
   return `mailto:observatory@earthguardians.org?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`
 })
+
 </script>
 
 <style scoped>

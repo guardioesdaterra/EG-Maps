@@ -907,7 +907,7 @@
 .maplibregl-ctrl-attrib {
   background: transparent !important;
   color: var(--text-secondary);
-  font-size: 10px;
+  font-size: clamp(10px, 1.5vw, 13px);
 }
 .maplibregl-ctrl-attrib .maplibregl-ctrl-attrib-inner,
 .maplibregl-ctrl-attrib a {
@@ -1491,8 +1491,8 @@
 :root {
   --obs-panel-bg: rgba(0, 0, 0, 0.75);
   --obs-panel-bg-dark: rgba(0, 0, 0, 0.82);
-  --obs-panel-border: rgba(255, 255, 255, 0.08);
-  --obs-panel-border-light: rgba(255, 255, 255, 0.06);
+  --obs-panel-border: rgba(255, 255, 255, 0.06);
+  --obs-panel-border-light: rgba(255, 255, 255, 0.04);
   --obs-panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --obs-panel-shadow-deep: 0 8px 32px rgba(0, 0, 0, 0.5);
   --obs-panel-inset: 0 0 0 1px rgba(255, 255, 255, 0.03);
@@ -1515,6 +1515,15 @@
   --obs-magenta: #ff00ff;
   --obs-amber: #f39c12;
   --obs-gray: #888;
+  /* ── z-index scale ── */
+  --obs-z-topbar: 550;
+  --obs-z-leftbar: 520;
+  --obs-z-rightslot: 510;
+  --obs-z-bottombar: 550;
+  --obs-z-modal-backdrop: 9990;
+  --obs-z-modal: 9991;
+  --obs-z-modal-close: 9992;
+  --obs-z-toast: 10000;
 }
 
 /* ── Base fade transition (loading, errors, simple toggles) ── */

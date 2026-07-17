@@ -1,4 +1,12 @@
+/**
+ * components/map/ProjectPopup.vue
+ * @why Project grant popup for map markers — shows title, funder, amount, category badge
+ * @component ProjectPopup
+ * @props project: ProjectData | null
+ * @deps vue (computed); @/lib/colors (getProjectColorByBeneficiaries); @/lib/utils (formatCompact)
+ */
 <script setup lang="ts">
+
 import { computed } from 'vue'
 import type { ProjectData } from '@/lib/types'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
@@ -32,6 +40,7 @@ const hasStats = computed(() => {
   if (!props.project) return false
   return props.project.direct_beneficiaries > 0 || props.project.indirect_beneficiaries > 0
 })
+
 </script>
 
 <template>

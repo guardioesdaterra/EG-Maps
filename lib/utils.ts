@@ -1,5 +1,9 @@
 /**
- * Lightweight, framework-agnostic utilities used across components.
+ * lib/utils.ts
+ * @why General-purpose utility functions — formatCompact, throttle, debounce, clamp, escapeHtml, cn
+ * @functions formatCompact, formatRelativeTime, escapeHtml, clamp, debounce, throttle, cn
+ * @deps clsx (clsx, type ClassValue); tailwind-merge (twMerge)
+ * @connections components/DataBubble.vue, components/map/ProjectPopup.vue, components/ui/Button.vue, components/ui/Input.vue, components/ui/OverlayImage.vue, components/ui/Tooltip.vue, composables/useMapMarker.ts, pages/index.vue, pages/info.vue
  */
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -75,7 +79,6 @@ export function clamp(value: number, min: number, max: number): number {
 /**
  * Stable debounce implementation. Cancels previous invocations within `wait` ms.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounce<T extends (..._args: any[]) => void>(
   fn: T,
   wait: number,

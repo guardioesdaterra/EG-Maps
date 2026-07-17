@@ -1,6 +1,13 @@
+/**
+ * components/MapView2D.vue
+ * @why 2D map container — instantiates UnifiedMap with dataset-appropriate configuration
+ * @component MapView2D
+ * @emits mapInit: [map: maplibregl.Map]
+ * @deps vue (ref, watch, computed, defineAsyncComponent); @/composables/useMapBase (useMapBase); ~/composables/useSpeciesData (useSpeciesIndex)
+ */
 <template>
   <div class="w-full h-[100svh] relative overflow-hidden bg-black" role="main" aria-label="Interactive Map Visualization">
-    <!-- Full-screen loading overlay (only during map init) -->
+    
     <Transition name="fade">
       <div v-if="isLoading" class="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center">
         <div class="relative mb-5 xs:mb-6">
@@ -8,7 +15,7 @@
           <div class="absolute inset-0 w-16 xs:w-20 h-16 xs:h-20 rounded-full border-4 border-white/10 border-b-white/50 animate-spin" style="animation-delay: 0.5s; animation-direction: reverse" />
         </div>
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('general.loading') }}</p>
-        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'endangered-species' ? t('home.species').toLowerCase() : t('home.observatoryOfVulcan').toLowerCase() }) }}</p>
+        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'endangered-species' ? t('home.species').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews').toLowerCase() : t('home.observatoryOfVulcan').toLowerCase() }) }}</p>
         <div class="mt-3 xs:mt-4 flex gap-1">
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
@@ -17,7 +24,7 @@
       </div>
     </Transition>
 
-    <!-- Non-blocking data loading indicator (shows on top of rendered map) -->
+    
     <Transition name="fade">
       <div v-if="showDataLoading" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-[99] flex items-center gap-2 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-sm border border-cyan-800/40 pointer-events-none">
         <div class="w-3 h-3 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
@@ -74,7 +81,7 @@
       </div>
     </Transition>
 
-    <!-- Species overlay -->
+    
     <Transition name="scale-fade">
       <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Species details" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
         <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" aria-label="Close species details"><Icon name="lucide:x" class="h-6 w-6" /></button>
@@ -87,7 +94,7 @@
       </div>
     </Transition>
 
-    <!-- Project overlay -->
+    
     <Transition name="scale-fade">
       <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Project details" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
         <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
@@ -97,7 +104,7 @@
       </div>
     </Transition>
 
-    <!-- Crew overlay -->
+    
     <Transition name="scale-fade">
       <div v-if="showCrewOverlay" ref="crewOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew region details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
         <button ref="crewCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
@@ -108,15 +115,19 @@
     </Transition>
 
     <SpeciesPanel @species-selected="handleSpeciesSelected" />
+    <ImportDataWidget v-if="!hideAll" />
   </div>
 </template>
 
 <script setup lang="ts">
+
 import { ref, watch, computed, defineAsyncComponent } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import type { MapBaseProps } from '@/composables/useMapBase'
 import { useMapBase } from '@/composables/useMapBase'
 import { useSpeciesIndex } from '~/composables/useSpeciesData'
+import { useMapCustomLayers } from '~/composables/useMapCustomLayers'
+import ImportDataWidget from '~/components/ImportDataWidget.vue'
 
 const SpeciesFilterPanel = defineAsyncComponent(() => import('~/components/SpeciesFilterPanel.vue'))
 const ProjectFilterPanel = defineAsyncComponent(() => import('~/components/ProjectFilterPanel.vue'))
@@ -135,8 +146,13 @@ const ctx = useMapBase({
   props,
   mapContainerRef,
   hexCanvasRef,
-  onMapReady: (map) => emit('mapInit', map),
+  onMapReady: (map) => {
+    emit('mapInit', map)
+    customLayerCtx.syncNow()
+  },
 })
+
+const customLayerCtx = useMapCustomLayers(ctx.map)
 
 const showDataLoading = ref(false)
 const dataStatusText = ref('')
@@ -172,7 +188,6 @@ if (props.defaultDataset === 'endangered-species') {
     }
   })
   watch(speciesIdx, (val) => {
-    // Only write data when non-empty — avoids wasted rebuild with 0 features
     if (val.length > 0) {
       ctx.speciesIndexData.value = val
     }
@@ -211,4 +226,5 @@ const {
   navigateToLocation,
   initMap,
 } = ctx
+
 </script>

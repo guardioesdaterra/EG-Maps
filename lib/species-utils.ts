@@ -1,3 +1,11 @@
+/**
+ * lib/species-utils.ts
+ * @why Species utility functions — status label formatting, taxonomy helpers, region matching
+ * @functions taxonomicGroupLabel, getTaxonomicGroupLabels, getLocalizedSpecies, findSpeciesAtCoord
+ * @types PopupSpecies
+ * @deps ./map-utils (GROUP_COLORS)
+ * @connections composables/useMapCore.ts, composables/useMapMarker.ts
+ */
 import type { Species } from './types'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import { GROUP_COLORS } from './map-utils'

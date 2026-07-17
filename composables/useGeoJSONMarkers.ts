@@ -1,9 +1,10 @@
 /**
- * GeoJSON converter utilities for marker data.
- * Transforms SpeciesIndexItem[] and ProjectData[] into GeoJSON FeatureCollections
- * for MapLibre's native clustering renderer.
+ * composables/useGeoJSONMarkers.ts
+ * @why High-performance GeoJSON marker rendering — native MapLibre clustering for 500+ points
+ * @functions speciesIndexToGeoJSON, projectsToGeoJSON, clearGeoJSONCache
+ * @interfaces SpeciesIndexItem
+ * @deps @/lib/map-utils (GROUP_COLORS); @/lib/colors (getProjectColorByBeneficiaries)
  */
-
 import { GROUP_COLORS } from '@/lib/map-utils'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
 
@@ -23,7 +24,6 @@ export interface SpeciesIndexItem {
 
 const GROUP_COLORS_HEX: Record<string, string> = GROUP_COLORS
 
-// Content-hash cache so filter changes with same data hit the cache
 const speciesGeoCache = new Map<string, GeoJSON.FeatureCollection>()
 const projectsGeoCache = new Map<string, GeoJSON.FeatureCollection>()
 const MAX_CACHE_SIZE = 20
@@ -57,7 +57,6 @@ function evictOldest(cache: Map<string, GeoJSON.FeatureCollection>) {
   }
 }
 
-// Lightweight index for markers - only 3.2MB vs 35MB full data
 export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.FeatureCollection {
 
   const key = hashSpeciesIndex(species)
@@ -92,7 +91,6 @@ export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.Feat
   return result
 }
 
-// Convert project data to GeoJSON FeatureCollection
 export function projectsToGeoJSON(projects: { latitude: number; longitude: number; project_title: string; country_province: string; direct_beneficiaries: number; indirect_beneficiaries: number }[]): GeoJSON.FeatureCollection {
   const key = hashProjects(projects)
   const cached = projectsGeoCache.get(key)
@@ -129,7 +127,6 @@ export function projectsToGeoJSON(projects: { latitude: number; longitude: numbe
   return result
 }
 
-// Clear caches when data changes
 export function clearGeoJSONCache() {
   speciesGeoCache.clear()
   projectsGeoCache.clear()

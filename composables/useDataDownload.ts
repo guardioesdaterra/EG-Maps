@@ -1,3 +1,12 @@
+/**
+ * composables/useDataDownload.ts
+ * @why Data export — converts current view data to CSV, GeoJSON, or PNG screenshot
+ * @functions downloadData, downloadAllDatasets
+ * @consts DOWNLOADABLE_DATASETS
+ * @interfaces DownloadableDataset
+ * @deps @/lib/enterprise-data (ENTERPRISES, CORPORATE_CONNECTIONS); @/lib/observatory-timeline (GEOPOLITICAL_TIMELINE, MINING_PHASE_TIMELINE); @/lib/map-utils (RARE_EARTH_CATEGORIES)
+ * @connections components/DataDownloadPanel.vue
+ */
 import { ENTERPRISES, CORPORATE_CONNECTIONS } from '@/lib/enterprise-data'
 import { GEOPOLITICAL_TIMELINE, MINING_PHASE_TIMELINE } from '@/lib/observatory-timeline'
 import { RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
@@ -224,7 +233,6 @@ export async function downloadAllDatasets() {
     try {
       await downloadData(ds)
     } catch {
-      // skip failed dataset, continue with next
     }
   }
 }

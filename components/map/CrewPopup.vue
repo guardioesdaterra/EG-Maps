@@ -1,4 +1,13 @@
+/**
+ * components/map/CrewPopup.vue
+ * @why Crew member popup for map markers — shows name, role, location, join date
+ * @component CrewPopup
+ * @props crew: CrewRegionData | CrewLocation | null
+  isLocation?
+ * @deps vue (computed)
+ */
 <script setup lang="ts">
+
 import { computed } from 'vue'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 
@@ -47,6 +56,7 @@ const mapsUrl = computed(() => {
   if (!props.crew || props.isLocation) return '#'
   return `https://www.google.com/maps?q=${(props.crew as CrewRegionData).latitude},${(props.crew as CrewRegionData).longitude}`
 })
+
 </script>
 
 <template>

@@ -1,6 +1,18 @@
+/**
+ * components/observatory/tabs/DangerTab.vue
+ * @why Danger zone alerts tab — shows safety warnings and hazardous area notifications
+ * @component DangerTab
+ * @props items: SpeculatorIndexEntry[]
+  showAll
+ * @emits 'fly-to-enterprise': [name: string]
+  'update:showAll': [v: boolean]
+  'update:highlight': [v: string | null]
+  'report-enterprise': [name: string, score: number, flags: string[]]
+ * @deps vue (computed, ref, reactive, watch)
+ */
 <template>
   <div class="obs-tab">
-    <!-- HEADER -->
+    
     <div class="obs-tab__head">
       <h3 class="obs-tab__title">
         <Icon name="lucide:radar" class="obs-tab__title-icon" />
@@ -19,7 +31,7 @@
       </button>
     </div>
 
-    <!-- EDUCATIONAL: What is the Speculator Index? -->
+    
     <div class="obs-expand">
       <button
         type="button"
@@ -43,13 +55,13 @@
       </Transition>
     </div>
 
-    <!-- EMPTY -->
+    
     <div v-if="items.length === 0" class="obs-tab__empty">
       <Icon name="lucide:search-x" class="obs-tab__empty-icon" />
       {{ t('observatory.dangerPanel.empty') }}
     </div>
 
-    <!-- ENTERPRISES BY TIER -->
+    
     <template v-else>
       <template v-for="(tier, tIdx) in sortedTiers" :key="tier.label">
         <div class="obs-tier-head">
@@ -173,6 +185,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed, ref, reactive, watch } from 'vue'
 import type { SpeculatorIndexEntry } from '@/lib/observatory-analysis'
 
@@ -215,7 +228,6 @@ const visibleItems = computed(() => {
   return props.showAll ? sortedItems.value : sortedItems.value.slice(0, 20)
 })
 
-// For backward compat with the "show all" toggle mode, also compute old-style paging
 const totalPages = computed(() => Math.max(1, Math.ceil(sortedItems.value.length / pageSize)))
 
 const sortedTiers = computed(() => {
@@ -296,6 +308,7 @@ function onFlyTo(name: string) {
 function openReport(d: SpeculatorIndexEntry) {
   emit('report-enterprise', d.displayName, d.suspicionScore, d.suspicionFlags)
 }
+
 </script>
 
 <style scoped>
@@ -308,7 +321,7 @@ function openReport(d: SpeculatorIndexEntry) {
 
 .obs-tab__title {
   margin: 0; display: flex; align-items: center; gap: 6px;
-  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  font-size: clamp(9px, 1.4vw, 12px); font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.06em; color: var(--obs-text-label);
 }
 
@@ -316,8 +329,8 @@ function openReport(d: SpeculatorIndexEntry) {
 
 .obs-tab__toggle {
   background: transparent; border: 1px solid var(--obs-panel-border);
-  color: var(--obs-text-label); font-size: 8px; font-weight: 700;
-  padding: 3px 8px; border-radius: 4px; cursor: pointer; font-family: inherit;
+  color: var(--obs-text-label); font-size: clamp(8px, 1.3vw, 11px); font-weight: 700;
+  padding: 3px clamp(6px, 1.2vw, 12px); border-radius: 4px; cursor: pointer; font-family: inherit;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
@@ -328,21 +341,20 @@ function openReport(d: SpeculatorIndexEntry) {
 }
 
 .obs-tab__empty {
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  padding: 28px 12px; text-align: center;
-  color: var(--obs-text-dim); font-size: 10px;
+  display: flex; flex-direction: column; align-items: center; gap: clamp(6px, 1.2vw, 14px);
+  padding: clamp(14px, 2vw, 28px) clamp(8px, 1.5vw, 16px); text-align: center;
+  color: var(--obs-text-dim); font-size: clamp(10px, 1.5vw, 13px);
 }
 
 .obs-tab__empty-icon { width: 20px; height: 20px; opacity: 0.4; }
 
-/* Expandable info section */
 .obs-expand { margin: 0 2px; }
 
 .obs-expand__btn {
   display: inline-flex; align-items: center; gap: 4px;
-  font-size: 8px; font-weight: 600; color: var(--obs-text-dim);
+  font-size: clamp(8px, 1.3vw, 11px); font-weight: 600; color: var(--obs-text-dim);
   background: none; border: none; cursor: pointer; font-family: inherit;
-  padding: 3px 6px; border-radius: 3px;
+  padding: 3px clamp(4px, 1vw, 8px); border-radius: 3px;
   transition: color 0.12s, background 0.12s;
 }
 
@@ -351,8 +363,8 @@ function openReport(d: SpeculatorIndexEntry) {
 .obs-expand__icon { width: 10px; height: 10px; }
 
 .obs-expand__body {
-  font-size: 9px; color: var(--obs-text-body); line-height: 1.5;
-  padding: 6px 8px; margin-top: 2px;
+  font-size: clamp(9px, 1.4vw, 12px); color: var(--obs-text-body); line-height: 1.5;
+  padding: clamp(4px, 1vw, 8px) clamp(6px, 1.2vw, 12px); margin-top: 2px;
   background: rgba(255,255,255,0.02); border-radius: 5px;
   border: 1px solid var(--obs-panel-border);
 }
@@ -367,10 +379,9 @@ function openReport(d: SpeculatorIndexEntry) {
 .obs-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
 .obs-expand__footnote {
-  font-size: 8px; color: var(--obs-text-dim); font-style: italic; margin: 6px 0 0;
+  font-size: clamp(8px, 1.3vw, 11px); color: var(--obs-text-dim); font-style: italic; margin: 6px 0 0;
 }
 
-/* Tier headers */
 .obs-tier-head {
   display: flex; align-items: center; gap: 6px;
   padding: 5px 4px 3px; margin-top: 2px;
@@ -379,12 +390,12 @@ function openReport(d: SpeculatorIndexEntry) {
 .obs-tier-head__accent { width: 3px; height: 12px; border-radius: 2px; flex-shrink: 0; }
 
 .obs-tier-head__label {
-  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  font-size: clamp(9px, 1.4vw, 12px); font-weight: 800; text-transform: uppercase;
   letter-spacing: 0.06em; flex: 1;
 }
 
 .obs-tier-head__count {
-  font-size: 8px; font-weight: 700; font-family: ui-monospace, monospace;
+  font-size: clamp(8px, 1.3vw, 11px); font-weight: 700; font-family: ui-monospace, monospace;
   color: var(--obs-text-dim); background: rgba(255,255,255,0.04);
   padding: 1px 5px; border-radius: 3px;
 }
@@ -443,23 +454,23 @@ function openReport(d: SpeculatorIndexEntry) {
 
 .obs-card__btn-accent { width: 3px; flex-shrink: 0; }
 
-.obs-card__btn-body { flex: 1; padding: 6px 8px; min-width: 0; }
+.obs-card__btn-body { flex: 1; padding: clamp(4px, 1vw, 8px) clamp(6px, 1.2vw, 12px); min-width: 0; }
 
 .obs-card__btn-top { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 
 .obs-card__btn-score {
-  display: inline-block; font-size: 8px; font-weight: 800;
+  display: inline-block; font-size: clamp(8px, 1.3vw, 11px); font-weight: 800;
   padding: 1px 4px; border-radius: 3px; color: #fff;
   font-family: ui-monospace, monospace; line-height: 1.3;
 }
 
 .obs-card__btn-name {
-  flex: 1; font-size: 10px; font-weight: 600; color: var(--obs-text-primary);
+  flex: 1; font-size: clamp(10px, 1.5vw, 13px); font-weight: 600; color: var(--obs-text-primary);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
 }
 
 .obs-card__btn-count {
-  font-size: 7px; font-weight: 700; color: var(--obs-text-dim);
+  font-size: clamp(7px, 1.2vw, 10px); font-weight: 700; color: var(--obs-text-dim);
   font-family: ui-monospace, monospace;
 }
 
@@ -471,27 +482,27 @@ function openReport(d: SpeculatorIndexEntry) {
 
 .obs-card__btn-bar-fill { height: 100%; border-radius: 2px; transition: width 0.25s ease; }
 
-.obs-card__btn-meta { display: flex; gap: 6px; flex-wrap: wrap; font-size: 8px; color: var(--obs-text-muted); font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.obs-card__btn-meta { display: flex; gap: 6px; flex-wrap: wrap; font-size: clamp(8px, 1.3vw, 11px); color: var(--obs-text-muted); font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
 
 .obs-card__meta-icon { width: 7px; height: 7px; margin-right: 1px; vertical-align: middle; opacity: 0.6; }
 
-.obs-card__btn-subs { display: flex; align-items: center; gap: 3px; font-size: 8px; color: var(--obs-text-dim); margin-top: 2px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.obs-card__btn-subs { display: flex; align-items: center; gap: 3px; font-size: clamp(8px, 1.3vw, 11px); color: var(--obs-text-dim); margin-top: 2px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .obs-card__subs-icon { width: 7px; height: 7px; flex-shrink: 0; opacity: 0.5; }
 
 .obs-card__btn-flags { display: flex; gap: 2px; flex-wrap: wrap; margin-top: 3px; }
 
-.obs-card__flag-badge { font-size: 7px; font-weight: 800; padding: 1px 4px; border-radius: 2px; background: rgba(93,173,226,0.12); color: var(--obs-blue-light); letter-spacing: 0.02em; cursor: help; }
+.obs-card__flag-badge { font-size: clamp(7px, 1.2vw, 10px); font-weight: 800; padding: 1px 4px; border-radius: 2px; background: rgba(93,173,226,0.12); color: var(--obs-blue-light); letter-spacing: 0.02em; cursor: help; }
 
 .obs-card__flag-badge--more { background: rgba(255,255,255,0.05); color: var(--obs-text-dim); }
 
 .obs-card__actions {
-  display: flex; flex-direction: column; gap: 2px; padding: 6px 4px;
+  display: flex; flex-direction: column; gap: 2px; padding: clamp(4px, 1vw, 8px) 4px;
   flex-shrink: 0; align-self: center;
 }
 
 .obs-card__action-btn {
-  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  width: clamp(20px, 4vw, 28px); height: clamp(20px, 4vw, 28px); display: flex; align-items: center; justify-content: center;
   background: transparent; border: 1px solid transparent; border-radius: 4px;
   color: var(--obs-text-dim); cursor: pointer; font-family: inherit;
   transition: all 0.12s;
@@ -501,11 +512,11 @@ function openReport(d: SpeculatorIndexEntry) {
 
 .obs-card__action-icon { width: 11px; height: 11px; }
 
-.obs-pager { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 0 2px; }
+.obs-pager { display: flex; align-items: center; justify-content: center; gap: 6px; padding: clamp(4px, 1vw, 8px) 0 2px; }
 
 .obs-pager__btn {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 22px; height: 20px; background: rgba(255,255,255,0.04);
+  width: clamp(20px, 4vw, 28px); height: clamp(18px, 3.5vw, 26px); background: rgba(255,255,255,0.04);
   color: var(--obs-text-body); border: 1px solid var(--obs-panel-border);
   border-radius: 4px; cursor: pointer; font-family: inherit;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
@@ -514,7 +525,7 @@ function openReport(d: SpeculatorIndexEntry) {
 .obs-pager__btn:hover:not(:disabled) { background: rgba(231,76,60,0.1); border-color: rgba(231,76,60,0.25); color: var(--obs-red); }
 .obs-pager__btn:disabled { opacity: 0.25; cursor: not-allowed; }
 .obs-pager__icon { width: 10px; height: 10px; }
-.obs-pager__info { font-size: 8px; font-weight: 600; color: var(--obs-text-muted); font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+.obs-pager__info { font-size: clamp(8px, 1.3vw, 11px); font-weight: 600; color: var(--obs-text-muted); font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
 
 .obs-fade-enter-active, .obs-fade-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
 .obs-fade-enter-from, .obs-fade-leave-to { opacity: 0; transform: translateY(-4px); }

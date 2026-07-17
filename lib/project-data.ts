@@ -1,3 +1,9 @@
+/**
+ * lib/project-data.ts
+ * @why Static project grant definitions — all Earth Guardians grant initiatives with metrics
+ * @consts allProjectsData
+ * @connections components/MapControls.vue, composables/useMapBase.ts, pages/index.vue, pages/info.vue
+ */
 import type { ProjectData } from "./types";
 
 export const allProjectsData: ProjectData[] = [

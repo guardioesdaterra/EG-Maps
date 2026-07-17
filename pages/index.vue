@@ -1,3 +1,9 @@
+/**
+ * pages/index.vue
+ * @why Landing page — hero section, global stats, featured projects, call-to-action
+ * @component index
+ * @deps vue (computed, ref, onMounted, onUnmounted); @/lib/project-data (allProjectsData); @/lib/crew-data (crewOverallStats); @/lib/utils (formatCompact)
+ */
 <template>
   <main class="bg-white dark:bg-[var(--bg-primary)] text-black dark:text-[var(--text-primary)]">
     <section class="mx-auto flex min-h-auto lg:min-h-[100svh] w-container flex-col justify-center px-4 py-8 sm:px-fluid-sm sm:section-padding pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-section">
@@ -37,15 +43,15 @@
           >
             <div class="py-2.5 sm:py-fluid-sm">
               <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ crewOverallStats.totalActiveCrews }}</p>
-              <p class="mt-0.5 text-[10px] xs:text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.crewsCount') }}</p>
+              <p class="mt-0.5 text-[clamp(10px,1.5vw,13px)] xs:text-[clamp(11px,1.6vw,14px)] sm:text-[clamp(12px,1.8vw,15px)] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.crewsCount') }}</p>
             </div>
             <div class="py-2.5 sm:py-fluid-sm">
               <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ projectStats.totalProjects }}</p>
-              <p class="mt-0.5 text-[10px] xs:text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.projectsCount') }}</p>
+              <p class="mt-0.5 text-[clamp(10px,1.5vw,13px)] xs:text-[clamp(11px,1.6vw,14px)] sm:text-[clamp(12px,1.8vw,15px)] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.projectsCount') }}</p>
             </div>
             <div class="py-2.5 sm:py-fluid-sm">
               <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ speciesCount }}</p>
-              <p class="mt-0.5 text-[10px] xs:text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.speciesCount') }}</p>
+              <p class="mt-0.5 text-[clamp(10px,1.5vw,13px)] xs:text-[clamp(11px,1.6vw,14px)] sm:text-[clamp(12px,1.8vw,15px)] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.speciesCount') }}</p>
             </div>
           </div>
         </header>
@@ -65,7 +71,7 @@
                   <div class="flex h-[clamp(2rem,6vw,2.5rem)] w-[clamp(2rem,6vw,2.5rem)] shrink-0 items-center justify-center rounded-full border-2 border-black bg-black dark:bg-[var(--text-primary)] text-white dark:text-black">
                     <Icon :name="dataset.icon" class="h-4 w-4 xs:h-5 xs:w-5" />
                   </div>
-                  <span class="max-w-[60%] truncate rounded-full border border-black dark:border-[var(--border-color)] px-2 py-0.5 sm:chip-fluid text-[10px] sm:text-[11px] font-black uppercase tracking-[0.16em]">
+                  <span class="max-w-[60%] truncate rounded-full border border-black dark:border-[var(--border-color)] px-2 py-0.5 sm:chip-fluid text-[clamp(10px,1.5vw,13px)] sm:text-[clamp(11px,1.6vw,14px)] font-black uppercase tracking-[0.16em]">
                     {{ dataset.label }}
                   </span>
                 </div>
@@ -77,7 +83,7 @@
                 <span
                   v-for="stat in dataset.stats"
                   :key="stat"
-                  class="rounded-fluid border border-black dark:border-[var(--border-color)] px-1.5 py-0.5 sm:chip-fluid text-[10px] sm:text-[11px] font-bold text-black dark:text-[var(--text-primary)]"
+                  class="rounded-fluid border border-black dark:border-[var(--border-color)] px-1.5 py-0.5 sm:chip-fluid text-[clamp(10px,1.5vw,13px)] sm:text-[clamp(11px,1.6vw,14px)] font-bold text-black dark:text-[var(--text-primary)]"
                 >
                   {{ stat }}
                 </span>
@@ -113,6 +119,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { allProjectsData } from '@/lib/project-data'
 import { crewOverallStats } from '@/lib/crew-data'
@@ -156,7 +163,6 @@ onMounted(async () => {
       taxonomicGroupCount.value = allGroups.size
     }
   } catch {
-    // Species data might not be available
   }
 })
 
@@ -232,4 +238,5 @@ const datasets = computed(() => [
     single: true,
   },
 ])
+
 </script>

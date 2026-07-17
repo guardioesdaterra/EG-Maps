@@ -1,3 +1,10 @@
+/**
+ * components/GlobeView.vue
+ * @why 3D globe using Three.js — spherical projection, particle network, connection arcs, markers
+ * @component GlobeView
+ * @emits ready: []
+ * @deps vue (ref, onMounted, onBeforeUnmount)
+ */
 <template>
   <canvas
     ref="canvasRef"
@@ -8,6 +15,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import type { GlobeProject } from '~/composables/useThreeGlobe'
 
@@ -37,4 +45,5 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   globeApi = null
 })
+
 </script>

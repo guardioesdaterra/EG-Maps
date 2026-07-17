@@ -1,3 +1,11 @@
+/**
+ * components/observatory/PhaseFilter.vue
+ * @why Phase/progress filter for observatory claims — select one or more phases
+ * @component PhaseFilter
+ * @props selected: Set<string>
+ * @emits 'update:selected': [value: Set<string>]
+ * @deps vue (reactive, watch); @/lib/map-utils (RARE_EARTH_PHASES)
+ */
 <template>
   <div class="obs-phase-filter">
     <h3 class="obs-phase-filter__title">
@@ -49,6 +57,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { reactive, watch } from 'vue'
 import { RARE_EARTH_PHASES } from '@/lib/map-utils'
 
@@ -93,14 +102,15 @@ function selectNone() {
   selectedPhases.clear()
   emit('update:selected', new Set(selectedPhases))
 }
+
 </script>
 
 <style scoped>
 .obs-phase-filter {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px;
+  gap: clamp(6px, 1.2vw, 12px);
+  padding: clamp(8px, 1.5vw, 16px);
   background: var(--obs-panel-bg-dark);
   border: 1px solid var(--obs-panel-border);
   border-radius: 8px;
@@ -110,8 +120,8 @@ function selectNone() {
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 9px;
+  gap: clamp(4px, 0.8vw, 8px);
+  font-size: clamp(9px, 1.4vw, 12px);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -127,15 +137,15 @@ function selectNone() {
 .obs-phase-filter__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: clamp(2px, 0.5vw, 6px);
 }
 
 .obs-phase-filter__chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
-  font-size: 9px;
+  gap: clamp(2px, 0.5vw, 6px);
+  padding: clamp(2px, 0.5vw, 6px) clamp(6px, 1.2vw, 12px);
+  font-size: clamp(9px, 1.4vw, 12px);
   font-weight: 700;
   border-radius: 5px;
   font-family: inherit;
@@ -169,21 +179,21 @@ function selectNone() {
 .obs-phase-filter__actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: clamp(4px, 0.8vw, 8px);
 }
 
 .obs-phase-filter__action {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  font-size: 8px;
+  gap: clamp(4px, 0.8vw, 8px);
+  font-size: clamp(8px, 1.3vw, 11px);
   font-weight: 600;
   color: var(--obs-text-dim);
   background: none;
   border: none;
   cursor: pointer;
   font-family: inherit;
-  padding: 2px 4px;
+  padding: clamp(2px, 0.5vw, 6px);
   border-radius: 3px;
   transition: color 0.15s, background 0.15s;
 }
@@ -200,6 +210,6 @@ function selectNone() {
 
 .obs-phase-filter__sep {
   color: var(--obs-text-dim);
-  font-size: 8px;
+  font-size: clamp(8px, 1.3vw, 11px);
 }
 </style>

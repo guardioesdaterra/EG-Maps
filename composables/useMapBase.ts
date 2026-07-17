@@ -1,3 +1,11 @@
+/**
+ * composables/useMapBase.ts
+ * @why Shared map initialization logic — tile auth, layer setup, common event handlers
+ * @functions useMapBase
+ * @interfaces MapBaseProps, MapBaseConfig
+ * @deps vue (ref, computed, nextTick, onMounted, onUnmounted, watch, type Ref); @/composables/useMediaQuery (useMediaQuery); @/composables/useI18n (useI18n); @/composables/useFocusTrap (useFocusTrap); @/composables/useMapHexGrid (useMapHexGrid); @/composables/useMapPopup (useSpeciesPopup, useProjectPopup, useCrewPopup, usePreviewCard); @/composables/useMapConnections (useMapConnections); @/composables/useMapMarker (useMapMarker); @/composables/useRareEarthController (useRareEarthController); @/composables/useCulturalLayers (getPopupContent); @/composables/useSpeciesPanel (useSpeciesPanel); @/composables/useAdaptiveQuality (useAdaptiveQuality); @/lib/project-data (allProjectsData); @/lib/map-utils (openRareEarthOverlayPopup); @/composables/useMapLibre (detectWebGLSupport, getMapStyle); @/lib/constants (HEX_GRID)
+ * @connections components/MapView2D.vue, components/MapView3D.vue
+ */
 import { ref, computed, nextTick, onMounted, onUnmounted, watch, type Ref } from 'vue'
 import maplibregl from 'maplibre-gl'
 import { useMediaQuery } from '@/composables/useMediaQuery'
@@ -61,7 +69,6 @@ export function useMapBase(config: MapBaseConfig) {
 
   const quality = useAdaptiveQuality()
 
-  // Derive reactive particle quality config from quality settings
   const particleQuality = computed<ParticleQualityConfig>(() => ({
     particleMaxCount: quality.settings.value.particleMaxCount,
     particleFps: quality.settings.value.particleFps,
@@ -142,7 +149,6 @@ export function useMapBase(config: MapBaseConfig) {
   })
   const onResize = hexGrid.debouncedSetup
 
-  // Watch quality changes and update hex grid dynamically
   watch(() => quality.settings.value.hexGridScale, (newScale) => {
     hexGrid.updateQualityScale(newScale)
   })
@@ -446,9 +452,9 @@ export function useMapBase(config: MapBaseConfig) {
         maxTileCacheSize: qs.maxTileCacheSize,
         maxTileCacheZoomLevels: qs.maxTileCacheZoomLevels,
         antialias: qs.antialiasing,
-        preferCanvas: true,                       // GPU-accelerated markers
-        crossSourceCollisions: false,             // Skip cross-source collision checks
-        maxPitch: qs.antialiasing ? 60 : 45,     // Limit pitch on low-end
+        preferCanvas: true,
+        crossSourceCollisions: false,
+        maxPitch: qs.antialiasing ? 60 : 45,
       } as maplibregl.MapOptions & { antialias?: boolean; preferCanvas?: boolean; crossSourceCollisions?: boolean; maxPitch?: number })
 
       console.timeEnd('[perf] initMap → MapLibre constructor')
@@ -481,8 +487,6 @@ export function useMapBase(config: MapBaseConfig) {
         if (activeDataset.value === 'vulcan-observatory') {
           setupRareEarthLayers()
         }
-        // Skip rebuild if species dataset has no index data yet —
-        // the watcher on speciesIndexData will rebuild when data arrives
         const shouldRebuild = activeDataset.value !== 'endangered-species' || speciesIndexData.value.length > 0
         if (shouldRebuild) {
           rebuildMarkers()

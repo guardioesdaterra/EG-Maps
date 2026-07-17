@@ -476,6 +476,7 @@ watch(activePortalTab, (tab) => {
 })
 
 onMounted(async () => {
+  if (import.meta.server) return
   await Promise.all([loadGrants(), loadStats(), loadScrapedGrants()])
   if (typeof window !== 'undefined' && !window.location.hash.includes('no-dock')) {
     history.replaceState(null, '', '#no-dock')

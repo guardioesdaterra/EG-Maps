@@ -123,6 +123,7 @@ async function invoke(fnName: string, options?: { method?: 'GET' | 'POST' | 'PAT
   const { data, error } = await client.functions.invoke(fnName, {
     method: options?.method || 'GET',
     body: options?.body,
+    timeout: 15000,
   })
   if (error) throw error
   return data

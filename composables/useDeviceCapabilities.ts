@@ -99,7 +99,7 @@ function getWebGLInfo(): { version: number; vendor: string; renderer: string; ma
       gl1.getExtension('WEBGL_lose_context')?.loseContext()
       return { version: 1, vendor, renderer, maxTextureSize }
     }
-  } catch {
+  } catch { /* noop */
   } finally {
     canvas = null
   }

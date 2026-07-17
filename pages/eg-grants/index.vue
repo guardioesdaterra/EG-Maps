@@ -746,8 +746,7 @@ async function checkCrewMembership() {
     if (fnError || !data?.authorized) {
       showCrewPopup.value = true
     }
-  } catch {
-  }
+  } catch { /* ignore */ }
 }
 
 watch(() => user.value?.email, (email) => {

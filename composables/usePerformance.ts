@@ -158,8 +158,7 @@ function startTracking() {
       }
     })
     longTaskObserver.observe({ type: 'longtask', buffered: true } as PerformanceObserverInit)
-  } catch {
-  }
+  } catch { /* noop */ }
 
   try {
     memoryObserver = new PerformanceObserver((list) => {
@@ -170,8 +169,7 @@ function startTracking() {
       }
     })
     memoryObserver.observe({ type: 'layout-shift', buffered: true } as PerformanceObserverInit)
-  } catch {
-  }
+  } catch { /* noop */ }
 
   visibilityHandler = () => {
     if (document.hidden) {

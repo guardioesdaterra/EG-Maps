@@ -1,9 +1,9 @@
+#!/usr/bin/env node
 /**
  * scripts/download-tiles.mjs
  * @why Tile downloader — downloads MapTiler tiles for offline map use
  * @deps fs (readFileSync, existsSync, mkdirSync, writeFileSync, createWriteStream, readdirSync, rmSync); path (resolve, dirname); https (get)
  */
-#!/usr/bin/env node
 
 /**
  * MapTiler Satellite Tile Downloader

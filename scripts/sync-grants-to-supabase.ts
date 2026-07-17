@@ -1,9 +1,9 @@
+#!/usr/bin/env -S npx tsx
 /**
  * scripts/sync-grants-to-supabase.ts
  * @why CLI sync tool — reads grant/agent JSON exports, upserts to Supabase with hash-based change detection
  * @deps node:fs (readFileSync, readdirSync); @supabase/supabase-js (createClient, type SupabaseClient)
  */
-#!/usr/bin/env -S npx tsx
 
 import { readFileSync, readdirSync } from "node:fs";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";

@@ -1,9 +1,9 @@
+#!/usr/bin/env node
 /**
  * scripts/update-locales.mjs
  * @why Locale updater — synchronizes translation keys across all locale files from en.json
  * @deps node:fs (readFileSync, writeFileSync); node:path (resolve)
  */
-#!/usr/bin/env node
 
 /**
  * One-shot script to merge new i18n keys into the existing locale files.

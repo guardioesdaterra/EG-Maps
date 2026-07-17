@@ -54,8 +54,7 @@ onMounted(async () => {
         lng: (f.geometry as GeoJSON.Point).coordinates[0],
       }))
     }
-  } catch {
-  }
+  } catch { /* ignore */ }
 })
 
 useHead({

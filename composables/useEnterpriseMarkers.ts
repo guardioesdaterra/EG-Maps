@@ -226,8 +226,7 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (_enterprise: E
     })
 
     addEnterpriseConnections(map)
-  } catch {
-  }
+  } catch { /* ignore */ }
 }
 
 export function cleanupEnterpriseLayer(map: MapLibreMap) {

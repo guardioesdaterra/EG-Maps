@@ -151,8 +151,7 @@ const makeParticles = (element: HTMLElement) => {
       setTimeout(() => {
         try {
           element.removeChild(particle)
-        } catch {
-        }
+        } catch { /* noop */ }
       }, t)
     }, 30)
   }

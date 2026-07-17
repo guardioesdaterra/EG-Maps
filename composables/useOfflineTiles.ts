@@ -152,8 +152,7 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
       stats.value.cacheSizeBytes += data.byteLength
       stats.value.cacheSizeFormatted = formatBytes(stats.value.cacheSizeBytes)
       tx.oncomplete = () => maybeEvict()
-    } catch {
-    }
+    } catch { /* ignore */ }
   }
 
   async function hasTile(z: number, x: number, y: number): Promise<boolean> {
@@ -195,8 +194,7 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
           }
         }
       }
-    } catch {
-    }
+    } catch { /* ignore */ }
   }
 
   async function clearCache() {
@@ -206,8 +204,7 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
       const tx = db.transaction(STORE_NAME, 'readwrite')
       const store = tx.objectStore(STORE_NAME)
       store.clear()
-    } catch {
-    }
+    } catch { /* ignore */ }
     stats.value.cachedTiles = 0
     stats.value.cacheSizeBytes = 0
     stats.value.cacheSizeFormatted = '0 B'
@@ -312,8 +309,7 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
               const buf = await resp.arrayBuffer()
               await setTile(z, clampedX, y, buf, resp.headers.get('content-type') || 'image/jpeg')
             }
-          } catch {
-          }
+          } catch { /* ignore */ }
           done++
           prefetchProgress.value = done
         }

@@ -323,8 +323,7 @@ export function useSpeciesDetails(dataset?: DatasetParam) {
           cache.set(speciesId, species)
           return species
         }
-      } catch {
-      }
+      } catch { /* ignore */ }
     }
 
     return null
@@ -348,6 +347,5 @@ export async function clearSpeciesCache() {
       tx.oncomplete = () => resolve()
       tx.onerror = () => reject(tx.error)
     })
-  } catch {
-  }
+  } catch { /* ignore */ }
 }

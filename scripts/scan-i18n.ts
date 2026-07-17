@@ -10,7 +10,7 @@ const IGNORE_PATTERNS = [
   /\.git/,
   /\.nuxt/,
   /dist/,
-  /public\/data\
+  /public\/data/,
   /\.test\./,
   /\.spec\./,
 ]

@@ -1,9 +1,9 @@
+#!/usr/bin/env node
+
 /**
  * scripts/overpass-to-geojson.cjs
  * @why Overpass API converter — parses Overpass XML/JSON responses into GeoJSON FeatureCollection
  */
-#!/usr/bin/env node
-
 /**
  * Converts Overpass API JSON output to GeoJSON.
  * Handles ways (polygons/lines) and relations (multipolygons).

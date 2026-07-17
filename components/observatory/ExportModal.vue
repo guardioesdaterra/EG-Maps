@@ -154,7 +154,7 @@ async function doExport() {
       filterSummary: props.filterSummary,
     })
     emit('close')
-  } catch {
+  } catch { /* noop */
   } finally {
     isExporting.value = false
   }

@@ -1,9 +1,9 @@
+#!/usr/bin/env npx tsx
 /**
  * scripts/build-regional-data.ts
  * @why Regional data builder — processes raw species data into region-split JSON files
  * @deps fs (readFileSync, writeFileSync, mkdirSync, existsSync); path (join)
  */
-#!/usr/bin/env npx tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Build regional data subsets for Poços de Caldas Vulcan Alkaline Plateau.

@@ -56,7 +56,7 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
     const srcId = SOURCE_PREFIX + ds.id
     const fc: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: ds.features }
     try { if (!m.getSource(srcId)) m.addSource(srcId, { type: 'geojson', data: fc }) } catch { return }
-    try { (m.getSource(srcId) as any)?.setData(fc) } catch {}
+    try { (m.getSource(srcId) as any)?.setData(fc) } catch { /* noop */ }
     if (hasPoint(ds.features)) {
       try {
         m.addLayer({
@@ -71,7 +71,7 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
             'circle-stroke-color': '#fff',
           },
         })
-      } catch {}
+      } catch { /* noop */ }
       try {
         m.addLayer({
           id: LAYER_LABEL_PREFIX + ds.id,
@@ -85,7 +85,7 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
           },
           paint: { 'text-color': ds.color, 'text-halo-color': '#fff', 'text-halo-width': 1 },
         })
-      } catch {}
+      } catch { /* noop */ }
     }
     if (hasLine(ds.features)) {
       try {
@@ -95,7 +95,7 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
           source: srcId,
           paint: { 'line-color': ds.color, 'line-width': 2, 'line-opacity': 0.7 },
         })
-      } catch {}
+      } catch { /* noop */ }
     }
     if (hasPolygon(ds.features)) {
       try {
@@ -105,7 +105,7 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
           source: srcId,
           paint: { 'fill-color': ds.color, 'fill-opacity': 0.15, 'fill-outline-color': ds.color },
         })
-      } catch {}
+      } catch { /* noop */ }
     }
   }
 
@@ -113,7 +113,7 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
     for (const [prefix, props] of [[LAYER_CIRCLE_PREFIX, [['circle-color', color]]], [LAYER_LABEL_PREFIX, [['text-color', color]]], [LAYER_LINE_PREFIX, [['line-color', color]]], [LAYER_FILL_PREFIX, [['fill-color', color], ['fill-outline-color', color]]]] as const) {
       const id = prefix + dsId
       for (const [prop, val] of props) {
-        try { m.setPaintProperty(id, prop, val) } catch {}
+        try { m.setPaintProperty(id, prop, val) } catch { /* noop */ }
       }
     }
   }
@@ -122,10 +122,10 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
     const prefixes = [LAYER_CIRCLE_PREFIX, LAYER_LABEL_PREFIX, LAYER_LINE_PREFIX, LAYER_FILL_PREFIX]
     for (const p of prefixes) {
       const id = p + dsId
-      try { if (m.getLayer(id)) m.removeLayer(id) } catch { }
+      try { if (m.getLayer(id)) m.removeLayer(id) } catch { /* noop */ }
     }
     const srcId = SOURCE_PREFIX + dsId
-    try { if (m.getSource(srcId)) m.removeSource(srcId) } catch { }
+    try { if (m.getSource(srcId)) m.removeSource(srcId) } catch { /* noop */ }
   }
 
   watch(datasets, (all) => {
@@ -145,7 +145,7 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
         try {
           const src = m.getSource(srcId) as any
           if (src && src.setData) src.setData({ type: 'FeatureCollection', features: ds.features })
-        } catch {}
+        } catch { /* noop */ }
         updateColors(ds.id, ds.color, m)
       }
     }

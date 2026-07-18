@@ -2,9 +2,7 @@
  * components/grants/GrantDetailModal.vue
  * @why Full grant detail view in a modal — shows all fields, comments, votes
  * @component GrantDetailModal
- * @emits close: []
- *   vote: [stars: number]
- *   save: [grantId: string, form: Record<string, string>]
+ * @emits close, vote, save
  * @deps vue (ref, reactive, watch)
  */
 <template>

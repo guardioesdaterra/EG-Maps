@@ -191,6 +191,8 @@
           :leaderboard="leaderboard"
           :leaderboard-loading="leaderboardLoading"
           :removing-grants="removingGrants"
+          :claims="claims"
+          :claims-loading="claimsLoading"
           @sign-in="signIn"
           @sign-out="handleSignOut"
           @update:active-tab="activePortalTab = $event"
@@ -201,6 +203,9 @@
           @leaderboard-detail="openLeaderboardDetail"
           @review:grant="handleReview"
           @review:scraped="handleReviewScraped"
+          @open-claim="openClaimModal"
+          @open-review-claim="openReviewClaimModal"
+          @open-create-grant="openCreateGrantModal"
         />
       </section>
 
@@ -235,6 +240,26 @@
       <GrantsFooter
         :country-count="countryCount"
       />
+
+      <ClaimGrantModal
+        :show="showClaimModal"
+        :project="claimProject"
+        @close="closeClaimModal"
+        @claimed="onClaimed"
+      />
+
+      <ReviewClaimModal
+        :show="showReviewClaimModal"
+        :claim="reviewClaimData"
+        @close="closeReviewClaimModal"
+        @reviewed="onClaimReviewed"
+      />
+
+      <CreateGrantModal
+        :show="showCreateGrantModal"
+        @close="closeCreateGrantModal"
+        @created="onGrantCreated"
+      />
     </div>
   </div>
 </template>
@@ -242,9 +267,9 @@
 <script setup lang="ts">
 
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
-import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
+import type { GrantRecord, ScrapedGrant, LeaderboardEntry, EGProjectGrant } from '~/composables/useGrants'
+import type { ClaimRecord, ProjectData, DetailGrantData } from '~/lib/types'
 import { allProjectsData } from '~/lib/project-data'
-import type { ProjectData, DetailGrantData } from '~/lib/types'
 import GrantsAuth from '~/components/grants/GrantsAuth.vue'
 import GrantsDashboard from '~/components/grants/GrantsDashboard.vue'
 import GrantDetailModal from '~/components/grants/GrantDetailModal.vue'
@@ -252,6 +277,9 @@ import GrantEditModal from '~/components/grants/GrantEditModal.vue'
 import RegistryModal from '~/components/grants/RegistryModal.vue'
 import GrantsFooter from '~/components/grants/GrantsFooter.vue'
 import CrewSignupModal from '~/components/grants/CrewSignupModal.vue'
+import ClaimGrantModal from '~/components/grants/ClaimGrantModal.vue'
+import ReviewClaimModal from '~/components/grants/ReviewClaimModal.vue'
+import CreateGrantModal from '~/components/grants/CreateGrantModal.vue'
 import GlobeView from '~/components/GlobeView.vue'
 import { useToast } from '~/composables/useToast'
 import { useSupabase } from '~/composables/useSupabase'
@@ -304,7 +332,7 @@ const isEmbed = computed(() => {
   return new URLSearchParams(window.location.search).get('embed') === 'true'
 })
 const { client } = useSupabase()
-const { listGrants, listScrapedGrants, reviewGrant: apiReviewGrant, reviewScrapedGrant: apiReviewScraped, updateScrapedGrant: apiUpdateScrapedGrant, getStats, voteGrant, voteScrapedGrant, deleteVote, getLeaderboard } = useGrants()
+const { listGrants, listScrapedGrants, reviewGrant: apiReviewGrant, reviewScrapedGrant: apiReviewScraped, updateScrapedGrant: apiUpdateScrapedGrant, getStats, voteGrant, voteScrapedGrant, deleteVote, getLeaderboard, listClaims } = useGrants()
 
 const grants = ref<GrantRecord[]>([])
 const registry = ref<Array<GrantRecord & { relevant?: boolean }>>([])
@@ -324,6 +352,14 @@ const scrapedUserVotes = reactive<Record<string, number>>({})
 
 const removingGrants = ref<string[]>([])
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+const claims = ref<ClaimRecord[]>([])
+const claimsLoading = ref(false)
+const showClaimModal = ref(false)
+const claimProject = ref<EGProjectGrant | null>(null)
+const showReviewClaimModal = ref(false)
+const reviewClaimData = ref<ClaimRecord | null>(null)
+const showCreateGrantModal = ref(false)
 
 function matchSearch(g: { title?: string; funder?: string; country?: string; description?: string; source?: string; categories?: string[] }, q: string): boolean {
   if (!q) return true
@@ -535,6 +571,58 @@ async function loadLeaderboardData() {
   } finally {
     leaderboardLoading.value = false
   }
+}
+
+async function loadClaims() {
+  claimsLoading.value = true
+  try {
+    const result = await listClaims()
+    claims.value = result.claims ?? []
+  } catch (e) {
+    console.error('Failed to load claims:', e)
+  } finally {
+    claimsLoading.value = false
+  }
+}
+
+function openClaimModal(project: EGProjectGrant) {
+  claimProject.value = project
+  showClaimModal.value = true
+}
+
+function closeClaimModal() {
+  showClaimModal.value = false
+  claimProject.value = null
+}
+
+function onClaimed() {
+  loadClaims()
+}
+
+function openReviewClaimModal(claim: ClaimRecord) {
+  reviewClaimData.value = claim
+  showReviewClaimModal.value = true
+}
+
+function closeReviewClaimModal() {
+  showReviewClaimModal.value = false
+  reviewClaimData.value = null
+}
+
+function onClaimReviewed() {
+  loadClaims()
+}
+
+function openCreateGrantModal() {
+  showCreateGrantModal.value = true
+}
+
+function closeCreateGrantModal() {
+  showCreateGrantModal.value = false
+}
+
+function onGrantCreated() {
+  Promise.all([refreshGrantsSilent(), loadStats()])
 }
 
 async function handleReview(grantId: string, decision: string) {
@@ -765,7 +853,7 @@ watch(activePortalTab, (tab) => {
 })
 
 onMounted(async () => {
-  await Promise.all([loadGrants(), loadStats(), loadScrapedGrants()])
+  await Promise.all([loadGrants(), loadStats(), loadScrapedGrants(), loadClaims()])
   window.addEventListener('scroll', onPageScroll, { passive: true })
   const route = useRoute()
   if (route.query.signup === '1' && user.value?.email) {

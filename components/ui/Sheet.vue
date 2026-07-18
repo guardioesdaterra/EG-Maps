@@ -115,7 +115,7 @@ function handlePointerDownOutside(e: Event) {
 .sheet-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--shadow-color);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   z-index: 9000;
@@ -123,13 +123,13 @@ function handlePointerDownOutside(e: Event) {
 
 .sheet {
   position: fixed;
-  background: rgba(15, 15, 18, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #fafafa;
+  background: var(--panel-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
   z-index: 9001;
   display: flex;
   flex-direction: column;
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
+  box-shadow: -8px 0 32px var(--shadow-color);
 }
 .sheet--right {
   top: 0;
@@ -164,9 +164,9 @@ function handlePointerDownOutside(e: Event) {
   width: 2rem;
   height: 2rem;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.7);
+  background: var(--glass-border-light);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -175,8 +175,8 @@ function handlePointerDownOutside(e: Event) {
   z-index: 1;
 }
 .sheet__close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fafafa;
+  background: var(--panel-border);
+  color: var(--text-primary);
 }
 
 .sheet-fade-enter-active,

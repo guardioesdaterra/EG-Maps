@@ -20,12 +20,12 @@ export const escapeHtml = _escapeHtml
 
 export const GROUP_COLORS: Record<string, string> = {
   Mammal: COLOR_MAMMAL,
-  Bird: '#D97706',
-  Amphibian: '#5A8F3C',
-  Reptile: '#7C3AED',
-  Fish: '#2563EB',
-  Plant: '#15803D',
-  Invertebrate: '#DB2777'
+  Bird: 'var(--warning)',
+  Amphibian: 'var(--success)',
+  Reptile: 'var(--purple)',
+  Fish: 'var(--info)',
+  Plant: 'var(--success)',
+  Invertebrate: 'var(--purple)'
 }
 
 export interface PopupTranslations {
@@ -136,7 +136,7 @@ export function buildCrewPopupHTML(crew: CrewRegionData, translations?: CrewPopu
     region: 'Region',
     growthSince2022: 'Growth since 2022',
   }
-  const color = crew.activeCrews > 20 ? '#22c55e' : crew.activeCrews > 5 ? '#3b82f6' : '#a855f7'
+  const color = crew.activeCrews > 20 ? 'var(--success)' : crew.activeCrews > 5 ? 'var(--info)' : 'var(--purple)'
   const history2022 = crew.history.find(h => h.year === 2022)
   const growth = history2022 && history2022.activeCrews > 0
     ? Math.round(((crew.activeCrews - history2022.activeCrews) / history2022.activeCrews) * 100)
@@ -219,7 +219,7 @@ export function buildCrewLocationPopupHTML(crew: { name: string; country: string
   }
   const location = [crew.city, crew.state, crew.country].filter(Boolean).join(', ')
   const isActive = crew.status !== 'inactive'
-  const statusColor = isActive ? '#22c55e' : '#f59e0b'
+  const statusColor = isActive ? 'var(--success)' : 'var(--warning)'
   const statusLabel = isActive ? 'Active' : 'Inactive'
 
   return `
@@ -265,10 +265,10 @@ export function buildCrewLocationPopupHTML(crew: { name: string; country: string
 }
 
 export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPopupTranslations, baseURL?: string): string {
-  const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64032'
+  const color = GROUP_COLORS[species.taxonomicGroup] ?? 'var(--danger)'
   const endangerment = species.endangerment ?? 'Unknown'
-  const endangermentColor = endangerment.toLowerCase().includes('critical') ? '#dc2626' :
-                            endangerment.toLowerCase().includes('endangered') ? '#ea580c' : '#d97706'
+  const endangermentColor = endangerment.toLowerCase().includes('critical') ? 'var(--danger)' :
+                            endangerment.toLowerCase().includes('endangered') ? 'var(--warning)' : 'var(--warning)'
   const t = translations || {
     scientificName: 'Scientific Name',
     threatTypes: 'Threat Types',
@@ -374,7 +374,7 @@ export function buildSpeciesPopupHTML(species: Species, translations?: SpeciesPo
         </div>
       </div>
       <div class="species-footer">
-        <div class="species-footer-line" style="background: rgba(128, 128, 128, 0.3);"></div>
+        <div class="species-footer-line" style="background: var(--text-muted);"></div>
       </div>
     </div>
   `
@@ -420,7 +420,7 @@ export function buildProjectPreviewHTML(project: ProjectData, baseURL?: string, 
 }
 
 export function buildSpeciesPreviewHTML(species: { commonName: string; scientificName: string; taxonomicGroup: string; category: string; imageUrl: string | null }, baseURL?: string, translations?: PreviewTranslations): string {
-  const color = GROUP_COLORS[species.taxonomicGroup] ?? '#B64032'
+  const color = GROUP_COLORS[species.taxonomicGroup] ?? 'var(--danger)'
   const t = translations || { expand: 'View details', beneficiaries: 'Beneficiaries', location: 'Location', activeCrews: 'Active Crews', totalMembers: 'Total Members' }
   const groupLabel = species.taxonomicGroup || 'Species'
 
@@ -454,7 +454,7 @@ export function buildSpeciesPreviewHTML(species: { commonName: string; scientifi
 }
 
 export function buildCrewPreviewHTML(crew: CrewRegionData, translations?: PreviewTranslations): string {
-  const color = crew.activeCrews > 20 ? '#22c55e' : crew.activeCrews > 5 ? '#3b82f6' : '#a855f7'
+  const color = crew.activeCrews > 20 ? 'var(--success)' : crew.activeCrews > 5 ? 'var(--info)' : 'var(--purple)'
   const t = translations || { expand: 'View details', beneficiaries: 'Beneficiaries', location: 'Location', activeCrews: 'Active Crews', totalMembers: 'Total Members' }
 
   return `
@@ -484,7 +484,7 @@ export function isValidCoordinate(lat: number | undefined | null, lng: number | 
 }
 
 export function getGroupColor(taxonomicGroup: string): string {
-  return GROUP_COLORS[taxonomicGroup] ?? '#B64032'
+  return GROUP_COLORS[taxonomicGroup] ?? 'var(--danger)'
 }
 
 export function generateCurvedPath(from: [number, number], to: [number, number]): [number, number] {
@@ -516,22 +516,22 @@ export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2
 }
 
 export const RARE_EARTH_CATEGORIES: Record<string, { label: string; color: string }> = {
-  direct_ree: { label: 'Terras Raras Diretas', color: '#ef4444' },
-  carbonatite_associated: { label: 'Carbonatito/Alcalino', color: '#f97316' },
-  pegmatite_associated: { label: 'Pegmatito', color: '#22c55e' },
-  heavy_mineral_associated: { label: 'Minerais Pesados', color: '#3b82f6' },
-  phosphate_associated: { label: 'Fosfato', color: '#a855f7' },
-  strategic_associated: { label: 'Estratégicos', color: '#ec4899' },
+  direct_ree: { label: 'Terras Raras Diretas', color: 'var(--danger)' },
+  carbonatite_associated: { label: 'Carbonatito/Alcalino', color: 'var(--warning)' },
+  pegmatite_associated: { label: 'Pegmatito', color: 'var(--success)' },
+  heavy_mineral_associated: { label: 'Minerais Pesados', color: 'var(--info)' },
+  phosphate_associated: { label: 'Fosfato', color: 'var(--purple)' },
+  strategic_associated: { label: 'Estratégicos', color: 'var(--purple)' },
 }
 
 export const RARE_EARTH_PHASES: Record<string, { label: string; shortLabel: string; color: string }> = {
-  REQUERIMENTO: { label: 'Requerimento', shortLabel: 'REQ', color: '#9ca3af' },
-  'REQUERIMENTO DE PESQUISA': { label: 'Requerimento de Pesquisa', shortLabel: 'REQ', color: '#9ca3af' },
-  'AUTORIZAÇÃO DE PESQUISA': { label: 'Autorização de Pesquisa', shortLabel: 'AUTH', color: '#f59e0b' },
-  DISPONIBILIDADE: { label: 'Disponibilidade', shortLabel: 'AVAIL', color: '#ea580c' },
-  LICENCIAMENTO: { label: 'Licenciamento', shortLabel: 'LICEN', color: '#dc2626' },
-  CONCESSÃO: { label: 'Concessão', shortLabel: 'CONC', color: '#b91c1c' },
-  LAVRA: { label: 'Lavra', shortLabel: 'LAVRA', color: '#7f1d1d' },
+  REQUERIMENTO: { label: 'Requerimento', shortLabel: 'REQ', color: 'var(--text-muted)' },
+  'REQUERIMENTO DE PESQUISA': { label: 'Requerimento de Pesquisa', shortLabel: 'REQ', color: 'var(--text-muted)' },
+  'AUTORIZAÇÃO DE PESQUISA': { label: 'Autorização de Pesquisa', shortLabel: 'AUTH', color: 'var(--warning)' },
+  DISPONIBILIDADE: { label: 'Disponibilidade', shortLabel: 'AVAIL', color: 'var(--warning)' },
+  LICENCIAMENTO: { label: 'Licenciamento', shortLabel: 'LICEN', color: 'var(--danger)' },
+  CONCESSÃO: { label: 'Concessão', shortLabel: 'CONC', color: 'var(--danger)' },
+  LAVRA: { label: 'Lavra', shortLabel: 'LAVRA', color: 'var(--danger)' },
 }
 
 export function getPhaseShortLabel(phase: string): string {
@@ -539,11 +539,11 @@ export function getPhaseShortLabel(phase: string): string {
 }
 
 export function getPhaseColor(phase: string): string {
-  return RARE_EARTH_PHASES[phase]?.color ?? '#666'
+  return RARE_EARTH_PHASES[phase]?.color ?? 'var(--text-muted)'
 }
 
 export function getCategoryColor(cat: string): string {
-  return RARE_EARTH_CATEGORIES[cat]?.color ?? '#666'
+  return RARE_EARTH_CATEGORIES[cat]?.color ?? 'var(--text-muted)'
 }
 
 export const isMilitaryInterest = _isMilitaryInterest
@@ -561,8 +561,8 @@ interface REEPopupProps {
 }
 
 export function buildRareEarthPopupHTML(props: REEPopupProps): string {
-  const cat = RARE_EARTH_CATEGORIES[props.c ?? ''] ?? { label: props.c || 'Unknown', color: '#666' }
-  const dangerColor = (props.ds ?? 5) >= 8 ? '#e74c3c' : (props.ds ?? 5) >= 6 ? '#f39c12' : '#27ae60'
+  const cat = RARE_EARTH_CATEGORIES[props.c ?? ''] ?? { label: props.c || 'Unknown', color: 'var(--text-muted)' }
+  const dangerColor = (props.ds ?? 5) >= 8 ? 'var(--danger)' : (props.ds ?? 5) >= 6 ? 'var(--warning)' : 'var(--success)'
   const areaHa = Number(props.a ?? 0)
   const area = areaHa >= 10000 ? `${(areaHa / 1000).toFixed(0)}K ha` : `${areaHa.toLocaleString('en-US')} ha`
 
@@ -570,9 +570,9 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
   const envFlag = props.env !== false && isHighEnvRisk(props as unknown as Record<string, unknown>)
   const susFlag = props.sus !== false && isSuspicious(props as unknown as Record<string, unknown>)
 
-  const flagsHTML = [milFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(231,76,60,0.2);color:#e74c3c">MIL</span>' : '',
-    envFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(39,174,96,0.2);color:#27ae60">ENV</span>' : '',
-    susFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(142,68,173,0.2);color:#8e44ad">SUS</span>' : '',
+  const flagsHTML = [milFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(231,76,60,0.2);color:var(--danger)">MIL</span>' : '',
+    envFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(39,174,96,0.2);color:var(--success)">ENV</span>' : '',
+    susFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(142,68,173,0.2);color:var(--purple)">SUS</span>' : '',
   ].filter(Boolean).join('')
 
   const anmUrl = buildAnmVerifyUrl(props.p, props.ano ?? props.y)
@@ -586,9 +586,9 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
   })
 
   const anmLink = anmUrl
-    ? `<a href="${escapeHtml(anmUrl)}" target="_blank" rel="noopener" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:9px;font-weight:700;padding:5px 8px;border-radius:4px;text-decoration:none;letter-spacing:0.04em;border:1px solid rgba(52,152,219,0.3);background:rgba(52,152,219,0.10);color:#5dade2">↗ Verify on ANM</a>`
+    ? `<a href="${escapeHtml(anmUrl)}" target="_blank" rel="noopener" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:9px;font-weight:700;padding:5px 8px;border-radius:4px;text-decoration:none;letter-spacing:0.04em;border:1px solid rgba(52,152,219,0.3);background:rgba(52,152,219,0.10);color:var(--info)">↗ Verify on ANM</a>`
     : ''
-  const reportLink = `<a href="${escapeHtml(mailtoUrl)}" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:9px;font-weight:700;padding:5px 8px;border-radius:4px;text-decoration:none;letter-spacing:0.04em;border:1px solid rgba(231,76,60,0.25);background:rgba(231,76,60,0.08);color:#e74c3c">⚑ Report issue</a>`
+  const reportLink = `<a href="${escapeHtml(mailtoUrl)}" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:9px;font-weight:700;padding:5px 8px;border-radius:4px;text-decoration:none;letter-spacing:0.04em;border:1px solid rgba(231,76,60,0.25);background:rgba(231,76,60,0.08);color:var(--danger)">⚑ Report issue</a>`
 
   const lastEvent = props.ev
   let lastEventHTML = ''
@@ -596,12 +596,12 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
     const refYear = Number(props.ano ?? props.y ?? 0)
     const currentYear = new Date().getFullYear()
     const ageYears = refYear ? Math.max(0, currentYear - refYear) : 99
-    const evColor = ageYears < 1 ? '#27ae60' : ageYears <= 3 ? '#f39c12' : '#e74c3c'
+    const evColor = ageYears < 1 ? 'var(--success)' : ageYears <= 3 ? 'var(--warning)' : 'var(--danger)'
     const evLabel = ageYears < 1 ? 'Recent' : ageYears <= 3 ? 'Active' : 'Stale'
     lastEventHTML = `<div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
       <div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:2px">Last event</div>
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <span style="font-size:9.5px;color:#ccc;line-height:1.4;flex:1;word-wrap:break-word">${escapeHtml(lastEvent)}</span>
+        <span style="font-size:9.5px;color:var(--text-secondary);line-height:1.4;flex:1;word-wrap:break-word">${escapeHtml(lastEvent)}</span>
         <span style="font-size:7.5px;padding:1px 6px;border-radius:2px;font-weight:700;background:${evColor}22;color:${evColor}">${evLabel}</span>
       </div>
     </div>`
@@ -611,9 +611,9 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
   let overlapHTML = ''
   if (overlaps.length) {
     const items = overlaps.slice(0, 3).map(o =>
-      `<span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;padding:1px 5px;border-radius:2px;background:rgba(231,76,60,0.18);color:#ff6b6b;font-weight:600;margin:1px">⚠ ${escapeHtml(o.name)}${o.distance_km ? ` <span style="opacity:0.7;font-weight:400">· ${o.distance_km}km</span>` : ''}</span>`
+      `<span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;padding:1px 5px;border-radius:2px;background:rgba(231,76,60,0.18);color:var(--danger);font-weight:600;margin:1px">⚠ ${escapeHtml(o.name)}${o.distance_km ? ` <span style="opacity:0.7;font-weight:400">· ${o.distance_km}km</span>` : ''}</span>`
     ).join('')
-    const more = overlaps.length > 3 ? `<span style="font-size:8px;color:#888;margin-left:4px">+${overlaps.length - 3} more</span>` : ''
+    const more = overlaps.length > 3 ? `<span style="font-size:8px;color:var(--text-muted);margin-left:4px">+${overlaps.length - 3} more</span>` : ''
     overlapHTML = `<div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
       <div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:3px">Overlaps</div>
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:0">${items}${more}</div>
@@ -631,11 +631,11 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
           <span style="display:inline-flex;align-items:center;gap:4px;font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${cat.color};color:#fff;letter-spacing:0.06em;text-transform:uppercase">${escapeHtml(cat.label)}</span>
           <span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${dangerColor};color:#fff">${(props.ds ?? 5).toFixed(1)} Danger</span>
-          ${props.net ? `<span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(41,128,185,0.2);color:#5dade2;letter-spacing:0.03em">${escapeHtml(props.net)}</span>` : ''}
+          ${props.net ? `<span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(41,128,185,0.2);color:var(--info);letter-spacing:0.03em">${escapeHtml(props.net)}</span>` : ''}
           ${flagsHTML}
         </div>
-        <h3 style="margin:0;font-size:13px;font-weight:700;color:#e8e8e8;line-height:1.35;letter-spacing:0.01em;word-wrap:break-word">${escapeHtml(props.n || 'Unknown')}</h3>
-        <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;font-style:italic">${escapeHtml(props.s || '—')}</div>
+        <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--text-primary);line-height:1.35;letter-spacing:0.01em;word-wrap:break-word">${escapeHtml(props.n || 'Unknown')}</h3>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;font-style:italic">${escapeHtml(props.s || '—')}</div>
       </div>
 
       <!-- Divider -->
@@ -644,10 +644,10 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
       <!-- Body -->
       <div style="padding:10px 14px 12px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 14px">
-          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Process</div><div style="font-size:10.5px;color:#ccc;font-weight:500;word-wrap:break-word">${escapeHtml(props.p || '—')}</div></div>
-          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Phase</div><div style="font-size:10.5px;color:#ccc;font-weight:500">${escapeHtml(props.f || '—')}</div></div>
-          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">UF</div><div style="font-size:10.5px;color:#ccc;font-weight:500">${escapeHtml(props.u || '—')}</div></div>
-          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Area</div><div style="font-size:10.5px;color:#ccc;font-weight:500">${area}</div></div>
+          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Process</div><div style="font-size:10.5px;color:var(--text-secondary);font-weight:500;word-wrap:break-word">${escapeHtml(props.p || '—')}</div></div>
+          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Phase</div><div style="font-size:10.5px;color:var(--text-secondary);font-weight:500">${escapeHtml(props.f || '—')}</div></div>
+          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">UF</div><div style="font-size:10.5px;color:var(--text-secondary);font-weight:500">${escapeHtml(props.u || '—')}</div></div>
+          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Area</div><div style="font-size:10.5px;color:var(--text-secondary);font-weight:500">${area}</div></div>
         </div>
         <div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
           <div style="display:flex;align-items:center;gap:6px">

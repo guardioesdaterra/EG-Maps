@@ -242,27 +242,27 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--glass-border);
 }
 .cmd-input-icon {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
 }
 .cmd-input {
   flex: 1;
   background: transparent;
   border: 0;
-  color: #fafafa;
+  color: var(--text-primary);
   font-size: 15px;
   outline: none;
   font-family: inherit;
 }
-.cmd-input::placeholder { color: rgba(255, 255, 255, 0.4); }
+.cmd-input::placeholder { color: var(--text-muted); }
 .cmd-kbd {
   font-size: 10px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  background: var(--glass-border);
   border-radius: 4px;
   padding: 2px 6px;
 }
@@ -274,7 +274,7 @@ onUnmounted(() => {
 .cmd-empty {
   padding: 24px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   font-size: 13px;
 }
 .cmd-group { padding: 4px 0; }
@@ -283,7 +283,7 @@ onUnmounted(() => {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   padding: 6px 10px 4px;
 }
 .cmd-item {
@@ -295,7 +295,7 @@ onUnmounted(() => {
   background: transparent;
   border: 0;
   border-radius: 6px;
-  color: #e8e8e8;
+  color: var(--text-primary);
   text-align: left;
   cursor: pointer;
   font-family: inherit;
@@ -304,8 +304,8 @@ onUnmounted(() => {
 }
 .cmd-item--active,
 .cmd-item:hover {
-  background: rgba(93, 173, 226, 0.12);
-  color: #fff;
+  background: var(--info-bg);
+  color: var(--bg-tertiary);
 }
 .cmd-item__icon {
   width: 18px;
@@ -313,7 +313,7 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
 }
 .cmd-item__body {
   flex: 1;
@@ -330,7 +330,7 @@ onUnmounted(() => {
 }
 .cmd-item__hint {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -338,7 +338,7 @@ onUnmounted(() => {
 .cmd-item__kbd {
   font-size: 10px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   background: rgba(255, 255, 255, 0.06);
   border-radius: 3px;
   padding: 2px 6px;
@@ -348,14 +348,14 @@ onUnmounted(() => {
   display: flex;
   gap: 12px;
   padding: 8px 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--glass-border);
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
 }
 .cmd-footer kbd {
   font-size: 9px;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass-border);
   border-radius: 2px;
   padding: 1px 4px;
   margin-right: 2px;

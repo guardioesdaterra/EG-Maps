@@ -19,9 +19,9 @@ const props = defineProps<{
 const { t } = useI18n()
 
 const color = computed(() => {
-  if (!props.crew || props.isLocation) return '#a855f7'
+  if (!props.crew || props.isLocation) return 'var(--purple)'
   const c = props.crew as CrewRegionData
-  return c.activeCrews > 20 ? '#22c55e' : c.activeCrews > 5 ? '#3b82f6' : '#a855f7'
+  return c.activeCrews > 20 ? 'var(--success)' : c.activeCrews > 5 ? 'var(--info)' : 'var(--purple)'
 })
 
 const regionName = computed(() => {
@@ -42,7 +42,7 @@ const isActive = computed(() => {
   return (props.crew as CrewLocation).status !== 'inactive'
 })
 
-const statusColor = computed(() => isActive.value ? '#22c55e' : '#f59e0b')
+const statusColor = computed(() => isActive.value ? 'var(--success)' : 'var(--warning)')
 
 const growth = computed(() => {
   if (!props.crew || props.isLocation) return null
@@ -119,10 +119,10 @@ const mapsUrl = computed(() => {
             class="crew-popup__stat crew-popup__stat--growth"
             :style="{ background: '#22c55e12', borderColor: '#22c55e30' }"
           >
-            <Icon name="lucide:trending-up" size="0.75rem" class="crew-popup__stat-icon" style="color:#22c55e" />
+            <Icon name="lucide:trending-up" size="0.75rem" class="crew-popup__stat-icon" :style="{ color: 'var(--success)' }" />
             <div class="crew-popup__stat-body">
               <span class="crew-popup__stat-label">{{ t('crews.growthSince2022') }}</span>
-              <span class="crew-popup__stat-value" style="color:#22c55e">+{{ growth }}%</span>
+              <span class="crew-popup__stat-value" :style="{ color: 'var(--success)' }">+{{ growth }}%</span>
             </div>
           </div>
         </div>
@@ -148,7 +148,7 @@ const mapsUrl = computed(() => {
 .crew-popup {
   display: flex;
   flex-direction: column;
-  color: #e2e2e2;
+  color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   position: relative;
 }
@@ -216,7 +216,7 @@ const mapsUrl = computed(() => {
   font-weight: 800;
   line-height: 1.25;
   margin: 0;
-  color: #fff;
+  color: var(--bg-tertiary);
   letter-spacing: -0.01em;
   overflow-wrap: break-word;
 }
@@ -281,7 +281,7 @@ const mapsUrl = computed(() => {
 .crew-popup__stat-value {
   font-size: 1rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--bg-tertiary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -297,7 +297,7 @@ const mapsUrl = computed(() => {
   align-items: center;
   gap: 0.35rem;
   font-size: 0.7rem;
-  color: var(--action-clr, #5dade2);
+  color: var(--action-clr, var(--info));
   text-decoration: none;
   font-weight: 600;
   padding: 0.25rem 0.65rem;
@@ -310,6 +310,6 @@ const mapsUrl = computed(() => {
 
 .crew-popup__action:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: var(--action-clr, #5dade2);
+  border-color: var(--action-clr, var(--info));
 }
 </style>

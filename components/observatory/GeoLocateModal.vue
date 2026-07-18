@@ -234,7 +234,7 @@ function onDismiss() {
   margin: 0 0 6px;
   font-size: clamp(15px, 2.2vw, 20px);
   font-weight: 800;
-  color: #e8e8e8;
+  color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 .obs-geo-modal__desc {
@@ -333,7 +333,7 @@ function onDismiss() {
   background: rgba(231, 76, 60, 0.15);
   border: 1px solid rgba(231, 76, 60, 0.3);
   border-radius: 8px;
-  color: #e74c3c;
+  color: var(--danger);
   font-size: clamp(14px, 2vw, 18px);
   font-weight: 700;
   cursor: pointer;
@@ -387,7 +387,7 @@ function onDismiss() {
   border: 1px solid rgba(231, 76, 60, 0.2);
   border-radius: 8px;
   font-size: clamp(10px, 1.5vw, 13px);
-  color: #e74c3c;
+  color: var(--danger);
 }
 
 .obs-geo-modal__location-card {
@@ -400,7 +400,7 @@ function onDismiss() {
 .obs-geo-modal__location-city {
   font-size: clamp(16px, 2.5vw, 22px);
   font-weight: 800;
-  color: #e8e8e8;
+  color: var(--text-primary);
   margin-bottom: 2px;
 }
 .obs-geo-modal__location-detail {

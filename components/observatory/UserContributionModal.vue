@@ -676,14 +676,14 @@ function typeLabel(type: string): string {
 
 function typeColor(type: string): string {
   const colors: Record<string, string> = {
-    observation: '#3498db',
-    contamination: '#e74c3c',
-    activity: '#f39c12',
-    wildlife: '#27ae60',
-    community: '#9b59b6',
-    heritage: '#e67e22',
+    observation: 'var(--info)',
+    contamination: 'var(--danger)',
+    activity: 'var(--warning)',
+    wildlife: 'var(--success)',
+    community: 'var(--purple)',
+    heritage: 'var(--warning)',
   }
-  return colors[type] || '#3498db'
+  return colors[type] || 'var(--info)'
 }
 
 function formatDate(ts: string | number): string {
@@ -771,21 +771,21 @@ defineExpose({ onMapClick })
 .obs-btn--primary {
   background: rgba(46, 204, 113, 0.15);
   border-color: rgba(46, 204, 113, 0.3);
-  color: #2ecc71;
+  color: var(--success);
 }
 .obs-btn--primary:hover { background: rgba(46, 204, 113, 0.25); }
 .obs-btn--primary:disabled { opacity: 0.3; cursor: not-allowed; }
 .obs-btn--primary.obs-btn--amber {
   background: rgba(245, 158, 11, 0.15);
   border-color: rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
+  color: var(--warning);
 }
 .obs-btn--primary.obs-btn--amber:hover { background: rgba(245, 158, 11, 0.25); }
 .obs-btn--primary.obs-btn--amber:disabled { opacity: 0.3; cursor: not-allowed; }
 .obs-btn--danger {
   background: rgba(231, 76, 60, 0.15);
   border-color: rgba(231, 76, 60, 0.3);
-  color: #e74c3c;
+  color: var(--danger);
 }
 .obs-btn--danger:hover { background: rgba(231, 76, 60, 0.25); }
 .obs-btn-sm {

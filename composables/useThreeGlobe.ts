@@ -59,8 +59,8 @@ export function useThreeGlobe(
     await Promise.all(SCRIPTS.map(loadScript))
 
     const win = window as unknown as { THREE: unknown; gsap: unknown; ScrollTrigger: unknown }
-    const THREE: any = win.THREE
-    const gsap: any = win.gsap
+    const THREE = win.THREE as Record<string, unknown>
+    const gsap = win.gsap as { registerPlugin: (p: unknown) => void; to: (...args: unknown[]) => unknown }
     if (!THREE || !gsap) { resolveReady?.(); return }
 
     gsap.registerPlugin(win.ScrollTrigger)
@@ -156,7 +156,7 @@ export function useThreeGlobe(
     }
     panelImages.length = PANEL_COUNT
 
-    const panels: any[] = []
+    const panels: Array<{ mesh: unknown; material: unknown; group: unknown; imgInfo: { url: string; w: number; h: number } }>[] = []
     const MAX_PANEL_W = 0.4
     const MAX_PANEL_H = 0.35
     for (let i = 0; i < PANEL_COUNT; i++) {

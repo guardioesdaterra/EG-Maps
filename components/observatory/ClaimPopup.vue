@@ -131,7 +131,7 @@ const props = defineProps<{
 
 const cat = computed(() => RARE_EARTH_CATEGORIES[props.c ?? ''] ?? { label: props.c || 'Unknown', color: '#666' })
 const dangerScore = computed(() => props.ds ?? 5)
-const dangerColor = computed(() => dangerScore.value >= 8 ? '#e74c3c' : dangerScore.value >= 6 ? '#f39c12' : '#27ae60')
+const dangerColor = computed(() => dangerScore.value >= 8 ? 'var(--danger)' : dangerScore.value >= 6 ? 'var(--warning)' : 'var(--success)')
 
 const milFlag = computed(() => isMilitaryInterest(props.u || ''))
 const envFlag = computed(() => isHighEnvRisk(props))
@@ -148,7 +148,7 @@ const ageColor = computed(() => {
   const refYear = Number(props.y ?? 0)
   const currentYear = new Date().getFullYear()
   const ageYears = refYear ? Math.max(0, currentYear - refYear) : 99
-  return ageYears < 1 ? '#27ae60' : ageYears <= 3 ? '#f39c12' : '#e74c3c'
+  return ageYears < 1 ? 'var(--success)' : ageYears <= 3 ? 'var(--warning)' : 'var(--danger)'
 })
 const ageLabel = computed(() => {
   const refYear = Number(props.y ?? 0)

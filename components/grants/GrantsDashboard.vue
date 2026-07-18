@@ -34,7 +34,11 @@
             />
           </div>
           <template v-if="user">
-            <div class="gstore-user-pill">
+            <div v-if="isManager" class="gstore-create-btn" role="button" tabindex="0" @click="emit('open-create-grant')" @keydown.enter="emit('open-create-grant')" aria-label="Create new grant">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Create Grant</span>
+            </div>
+            <div class="gstore-user-pill" role="group" aria-label="User menu">
               <span class="gstore-user-avatar" :class="isManager ? 'manager' : ''">{{ isManager ? 'M' : 'C' }}</span>
               <span class="gstore-user-email">{{ user.email }}</span>
               <button class="gstore-signout-btn" @click="$emit('signOut')" aria-label="Sign out">✕</button>
@@ -106,17 +110,18 @@
               <h2 class="gstore-section-title">{{ cat.label }}</h2>
               <span class="gstore-section-count">{{ cat.count }}</span>
             </div>
-            <button class="gstore-section-seeall" @click="scrollSection(cat.key)">{{ cat.count > 6 ? 'Show all' : '' }}<svg v-if="cat.count > 6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="gstore-chevron"><path d="M9 18l6-6-6-6"/></svg></button>
+            <span class="gstore-section-count-badge">{{ cat.count }} items</span>
           </div>
-          <div
-            :ref="el => { if (el) sectionRefs[cat.key] = el as HTMLElement }"
-            class="gstore-section-scroll"
-          >
+          <div class="gstore-section-scroll">
             <div
               v-for="g in cat.items"
               :key="g.id"
               class="gstore-card"
+              role="button"
+              tabindex="0"
+              :aria-label="`View details: ${g.title}`"
               @click="($emit as any)('view-detail', g)"
+              @keydown.enter="($emit as any)('view-detail', g)"
             >
               <div class="gstore-card-top">
                 <span v-if="g.grant_type" class="gstore-card-type" :class="g.grant_type">
@@ -144,6 +149,21 @@
           </div>
         </section>
       </template>
+
+      <section v-if="user && isManager && activeCategory === 'claims'" class="gstore-section">
+        <div class="gstore-section-header">
+          <div class="gstore-section-header-left">
+            <span class="gstore-section-icon">⚖️</span>
+            <h2 class="gstore-section-title">{{ t('grantsPortal.claimsManagement') }}</h2>
+            <span class="gstore-section-count">{{ claims.length }}</span>
+          </div>
+        </div>
+        <ClaimsTable
+          :claims="claims"
+          :loading="claimsLoading"
+          @review="(c: any) => emit('open-review-claim', c)"
+        />
+      </section>
     </main>
 
     <Teleport to="body">
@@ -162,10 +182,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, reactive } from 'vue'
-import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
+import { computed, ref, watch, onMounted } from 'vue'
+import type { GrantRecord, ScrapedGrant, LeaderboardEntry, EGProjectGrant, Partner, PartnerOpportunity } from '~/composables/useGrants'
+import { useGrants } from '~/composables/useGrants'
 import { allProjectsData } from '~/lib/project-data'
-import type { ProjectData } from '~/lib/types'
+import ClaimsTable from '~/components/grants/ClaimsTable.vue'
+import { useI18n } from '~/composables/useI18n'
 
 const props = defineProps<{
   user: { email?: string } | null
@@ -185,6 +207,8 @@ const props = defineProps<{
   leaderboard: LeaderboardEntry[]
   leaderboardLoading: boolean
   removingGrants: string[]
+  claims: import('~/lib/types').ClaimRecord[]
+  claimsLoading: boolean
 }>()
 
 const emit = defineEmits<{
@@ -198,22 +222,39 @@ const emit = defineEmits<{
   leaderboardDetail: [entry: LeaderboardEntry]
   'review:grant': [id: string, decision: 'pending' | 'open' | 'closed']
   'review:scraped': [id: string, decision: 'approved' | 'hidden' | 'closed' | 'pending', table: string]
+  'open-claim': [project: EGProjectGrant]
+  'open-review-claim': [claim: import('~/lib/types').ClaimRecord]
+  'open-create-grant': []
 }>()
 
 const { t } = useI18n()
+const { listEGProjects, listPartners, listOpportunities } = useGrants()
 
 const showLoginPopup = ref(false)
 const activeCategory = ref('community')
-const sectionRefs = reactive<Record<string, HTMLElement>>({})
+const egProjects = ref<EGProjectGrant[]>([])
+const egProjectsLoading = ref(false)
+const partners = ref<Partner[]>([])
+const partnerOpportunities = ref<PartnerOpportunity[]>([])
 
 watch(() => props.user, (u) => {
   if (u) showLoginPopup.value = false
 })
 
-function scrollSection(key: string) {
-  const el = sectionRefs[key]
-  if (el) el.scrollTo({ left: 300, behavior: 'smooth' })
-}
+onMounted(async () => {
+  egProjectsLoading.value = true
+  try {
+    const [egResult, partnersResult, oppsResult] = await Promise.all([
+      listEGProjects('granted'),
+      listPartners({ status: 'active' }),
+      listOpportunities({ status: 'open' }),
+    ])
+    if (egResult.grants) egProjects.value = egResult.grants
+    if (partnersResult.partners) partners.value = partnersResult.partners
+    if (oppsResult.opportunities) partnerOpportunities.value = oppsResult.opportunities
+  } catch { /* fallback to static data */ }
+  egProjectsLoading.value = false
+})
 
 function grantTypeEmoji(type?: string): string {
   const map: Record<string, string> = {
@@ -236,6 +277,23 @@ const scrapedItems = computed<MixedGrant[]>(() => {
 })
 
 const projectItems = computed(() => {
+  if (egProjects.value.length > 0) {
+    return egProjects.value.map((p) => ({
+      id: p.id,
+      title: p.title,
+      funder: p.funder || 'Earth Guardians',
+      country: p.country.split(',').pop()?.trim() || p.country,
+      amount_max: p.amount_max || '',
+      currency: p.currency || '',
+      grant_type: (p.grant_type || 'conservation') as string,
+      priority_score: p.priority_score,
+      highlights: p.highlights || ['eg_core'],
+      direct_beneficiaries: p.direct_beneficiaries + p.indirect_beneficiaries,
+      description: `Project in ${p.country}`,
+      categories: ['environment', 'community'],
+      status: p.status,
+    }))
+  }
   return allProjectsData.map((p, i) => ({
     id: `project-${i}`,
     title: p.project_title,
@@ -268,23 +326,35 @@ const categories = computed(() => {
     g.grant_type === 'climate_justice' ||
     g.grant_type === 'indigenous_rights'
   )
-  const partners = scrapedItems.value.filter(g =>
-    g.funder && ['foundation', 'fund', 'trust', 'programme', 'UN', 'EU', 'UNESCO', 'Commonwealth'].some(k =>
-      g.funder!.toLowerCase().includes(k.toLowerCase())
-    )
+  const communityOpps = partnerOpportunities.value.filter(o =>
+    o.categories?.some(c => c.toLowerCase().includes('community')) ||
+    o.grant_type === 'climate_justice'
   )
+  const allCommunity = [...community, ...communityOpps.map(o => ({
+    id: o.id, title: o.title, funder: o.partners?.name || '', country: o.country || '',
+    amount_max: o.amount_max, currency: o.currency, grant_type: o.grant_type,
+    priority_score: o.priority_score, highlights: o.highlights || [],
+    description: o.description, status: o.status, categories: o.categories,
+  }))]
+
+  const partnerOrgs = partners.value
+  const partnerOpps = partnerOpportunities.value
   const worldwide = scrapedItems.value.filter(g =>
-    !community.includes(g) && !partners.includes(g)
+    !community.includes(g) &&
+    !(g.funder && ['foundation', 'fund', 'trust', 'programme', 'UN', 'EU', 'UNESCO', 'Commonwealth'].some(k =>
+      g.funder!.toLowerCase().includes(k.toLowerCase())
+    ))
   )
   const crew = props.filteredInternalGrants || []
   const egProjects = projectItems.value
 
   return [
-    { key: 'community', icon: '🌱', label: 'Community Opportunities', count: community.length, items: community.slice(0, 20) },
+    { key: 'community', icon: '🌱', label: 'Community Opportunities', count: allCommunity.length, items: allCommunity.slice(0, 20) },
     { key: 'crew', icon: '👥', label: 'Crew Projects', count: crew.length, items: crew.slice(0, 20) },
-    { key: 'partners', icon: '🤝', label: 'Partner Grants', count: partners.length, items: partners.slice(0, 20) },
+    { key: 'partners', icon: '🤝', label: 'Partner Grants', count: partnerOrgs.length + partnerOpps.length, items: [...partnerOrgs.slice(0, 10).map(p => ({ id: p.id, title: p.name, funder: p.partner_type, country: p.country, description: p.mission, status: p.status, highlights: [] })), ...partnerOpps.slice(0, 10).map(o => ({ id: o.id, title: o.title, funder: o.partners?.name || '', country: o.country, amount_max: o.amount_max, description: o.description, status: o.status, highlights: o.highlights || [], categories: o.categories, grant_type: o.grant_type, priority_score: o.priority_score }))].slice(0, 20) },
     { key: 'worldwide', icon: '🌍', label: 'Worldwide Grants', count: worldwide.length, items: worldwide.slice(0, 20) },
     { key: 'egprojects', icon: '🌿', label: 'EG Project Grants', count: egProjects.length, items: egProjects.slice(0, 20) },
+    ...(props.isManager ? [{ key: 'claims', icon: '⚖️', label: 'Claims Review', count: props.claims?.length || 0, items: [] as never[] }] : []),
   ]
 })
 
@@ -308,17 +378,15 @@ const visibleCategories = computed(() => {
 
 <style scoped>
 .gstore {
-  --accent: #00ff85;
-  --accent-dim: rgba(0, 255, 133, 0.15);
-  --accent-glow: rgba(0, 255, 133, 0.06);
-  --glass: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.06);
+  --accent: var(--success);
+  --accent-dim: var(--success-bg);
+  --accent-glow: rgba(39, 174, 96, 0.06);
+  --glass: var(--glass-bg);
   --glass-hover: rgba(255, 255, 255, 0.07);
-  --text: #f0f0f0;
-  --text-secondary: rgba(255, 255, 255, 0.55);
-  --text-tertiary: rgba(255, 255, 255, 0.28);
-  --surface: rgba(255, 255, 255, 0.02);
-  background: #000;
+  --text: var(--text-primary);
+  --text-tertiary: var(--text-muted);
+  --surface: var(--bg-secondary);
+  background: var(--bg-primary);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -480,15 +548,48 @@ const visibleCategories = computed(() => {
   background: none;
   border: none;
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 13px;
   cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 4px;
+  padding: clamp(6px, 0.8vw, 10px) clamp(8px, 1vw, 12px);
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
   transition: color 0.15s;
 }
 
 .gstore-signout-btn:hover {
   color: var(--text);
+}
+
+.gstore-create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: clamp(8px, 1vw, 12px) clamp(12px, 1.5vw, 18px);
+  min-height: 44px;
+  background: var(--accent);
+  border: none;
+  border-radius: 9999px;
+  color: var(--bg-primary);
+  font-size: clamp(11px, 1.2vw, 13px);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.gstore-create-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 16px rgba(0, 255, 133, 0.3);
+}
+
+.gstore-create-btn svg {
+  width: 14px;
+  height: 14px;
 }
 
 .gstore-google-btn {
@@ -539,12 +640,13 @@ const visibleCategories = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: clamp(8px, 1vw, 12px) clamp(12px, 1.5vw, 18px);
+  min-height: 44px;
   border: 1px solid var(--glass-border);
   border-radius: 9999px;
   background: transparent;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: clamp(11px, 1.2vw, 13px);
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -704,7 +806,7 @@ const visibleCategories = computed(() => {
   background: var(--accent);
   border: none;
   border-radius: 9999px;
-  color: #000;
+  color: var(--bg-primary);
   font-size: 15px;
   font-weight: 600;
   font-family: inherit;
@@ -759,29 +861,15 @@ const visibleCategories = computed(() => {
   background: var(--surface);
 }
 
-.gstore-section-seeall {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  color: var(--accent);
-  font-size: 13px;
+.gstore-section-count-badge {
+  font-size: clamp(11px, 1.2vw, 13px);
   font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: background 0.15s;
-}
-
-.gstore-section-seeall:hover {
-  background: var(--accent-dim);
-}
-
-.gstore-chevron {
-  width: 14px;
-  height: 14px;
+  color: rgba(255, 255, 255, 0.35);
+  padding: clamp(2px, 0.3vw, 4px) clamp(8px, 1vw, 12px);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .gstore-section-scroll {
@@ -869,7 +957,7 @@ const visibleCategories = computed(() => {
 
 .gstore-card-priority.mid {
   background: rgba(250, 204, 21, 0.15);
-  color: #facc15;
+  color: var(--warning);
 }
 
 .gstore-card-title {
@@ -947,12 +1035,12 @@ const visibleCategories = computed(() => {
 
 .gstore-card-tag.urgent {
   background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
+  color: var(--danger);
 }
 
 .gstore-card-tag.soon {
   background: rgba(234, 179, 8, 0.15);
-  color: #facc15;
+  color: var(--warning);
 }
 
 .gstore-overlay {
@@ -968,7 +1056,7 @@ const visibleCategories = computed(() => {
 }
 
 .gstore-popup {
-  background: #111;
+  background: var(--bg-secondary);
   border: 1px solid var(--glass-border);
   border-radius: 16px;
   padding: 32px;

@@ -286,7 +286,7 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
 
 .obs-tabstrip__btn:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #fafafa;
+  color: var(--text-primary);
   transform: scale(1.08);
 }
 
@@ -371,13 +371,13 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
 }
 
 .obs-panel__tab:hover {
-  color: #fafafa;
+  color: var(--text-primary);
   background: rgba(255, 255, 255, 0.04);
 }
 
 .obs-panel__tab.is-active {
   color: #fff;
-  border-bottom-color: #e74c3c;
+  border-bottom-color: var(--danger);
   background: rgba(231, 76, 60, 0.08);
 }
 
@@ -388,7 +388,7 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   left: 20%;
   right: 20%;
   height: 2px;
-  background: #e74c3c;
+  background: var(--danger);
   border-radius: 1px;
   box-shadow: 0 0 8px rgba(231, 76, 60, 0.4);
 }
@@ -421,14 +421,14 @@ useFocusTrap(panelEl, { active: computed(() => !collapsed.value && !!props.activ
   transition: all 0.15s ease;
 }
 
-.obs-panel__collapse:hover { color: #fafafa; background: rgba(255, 255, 255, 0.04); }
+.obs-panel__collapse:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.04); }
 
 .obs-panel__body {
   flex: 1;
   overflow-y: auto;
   padding: clamp(4px, 1vw, 8px);
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-color: var(--glass-border-light) transparent;
 }
 
 .obs-panel__body::-webkit-scrollbar { width: 4px; }

@@ -389,7 +389,7 @@ defineExpose({
 }
 
 .filter-search:focus {
-  border-color: #06b6d4;
+  border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
 }
 
@@ -399,7 +399,7 @@ defineExpose({
 }
 
 .filter-select:focus {
-  border-color: #06b6d4;
+  border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
 }
 

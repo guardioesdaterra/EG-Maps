@@ -234,27 +234,27 @@ const crewStats = computed(() => {
 })
 
 const projectLegendItems = computed(() => [
-  { color: '#3b82f6', label: '≤100' },
-  { color: '#22c55e', label: '101–500' },
-  { color: '#eab308', label: '501–1K' },
-  { color: '#ef4444', label: '>1K' },
+  { color: 'var(--info)', label: '≤100' },
+  { color: 'var(--success)', label: '101–500' },
+  { color: 'var(--warning)', label: '501–1K' },
+  { color: 'var(--danger)', label: '>1K' },
 ])
 
 const crewLegendItems = computed(() => [
-  { color: '#22c55e', label: t('stats.crewsActive20') },
-  { color: '#3b82f6', label: t('stats.crewsActive5to20') },
-  { color: '#a855f7', label: t('stats.crewsActive1to5') },
-  { color: '#f59e0b', label: t('stats.crewsInactive') },
+  { color: 'var(--success)', label: t('stats.crewsActive20') },
+  { color: 'var(--info)', label: t('stats.crewsActive5to20') },
+  { color: 'var(--purple)', label: t('stats.crewsActive1to5') },
+  { color: 'var(--warning)', label: t('stats.crewsInactive') },
 ])
 
 const speciesLegendItems = computed(() => [
-  { color: '#B64032', label: t('taxonomy.Mammal'), size: 11 },
-  { color: '#D97706', label: t('taxonomy.Bird'), size: 9 },
-  { color: '#5A8F3C', label: t('taxonomy.Amphibian'), size: 9 },
-  { color: '#7C3AED', label: t('taxonomy.Reptile'), size: 9 },
-  { color: '#2563EB', label: t('taxonomy.Fish'), size: 9 },
-  { color: '#15803D', label: t('taxonomy.Plant'), size: 7 },
-  { color: '#DB2777', label: t('taxonomy.Invertebrate'), size: 7 },
+  { color: 'var(--danger)', label: t('taxonomy.Mammal'), size: 11 },
+  { color: 'var(--warning)', label: t('taxonomy.Bird'), size: 9 },
+  { color: 'var(--success)', label: t('taxonomy.Amphibian'), size: 9 },
+  { color: 'var(--purple)', label: t('taxonomy.Reptile'), size: 9 },
+  { color: 'var(--info)', label: t('taxonomy.Fish'), size: 9 },
+  { color: 'var(--success)', label: t('taxonomy.Plant'), size: 7 },
+  { color: 'var(--purple)', label: t('taxonomy.Invertebrate'), size: 7 },
 ])
 
 </script>

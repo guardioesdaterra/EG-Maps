@@ -145,13 +145,13 @@ function onScroll() {
 }
 
 function catColor(cat: string): string {
-  return RARE_EARTH_CATEGORIES[cat]?.color ?? '#666'
+  return RARE_EARTH_CATEGORIES[cat]?.color ?? 'var(--text-muted)'
 }
 
 function dangerColor(score: number): string {
-  if (score >= 8) return '#e74c3c'
-  if (score >= 6) return '#f39c12'
-  return '#27ae60'
+  if (score >= 8) return 'var(--danger)'
+  if (score >= 6) return 'var(--warning)'
+  return 'var(--success)'
 }
 
 function formatHa(ha: number): string {
@@ -167,11 +167,11 @@ watch(() => props.visible, (v) => {
 
 <style scoped>
 .obs-datatable {
-  background: rgba(12, 12, 15, 0.95);
+  background: var(--panel-bg);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
   border-radius: 14px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 16px 48px var(--shadow-color);
   width: clamp(320px, 70vw, 800px);
   max-height: 80vh;
   display: flex;
@@ -184,29 +184,29 @@ watch(() => props.visible, (v) => {
   align-items: center;
   justify-content: space-between;
   padding: clamp(8px, 1.5vw, 16px) clamp(10px, 2vw, 20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--glass-border);
   gap: clamp(6px, 1.2vw, 12px);
 }
 .obs-datatable__title {
   margin: 0;
   font-size: clamp(12px, 1.8vw, 15px);
   font-weight: 700;
-  color: #e8e8e8;
+  color: var(--text-primary);
 }
 .obs-datatable__count {
   font-size: clamp(9px, 1.4vw, 12px);
-  color: rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.06);
+  color: var(--obs-text-dim);
+  background: var(--glass-border);
   padding: clamp(2px, 0.5vw, 6px);
   border-radius: 4px;
 }
 .obs-datatable__search {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--glass-border);
+  border: 1px solid var(--panel-border);
   border-radius: 6px;
   padding: clamp(2px, 0.5vw, 6px) clamp(6px, 1.2vw, 12px);
   font-size: clamp(10px, 1.5vw, 13px);
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--obs-text-primary);
   outline: none;
   width: 120px;
   font-family: inherit;
@@ -218,7 +218,7 @@ watch(() => props.visible, (v) => {
 .obs-datatable__close {
   background: transparent;
   border: 0;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--obs-text-muted);
   font-size: clamp(18px, 3vw, 26px);
   cursor: pointer;
   line-height: 1;
@@ -227,7 +227,7 @@ watch(() => props.visible, (v) => {
   transition: all 0.15s;
 }
 .obs-datatable__close:hover {
-  color: #e74c3c;
+  color: var(--danger);
   background: rgba(231, 76, 60, 0.1);
 }
 .obs-datatable__body {
@@ -249,9 +249,9 @@ watch(() => props.visible, (v) => {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--obs-text-muted);
   background: rgba(0, 0, 0, 0.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--glass-border);
   text-align: left;
   cursor: pointer;
   user-select: none;
@@ -275,7 +275,7 @@ watch(() => props.visible, (v) => {
   white-space: nowrap;
 }
 .obs-datatable__td--name {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--obs-text-primary);
   font-weight: 500;
   max-width: 200px;
   overflow: hidden;

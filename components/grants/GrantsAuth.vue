@@ -104,7 +104,7 @@ const showDropdown = ref(false)
 
 .auth-avatar.manager .auth-avatar-letter {
   background: rgba(0, 255, 133, 0.2);
-  color: #00ff85;
+  color: var(--success);
 }
 
 .auth-avatar-email {
@@ -190,12 +190,12 @@ const showDropdown = ref(false)
 }
 
 .auth-dropdown-item--danger {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .auth-dropdown-item--danger:hover {
   background: rgba(239, 68, 68, 0.1);
-  color: #f87171;
+  color: var(--danger);
 }
 
 .modal-fade-enter-active,

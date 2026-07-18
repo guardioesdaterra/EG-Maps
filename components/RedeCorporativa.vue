@@ -83,15 +83,15 @@ const hoveredEdge = ref<{ from: string; to: string; type: string; label?: string
 const tooltipPos = ref({ left: '0px', top: '0px' })
 
 const legendItems = [
-  { key: 'shareholding', label: 'Shareholding', color: '#e74c3c' },
-  { key: 'subsidiary', label: 'Subsidiary', color: '#3498db' },
-  { key: 'joint_venture', label: 'Joint Venture', color: '#27ae60' },
-  { key: 'board_overlap', label: 'Board Overlap', color: '#8e44ad' },
-  { key: 'partnership', label: 'Partnership', color: '#f39c12' },
+  { key: 'shareholding', label: 'Shareholding', color: 'var(--danger)' },
+  { key: 'subsidiary', label: 'Subsidiary', color: 'var(--info)' },
+  { key: 'joint_venture', label: 'Joint Venture', color: 'var(--success)' },
+  { key: 'board_overlap', label: 'Board Overlap', color: 'var(--purple)' },
+  { key: 'partnership', label: 'Partnership', color: 'var(--warning)' },
 ]
 
 function getConnectionColor(type: string): string {
-  return legendItems.find(l => l.key === type)?.color || '#666'
+  return legendItems.find(l => l.key === type)?.color || 'var(--text-muted)'
 }
 
 interface LayoutNode { id: string; x: number; y: number; ent: EnterpriseHQ; connections: number }
@@ -337,20 +337,20 @@ onUnmounted(() => {
 }
 .rede-header {
   display: flex; justify-content: space-between; align-items: flex-start;
-  padding: clamp(10px, 2.5vw, 16px) clamp(12px, 3vw, 20px) clamp(8px, 2vw, 12px); border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: clamp(10px, 2.5vw, 16px) clamp(12px, 3vw, 20px) clamp(8px, 2vw, 12px); border-bottom: 1px solid var(--glass-border);
 }
 .rede-badge {
   font-size: clamp(9px, 1.4vw, 12px); font-weight: 800; letter-spacing: 0.1em;
-  color: #5dade2; padding: 2px 6px; border-radius: 4px;
-  background: rgba(52,152,219,0.12);
+  color: var(--info); padding: 2px 6px; border-radius: 4px;
+  background: var(--info-bg);
 }
-.rede-title { font-size: clamp(12px, 3vw, 16px); font-weight: 800; color: #eee; margin: 2px 0 0; }
-.rede-subtitle { font-size: clamp(8px, 2vw, 10px); color: #666; margin: 0; }
+.rede-title { font-size: clamp(12px, 3vw, 16px); font-weight: 800; color: var(--text-primary); margin: 2px 0 0; }
+.rede-subtitle { font-size: clamp(8px, 2vw, 10px); color: var(--text-muted); margin: 0; }
 .rede-close {
-  background: none; border: none; color: #666; font-size: clamp(18px, 4vw, 24px);
+  background: none; border: none; color: var(--text-muted); font-size: clamp(18px, 4vw, 24px);
   cursor: pointer; padding: 0 4px; line-height: 1;
 }
-.rede-close:hover { color: #fff; }
+.rede-close:hover { color: var(--bg-tertiary); }
 .rede-canvas-wrap {
   flex: 1; position: relative; min-height: clamp(280px, 50vh, 400px);
   margin: 0; overflow: hidden;
@@ -361,50 +361,50 @@ onUnmounted(() => {
 }
 .rede-tooltip {
   position: absolute; padding: clamp(4px, 1.5vw, 6px) clamp(6px, 1.5vw, 10px); border-radius: 8px;
-  background: rgba(0,0,0,0.9); border: 1px solid rgba(255,255,255,0.1);
-  color: #ddd; font-size: clamp(11px, 1.6vw, 14px); pointer-events: none;
+  background: var(--bg-primary); border: 1px solid var(--panel-border);
+  color: var(--text-primary); font-size: clamp(11px, 1.6vw, 14px); pointer-events: none;
   white-space: nowrap; transform: translate(-50%, -120%);
 }
 .rede-edge-type {
   display: inline-block; margin-left: 6px; padding: 1px 5px;
-  border-radius: 3px; color: #fff; font-size: clamp(9px, 1.4vw, 12px); font-weight: 700;
+  border-radius: 3px; color: var(--bg-tertiary); font-size: clamp(9px, 1.4vw, 12px); font-weight: 700;
 }
 .rede-toolbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: clamp(4px, 1vw, 6px) clamp(10px, 3vw, 20px); gap: clamp(7px, 1.5vw, 12px);
-  border-top: 1px solid rgba(255,255,255,0.04);
-  background: rgba(255,255,255,0.015);
+  border-top: 1px solid var(--glass-border-light);
+  background: var(--glass-border-light);
 }
 .rede-toolbar-btn {
   background: rgba(52,152,219,0.1); border: 1px solid rgba(52,152,219,0.25);
-  color: #5dade2; padding: 3px 9px; border-radius: 5px;
+  color: var(--info); padding: 3px 9px; border-radius: 5px;
   font-size: clamp(10px, 1.5vw, 13px); font-weight: 700; cursor: pointer;
   display: inline-flex; align-items: center; gap: 4px;
 }
 .rede-toolbar-btn:hover { background: rgba(52,152,219,0.2); }
-.rede-toolbar-hint { font-size: clamp(9px, 1.4vw, 12px); color: #555; }
+.rede-toolbar-hint { font-size: clamp(9px, 1.4vw, 12px); color: var(--text-muted); }
 
 .rede-legend {
   display: flex; flex-wrap: wrap; gap: clamp(5px, 1.5vw, 8px);
-  padding: clamp(6px, 2vw, 10px) clamp(10px, 3vw, 20px); border-top: 1px solid rgba(255,255,255,0.06);
+  padding: clamp(6px, 2vw, 10px) clamp(10px, 3vw, 20px); border-top: 1px solid var(--glass-border);
 }
 .rede-legend-item {
-  font-size: clamp(10px, 1.5vw, 13px); color: #999; display: flex; align-items: center; gap: clamp(4px, 0.5vw, 6px);
+  font-size: clamp(10px, 1.5vw, 13px); color: var(--text-muted); display: flex; align-items: center; gap: clamp(4px, 0.5vw, 6px);
 }
 .rede-legend-dot {
   width: 8px; height: 8px; border-radius: 50%; display: inline-block;
 }
 .rede-detail-bar {
   display: flex; justify-content: space-between; align-items: center;
-  padding: clamp(6px, 2vw, 10px) clamp(10px, 3vw, 20px); border-top: 1px solid rgba(255,255,255,0.06);
-  background: rgba(255,255,255,0.02);
+  padding: clamp(6px, 2vw, 10px) clamp(10px, 3vw, 20px); border-top: 1px solid var(--glass-border);
+  background: var(--glass-border-light);
 }
 .rede-detail-info {
   display: flex; flex-direction: column; gap: 1px;
 }
 .rede-detail-fly {
   background: rgba(52,152,219,0.15); border: 1px solid rgba(52,152,219,0.3);
-  color: #5dade2; padding: 4px 10px; border-radius: 6px;
+  color: var(--info); padding: 4px 10px; border-radius: 6px;
   font-size: clamp(10px, 1.5vw, 13px); font-weight: 700; cursor: pointer;
 }
 .rede-detail-fly:hover { background: rgba(52,152,219,0.25); }

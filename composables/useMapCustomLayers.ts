@@ -3,7 +3,7 @@
  * @why MapLibre GL custom layer manager — watches custom datasets, adds/removes MapLibre sources and layers (circle, symbol, line, fill) reactively, and handles click events to select features for popup display.
  */
 import { watch, ref, onUnmounted, type Ref } from 'vue'
-import type { Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl'
+import type { Map as MapLibreMap, MapMouseEvent, GeoJSONSource } from 'maplibre-gl'
 import { useCustomData, type CustomDataset } from './useCustomData'
 
 const SOURCE_PREFIX = 'custom_source_'
@@ -56,7 +56,7 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
     const srcId = SOURCE_PREFIX + ds.id
     const fc: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: ds.features }
     try { if (!m.getSource(srcId)) m.addSource(srcId, { type: 'geojson', data: fc }) } catch { return }
-    try { (m.getSource(srcId) as any)?.setData(fc) } catch { /* noop */ }
+    try { (m.getSource(srcId) as GeoJSONSource | undefined)?.setData(fc) } catch { /* noop */ }
     if (hasPoint(ds.features)) {
       try {
         m.addLayer({
@@ -143,7 +143,7 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
       } else if (ds.visible && lastIds.has(ds.id)) {
         const srcId = SOURCE_PREFIX + ds.id
         try {
-          const src = m.getSource(srcId) as any
+          const src = m.getSource(srcId) as GeoJSONSource | undefined
           if (src && src.setData) src.setData({ type: 'FeatureCollection', features: ds.features })
         } catch { /* noop */ }
         updateColors(ds.id, ds.color, m)

@@ -30,9 +30,9 @@
         <div v-if="legendOpen" class="obs-expand__body">
           <p>{{ t('observatory.envPanel.legendIntro') }}</p>
           <ul class="obs-expand__legend">
-            <li><span class="obs-legend-dot" style="background:#e74c3c" /> <strong>8+</strong> — {{ t('observatory.envPanel.criticalRisk') }}</li>
-            <li><span class="obs-legend-dot" style="background:#f39c12" /> <strong>6–7.9</strong> — {{ t('observatory.envPanel.highRisk') }}</li>
-            <li><span class="obs-legend-dot" style="background:#27ae60" /> <strong>&lt;6</strong> — {{ t('observatory.envPanel.moderateRisk') }}</li>
+            <li><span class="obs-legend-dot" :style="{ background: 'var(--danger)' }" /> <strong>8+</strong> — {{ t('observatory.envPanel.criticalRisk') }}</li>
+            <li><span class="obs-legend-dot" :style="{ background: 'var(--warning)' }" /> <strong>6–7.9</strong> — {{ t('observatory.envPanel.highRisk') }}</li>
+            <li><span class="obs-legend-dot" :style="{ background: 'var(--success)' }" /> <strong>&lt;6</strong> — {{ t('observatory.envPanel.moderateRisk') }}</li>
           </ul>
         </div>
       </Transition>
@@ -123,9 +123,9 @@ const legendOpen = ref(false)
 const highlighted = ref<string | null>(null)
 
 function dangerColor(score: number) {
-  if (score >= 8) return '#e74c3c'
-  if (score >= 6) return '#f39c12'
-  return '#27ae60'
+  if (score >= 8) return 'var(--danger)'
+  if (score >= 6) return 'var(--warning)'
+  return 'var(--success)'
 }
 
 function onHighlight(key: string) {

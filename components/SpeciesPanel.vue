@@ -136,7 +136,7 @@ onBeforeUnmount(() => {
             
             <div
               class="w-10 h-10 rounded-lg shrink-0 bg-[var(--input-bg)] overflow-hidden"
-              :style="{ borderLeft: `3px solid ${GROUP_COLORS[s.taxonomicGroup] ?? '#B64032'}` }"
+              :style="{ borderLeft: `3px solid ${GROUP_COLORS[s.taxonomicGroup] ?? 'var(--danger)'}` }"
             >
               <img
                 v-if="s.imageUrl"
@@ -158,8 +158,8 @@ onBeforeUnmount(() => {
             <div
               class="shrink-0 text-[clamp(10px,1.5vw,13px)] font-bold px-1.5 py-0.5 rounded"
               :style="{
-                color: GROUP_COLORS[s.taxonomicGroup] ?? '#B64032',
-                background: `${GROUP_COLORS[s.taxonomicGroup] ?? '#B64032'}20`,
+                color: GROUP_COLORS[s.taxonomicGroup] ?? 'var(--danger)',
+                background: `${GROUP_COLORS[s.taxonomicGroup] ?? 'var(--danger)'}20`,
               }"
             >
               {{ s.category }}

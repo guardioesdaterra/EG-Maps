@@ -94,7 +94,7 @@ watch(() => props.visible, (v) => {
   width: 100%;
   max-height: min(90vh, 40rem);
   overflow-y: auto;
-  background: #0d0d12;
+  background: var(--bg-secondary);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);

@@ -93,20 +93,20 @@ function runAction(id: string, onClick: () => void) {
   gap: clamp(6px, 1.2vw, 12px);
   padding: clamp(6px, 1.2vw, 12px);
   border-radius: 10px;
-  background: rgba(15, 15, 18, 0.96);
-  color: #f5f5f5;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 6px 24px var(--shadow-color), 0 0 0 1px var(--glass-border-light) inset;
   font-size: clamp(12px, 1.8vw, 15px);
   line-height: 1.4;
   pointer-events: auto;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
-.toast--success { border-left: 3px solid #27ae60; }
-.toast--info { border-left: 3px solid #5dade2; }
-.toast--warning { border-left: 3px solid #f39c12; }
-.toast--error { border-left: 3px solid #e74c3c; }
+.toast--success { border-left: 3px solid var(--success); }
+.toast--info { border-left: 3px solid var(--info); }
+.toast--warning { border-left: 3px solid var(--warning); }
+.toast--error { border-left: 3px solid var(--danger); }
 
 .toast__icon {
   font-size: clamp(14px, 2vw, 18px);
@@ -116,19 +116,19 @@ function runAction(id: string, onClick: () => void) {
   min-width: 18px;
   text-align: center;
 }
-.toast--success .toast__icon { color: #27ae60; }
-.toast--info .toast__icon { color: #5dade2; }
-.toast--warning .toast__icon { color: #f39c12; }
-.toast--error .toast__icon { color: #e74c3c; }
+.toast--success .toast__icon { color: var(--success); }
+.toast--info .toast__icon { color: var(--info); }
+.toast--warning .toast__icon { color: var(--warning); }
+.toast--error .toast__icon { color: var(--danger); }
 
 .toast__body { flex: 1; min-width: 0; }
-.toast__title { font-weight: 700; color: #fafafa; }
-.toast__text { color: rgba(255, 255, 255, 0.7); margin-top: 2px; word-wrap: break-word; }
+.toast__title { font-weight: 700; color: var(--text-primary); }
+.toast__text { color: var(--text-secondary); margin-top: 2px; word-wrap: break-word; }
 
 .toast__action {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fafafa;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--glass-border);
+  color: var(--text-primary);
+  border: 1px solid var(--panel-border);
   border-radius: 6px;
   padding: clamp(2px, 0.5vw, 6px) clamp(6px, 1.2vw, 12px);
   font-size: clamp(11px, 1.6vw, 14px);
@@ -137,19 +137,19 @@ function runAction(id: string, onClick: () => void) {
   font-family: inherit;
   white-space: nowrap;
 }
-.toast__action:hover { background: rgba(255, 255, 255, 0.15); }
+.toast__action:hover { background: var(--panel-border); }
 
 .toast__close {
   background: transparent;
   border: 0;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: clamp(16px, 2.5vw, 22px);
   line-height: 1;
   padding: 0 4px;
   font-family: inherit;
 }
-.toast__close:hover { color: #fafafa; }
+.toast__close:hover { color: var(--text-primary); }
 
 .toast-enter-active,
 .toast-leave-active {

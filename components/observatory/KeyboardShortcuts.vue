@@ -102,7 +102,7 @@ const shortcutGroups = [
   margin: 0;
   font-size: clamp(12px, 1.8vw, 15px);
   font-weight: 700;
-  color: #e8e8e8;
+  color: var(--text-primary);
 }
 .obs-shortcuts-panel__close {
   background: transparent;
@@ -116,7 +116,7 @@ const shortcutGroups = [
   transition: all 0.15s;
 }
 .obs-shortcuts-panel__close:hover {
-  color: #e74c3c;
+  color: var(--danger);
   background: rgba(231, 76, 60, 0.1);
 }
 .obs-shortcuts-panel__body {

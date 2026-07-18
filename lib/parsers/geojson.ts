@@ -12,7 +12,7 @@ export interface ParseResult {
 
 export function parseGeoJSON(text: string, fileName: string): ParseResult {
   const errors: string[] = []
-  let data: any
+  let data: Record<string, unknown>
   try { data = JSON.parse(text) } catch {
     return { features: [], name: fileName, count: 0, properties: [], errors: ['Invalid JSON syntax'] }
   }
@@ -25,7 +25,7 @@ export function parseGeoJSON(text: string, fileName: string): ParseResult {
   } else if (data.type === 'Feature' && data.geometry) {
     features = [data]
   } else if (data.type === 'GeometryCollection' && Array.isArray(data.geometries)) {
-    features = data.geometries.map((g: any, i: number) => ({ type: 'Feature', id: i, geometry: g, properties: {} }))
+    features = data.geometries.map((g: GeoJSON.Geometry, i: number) => ({ type: 'Feature', id: i, geometry: g, properties: {} }))
   } else if (['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'].includes(data.type)) {
     features = [{ type: 'Feature', geometry: data, properties: {} }]
   } else {

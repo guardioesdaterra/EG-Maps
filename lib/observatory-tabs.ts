@@ -63,7 +63,7 @@ export const ILLEGAL_PATTERNS: IllegalPattern[] = [
   {
     titleKey: 'observatory.illegal.landSpec',
     descKey: 'observatory.illegal.landSpecDesc',
-    color: '#8e44ad',
+    color: 'var(--purple)',
     examples: [
       { key: 'observatory.illegal.landSpecEx1' },
       { key: 'observatory.illegal.landSpecEx2' },
@@ -73,7 +73,7 @@ export const ILLEGAL_PATTERNS: IllegalPattern[] = [
   {
     titleKey: 'observatory.illegal.rejeito',
     descKey: 'observatory.illegal.rejeitoDesc',
-    color: '#8e44ad',
+    color: 'var(--purple)',
     examples: [
       { key: 'observatory.illegal.rejeitoEx1' },
       { key: 'observatory.illegal.rejeitoEx2' },
@@ -83,7 +83,7 @@ export const ILLEGAL_PATTERNS: IllegalPattern[] = [
   {
     titleKey: 'observatory.illegal.secrecy',
     descKey: 'observatory.illegal.secrecyDesc',
-    color: '#8e44ad',
+    color: 'var(--purple)',
     examples: [
       { key: 'observatory.illegal.secrecyEx1' },
       { key: 'observatory.illegal.secrecyEx2' },
@@ -93,7 +93,7 @@ export const ILLEGAL_PATTERNS: IllegalPattern[] = [
   {
     titleKey: 'observatory.illegal.foreign',
     descKey: 'observatory.illegal.foreignDesc',
-    color: '#2980b9',
+    color: 'var(--info)',
     examples: [
       { key: 'observatory.illegal.foreignEx1' },
       { key: 'observatory.illegal.foreignEx2' },
@@ -104,7 +104,7 @@ export const ILLEGAL_PATTERNS: IllegalPattern[] = [
   {
     titleKey: 'observatory.illegal.exclusion',
     descKey: 'observatory.illegal.exclusionDesc',
-    color: '#8e44ad',
+    color: 'var(--purple)',
     examples: [
       { key: 'observatory.illegal.exclusionEx1' },
       { key: 'observatory.illegal.exclusionEx2' },
@@ -114,7 +114,7 @@ export const ILLEGAL_PATTERNS: IllegalPattern[] = [
   {
     titleKey: 'observatory.illegal.water',
     descKey: 'observatory.illegal.waterDesc',
-    color: '#2980b9',
+    color: 'var(--info)',
     examples: [
       { key: 'observatory.illegal.waterEx1' },
       { key: 'observatory.illegal.waterEx2' },
@@ -215,22 +215,22 @@ export const NETWORK_NOTES: NetworkNote[] = [
   {
     titleKey: 'observatory.network.foxfireTitle',
     bodyKey: 'observatory.network.foxfireBody',
-    color: '#e74c3c',
+    color: 'var(--danger)',
   },
   {
     titleKey: 'observatory.network.australianTitle',
     bodyKey: 'observatory.network.australianBody',
-    color: '#2980b9',
+    color: 'var(--info)',
   },
   {
     titleKey: 'observatory.network.usMilitaryTitle',
     bodyKey: 'observatory.network.usMilitaryBody',
-    color: '#e74c3c',
+    color: 'var(--danger)',
   },
   {
     titleKey: 'observatory.network.cbmmTitle',
     bodyKey: 'observatory.network.cbmmBody',
-    color: '#8e44ad',
+    color: 'var(--purple)',
   },
 ]
 

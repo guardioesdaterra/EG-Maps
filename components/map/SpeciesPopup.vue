@@ -23,8 +23,8 @@ const imageError = ref(false)
 const imageLoading = ref(true)
 
 const color = computed(() => {
-  if (!props.species) return '#5dade2'
-  return GROUP_COLORS[props.species.taxonomicGroup] ?? '#B64032'
+  if (!props.species) return 'var(--info)'
+  return GROUP_COLORS[props.species.taxonomicGroup] ?? 'var(--danger)'
 })
 
 const content = computed(() => {
@@ -76,11 +76,11 @@ const endangermentLevel = computed(() => {
 })
 
 const endangermentColors: Record<string, string> = {
-  critical: '#dc2626',
-  endangered: '#ea580c',
-  vulnerable: '#d97706',
-  near: '#a3a3a3',
-  default: '#a3a3a3',
+  critical: 'var(--danger)',
+  endangered: 'var(--warning)',
+  vulnerable: 'var(--warning)',
+  near: 'var(--text-muted)',
+  default: 'var(--text-muted)',
 }
 
 const endangermentColor = computed(() => endangermentColors[endangermentLevel.value] ?? color.value)
@@ -212,7 +212,7 @@ const coords = computed(() => {
   --popup-radius: 10px;
   display: flex;
   flex-direction: column;
-  color: #e2e2e2;
+  color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   position: relative;
 }
@@ -259,7 +259,7 @@ const coords = computed(() => {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: 800;
-  color: #fff;
+  color: var(--bg-tertiary);
   padding: 0.1rem 0.45rem;
   border-radius: 3px;
   display: inline-block;
@@ -271,7 +271,7 @@ const coords = computed(() => {
   font-weight: 800;
   line-height: 1.2;
   margin: 0;
-  color: #fff;
+  color: var(--bg-tertiary);
   letter-spacing: -0.01em;
   overflow-wrap: break-word;
 }
@@ -445,7 +445,7 @@ const coords = computed(() => {
   align-items: center;
   gap: 0.35rem;
   font-size: 0.7rem;
-  color: var(--link-clr, #5dade2);
+  color: var(--link-clr, var(--info));
   text-decoration: none;
   font-weight: 600;
   padding: 0.25rem 0.65rem;
@@ -458,6 +458,6 @@ const coords = computed(() => {
 
 .species-popup__link:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: var(--link-clr, #5dade2);
+  border-color: var(--link-clr, var(--info));
 }
 </style>

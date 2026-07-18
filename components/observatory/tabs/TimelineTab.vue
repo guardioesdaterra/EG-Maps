@@ -104,9 +104,9 @@ const cumMap = computed(() => {
 function cumulative(year: number) { return cumMap.value[year] ?? 0 }
 
 function barColor(count: number) {
-  if (count > 2000) return '#c0392b'
-  if (count > 800) return '#f39c12'
-  return '#27ae60'
+  if (count > 2000) return 'var(--danger)'
+  if (count > 800) return 'var(--warning)'
+  return 'var(--success)'
 }
 
 </script>

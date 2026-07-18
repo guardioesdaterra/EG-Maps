@@ -123,6 +123,41 @@ export interface CommandPaletteItem {
   keywords?: string[]
 }
 
+export interface ClaimRecord {
+  id: string
+  project_id: string
+  user_id: string
+  user_email: string
+  user_name: string
+  claim_note: string
+  status: 'pending' | 'approved' | 'rejected'
+  reviewer_id: string | null
+  reviewer_email: string | null
+  review_note: string | null
+  reviewed_at: string | null
+  created_at: string
+  updated_at: string
+  project_title?: string
+  project_country?: string
+}
+
+export interface CreateGrantInput {
+  title: string
+  description: string
+  location_name: string
+  latitude: number | null
+  longitude: number | null
+  category: string
+  funder?: string
+  url?: string
+  amount_max?: string
+  amount_min?: string
+  currency?: string
+  country?: string
+  grant_type?: string
+  deadline?: string
+}
+
 export interface DetailGrantData {
   id: string
   title: string

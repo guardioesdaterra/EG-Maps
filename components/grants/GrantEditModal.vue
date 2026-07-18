@@ -11,8 +11,8 @@
     <Transition name="modal-fade">
       <div v-if="grant" class="fixed inset-0 flex items-center justify-center p-4 grant-edit-overlay" role="dialog" aria-modal="true" aria-label="Edit grant">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="$emit('close')" />
-        <div class="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl">
-          <div class="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-white/5 bg-[#0c0c0e]/95 backdrop-blur-sm">
+        <div class="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-[var(--bg-secondary)] shadow-2xl">
+          <div class="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-white/5 bg-[var(--bg-secondary)]/95 backdrop-blur-sm">
             <div class="min-w-0 flex-1 mr-3">
               <h2 class="text-sm font-bold text-white truncate">{{ form.title || t('grantsPortal.editGrant') }}</h2>
               <p class="text-[10px] text-white/40 truncate mt-0.5">{{ grant?.source || grant?.id }}</p>
@@ -152,25 +152,25 @@ watch(() => props.grant, (g) => {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(255,255,255,0.4);
+  color: var(--text-muted);
 }
 
 .form-input {
   width: 100%;
   padding: 0.7rem 1rem;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--glass-border-light);
+  border: 1px solid var(--panel-border);
   border-radius: 8px;
-  color: #f0f0f0;
+  color: var(--text-primary);
   font-size: 0.85rem;
   outline: none;
   transition: border-color 0.2s;
 }
 .form-input:focus {
-  border-color: rgba(0,255,133,0.4);
+  border-color: var(--success);
 }
 .form-input::placeholder {
-  color: rgba(255,255,255,0.2);
+  color: var(--text-muted);
 }
 textarea.form-input {
   resize: vertical;

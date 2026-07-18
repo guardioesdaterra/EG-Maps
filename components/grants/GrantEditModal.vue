@@ -3,9 +3,7 @@
  * @why Modal for creating or editing a grant — title, description, amount, category
  * @component GrantEditModal
  * @props grant: ScrapedGrant | null
-  saving
- * @emits close: []
-  save: [form: Record<string, string>]
+ * @emits close, save
  * @deps vue (reactive, watch)
  */
 <template>

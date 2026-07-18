@@ -1,231 +1,171 @@
 /**
  * components/grants/GrantsDashboard.vue
- * @why Grants management dashboard — lists grants with status, filters, approve/close actions
+ * @why Grants management dashboard — App Store-style full-screen category browser
  * @component GrantsDashboard
- * @emits signIn: []
-  signOut: []
-  'update:activeTab': [tab: string]
-  'update:searchQuery': [q: string]
-  'toggle:showHistory': []
-  vote: [id: string, stars: number]
-  'view-detail': [grant: ScrapedGrant | GrantRecord]
-  leaderboardDetail: [entry: LeaderboardEntry]
-  'review:grant': [id: string, decision: 'pending' | 'open' | 'closed']
-  'review:scraped': [id: string, decision: 'approved' | 'hidden' | 'closed' | 'pending', table: string]
- * @deps vue (computed, ref, watch)
+ * @emits signIn, signOut, 'update:activeTab', 'update:searchQuery', 'toggle:showHistory',
+ *   vote, 'view-detail', leaderboardDetail, 'review:grant', 'review:scraped'
+ * @deps vue (computed, ref, watch), ~/lib/project-data (allProjectsData)
  */
 <template>
-  <div class="gdash">
-    
-    <div class="gdash-user glass">
-      <template v-if="user">
-        <div class="gdash-user-info">
-          <div class="gdash-avatar" :class="isManager ? 'manager' : 'member'">
-            {{ isManager ? 'M' : 'C' }}
+  <div class="gstore">
+    <header class="gstore-header">
+      <div class="gstore-header-inner">
+        <div class="gstore-header-left">
+          <div class="gstore-logo">
+            <svg viewBox="0 0 32 32" fill="none" class="gstore-logo-icon">
+              <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              <path d="M10 20c2-6 6-10 6-10s4 4 6 10" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <path d="M7 16c3-4 9-4 9-4s6 0 9 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            </svg>
+            <span class="gstore-logo-text">Grants</span>
           </div>
-          <div>
-            <p class="gdash-role">{{ isManager ? t('grantsPortal.manager') : t('grantsPortal.crewMember') }}</p>
-            <p class="gdash-email">{{ user.email }}</p>
-          </div>
+          <div class="gstore-header-divider" />
+          <span class="gstore-badge">Dashboard</span>
         </div>
-        <button class="gdash-signout" @click="$emit('signOut')">{{ t('grantsPortal.signOut') }}</button>
+        <div class="gstore-header-right">
+          <div class="gstore-search">
+            <svg class="gstore-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input
+              :value="searchQuery"
+              @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
+              placeholder="Search grants, funders, countries…"
+              class="gstore-search-input"
+              aria-label="Search grants"
+            />
+          </div>
+          <template v-if="user">
+            <div class="gstore-user-pill">
+              <span class="gstore-user-avatar" :class="isManager ? 'manager' : ''">{{ isManager ? 'M' : 'C' }}</span>
+              <span class="gstore-user-email">{{ user.email }}</span>
+              <button class="gstore-signout-btn" @click="$emit('signOut')" aria-label="Sign out">✕</button>
+            </div>
+          </template>
+          <template v-else>
+            <button class="gstore-google-btn" @click="$emit('signIn')">
+              <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              Sign In
+            </button>
+          </template>
+        </div>
+      </div>
+    </header>
+
+    <nav class="gstore-nav">
+      <button
+        v-for="cat in categories"
+        :key="cat.key"
+        class="gstore-nav-pill"
+        :class="{ active: activeCategory === cat.key }"
+        @click="activeCategory = cat.key"
+      >
+        <span class="gstore-nav-pill-icon">{{ cat.icon }}</span>
+        <span class="gstore-nav-pill-label">{{ cat.label }}</span>
+        <span class="gstore-nav-pill-count">{{ cat.count }}</span>
+      </button>
+    </nav>
+
+    <main class="gstore-main">
+      <div v-if="isLoading" class="gstore-loading">
+        <div class="gstore-loading-dot" />
+        <span>Loading grants…</span>
+      </div>
+
+      <template v-else-if="!user">
+        <section class="gstore-hero">
+          <div class="gstore-hero-chip">Earth Guardians</div>
+          <h1 class="gstore-hero-title">Grants &amp; Opportunities</h1>
+          <p class="gstore-hero-subtitle">Discover funding for climate action, conservation, and community projects worldwide.</p>
+          <div class="gstore-hero-stats">
+            <div class="gstore-hero-stat">
+              <span class="gstore-hero-stat-num">{{ totalAll }}</span>
+              <span class="gstore-hero-stat-label">Total Grants</span>
+            </div>
+            <div class="gstore-hero-stat">
+              <span class="gstore-hero-stat-num">{{ categoryCount }}</span>
+              <span class="gstore-hero-stat-label">Categories</span>
+            </div>
+            <div class="gstore-hero-stat">
+              <span class="gstore-hero-stat-num">{{ countriesCount }}+</span>
+              <span class="gstore-hero-stat-label">Countries</span>
+            </div>
+          </div>
+          <p class="gstore-hero-hint">Sign in to vote, track, and manage grants.</p>
+          <button class="gstore-hero-btn" @click="$emit('signIn')">Sign in with Google</button>
+        </section>
       </template>
+
       <template v-else>
-        <div class="gdash-signin-inner">
-          <svg class="gdash-heart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-          <h3>{{ t('grantsPortal.signInTitle') }}</h3>
-          <p>{{ t('grantsPortal.signInDesc') }}</p>
-          <button class="gdash-google-btn" @click="$emit('signIn')">
-            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-            {{ t('grantsPortal.signInBtn') }}
-          </button>
-          <a href="https://www.earthguardians.org/" target="_blank" class="gdash-join-link">{{ t('grantsPortal.notMemberJoin') }}</a>
-        </div>
-      </template>
-    </div>
-
-    
-
-    
-    <div v-if="user" class="gdash-controls">
-      <div class="gdash-tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.key"
-          class="gdash-tab"
-          :class="{ active: activeTab === tab.key }"
-          @click="$emit('update:activeTab', tab.key)"
+        <section
+          v-for="cat in visibleCategories"
+          :key="cat.key"
+          class="gstore-section"
         >
-          <span class="gdash-tab-emoji">{{ tab.emoji }}</span>
-          {{ t(`grantsPortal.${tab.key}`) }}
-          <span class="gdash-tab-count">{{ tabCount(tab.key) }}</span>
-        </button>
-      </div>
-      <div class="gdash-search">
-        <svg class="gdash-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input
-          :value="searchQuery"
-          @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
-          :placeholder="t('grantsPortal.dashboardSearchPlaceholder')"
-          class="gdash-search-input"
-          :aria-label="t('grantsPortal.dashboardSearchPlaceholder')"
-        />
-      </div>
-    </div>
-    <p v-else class="gdash-signin-hint">{{ t('grantsPortal.signInDashboardDesc') }}</p>
-
-    
-    <div class="gdash-list">
-      <div v-if="isLoading" class="gdash-status">{{ t('grantsPortal.loadingGrants') }}</div>
-      <div v-else-if="displayGrants.length === 0" class="gdash-status">{{ emptyMessage }}</div>
-
-      
-      <template v-if="activeTab !== 'tabLeaderboard'">
-        <div
-          v-for="g in paginatedGrants"
-          :key="g.id"
-           class="gdash-card glass"
-           :class="{
-             'opacity-60': activeTab === 'tabClosed',
-             removing: removingGrants.includes(g.id)
-           }"
-        >
-          <div class="gdash-card-header">
-            <div class="gdash-card-title-row">
-              <span v-if="g.grant_type" class="gdash-type-badge" :class="g.grant_type || 'general'">
-                {{ typeEmoji(g.grant_type) }} {{ grantTypeLabel(g.grant_type) }}
-              </span>
-              <h4>{{ g.title }}</h4>
+          <div class="gstore-section-header">
+            <div class="gstore-section-header-left">
+              <span class="gstore-section-icon">{{ cat.icon }}</span>
+              <h2 class="gstore-section-title">{{ cat.label }}</h2>
+              <span class="gstore-section-count">{{ cat.count }}</span>
             </div>
-            <div class="gdash-card-badges">
-              <span v-if="g.priority_score != null" class="gdash-priority" :class="priorityClass(g.priority_score)">{{ g.priority_score }}</span>
-              <span class="gdash-badge" :class="statusClass">{{ statusLabel }}</span>
-            </div>
+            <button class="gstore-section-seeall" @click="scrollSection(cat.key)">{{ cat.count > 6 ? 'Show all' : '' }}<svg v-if="cat.count > 6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="gstore-chevron"><path d="M9 18l6-6-6-6"/></svg></button>
           </div>
-
-          <div v-if="g.highlights?.length && activeTab === 'tabOpen'" class="gdash-highlights">
-            <span v-for="hl in g.highlights.slice(0, 5)" :key="hl" class="gdash-highlight" :class="hl.toLowerCase().replace(/\s+/g, '_')">{{ hl }}</span>
-          </div>
-
-          <div v-if="activeTab === 'tabOpen' && g.urgency" class="gdash-urgency" :class="g.urgency">
-            <template v-if="g.urgency === 'urgent'">⚠️ {{ t('grantsPortal.urgencyUrgent') }}</template>
-            <template v-else-if="g.urgency === 'soon'">⏰ {{ t('grantsPortal.urgencySoon') }}</template>
-            <template v-else-if="g.urgency === 'expired'">🔴 {{ t('grantsPortal.urgencyExpired') }}</template>
-          </div>
-
-          <p class="gdash-card-desc">{{ g.description?.slice(0, 200) }}{{ g.description?.length > 200 ? '...' : '' }}</p>
-
-          <div class="gdash-card-meta-row">
-            <span v-if="g.funder">🏛 {{ t('grantsPortal.funder') }}: {{ g.funder }}</span>
-            <span v-if="g.country">📍 {{ t('grantsPortal.country') }}: {{ g.country }}</span>
-            <span v-if="g.deadline">📅 {{ t('grantsPortal.deadline') }}: {{ g.deadline }}</span>
-            <template v-if="g.amount_max">
-              <span>💰 {{ t('grantsPortal.amount') }}: {{ g.amount_max }} {{ g.currency }}</span>
-              <span v-if="g.amount_usd != null" class="text-green-400/70">≈ ${{ formatAmount(g.amount_usd) }} USD</span>
-            </template>
-            <span v-if="g.source">📡 {{ t('grantsPortal.source') }}: {{ g.source }}</span>
-          </div>
-
-          <div v-if="g.categories?.length && activeTab === 'tabOpen'" class="gdash-categories">
-            <span v-for="cat in g.categories.slice(0, 4)" :key="cat" class="gdash-cat-tag">{{ cat }}</span>
-          </div>
-
-          <div class="gdash-card-footer">
-            <div v-if="activeTab !== 'tabClosed'" class="gdash-stars">
-              <button v-for="n in 8" :key="n" class="gdash-star" :class="{ active: (userVotes[g.id] || 0) >= n }" @click="user ? $emit('vote', g.id, n) : showLoginPopup = true" :aria-label="n + ' ' + t('grantsPortal.stars')" role="radio" :aria-checked="(userVotes[g.id] || 0) >= n">★</button>
-              <span class="gdash-votes">{{ voteCount(g.id) }} {{ t('grantsPortal.votes') }}</span>
-            </div>
-            <div class="gdash-card-links">
-              <button class="gdash-link-btn" @click="$emit('view-detail', g)">{{ t('grantsPortal.details') }}</button>
-              <a v-if="isSafeUrl(g.url)" :href="g.url" target="_blank" class="gdash-link-btn apply" rel="noopener noreferrer">{{ t('grantsPortal.apply') }} ↗</a>
-              <template v-if="isManager">
-                <button v-if="activeTab === 'tabPending'" class="gdash-action approve text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'approved', 'scraped_grants')">✓ {{ t('grantsPortal.approve') }}</button>
-                <button v-if="activeTab === 'tabPending'" class="gdash-action reject text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'hidden', 'scraped_grants')">✗ {{ t('grantsPortal.reject') }}</button>
-                <button v-if="activeTab === 'tabOpen'" class="gdash-action reject text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'hidden', 'grants')">✗ {{ t('grantsPortal.reject') }}</button>
-                <button v-if="activeTab === 'tabOpen'" class="gdash-action close text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'closed', 'grants')">🔒 {{ t('grantsPortal.closeGrant') }}</button>
-                <button v-if="activeTab === 'tabClosed'" class="gdash-action restore text-[11px] py-0.5" @click="$emit('review:scraped', g.id, 'pending', 'scraped_grants')">↩ {{ t('grantsPortal.restore') }}</button>
-              </template>
-            </div>
-          </div>
-        </div>
-      </template>
-
-      
-      <template v-if="activeTab === 'tabLeaderboard'">
-        <div v-if="leaderboardLoading" class="gdash-status">{{ t('grantsPortal.loadingLeaderboard') }}</div>
-        <div v-else-if="leaderboard.length === 0" class="gdash-status">{{ t('grantsPortal.noLeaderboard') }}</div>
-        <div v-for="(entry, i) in leaderboard" :key="entry.id" class="gdash-card glass">
-          <div class="gdash-card-header">
-            <div class="gdash-lb-rank" :style="{ color: i === 0 ? '#ffd700' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : '#ffffff40' }">#{{ i + 1 }}</div>
-            <div class="gdash-lb-info">
-              <h4>{{ entry.title }}</h4>
-              <div class="gdash-lb-meta">
-                <span class="text-yellow-400 text-sm">{{ safeStarRepeat(entry.avg_stars) }}</span>
-                <span class="text-xs text-white/50">{{ entry.avg_stars }}/8 ({{ entry.vote_count }} votes)</span>
-                <span class="text-xs text-white/30">{{ entry.view_count }} views</span>
-                <span v-if="entry.source_type === 'scraped'" class="gdash-source-badge open">{{ t('grantsPortal.leaderboardOpen') }}</span>
-                <span v-else class="gdash-source-badge crew">{{ t('grantsPortal.leaderboardCrew') }}</span>
+          <div
+            :ref="el => { if (el) sectionRefs[cat.key] = el as HTMLElement }"
+            class="gstore-section-scroll"
+          >
+            <div
+              v-for="g in cat.items"
+              :key="g.id"
+              class="gstore-card"
+              @click="$emit('view-detail', g)"
+            >
+              <div class="gstore-card-top">
+                <span v-if="g.grant_type" class="gstore-card-type" :class="g.grant_type">
+                  {{ grantTypeEmoji(g.grant_type) }}
+                </span>
+                <div class="gstore-card-badges">
+                  <span v-if="g.priority_score != null && g.priority_score >= 60" class="gstore-card-priority high">{{ g.priority_score }}</span>
+                  <span v-else-if="g.priority_score != null && g.priority_score >= 30" class="gstore-card-priority mid">{{ g.priority_score }}</span>
+                </div>
+              </div>
+              <h3 class="gstore-card-title">{{ g.title }}</h3>
+              <div class="gstore-card-meta">
+                <span v-if="g.funder" class="gstore-card-meta-item">{{ g.funder }}</span>
+                <span v-if="g.country" class="gstore-card-meta-item">{{ g.country }}</span>
+              </div>
+              <div class="gstore-card-footer">
+                <div v-if="g.amount_max" class="gstore-card-amount">{{ g.amount_max }} {{ g.currency }}</div>
+                <div v-else-if="'direct_beneficiaries' in g && g.direct_beneficiaries != null" class="gstore-card-amount">{{ formatCompact(g.direct_beneficiaries) }} beneficiaries</div>
+                <div v-else class="gstore-card-amount muted">—</div>
+                <div v-if="g.highlights?.length" class="gstore-card-tags">
+                  <span v-for="hl in g.highlights.slice(0, 2)" :key="hl" class="gstore-card-tag" :class="hl.toLowerCase().replace(/\s+/g, '_')">{{ hl }}</span>
+                </div>
               </div>
             </div>
-            <button class="gdash-link-btn" @click="$emit('leaderboardDetail', entry)">{{ t('grantsPortal.details') }}</button>
           </div>
-        </div>
+        </section>
       </template>
+    </main>
 
-      
-      <div v-if="totalPages > 1" class="gdash-pagination glass">
-        <button
-          class="gdash-page-btn"
-          :disabled="currentPage <= 1"
-          @click="currentPage = Math.max(1, currentPage - 1)"
-          :aria-label="t('grantsPortal.paginationPrev')"
-        >‹</button>
-        <template v-for="p in visiblePages" :key="p">
-          <span v-if="p === '...'" class="gdash-page-ellipsis">…</span>
-          <button
-            v-else
-            class="gdash-page-num"
-            :class="{ active: p === currentPage }"
-            @click="goToPage(p)"
-          >{{ p }}</button>
-        </template>
-        <button
-          class="gdash-page-btn"
-          :disabled="currentPage >= totalPages"
-          @click="currentPage = Math.min(totalPages, currentPage + 1)"
-          :aria-label="t('grantsPortal.paginationNext')"
-        >›</button>
-      </div>
-    </div>
-  </div>
-
-  
-  <Teleport to="body">
-    <Transition name="popup-fade">
-      <div v-if="showLoginPopup" class="gdash-login-overlay" role="dialog" aria-modal="true" :aria-label="t('grantsPortal.signInTitle')" @click.self="showLoginPopup = false">
-        <div class="gdash-login-popup glass">
-          <div class="gdash-login-header">
-            <svg class="gdash-login-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-            <h3>{{ t('grantsPortal.signInTitle') }}</h3>
-          </div>
-          <p class="gdash-login-desc">{{ t('grantsPortal.signInToVote') }}</p>
-          <div class="gdash-login-actions">
-            <button class="gdash-google-btn" @click="$emit('signIn'); showLoginPopup = false">
-              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-              {{ t('grantsPortal.signInBtn') }}
-            </button>
-            <button class="gdash-cancel-btn" @click="showLoginPopup = false">{{ t('grantsPortal.cancel') }}</button>
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showLoginPopup" class="gstore-overlay" role="dialog" aria-modal="true" @click.self="showLoginPopup = false">
+          <div class="gstore-popup">
+            <h3 class="gstore-popup-title">Sign In Required</h3>
+            <p class="gstore-popup-desc">Sign in to vote on grants and track your favorites.</p>
+            <button class="gstore-hero-btn" @click="$emit('signIn'); showLoginPopup = false">Sign in with Google</button>
+            <button class="gstore-popup-cancel" @click="showLoginPopup = false">Cancel</button>
           </div>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+      </Transition>
+    </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
-
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, reactive } from 'vue'
 import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
+import { allProjectsData } from '~/lib/project-data'
+import type { ProjectData } from '~/lib/types'
 
 const props = defineProps<{
   user: { email?: string } | null
@@ -247,7 +187,7 @@ const props = defineProps<{
   removingGrants: string[]
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   signIn: []
   signOut: []
   'update:activeTab': [tab: string]
@@ -263,936 +203,873 @@ defineEmits<{
 const { t } = useI18n()
 
 const showLoginPopup = ref(false)
-const currentPage = ref(1)
-const perPage = 10
+const activeCategory = ref('community')
+const sectionRefs = reactive<Record<string, HTMLElement>>({})
 
-function goToPage(p: number | string) {
-  if (typeof p === 'number') currentPage.value = p
+watch(() => props.user, (u) => {
+  if (u) showLoginPopup.value = false
+})
+
+function scrollSection(key: string) {
+  const el = sectionRefs[key]
+  if (el) el.scrollTo({ left: 300, behavior: 'smooth' })
 }
 
-watch(() => props.user, (newUser) => {
-  if (newUser) showLoginPopup.value = false
-})
-
-watch([() => props.activeTab, () => props.filteredScrapedGrants, () => props.searchQuery], () => {
-  currentPage.value = 1
-})
-
-const tabs = computed(() => {
-  const list = [
-    { key: 'tabPending', emoji: '📋' },
-    { key: 'tabOpen', emoji: '🌍' },
-    { key: 'tabClosed', emoji: '🔒' },
-    { key: 'tabLeaderboard', emoji: '🏆' },
-  ]
-  if (!props.user) return list.filter(tab => tab.key === 'tabOpen')
-  if (!props.isManager) return list.filter(tab => tab.key === 'tabOpen' || tab.key === 'tabLeaderboard')
-  return list
-})
-
-const displayGrants = computed(() => props.filteredScrapedGrants)
-
-const totalPages = computed(() => Math.max(1, Math.ceil(displayGrants.value.length / perPage)))
-
-const paginatedGrants = computed(() => {
-  const start = (currentPage.value - 1) * perPage
-  return displayGrants.value.slice(start, start + perPage)
-})
-
-const visiblePages = computed(() => {
-  const total = totalPages.value
-  const curr = currentPage.value
-  if (total <= 7) {
-    return Array.from({ length: total }, (_, i) => i + 1)
-  }
-  if (curr <= 4) return [1, 2, 3, 4, 5, '...', total]
-  if (curr >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total]
-  return [1, '...', curr - 1, curr, curr + 1, '...', total]
-})
-
-const statusClass = computed(() => {
+function grantTypeEmoji(type?: string): string {
   const map: Record<string, string> = {
-    tabPending: 'pending',
-    tabOpen: 'open',
-    tabClosed: 'closed',
-  }
-  return map[props.activeTab] || 'pending'
-})
-
-const statusLabel = computed(() => {
-  const map: Record<string, string> = {
-    tabPending: t('grantsPortal.statusPending'),
-    tabOpen: t('grantsPortal.statusOpen'),
-    tabClosed: t('grantsPortal.statusClosed'),
-  }
-  return map[props.activeTab] || ''
-})
-
-const emptyMessage = computed(() => {
-  if (props.searchQuery) return t('grantsPortal.dashboardEmptySearch')
-  const map: Record<string, string> = {
-    tabPending: t('grantsPortal.noGrants'),
-    tabOpen: t('grantsPortal.noOpenGrants'),
-    tabClosed: t('grantsPortal.noClosedGrants'),
-    tabLeaderboard: t('grantsPortal.noLeaderboard'),
-  }
-  return map[props.activeTab] || t('grantsPortal.noGrants')
-})
-
-function tabCount(key: string): string {
-  const map: Record<string, number> = {
-    tabPending: props.pendingCount,
-    tabOpen: props.openCount,
-    tabClosed: props.closedCount,
-  }
-  const n = map[key]
-  return n != null ? `(${n})` : ''
-}
-
-function typeEmoji(type?: string): string {
-  const map: Record<string, string> = {
-    artivism: '🎨',
-    climate_justice: '🌍',
-    conservation: '🌿',
-    human_rights: '⚖️',
-    indigenous_rights: '🏹',
-    youth: '🌟',
+    artivism: '🎨', climate_justice: '🌍', conservation: '🌿',
+    human_rights: '⚖️', indigenous_rights: '🏹', youth: '🌟',
   }
   return map[type || ''] || '📋'
 }
 
-function grantTypeLabel(type?: string): string {
-  const map: Record<string, string> = {
-    artivism: 'Artivism',
-    climate_justice: 'Climate Justice',
-    conservation: 'Conservation',
-    human_rights: 'Human Rights',
-    indigenous_rights: 'Indigenous Rights',
-    youth: 'Youth',
-  }
-  return map[type || ''] || 'General'
-}
-
-function priorityClass(score: number): string {
-  if (score >= 60) return 'high'
-  if (score >= 30) return 'mid'
-  return 'low'
-}
-
-function formatAmount(val: number): string {
+function formatCompact(val: number): string {
   if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M'
   if (val >= 1000) return (val / 1000).toFixed(val >= 10000 ? 0 : 1) + 'K'
   return val.toFixed(0)
 }
 
-function isSafeUrl(url: string | undefined | null): boolean {
-  if (!url) return false
-  try {
-    const parsed = new URL(url)
-    return ['http:', 'https:'].includes(parsed.protocol)
-  } catch {
-    return false
-  }
-}
+type MixedGrant = ScrapedGrant | GrantRecord | (ScrapedGrant & { direct_beneficiaries?: number })
 
-function safeStarRepeat(count: number): string {
-  const clamped = Math.max(0, Math.min(8, Math.round(count)))
-  return '★'.repeat(clamped) + '☆'.repeat(8 - clamped)
-}
+const scrapedItems = computed<MixedGrant[]>(() => {
+  return props.filteredScrapedGrants as MixedGrant[]
+})
 
-function voteCount(grantId: string): number {
-  const entry = props.leaderboard.find(e => e.id === grantId)
-  return entry?.vote_count || 0
-}
+const projectItems = computed(() => {
+  return allProjectsData.map((p, i) => ({
+    id: `project-${i}`,
+    title: p.project_title,
+    funder: 'Earth Guardians',
+    country: p.country_province.split(',').pop()?.trim() || p.country_province,
+    amount_max: '',
+    currency: '',
+    grant_type: 'conservation' as const,
+    priority_score: 50,
+    highlights: ['eg_core'] as string[],
+    direct_beneficiaries: p.direct_beneficiaries + p.indirect_beneficiaries,
+    description: `Project in ${p.country_province}`,
+    categories: ['environment', 'community'],
+    status: 'open',
+  }))
+})
 
+const totalAll = computed(() => scrapedItems.value.length + projectItems.value.length)
+
+const countriesCount = computed(() => {
+  const countries = new Set<string>()
+  scrapedItems.value.forEach(g => g.country && countries.add(g.country))
+  projectItems.value.forEach(g => g.country && countries.add(g.country))
+  return countries.size
+})
+
+const categories = computed(() => {
+  const community = scrapedItems.value.filter(g =>
+    g.categories?.some(c => c.toLowerCase().includes('community')) ||
+    g.grant_type === 'climate_justice' ||
+    g.grant_type === 'indigenous_rights'
+  )
+  const partners = scrapedItems.value.filter(g =>
+    g.funder && ['foundation', 'fund', 'trust', 'programme', 'UN', 'EU', 'UNESCO', 'Commonwealth'].some(k =>
+      g.funder!.toLowerCase().includes(k.toLowerCase())
+    )
+  )
+  const worldwide = scrapedItems.value.filter(g =>
+    !community.includes(g) && !partners.includes(g)
+  )
+  const crew = props.filteredInternalGrants || []
+  const egProjects = projectItems.value
+
+  return [
+    { key: 'community', icon: '🌱', label: 'Community Opportunities', count: community.length, items: community.slice(0, 20) },
+    { key: 'crew', icon: '👥', label: 'Crew Projects', count: crew.length, items: crew.slice(0, 20) },
+    { key: 'partners', icon: '🤝', label: 'Partner Grants', count: partners.length, items: partners.slice(0, 20) },
+    { key: 'worldwide', icon: '🌍', label: 'Worldwide Grants', count: worldwide.length, items: worldwide.slice(0, 20) },
+    { key: 'egprojects', icon: '🌿', label: 'EG Project Grants', count: egProjects.length, items: egProjects.slice(0, 20) },
+  ]
+})
+
+const categoryCount = computed(() => categories.value.filter(c => c.count > 0).length)
+
+const visibleCategories = computed(() => {
+  const q = props.searchQuery?.toLowerCase()
+  if (!q) return categories.value.filter(c => c.count > 0)
+  return categories.value.map(cat => ({
+    ...cat,
+    items: cat.items.filter(g =>
+      (g.title || '').toLowerCase().includes(q) ||
+      (g.funder || '').toLowerCase().includes(q) ||
+      (g.country || '').toLowerCase().includes(q) ||
+      (g.description || '').toLowerCase().includes(q) ||
+      (g.categories || []).some(c => c.toLowerCase().includes(q))
+    ),
+  })).filter(cat => cat.items.length > 0)
+})
 </script>
 
 <style scoped>
-.gdash {
-  --obsidian: #08080a;
-  --tectonic-white: #f0f0f0;
+.gstore {
   --accent: #00ff85;
-  --stat-open: #eab308;
-  --stat-approved: var(--accent);
-  --stat-closed: rgba(255, 255, 255, 0.4);
-  --stat-declined: #ef4444;
-  max-width: 720px;
+  --accent-dim: rgba(0, 255, 133, 0.15);
+  --accent-glow: rgba(0, 255, 133, 0.06);
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-hover: rgba(255, 255, 255, 0.07);
+  --text: #f0f0f0;
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-tertiary: rgba(255, 255, 255, 0.28);
+  --surface: rgba(255, 255, 255, 0.02);
+  background: #000;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.gstore-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.gstore-header-inner {
+  max-width: 1400px;
   margin: 0 auto;
-}
-
-.glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-.glass:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-.gdash-user {
+  padding: 0 28px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 2rem;
-  margin-bottom: 1.5rem;
+  gap: 16px;
 }
-.gdash-user-info {
+
+.gstore-header-left {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
-.gdash-avatar {
-  width: 36px;
-  height: 36px;
+
+.gstore-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.gstore-logo-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+}
+
+.gstore-logo-text {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.gstore-header-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--glass-border);
+}
+
+.gstore-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+
+.gstore-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.gstore-search {
+  position: relative;
+  max-width: 280px;
+  width: 100%;
+}
+
+.gstore-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.gstore-search-input {
+  width: 100%;
+  padding: 7px 12px 7px 34px;
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 400;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.gstore-search-input:focus {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.gstore-search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.gstore-user-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 10px 3px 3px;
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.gstore-user-avatar {
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 900;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
-.gdash-avatar.manager { background: rgba(0,255,133,0.2); color: var(--accent); }
-.gdash-avatar.member { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
-.gdash-role { font-size: 0.8rem; font-weight: 700; color: var(--tectonic-white); }
-.gdash-email { font-size: 0.7rem; color: rgba(255,255,255,0.3); }
-.gdash-signout {
-  background: rgba(255,255,255,0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.5);
-  padding: 0.4rem 1rem;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.gdash-signout:hover {
-  color: var(--tectonic-white);
-  border-color: rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.08);
+
+.gstore-user-avatar.manager {
+  background: var(--accent-dim);
+  color: var(--accent);
 }
 
-.gdash-signin-inner {
-  text-align: center;
-  padding: 2.5rem 2rem;
-  width: 100%;
-}
-.gdash-heart-icon {
-  width: 40px;
-  height: 40px;
-  stroke: var(--accent);
-  margin: 0 auto 1rem;
-  display: block;
-}
-.gdash-signin-inner h3 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--tectonic-white);
-  margin-bottom: 0.5rem;
-  font-family: 'JetBrains Mono', monospace;
-}
-.gdash-signin-inner p {
-  color: rgba(255,255,255,0.5);
-  font-size: 0.85rem;
-  margin-bottom: 1.5rem;
-  max-width: 360px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.6;
-}
-.gdash-google-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0.8rem 2rem;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--tectonic-white);
-  font-weight: 700;
-  font-size: 0.9rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.25s;
-}
-.gdash-google-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.02);
-}
-.gdash-join-link {
-  display: block;
-  margin-top: 1rem;
-  font-size: 0.7rem;
-  text-align: center;
-  color: rgba(255,255,255,0.35);
-  text-decoration: underline;
-  text-underline-offset: 2;
-  transition: color 0.2s;
-}
-.gdash-join-link:hover { color: rgba(255,255,255,0.6); }
-
-.gdash-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-.gdash-stat {
-  padding: 1rem;
-  text-align: center;
-  position: relative;
+.gstore-user-email {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  max-width: 140px;
   overflow: hidden;
-}
-.gdash-stat::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, transparent 50%);
-  pointer-events: none;
-}
-.gdash-stat:hover {
-  box-shadow: 0 0 30px rgba(0, 255, 133, 0.05);
-  transform: translateY(-2px);
-}
-.gdash-stat-num {
-  display: block;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 1.5rem;
-  font-weight: 800;
-  line-height: 1;
-  position: relative;
-}
-.gdash-stat-label {
-  display: block;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.55rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgba(255,255,255,0.3);
-  margin-top: 4px;
-  position: relative;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.gdash-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-.gdash-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-}
-.gdash-tab {
+.gstore-signout-btn {
+  background: none;
   border: none;
+  color: var(--text-tertiary);
+  font-size: 11px;
   cursor: pointer;
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.5);
-  background: transparent;
-  transition: all 0.15s;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.gstore-signout-btn:hover {
+  color: var(--text);
+}
+
+.gstore-google-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-}
-.gdash-tab:hover {
-  color: rgba(255,255,255,0.8);
-  background: rgba(255,255,255,0.06);
-}
-.gdash-tab.active {
-  color: #fff;
-  background: rgba(255,255,255,0.1);
-}
-.gdash-tab-emoji { font-size: 0.85rem; }
-.gdash-tab-count {
-  font-size: 0.6rem;
-  opacity: 0.5;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.gdash-search {
-  position: relative;
-  max-width: 400px;
-}
-.gdash-search-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  color: rgba(255, 255, 255, 0.25);
-  pointer-events: none;
-}
-.gdash-search-input {
-  width: 100%;
-  padding: 0.7rem 1rem 0.7rem 2.75rem;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  color: var(--tectonic-white);
-  font-size: 0.8rem;
-  outline: none;
-  transition: all 0.3s;
-}
-.gdash-search-input:focus {
-  border-color: rgba(0, 255, 133, 0.3);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 0 25px rgba(0, 255, 133, 0.04);
-}
-.gdash-search-input::placeholder { color: rgba(255, 255, 255, 0.2); }
-
-.gdash-signin-hint {
-  text-align: center;
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.35);
-  margin-bottom: 1rem;
-}
-
-.gdash-subtabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  margin-bottom: 1rem;
-}
-.gdash-subtab {
-  border: none;
+  gap: 8px;
+  padding: 7px 16px;
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  border-radius: 9999px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
   cursor: pointer;
-  padding: 0.25rem 0.625rem;
-  border-radius: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.5);
-  background: transparent;
-  transition: all 0.15s;
+  transition: all 0.2s;
+  flex-shrink: 0;
 }
-.gdash-subtab:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.06); }
-.gdash-subtab.active { color: #fff; background: rgba(255,255,255,0.1); }
 
-.gdash-list {
+.gstore-google-btn:hover {
+  background: var(--glass-hover);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.gstore-nav {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.gdash-status {
-  text-align: center;
-  padding: 2.5rem 1rem;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.4);
+  gap: 6px;
+  padding: 12px 28px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  position: sticky;
+  top: 52px;
+  z-index: 99;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 
-.gdash-card {
-  padding: 1.25rem;
+.gstore-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.gstore-nav-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.gstore-nav-pill:hover {
+  background: var(--glass-hover);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.gstore-nav-pill.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: rgba(0, 255, 133, 0.25);
+}
+
+.gstore-nav-pill-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.gstore-nav-pill-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.gstore-nav-pill-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.gstore-nav-pill.active .gstore-nav-pill-count {
+  background: rgba(0, 255, 133, 0.15);
+  color: var(--accent);
+}
+
+.gstore-main {
+  flex: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 28px 48px;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.gstore-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 0;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.gstore-loading-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse-dot 1s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+.gstore-hero {
+  text-align: center;
+  padding: 60px 0 40px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.gstore-hero-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid var(--accent-dim);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.gstore-hero-title {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0 0 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+}
+
+.gstore-hero-subtitle {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0 0 32px;
+  font-weight: 400;
+}
+
+.gstore-hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 32px;
+}
+
+.gstore-hero-stat {
+  text-align: center;
+}
+
+.gstore-hero-stat-num {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.gstore-hero-stat-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+.gstore-hero-hint {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin: 0 0 20px;
+}
+
+.gstore-hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 24px;
+  background: var(--accent);
+  border: none;
+  border-radius: 9999px;
+  color: #000;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
   transition: all 0.2s;
 }
-.gdash-card:hover {
-  background: rgba(255, 255, 255, 0.04);
+
+.gstore-hero-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 24px rgba(0, 255, 133, 0.25);
 }
-.gdash-card-header {
+
+.gstore-section {
+  margin-bottom: 36px;
+}
+
+.gstore-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.5rem;
+  margin-bottom: 14px;
+  padding: 0 2px;
 }
-.gdash-card-title-row {
+
+.gstore-section-header-left {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  flex: 1;
-  min-width: 0;
+  gap: 10px;
 }
-.gdash-card-badges {
-  display: flex;
+
+.gstore-section-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.gstore-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+}
+
+.gstore-section-count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: var(--surface);
+}
+
+.gstore-section-seeall {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.gstore-section-seeall:hover {
+  background: var(--accent-dim);
+}
+
+.gstore-chevron {
+  width: 14px;
+  height: 14px;
+}
+
+.gstore-section-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  padding: 4px 2px 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.06) transparent;
+}
+
+.gstore-section-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.gstore-section-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.gstore-section-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 9999px;
+}
+
+.gstore-card {
+  flex: 0 0 240px;
+  scroll-snap-align: start;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  flex-direction: column;
+  min-height: 160px;
+}
+
+.gstore-card:hover {
+  background: var(--glass-hover);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.gstore-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 6px;
+}
+
+.gstore-card-type {
+  font-size: 16px;
+  line-height: 1;
   flex-shrink: 0;
 }
-.gdash-card-header h4 {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--tectonic-white);
-  margin: 0;
-}
-.gdash-card-desc {
-  font-size: 0.78rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.5);
-  margin-bottom: 0.5rem;
-}
-.gdash-card-meta {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.3);
-  font-family: 'JetBrains Mono', monospace;
-}
-.gdash-card-actions {
+
+.gstore-card-badges {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
-.gdash-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 8px;
-  border-radius: 9999px;
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-.gdash-badge.pending { background: rgba(234, 179, 8, 0.12); color: #eab308; }
-.gdash-badge.open { background: rgba(0, 200, 83, 0.12); color: #00c853; }
-.gdash-badge.closed { background: rgba(255, 255, 255, 0.05); color: rgba(255,255,255,0.4); }
-.gdash-badge.hidden { background: rgba(255, 255, 255, 0.05); color: rgba(255,255,255,0.4); }
-.gdash-badge.reviewed { background: rgba(0, 255, 133, 0.12); color: #00ff85; }
-.gdash-badge.neutral { background: rgba(255, 255, 255, 0.06); color: rgba(255,255,255,0.5); }
-
-.gdash-type-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 1px 8px;
-  border-radius: 9999px;
-  font-size: 0.6rem;
-  font-weight: 600;
-  white-space: nowrap;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.gdash-type-badge.artivism         { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
-.gdash-type-badge.climate_justice  { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-.gdash-type-badge.conservation     { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-.gdash-type-badge.human_rights     { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-.gdash-type-badge.indigenous_rights { background: rgba(234, 179, 8, 0.15); color: #facc15; }
-.gdash-type-badge.youth            { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
-.gdash-type-badge.general          { background: rgba(255, 255, 255, 0.08); color: rgba(255,255,255,0.6); }
-
-.gdash-priority {
+.gstore-card-priority {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.5rem;
-  height: 1.5rem;
+  min-width: 20px;
+  height: 20px;
   border-radius: 9999px;
+  font-size: 10px;
   font-weight: 700;
-  font-size: 0.65rem;
-  padding: 0 6px;
+  padding: 0 5px;
 }
-.gdash-priority.high { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
-.gdash-priority.mid  { background: rgba(234, 179, 8, 0.2); color: #facc15; }
-.gdash-priority.low  { background: rgba(255, 255, 255, 0.06); color: rgba(255,255,255,0.5); }
 
-.gdash-highlights {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  margin-bottom: 0.5rem;
+.gstore-card-priority.high {
+  background: rgba(0, 255, 133, 0.15);
+  color: var(--accent);
 }
-.gdash-highlight {
-  display: inline-block;
-  padding: 0 6px;
-  border-radius: 4px;
-  font-size: 0.55rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.gdash-highlight.eg_core       { background: rgba(0, 255, 133, 0.15); color: #00ff85; }
-.gdash-highlight.urgent        { background: rgba(239, 68, 68, 0.2);  color: #f87171; }
-.gdash-highlight.soon          { background: rgba(234, 179, 8, 0.2);  color: #facc15; }
-.gdash-highlight.expired       { background: rgba(239, 68, 68, 0.1);  color: #ef4444; opacity: 0.6; }
-.gdash-highlight.high_value    { background: rgba(34, 197, 94, 0.2);  color: #4ade80; }
-.gdash-highlight.good_value    { background: rgba(34, 197, 94, 0.12); color: #4ade80; }
-.gdash-highlight.has_amount    { background: rgba(34, 197, 94, 0.08); color: #86efac; }
-.gdash-highlight.artivism      { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
-.gdash-highlight.climate       { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-.gdash-highlight.indigenous    { background: rgba(234, 179, 8, 0.15); color: #facc15; }
-.gdash-highlight.scholarship   { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
 
-.gdash-urgency {
-  font-size: 0.7rem;
+.gstore-card-priority.mid {
+  background: rgba(250, 204, 21, 0.15);
+  color: #facc15;
+}
+
+.gstore-card-title {
+  font-size: 13px;
   font-weight: 600;
-  margin-bottom: 0.375rem;
-}
-.gdash-urgency.urgent { color: #ef4444; }
-.gdash-urgency.soon { color: #facc15; }
-.gdash-urgency.expired { color: #dc2626; }
-
-.gdash-card-meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.4);
-  margin-bottom: 0.5rem;
-}
-.gdash-categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  margin-bottom: 0.5rem;
-}
-.gdash-cat-tag {
-  font-size: 0.55rem;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255,255,255,0.6);
+  line-height: 1.4;
+  color: var(--text);
+  margin: 0 0 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.gdash-card-footer {
+.gstore-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: auto;
+}
+
+.gstore-card-meta-item {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gstore-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-.gdash-card-links {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+  margin-top: 8px;
+  border-top: 1px solid var(--glass-border);
 }
 
-.gdash-stars {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.125rem;
-}
-.gdash-star {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: rgba(255, 255, 255, 0.12);
-  transition: all 0.15s;
-  padding: 0;
-  line-height: 1;
-  font-size: 0.85rem;
-}
-.gdash-star:hover { color: rgba(250, 204, 21, 0.6); transform: scale(1.15); }
-.gdash-star.active { color: #facc15; text-shadow: 0 0 8px rgba(250, 204, 21, 0.4); }
-.gdash-votes {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.55rem;
-  color: rgba(255, 255, 255, 0.3);
-  margin-left: 0.375rem;
-}
-
-.gdash-link-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.5);
-  transition: color 0.15s;
-  padding: 0;
-}
-.gdash-link-btn:hover { color: var(--tectonic-white); }
-.gdash-link-btn.apply {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.6rem;
-  color: var(--accent);
-  padding: 0.3rem 0.75rem;
-  border: 1px solid rgba(0, 255, 133, 0.25);
-  border-radius: 6px;
-  background: rgba(0, 255, 133, 0.04);
-  transition: all 0.3s;
-  text-decoration: none;
-}
-.gdash-link-btn.apply:hover {
-  background: var(--accent);
-  color: #000;
-  box-shadow: 0 0 20px rgba(0, 255, 133, 0.3);
-  border-color: var(--accent);
-}
-
-.gdash-action {
-  border: none;
-  cursor: pointer;
-  border-radius: 6px;
+.gstore-card-amount {
+  font-size: 12px;
   font-weight: 600;
-  transition: all 0.15s;
-  font-size: 0.7rem;
-  padding: 0.25rem 0.75rem;
+  color: var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.gdash-action.approve { background: rgba(0, 200, 83, 0.15); color: #00c853; }
-.gdash-action.approve:hover { background: rgba(0, 200, 83, 0.25); }
-.gdash-action.reject { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-.gdash-action.reject:hover { background: rgba(239, 68, 68, 0.25); }
-.gdash-action.restore { background: rgba(250, 204, 21, 0.15); color: #facc15; }
-.gdash-action.restore:hover { background: rgba(250, 204, 21, 0.25); }
-.gdash-action.close { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-.gdash-action.close:hover { background: rgba(59, 130, 246, 0.25); }
 
-.gdash-lb-rank {
-  font-size: 1.1rem;
-  font-weight: 900;
+.gstore-card-amount.muted {
+  color: var(--text-tertiary);
+  font-weight: 400;
+}
+
+.gstore-card-tags {
+  display: flex;
+  gap: 4px;
   flex-shrink: 0;
 }
-.gdash-lb-info { flex: 1; min-width: 0; }
-.gdash-lb-info h4 { font-size: 0.85rem; }
-.gdash-lb-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
-  flex-wrap: wrap;
-}
-.gdash-source-badge {
-  font-size: 0.55rem;
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-weight: 600;
-}
-.gdash-source-badge.open { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
-.gdash-source-badge.crew { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
 
-.gdash-login-overlay {
+.gstore-card-tag {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.gstore-card-tag.eg_core,
+.gstore-card-tag.high_value {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.gstore-card-tag.urgent {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.gstore-card-tag.soon {
+  background: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+}
+
+.gstore-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  padding: 1rem;
+  padding: 16px;
 }
-.gdash-login-popup {
-  max-width: 360px;
+
+.gstore-popup {
+  background: #111;
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 340px;
   width: 100%;
-  padding: 2rem;
   text-align: center;
 }
-.gdash-login-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-.gdash-login-icon {
-  width: 48px;
-  height: 48px;
-  stroke: var(--accent);
-}
-.gdash-login-header h3 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--tectonic-white);
-  font-family: 'JetBrains Mono', monospace;
-  margin: 0;
-}
-.gdash-login-desc {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.85rem;
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
-}
-.gdash-login-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.gdash-cancel-btn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.5);
-  padding: 0.6rem 1.5rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
+
+.gstore-popup-title {
+  font-size: 20px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.gdash-cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--tectonic-white);
+  color: var(--text);
+  margin: 0 0 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
 }
 
-.gdash-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0.75rem 1rem;
-  margin-top: 0.5rem;
-}
-.gdash-page-btn {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.5);
-  padding: 0.3rem 0.65rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
-  line-height: 1;
-}
-.gdash-page-btn:hover:not(:disabled) {
-  color: var(--tectonic-white);
-  border-color: rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.06);
-}
-.gdash-page-btn:disabled {
-  opacity: 0.25;
-  cursor: default;
-}
-.gdash-page-num {
-  background: transparent;
-  border: none;
-  color: rgba(255,255,255,0.4);
-  padding: 0.25rem 0.55rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  min-width: 1.75rem;
-  text-align: center;
-}
-.gdash-page-num:hover {
-  color: var(--tectonic-white);
-  background: rgba(255,255,255,0.06);
-}
-.gdash-page-num.active {
-  color: #fff;
-  background: rgba(0, 255, 133, 0.15);
-  font-weight: 700;
-}
-.gdash-page-ellipsis {
-  color: rgba(255,255,255,0.25);
-  padding: 0.25rem 0.25rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
+.gstore-popup-desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0 0 24px;
 }
 
-.popup-fade-enter-active,
-.popup-fade-leave-active {
+.gstore-popup-cancel {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  background: none;
+  border: 1px solid var(--glass-border);
+  border-radius: 9999px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.gstore-popup-cancel:hover {
+  background: var(--glass-hover);
+  color: var(--text);
+}
+
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.2s ease;
 }
-.popup-fade-enter-from,
-.popup-fade-leave-to {
+
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
-}
-
-.gdash-card.removing {
-  animation: disintegrate 0.7s cubic-bezier(0.55, 0, 0.1, 1) forwards;
-  pointer-events: none;
-  position: relative;
-  overflow: hidden;
-}
-
-.gdash-card.removing::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(0,255,133,0.15) 0%, transparent 70%);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 2;
-  animation: flash-burst 0.7s ease-out forwards;
-  border-radius: inherit;
-}
-
-@keyframes disintegrate {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-    clip-path: inset(0);
-    filter: brightness(1);
-  }
-  15% {
-    transform: scale(1.03) rotate(-1deg);
-    filter: brightness(1.4);
-  }
-  30% {
-    transform: scale(0.97) rotate(1.5deg);
-    clip-path: polygon(
-      0% 0%, 100% 0%, 100% 100%, 0% 100%
-    );
-    filter: brightness(1.6) contrast(1.2);
-  }
-  50% {
-    transform: scale(0.82) rotate(-2.5deg) translateY(8px);
-    clip-path: polygon(
-      2% 1%, 98% 2%,
-      96% 40%, 97% 98%,
-      55% 96%, 1% 97%
-    );
-    opacity: 0.7;
-    filter: brightness(2) contrast(1.4) hue-rotate(20deg);
-  }
-  72% {
-    transform: scale(0.45) rotate(4deg) translateY(18px);
-    clip-path: polygon(
-      8% 5%, 94% 4%,
-      90% 45%, 92% 92%,
-      45% 90%, 6% 94%
-    );
-    opacity: 0.35;
-    filter: brightness(2.5) blur(1.5px);
-    box-shadow: 0 0 30px rgba(0,255,133,0.3);
-  }
-  100% {
-    transform: scale(0) rotate(12deg) translateY(40px);
-    opacity: 0;
-    filter: brightness(4) blur(5px);
-    clip-path: inset(45% 40% 45% 40%);
-    box-shadow: 0 0 60px rgba(0,255,133,0);
-  }
-}
-
-@keyframes flash-burst {
-  0% { opacity: 0; transform: scale(0.3); }
-  25% { opacity: 0.7; transform: scale(1.1); }
-  55% { opacity: 0.25; transform: scale(1.4); }
-  100% { opacity: 0; transform: scale(2); }
 }
 
 @media (max-width: 768px) {
-  .gdash-stats {
-    grid-template-columns: repeat(2, 1fr);
+  .gstore-header-inner {
+    padding: 0 16px;
+    height: 48px;
   }
-  .gdash-user {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-    padding: 1.5rem;
+
+  .gstore-main {
+    padding: 0 16px 32px;
   }
-  .gdash-user-info {
-    justify-content: center;
+
+  .gstore-nav {
+    padding: 10px 16px;
+    top: 48px;
   }
-  .gdash-card-header {
-    flex-direction: column;
-    align-items: flex-start;
+
+  .gstore-search {
+    max-width: 160px;
   }
-  .gdash-card-footer {
-    flex-direction: column;
-    align-items: flex-start;
+
+  .gstore-user-email {
+    display: none;
+  }
+
+  .gstore-hero-title {
+    font-size: 28px;
+  }
+
+  .gstore-hero-stats {
+    gap: 24px;
+  }
+
+  .gstore-hero-stat-num {
+    font-size: 22px;
+  }
+
+  .gstore-card {
+    flex: 0 0 200px;
+    min-height: 140px;
+    padding: 12px;
+  }
+
+  .gstore-section-title {
+    font-size: 17px;
+  }
+
+  .gstore-badge {
+    display: none;
   }
 }
 </style>

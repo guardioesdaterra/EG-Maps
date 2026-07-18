@@ -116,7 +116,7 @@
               v-for="g in cat.items"
               :key="g.id"
               class="gstore-card"
-              @click="$emit('view-detail', g)"
+              @click="($emit as any)('view-detail', g)"
             >
               <div class="gstore-card-top">
                 <span v-if="g.grant_type" class="gstore-card-type" :class="g.grant_type">

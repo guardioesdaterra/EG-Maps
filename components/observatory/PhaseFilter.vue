@@ -2,8 +2,8 @@
  * components/observatory/PhaseFilter.vue
  * @why Phase/progress filter for observatory claims — select one or more phases
  * @component PhaseFilter
- * @props selected: Set<string>
- * @emits 'update:selected': [value: Set<string>]
+ * @props selected: string set
+ * @emits 'update:selected': [value: string set]
  * @deps vue (reactive, watch); @/lib/map-utils (RARE_EARTH_PHASES)
  */
 <template>

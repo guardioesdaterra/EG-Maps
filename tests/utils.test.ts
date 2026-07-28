@@ -45,30 +45,30 @@ describe('formatCompact', () => {
 
 describe('getProjectColorByBeneficiaries', () => {
   it('returns default for zero', () => {
-    expect(getProjectColorByBeneficiaries(0, 0)).toBe('#a855f7')
+    expect(getProjectColorByBeneficiaries(0, 0)).toBe('var(--purple)')
   })
 
   it('returns blue for <=100', () => {
-    expect(getProjectColorByBeneficiaries(50, 50)).toBe('#3b82f6')
+    expect(getProjectColorByBeneficiaries(50, 50)).toBe('var(--info)')
   })
 
   it('returns green for <=500', () => {
-    expect(getProjectColorByBeneficiaries(300, 0)).toBe('#22c55e')
+    expect(getProjectColorByBeneficiaries(300, 0)).toBe('var(--success)')
   })
 
   it('returns yellow for <=1000', () => {
-    expect(getProjectColorByBeneficiaries(800, 0)).toBe('#eab308')
+    expect(getProjectColorByBeneficiaries(800, 0)).toBe('var(--warning)')
   })
 
   it('returns red for >1000', () => {
-    expect(getProjectColorByBeneficiaries(1500, 0)).toBe('#ef4444')
+    expect(getProjectColorByBeneficiaries(1500, 0)).toBe('var(--danger)')
   })
 })
 
 describe('getProjectColor', () => {
   it('extracts color from project data', () => {
     const project = { direct_beneficiaries: 50, indirect_beneficiaries: 50 } as ProjectData
-    expect(getProjectColor(project)).toBe('#3b82f6')
+    expect(getProjectColor(project)).toBe('var(--info)')
   })
 })
 
@@ -88,11 +88,11 @@ describe('isValidCoordinate', () => {
 
 describe('getGroupColor', () => {
   it('returns color for known group', () => {
-    expect(getGroupColor('Mammal')).toBe('#B64032')
+    expect(getGroupColor('Mammal')).toBe('var(--danger)')
   })
 
   it('returns default for unknown group', () => {
-    expect(getGroupColor('Alien')).toBe('#B64032')
+    expect(getGroupColor('Alien')).toBe('var(--danger)')
   })
 })
 

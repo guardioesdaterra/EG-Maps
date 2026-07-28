@@ -38,12 +38,12 @@ describe('buildRareEarthPopupHTML', () => {
     })
     expect(html).toContain('Vale S.A.')
     expect(html).toContain('820001/2023')
-    expect(html).toContain('#e74c3c')
+    expect(html).toContain('var(--danger)')
   })
 
   it('uses fallback color and label for unknown category', () => {
     const html = buildRareEarthPopupHTML({ c: 'unknown_cat', n: 'X' })
-    expect(html).toContain('#666')
+    expect(html).toContain('var(--text-muted)')
     expect(html).toContain('unknown_cat')
   })
 
@@ -54,17 +54,17 @@ describe('buildRareEarthPopupHTML', () => {
 
   it('danger color is red when score >= 8', () => {
     const html = buildRareEarthPopupHTML({ c: 'direct_ree', n: 'X', ds: 9.0 })
-    expect(html).toContain('#e74c3c')
+    expect(html).toContain('var(--danger)')
   })
 
   it('danger color is orange when score 6–7.9', () => {
     const html = buildRareEarthPopupHTML({ c: 'direct_ree', n: 'X', ds: 6.5 })
-    expect(html).toContain('#f39c12')
+    expect(html).toContain('var(--warning)')
   })
 
   it('danger color is green when score < 6', () => {
     const html = buildRareEarthPopupHTML({ c: 'direct_ree', n: 'X', ds: 3.0 })
-    expect(html).toContain('#27ae60')
+    expect(html).toContain('var(--success)')
   })
 
   it('formats area in ha for small values', () => {
@@ -579,7 +579,7 @@ describe('RARE_EARTH_PHASES', () => {
     for (const [, phase] of Object.entries(RARE_EARTH_PHASES)) {
       expect(phase.label).toBeTruthy()
       expect(phase.shortLabel).toBeTruthy()
-      expect(phase.color).toMatch(/^#[0-9a-f]{6}$/i)
+      expect(phase.color).toBeTruthy()
     }
   })
 
@@ -593,12 +593,12 @@ describe('RARE_EARTH_PHASES', () => {
   })
 
   it('getPhaseColor returns color for known phases', () => {
-    expect(getPhaseColor('REQUERIMENTO')).toBe('#9ca3af')
-    expect(getPhaseColor('LAVRA')).toBe('#7f1d1d')
+    expect(getPhaseColor('REQUERIMENTO')).toBe('var(--text-muted)')
+    expect(getPhaseColor('LAVRA')).toBe('var(--danger)')
   })
 
   it('getPhaseColor returns fallback for unknown phases', () => {
-    expect(getPhaseColor('NONEXISTENT')).toBe('#666')
+    expect(getPhaseColor('NONEXISTENT')).toBe('var(--text-muted)')
   })
 })
 
@@ -678,7 +678,7 @@ describe('buildEnterpriseNetworkLines', () => {
       f.properties?.from === 'Rio Tinto' && f.properties?.type === 'foreign_to_claims'
     )
     expect(rioLine).toBeDefined()
-    expect(rioLine!.properties!.color).toBe('#e74c3c')
+    expect(rioLine!.properties!.color).toBe('var(--danger)')
   })
 })
 

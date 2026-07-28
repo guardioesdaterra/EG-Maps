@@ -1,3 +1,10 @@
+/**
+ * composables/useCommandPalette.ts
+ * @why Command palette search — registers commands, fuzzy-filters, executes actions
+ * @functions useCommandPalette, filterPaletteItems, groupPaletteItems
+ * @interfaces CommandPaletteItem
+ * @connections components/CommandPalette.vue, plugins/command-palette.client.ts
+ */
 export interface CommandPaletteItem {
   id: string
   group: string

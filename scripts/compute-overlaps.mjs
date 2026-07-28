@@ -1,5 +1,10 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
+/**
+ * scripts/compute-overlaps.mjs
+ * @why Overlap analyzer — computes geographic overlap between species ranges and protected areas
+ * @deps node:fs (readFileSync, writeFileSync); node:path (resolve, dirname); node:url (fileURLToPath)
+ */
+
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'

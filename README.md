@@ -472,6 +472,17 @@ refactor: extract marker logic to composable
 
 ---
 
+## 📚 Documentation
+
+| Doc | Description |
+|-----|-------------|
+| [Architecture](docs/ARCHITECTURE.md) | Project structure, component architecture, rendering pipeline |
+| [API Reference](docs/API.md) | Supabase edge function endpoints, payloads, responses |
+| [Database Schema](docs/DATABASE.md) | All 13 tables, columns, indexes, RLS policies |
+| [Contributing](docs/CONTRIBUTING.md) | Development setup, code conventions, PR guidelines |
+
+---
+
 <p align="center">
   <strong>Rising together.</strong><br>
   Built with 💚 by Earth Guardians and the global Crew network.

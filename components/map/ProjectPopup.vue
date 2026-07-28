@@ -1,4 +1,12 @@
+/**
+ * components/map/ProjectPopup.vue
+ * @why Project grant popup for map markers — shows title, funder, amount, category badge
+ * @component ProjectPopup
+ * @props project: ProjectData | null
+ * @deps vue (computed); @/lib/colors (getProjectColorByBeneficiaries); @/lib/utils (formatCompact)
+ */
 <script setup lang="ts">
+
 import { computed } from 'vue'
 import type { ProjectData } from '@/lib/types'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
@@ -16,7 +24,7 @@ const totalBeneficiaries = computed(() => {
 })
 
 const accentColor = computed(() => {
-  if (!props.project) return '#6366f1'
+  if (!props.project) return 'var(--purple)'
   return getProjectColorByBeneficiaries(
     props.project.direct_beneficiaries,
     props.project.indirect_beneficiaries,
@@ -32,6 +40,7 @@ const hasStats = computed(() => {
   if (!props.project) return false
   return props.project.direct_beneficiaries > 0 || props.project.indirect_beneficiaries > 0
 })
+
 </script>
 
 <template>
@@ -100,7 +109,7 @@ const hasStats = computed(() => {
 .project-popup {
   display: flex;
   flex-direction: column;
-  color: #e2e2e2;
+  color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   position: relative;
 }
@@ -146,7 +155,7 @@ const hasStats = computed(() => {
   font-weight: 800;
   line-height: 1.25;
   margin: 0;
-  color: #fff;
+  color: var(--bg-tertiary);
   letter-spacing: -0.01em;
   overflow-wrap: break-word;
 }
@@ -207,7 +216,7 @@ const hasStats = computed(() => {
 .project-popup__stat-value {
   font-size: 1rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--bg-tertiary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -246,7 +255,7 @@ const hasStats = computed(() => {
   align-items: center;
   gap: 0.35rem;
   font-size: 0.7rem;
-  color: var(--action-clr, #5dade2);
+  color: var(--action-clr, var(--info));
   text-decoration: none;
   font-weight: 600;
   padding: 0.25rem 0.65rem;
@@ -259,6 +268,6 @@ const hasStats = computed(() => {
 
 .project-popup__action:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: var(--action-clr, #5dade2);
+  border-color: var(--action-clr, var(--info));
 }
 </style>

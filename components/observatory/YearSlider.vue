@@ -1,3 +1,13 @@
+/**
+ * components/observatory/YearSlider.vue
+ * @why Year range slider for filtering observatory data by year
+ * @component YearSlider
+ * @props yearMin: number
+  yearMax
+ * @emits 'update:yearMin': [value: number]
+  'update:yearMax': [value: number]
+ * @deps vue (ref, onUnmounted, watch)
+ */
 <template>
   <div class="obs-slider">
     <div class="obs-slider__header">
@@ -68,6 +78,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, onUnmounted, watch } from 'vue'
 
 const MIN_YEAR = 1935
@@ -135,14 +146,15 @@ watch(() => [props.yearMin, props.yearMax], ([min, max]) => {
     emit('update:yearMax', min)
   }
 })
+
 </script>
 
 <style scoped>
 .obs-slider {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px;
+  gap: clamp(6px, 1.2vw, 12px);
+  padding: clamp(8px, 1.5vw, 16px);
   background: var(--obs-panel-bg-dark);
   border: 1px solid var(--obs-panel-border);
   border-radius: 8px;
@@ -158,8 +170,8 @@ watch(() => [props.yearMin, props.yearMax], ([min, max]) => {
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 9px;
+  gap: clamp(4px, 0.8vw, 8px);
+  font-size: clamp(9px, 1.4vw, 12px);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -175,11 +187,11 @@ watch(() => [props.yearMin, props.yearMax], ([min, max]) => {
 .obs-slider__years {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: clamp(2px, 0.5vw, 6px);
 }
 
 .obs-slider__year-value {
-  font-size: 11px;
+  font-size: clamp(11px, 1.6vw, 14px);
   font-weight: 800;
   font-family: ui-monospace, monospace;
   color: var(--obs-text-primary);
@@ -187,7 +199,7 @@ watch(() => [props.yearMin, props.yearMax], ([min, max]) => {
 }
 
 .obs-slider__year-sep {
-  font-size: 10px;
+  font-size: clamp(10px, 1.5vw, 13px);
   color: var(--obs-text-dim);
 }
 
@@ -263,7 +275,7 @@ watch(() => [props.yearMin, props.yearMax], ([min, max]) => {
 .obs-slider__range-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 8px;
+  font-size: clamp(8px, 1.3vw, 11px);
   color: var(--obs-text-dim);
   font-family: ui-monospace, monospace;
   margin-top: -4px;
@@ -272,15 +284,15 @@ watch(() => [props.yearMin, props.yearMax], ([min, max]) => {
 .obs-slider__controls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: clamp(4px, 0.8vw, 8px);
 }
 
 .obs-slider__btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
-  font-size: 9px;
+  gap: clamp(2px, 0.5vw, 6px);
+  padding: clamp(2px, 0.5vw, 6px) clamp(6px, 1.2vw, 12px);
+  font-size: clamp(9px, 1.4vw, 12px);
   font-weight: 700;
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.03);
@@ -315,7 +327,7 @@ watch(() => [props.yearMin, props.yearMax], ([min, max]) => {
 
 .obs-slider__count {
   margin-left: auto;
-  font-size: 9px;
+  font-size: clamp(9px, 1.4vw, 12px);
   color: var(--obs-text-dim);
   font-family: ui-monospace, monospace;
   font-variant-numeric: tabular-nums;

@@ -1,3 +1,11 @@
+/**
+ * composables/useAdaptiveQuality.ts
+ * @why Adaptive quality scaling — reduces 3D quality on low-end devices to maintain frame rate
+ * @functions useAdaptiveQuality
+ * @interfaces QualitySettings
+ * @deps vue (ref, computed, onMounted, onUnmounted, type Ref); @/composables/useDeviceCapabilities (useDeviceCapabilities, type DeviceTier); @/composables/usePerformance (usePerformance); @/lib/constants (QUALITY_PRESETS)
+ * @connections composables/useMapBase.ts
+ */
 import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue'
 import { useDeviceCapabilities, type DeviceTier } from '@/composables/useDeviceCapabilities'
 import { usePerformance } from '@/composables/usePerformance'
@@ -29,7 +37,6 @@ export interface QualitySettings {
   autoRotate: boolean
 }
 
-// Build full QualitySettings from base presets (adds computed fields)
 function buildSettings(level: QualityLevel): QualitySettings {
   const base = BASE_PRESETS[level]
   return {
@@ -63,7 +70,6 @@ const TIER_TO_QUALITY: Record<DeviceTier, QualityLevel> = {
   ultra: 'ultra',
 }
 
-// ── Singleton shared state ──
 const currentLevel = ref<QualityLevel>('high')
 const currentSettings = ref<QualitySettings>(buildSettings('high'))
 const isAutoAdjusting = ref(true)
@@ -71,7 +77,6 @@ let adjustTimer: ReturnType<typeof setInterval> | null = null
 let lastAdjustTime = 0
 const ADJUST_COOLDOWN_MS = 2000
 
-// Weak ref to performance metrics (set during init)
 let perfFps: Ref<number> | null = null
 let perfFpsStddev: Ref<number> | null = null
 let perfFrameTimeP95: Ref<number> | null = null
@@ -93,15 +98,12 @@ function computeQualityFromMetrics(): QualityLevel {
   const jank = perfJankCount?.value ?? 0
   const throttled = perfIsThrottled?.value ?? false
 
-  // Start from device tier
   let level: QualityLevel = TIER_TO_QUALITY[deviceTier]
 
-  // ── Hard overrides (immediate downgrade to low) ──
   if (throttled || fps < 15 || (p95 > 64 && fps < 30)) {
     return 'low'
   }
 
-  // ── User preference overrides ──
   if (devicePrefersReducedMotion) {
     return level === 'ultra' ? 'high' : level === 'high' ? 'medium' : 'low'
   }
@@ -110,35 +112,29 @@ function computeQualityFromMetrics(): QualityLevel {
     if (level === 'high') level = 'medium'
   }
 
-  // ── Network-aware: throttle on slow connections ──
   if (deviceConnectionDownlink < 1) {
     if (level === 'ultra') level = 'high'
     if (level === 'high') level = 'medium'
   }
 
-  // ── Performance-based downgrade ──
   if (fps < 30 || p95 > 40) {
     level = level === 'ultra' ? 'high' : level === 'high' ? 'medium' : level === 'medium' ? 'low' : 'low'
   } else if (fps < 45 || p95 > 28) {
     level = level === 'ultra' ? 'high' : level === 'high' ? 'medium' : level
   }
 
-  // ── Frame time variance penalty ──
   if (stddev > 15 && level !== 'low') {
     level = level === 'ultra' ? 'high' : level === 'high' ? 'medium' : level
   }
 
-  // ── Memory pressure penalty ──
   if (memPressure) {
     level = level === 'ultra' ? 'high' : level === 'high' ? 'medium' : level
   }
 
-  // ── Jank accumulation penalty ──
   if (jank > 50) {
     level = level === 'ultra' ? 'high' : level === 'high' ? 'medium' : level
   }
 
-  // ── Upgrade if we have headroom ──
   if (fps > 55 && stddev < 5 && p95 < 20 && !memPressure && jank < 10) {
     level = level === 'low' ? 'medium' : level === 'medium' ? 'high' : level
   }
@@ -171,7 +167,6 @@ export function useAdaptiveQuality() {
   const perf = usePerformance()
 
   onMounted(() => {
-    // Link performance refs
     perfFps = perf.fps
     perfFpsStddev = perf.fpsStddev
     perfFrameTimeP95 = perf.frameTimeP95
@@ -180,7 +175,6 @@ export function useAdaptiveQuality() {
     perfIsThrottled = perf.isThrottled
     perfIsIdle = perf.isIdle
 
-    // Read device capabilities
     if (capabilities.value) {
       deviceTier = capabilities.value.tier
       devicePrefersReducedMotion = capabilities.value.prefersReducedMotion
@@ -190,7 +184,6 @@ export function useAdaptiveQuality() {
       applyLevel(TIER_TO_QUALITY[deviceTier])
     }
 
-    // Start adaptive loop
     if (!adjustTimer) {
       adjustTimer = setInterval(() => {
         if (isAutoAdjusting.value) adjust()
@@ -199,7 +192,6 @@ export function useAdaptiveQuality() {
   })
 
   onUnmounted(() => {
-    // Don't tear down singleton timer on individual component unmount
   })
 
   const settings = computed(() => currentSettings.value)

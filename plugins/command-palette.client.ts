@@ -1,6 +1,8 @@
 /**
- * Registers global command palette items: navigation, theme toggle, language switch.
- * Runs once on client init.
+ * plugins/command-palette.client.ts
+ * @why Command palette keyboard shortcut (Cmd+K) and global event listener
+ * @defaults defineNuxtPlugin
+ * @deps @/composables/useCommandPalette (useCommandPalette); @/composables/useDarkMode (useDarkMode); @/composables/useI18n (useI18n)
  */
 import { useCommandPalette } from '@/composables/useCommandPalette'
 import { useDarkMode } from '@/composables/useDarkMode'
@@ -12,7 +14,6 @@ export default defineNuxtPlugin(() => {
   const { register } = useCommandPalette()
   const { t, locale } = useI18n()
 
-  // Navigation
   register({
     id: 'nav:home',
     group: t('palette.groupNavigation'),
@@ -54,7 +55,6 @@ export default defineNuxtPlugin(() => {
     onSelect: () => { void navigateTo('/vulcan-observatory') },
   })
 
-  // Theme toggle
   const dark = useDarkMode()
   register({
     id: 'theme:toggle',
@@ -66,7 +66,6 @@ export default defineNuxtPlugin(() => {
     onSelect: () => { dark.toggle() },
   })
 
-  // Locale switch
   const LOCALES = ['en', 'es', 'fr', 'pt', 'ar', 'hi', 'ja', 'zh'] as const
   const LOCALE_NAMES: Record<typeof LOCALES[number], string> = {
     en: 'English', es: 'Español', fr: 'Français', pt: 'Português',

@@ -1,8 +1,11 @@
+/**
+ * plugins/iconify-icon.client.ts
+ * @why Iconify icon library registration — registers all used icon sets globally
+ * @defaults defineNuxtPlugin
+ */
 export default defineNuxtPlugin(() => {
   if (typeof window !== 'undefined') {
     import('iconify-icon').then(mod => {
-      // Preload the entire svg-spinners collection so fallback/error animations
-      // render immediately without any CDN round-trip.
       mod.addCollection({
         name: 'svg-spinners',
         total: 46,
@@ -19,8 +22,6 @@ export default defineNuxtPlugin(() => {
         category: 'UI 24px',
         icons: {},
       } as never)
-      // iconify-icon will automatically fetch missing icon data from the API
-      // (svgs rendered are inline - no external font/CSS needed)
     })
   }
 })

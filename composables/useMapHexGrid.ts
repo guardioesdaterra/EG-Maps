@@ -1,3 +1,11 @@
+/**
+ * composables/useMapHexGrid.ts
+ * @why Canvas-based hex grid overlay for density visualization on the map
+ * @functions useMapHexGrid
+ * @interfaces HexGridOptions
+ * @deps vue (ref, nextTick, onScopeDispose, type Ref); @/composables/useMediaQuery (useMediaQuery); @/lib/constants (HEX_GRID)
+ * @connections composables/useMapBase.ts
+ */
 import { ref, nextTick, onScopeDispose, type Ref } from 'vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { HEX_GRID } from '@/lib/constants'
@@ -39,7 +47,7 @@ export function useMapHexGrid(
     const canvas = canvasRef.value
     if (!canvas) return
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2) // Cap DPR for canvas
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
     const w = window.innerWidth
     const h = window.innerHeight
     const qs = cfg.qualityScale
@@ -61,13 +69,10 @@ export function useMapHexGrid(
       const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true })
       if (!ctx) return
 
-      // DPR-aware transform
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-      // Disable image smoothing for crisp lines
       ctx.imageSmoothingEnabled = false
 
-      // Scale hex size inversely with quality (lower quality = bigger hexes = fewer)
       const baseHexSize = isMobile.value ? cfg.mobileSize : cfg.desktopSize
       const hexSize = Math.round(baseHexSize / Math.max(qs, 0.3))
       const hexHeight = hexSize * Math.sqrt(3)
@@ -78,7 +83,6 @@ export function useMapHexGrid(
       const rows = Math.ceil(h / hexVerticalOffset) + 1
 
       ctx.strokeStyle = cfg.strokeColor
-      // DPR-aware line width: render at 1px visual regardless of DPR
       ctx.lineWidth = cfg.lineWidth
 
       for (let row = 0; row < rows; row++) {
@@ -119,7 +123,7 @@ export function useMapHexGrid(
 
   function updateQualityScale(scale: number) {
     cfg.qualityScale = scale
-    lastQualityScale = -1 // Force redraw
+    lastQualityScale = -1
     setupHexGrid()
   }
 

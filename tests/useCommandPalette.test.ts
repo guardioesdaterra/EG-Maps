@@ -1,3 +1,8 @@
+/**
+ * tests/useCommandPalette.test.ts
+ * @why Unit tests for command palette composable — command registration, filtering, execution
+ * @deps vitest (describe, it, expect, beforeEach); ../composables/useCommandPalette (filterPaletteItems, groupPaletteItems, type CommandPaletteItem)
+ */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { filterPaletteItems, groupPaletteItems, type CommandPaletteItem } from '../composables/useCommandPalette'
 
@@ -68,7 +73,6 @@ describe('useUrlState', () => {
   })
 
   it('parses a hash fragment with the given key prefix', () => {
-    // Simulate URL: #tab=military
     if (typeof window === 'undefined') return
     window.history.replaceState(null, '', '#tab=military&feature=foo')
     const hash = window.location.hash
@@ -77,7 +81,6 @@ describe('useUrlState', () => {
   })
 
   it('omits empty values from URL params', () => {
-    // Validate the encode logic by checking that empty strings are not present
     const obj = { tab: '', showAll: false, count: 5 }
     const parts: string[] = []
     for (const [k, v] of Object.entries(obj)) {

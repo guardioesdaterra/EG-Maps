@@ -1,3 +1,9 @@
+/**
+ * composables/useMapPopup/speciesPopup.ts
+ * @why Species popup HTML builder — constructs popup content for species markers
+ * @functions useSpeciesPopup
+ * @deps vue (ref, computed, nextTick); @/composables/useI18n (useI18n); ./utils (getLocalizedSpecies, type PopupSpecies)
+ */
 import { ref, computed, nextTick } from 'vue'
 import { useI18n } from '@/composables/useI18n'
 import { getLocalizedSpecies, type PopupSpecies } from './utils'

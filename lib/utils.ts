@@ -1,5 +1,9 @@
 /**
- * Lightweight, framework-agnostic utilities used across components.
+ * lib/utils.ts
+ * @why General-purpose utility functions — formatCompact, throttle, debounce, clamp, escapeHtml, cn
+ * @functions formatCompact, formatRelativeTime, escapeHtml, clamp, debounce, throttle, cn
+ * @deps clsx (clsx, type ClassValue); tailwind-merge (twMerge)
+ * @connections components/DataBubble.vue, components/map/ProjectPopup.vue, components/ui/Button.vue, components/ui/Input.vue, components/ui/OverlayImage.vue, components/ui/Tooltip.vue, composables/useMapMarker.ts, pages/index.vue, pages/info.vue
  */
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
@@ -14,15 +18,28 @@ export function formatCompact(num: number): string {
   return String(num)
 }
 
+const _rtfCache = new Map<string, Intl.RelativeTimeFormat>()
+function getRtf(locale?: string): Intl.RelativeTimeFormat {
+  const key = locale || 'default'
+  let rtf = _rtfCache.get(key)
+  if (!rtf) {
+    rtf = new Intl.RelativeTimeFormat(locale ?? undefined, { numeric: 'auto' })
+    if (_rtfCache.size > 20) _rtfCache.clear()
+    _rtfCache.set(key, rtf)
+  }
+  return rtf
+}
+
 /**
  * Format an ISO date as a relative time string (e.g. "2 days ago").
+ * Accepts an optional locale to support i18n — caches formatters by locale.
  */
-const _rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
-export function formatRelativeTime(iso?: string | number | Date): string {
+export function formatRelativeTime(iso?: string | number | Date, locale?: string): string {
   if (!iso) return '—'
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return '—'
 
+  const rtf = getRtf(locale)
   const diff = Date.now() - d.getTime()
   const absDiff = Math.abs(diff)
   const future = diff < 0
@@ -33,12 +50,12 @@ export function formatRelativeTime(iso?: string | number | Date): string {
   const months = days / 30
   const years = days / 365
 
-  if (seconds < 60) return _rtf.format(future ? Math.ceil(seconds) : -Math.floor(seconds), 'second')
-  if (minutes < 60) return _rtf.format(future ? Math.ceil(minutes) : -Math.floor(minutes), 'minute')
-  if (hours < 24) return _rtf.format(future ? Math.ceil(hours) : -Math.floor(hours), 'hour')
-  if (days < 30) return _rtf.format(future ? Math.ceil(days) : -Math.floor(days), 'day')
-  if (months < 12) return _rtf.format(future ? Math.ceil(months) : -Math.floor(months), 'month')
-  return _rtf.format(future ? Math.ceil(years) : -Math.floor(years), 'year')
+  if (seconds < 60) return rtf.format(future ? Math.ceil(seconds) : -Math.floor(seconds), 'second')
+  if (minutes < 60) return rtf.format(future ? Math.ceil(minutes) : -Math.floor(minutes), 'minute')
+  if (hours < 24) return rtf.format(future ? Math.ceil(hours) : -Math.floor(hours), 'hour')
+  if (days < 30) return rtf.format(future ? Math.ceil(days) : -Math.floor(days), 'day')
+  if (months < 12) return rtf.format(future ? Math.ceil(months) : -Math.floor(months), 'month')
+  return rtf.format(future ? Math.ceil(years) : -Math.floor(years), 'year')
 }
 
 /**
@@ -62,8 +79,7 @@ export function clamp(value: number, min: number, max: number): number {
 /**
  * Stable debounce implementation. Cancels previous invocations within `wait` ms.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function debounce<T extends (..._args: any[]) => void>(
+export function debounce<T extends (..._args: unknown[]) => void>(
   fn: T,
   wait: number,
 ): T & { cancel: () => void } {

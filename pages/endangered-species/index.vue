@@ -1,3 +1,9 @@
+/**
+ * pages/endangered-species/index.vue
+ * @why Endangered species 2D map — species markers with clustering, filters for region/threat
+ * @component index
+ * @deps vue (defineAsyncComponent)
+ */
 <template>
   <ClientOnly>
     <MapView2D :default-dataset="'endangered-species'" />
@@ -14,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { defineAsyncComponent } from 'vue'
 
 const MapView2D = defineAsyncComponent(() => import('~/components/MapView2D.vue'))
@@ -30,4 +37,5 @@ useHead({
     { rel: 'dns-prefetch', href: 'https://api.maptiler.com' },
   ],
 })
+
 </script>

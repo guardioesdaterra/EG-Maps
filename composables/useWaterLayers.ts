@@ -1,3 +1,10 @@
+/**
+ * composables/useWaterLayers.ts
+ * @why Water body map layers — renders rivers, lakes, and ocean features on the map
+ * @functions setupWaterLayers, cleanupWaterLayers, setWaterLayersVisibility
+ * @consts WATER_SOURCE, WATER_LAYER_IDS
+ * @connections composables/useRareEarthController.ts, composables/useRareEarthLayers.ts
+ */
 import type { Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 
@@ -29,7 +36,6 @@ export function setupWaterLayers(
     data: waterData,
   })
 
-  // Water body polygons (lakes, reservoirs, ponds)
   map.addLayer({
     id: 'ree-water-poly-fill',
     type: 'fill',
@@ -73,7 +79,6 @@ export function setupWaterLayers(
     },
   })
 
-  // Water lines (rivers, streams)
   map.addLayer({
     id: 'ree-water-river-line',
     type: 'line',
@@ -111,7 +116,6 @@ export function setupWaterLayers(
     },
   })
 
-  // Click handler for water bodies
   const onWaterClick = (e: MapLayerMouseEvent) => {
     if (!e.features?.length) return
     const p = e.features[0].properties

@@ -1,3 +1,8 @@
+/**
+ * tests/observatory.test.ts
+ * @why Unit tests for observatory analysis utilities — statistical computations, data transforms
+ * @deps vitest (describe, it, expect); ../lib/map-utils (buildRareEarthPopupHTML, isValidCoordinate, escapeHtml, RARE_EARTH_PHASES, getPhaseShortLabel, getPhaseColor, ); ../lib/observatory-analysis (computeSpeculatorIndex, computeDangerScore, normalizeName, isMilitaryInterest, isHighEnvRisk, buildClaimReportMailtoUrl, buildAnmVerifyUrl, type RareEarthFeatureCollection, type RareEarthFeature, ); ../lib/enterprise-data (buildEnterpriseNetworkLines, buildEnterpriseHQGeoJSON, ENTERPRISES, ); ../composables/useForceLayout (computeForceLayout)
+ */
 import { describe, it, expect } from 'vitest'
 import {
   buildRareEarthPopupHTML,
@@ -25,10 +30,6 @@ import {
 } from '../lib/enterprise-data'
 import { computeForceLayout } from '../composables/useForceLayout'
 
-// ============================================================================
-// buildRareEarthPopupHTML
-// ============================================================================
-
 describe('buildRareEarthPopupHTML', () => {
   it('renders category label from a known category code', () => {
     const html = buildRareEarthPopupHTML({
@@ -37,14 +38,12 @@ describe('buildRareEarthPopupHTML', () => {
     })
     expect(html).toContain('Vale S.A.')
     expect(html).toContain('820001/2023')
-    // category color used
     expect(html).toContain('#e74c3c')
   })
 
   it('uses fallback color and label for unknown category', () => {
     const html = buildRareEarthPopupHTML({ c: 'unknown_cat', n: 'X' })
     expect(html).toContain('#666')
-    // Falls back to using the raw category code as the label
     expect(html).toContain('unknown_cat')
   })
 
@@ -55,17 +54,17 @@ describe('buildRareEarthPopupHTML', () => {
 
   it('danger color is red when score >= 8', () => {
     const html = buildRareEarthPopupHTML({ c: 'direct_ree', n: 'X', ds: 9.0 })
-    expect(html).toContain('#e74c3c') // danger red
+    expect(html).toContain('#e74c3c')
   })
 
   it('danger color is orange when score 6–7.9', () => {
     const html = buildRareEarthPopupHTML({ c: 'direct_ree', n: 'X', ds: 6.5 })
-    expect(html).toContain('#f39c12') // danger orange
+    expect(html).toContain('#f39c12')
   })
 
   it('danger color is green when score < 6', () => {
     const html = buildRareEarthPopupHTML({ c: 'direct_ree', n: 'X', ds: 3.0 })
-    expect(html).toContain('#27ae60') // danger green
+    expect(html).toContain('#27ae60')
   })
 
   it('formats area in ha for small values', () => {
@@ -89,7 +88,6 @@ describe('buildRareEarthPopupHTML', () => {
   })
 
   it('shows ENV flag for FOSFATO subs', () => {
-    // isHighEnvRisk reads props.subs (uppercase)
     const html = buildRareEarthPopupHTML({ c: 'direct_ree', n: 'X', subs: 'FOSFATO' })
     expect(html).toContain('ENV')
   })
@@ -159,15 +157,10 @@ describe('buildRareEarthPopupHTML', () => {
 
   it('omits verify link when processo is missing', () => {
     const html = buildRareEarthPopupHTML({ c: 'direct_ree', n: 'X' })
-    // Verify link is only present when anmUrl is truthy
     const verifyMatch = html.match(/Verify on ANM/)
     expect(verifyMatch).toBeNull()
   })
 })
-
-// ============================================================================
-// computeSpeculatorIndex
-// ============================================================================
 
 describe('computeSpeculatorIndex', () => {
   const makeFC = (features: Array<{
@@ -236,7 +229,6 @@ describe('computeSpeculatorIndex', () => {
       { name: 'X', subs: 'NIOBIO;Litio' },
     ]))
     expect(result[0].subs).toEqual(expect.arrayContaining(['Nióbio', 'Tântalo', 'NIOBIO', 'Litio']))
-    // Only unique values
     expect(new Set(result[0].subs).size).toBe(result[0].subs.length)
   })
 
@@ -265,9 +257,7 @@ describe('computeSpeculatorIndex', () => {
 
   it('sorts by suspicionScore desc, then totalAreaHa desc', () => {
     const result = computeSpeculatorIndex(makeFC([
-      // 5 small recent claims = RECENT_RUSH only (score 2)
       ...Array.from({ length: 5 }, () => ({ name: 'Small', ano: 2024, area: 100, uf: 'MG', fase: 'REQUERIMENTO' })),
-      // 200 big claims = CARPET_BOMBING + HIGH_VOLUME (score 4+)
       ...Array.from({ length: 200 }, () => ({ name: 'Big', ano: 2024, area: 2000, uf: 'AM', fase: 'REQUERIMENTO' })),
     ]))
     expect(result[0].displayName).toBe('Big')
@@ -297,10 +287,6 @@ describe('computeSpeculatorIndex', () => {
     expect(result[0].displayName).toBe('UPPERCASE CO')
   })
 })
-
-// ============================================================================
-// computeDangerScore
-// ============================================================================
 
 describe('computeDangerScore', () => {
   it('returns base score of 4.0 for neutral props', () => {
@@ -336,10 +322,6 @@ describe('computeDangerScore', () => {
     expect(score).toBe(5.5)
   })
 })
-
-// ============================================================================
-// isMilitaryInterest / isHighEnvRisk
-// ============================================================================
 
 describe('isMilitaryInterest', () => {
   it.each(['AM', 'AP', 'PA', 'RR', 'RO', 'MT'])('returns true for military UF %s', (uf) => {
@@ -383,15 +365,8 @@ describe('isHighEnvRisk', () => {
   })
 })
 
-// ============================================================================
-// normalizeName
-// ============================================================================
-
 describe('normalizeName', () => {
   it('removes accents on names without generic suffix', () => {
-    // Note: normalizeName includes MINERACAO in its generic-suffix list,
-    // which strips the word from real company names that contain it
-    // (this is an existing quirk; the test documents the behavior).
     expect(normalizeName('Açúcar')).toBe('ACUCAR')
   })
 
@@ -408,20 +383,14 @@ describe('normalizeName', () => {
   })
 
   it('collapses non-alphanumeric to spaces and strips MINERALS/CORP', () => {
-    // MINERALS and CORP are both in the suffix list, so the result is "VALE"
     expect(normalizeName('Vale-Minerals!Corp')).toBe('VALE')
   })
 })
-
-// ============================================================================
-// buildAnmVerifyUrl / buildClaimReportMailtoUrl
-// ============================================================================
 
 describe('buildAnmVerifyUrl', () => {
   it('builds a SIGMINE URL for a valid processo', () => {
     const url = buildAnmVerifyUrl('820001/2023', 2023)
     expect(url).toContain('anm.gov.br')
-    // URL strips the slash from the processo number (e.g. 820001/2023 -> 8200012023)
     expect(url).toContain('8200012023')
     expect(url).toContain('ano=2023')
   })
@@ -438,7 +407,7 @@ describe('buildClaimReportMailtoUrl', () => {
       processo: '820001/2023', nome: 'Vale S.A.', lat: -19.5, lng: -43.5, uf: 'MG', subs: 'Nióbio',
     })
     expect(url).toContain('mailto:')
-    expect(url).toContain('820001%2F2023') // URL-encoded slash
+    expect(url).toContain('820001%2F2023')
   })
 
   it('escapes newlines to prevent header injection', () => {
@@ -448,10 +417,6 @@ describe('buildClaimReportMailtoUrl', () => {
     expect(url).not.toContain('\n')
   })
 })
-
-// ============================================================================
-// computeForceLayout
-// ============================================================================
 
 describe('computeForceLayout', () => {
   it('returns one node per input node', () => {
@@ -469,7 +434,6 @@ describe('computeForceLayout', () => {
   })
 
   it('places connected nodes closer than unconnected ones (chain)', () => {
-    // Chain: a-b-c-d. Endpoints (a, d) are far apart, neighbours are close.
     const nodes = [
       { id: 'a', x: 0, y: 0 },
       { id: 'b', x: 0, y: 0 },
@@ -491,15 +455,12 @@ describe('computeForceLayout', () => {
     const d = result.find(n => n.id === 'd')!
     const dAB = Math.hypot(a.x - b.x, a.y - b.y)
     const dBC = Math.hypot(b.x - c.x, b.y - c.y)
-    const dAD = Math.hypot(a.x - d.x, a.y - d.y) // graph diameter
-    // Neighbouring edge lengths are smaller than the diameter
+    const dAD = Math.hypot(a.x - d.x, a.y - d.y)
     expect(dAB).toBeLessThan(dAD)
     expect(dBC).toBeLessThan(dAD)
   })
 
   it('isolated node is pushed away from connected cluster', () => {
-    // a-b form a connected pair, c is fully isolated. With sufficient
-    // iterations, c should be pushed out of the a-b cluster.
     const nodes = [
       { id: 'a', x: 100, y: 100 },
       { id: 'b', x: 110, y: 100 },
@@ -515,7 +476,6 @@ describe('computeForceLayout', () => {
     const c = result.find(n => n.id === 'c')!
     const dAB = Math.hypot(a.x - b.x, a.y - b.y)
     const dAC = Math.hypot(a.x - c.x, a.y - c.y)
-    // Connected pair is closer than c is to a
     expect(dAB).toBeLessThan(dAC)
   })
 
@@ -542,14 +502,12 @@ describe('computeForceLayout', () => {
   })
 
   it('respects edge weights (heavier = closer)', () => {
-    // Star: a is the center with a heavy edge to b (w=5) and a light edge
-    // to c (w=0.1). b should be pulled in closer to a than c is.
     const result = computeForceLayout(
       [
         { id: 'a', x: 200, y: 200 },
         { id: 'b', x: 200, y: 200 },
         { id: 'c', x: 200, y: 200 },
-        { id: 'd', x: 200, y: 200 }, // 4 nodes to break symmetry
+        { id: 'd', x: 200, y: 200 },
       ],
       [
         { source: 'a', target: 'b', weight: 5 },
@@ -564,14 +522,9 @@ describe('computeForceLayout', () => {
     const c = result.find(n => n.id === 'c')!
     const dAB = Math.hypot(a.x - b.x, a.y - b.y)
     const dAC = Math.hypot(a.x - c.x, a.y - c.y)
-    // b is connected to a with weight 5, so dAB < dAC
     expect(dAB).toBeLessThan(dAC)
   })
 })
-
-// ============================================================================
-// escapeHtml + isValidCoordinate (sanity for popup helpers)
-// ============================================================================
 
 describe('escapeHtml', () => {
   it('escapes < and > to prevent script injection', () => {
@@ -614,10 +567,6 @@ describe('isValidCoordinate', () => {
   })
 })
 
-// ============================================================================
-// RARE_EARTH_PHASES
-// ============================================================================
-
 describe('RARE_EARTH_PHASES', () => {
   it('has all expected phases', () => {
     expect(RARE_EARTH_PHASES.REQUERIMENTO).toBeDefined()
@@ -652,10 +601,6 @@ describe('RARE_EARTH_PHASES', () => {
     expect(getPhaseColor('NONEXISTENT')).toBe('#666')
   })
 })
-
-// ============================================================================
-// buildEnterpriseNetworkLines
-// ============================================================================
 
 describe('buildEnterpriseNetworkLines', () => {
   it('returns a FeatureCollection', () => {
@@ -736,10 +681,6 @@ describe('buildEnterpriseNetworkLines', () => {
     expect(rioLine!.properties!.color).toBe('#e74c3c')
   })
 })
-
-// ============================================================================
-// buildEnterpriseHQGeoJSON
-// ============================================================================
 
 describe('buildEnterpriseHQGeoJSON', () => {
   it('returns all enterprises as FeatureCollection', () => {

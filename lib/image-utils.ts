@@ -1,3 +1,9 @@
+/**
+ * lib/image-utils.ts
+ * @why Image utilities — caching, lazy loading, placeholder generation, aspect ratio calculations
+ * @functions getMarkerPlaceholder, getProjectPlaceholder, getThumbnailUrl, getMarkerImageUrl, getPreviewImageUrl, getPopupImageUrl, preloadImage, preloadSpeciesImages, clearImageCache
+ * @connections components/map/SpeciesPopup.vue
+ */
 const MARKER_THUMB_SIZE = 64
 const PREVIEW_THUMB_SIZE = 112
 const POPUP_THUMB_SIZE = 560
@@ -79,7 +85,6 @@ function getThumbnailPath(originalUrl: string, width: number, baseURL?: string):
 export function getThumbnailUrl(originalUrl: string, width: number, baseURL?: string): string {
   if (!originalUrl) return ''
 
-  // Local files: serve WebP thumbnail for markers, original for popups
   if (!originalUrl.startsWith('http://') && !originalUrl.startsWith('https://')) {
     if (width === MARKER_THUMB_SIZE) {
       return getThumbnailPath(originalUrl, width, baseURL)
@@ -114,7 +119,6 @@ export function getPreviewImageUrl(originalUrl: string, baseURL?: string): strin
 
 export function getPopupImageUrl(originalUrl: string, baseURL?: string): string {
   if (!originalUrl) return ''
-  // Full-size WebP at 100% quality for popup images
   if (!originalUrl.startsWith('http://') && !originalUrl.startsWith('https://')) {
     const filename = originalUrl.replace(/^\//, '')
     const basename = filename.split('/').pop() || filename
@@ -209,7 +213,7 @@ export async function preloadImage(url: string): Promise<string | null> {
 export function preloadSpeciesImages(imageUrls: string[], markerOnly = false, baseURL?: string): void {
   const urls = [...new Set(imageUrls.filter(Boolean))]
   const markerUrls = urls.map(u => getMarkerImageUrl(u, baseURL))
-  
+
   markerUrls.forEach(url => {
     if (url) preloadImage(url)
   })

@@ -1,3 +1,9 @@
+/**
+ * components/KeyboardShortcuts.vue
+ * @why Overlay displaying available keyboard shortcuts for the current view
+ * @component KeyboardShortcuts
+ * @deps vue (computed, onMounted, onUnmounted, ref)
+ */
 <template>
   <Teleport to="body">
     <Transition name="kbd-fade">
@@ -32,6 +38,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 const { t } = useI18n()
@@ -62,7 +69,6 @@ function open_() { open.value = true }
 function close() { open.value = false }
 
 function onGlobalKeydown(e: KeyboardEvent) {
-  // Don't trigger when typing in inputs
   const target = e.target as HTMLElement | null
   if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
     if (e.key === 'Escape') open.value = false
@@ -87,13 +93,14 @@ onUnmounted(() => {
     window.removeEventListener('keydown', onGlobalKeydown)
   }
 })
+
 </script>
 
 <style scoped>
 .kbd-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--shadow-color);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   z-index: 10001;
@@ -105,10 +112,10 @@ onUnmounted(() => {
 .kbd-panel {
   width: 100%;
   max-width: 400px;
-  background: rgba(15, 15, 18, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 60px var(--shadow-color);
   overflow: hidden;
 }
 .kbd-panel__head {
@@ -116,24 +123,24 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--glass-border);
 }
 .kbd-panel__title {
   margin: 0;
   font-size: 14px;
   font-weight: 700;
-  color: #fafafa;
+  color: var(--text-primary);
 }
 .kbd-panel__close {
   background: transparent;
   border: 0;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   font-size: 22px;
   cursor: pointer;
   font-family: inherit;
   line-height: 1;
 }
-.kbd-panel__close:hover { color: #fafafa; }
+.kbd-panel__close:hover { color: var(--text-primary); }
 .kbd-list {
   list-style: none;
   margin: 0;
@@ -147,7 +154,7 @@ onUnmounted(() => {
   padding: 8px 10px;
   border-radius: 6px;
 }
-.kbd-item:hover { background: rgba(255, 255, 255, 0.04); }
+.kbd-item:hover { background: var(--glass-border-light); }
 .kbd-item__keys {
   display: flex;
   gap: 4px;
@@ -155,9 +162,9 @@ onUnmounted(() => {
 .kbd-key {
   font-size: 10px;
   font-weight: 700;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fafafa;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--glass-border);
+  color: var(--text-primary);
+  border: 1px solid var(--panel-border);
   border-radius: 4px;
   padding: 3px 7px;
   min-width: 22px;
@@ -166,7 +173,7 @@ onUnmounted(() => {
 }
 .kbd-item__label {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   flex: 1;
   text-align: right;
 }

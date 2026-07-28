@@ -1,3 +1,9 @@
+/**
+ * composables/useMapPopup/projectPopup.ts
+ * @why Project grant popup HTML builder — constructs popup content for project markers
+ * @functions useProjectPopup
+ * @deps vue (ref, computed, nextTick)
+ */
 import { ref, computed, nextTick } from 'vue'
 import type { ProjectData } from '@/lib/types'
 

@@ -1,4 +1,8 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+/**
+ * nuxt.config.ts
+ * @why Nuxt 3 framework configuration — build, modules, runtime config, deployment
+ * @defaults defineNuxtConfig
+ */
 const baseURL = process.env.NUXT_APP_BASE_URL || '/'
 
 export default defineNuxtConfig({
@@ -15,14 +19,10 @@ export default defineNuxtConfig({
 
   plugins: ['~/plugins/iconify-icon.client.ts', '~/plugins/command-palette.client.ts', '~/plugins/ui-init.client.ts'],
 
-  // vueuse module
   vueuse: {
     ssrHandlers: true,
   },
 
-  // i18n — keep URLs unchanged via no_prefix; the existing useI18n composable
-  // delegates to vue-i18n's $t so we get lazy-loaded locale bundles and
-  // proper pluralization/formatting for free.
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'en',
@@ -43,7 +43,6 @@ export default defineNuxtConfig({
     detectBrowserLanguage: false,
   },
 
-  // SSG with prerendered HTML for all routes - enables proper GitHub Pages indexing and refresh
   ssr: true,
   routeRules: {
     '/**': { prerender: true },
@@ -58,7 +57,6 @@ export default defineNuxtConfig({
     '/active-crews/3d': { prerender: false },
   },
 
-  // App configuration
   app: {
     baseURL,
     head: {
@@ -71,7 +69,6 @@ export default defineNuxtConfig({
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Earth Guardians' },
       ],
-      // Inline script to prevent flash of wrong theme - runs before page renders
       script: [
         {
           innerHTML: `(function() {
@@ -96,7 +93,6 @@ export default defineNuxtConfig({
     },
   },
 
-  // Runtime config for API keys + analytics
   runtimeConfig: {
     public: {
       maptilerApiKey: process.env.NUXT_PUBLIC_MAPTILER_API_KEY || process.env.MAPTILER_API_KEY || '',
@@ -106,17 +102,14 @@ export default defineNuxtConfig({
     },
   },
 
-  // CSS - only MapLibre
   css: ['~/assets/css/main.css', 'maplibre-gl/dist/maplibre-gl.css'],
 
-  // Build settings
   typescript: {
     strict: true,
     typeCheck: false,
     shim: false,
   },
 
-  // Nitro (static output)
   nitro: {
     preset: 'static',
     prerender: {
@@ -131,7 +124,6 @@ export default defineNuxtConfig({
     appManifest: false,
   },
 
-  // Vite config for MapLibre + WSL HMR
   vite: {
     build: {
       rollupOptions: {

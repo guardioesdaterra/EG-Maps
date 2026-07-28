@@ -1,11 +1,17 @@
+/**
+ * layouts/default.vue
+ * @why Default app layout — header navigation, theme toggle, footer, and slot for page content
+ * @component default
+ * @deps vue (ref, computed, onMounted, onUnmounted); @/composables/useI18n (useI18n)
+ */
 <template>
   <div :class="[isMapRoute ? 'h-[100svh]' : 'min-h-viewport', 'bg-[var(--bg-secondary)]']">
     <slot />
 
-    <!-- Unified Top Header - 2D/3D + Utilities + Theme -->
+    
     <header v-if="showUnifiedHeader" class="fixed left-2 xs:left-4 top-[clamp(4.5rem,12vw,6rem)] z-[10000] sm:left-auto sm:right-[max(1rem,env(safe-area-inset-right))] sm:top-[0.5rem]">
       <div :class="unifiedHeaderShellClass">
-        <!-- Left: 2D/3D Toggle -->
+        
         <div v-if="showViewToggle" class="map-view-switcher flex flex-col sm:flex-row items-start sm:items-center gap-0.5">
           <NuxtLink
             :to="view2DRoute"
@@ -29,10 +35,10 @@
           </NuxtLink>
         </div>
 
-        <!-- Separator -->
+        
         <div v-if="showViewToggle" :class="[headerSeparatorClass, 'hidden sm:block']" />
 
-        <!-- Right: Navigation + Theme -->
+        
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-0.5">
           <NuxtLink
             v-for="item in headerItems"
@@ -53,10 +59,10 @@
             <span class="hidden sm:inline text-xs">{{ t('nav.crews') }}</span>
           </a>
 
-          <!-- Separator -->
+          
           <div :class="[headerSeparatorClass, 'hidden sm:block']" />
 
-          <!-- Theme toggle -->
+          
           <button
             @click="toggleDarkMode"
             :class="headerUtilityClass"
@@ -68,16 +74,16 @@
       </div>
     </header>
 
-    <!-- Map-focused Dock Navigation with GooeyNav -->
+    
     <nav v-if="showDock && !hideAll" class="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] xs:bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
       <div :class="dockShellClass">
         <div class="flex items-center gap-1">
           <GooeyNav :items="navItems" />
 
-          <!-- Separator -->
+          
           <div :class="separatorClass" />
 
-          <!-- Language Switcher -->
+          
           <div class="relative" ref="langDropdownRef">
             <button
               @click="showLangMenu = !showLangMenu"
@@ -95,7 +101,7 @@
               </div>
             </button>
 
-            <!-- Language dropdown -->
+            
             <Transition name="dropdown">
               <div
                 v-if="showLangMenu"
@@ -120,16 +126,14 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n as useAppI18n } from '@/composables/useI18n'
 
 const route = useRoute()
 
-// i18n
 const { t, locale, availableLocales, localeNames, setLocale } = useAppI18n()
 
-// #no-dock hash support — hides the dock navigation bar
-// Start with a safe default and only modify on client to avoid hydration mismatch
 const showDock = ref(true)
 
 function updateDockFromHash() {
@@ -220,18 +224,14 @@ const dropdownClass = computed(() => [
   'bg-gray-900/95 backdrop-blur border border-white/10',
 ])
 
-// Language dropdown state
 const showLangMenu = ref(false)
 const langDropdownRef = ref<HTMLElement | null>(null)
 
-// Close dropdown when clicking outside
 function handleClickOutside(event: MouseEvent) {
   if (langDropdownRef.value && !langDropdownRef.value.contains(event.target as Node)) {
     showLangMenu.value = false
   }
 }
-
-
 
 const isActive = (path: string) => {
   if (path === '/') return route.path === '/'
@@ -251,6 +251,7 @@ function getHeaderItemClass(path: string) {
   }
   return `${base} ${isActive(path) ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'}`
 }
+
 </script>
 
 <style scoped>

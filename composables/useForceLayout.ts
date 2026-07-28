@@ -1,3 +1,10 @@
+/**
+ * composables/useForceLayout.ts
+ * @why Force-directed graph layout — d3-force simulation for network visualization
+ * @functions computeForceLayout
+ * @interfaces ForceNode, ForceEdge, ForceLayoutOptions
+ * @connections components/RedeCorporativa.vue
+ */
 export interface ForceNode {
   id: string
   x: number
@@ -99,7 +106,6 @@ export function computeForceLayout(
   const initialTemperature = options.initialTemperature ?? Math.max(width, height) / 10
   const cooling = options.cooling ?? 0.975
 
-  // Deep-clone so we can mutate velocity/position without affecting caller
   const internal: InternalNode[] = nodes.map(n => ({
     ...n,
     vx: 0,
@@ -107,11 +113,9 @@ export function computeForceLayout(
     mass: n.mass ?? 1,
   }))
 
-  // Build edge index for O(1) lookup of adjacency
   const indexById = new Map<string, InternalNode>()
   internal.forEach(n => indexById.set(n.id, n))
 
-  // Seed initial positions on a circle (helps symmetry-break)
   const cx0 = width / 2
   const cy0 = height / 2
   const r0 = Math.min(width, height) * 0.35
@@ -126,7 +130,6 @@ export function computeForceLayout(
   let temperature = initialTemperature
 
   for (let iter = 0; iter < iterations; iter++) {
-    // Repulsive forces (n^2 — fine for small graphs)
     for (let i = 0; i < internal.length; i++) {
       const a = internal[i]
       for (let j = i + 1; j < internal.length; j++) {
@@ -135,7 +138,6 @@ export function computeForceLayout(
         let dy = a.y - b.y
         let dist = Math.sqrt(dx * dx + dy * dy)
         if (dist < 0.01) {
-          // Jitter to escape exact overlap
           dx = (rand() - 0.5) * 0.1
           dy = (rand() - 0.5) * 0.1
           dist = Math.sqrt(dx * dx + dy * dy) || 0.01
@@ -150,7 +152,6 @@ export function computeForceLayout(
       }
     }
 
-    // Attractive forces along edges (Hooke's law)
     for (const e of edges) {
       const a = indexById.get(e.source)
       const b = indexById.get(e.target)
@@ -168,7 +169,6 @@ export function computeForceLayout(
       b.vy += fy * b.mass
     }
 
-    // Apply velocity with temperature cap (simulated annealing)
     for (const n of internal) {
       const vmag = Math.sqrt(n.vx * n.vx + n.vy * n.vy)
       if (vmag > temperature) {
@@ -185,7 +185,6 @@ export function computeForceLayout(
         if (n.y > height - padding) n.y = height - padding
       }
 
-      // Velocity damping
       n.vx *= 0.85
       n.vy *= 0.85
     }
@@ -194,7 +193,6 @@ export function computeForceLayout(
   }
 
   if (shouldCenter) {
-    // Compute centroid and shift so it sits in the middle
     let sx = 0
     let sy = 0
     for (const n of internal) { sx += n.x; sy += n.y }
@@ -203,7 +201,6 @@ export function computeForceLayout(
     const dx = (width / 2) - sx
     const dy = (height / 2) - sy
     if (clamp) {
-      // Only shift if it keeps everything inside the padded area
       let canShift = true
       for (const n of internal) {
         if (n.x + dx < padding || n.x + dx > width - padding) { canShift = false; break }
@@ -215,6 +212,5 @@ export function computeForceLayout(
     }
   }
 
-  // Return original input shape (without internal velocity fields)
   return internal.map(({ id, x, y, mass }) => ({ id, x, y, mass }))
 }

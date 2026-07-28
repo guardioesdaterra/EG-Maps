@@ -1,3 +1,11 @@
+/**
+ * components/ObservatoryClaimActions.vue
+ * @why Action buttons for observatory claims — approve, reject, request changes
+ * @component ObservatoryClaimActions
+ * @props processo: string | null | undefined
+  ano
+ * @deps vue (computed); @/lib/observatory-analysis (buildAnmVerifyUrl)
+ */
 <template>
   <div class="ree-claim-actions">
     <a v-if="anmUrl" :href="anmUrl" target="_blank" rel="noopener" class="ree-claim-action ree-claim-action--primary">
@@ -12,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed } from 'vue'
 import { buildAnmVerifyUrl } from '@/lib/observatory-analysis'
 
@@ -45,6 +54,7 @@ const mailtoUrl = computed(() => {
   ]
   return `mailto:observatory@earthguardians.org?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`
 })
+
 </script>
 
 <style scoped>
@@ -53,7 +63,7 @@ const mailtoUrl = computed(() => {
   gap: 6px;
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid var(--glass-border);
 }
 .ree-claim-action {
   flex: 1;
@@ -71,22 +81,22 @@ const mailtoUrl = computed(() => {
   transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 }
 .ree-claim-action--primary {
-  background: rgba(52,152,219,0.10);
-  color: #5dade2;
+  background: var(--info-bg);
+  color: var(--info);
   border-color: rgba(52,152,219,0.3);
 }
 .ree-claim-action--primary:hover {
   background: rgba(52,152,219,0.2);
-  border-color: #5dade2;
+  border-color: var(--info);
 }
 .ree-claim-action--report {
-  background: rgba(231,76,60,0.08);
-  color: #e74c3c;
+  background: var(--danger-bg);
+  color: var(--danger);
   border-color: rgba(231,76,60,0.25);
 }
 .ree-claim-action--report:hover {
   background: rgba(231,76,60,0.15);
-  border-color: #e74c3c;
+  border-color: var(--danger);
 }
 .ree-claim-action-icon {
   font-size: 10px;

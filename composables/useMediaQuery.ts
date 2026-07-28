@@ -1,3 +1,10 @@
+/**
+ * composables/useMediaQuery.ts
+ * @why Responsive breakpoint detection — reactive boolean refs for sm/md/lg/xl breakpoints
+ * @functions useMediaQuery
+ * @deps vue (ref, onMounted, onUnmounted)
+ * @connections components/GlobalStats.vue, components/MapControls.vue, components/ProjectFilterPanel.vue, components/SpeciesFilterPanel.vue, composables/useMapBase.ts, composables/useMapConnections.ts, composables/useMapHexGrid.ts
+ */
 import { ref, onMounted, onUnmounted } from 'vue'
 
 export function useMediaQuery(query: string) {

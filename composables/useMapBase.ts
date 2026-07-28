@@ -1,3 +1,11 @@
+/**
+ * composables/useMapBase.ts
+ * @why Shared map initialization logic — tile auth, layer setup, common event handlers
+ * @functions useMapBase
+ * @interfaces MapBaseProps, MapBaseConfig
+ * @deps vue (ref, computed, nextTick, onMounted, onUnmounted, watch, type Ref); @/composables/useMediaQuery (useMediaQuery); @/composables/useI18n (useI18n); @/composables/useFocusTrap (useFocusTrap); @/composables/useMapHexGrid (useMapHexGrid); @/composables/useMapPopup (useSpeciesPopup, useProjectPopup, useCrewPopup, usePreviewCard); @/composables/useMapConnections (useMapConnections); @/composables/useMapMarker (useMapMarker); @/composables/useRareEarthController (useRareEarthController); @/composables/useCulturalLayers (getPopupContent); @/composables/useSpeciesPanel (useSpeciesPanel); @/composables/useAdaptiveQuality (useAdaptiveQuality); @/lib/project-data (allProjectsData); @/lib/map-utils (openRareEarthOverlayPopup); @/composables/useMapLibre (detectWebGLSupport, getMapStyle); @/lib/constants (HEX_GRID)
+ * @connections components/MapView2D.vue, components/MapView3D.vue
+ */
 import { ref, computed, nextTick, onMounted, onUnmounted, watch, type Ref } from 'vue'
 import maplibregl from 'maplibre-gl'
 import { useMediaQuery } from '@/composables/useMediaQuery'
@@ -58,11 +66,9 @@ export function useMapBase(config: MapBaseConfig) {
   const baseURL = useRuntimeConfig().app.baseURL
   const isMobile = useMediaQuery('(max-width: 768px)')
   const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
-  const MAP_STYLE = getMapStyle(MAPTILER_API_KEY)
 
   const quality = useAdaptiveQuality()
 
-  // Derive reactive particle quality config from quality settings
   const particleQuality = computed<ParticleQualityConfig>(() => ({
     particleMaxCount: quality.settings.value.particleMaxCount,
     particleFps: quality.settings.value.particleFps,
@@ -76,6 +82,9 @@ export function useMapBase(config: MapBaseConfig) {
   const projectsData = computed(() => props.projects || allProjectsData)
   const speciesData = computed(() => props.species || [])
   const speciesIndexData = ref<SpeciesIndexItem[]>(props.speciesIndex || [])
+  watch(() => props.speciesIndex, (val) => {
+    if (val) speciesIndexData.value = val
+  }, { immediate: false })
   const crewsData = computed(() => props.crews || [])
   const crewLocationsData = computed(() => props.crewLocations || [])
   const filteredProjectsList = ref<ProjectData[] | null>(null)
@@ -140,7 +149,6 @@ export function useMapBase(config: MapBaseConfig) {
   })
   const onResize = hexGrid.debouncedSetup
 
-  // Watch quality changes and update hex grid dynamically
   watch(() => quality.settings.value.hexGridScale, (newScale) => {
     hexGrid.updateQualityScale(newScale)
   })
@@ -333,7 +341,7 @@ export function useMapBase(config: MapBaseConfig) {
     marker.rebuild({
       dataset: activeDataset.value!,
       projects: isRee ? [] : visibleProjects.value,
-      speciesIndex: isRee ? [] : speciesIndexData.value,
+      speciesIndex: isRee ? [] : visibleSpecies.value,
       species: isRee ? [] : speciesData.value,
       crews: isRee ? [] : crewsData.value,
       crewLocations: isRee ? [] : crewLocationsData.value,
@@ -351,7 +359,7 @@ export function useMapBase(config: MapBaseConfig) {
     marker.update({
       dataset: activeDataset.value!,
       projects: isRee ? [] : visibleProjects.value,
-      speciesIndex: isRee ? [] : speciesIndexData.value,
+      speciesIndex: isRee ? [] : visibleSpecies.value,
       species: isRee ? [] : speciesData.value,
       crews: isRee ? [] : crewsData.value,
       crewLocations: isRee ? [] : crewLocationsData.value,
@@ -430,20 +438,23 @@ export function useMapBase(config: MapBaseConfig) {
       const isRee = activeDataset.value === 'vulcan-observatory'
       const qs = quality.settings.value
 
+      const mapStyle = getMapStyle(MAPTILER_API_KEY, qs.tileResolution)
+      const tileMaxZoom = qs.tileResolution === 'low' ? 14 : qs.tileResolution === 'medium' ? 17 : 22
       map = new maplibregl.Map({
         container: mapContainerRef.value,
-        style: MAP_STYLE,
+        style: mapStyle,
         zoom: isRee ? (isGlobe ? 4.2 : 9.5) : isMobile.value ? (isGlobe ? 1.5 : 1.8) : (isGlobe ? 2.5 : 3),
         center: isRee ? (isGlobe ? [-48, -15] : [-46.533, -21.914]) : (isGlobe ? [0, 20] : [0, 0]),
         attributionControl: false,
         renderWorldCopies: !isGlobe,
         fadeDuration: 100,
+        maxZoom: tileMaxZoom,
         maxTileCacheSize: qs.maxTileCacheSize,
         maxTileCacheZoomLevels: qs.maxTileCacheZoomLevels,
         antialias: qs.antialiasing,
-        preferCanvas: true,                       // GPU-accelerated markers
-        crossSourceCollisions: false,             // Skip cross-source collision checks
-        maxPitch: qs.antialiasing ? 60 : 45,     // Limit pitch on low-end
+        preferCanvas: true,
+        crossSourceCollisions: false,
+        maxPitch: qs.antialiasing ? 60 : 45,
       } as maplibregl.MapOptions & { antialias?: boolean; preferCanvas?: boolean; crossSourceCollisions?: boolean; maxPitch?: number })
 
       console.timeEnd('[perf] initMap → MapLibre constructor')
@@ -476,8 +487,6 @@ export function useMapBase(config: MapBaseConfig) {
         if (activeDataset.value === 'vulcan-observatory') {
           setupRareEarthLayers()
         }
-        // Skip rebuild if species dataset has no index data yet —
-        // the watcher on speciesIndexData will rebuild when data arrives
         const shouldRebuild = activeDataset.value !== 'endangered-species' || speciesIndexData.value.length > 0
         if (shouldRebuild) {
           rebuildMarkers()
@@ -516,7 +525,7 @@ export function useMapBase(config: MapBaseConfig) {
 
       function tryFallback() {
         if (usedFallback || !map) return
-        if (!MAP_STYLE.includes('maptiler.com')) return
+        if (!mapStyle.includes('maptiler.com')) return
         usedFallback = true
         console.warn('MapTiler style failed, falling back to demotiles style')
         map.setStyle(DEMOTILES_STYLE)

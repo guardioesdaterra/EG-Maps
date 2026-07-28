@@ -232,7 +232,8 @@
     "retry": "Försök igen",
     "close": "Stäng",
     "save": "Spara",
-    "cancel": "Avbryt"
+    "cancel": "Avbryt",
+    "imageNotAvailable": "Bild inte tillgänglig"
   },
   "observatory": {
     "tabs": {
@@ -539,8 +540,6 @@
     "howGrantsWork": "HUR VI FONDIERAR FÖRÄNDRING",
     "impactRingLabel": "BOR",
     "grantsSectionLabel": "T.ex. PROJEKTBIDRAG",
-    "grantsCopy1": "Vi erbjuder $300–$500 anslag för att stödja våra globala förändringsskapare, med prioritet till våra besättningar.",
-    "grantsCopy1Strong": "300–500 USD bidrag",
     "grantsCopy2": "Sedan 2021 har vårt Project Grants-program stöttat gräsrotsinsatser inom utbildning om klimaträttvisa, regenerativt jordbruk, trädplanteringar, ickevåldsamma direkta åtgärder, klimatpolitik, livsmedelssäkerhet, konstvism och mer.",
     "grantsCopy3": "Med utbildning, mentorskap och finansiering ger vårt Project Grants-program dig möjlighet att förverkliga dina idéer och inspirera andra. Projektbidragsprocessen lär också ut anslagsskrivning, projektkoordinering och dataanalysfärdigheter.",
     "grantsCopy4": "Var med oss ​​för att bygga motståndskraft och tackla klimatkrisen lokalt!",

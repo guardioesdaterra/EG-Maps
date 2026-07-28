@@ -232,7 +232,8 @@
     "retry": "重试",
     "close": "关闭",
     "save": "保存",
-    "cancel": "取消"
+    "cancel": "取消",
+    "imageNotAvailable": "图片不可用"
   },
   "observatory": {
     "tabs": {
@@ -539,8 +540,6 @@
     "howGrantsWork": "我们如何资助变革",
     "impactRingLabel": "生活",
     "grantsSectionLabel": "EG 项目补助金",
-    "grantsCopy1": "我们提供 300 至 500 美元的赠款来支持我们的全球变革者，并优先考虑我们的工作人员。",
-    "grantsCopy1Strong": "$300–$500 补助金",
     "grantsCopy2": "自 2021 年以来，我们的项目赠款计划支持了气候正义教育、再生农业、植树、非暴力直接行动、气候政策、粮食安全、艺术主义等方面的基层努力。",
     "grantsCopy3": "通过教育、指导和资金，我们的项目资助计划使您能够将您的想法变为现实并激励他人。项目资助流程还教授资助写作、项目协调和数据分析技能。",
     "grantsCopy4": "与我们一起增强当地的抵御能力并应对气候危机！",

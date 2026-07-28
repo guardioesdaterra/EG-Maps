@@ -1,4 +1,10 @@
+/**
+ * components/ui/Skeleton.vue
+ * @why Generic skeleton loading placeholder with configurable shape and animation
+ * @component Skeleton
+ */
 <script setup lang="ts">
+
 interface Props {
   /** Width as a CSS unit (e.g. '100%', '8rem', '4.5rem') */
   width?: string
@@ -16,6 +22,7 @@ withDefaults(defineProps<Props>(), {
   rounded: 'md',
   label: 'Loading…',
 })
+
 </script>
 
 <template>

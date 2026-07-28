@@ -1,3 +1,9 @@
+/**
+ * composables/useUserPin.ts
+ * @why User map pin creation — captures click coordinates, submits via register-pin edge function
+ * @functions useUserPin
+ * @interfaces UserPin
+ */
 export interface UserPin {
   lng: number
   lat: number

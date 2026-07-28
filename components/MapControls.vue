@@ -1,8 +1,19 @@
+/**
+ * components/MapControls.vue
+ * @why Search bar, dataset toggle, filter panel toggle, fullscreen control, and location navigation
+ * @component MapControls
+ * @emits 'toggle-hex-grid': []
+  'toggle-connections': []
+  'toggle-filter': []
+  'search-open-change': [open: boolean]
+  'navigate': [lat: number, lng: number]
+ * @deps vue (ref, watch, nextTick, computed, onMounted, onUnmounted); @/composables/useMediaQuery (useMediaQuery); @/composables/useI18n (useI18n); @/lib/project-data (allProjectsData); @/lib/brazilian-cities (searchCities, BRAZILIAN_CITIES, type BrazilianCity)
+ */
 <template>
   <div>
-    <!-- Main controls container - Mobile optimized -->
+    
     <div v-if="!isEmbed" :class="`absolute ${isMobile ? 'top-[clamp(6.5rem,18vh,9rem)] right-[max(0.5rem,env(safe-area-inset-right))]' : 'top-20 right-4'} z-[700] flex flex-col gap-1.5 xs:gap-2 map-tool-stack`">
-      <!-- Search Button -->
+      
       <UiTooltip :side="isMobile ? 'right' : 'left'">
         <template #trigger>
 <UiButton
@@ -13,13 +24,13 @@
             :aria-label="t('mapControls.search')"
           >
             <iconify-icon icon="lucide:search" class="h-4 w-4 xs:h-5 xs:w-5" />
-            <span v-if="recentSearches.length > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-white rounded-full" />
+            <span v-if="recentSearches.length > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full" style="background: var(--accent)" />
           </UiButton>
         </template>
-        <p>{{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'vulcan-observatory' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }} <span class="text-gray-500 ml-1">{{ t('mapControls.keyboardShortcut') }}</span></p>
+        <p>{{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'vulcan-observatory' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }} <span class="ml-1" style="color: var(--text-muted)">{{ t('mapControls.keyboardShortcut') }}</span></p>
       </UiTooltip>
 
-      <!-- Filter Panel Toggle -->
+      
       <UiTooltip v-if="!isGlobeView" :side="isMobile ? 'right' : 'left'">
         <template #trigger>
           <UiButton
@@ -35,7 +46,7 @@
         <p>{{ filterOpen ? t('mapControls.hideFilters') : t('mapControls.showFilters') }}</p>
       </UiTooltip>
 
-      <!-- Connections / Particles Toggle -->
+      
       <UiTooltip :side="isMobile ? 'right' : 'left'">
         <template #trigger>
           <UiButton
@@ -51,7 +62,7 @@
         <p>{{ showConnections ? t('mapControls.hideConnections') : t('mapControls.showConnections') }}</p>
       </UiTooltip>
 
-      <!-- Hex Grid Toggle -->
+      
       <UiTooltip :side="isMobile ? 'right' : 'left'">
         <template #trigger>
           <UiButton
@@ -68,7 +79,7 @@
         <p>{{ showHexGrid ? t('mapControls.hideHexGrid') : t('mapControls.showHexGrid') }}</p>
       </UiTooltip>
 
-      <!-- Fullscreen Toggle -->
+      
       <UiTooltip :side="isMobile ? 'right' : 'left'">
         <template #trigger>
           <UiButton
@@ -86,7 +97,7 @@
       </UiTooltip>
     </div>
 
-    <!-- Search Panel with Transition -->
+    
     <Transition name="search-panel">
       <div 
         v-if="showSearch" 
@@ -100,7 +111,7 @@
             {{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'vulcan-observatory' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }}
           </h3>
           <div class="flex items-center gap-1">
-            <span class="text-[10px] text-[var(--text-muted)] hidden sm:inline">ESC</span>
+            <span class="text-[clamp(10px,1.5vw,13px)] text-[var(--text-muted)] hidden sm:inline">ESC</span>
             <UiButton variant="ghost" size="icon" class="h-6 w-6 text-[var(--text-muted)] hover:text-[var(--text-primary)]" @click="closeSearch" :aria-label="t('general.close')">
               <iconify-icon icon="lucide:x" class="h-4 w-4" />
             </UiButton>
@@ -141,9 +152,9 @@
           </UiButton>
         </div>
 
-        <!-- Recent Searches -->
+        
         <div v-if="recentSearches.length > 0 && !searchQuery && !showAllItems" class="mb-3">
-          <p class="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1.5">{{ t('mapControls.recent') }}</p>
+          <p class="text-[clamp(10px,1.5vw,13px)] text-[var(--text-muted)] uppercase tracking-wider mb-1.5">{{ t('mapControls.recent') }}</p>
           <div class="flex flex-wrap gap-1">
             <button
               v-for="recent in recentSearches.slice(0, 3)"
@@ -157,8 +168,8 @@
           </div>
         </div>
 
-        <!-- Keyboard navigation hint -->
-        <div v-if="searchResults.length > 0" class="mb-2 text-[10px] text-[var(--text-muted)] flex items-center gap-2">
+        
+        <div v-if="searchResults.length > 0" class="mb-2 text-[clamp(10px,1.5vw,13px)] text-[var(--text-muted)] flex items-center gap-2">
           <span class="flex items-center gap-1">
             <kbd class="px-1 py-0.5 rounded text-[9px]" style="background: var(--input-bg); color: var(--input-text);">Up</kbd>
             <kbd class="px-1 py-0.5 rounded text-[9px]" style="background: var(--input-bg); color: var(--input-text);">Down</kbd>
@@ -166,7 +177,7 @@
           </span>
         </div>
 
-        <!-- Results List -->
+        
         <div 
           ref="resultsContainerRef"
           :class="`space-y-0.5 ${isMobile ? 'max-h-[42vh]' : 'max-h-[clamp(16rem,28vh,20rem)]'} overflow-y-auto cyber-scrollbar pr-1`"
@@ -191,6 +202,7 @@
               <div class="flex-1 min-w-0">
                 <h4 class="text-sm font-medium truncate transition-colors text-[var(--search-result-text)] group-hover:text-[var(--search-result-selected-text)]">
                   {{ getResultTitle(result) }}
+                  <span v-if="isCustomResult(result)" class="ml-1.5 inline-flex items-center gap-0.5 text-[10px] px-1 py-0.5 rounded bg-[var(--tool-btn-active-bg)]/30 text-[var(--tool-btn-active-text)]">Import</span>
                 </h4>
                 <div class="flex justify-between items-center">
                   <p class="text-xs text-[var(--text-muted)] flex items-center">
@@ -220,7 +232,7 @@
             <div v-else-if="!showAllItems" class="flex flex-col space-y-3 items-center justify-center py-6">
               <div class="relative">
                 <iconify-icon icon="lucide:search" class="h-10 w-10" style="color: var(--panel-border);" />
-                <iconify-icon icon="lucide:sparkles" class="h-4 w-4 text-white/30 absolute -top-1 -right-1" />
+                <iconify-icon icon="lucide:sparkles" class="h-4 w-4 absolute -top-1 -right-1" style="color: var(--text-muted)" />
               </div>
               <p class="text-xs text-center" style="color: var(--text-secondary);">{{ t('mapControls.clickToNavigate') }}<br />{{ t('mapControls.browseAll') }}</p>
               <UiButton variant="outline" size="sm" class="mt-1 text-xs border-[var(--panel-border)] text-[var(--tool-btn-text)] hover:bg-[var(--tool-btn-active-bg)] hover:text-[var(--tool-btn-active-text)] transition-all" @click="toggleAllItems">
@@ -230,15 +242,15 @@
             </div>
             <div v-else class="flex items-center justify-center py-4">
               <div class="flex gap-1">
-                <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
-                <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
-                <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-3" />
+                <div class="w-2 h-2 rounded-full animate-bounce stagger-1" style="background: var(--text-muted)" />
+                <div class="w-2 h-2 rounded-full animate-bounce stagger-2" style="background: var(--text-muted)" />
+                <div class="w-2 h-2 rounded-full animate-bounce stagger-3" style="background: var(--text-muted)" />
               </div>
             </div>
           </template>
         </div>
 
-        <!-- Footer -->
+        
         <div class="mt-3 pt-2 border-t flex justify-between items-center" style="border-color: var(--panel-border);">
           <p class="text-xs" style="color: var(--text-muted);">
             {{ showAllItems ? t('mapControls.allItems') : searchQuery ? t('mapControls.results') : t('mapControls.recent') }}: {{ searchResults.length || recentSearches.length }}
@@ -254,6 +266,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, watch, nextTick, computed, onMounted, onUnmounted } from 'vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
@@ -263,6 +276,19 @@ import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import type { CrewRegionData } from '@/lib/crew-data'
 import { searchCities, BRAZILIAN_CITIES, type BrazilianCity } from '@/lib/brazilian-cities'
+import { useCustomData } from '~/composables/useCustomData'
+
+interface CustomSearchItem {
+  _customDatasetName: string
+  _customDatasetId: string
+  feature: GeoJSON.Feature
+  title: string
+  description: string
+  lat: number
+  lng: number
+  properties: Record<string, unknown>
+  imageUrl: string | null
+}
 
 interface Props {
   isGlobeView?: boolean
@@ -294,12 +320,89 @@ const emit = defineEmits<{
 
 const isMobile = useMediaQuery('(max-width: 768px)')
 const { t } = useI18n()
+const { datasets: customDatasets } = useCustomData()
+
+function featureTitle(f: GeoJSON.Feature): string {
+  const p = f.properties || {}
+  return String(p.name || p.title || p.Nome || p.Name || p.nome || p.label || p.id || '')
+}
+
+function featureDescription(f: GeoJSON.Feature): string {
+  const p = f.properties || {}
+  return String(p.description || p.Description || p.desc || p.notes || p.comments || '')
+}
+
+function featureImageUrl(f: GeoJSON.Feature): string | null {
+  const p = f.properties || {}
+  const url = p.image_url || p.imageUrl || p.ImageUrl || p.image || p.Image || p.foto || p.photo || null
+  return url ? String(url) : null
+}
+
+function featureCoord(f: GeoJSON.Feature): { lat: number; lng: number } | null {
+  if (!f.geometry) return null
+  const g = f.geometry
+  if (g.type === 'Point') return { lng: (g.coordinates as number[])[0], lat: (g.coordinates as number[])[1] }
+  if (g.type === 'MultiPoint' || g.type === 'LineString') {
+    const c = (g.coordinates as number[][])[0]
+    return c ? { lng: c[0], lat: c[1] } : null
+  }
+  if (g.type === 'Polygon' || g.type === 'MultiLineString') {
+    const ring = (g.coordinates as number[][][])[0]
+    const c = ring?.[0]
+    return c ? { lng: c[0], lat: c[1] } : null
+  }
+  if (g.type === 'MultiPolygon') {
+    const poly = (g.coordinates as number[][][][])[0]
+    const ring = poly?.[0]
+    const c = ring?.[0]
+    return c ? { lng: c[0], lat: c[1] } : null
+  }
+  return null
+}
+
+function searchCustomItems(query: string): CustomSearchItem[] {
+  const q = query.toLowerCase().trim()
+  if (!q || q.length <= 1) return []
+  const results: CustomSearchItem[] = []
+  for (const ds of customDatasets.value) {
+    if (!ds.visible) continue
+    for (const f of ds.features) {
+      const title = featureTitle(f)
+      const desc = featureDescription(f)
+      const props = f.properties || {}
+      let matched = false
+      if (title.toLowerCase().includes(q) || desc.toLowerCase().includes(q) || ds.name.toLowerCase().includes(q)) {
+        matched = true
+      }
+      if (!matched) {
+        for (const val of Object.values(props)) {
+          if (typeof val === 'string' && val.toLowerCase().includes(q)) { matched = true; break }
+        }
+      }
+      if (!matched) continue
+      const coord = featureCoord(f)
+      if (!coord) continue
+      results.push({
+        _customDatasetName: ds.name,
+        _customDatasetId: ds.id,
+        feature: f,
+        title: title || `${ds.name} #${ds.features.indexOf(f) + 1}`,
+        description: desc,
+        lat: coord.lat,
+        lng: coord.lng,
+        properties: props as Record<string, unknown>,
+        imageUrl: featureImageUrl(f),
+      })
+    }
+  }
+  return results
+}
 
 const fullscreen = ref(false)
 const showSearch = ref(false)
 const showAllItems = ref(false)
 const searchQuery = ref('')
-type SearchResult = ProjectData | Species | BrazilianCity | CrewRegionData
+type SearchResult = ProjectData | Species | BrazilianCity | CrewRegionData | CustomSearchItem
 const searchResults = ref<SearchResult[]>([])
 const searchInputRef = ref<{ inputRef?: HTMLInputElement } | null>(null)
 const selectedIndex = ref(-1)
@@ -307,7 +410,6 @@ const selectedResultEl = ref<Element | null>(null)
 const resultsContainerRef = ref<HTMLElement | null>(null)
 const recentSearches = ref<string[]>([])
 
-// Load recent searches from localStorage
 onMounted(() => {
   if (typeof window !== 'undefined') {
     try {
@@ -394,12 +496,10 @@ function scrollToSelected() {
   })
 }
 
-// Reset selected index when results change
 watch(searchResults, () => {
   selectedIndex.value = searchResults.value.length > 0 ? 0 : -1
 })
 
-// Search data based on active dataset
 const currentProjects = computed(() => props.projects || allProjectsData)
 
 function isProjectResult(result: SearchResult): result is ProjectData {
@@ -418,7 +518,12 @@ function isCrewResult(result: SearchResult): result is CrewRegionData {
   return 'activeCrews' in result && 'totalMembers' in result
 }
 
+function isCustomResult(result: SearchResult): result is CustomSearchItem {
+  return '_customDatasetName' in result && '_customDatasetId' in result
+}
+
 function getResultTitle(result: SearchResult): string {
+  if (isCustomResult(result)) return result.title
   if (isProjectResult(result)) return result.project_title
   if (isSpeciesResult(result)) return result.commonName
   if (isCrewResult(result)) return result.region
@@ -426,6 +531,7 @@ function getResultTitle(result: SearchResult): string {
 }
 
 function getResultLocation(result: SearchResult): string {
+  if (isCustomResult(result)) return result._customDatasetName
   if (isProjectResult(result)) return result.country_province
   if (isSpeciesResult(result)) return result.region
   if (isCrewResult(result)) return `${result.activeCrews} active crews`
@@ -433,6 +539,7 @@ function getResultLocation(result: SearchResult): string {
 }
 
 function getResultLat(result: SearchResult): number {
+  if (isCustomResult(result)) return result.lat
   if (isProjectResult(result)) return result.latitude
   if (isSpeciesResult(result)) return result.lat
   if (isCrewResult(result)) return result.latitude
@@ -440,6 +547,7 @@ function getResultLat(result: SearchResult): number {
 }
 
 function getResultLng(result: SearchResult): number {
+  if (isCustomResult(result)) return result.lng
   if (isProjectResult(result)) return result.longitude
   if (isSpeciesResult(result)) return result.lng
   if (isCrewResult(result)) return result.longitude
@@ -458,7 +566,6 @@ function getCityPopulation(result: SearchResult): number | null {
   return isCityResult(result) ? result.population : null
 }
 
-// Debounce search to avoid filtering 4000+ items on every keystroke
 const debouncedSearch = ref('')
 let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
 watch(searchQuery, (val) => {
@@ -468,8 +575,7 @@ watch(searchQuery, (val) => {
   }, 150)
 })
 
-// Search logic
-watch([debouncedSearch, showAllItems, () => props.dataset], () => {
+watch([debouncedSearch, showAllItems, () => props.dataset, customDatasets], () => {
   const q = debouncedSearch.value
   if (props.dataset === 'project-grants') {
     if (q.length > 1) {
@@ -487,7 +593,6 @@ watch([debouncedSearch, showAllItems, () => props.dataset], () => {
       searchResults.value = []
     }
   } else if (props.dataset === 'vulcan-observatory') {
-    // City search
     if (q.length > 1) {
       searchResults.value = searchCities(q)
       showAllItems.value = false
@@ -499,7 +604,6 @@ watch([debouncedSearch, showAllItems, () => props.dataset], () => {
       searchResults.value = []
     }
   } else if (props.dataset === 'active-crews') {
-    // Crew region search
     const crewList = currentProjects.value as unknown as CrewRegionData[]
     if (q.length > 1) {
       const query = q.toLowerCase().trim()
@@ -515,7 +619,6 @@ watch([debouncedSearch, showAllItems, () => props.dataset], () => {
       searchResults.value = []
     }
   } else {
-    // Species search
     const speciesList = (props.species || []) as Species[]
     if (q.length > 1) {
       const query = q.toLowerCase().trim()
@@ -534,18 +637,24 @@ watch([debouncedSearch, showAllItems, () => props.dataset], () => {
       searchResults.value = []
     }
   }
+
+  if (q.length > 1) {
+    const customFound = searchCustomItems(q)
+    if (customFound.length > 0) {
+      searchResults.value = [...customFound, ...searchResults.value]
+    }
+  }
 })
 
-// Focus search input when search panel opens
 watch(showSearch, async (val) => {
   if (val) {
+    showAllItems.value = !searchQuery.value
     await nextTick()
     const input = searchInputRef.value?.inputRef
     input?.focus()
   }
 })
 
-// Keyboard shortcut for search (Ctrl+K or /)
 function handleKeyboardShortcut(e: KeyboardEvent) {
   const target = e.target as HTMLElement | null
   const isTyping = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.tagName === 'SELECT' || target?.isContentEditable
@@ -610,4 +719,5 @@ function closeSearch() {
   searchResults.value = []
   emit('search-open-change', false)
 }
+
 </script>

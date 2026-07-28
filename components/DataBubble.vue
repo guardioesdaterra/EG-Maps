@@ -1,3 +1,12 @@
+/**
+ * components/DataBubble.vue
+ * @why Animated data bubble indicator for floating stats display
+ * @component DataBubble
+ * @props mode: 'species' | 'projects' | 'crews'
+  selectedGroups?
+ * @emits 'toggle-group': [group: string]
+ * @deps vue (ref, computed, nextTick, watch); @/composables/useI18n (useI18n); @/lib/map-utils (GROUP_COLORS); @/lib/utils (formatCompact)
+ */
 <template>
   <div
     class="data-bubble"
@@ -32,7 +41,7 @@
           </button>
         </div>
 
-        <!-- Species: taxonomic group filters -->
+        
         <template v-if="mode === 'species'">
           <div class="groups-grid">
             <button
@@ -49,7 +58,7 @@
           </div>
         </template>
 
-        <!-- Projects: stats + legend -->
+        
         <template v-else-if="mode === 'projects' && stats">
           <div class="stats-grid">
             <div class="stat-cell">
@@ -80,7 +89,7 @@
           </div>
         </template>
 
-        <!-- Crews: stats + legend -->
+        
         <template v-else-if="mode === 'crews'">
           <div v-if="crewStats" class="stats-grid">
             <div class="stat-cell">
@@ -111,7 +120,7 @@
           </div>
         </template>
 
-        <!-- Species: legend below group filters -->
+        
         <template v-if="mode === 'species'">
           <div class="legend-section">
             <span class="legend-title">{{ t('stats.markerSize') }}</span>
@@ -129,6 +138,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, computed, nextTick, watch } from 'vue'
 import { useI18n } from '@/composables/useI18n'
 import Icon from './Icon.vue'
@@ -224,28 +234,29 @@ const crewStats = computed(() => {
 })
 
 const projectLegendItems = computed(() => [
-  { color: '#3b82f6', label: '≤100' },
-  { color: '#22c55e', label: '101–500' },
-  { color: '#eab308', label: '501–1K' },
-  { color: '#ef4444', label: '>1K' },
+  { color: 'var(--info)', label: '≤100' },
+  { color: 'var(--success)', label: '101–500' },
+  { color: 'var(--warning)', label: '501–1K' },
+  { color: 'var(--danger)', label: '>1K' },
 ])
 
 const crewLegendItems = computed(() => [
-  { color: '#22c55e', label: t('stats.crewsActive20') },
-  { color: '#3b82f6', label: t('stats.crewsActive5to20') },
-  { color: '#a855f7', label: t('stats.crewsActive1to5') },
-  { color: '#f59e0b', label: t('stats.crewsInactive') },
+  { color: 'var(--success)', label: t('stats.crewsActive20') },
+  { color: 'var(--info)', label: t('stats.crewsActive5to20') },
+  { color: 'var(--purple)', label: t('stats.crewsActive1to5') },
+  { color: 'var(--warning)', label: t('stats.crewsInactive') },
 ])
 
 const speciesLegendItems = computed(() => [
-  { color: '#B64032', label: t('taxonomy.Mammal'), size: 11 },
-  { color: '#D97706', label: t('taxonomy.Bird'), size: 9 },
-  { color: '#5A8F3C', label: t('taxonomy.Amphibian'), size: 9 },
-  { color: '#7C3AED', label: t('taxonomy.Reptile'), size: 9 },
-  { color: '#2563EB', label: t('taxonomy.Fish'), size: 9 },
-  { color: '#15803D', label: t('taxonomy.Plant'), size: 7 },
-  { color: '#DB2777', label: t('taxonomy.Invertebrate'), size: 7 },
+  { color: 'var(--danger)', label: t('taxonomy.Mammal'), size: 11 },
+  { color: 'var(--warning)', label: t('taxonomy.Bird'), size: 9 },
+  { color: 'var(--success)', label: t('taxonomy.Amphibian'), size: 9 },
+  { color: 'var(--purple)', label: t('taxonomy.Reptile'), size: 9 },
+  { color: 'var(--info)', label: t('taxonomy.Fish'), size: 9 },
+  { color: 'var(--success)', label: t('taxonomy.Plant'), size: 7 },
+  { color: 'var(--purple)', label: t('taxonomy.Invertebrate'), size: 7 },
 ])
+
 </script>
 
 <style scoped>
@@ -368,7 +379,6 @@ const speciesLegendItems = computed(() => [
   outline-offset: 2px;
 }
 
-/* Groups grid */
 .groups-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -431,7 +441,6 @@ const speciesLegendItems = computed(() => [
   text-overflow: ellipsis;
 }
 
-/* Stats grid */
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -464,7 +473,6 @@ const speciesLegendItems = computed(() => [
   line-height: 1.2;
 }
 
-/* Legend section */
 .legend-section {
   margin-top: clamp(0.375rem, 1vw, 0.5rem);
   padding-top: clamp(0.375rem, 1vw, 0.5rem);
@@ -506,7 +514,6 @@ const speciesLegendItems = computed(() => [
   white-space: nowrap;
 }
 
-/* Expansion transition */
 .bubble-expand-enter-active,
 .bubble-expand-leave-active {
   transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);

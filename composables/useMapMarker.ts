@@ -1,13 +1,12 @@
 /**
- * Unified marker system — single source of truth for all map datasets.
- *
- * • GPU-accelerated vector rendering via MapLibre GeoJSON source/layers
- * • Dark-circle + colored-border + glow aesthetic (matches old DOM markers)
- * • Automatic repositioning on pan/zoom — no manual moveend rebuilds
- * • Replaces: useMapMarkers.ts, useGeoJSONMarkers.ts, useMapCluster.ts,
- *             useMapMarkerOrchestrator.ts
+ * composables/useMapMarker.ts
+ * @why Individual map marker factory — creates and styles a single DOM marker element
+ * @functions useMapMarker
+ * @interfaces MarkerCallbacks, RebuildArgs
+ * @types MarkerDataset
+ * @deps @/lib/map-utils (GROUP_COLORS, isValidCoordinate); @/lib/colors (getProjectColorByBeneficiaries); @/lib/utils (formatCompact); @/lib/species-utils (findSpeciesAtCoord); @/lib/constants (SPECIES_COORD_TOLERANCE)
+ * @connections composables/useMapBase.ts
  */
-
 import type { Map as MapLibreMap, GeoJSONSource, ExpressionSpecification, FilterSpecification, MapLayerMouseEvent, MapLayerEventType } from 'maplibre-gl'
 import { GROUP_COLORS, isValidCoordinate } from '@/lib/map-utils'
 import { getProjectColorByBeneficiaries } from '@/lib/colors'
@@ -74,6 +73,9 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   let projectMap: Map<string, ProjectData> | null = null
   let speciesMap: Map<string, SpeciesIndexItem> | null = null
   let fullSpeciesMap: Map<string, Species> | null = null
+  let lastProjectsRef: ProjectData[] | null = null
+  let lastSpeciesIdxRef: SpeciesIndexItem[] | null = null
+  let lastSpeciesRef: Species[] | null = null
 
   const handlers: Array<{ id: string; evt: keyof MapLayerEventType; fn: (e: MapLayerMouseEvent) => void }> = []
 
@@ -87,6 +89,9 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     projectMap = null
     speciesMap = null
     fullSpeciesMap = null
+    lastProjectsRef = null
+    lastSpeciesIdxRef = null
+    lastSpeciesRef = null
     map = null
   }
 
@@ -157,15 +162,33 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   function buildLookupMaps(ds: MarkerDataset, a: RebuildArgs) {
     const label = `[perf] buildLookupMaps ${ds}`
     console.time(label)
-    projectMap = ds === 'project-grants'
-      ? new Map(a.projects.map(p => [p.project_title, p]))
-      : null
-    speciesMap = ds === 'endangered-species'
-      ? new Map(resolveSpeciesIndex(a).map(s => [s.id, s]))
-      : null
-    fullSpeciesMap = ds === 'endangered-species'
-      ? new Map(a.species.map(s => [s.id, s]))
-      : null
+    if (ds === 'project-grants') {
+      if (projectMap && lastProjectsRef === a.projects) {
+        console.timeEnd(label)
+        return
+      }
+      projectMap = new Map(a.projects.map(p => [p.project_title, p]))
+      lastProjectsRef = a.projects
+    } else {
+      projectMap = null
+      lastProjectsRef = null
+    }
+    if (ds === 'endangered-species') {
+      const speciesIdx = resolveSpeciesIndex(a)
+      if (speciesMap && lastSpeciesIdxRef === speciesIdx && lastSpeciesRef === a.species) {
+        console.timeEnd(label)
+        return
+      }
+      speciesMap = new Map(speciesIdx.map(s => [s.id, s]))
+      fullSpeciesMap = new Map(a.species.map(s => [s.id, s]))
+      lastSpeciesIdxRef = speciesIdx
+      lastSpeciesRef = a.species
+    } else {
+      speciesMap = null
+      fullSpeciesMap = null
+      lastSpeciesIdxRef = null
+      lastSpeciesRef = null
+    }
     console.timeEnd(label)
   }
 
@@ -347,7 +370,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   function dispatchCrew(p: Record<string, unknown>, coords: [number, number]) {
     switch (p._type) {
       case 'crewLocation': return dispatchCrewLocation(p, coords)
-      default:             return dispatchCrewRegion(p, coords)
+      case 'crewRegion':   return dispatchCrewRegion(p, coords)
     }
   }
 
@@ -371,7 +394,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       })
     }
 
-    const cb = callbacks.openCrewLocationOverlay ?? callbacks.openCrewOverlay
+    const cb = callbacks.openCrewPreview ?? callbacks.openCrewLocationOverlay ?? callbacks.openCrewOverlay
     cb(loc)
   }
 
@@ -454,7 +477,13 @@ function toProjectGeoJSON(projects: ProjectData[]): GeoJSON.FeatureCollection {
   }
 }
 
+const speciesGeoCache = new Map<string, GeoJSON.FeatureCollection>()
+const SPECIES_GEO_CACHE_MAX = 20
+
 function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: string[]): GeoJSON.FeatureCollection {
+  const cacheKey = `${index.length}:${raw.length}:${groups.sort().join(',')}`
+  const cached = speciesGeoCache.get(cacheKey)
+  if (cached) return cached
   const label = `[perf] toSpeciesGeoJSON (idx=${index.length}, raw=${raw.length}, groups=${groups.length})`
   console.time(label)
   const idx = filterByGroups(buildSpeciesIndex(index, raw), groups)
@@ -478,6 +507,11 @@ function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: str
   const result = { type: 'FeatureCollection' as const, features }
   console.timeLog(label, `features=${features.length}`)
   console.timeEnd(label)
+  if (speciesGeoCache.size >= SPECIES_GEO_CACHE_MAX) {
+    const first = speciesGeoCache.keys().next().value
+    if (first) speciesGeoCache.delete(first)
+  }
+  speciesGeoCache.set(cacheKey, result)
   return result
 }
 

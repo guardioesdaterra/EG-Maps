@@ -1,3 +1,9 @@
+/**
+ * composables/useMapCore.ts
+ * @why Core MapLibre map instance — tile server config, style setup, resize observer
+ * @functions useMapCore
+ * @deps @/lib/constants (MARKER_VISIBILITY_MARGIN, CLUSTER_REBUILD_THRESHOLD, SPECIES_COORD_TOLERANCE); @/lib/species-utils (findSpeciesAtCoord, getLocalizedSpecies, getTaxonomicGroupLabels)
+ */
 import type { Ref } from 'vue'
 import type { Map as MapLibreMap, Marker } from 'maplibre-gl'
 import type { Species } from '@/lib/types'
@@ -23,13 +29,6 @@ export function useMapCore(locale: Ref<string>, t: (_key: string) => string) {
     if (selectedGroups.length === 0) return speciesIndex
     return speciesIndex.filter(s => selectedGroups.includes(s.taxonomicGroup))
   }
-
-  // ── Marker visibility ──
-  // Uses visibility + pointer-events instead of display toggling to avoid
-  // layout reflow that fights with MapLibre's coordinate→pixel positioning.
-  // display:none removes the element from layout flow, causing the browser
-  // to recalculate surrounding geometry — which shifts marker positions
-  // during pan/zoom animations.
 
   function updateMarkerVisibility(
     mapInstance: MapLibreMap,
@@ -63,8 +62,6 @@ export function useMapCore(locale: Ref<string>, t: (_key: string) => string) {
       }
     })
   }
-
-  // ── Cluster rebuild logic ──
 
   function shouldRebuildClusters(
     mapInstance: MapLibreMap,

@@ -1,7 +1,12 @@
+/**
+ * pages/iframe.vue
+ * @why Embeddable iframe page — lightweight map view for embedding in external sites
+ * @component iframe
+ */
 <template>
   <main class="bg-white dark:bg-[var(--bg-primary)] text-black dark:text-[var(--text-primary)] min-h-screen">
     <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-      <!-- Header -->
+      
       <header class="mb-8">
         <h1 class="text-3xl font-black tracking-tight sm:text-4xl">
           {{ t('iframe.title') }}
@@ -11,7 +16,7 @@
         </p>
       </header>
 
-      <!-- Quick Picker — big 2D | 3D buttons, fast load with hideAll -->
+      
       <section class="mb-8 rounded-xl border-2 border-black/20 dark:border-[var(--border-color)] overflow-hidden">
         <div class="border-b-2 border-black/20 dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
           <h2 class="text-lg font-bold">{{ t('iframe.picker.title') }}</h2>
@@ -20,7 +25,7 @@
           </p>
         </div>
         <div class="p-6 flex flex-col items-center gap-6">
-          <!-- 2D | 3D buttons -->
+          
           <div class="flex gap-4 w-full max-w-md">
             <button
               @click="pickerMode = '2d'"
@@ -41,7 +46,7 @@
               3D
             </button>
           </div>
-          <!-- Dataset selector (appears after picking a view) -->
+          
           <div v-if="pickerMode" class="flex gap-2 flex-wrap justify-center">
             <button
               v-for="ds in pickerDatasets"
@@ -55,7 +60,7 @@
               {{ ds.label }}
             </button>
           </div>
-          <!-- Iframe (only rendered after selection) -->
+          
           <div v-if="pickerMode" class="w-full border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
             <iframe
               :src="pickerIframeSrc"
@@ -65,7 +70,7 @@
               :title="pickerIframeTitle"
             ></iframe>
           </div>
-          <!-- Embed code -->
+          
           <div v-if="pickerMode" class="w-full relative">
             <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
               <pre class="text-sm text-gray-100 font-mono whitespace-pre-wrap break-words">{{ pickerEmbedCode }}</pre>
@@ -81,7 +86,7 @@
         </div>
       </section>
 
-      <!-- 2D vs 3D Comparison — side-by-side for every dataset -->
+      
       <section class="mb-8 rounded-xl border-2 border-black/20 dark:border-[var(--border-color)] overflow-hidden">
         <div class="border-b-2 border-black/20 dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
           <h2 class="text-lg font-bold">{{ t('iframe.compare.title') }}</h2>
@@ -146,7 +151,7 @@
         </div>
       </section>
 
-      <!-- Embed Examples -->
+      
       <div class="grid gap-8">
         <section
           v-for="item in iframeConfigs"
@@ -160,12 +165,12 @@
             </p>
           </div>
           <div class="p-4">
-            <!-- Preview container (observed for visibility) -->
+            
             <div
               :ref="(el) => observeContainer(item.key, el as HTMLElement | null)"
               class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
             >
-              <!-- Placeholder -->
+              
               <div
                 v-if="!isVisible[item.key]"
                 class="bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm"
@@ -173,7 +178,7 @@
               >
                 {{ t('iframe.loadingPreview') }}
               </div>
-              <!-- Iframe (mounted only while visible) -->
+              
               <iframe
                 v-else
                 :src="item.src"
@@ -184,7 +189,7 @@
                 :allow="item.allow"
               ></iframe>
             </div>
-            <!-- Code Block -->
+            
             <div class="relative">
               <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                 <pre class="text-sm text-gray-100 font-mono whitespace-pre-wrap break-words">{{ buildEmbedCode(item) }}</pre>
@@ -201,7 +206,7 @@
         </section>
       </div>
 
-      <!-- Usage Instructions -->
+      
       <section class="mt-8 rounded-xl border-2 border-black dark:border-[var(--border-color)] overflow-hidden">
         <div class="border-b-2 border-black dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
           <h2 class="text-lg font-bold">{{ t('iframe.usage.title') }}</h2>
@@ -252,10 +257,10 @@
 </template>
 
 <script setup lang="ts">
+
 const { t } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL || '/'
 
-// ── Copy ──────────────────────────────────────────────────────
 const copiedId = ref<string | null>(null)
 let copyTimeout: ReturnType<typeof setTimeout> | null = null
 
@@ -270,7 +275,6 @@ async function copyToClipboard(text: string, id: string) {
   }
 }
 
-// ── Quick Picker (2D | 3D) ────────────────────────────────────
 const pickerMode = ref<'2d' | '3d' | null>(null)
 const pickerDataset = ref('active-crews')
 
@@ -300,10 +304,9 @@ const pickerEmbedCode = computed(() => {
   const path = pickerMode.value === '3d' ? `${pickerDataset.value}/3d` : pickerDataset.value
   const src = `${baseURL}${path}?hideAll=true`
   const label = `${ds?.label ?? ''} — ${mode}`
-  return `<!-- ${label} Embed (Globe Only) -->\n<iframe\n  src="${src}"\n  style="width: 100%; height: 500px; border: none;"\n  loading="lazy"\n  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"\n  title="${label}"\n></iframe>`
+  return `\n<iframe\n  src="${src}"\n  style="width: 100%; height: 500px; border: none;"\n  loading="lazy"\n  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"\n  title="${label}"\n></iframe>`
 })
 
-// ── 2D vs 3D Comparison ──────────────────────────────────────
 interface CompareItem {
   key: string
   label: string
@@ -338,7 +341,6 @@ const compareConfigs: CompareItem[] = [
   },
 ]
 
-// ── Iframe configuration (single source of truth) ─────────────
 interface IframeConfig {
   key: string
   src: string
@@ -352,7 +354,6 @@ interface IframeConfig {
 }
 
 const iframeConfigs: IframeConfig[] = [
-  // ── Active Crews (3D) – size variations ──
   {
     key: 'fullScreen',
     src: `${baseURL}active-crews/3d`,
@@ -431,7 +432,6 @@ const iframeConfigs: IframeConfig[] = [
     embedHeight: '500px',
   },
 
-  // ── Active Crews (2D) ──
   {
     key: 'activeCrews2d',
     src: `${baseURL}active-crews?embed=true`,
@@ -444,7 +444,6 @@ const iframeConfigs: IframeConfig[] = [
     embedHeight: '500px',
   },
 
-  // ── Project Grants (3D) ──
   {
     key: 'projectGrants3d',
     src: `${baseURL}project-grants/3d?embed=true`,
@@ -456,7 +455,6 @@ const iframeConfigs: IframeConfig[] = [
     embedWidth: '100%',
     embedHeight: '500px',
   },
-  // ── Project Grants (2D) ──
   {
     key: 'projectGrants2d',
     src: `${baseURL}project-grants?embed=true`,
@@ -469,7 +467,6 @@ const iframeConfigs: IframeConfig[] = [
     embedHeight: '500px',
   },
 
-  // ── Endangered Species (3D) ──
   {
     key: 'endangeredSpecies3d',
     src: `${baseURL}endangered-species/3d?embed=true`,
@@ -481,7 +478,6 @@ const iframeConfigs: IframeConfig[] = [
     embedWidth: '100%',
     embedHeight: '500px',
   },
-  // ── Endangered Species (2D) ──
   {
     key: 'endangeredSpecies2d',
     src: `${baseURL}endangered-species?embed=true`,
@@ -494,7 +490,6 @@ const iframeConfigs: IframeConfig[] = [
     embedHeight: '500px',
   },
 
-  // ── Vulcan Observatory (3D) ──
   {
     key: 'observatory3d',
     src: `${baseURL}vulcan-observatory/3d?embed=true`,
@@ -506,7 +501,6 @@ const iframeConfigs: IframeConfig[] = [
     embedWidth: '100%',
     embedHeight: '500px',
   },
-  // ── Vulcan Observatory (2D) ──
   {
     key: 'observatory',
     src: `${baseURL}vulcan-observatory?embed=true`,
@@ -519,7 +513,6 @@ const iframeConfigs: IframeConfig[] = [
     embedHeight: '500px',
   },
 
-  // ── Parameter examples ──
   {
     key: 'noControl',
     src: `${baseURL}active-crews/3d?no-control=true`,
@@ -546,7 +539,7 @@ const iframeConfigs: IframeConfig[] = [
 
 function buildEmbedCode(item: IframeConfig): string {
   if (item.key === 'responsive') {
-    return `<!-- Responsive 16:9 Aspect Ratio Embed -->
+    return `
 <div style="position: relative; width: 100%; padding-bottom: 56.25%;">
   <iframe
     src="${item.src}"
@@ -557,7 +550,7 @@ function buildEmbedCode(item: IframeConfig): string {
   ></iframe>
 </div>`
   }
-  return `<!-- ${item.embedLabel} Embed -->
+  return `
 <iframe
   src="${item.src}"
   style="width: ${item.embedWidth}; height: ${item.embedHeight}; border: none;"
@@ -566,11 +559,6 @@ function buildEmbedCode(item: IframeConfig): string {
   title="${item.embedLabel}"
 ></iframe>`
 }
-
-// ── Viewport visibility tracking ──────────────────────────────
-// Only mount heavy WebGL iframes while visible; destroy on exit.
-// Uses a Map for O(1) observer → key lookup and per-iframe
-// debounce timers to avoid rapid mount/unmount during fast scrolls.
 
 const isVisible = reactive<Record<string, boolean>>({})
 for (const cfg of iframeConfigs) isVisible[cfg.key] = false
@@ -629,7 +617,6 @@ onMounted(() => {
   })
 })
 
-// SEO
 useHead({
   title: t('iframe.title'),
   meta: [
@@ -637,4 +624,5 @@ useHead({
     { name: 'robots', content: 'noindex, nofollow' }
   ]
 })
+
 </script>

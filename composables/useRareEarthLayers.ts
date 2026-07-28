@@ -1,3 +1,13 @@
+/**
+ * composables/useRareEarthLayers.ts
+ * @why Rare earth 3D visualization layers — element spheres, connection lines, annotations
+ * @functions cleanupRareEarthLayers, setupRareEarthLayers, adaptPolygonProps, addRareEarthGeoBoundaries, addRareEarthConflictSites, addRareEarthNetworkLines, addBrazilianCitiesLayer, addProtectedAreasLayer, addPolygonLayersToMap, syncRareEarthLayerVisibility, buildNetworkLinesFromClaims
+ * @consts REE_SOURCE_POINTS, REE_SOURCE_POLYS, REE_SOURCE_GEO, REE_SOURCE_SITES, REE_SOURCE_NETWORK, REE_SOURCE_PROTECTED, REE_SOURCE_CITIES, REE_LAYER_IDS, REE_SOURCE_IDS, CAT_COLOR_MATCH, POLY_COLOR_MATCH
+ * @interfaces RareEarthLayerOptions
+ * @types CleanupFn
+ * @deps @/lib/map-utils (buildRareEarthPopupHTML, escapeHtml); @/composables/useObservatoryPopup (openRareEarthPopup); @/lib/brazilian-cities (citiesToGeoJSON); @/lib/rare-earth-geo-data (RARE_EARTH_GEO_BOUNDARIES, RARE_EARTH_CONFLICT_SITES); @/composables/useWaterLayers (WATER_SOURCE, cleanupWaterLayers); @/composables/useCulturalLayers (CULTURAL_SOURCE, cleanupCulturalLayers)
+ * @connections composables/useRareEarthController.ts
+ */
 import type { Map as MapLibreMap, MapLayerMouseEvent, DataDrivenPropertyValueSpecification } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 import { buildRareEarthPopupHTML, escapeHtml } from '@/lib/map-utils'
@@ -35,7 +45,6 @@ export const REE_LAYER_IDS = [
   'ree-overlap-glow',
 ] as const
 
-// Include water source IDs so cleanupRareEarthLayers removes them too
 export const REE_SOURCE_IDS = [
   REE_SOURCE_POINTS, REE_SOURCE_POLYS, REE_SOURCE_GEO,
   REE_SOURCE_SITES, REE_SOURCE_NETWORK, REE_SOURCE_PROTECTED,
@@ -88,7 +97,6 @@ export function cleanupRareEarthLayers(map: MapLibreMap) {
 }
 
 function addPointLayers(map: MapLibreMap, source: string) {
-  // Glow layer behind points
   map.addLayer({
     id: 'ree-point-glow',
     type: 'circle',
@@ -102,7 +110,6 @@ function addPointLayers(map: MapLibreMap, source: string) {
     },
   })
 
-  // Unclustered point layer
   map.addLayer({
     id: 'ree-point-circle',
     type: 'circle',
@@ -117,7 +124,6 @@ function addPointLayers(map: MapLibreMap, source: string) {
     },
   })
 
-  // Cluster circle layer
   map.addLayer({
     id: 'ree-cluster-circle',
     type: 'circle',
@@ -139,7 +145,6 @@ function addPointLayers(map: MapLibreMap, source: string) {
     },
   })
 
-  // Cluster count label
   map.addLayer({
     id: 'ree-cluster-count',
     type: 'symbol',
@@ -153,7 +158,6 @@ function addPointLayers(map: MapLibreMap, source: string) {
     paint: { 'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.6)', 'text-halo-width': 1.5 },
   })
 
-  // Heatmap layer
   map.addLayer({
     id: 'ree-heat-layer',
     type: 'heatmap',
@@ -171,7 +175,6 @@ function addPointLayers(map: MapLibreMap, source: string) {
     },
   }, 'ree-point-circle')
 
-  // Hover effect layer
   map.addLayer({
     id: 'ree-point-hover',
     type: 'circle',
@@ -188,7 +191,6 @@ function addPointLayers(map: MapLibreMap, source: string) {
 }
 
 function addClickHandlers(map: MapLibreMap, options: RareEarthLayerOptions, cleanups: Array<() => void>) {
-  // Point click handler
   const onPointClick = (e: MapLayerMouseEvent) => {
     if (!e.features?.length) return
     const p = e.features[0].properties as Record<string, unknown>
@@ -334,7 +336,6 @@ export function setupRareEarthLayers(
 
   cleanupRareEarthLayers(map)
 
-  // Points source with clustering
   map.addSource(REE_SOURCE_POINTS, {
     type: 'geojson',
     data: points,
@@ -355,14 +356,12 @@ export function setupRareEarthLayers(
   addPointLayers(map, REE_SOURCE_POINTS)
   addClickHandlers(map, options, cleanups)
 
-  // Polygon layers
   if (polys) {
     map.addSource(REE_SOURCE_POLYS, { type: 'geojson', data: polys })
     addPolygonLayers(map)
     addPolygonHandlers(map, options, cleanups)
   }
 
-  // Geo boundaries, conflict sites, cities, network lines
   addRareEarthGeoBoundaries(map)
   addRareEarthConflictSites(map)
   addSiteHandlers(map, cleanups)
@@ -558,7 +557,6 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
     paint: { 'text-color': '#d97706', 'text-halo-color': 'rgba(0,0,0,0.9)', 'text-halo-width': 1.5 },
   })
 
-  // Overlap glow on points that have overlaps
   map.addLayer({
     id: 'ree-overlap-glow', type: 'circle', source: REE_SOURCE_POINTS,
     filter: ['all', ['!', ['has', 'point_count']], ['>', ['to-number', ['coalesce', ['get', 'overlaps_count'], ['length', ['get', 'ov']]]], 0]],
@@ -566,7 +564,6 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
   })
 }
 
-// Track which maps have polygon handlers set up (fixes race condition)
 const polyHandlerMap = new WeakMap<MapLibreMap, boolean>()
 
 export function addPolygonLayersToMap(

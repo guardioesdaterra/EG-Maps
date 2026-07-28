@@ -1,3 +1,11 @@
+/**
+ * lib/brazilian-cities.ts
+ * @why Brazilian cities coordinate database — city name to lat/lng lookup with state filtering
+ * @functions citiesToGeoJSON, searchCities
+ * @consts BRAZILIAN_CITIES
+ * @interfaces BrazilianCity
+ * @connections components/MapControls.vue, composables/useRareEarthLayers.ts
+ */
 export interface BrazilianCity {
   name: string
   state: string

@@ -1,3 +1,9 @@
+/**
+ * lib/rare-earth-geo-data.ts
+ * @why Rare earth element geographic data — mine locations, reserve estimates, country production
+ * @consts RARE_EARTH_GEO_BOUNDARIES, RARE_EARTH_CONFLICT_SITES
+ * @connections composables/useRareEarthLayers.ts
+ */
 export const RARE_EARTH_GEO_BOUNDARIES: GeoJSON.FeatureCollection = {
   type: 'FeatureCollection',
   features: [

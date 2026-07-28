@@ -1,3 +1,8 @@
+/**
+ * tests/useThreeGlobe.test.ts
+ * @why Unit tests for Three.js globe composable — coordinate projection, rotation calculations
+ * @deps vitest (describe, it, expect); ../composables/useThreeGlobe (latLngToVector3, type GlobeProject)
+ */
 import { describe, it, expect } from 'vitest'
 import { latLngToVector3, type GlobeProject } from '../composables/useThreeGlobe'
 

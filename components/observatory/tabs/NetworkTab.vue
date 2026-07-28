@@ -1,3 +1,11 @@
+/**
+ * components/observatory/tabs/NetworkTab.vue
+ * @why Network graph tab — interactive force-directed graph of relationships
+ * @component NetworkTab
+ * @props highlight?: string | null
+ * @emits 'update:highlight': [v: string | null]
+ * @deps vue (ref); @/lib/observatory-tabs (NETWORK_NOTES)
+ */
 <template>
   <div class="obs-tab">
     <p class="obs-tab__hint">
@@ -5,7 +13,7 @@
       {{ t('observatory.network.clickHint') }}
     </p>
 
-    <!-- EDUCATIONAL: What is this network? -->
+    
     <div class="obs-expand">
       <button
         type="button"
@@ -63,6 +71,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref } from 'vue'
 import { NETWORK_NOTES } from '@/lib/observatory-tabs'
 
@@ -98,6 +107,7 @@ function networkIcon(titleKey: string): string {
   }
   return map[titleKey] || 'lucide:git-branch'
 }
+
 </script>
 
 <style scoped>
@@ -105,7 +115,7 @@ function networkIcon(titleKey: string): string {
 
 .obs-tab__hint {
   margin: 0; display: flex; align-items: center; justify-content: center; gap: 5px;
-  font-size: 9px; font-style: italic; color: var(--obs-text-dim); text-align: center; padding: 4px;
+  font-size: clamp(9px, 1.4vw, 12px); font-style: italic; color: var(--obs-text-dim); text-align: center; padding: 4px;
 }
 
 .obs-tab__hint-icon { width: 10px; height: 10px; }
@@ -114,9 +124,9 @@ function networkIcon(titleKey: string): string {
 
 .obs-expand__btn {
   display: inline-flex; align-items: center; gap: 4px;
-  font-size: 8px; font-weight: 600; color: var(--obs-text-dim);
+  font-size: clamp(8px, 1.3vw, 11px); font-weight: 600; color: var(--obs-text-dim);
   background: none; border: none; cursor: pointer; font-family: inherit;
-  padding: 3px 6px; border-radius: 3px;
+  padding: 3px clamp(4px, 1vw, 8px); border-radius: 3px;
   transition: color 0.12s, background 0.12s;
 }
 
@@ -125,8 +135,8 @@ function networkIcon(titleKey: string): string {
 .obs-expand__icon { width: 10px; height: 10px; }
 
 .obs-expand__body {
-  font-size: 9px; color: var(--obs-text-body); line-height: 1.5;
-  padding: 6px 8px; margin-top: 2px;
+  font-size: clamp(9px, 1.4vw, 12px); color: var(--obs-text-body); line-height: 1.5;
+  padding: clamp(4px, 1vw, 8px) clamp(6px, 1.2vw, 12px); margin-top: 2px;
   background: rgba(255,255,255,0.02); border-radius: 5px;
   border: 1px solid var(--obs-panel-border);
 }
@@ -144,23 +154,23 @@ function networkIcon(titleKey: string): string {
 .obs-card--highlighted { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 16px rgba(255,255,255,0.06); }
 
 .obs-card__accent { width: 3px; flex-shrink: 0; }
-.obs-card__body { flex: 1; padding: 8px 9px; min-width: 0; }
+.obs-card__body { flex: 1; padding: clamp(6px, 1.2vw, 12px) clamp(7px, 1.4vw, 14px); min-width: 0; }
 
 .obs-card__head { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
 
 .obs-card__head-icon { width: 12px; height: 12px; flex-shrink: 0; }
 
-.obs-card__title { margin: 0; font-size: 10px; font-weight: 700; line-height: 1.3; }
+.obs-card__title { margin: 0; font-size: clamp(10px, 1.5vw, 13px); font-weight: 700; line-height: 1.3; }
 
-.obs-card__desc { margin: 0; font-size: 9px; color: var(--obs-text-body); line-height: 1.5; }
+.obs-card__desc { margin: 0; font-size: clamp(9px, 1.4vw, 12px); color: var(--obs-text-body); line-height: 1.5; }
 
 .obs-card__actions {
   display: flex; flex-direction: column; justify-content: center;
-  padding: 6px 4px; flex-shrink: 0;
+  padding: clamp(4px, 1vw, 8px) 4px; flex-shrink: 0;
 }
 
 .obs-card__action-btn {
-  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  width: clamp(20px, 4vw, 28px); height: clamp(20px, 4vw, 28px); display: flex; align-items: center; justify-content: center;
   background: transparent; border: 1px solid transparent; border-radius: 4px;
   color: var(--obs-text-dim); cursor: pointer; font-family: inherit;
   transition: all 0.12s;
@@ -172,7 +182,7 @@ function networkIcon(titleKey: string): string {
 
 .obs-tab__footnote {
   display: flex; align-items: center; gap: 4px;
-  font-size: 8px; color: var(--obs-text-dim); font-style: italic;
+  font-size: clamp(8px, 1.3vw, 11px); color: var(--obs-text-dim); font-style: italic;
   padding: 4px; text-align: center; justify-content: center;
 }
 

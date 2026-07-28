@@ -1,3 +1,9 @@
+/**
+ * components/grants/GrantsFooter.vue
+ * @why Footer for grants section — links, stats, version info
+ * @component GrantsFooter
+ * @props countryCount: string
+ */
 <template>
   <section id="footer" class="footer-section">
     <div class="footer-glow" />
@@ -34,11 +40,13 @@
 </template>
 
 <script setup lang="ts">
+
 defineProps<{
   countryCount: string
 }>()
 
 const { t } = useI18n()
+
 </script>
 
 <style scoped>

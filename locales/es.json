@@ -232,7 +232,8 @@
     "retry": "Reintentar",
     "close": "Cerrar",
     "save": "Guardar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "imageNotAvailable": "Imagen no disponible"
   },
   "observatory": {
     "tabs": {
@@ -630,8 +631,6 @@
     "howGrantsWork": "CÓMO FINANCIAMOS EL CAMBIO",
     "impactRingLabel": "VIDAS",
     "grantsSectionLabel": "SUBVENCIÓNES DE PROYECTO EG",
-    "grantsCopy1": "Ofrecemos subvenciones de $300–$500 para apoyar a nuestros transformadores globales, con prioridad para nuestros Crews.",
-    "grantsCopy1Strong": "subvenciones de $300–$500",
     "grantsCopy2": "Desde 2021, nuestro programa de Subvenciones de Proyecto ha respaldado esfuerzos de base en educación de justicia climática, agricultura regenerativa, plantación de árboles, acción directa no violenta, política climática, seguridad alimentaria, arte-activismo y más.",
     "grantsCopy3": "Con educación, mentoría y financiamiento, nuestro programa de Subvenciones de Proyecto te empodera para hacer realidad tus ideas e inspirar a otros. El proceso de Subvención de Proyecto también enseña habilidades de redacción de solicitudes, coordinación de proyectos y análisis de datos.",
     "grantsCopy4": "¡Únete a nosotros para construir resiliencia y enfrentar la crisis climática localmente!",

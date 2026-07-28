@@ -1,10 +1,17 @@
+/**
+ * components/grants/GrantDetailModal.vue
+ * @why Full grant detail view in a modal — shows all fields, comments, votes
+ * @component GrantDetailModal
+ * @emits close, vote, save
+ * @deps vue (ref, reactive, watch)
+ */
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="grant" class="fixed inset-0 flex items-center justify-center p-2 sm:p-4 md:p-6 grant-detail-overlay" role="dialog" aria-modal="true" aria-label="Grant detail">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="handleBackdropClick" />
-        <div class="relative w-full max-w-[85vw] sm:max-w-[85vw] max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0c0c0e] shadow-2xl grant-detail-scroll">
-          <div class="sticky top-0 z-10 flex items-start justify-between gap-4 p-4 sm:p-6 md:p-8 border-b border-white/5 bg-[#0c0c0e]/95 backdrop-blur-sm">
+        <div class="relative w-full max-w-[85vw] sm:max-w-[85vw] max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-[var(--bg-secondary)] shadow-2xl grant-detail-scroll">
+          <div class="sticky top-0 z-10 flex items-start justify-between gap-4 p-4 sm:p-6 md:p-8 border-b border-white/5 bg-[var(--bg-secondary)]/95 backdrop-blur-sm">
             <div class="min-w-0 flex-1">
               <template v-if="editing">
                 <input
@@ -168,7 +175,7 @@
               </div>
             </div>
 
-            <!-- ── Comments section ───────────────────── -->
+            
             <div class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
               <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40 flex items-center gap-2">
                 {{ t('grantsPortal.comments') }}
@@ -224,6 +231,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, reactive, watch } from 'vue'
 import type { DetailGrantData } from '~/lib/types'
 import type { GrantComment } from '~/composables/useGrants'
@@ -382,6 +390,7 @@ function formatAmount(val: number): string {
   if (val >= 1000) return (val / 1000).toFixed(val >= 10000 ? 0 : 1) + 'K'
   return val.toFixed(0)
 }
+
 </script>
 
 <style scoped>
@@ -450,7 +459,7 @@ function formatAmount(val: number): string {
   transform: scale(1.15);
 }
 .star-btn.active {
-  color: #facc15;
+  color: var(--warning);
   text-shadow: 0 0 8px rgba(250, 204, 21, 0.4);
 }
 
@@ -465,9 +474,9 @@ function formatAmount(val: number): string {
   font-size: 0.7rem;
   padding: 0 6px;
 }
-.priority-score.high { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
-.priority-score.mid  { background: rgba(234, 179, 8, 0.2); color: #facc15; }
-.priority-score.low  { background: rgba(255, 255, 255, 0.06); color: rgba(255,255,255,0.5); }
+.priority-score.high { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+.priority-score.mid  { background: rgba(234, 179, 8, 0.2); color: var(--warning); }
+.priority-score.low  { background: var(--glass-border); color: var(--text-muted); }
 
 .grant-type-badge {
   display: inline-flex;
@@ -481,13 +490,13 @@ function formatAmount(val: number): string {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-.grant-type-badge.artivism        { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
-.grant-type-badge.climate_justice  { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-.grant-type-badge.conservation     { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-.grant-type-badge.human_rights     { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-.grant-type-badge.indigenous_rights { background: rgba(234, 179, 8, 0.15); color: #facc15; }
+.grant-type-badge.artivism        { background: var(--purple-bg); color: var(--purple); }
+.grant-type-badge.climate_justice  { background: var(--success-bg); color: var(--success); }
+.grant-type-badge.conservation     { background: var(--success-bg); color: var(--success); }
+.grant-type-badge.human_rights     { background: var(--info-bg); color: var(--info); }
+.grant-type-badge.indigenous_rights { background: var(--warning-bg); color: var(--warning); }
 .grant-type-badge.youth            { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
-.grant-type-badge.general          { background: rgba(255, 255, 255, 0.08); color: rgba(255,255,255,0.6); }
+.grant-type-badge.general          { background: var(--glass-border); color: var(--text-secondary); }
 
 .highlight-badge {
   display: inline-block;
@@ -498,19 +507,19 @@ function formatAmount(val: number): string {
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.highlight-badge.eg_core       { background: rgba(0, 255, 133, 0.15); color: #00ff85; }
-.highlight-badge.urgent        { background: rgba(239, 68, 68, 0.2);  color: #f87171; }
-.highlight-badge.soon          { background: rgba(234, 179, 8, 0.2);  color: #facc15; }
-.highlight-badge.expired       { background: rgba(239, 68, 68, 0.1);  color: #ef4444; opacity: 0.6; }
-.highlight-badge.high_value    { background: rgba(34, 197, 94, 0.2);  color: #4ade80; }
-.highlight-badge.good_value    { background: rgba(34, 197, 94, 0.12); color: #4ade80; }
-.highlight-badge.has_amount    { background: rgba(34, 197, 94, 0.08); color: #86efac; }
-.highlight-badge.artivism      { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
-.highlight-badge.climate       { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-.highlight-badge.indigenous    { background: rgba(234, 179, 8, 0.15); color: #facc15; }
-.highlight-badge.scholarship   { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-.highlight-badge.open          { background: rgba(34, 197, 94, 0.1);  color: #4ade80; }
-.highlight-badge.closed        { background: rgba(255, 255, 255, 0.05); color: rgba(255,255,255,0.4); }
+.highlight-badge.eg_core       { background: var(--success-bg); color: var(--success); }
+.highlight-badge.urgent        { background: var(--danger-bg);  color: var(--danger); }
+.highlight-badge.soon          { background: var(--warning-bg);  color: var(--warning); }
+.highlight-badge.expired       { background: var(--danger-bg);  color: var(--danger); opacity: 0.6; }
+.highlight-badge.high_value    { background: var(--success-bg);  color: var(--success); }
+.highlight-badge.good_value    { background: var(--success-bg); color: var(--success); }
+.highlight-badge.has_amount    { background: var(--success-bg); color: var(--success); }
+.highlight-badge.artivism      { background: var(--purple-bg); color: var(--purple); }
+.highlight-badge.climate       { background: var(--success-bg); color: var(--success); }
+.highlight-badge.indigenous    { background: var(--warning-bg); color: var(--warning); }
+.highlight-badge.scholarship   { background: var(--info-bg); color: var(--info); }
+.highlight-badge.open          { background: var(--success-bg);  color: var(--success); }
+.highlight-badge.closed        { background: var(--glass-border-light); color: var(--text-muted); }
 
 .edit-field {
   display: flex;
@@ -528,10 +537,10 @@ function formatAmount(val: number): string {
 .form-input {
   width: 100%;
   padding: 0.7rem 1rem;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--glass-border-light);
+  border: 1px solid var(--panel-border);
   border-radius: 8px;
-  color: #f0f0f0;
+  color: var(--text-primary);
   font-size: 0.85rem;
   outline: none;
   transition: border-color 0.2s;

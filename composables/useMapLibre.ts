@@ -1,7 +1,14 @@
-export function getMapStyle(apiKey: string): string {
+/**
+ * composables/useMapLibre.ts
+ * @why MapLibre GL instance lifecycle — create, destroy, resize, load handlers
+ * @functions getMapStyle, detectWebGLSupport
+ * @connections composables/useMapBase.ts
+ */
+export function getMapStyle(apiKey: string, tileResolution?: 'low' | 'medium' | 'high'): string {
+  const resParam = tileResolution && tileResolution !== 'high' ? `&res=${tileResolution}` : ''
   return apiKey
-    ? `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${apiKey}`
-    : `https://api.maptiler.com/maps/satellite-v4/style.json?key=${apiKey}`
+    ? `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${apiKey}${resParam}`
+    : `https://api.maptiler.com/maps/satellite-v4/style.json?key=${apiKey}${resParam}`
 }
 
 export function detectWebGLSupport(): boolean {

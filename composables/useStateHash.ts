@@ -1,7 +1,10 @@
 /**
- * Share view state via URL hash.
- * Serializes map center, zoom, and active filters to the URL hash
- * so the current view can be shared via a link.
+ * composables/useStateHash.ts
+ * @why URL hash-based state persistence — encodes/decodes state object to location.hash
+ * @functions useStateHash
+ * @interfaces ShareableState
+ * @deps vue (ref, onMounted)
+ * @connections composables/useObservatoryControls.ts
  */
 import { ref, onMounted } from 'vue'
 

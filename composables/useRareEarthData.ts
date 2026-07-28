@@ -1,3 +1,12 @@
+/**
+ * composables/useRareEarthData.ts
+ * @why Rare earth elements data management — periodic table data, properties, supply chain info
+ * @functions useRareEarthData
+ * @interfaces RareEarthFeatureSummary, DeepAnalysis
+ * @types LoadPhase, DataRegion
+ * @deps vue (shallowRef, ref, computed); @/lib/observatory-analysis (computeSpeculatorIndex, type RareEarthFeature, type RareEarthFeatureCollection, type SpeculatorIndexEntry)
+ * @connections composables/useVulcanObservatoryPage.ts
+ */
 import { shallowRef, ref, computed } from 'vue'
 import { computeSpeculatorIndex, type RareEarthFeature, type RareEarthFeatureCollection, type SpeculatorIndexEntry } from '@/lib/observatory-analysis'
 
@@ -76,7 +85,6 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
     })
   }
 
-  // Track individual resource errors for isolation
   const resourceErrors = ref<Record<string, string>>({})
 
   async function loadResource<T>(name: string, url: string, setter: (_data: T) => void): Promise<T | null> {
@@ -104,7 +112,6 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
     resourceErrors.value = {}
     const dir = dataDir()
 
-    // Phase 1: Load points immediately (critical for map display)
     const pointsRes = await fetch(`${dir}points.geojson`).catch(() => null)
     if (!pointsRes?.ok) {
       error.value = new Error('Failed to load points data — cannot render map')
@@ -116,10 +123,8 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
     pointsData.value = pointsGJ
     loadProgress.value = 20
 
-    // Defer remaining loads until after first paint
     await new Promise(resolve => requestAnimationFrame(resolve))
 
-    // Phase 2: Load overlaps (needed for popup enrichment)
     loadPhase.value = 'overlaps'
     loadProgress.value = 30
     const overlapsUrl = region.value === 'pococaldas'
@@ -138,13 +143,11 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
       features.value = features.value.map(f => ({ ...f, ov: overlapsByProcesso[f.p] || null }))
     }
 
-    // Phase 3: Load polygons (heavy, for polygon layers)
     loadProgress.value = 50
     await loadResource('polygons', `${dir}polygons.geojson`, (data: RareEarthFeatureCollection) => { polygonsData.value = data })
 
     await new Promise(resolve => requestAnimationFrame(resolve))
 
-    // Phase 4: Load protected areas + deep analysis + waterbodies + cultural features
     loadPhase.value = 'protected'
     loadProgress.value = 60
     await Promise.all([

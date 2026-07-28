@@ -1,12 +1,15 @@
+/**
+ * composables/useSupabaseAuth.ts
+ * @why Supabase authentication wrapper — sign in, sign up, sign out, session management
+ * @functions useSupabaseAuth
+ * @deps vue (ref, watch); ./useSupabase (useSupabase)
+ */
 import { ref, watch } from 'vue'
 import { useSupabase } from './useSupabase'
 
 export function useSupabaseAuth() {
   const { client, user, sessionReady } = useSupabase()
 
-  // Start denied by default. The edge function is authoritative.
-  // A fast local check from the JWT-verified email provides an initial value
-  // while the server call completes.
   const isManager = ref(false)
   const isManagerReady = ref(false)
 
@@ -38,9 +41,6 @@ export function useSupabaseAuth() {
     }
   }
 
-  // Re-verify when session becomes ready or user email changes.
-  // The edge function is the authoritative source — it validates
-  // the JWT server-side and checks the email domain.
   watch(
     () => (sessionReady.value ? user.value?.email : undefined),
     (email) => {

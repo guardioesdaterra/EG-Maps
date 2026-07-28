@@ -1,4 +1,11 @@
-// Dataset type constants to avoid magic strings throughout the codebase
+/**
+ * lib/constants.ts
+ * @why Application-wide constant values — route paths, dataset keys, marker limits, hex grid config
+ * @functions isValidDatasetKey
+ * @consts DatasetKey, RoutePath, MAX_CLUSTER_SIZE, MARKER_VISIBILITY_MARGIN, CLUSTER_REBUILD_THRESHOLD, MOBILE_PROJECT_LIMIT, MOBILE_SPECIES_LIMIT, NATIVE_GEOJSON_THRESHOLD, HEX_GRID, QUALITY_PRESETS, SPECIES_COORD_TOLERANCE, MAP_LOAD_TIMEOUT_MS
+ * @types DatasetKey, QualityLevel
+ * @connections composables/useAdaptiveQuality.ts, composables/useMapBase.ts, composables/useMapCore.ts, composables/useMapHexGrid.ts, composables/useMapMarker.ts
+ */
 export const DatasetKey = {
   PROJECT_GRANTS: 'project-grants',
   ENDANGERED_SPECIES: 'endangered-species',
@@ -8,12 +15,10 @@ export const DatasetKey = {
 
 export type DatasetKey = typeof DatasetKey[keyof typeof DatasetKey]
 
-// Helper to check if a string is a valid dataset key
 export function isValidDatasetKey(value: string): value is DatasetKey {
   return value === DatasetKey.PROJECT_GRANTS || value === DatasetKey.ENDANGERED_SPECIES || value === DatasetKey.OBSERVATORY_OF_VULCAN || value === DatasetKey.ACTIVE_CREWS
 }
 
-// Route paths
 export const RoutePath = {
   PROJECT_GRANTS: '/project-grants',
   PROJECT_GRANTS_3D: '/project-grants/3d',
@@ -27,10 +32,7 @@ export const RoutePath = {
   INFO: '/info',
 } as const
 
-// Maximum number of items to show in a cluster marker
 export const MAX_CLUSTER_SIZE = 5
-
-// ── Map constants ──
 
 /** Minimum canvas margin (px) outside viewport for marker culling */
 export const MARKER_VISIBILITY_MARGIN = 50

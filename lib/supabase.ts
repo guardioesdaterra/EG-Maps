@@ -1,3 +1,9 @@
+/**
+ * lib/supabase.ts
+ * @why Supabase client factory — creates admin and anon clients, configures auth persistence
+ * @functions getSupabaseClient, isSupabaseConfigured
+ * @deps @supabase/supabase-js (createClient, type SupabaseClient)
+ */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 let client: SupabaseClient | null = null

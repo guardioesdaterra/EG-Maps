@@ -1,3 +1,8 @@
+/**
+ * composables/useToast.ts
+ * @why Toast notification system — queue, display, auto-dismiss, and stack management
+ * @functions useToast
+ */
 import type { ToastMessage } from '@/lib/types'
 
 interface ToastState {

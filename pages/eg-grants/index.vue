@@ -1,3 +1,9 @@
+/**
+ * pages/eg-grants/index.vue
+ * @why EG grants dashboard — table of grants with status badges, approve/close actions, search
+ * @component index
+ * @deps vue (ref, reactive, computed, watch, onMounted, onBeforeUnmount); ~/lib/project-data (allProjectsData); ~/composables/useToast (useToast); ~/composables/useSupabase (useSupabase); ~/composables/useI18n (useI18n); ~/composables/useDeviceCapabilities (useDeviceCapabilities); ~/composables/useAdaptiveQuality (useAdaptiveQuality)
+ */
 <template>
   <div class="grants-portal relative min-h-screen overflow-hidden bg-[#08080a]">
     <GlobeView :projects="allProjectsData" @ready="onGlobeReady" />
@@ -19,7 +25,7 @@
     </div>
     <GrantsAuth v-if="!isEmbed && sessionReady" :user="user" :is-manager="isManager" @sign-in="signIn" @sign-out="handleSignOut" />
 
-    <!-- Crew membership check popup (stepping stone to signup modal) -->
+    
     <Transition name="modal-fade">
       <div v-if="showCrewPopup && !showCrewSignup" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" :style="{ zIndex: 'var(--z-confirm)' }" @click.self="dismissCrewPopup">
         <div class="bg-[#111] border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl text-center">
@@ -38,7 +44,7 @@
 
     <CrewSignupModal :show="showCrewSignup" :user-email="user?.email" @close="closeCrewSignup" @registered="onCrewRegistered" />
 
-    <!-- Sign-out confirmation dialog -->
+    
     <Transition name="modal-fade">
       <div v-if="confirmSignOut" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" :style="{ zIndex: 'var(--z-confirm)' }" @click.self="confirmSignOut = false">
         <div class="bg-[#111] border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
@@ -53,14 +59,14 @@
     </Transition>
 
     <div id="ui-overlay" class="relative" :style="{ zIndex: 'var(--z-ui)' }">
-      <!-- Hero -->
+      
       <section id="hero" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
         <span class="data-label hero-reveal">{{ t('grantsPortal.heroLabel') }}</span>
         <h1 class="hero-reveal">{{ t('grantsPortal.heroTitle1') }}<br/>{{ t('grantsPortal.heroTitle2') }}</h1>
         <p class="hero-desc hero-reveal" v-html="t('grantsPortal.heroDesc', { strong1: '<strong>', strong2: '</strong>', strong3: '<strong>', strong4: '</strong>', strong5: '<strong>', strong6: '</strong>' })" />
       </section>
 
-      <!-- Impact -->
+      
       <section id="details" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
         <div class="impact-grid">
           <div class="impact-content">
@@ -129,14 +135,13 @@
         </div>
       </section>
 
-      <!-- How Grants Work -->
+      
       <section class="grants-section" id="join">
         <div class="grants-inner">
           <span class="data-label">{{ t('grantsPortal.grantsSectionLabel') }}</span>
           <h2 class="grants-heading">{{ t('grantsPortal.howGrantsWork') }}</h2>
           <div class="grants-body">
-            <div class="grants-copy">              <p>{{ t('grantsPortal.grantsCopy1').split(t('grantsPortal.grantsCopy1Strong'))[0] }}<strong>{{ t('grantsPortal.grantsCopy1Strong') }}</strong>{{ t('grantsPortal.grantsCopy1').split(t('grantsPortal.grantsCopy1Strong'))[1] }}</p>
-              <p>{{ t('grantsPortal.grantsCopy2') }}</p>
+            <div class="grants-copy">              <p>{{ t('grantsPortal.grantsCopy2') }}</p>
               <p>{{ t('grantsPortal.grantsCopy3') }}</p>
               <p>{{ t('grantsPortal.grantsCopy4') }}</p>
               <NuxtLink to="https://www.earthguardians.org/project-grants" target="_blank" class="grants-cta-btn">
@@ -155,13 +160,17 @@
         </div>
       </section>
 
-      <!-- Unified Dashboard -->
+      
       <section class="projects-section" id="grants-portal">
         <div class="nebula-bg" />
         <div class="projects-header">
           <span class="dash-label">{{ t('grantsPortal.dashboardLabel') }}</span>
           <h2>{{ t('grantsPortal.portalTitle') }}</h2>
           <p class="projects-subtitle">{{ t('grantsPortal.dashboardSubtitle') }}</p>
+          <NuxtLink to="/eg-grants/fullscreen#no-dock" class="fs-toggle-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-3.5 h-3.5"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
+            <span>Full Screen</span>
+          </NuxtLink>
         </div>
 
         <GrantsDashboard
@@ -182,6 +191,8 @@
           :leaderboard="leaderboard"
           :leaderboard-loading="leaderboardLoading"
           :removing-grants="removingGrants"
+          :claims="claims"
+          :claims-loading="claimsLoading"
           @sign-in="signIn"
           @sign-out="handleSignOut"
           @update:active-tab="activePortalTab = $event"
@@ -192,6 +203,9 @@
           @leaderboard-detail="openLeaderboardDetail"
           @review:grant="handleReview"
           @review:scraped="handleReviewScraped"
+          @open-claim="openClaimModal"
+          @open-review-claim="openReviewClaimModal"
+          @open-create-grant="openCreateGrantModal"
         />
       </section>
 
@@ -226,15 +240,36 @@
       <GrantsFooter
         :country-count="countryCount"
       />
+
+      <ClaimGrantModal
+        :show="showClaimModal"
+        :project="claimProject"
+        @close="closeClaimModal"
+        @claimed="onClaimed"
+      />
+
+      <ReviewClaimModal
+        :show="showReviewClaimModal"
+        :claim="reviewClaimData"
+        @close="closeReviewClaimModal"
+        @reviewed="onClaimReviewed"
+      />
+
+      <CreateGrantModal
+        :show="showCreateGrantModal"
+        @close="closeCreateGrantModal"
+        @created="onGrantCreated"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
-import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
+import type { GrantRecord, ScrapedGrant, LeaderboardEntry, EGProjectGrant } from '~/composables/useGrants'
+import type { ClaimRecord, DetailGrantData } from '~/lib/types'
 import { allProjectsData } from '~/lib/project-data'
-import type { ProjectData, DetailGrantData } from '~/lib/types'
 import GrantsAuth from '~/components/grants/GrantsAuth.vue'
 import GrantsDashboard from '~/components/grants/GrantsDashboard.vue'
 import GrantDetailModal from '~/components/grants/GrantDetailModal.vue'
@@ -242,13 +277,19 @@ import GrantEditModal from '~/components/grants/GrantEditModal.vue'
 import RegistryModal from '~/components/grants/RegistryModal.vue'
 import GrantsFooter from '~/components/grants/GrantsFooter.vue'
 import CrewSignupModal from '~/components/grants/CrewSignupModal.vue'
+import ClaimGrantModal from '~/components/grants/ClaimGrantModal.vue'
+import ReviewClaimModal from '~/components/grants/ReviewClaimModal.vue'
+import CreateGrantModal from '~/components/grants/CreateGrantModal.vue'
 import GlobeView from '~/components/GlobeView.vue'
+import { useToast } from '~/composables/useToast'
 import { useSupabase } from '~/composables/useSupabase'
+import { useI18n } from '~/composables/useI18n'
 import { useDeviceCapabilities } from '~/composables/useDeviceCapabilities'
 import { useAdaptiveQuality } from '~/composables/useAdaptiveQuality'
 
 const deviceCaps = useDeviceCapabilities()
 const quality = useAdaptiveQuality()
+const toast = useToast()
 
 const isLowQuality = computed(() => quality.level.value === 'low' || quality.level.value === 'medium')
 
@@ -272,7 +313,7 @@ useHead({
   ],
 })
 
-const { t } = useI18n()
+const { t, locale, localeNames } = useI18n()
 
 const impactStats = computed(() => [
   { num: '1M+', label: t('grantsPortal.impactStat1Label') },
@@ -291,9 +332,8 @@ const isEmbed = computed(() => {
   return new URLSearchParams(window.location.search).get('embed') === 'true'
 })
 const { client } = useSupabase()
-const { listGrants, listScrapedGrants, reviewGrant: apiReviewGrant, reviewScrapedGrant: apiReviewScraped, updateScrapedGrant: apiUpdateScrapedGrant, getStats, voteGrant, voteScrapedGrant, deleteVote, getLeaderboard } = useGrants()
+const { listGrants, listScrapedGrants, reviewGrant: apiReviewGrant, reviewScrapedGrant: apiReviewScraped, updateScrapedGrant: apiUpdateScrapedGrant, getStats, voteGrant, voteScrapedGrant, deleteVote, getLeaderboard, listClaims } = useGrants()
 
-// Internal grants
 const grants = ref<GrantRecord[]>([])
 const registry = ref<Array<GrantRecord & { relevant?: boolean }>>([])
 const stats = reactive({ pending: 0, open: 0, closed: 0, hidden: 0, total: 0 })
@@ -306,14 +346,20 @@ const projectStats = computed(() => {
 })
 const showHistory = ref(false)
 
-// Scraped (open) grants
 const scrapedGrants = ref<ScrapedGrant[]>([])
 const scrapedLoading = ref(false)
 const scrapedUserVotes = reactive<Record<string, number>>({})
 
-// Grants being animated out (disintegration)
 const removingGrants = ref<string[]>([])
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+const claims = ref<ClaimRecord[]>([])
+const claimsLoading = ref(false)
+const showClaimModal = ref(false)
+const claimProject = ref<EGProjectGrant | null>(null)
+const showReviewClaimModal = ref(false)
+const reviewClaimData = ref<ClaimRecord | null>(null)
+const showCreateGrantModal = ref(false)
 
 function matchSearch(g: { title?: string; funder?: string; country?: string; description?: string; source?: string; categories?: string[] }, q: string): boolean {
   if (!q) return true
@@ -330,16 +376,14 @@ const filteredScrapedGrants = computed(() => {
   const q = dashboardSearch.value
   const tab = activePortalTab.value
   if (tab === 'tabPending') return scrapedGrants.value.filter(g => g.status === 'pending' && matchSearch(g, q))
-  if (tab === 'tabOpen') return grants.value.filter(g => g.status === 'open' && matchSearch(g, q))
+  if (tab === 'tabOpen') return scrapedGrants.value.filter(g => g.status === 'open' && matchSearch(g, q))
   if (tab === 'tabClosed') return scrapedGrants.value.filter(g => g.status === 'closed' && matchSearch(g, q))
   return scrapedGrants.value.filter(g => matchSearch(g, q))
 })
 
-// Leaderboard
 const leaderboard = ref<LeaderboardEntry[]>([])
 const leaderboardLoading = ref(false)
 
-// Edit state
 const editGrant = ref<ScrapedGrant | null>(null)
 const editSaving = ref(false)
 const editSavingDetail = ref(false)
@@ -357,14 +401,12 @@ const editForm = reactive({
   categories: '',
 })
 
-// UI state
 const activePortalTab = ref('tabOpen')
 const showRegistry = ref(false)
 const registryLoading = ref(false)
 const detailGrant = ref<DetailGrantData | null>(null)
 const detailUserVote = ref(0)
 
-// Dashboard state
 const dashboardSearch = ref('')
 
 const topProjects = computed(() =>
@@ -472,48 +514,13 @@ async function loadStats() {
   }
 }
 
-function projectToScrapedGrant(p: ProjectData, i: number): ScrapedGrant {
-  return {
-    id: `project-${i}`,
-    source_id: `project-${i}`,
-    title: p.project_title,
-    funder: 'Earth Guardians',
-    source: 'project-grants',
-    url: '',
-    description: `Project in ${p.country_province} with ${p.direct_beneficiaries} direct and ${p.indirect_beneficiaries} indirect beneficiaries.`,
-    deadline: '',
-    amount_max: '',
-    amount_min: '',
-    currency: '',
-    country: p.country_province.split(',').pop()?.trim() || p.country_province,
-    region: p.country_province,
-    categories: ['environment', 'community'],
-    language: 'en',
-    status: 'open',
-    fetched_at: new Date().toISOString(),
-    created_at: new Date('2024-01-01').toISOString(),
-    grant_type: 'conservation',
-    highlights: ['eg_core', 'high_value'],
-    urgency: 'unknown',
-    amount_usd: null,
-    priority_score: 50,
-    reviewed: false,
-  }
-}
-
 async function loadScrapedGrants() {
   scrapedLoading.value = true
   try {
     const result = await listScrapedGrants()
     scrapedGrants.value = result.grants ?? []
-    if (scrapedGrants.value.length === 0) {
-      scrapedGrants.value = allProjectsData.map(projectToScrapedGrant)
-    }
   } catch (e) {
     console.error('Failed to load scraped grants:', e)
-    if (scrapedGrants.value.length === 0) {
-      scrapedGrants.value = allProjectsData.map(projectToScrapedGrant)
-    }
   } finally {
     scrapedLoading.value = false
   }
@@ -531,6 +538,58 @@ async function loadLeaderboardData() {
   }
 }
 
+async function loadClaims() {
+  claimsLoading.value = true
+  try {
+    const result = await listClaims()
+    claims.value = result.claims ?? []
+  } catch (e) {
+    console.error('Failed to load claims:', e)
+  } finally {
+    claimsLoading.value = false
+  }
+}
+
+function openClaimModal(project: EGProjectGrant) {
+  claimProject.value = project
+  showClaimModal.value = true
+}
+
+function closeClaimModal() {
+  showClaimModal.value = false
+  claimProject.value = null
+}
+
+function onClaimed() {
+  loadClaims()
+}
+
+function openReviewClaimModal(claim: ClaimRecord) {
+  reviewClaimData.value = claim
+  showReviewClaimModal.value = true
+}
+
+function closeReviewClaimModal() {
+  showReviewClaimModal.value = false
+  reviewClaimData.value = null
+}
+
+function onClaimReviewed() {
+  loadClaims()
+}
+
+function openCreateGrantModal() {
+  showCreateGrantModal.value = true
+}
+
+function closeCreateGrantModal() {
+  showCreateGrantModal.value = false
+}
+
+function onGrantCreated() {
+  Promise.all([refreshGrantsSilent(), loadStats()])
+}
+
 async function handleReview(grantId: string, decision: string) {
   try {
     await apiReviewGrant(grantId, decision as 'open' | 'closed')
@@ -545,14 +604,8 @@ async function refreshScrapedGrantsSilent() {
   try {
     const result = await listScrapedGrants()
     scrapedGrants.value = result.grants ?? []
-    if (scrapedGrants.value.length === 0) {
-      scrapedGrants.value = allProjectsData.map(projectToScrapedGrant)
-    }
   } catch (e) {
     console.error('Failed to refresh scraped grants:', e)
-    if (scrapedGrants.value.length === 0) {
-      scrapedGrants.value = allProjectsData.map(projectToScrapedGrant)
-    }
   }
 }
 
@@ -572,16 +625,13 @@ async function handleReviewScraped(grantId: string, decision: string, table = 's
       apiReviewScraped(grantId, decision as 'approved' | 'hidden' | 'closed' | 'pending', undefined, table),
       sleep(700),
     ])
-    // Check for API errors
     if (apiResult.error) {
       console.error('Review scraped grant failed:', apiResult.error)
       removingGrants.value = removingGrants.value.filter(id => id !== grantId)
       return
     }
-    // Remove from local arrays after animation
     scrapedGrants.value = scrapedGrants.value.filter(g => g.id !== grantId)
     removingGrants.value = removingGrants.value.filter(id => id !== grantId)
-    // Refresh from server (silent — no loading spinners)
     await Promise.all([refreshScrapedGrantsSilent(), refreshGrantsSilent(), loadStats()])
   } catch (e) {
     console.error('Failed to review scraped grant:', e)
@@ -731,7 +781,6 @@ function onCrewRegistered(_memberId: string) {
 }
 
 async function checkCrewMembership() {
-  // Wait for manager status to resolve first
   if (!isManagerReady.value) {
     for (let i = 0; i < 100; i++) {
       await new Promise(r => setTimeout(r, 50))
@@ -744,9 +793,7 @@ async function checkCrewMembership() {
     if (fnError || !data?.authorized) {
       showCrewPopup.value = true
     }
-  } catch {
-    // Silently fail — if we can't check, just proceed
-  }
+  } catch { /* ignore */ }
 }
 
 watch(() => user.value?.email, (email) => {
@@ -765,12 +812,21 @@ watch(activePortalTab, (tab) => {
 })
 
 onMounted(async () => {
-  await Promise.all([loadGrants(), loadStats(), loadScrapedGrants()])
+  await Promise.all([loadGrants(), loadStats(), loadScrapedGrants(), loadClaims()])
   window.addEventListener('scroll', onPageScroll, { passive: true })
   const route = useRoute()
   if (route.query.signup === '1' && user.value?.email) {
     openCrewSignup()
   }
+  setTimeout(() => {
+    if (!import.meta.client) return
+    try {
+      if (localStorage.getItem('langToastSeen')) return
+      const name = localeNames[locale.value] || locale.value
+      toast.info(`Viewing in ${name}`, 'Need a different language? Click the translation icon in the dock to change.')
+      localStorage.setItem('langToastSeen', '1')
+    } catch { /* localStorage unavailable */ }
+  }, 3000)
 })
 
 function onGlobeReady() {
@@ -782,6 +838,7 @@ function onGlobeReady() {
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onPageScroll)
 })
+
 </script>
 
 <style scoped>
@@ -1189,6 +1246,40 @@ h2 {
   margin-bottom: 1rem;
 }
 .projects-subtitle { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: rgba(255, 255, 255, 0.5); letter-spacing: 0.2em; text-transform: uppercase; }
+
+.fs-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(16px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fs-toggle-btn:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+}
+
+.fs-toggle-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.fs-toggle-btn:hover svg {
+  transform: scale(1.1);
+}
 
 .nebula-bg {
   position: absolute;

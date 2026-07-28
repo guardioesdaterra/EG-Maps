@@ -1,3 +1,11 @@
+/**
+ * stores/ui.ts
+ * @why Pinia store for UI state — dark mode, sidebar, mobile nav, search, modals
+ * @functions useUiStore
+ * @types SupportedLocale
+ * @deps vue (ref, watch)
+ * @connections composables/useDarkMode.ts, composables/useI18n.ts
+ */
 import { ref, watch } from 'vue'
 
 const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'pt', 'ar', 'hi', 'ja', 'zh', 'nl', 'de'] as const
@@ -8,6 +16,21 @@ let _isDarkInitialized: ReturnType<typeof ref<boolean>> | null = null
 let _locale: ReturnType<typeof ref<SupportedLocale>> | null = null
 let _watchInstalled = false
 
+function installDarkModeWatch() {
+  if (!import.meta.client || _watchInstalled || !_isDark) return
+  _watchInstalled = true
+  watch(_isDark, (value) => {
+    try { localStorage.setItem('darkMode', String(value)) } catch { /* noop */ }
+    applyDarkClass(!!value)
+  })
+}
+
+function applyDarkClass(value: boolean) {
+  if (import.meta.client) {
+    document.documentElement.classList.toggle('dark', value)
+  }
+}
+
 export function useUiStore() {
   if (!_isDark) _isDark = ref<boolean>(true)
   if (!_isDarkInitialized) _isDarkInitialized = ref<boolean>(false)
@@ -17,12 +40,6 @@ export function useUiStore() {
   const isDarkInitialized = _isDarkInitialized
   const locale = _locale
 
-  function applyDarkClass(value: boolean) {
-    if (import.meta.client) {
-      document.documentElement.classList.toggle('dark', value)
-    }
-  }
-
   function getInitialDarkMode(): boolean {
     if (!import.meta.client) return true
     const saved = localStorage.getItem('darkMode')
@@ -31,6 +48,7 @@ export function useUiStore() {
   }
 
   function initDarkMode() {
+    installDarkModeWatch()
     if (isDarkInitialized.value || !import.meta.client) return
     isDark.value = getInitialDarkMode()
     isDarkInitialized.value = true
@@ -38,24 +56,17 @@ export function useUiStore() {
   }
 
   function toggleDarkMode() {
+    installDarkModeWatch()
     isDark.value = !isDark.value
     applyDarkClass(isDark.value)
   }
 
   function setDarkMode(value: boolean) {
+    installDarkModeWatch()
     isDark.value = value
     applyDarkClass(value)
   }
 
-  if (import.meta.client && !_watchInstalled) {
-    _watchInstalled = true
-    watch(isDark, (value) => {
-      localStorage.setItem('darkMode', String(value))
-      applyDarkClass(!!value)
-    })
-  }
-
-  // ── Locale ────────────────────────────────────────────────────────────────
   const locales = SUPPORTED_LOCALES
 
   function getInitialLocale(): SupportedLocale {

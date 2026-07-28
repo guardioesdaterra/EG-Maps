@@ -1,3 +1,10 @@
+/**
+ * lib/observatory-analysis.ts
+ * @why Observatory data analysis — statistical computations, trend detection, cluster analysis
+ * @functions isMilitaryInterest, isHighEnvRisk, isSuspiciousBasic, normalizeName, computeSpeculatorIndex, computeDangerScore, getTopDangerEnterprises, buildAnmVerifyUrl, buildClaimReportMailtoUrl
+ * @interfaces RareEarthFeature, RareEarthFeatureCollection, SpeculatorIndexEntry, DeepAnalysisForeignClaims, DeepAnalysis
+ * @connections components/ObservatoryClaimActions.vue, components/observatory/ClaimPopup.vue, components/observatory/ClaimReportModal.vue, composables/useObservatoryPopup.ts, composables/useRareEarthData.ts, lib/enterprise-data.ts
+ */
 export interface RareEarthFeature {
   type: 'Feature'
   geometry: GeoJSON.Geometry

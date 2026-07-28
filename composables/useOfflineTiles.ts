@@ -1,3 +1,10 @@
+/**
+ * composables/useOfflineTiles.ts
+ * @why Offline map tiles — caches tile blobs in IndexedDB for offline map viewing
+ * @functions useOfflineTiles
+ * @interfaces OfflineTileStats
+ * @deps vue (ref, onScopeDispose, type Ref)
+ */
 import { ref, onScopeDispose, type Ref } from 'vue'
 
 export interface OfflineTileStats {
@@ -87,7 +94,6 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
       await statsP
       isInitialized.value = true
     } catch {
-      // IndexedDB not available, falling back to memory cache only
       isInitialized.value = true
     }
   }
@@ -146,9 +152,7 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
       stats.value.cacheSizeBytes += data.byteLength
       stats.value.cacheSizeFormatted = formatBytes(stats.value.cacheSizeBytes)
       tx.oncomplete = () => maybeEvict()
-    } catch {
-      // Silently fail store - memory cache still works
-    }
+    } catch { /* ignore */ }
   }
 
   async function hasTile(z: number, x: number, y: number): Promise<boolean> {
@@ -190,9 +194,7 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
           }
         }
       }
-    } catch {
-      // Best effort
-    }
+    } catch { /* ignore */ }
   }
 
   async function clearCache() {
@@ -202,9 +204,7 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
       const tx = db.transaction(STORE_NAME, 'readwrite')
       const store = tx.objectStore(STORE_NAME)
       store.clear()
-    } catch {
-      // Best effort
-    }
+    } catch { /* ignore */ }
     stats.value.cachedTiles = 0
     stats.value.cacheSizeBytes = 0
     stats.value.cacheSizeFormatted = '0 B'
@@ -309,9 +309,7 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
               const buf = await resp.arrayBuffer()
               await setTile(z, clampedX, y, buf, resp.headers.get('content-type') || 'image/jpeg')
             }
-          } catch {
-            // Skip failed tiles
-          }
+          } catch { /* ignore */ }
           done++
           prefetchProgress.value = done
         }

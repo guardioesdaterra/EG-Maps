@@ -1,3 +1,10 @@
+/**
+ * composables/useObservatoryUpdates.ts
+ * @why Observatory update submission — validates and submits user-contributed data points
+ * @functions useObservatoryUpdates
+ * @interfaces ObservatoryUpdate, ObservatoryUpdateInput
+ * @deps vue (ref, readonly); ./useSupabase (useSupabase)
+ */
 import { ref, readonly } from 'vue'
 import { useSupabase } from './useSupabase'
 

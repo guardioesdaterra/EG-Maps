@@ -1,3 +1,9 @@
+/**
+ * composables/useSupabase.ts
+ * @why Supabase client singleton — creates and caches the Supabase JS client instance
+ * @functions useSupabase
+ * @deps vue (ref, onMounted, onUnmounted, readonly); ~/lib/supabase (getSupabaseClient)
+ */
 import { ref, onMounted, onUnmounted, readonly } from 'vue'
 import type { User, Subscription } from '@supabase/supabase-js'
 import { getSupabaseClient } from '~/lib/supabase'
@@ -16,7 +22,6 @@ export function useSupabase() {
       client.auth.getSession().then(({ data: { session } }) => {
         currentUser.value = session?.user ?? null
       }).catch(() => {
-        // Session fetch failed — stay logged out
       }).finally(() => {
         sessionReady.value = true
       })

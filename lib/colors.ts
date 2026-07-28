@@ -1,11 +1,17 @@
+/**
+ * lib/colors.ts
+ * @why Color palette — category-to-color mappings, species status colors, theme color tokens
+ * @consts COLOR_MAMMAL, getProjectColorByBeneficiaries, getProjectColor
+ * @connections components/map/ProjectPopup.vue, composables/useGeoJSONMarkers.ts, composables/useMapMarker.ts
+ */
 import type { ProjectData } from "./types";
 
-const COLOR_BLUE = "#3b82f6";
-const COLOR_GREEN = "#22c55e";
-const COLOR_YELLOW = "#eab308";
-const COLOR_RED = "#ef4444";
-const COLOR_DEFAULT = "#a855f7";
-export const COLOR_MAMMAL = "#B64032";
+const COLOR_BLUE = "var(--info)";
+const COLOR_GREEN = "var(--success)";
+const COLOR_YELLOW = "var(--warning)";
+const COLOR_RED = "var(--danger)";
+const COLOR_DEFAULT = "var(--purple)";
+export const COLOR_MAMMAL = "var(--danger)";
 
 export const getProjectColorByBeneficiaries = (
   directBeneficiaries: number,

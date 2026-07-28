@@ -1,3 +1,9 @@
+/**
+ * pages/auth/callback.vue
+ * @why OAuth callback handler — processes Supabase auth redirect, sets session, redirects to origin
+ * @component callback
+ * @deps vue (ref, watch); ~/composables/useSupabase (useSupabase)
+ */
 <template>
   <div class="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
     <div class="text-center">
@@ -16,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, watch } from 'vue'
 import { useSupabase } from '~/composables/useSupabase'
 
@@ -24,16 +31,11 @@ useHead({ title: 'Auth Callback | Earth Guardians' })
 const { client, sessionReady } = useSupabase()
 const error = ref('')
 
-// With detectSessionInUrl: true and flowType: 'pkce', the Supabase SDK
-// automatically detects the PKCE auth code in the URL during its
-// getSession() call in useSupabase's onMounted, exchanges it, and
-// sets the session. The callback just needs to wait for that to finish.
 watch(sessionReady, async (ready) => {
   if (!ready) return
 
   const SIGN_UP_URL = '/eg-grants?signup=1'
 
-  // Clean PKCE params from URL after exchange
   if (window.location.search || window.location.hash) {
     window.history.replaceState({}, '', window.location.pathname)
   }
@@ -76,4 +78,5 @@ async function checkMembershipAndRedirect(signUpUrl: string) {
 
   navigateTo('/eg-grants')
 }
+
 </script>

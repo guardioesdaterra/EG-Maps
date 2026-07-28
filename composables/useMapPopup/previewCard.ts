@@ -1,3 +1,11 @@
+/**
+ * composables/useMapPopup/previewCard.ts
+ * @why Preview card HTML builder — compact popup variant for clustered/unclustered states
+ * @functions usePreviewCard
+ * @interfaces PreviewCardCallbacks
+ * @types PreviewItem
+ * @deps vue (ref, nextTick); @/lib/map-utils (buildProjectPreviewHTML, buildSpeciesPreviewHTML, buildCrewPreviewHTML); @/composables/useI18n (useI18n)
+ */
 import { ref, nextTick } from 'vue'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
@@ -85,7 +93,7 @@ export function usePreviewCard(baseURL?: string) {
 
     const lat = 'lat' in crew ? crew.lat : (crew as CrewRegionData).latitude
     const lng = 'lng' in crew ? crew.lng : (crew as CrewRegionData).longitude
-    const html = buildCrewPreviewHTML(crew as CrewRegionData, getTranslations())
+    const html = buildCrewPreviewHTML(crew, getTranslations())
     createPopup(html, [lng, lat], map, () => {
       cbs.expandCrew(crew)
     })

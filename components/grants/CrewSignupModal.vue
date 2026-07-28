@@ -1,9 +1,19 @@
+/**
+ * components/grants/CrewSignupModal.vue
+ * @why Modal for crew member signup form — collects personal info, preferences, inspiration
+ * @component CrewSignupModal
+ * @props show: boolean
+  userEmail?
+ * @emits close: []
+  registered: [memberId: string]
+ * @deps vue (reactive, ref)
+ */
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="show" class="fixed inset-0 z-[10000] flex items-start justify-center overflow-y-auto bg-black/70 backdrop-blur-sm py-8 px-4" @click.self="$emit('close')">
         <div class="w-full max-w-xl glass rounded-2xl p-5 sm:p-8 my-auto" @click.stop>
-          <!-- Header -->
+          
           <div class="flex items-center justify-between mb-6">
             <div>
               <h2 class="text-lg font-bold text-white">{{ t('grantsPortal.crewSignupTitle') }}</h2>
@@ -16,7 +26,7 @@
 
           <p class="text-xs text-white/30 mb-6 leading-relaxed">{{ t('grantsPortal.crewSignupAnyAge') }} {{ t('grantsPortal.crewSignupDirector') }}</p>
 
-          <!-- Error / Success states -->
+          
           <div v-if="error" class="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">{{ error }}</div>
           <div v-if="success" class="text-center py-8">
             <div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full bg-green-500/15 flex items-center justify-center">
@@ -27,9 +37,9 @@
             <button class="px-5 py-2 text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-all" @click="$emit('close')">{{ t('grantsPortal.crewSignupBackToPortal') }}</button>
           </div>
 
-          <!-- Form -->
+          
           <form v-else @submit.prevent="handleSubmit" class="space-y-5">
-            <!-- Role -->
+            
             <fieldset>
               <legend class="text-xs font-semibold text-white/70 mb-3">{{ t('grantsPortal.crewSignupRole') }} <span class="text-red-400">*</span></legend>
               <div class="space-y-2">
@@ -40,7 +50,7 @@
               </div>
             </fieldset>
 
-            <!-- Name row -->
+            
             <div class="grid grid-cols-2 gap-3">
               <FormField :label="t('grantsPortal.crewSignupFirstName')" required>
                 <input v-model="form.first_name" type="text" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors" />
@@ -50,7 +60,7 @@
               </FormField>
             </div>
 
-            <!-- Language -->
+            
             <FormField :label="t('grantsPortal.crewSignupLanguage')" required>
               <select v-model="form.preferred_language" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-green-500/40 transition-colors appearance-none cursor-pointer">
                 <option value="en">{{ t('grantsPortal.crewSignupLanguageEn') }}</option>
@@ -60,12 +70,12 @@
               </select>
             </FormField>
 
-            <!-- Age -->
+            
             <FormField :label="t('grantsPortal.crewSignupAge')" :hint="t('grantsPortal.crewSignupAgeHint')" required>
               <input v-model.number="form.age" type="number" min="0" max="150" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors" />
             </FormField>
 
-            <!-- Phone -->
+            
             <div class="grid grid-cols-[min(25vw,100px)_1fr] gap-3">
               <FormField :label="t('grantsPortal.crewSignupCountry')">
                 <input v-model="form.phone_country" type="text" placeholder="US" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors" />
@@ -75,12 +85,12 @@
               </FormField>
             </div>
 
-            <!-- Email -->
+            
             <FormField :label="t('grantsPortal.crewSignupEmail')" required>
               <input v-model="form.email" type="email" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors" :placeholder="userEmail || 'you@example.com'" />
             </FormField>
 
-            <!-- Address -->
+            
             <fieldset>
               <legend class="text-xs font-semibold text-white/50 mb-2">{{ t('grantsPortal.crewSignupAddress') }}</legend>
               <div class="space-y-2">
@@ -107,12 +117,12 @@
               </div>
             </fieldset>
 
-            <!-- Inspiration -->
+            
             <FormField :label="t('grantsPortal.crewSignupInspiration')" :hint="t('grantsPortal.crewSignupInspirationHint')">
               <textarea v-model="form.inspiration" rows="3" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors resize-none" />
             </FormField>
 
-            <!-- Training interest -->
+            
             <fieldset>
               <legend class="text-xs font-semibold text-white/70 mb-3">{{ t('grantsPortal.crewSignupTraining') }} <span class="text-red-400">*</span></legend>
               <div class="space-y-1.5">
@@ -123,24 +133,24 @@
               </div>
             </fieldset>
 
-            <!-- Climate experience -->
+            
             <FormField :label="t('grantsPortal.crewSignupExperience')" :hint="t('grantsPortal.crewSignupExperienceHint')">
               <textarea v-model="form.climate_experience" rows="3" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors resize-none" />
             </FormField>
 
-            <!-- Indigenous status -->
+            
             <FormField :label="t('grantsPortal.crewSignupIndigenous')" :hint="t('grantsPortal.crewSignupIndigenousHint')">
               <input v-model="form.indigenous_status" type="text" placeholder="N/A" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white placeholder-white/20 outline-none focus:border-green-500/40 transition-colors" />
             </FormField>
 
-            <!-- Submit -->
+            
             <button type="submit" :disabled="submitting" class="w-full py-3 rounded-lg font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2" :class="submitting ? 'bg-green-500/10 text-green-400/50 cursor-wait' : 'bg-green-500/15 text-green-400 hover:bg-green-500/25 hover:shadow-[0_0_30px_rgba(0,255,133,0.15)]'">
               <svg v-if="submitting" class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
               {{ submitting ? 'Submitting...' : t('grantsPortal.crewSignupSubmit') }}
             </button>
           </form>
 
-          <!-- Footer links -->
+          
           <div class="mt-6 text-center">
             <p class="text-xs text-white/25">
               {{ t('grantsPortal.crewSignupContactCrews') }}
@@ -155,6 +165,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { reactive, ref } from 'vue'
 
 const props = defineProps<{
@@ -254,6 +265,7 @@ async function handleSubmit() {
     submitting.value = false
   }
 }
+
 </script>
 
 <style scoped>

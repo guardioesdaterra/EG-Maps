@@ -232,7 +232,8 @@
     "retry": "Erneut versuchen",
     "close": "Schließen",
     "save": "Speichern",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "imageNotAvailable": "Bild nicht verfügbar"
   },
   "observatory": {
     "tabs": {
@@ -539,8 +540,6 @@
     "howGrantsWork": "WIE WIR VERÄNDERUNGEN FINANZIEREN",
     "impactRingLabel": "LEBEN",
     "grantsSectionLabel": "Z. B. PROJEKTFÖRDERUNGEN",
-    "grantsCopy1": "Wir bieten Zuschüsse in Höhe von 300–500 US-Dollar an, um unsere globalen Changemaker zu unterstützen, wobei unseren Crews Vorrang eingeräumt wird.",
-    "grantsCopy1Strong": "Zuschüsse in Höhe von 300 bis 500 US-Dollar",
     "grantsCopy2": "Seit 2021 unterstützt unser Project Grants-Programm Basisbemühungen in den Bereichen Klimagerechtigkeitserziehung, regenerative Landwirtschaft, Baumpflanzungen, gewaltfreie direkte Aktion, Klimapolitik, Ernährungssicherheit, Kunstvismus und mehr.",
     "grantsCopy3": "Mit Bildung, Mentoring und Finanzierung ermöglicht Ihnen unser Project Grants-Programm, Ihre Ideen zum Leben zu erwecken und andere zu inspirieren. Im Rahmen des Project Grant-Prozesses werden auch Fähigkeiten zum Verfassen von Zuschüssen, zur Projektkoordination und zur Datenanalyse vermittelt.",
     "grantsCopy4": "Bauen Sie gemeinsam mit uns Resilienz auf und bekämpfen Sie die Klimakrise vor Ort!",

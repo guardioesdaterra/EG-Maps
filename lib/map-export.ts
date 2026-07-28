@@ -1,3 +1,11 @@
+/**
+ * lib/map-export.ts
+ * @why Map export utilities — canvas-to-image conversion, download helpers, watermark
+ * @functions exportMapToImage
+ * @interfaces ExportOptions
+ * @deps file-saver (saveAs)
+ * @connections components/observatory/ExportModal.vue
+ */
 import { saveAs } from 'file-saver'
 
 export interface ExportOptions {

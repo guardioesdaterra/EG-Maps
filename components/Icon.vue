@@ -1,3 +1,9 @@
+/**
+ * components/Icon.vue
+ * @why SVG icon wrapper — renders Iconify icons with configurable size, color, and aria-label
+ * @component Icon
+ * @deps vue (computed)
+ */
 <template>
   <iconify-icon
     :icon="name"
@@ -7,6 +13,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed } from 'vue'
 
 interface Props {
@@ -37,6 +44,7 @@ const iconStyles = computed(() => {
 
   return styles
 })
+
 </script>
 
 <style scoped>

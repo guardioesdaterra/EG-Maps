@@ -1,3 +1,9 @@
+/**
+ * components/LoadingSpinner.vue
+ * @why Animated loading spinner for async data states
+ * @component LoadingSpinner
+ * @deps vue (computed)
+ */
 <template>
   <div role="status" aria-live="polite">
     <div :class="wrapperClass">
@@ -9,6 +15,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { computed } from 'vue'
 
 const SPINNING_ICONS = ['svg-spinners:eclipse', 'svg-spinners:wind-toy', 'svg-spinners:blocks-shuffle-2', 'svg-spinners:3-dots-move']
@@ -53,4 +60,5 @@ const messageClass = computed(() => {
   if (props.size === 'lg') return 'text-base text-gray-300'
   return 'text-lg text-gray-300'
 })
+
 </script>

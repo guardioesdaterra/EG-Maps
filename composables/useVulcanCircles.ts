@@ -1,3 +1,10 @@
+/**
+ * composables/useVulcanCircles.ts
+ * @why Vulcan observatory circle overlays — radial search radius and density heat circles
+ * @functions setupVulcanCircles, cleanupVulcanCircles, setVulcanCirclesVisibility
+ * @consts VULCAN_CENTER, VULCAN_CIRCLES
+ * @interfaces VulcanCircle
+ */
 import maplibregl from 'maplibre-gl'
 
 export interface VulcanCircle {
@@ -57,7 +64,6 @@ export function setupVulcanCircles(map: maplibregl.Map): () => void {
     data: { type: 'FeatureCollection', features },
   })
 
-  // Fills (bottom to top: largest first)
   for (let i = VULCAN_CIRCLES.length - 1; i >= 0; i--) {
     const circle = VULCAN_CIRCLES[i]
     map.addLayer({
@@ -72,7 +78,6 @@ export function setupVulcanCircles(map: maplibregl.Map): () => void {
     })
   }
 
-  // Lines
   for (let i = 0; i < VULCAN_CIRCLES.length; i++) {
     const circle = VULCAN_CIRCLES[i]
     map.addLayer({
@@ -89,7 +94,6 @@ export function setupVulcanCircles(map: maplibregl.Map): () => void {
     })
   }
 
-  // Labels
   for (let i = 0; i < VULCAN_CIRCLES.length; i++) {
     const circle = VULCAN_CIRCLES[i]
     map.addLayer({
@@ -113,7 +117,6 @@ export function setupVulcanCircles(map: maplibregl.Map): () => void {
     })
   }
 
-  // Center marker
   const centerEl = document.createElement('div')
   centerEl.style.cssText = `
     width: 14px; height: 14px; border-radius: 50%;

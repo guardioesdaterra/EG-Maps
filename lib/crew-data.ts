@@ -1,3 +1,10 @@
+/**
+ * lib/crew-data.ts
+ * @why Crew member data — static crew definitions, overall stats, and profile data
+ * @consts allCrewRegionsData, crewOverallStats
+ * @interfaces CrewRegionHistory, CrewRegionData, CrewLocation
+ * @connections pages/active-crews/3d.vue, pages/active-crews/index.vue, pages/index.vue
+ */
 export interface CrewRegionHistory {
   year: number
   activeCrews: number

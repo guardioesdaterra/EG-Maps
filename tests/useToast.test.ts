@@ -1,10 +1,13 @@
+/**
+ * tests/useToast.test.ts
+ * @why Unit tests for toast composable — add, dismiss, auto-remove, queue limits
+ * @deps vitest (describe, it, expect, beforeEach, vi); pinia (setActivePinia, createPinia); vue (ref)
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { ref } from 'vue'
 import type { ToastMessage } from '../lib/types'
 
-// Mock the Nuxt composables used by useToast (it only uses useState and
-// auto-imported `ref`/`computed`).
 ;(globalThis as unknown as { useState: <T>(_k: string, _init: () => T) => { value: T } }).useState = <T>(_k: string, init: () => T) => {
   return ref(init()) as unknown as { value: T }
 }

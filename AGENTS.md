@@ -219,6 +219,7 @@ pnpm test:watch     # Watch mode
 | Priority | Issue | Location |
 |----------|-------|----------|
 | Critical | `UnifiedMap.vue` and `GlobeView.vue` duplication | Both map components |
+| **Fixed** | `rebuildMarkers()`/`updateMarkerData()` passed `speciesIndexData.value` (unfiltered) instead of `visibleSpecies.value` (filtered) — region/ecosystem/threat/text search filters had zero effect on markers | useMapBase.ts:338,356 |
 | High | `keepPopupFullyVisible()` calculates offset but never applies it | UnifiedMap.vue:408-411 |
 | High | MapTiler API key exposed in client-side code | nuxt.config.ts |
 | Medium | No ESLint/Prettier config | Project root |

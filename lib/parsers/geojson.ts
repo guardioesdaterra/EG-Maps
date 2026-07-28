@@ -23,11 +23,11 @@ export function parseGeoJSON(text: string, fileName: string): ParseResult {
   if (data.type === 'FeatureCollection' && Array.isArray(data.features)) {
     features = data.features.filter((f: GeoJSON.Feature) => f && f.type === 'Feature' && f.geometry)
   } else if (data.type === 'Feature' && data.geometry) {
-    features = [data]
+    features = [data as unknown as GeoJSON.Feature]
   } else if (data.type === 'GeometryCollection' && Array.isArray(data.geometries)) {
-    features = data.geometries.map((g: GeoJSON.Geometry, i: number) => ({ type: 'Feature', id: i, geometry: g, properties: {} }))
-  } else if (['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'].includes(data.type)) {
-    features = [{ type: 'Feature', geometry: data, properties: {} }]
+    features = (data.geometries as GeoJSON.Geometry[]).map((g: GeoJSON.Geometry, i: number) => ({ type: 'Feature' as const, id: i, geometry: g, properties: {} }))
+  } else if (['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'].includes(data.type as string)) {
+    features = [{ type: 'Feature' as const, geometry: data as unknown as GeoJSON.Geometry, properties: {} }]
   } else {
     errors.push('No recognizable GeoJSON structure found')
   }
@@ -35,6 +35,6 @@ export function parseGeoJSON(text: string, fileName: string): ParseResult {
   for (const f of features) {
     if (f.properties) Object.keys(f.properties).forEach(k => props.add(k))
   }
-  const name = data.name || data.metadata?.name || fileName.replace(/\.[^.]+$/, '')
+  const name = (data as Record<string, unknown>).name as string || ((data as Record<string, unknown>).metadata as Record<string, unknown>)?.name as string || fileName.replace(/\.[^.]+$/, '')
   return { features, name, count: features.length, properties: [...props], errors }
 }

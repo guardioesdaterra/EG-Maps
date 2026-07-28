@@ -139,7 +139,7 @@
               </div>
               <div class="gstore-card-footer">
                 <div v-if="g.amount_max" class="gstore-card-amount">{{ g.amount_max }} {{ g.currency }}</div>
-                <div v-else-if="'direct_beneficiaries' in g && g.direct_beneficiaries != null" class="gstore-card-amount">{{ formatCompact(g.direct_beneficiaries) }} beneficiaries</div>
+                <div v-else-if="'direct_beneficiaries' in g && g.direct_beneficiaries != null" class="gstore-card-amount">{{ formatCompact(Number(g.direct_beneficiaries)) }} beneficiaries</div>
                 <div v-else class="gstore-card-amount muted">—</div>
                 <div v-if="g.highlights?.length" class="gstore-card-tags">
                   <span v-for="hl in g.highlights.slice(0, 2)" :key="hl" class="gstore-card-tag" :class="hl.toLowerCase().replace(/\s+/g, '_')">{{ hl }}</span>
@@ -352,10 +352,10 @@ const categories = computed(() => {
   return [
     { key: 'community', icon: '🌱', label: 'Community Opportunities', count: allCommunity.length, items: allCommunity.slice(0, 20) },
     { key: 'crew', icon: '👥', label: 'Crew Projects', count: crew.length, items: crew.slice(0, 20) },
-    { key: 'partners', icon: '🤝', label: 'Partner Grants', count: partnerOrgs.length + partnerOpps.length, items: [...partnerOrgs.slice(0, 10).map(p => ({ id: p.id, title: p.name, funder: p.partner_type, country: p.country, description: p.mission, status: p.status, highlights: [] })), ...partnerOpps.slice(0, 10).map(o => ({ id: o.id, title: o.title, funder: o.partners?.name || '', country: o.country, amount_max: o.amount_max, description: o.description, status: o.status, highlights: o.highlights || [], categories: o.categories, grant_type: o.grant_type, priority_score: o.priority_score }))].slice(0, 20) },
+    { key: 'partners', icon: '🤝', label: 'Partner Grants', count: partnerOrgs.length + partnerOpps.length,     items: [...partnerOrgs.slice(0, 10).map(p => ({ id: p.id, title: p.name, funder: p.partner_type, country: p.country, description: p.mission, status: p.status, highlights: [] as string[], categories: undefined as string[] | undefined, grant_type: undefined as string | undefined, priority_score: undefined as number | undefined, amount_max: undefined as string | undefined, currency: undefined as string | undefined, direct_beneficiaries: undefined as number | undefined })), ...partnerOpps.slice(0, 10).map(o => ({ id: o.id, title: o.title, funder: o.partners?.name || '', country: o.country, amount_max: o.amount_max, currency: o.currency, description: o.description, status: o.status, highlights: o.highlights || [], categories: o.categories, grant_type: o.grant_type, priority_score: o.priority_score, direct_beneficiaries: undefined as number | undefined }))].slice(0, 20) },
     { key: 'worldwide', icon: '🌍', label: 'Worldwide Grants', count: worldwide.length, items: worldwide.slice(0, 20) },
     { key: 'egprojects', icon: '🌿', label: 'EG Project Grants', count: egProjectItems.length, items: egProjectItems.slice(0, 20) },
-    ...(props.isManager ? [{ key: 'claims', icon: '⚖️', label: 'Claims Review', count: props.claims?.length || 0, items: [] as never[] }] : []),
+    ...(props.isManager ? [{ key: 'claims', icon: '⚖️', label: 'Claims Review', count: props.claims?.length || 0, items: [] as MixedGrant[] }] : []),
   ]
 })
 
@@ -375,7 +375,7 @@ const visibleCategories = computed(() => {
       (g.funder || '').toLowerCase().includes(q) ||
       (g.country || '').toLowerCase().includes(q) ||
       (g.description || '').toLowerCase().includes(q) ||
-      (g.categories || []).some(c => c.toLowerCase().includes(q))
+      (g.categories || []).some((c: string) => c.toLowerCase().includes(q))
     ),
   })).filter(cat => cat.items.length > 0)
 })

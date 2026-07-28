@@ -370,7 +370,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   function dispatchCrew(p: Record<string, unknown>, coords: [number, number]) {
     switch (p._type) {
       case 'crewLocation': return dispatchCrewLocation(p, coords)
-      default:             return dispatchCrewRegion(p, coords)
+      case 'crewRegion':   return dispatchCrewRegion(p, coords)
     }
   }
 
@@ -394,7 +394,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       })
     }
 
-    const cb = callbacks.openCrewLocationOverlay ?? callbacks.openCrewOverlay
+    const cb = callbacks.openCrewPreview ?? callbacks.openCrewLocationOverlay ?? callbacks.openCrewOverlay
     cb(loc)
   }
 

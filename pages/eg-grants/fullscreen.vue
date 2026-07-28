@@ -71,6 +71,8 @@
           :leaderboard="leaderboard"
           :leaderboard-loading="leaderboardLoading"
           :removing-grants="removingGrants"
+          :claims="claims"
+          :claims-loading="claimsLoading"
           @sign-in="signIn"
           @sign-out="handleSignOut"
           @update:active-tab="activePortalTab = $event"
@@ -121,8 +123,8 @@
 
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
+import type { ClaimRecord, DetailGrantData } from '~/lib/types'
 import { allProjectsData } from '~/lib/project-data'
-import type { ProjectData, DetailGrantData } from '~/lib/types'
 import GrantsAuth from '~/components/grants/GrantsAuth.vue'
 import GrantsDashboard from '~/components/grants/GrantsDashboard.vue'
 import GrantDetailModal from '~/components/grants/GrantDetailModal.vue'
@@ -151,6 +153,8 @@ const projectStats = computed(() => {
 })
 const showHistory = ref(false)
 
+const claims = ref<ClaimRecord[]>([])
+const claimsLoading = ref(false)
 const scrapedGrants = ref<ScrapedGrant[]>([])
 const scrapedLoading = ref(false)
 const scrapedUserVotes = reactive<Record<string, number>>({})
@@ -172,7 +176,7 @@ const filteredScrapedGrants = computed(() => {
   const q = dashboardSearch.value
   const tab = activePortalTab.value
   if (tab === 'tabPending') return scrapedGrants.value.filter(g => g.status === 'pending' && matchSearch(g, q))
-  if (tab === 'tabOpen') return grants.value.filter(g => g.status === 'open' && matchSearch(g, q))
+  if (tab === 'tabOpen') return scrapedGrants.value.filter(g => g.status === 'open' && matchSearch(g, q))
   if (tab === 'tabClosed') return scrapedGrants.value.filter(g => g.status === 'closed' && matchSearch(g, q))
   return scrapedGrants.value.filter(g => matchSearch(g, q))
 })
@@ -275,34 +279,13 @@ async function loadStats() {
   }
 }
 
-function projectToScrapedGrant(p: ProjectData, i: number): ScrapedGrant {
-  return {
-    id: `project-${i}`, source_id: `project-${i}`, title: p.project_title,
-    funder: 'Earth Guardians', source: 'project-grants', url: '',
-    description: `Project in ${p.country_province} with ${p.direct_beneficiaries} direct and ${p.indirect_beneficiaries} indirect beneficiaries.`,
-    deadline: '', amount_max: '', amount_min: '', currency: '',
-    country: p.country_province.split(',').pop()?.trim() || p.country_province,
-    region: p.country_province, categories: ['environment', 'community'],
-    language: 'en', status: 'open', fetched_at: new Date().toISOString(),
-    created_at: new Date('2024-01-01').toISOString(), grant_type: 'conservation',
-    highlights: ['eg_core', 'high_value'], urgency: 'unknown',
-    amount_usd: null, priority_score: 50, reviewed: false,
-  }
-}
-
 async function loadScrapedGrants() {
   scrapedLoading.value = true
   try {
     const result = await listScrapedGrants()
     scrapedGrants.value = result.grants ?? []
-    if (scrapedGrants.value.length === 0) {
-      scrapedGrants.value = allProjectsData.map(projectToScrapedGrant)
-    }
   } catch (e) {
     console.error('Failed to load scraped grants:', e)
-    if (scrapedGrants.value.length === 0) {
-      scrapedGrants.value = allProjectsData.map(projectToScrapedGrant)
-    }
   } finally {
     scrapedLoading.value = false
   }
@@ -334,14 +317,8 @@ async function refreshScrapedGrantsSilent() {
   try {
     const result = await listScrapedGrants()
     scrapedGrants.value = result.grants ?? []
-    if (scrapedGrants.value.length === 0) {
-      scrapedGrants.value = allProjectsData.map(projectToScrapedGrant)
-    }
   } catch (e) {
     console.error('Failed to refresh scraped grants:', e)
-    if (scrapedGrants.value.length === 0) {
-      scrapedGrants.value = allProjectsData.map(projectToScrapedGrant)
-    }
   }
 }
 

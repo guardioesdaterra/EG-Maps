@@ -53,8 +53,13 @@ const growth = computed(() => {
 })
 
 const mapsUrl = computed(() => {
-  if (!props.crew || props.isLocation) return '#'
-  return `https://www.google.com/maps?q=${(props.crew as CrewRegionData).latitude},${(props.crew as CrewRegionData).longitude}`
+  if (!props.crew) return '#'
+  if (props.isLocation) {
+    const c = props.crew as CrewLocation
+    return `https://www.google.com/maps?q=${c.lat},${c.lng}`
+  }
+  const c = props.crew as CrewRegionData
+  return `https://www.google.com/maps?q=${c.latitude},${c.longitude}`
 })
 
 </script>
@@ -128,19 +133,20 @@ const mapsUrl = computed(() => {
         </div>
       </div>
 
-      <footer class="crew-popup__footer">
-        <a
-          :href="mapsUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="crew-popup__action"
-          :style="{ '--action-clr': color }"
-        >
-          <Icon name="lucide:external-link" size="0.75rem" />
-          <span>Open in Google Maps</span>
-        </a>
-      </footer>
     </template>
+
+    <footer class="crew-popup__footer">
+      <a
+        :href="mapsUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="crew-popup__action"
+        :style="{ '--action-clr': color }"
+      >
+        <Icon name="lucide:external-link" size="0.75rem" />
+        <span>Open in Google Maps</span>
+      </a>
+    </footer>
   </article>
 </template>
 
@@ -216,7 +222,7 @@ const mapsUrl = computed(() => {
   font-weight: 800;
   line-height: 1.25;
   margin: 0;
-  color: var(--bg-tertiary);
+  color: var(--text-primary);
   letter-spacing: -0.01em;
   overflow-wrap: break-word;
 }
@@ -281,7 +287,7 @@ const mapsUrl = computed(() => {
 .crew-popup__stat-value {
   font-size: 1rem;
   font-weight: 800;
-  color: var(--bg-tertiary);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 

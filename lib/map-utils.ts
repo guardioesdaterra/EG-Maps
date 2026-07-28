@@ -10,7 +10,7 @@
 import maplibregl from 'maplibre-gl'
 import { getProjectColorByBeneficiaries, COLOR_MAMMAL } from './colors'
 import type { ProjectData, Species } from './types'
-import type { CrewRegionData } from './crew-data'
+import type { CrewRegionData, CrewLocation } from './crew-data'
 import { isMilitaryInterest as _isMilitaryInterest, isHighEnvRisk as _isHighEnvRisk, isSuspiciousBasic, buildAnmVerifyUrl, buildClaimReportMailtoUrl, type SpeculatorIndexEntry } from './observatory-analysis'
 import { escapeHtml as _escapeHtml, formatCompact } from './utils'
 import { getPreviewImageUrl, getProjectPlaceholder, getMarkerPlaceholder } from './image-utils'
@@ -453,9 +453,13 @@ export function buildSpeciesPreviewHTML(species: { commonName: string; scientifi
   `
 }
 
-export function buildCrewPreviewHTML(crew: CrewRegionData, translations?: PreviewTranslations): string {
-  const color = crew.activeCrews > 20 ? 'var(--success)' : crew.activeCrews > 5 ? 'var(--info)' : 'var(--purple)'
+export function buildCrewPreviewHTML(crew: CrewRegionData | CrewLocation, translations?: PreviewTranslations): string {
+  const isRegion = 'activeCrews' in crew
+  const color = isRegion && crew.activeCrews > 20 ? 'var(--success)' : isRegion && crew.activeCrews > 5 ? 'var(--info)' : 'var(--purple)'
   const t = translations || { expand: 'View details', beneficiaries: 'Beneficiaries', location: 'Location', activeCrews: 'Active Crews', totalMembers: 'Total Members' }
+  const cl = crew as CrewLocation
+  const location = [cl.city, cl.state, cl.country].filter(Boolean).join(', ')
+  const title = isRegion ? (crew as CrewRegionData).region : cl.name
 
   return `
     <div class="preview-card" data-type="crew">
@@ -465,10 +469,11 @@ export function buildCrewPreviewHTML(crew: CrewRegionData, translations?: Previe
       </div>
       <div class="preview-card__body">
         <p class="preview-card__eyebrow">Earth Guardians Crew</p>
-        <h4 class="preview-card__title">${escapeHtml(crew.region)}</h4>
-        <div class="preview-card__tags">
-          <span class="preview-card__tag" style="color: ${color};">${crew.activeCrews} ${t.activeCrews}</span>
-          <span class="preview-card__tag">${crew.totalMembers.toLocaleString()} ${t.totalMembers}</span>
+        <h4 class="preview-card__title">${escapeHtml(title)}</h4>
+        <div class="preview-card__tags">${isRegion ? `
+          <span class="preview-card__tag" style="color: ${color};">${(crew as CrewRegionData).activeCrews} ${t.activeCrews}</span>
+          <span class="preview-card__tag">${(crew as CrewRegionData).totalMembers.toLocaleString()} ${t.totalMembers}</span>` : `
+          <span class="preview-card__tag">${escapeHtml(location)}</span>`}
         </div>
       </div>
       <button class="preview-card__expand" data-action="expand" title="${t.expand}">

@@ -93,7 +93,7 @@ export function usePreviewCard(baseURL?: string) {
 
     const lat = 'lat' in crew ? crew.lat : (crew as CrewRegionData).latitude
     const lng = 'lng' in crew ? crew.lng : (crew as CrewRegionData).longitude
-    const html = buildCrewPreviewHTML(crew as CrewRegionData, getTranslations())
+    const html = buildCrewPreviewHTML(crew, getTranslations())
     createPopup(html, [lng, lat], map, () => {
       cbs.expandCrew(crew)
     })

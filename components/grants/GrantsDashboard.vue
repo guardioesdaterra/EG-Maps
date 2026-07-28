@@ -79,20 +79,6 @@
           <div class="gstore-hero-chip">Earth Guardians</div>
           <h1 class="gstore-hero-title">Grants &amp; Opportunities</h1>
           <p class="gstore-hero-subtitle">Discover funding for climate action, conservation, and community projects worldwide.</p>
-          <div class="gstore-hero-stats">
-            <div class="gstore-hero-stat">
-              <span class="gstore-hero-stat-num">{{ totalAll }}</span>
-              <span class="gstore-hero-stat-label">Total Grants</span>
-            </div>
-            <div class="gstore-hero-stat">
-              <span class="gstore-hero-stat-num">{{ categoryCount }}</span>
-              <span class="gstore-hero-stat-label">Categories</span>
-            </div>
-            <div class="gstore-hero-stat">
-              <span class="gstore-hero-stat-num">{{ countriesCount }}+</span>
-              <span class="gstore-hero-stat-label">Countries</span>
-            </div>
-          </div>
           <p class="gstore-hero-hint">Sign in to vote, track, and manage grants.</p>
           <button class="gstore-hero-btn" @click="$emit('signIn')">Sign in with Google</button>
         </section>
@@ -311,46 +297,20 @@ const projectItems = computed(() => {
   }))
 })
 
-const totalAll = computed(() => scrapedItems.value.length + projectItems.value.length)
-
-const countriesCount = computed(() => {
-  const countries = new Set<string>()
-  scrapedItems.value.forEach(g => g.country && countries.add(g.country))
-  projectItems.value.forEach(g => g.country && countries.add(g.country))
-  return countries.size
-})
-
 const categories = computed(() => {
-  const communityItems = scrapedItems.value.filter(g =>
-    g.categories?.some(c => c.toLowerCase().includes('community')) ||
-    g.grant_type === 'climate_justice' ||
-    g.grant_type === 'indigenous_rights'
-  )
-  const communityIds = new Set(communityItems.map(g => g.id))
-  const communityOpps = partnerOpportunities.value.filter(o =>
-    o.categories?.some(c => c.toLowerCase().includes('community')) ||
-    o.grant_type === 'climate_justice'
-  )
-  const allCommunity = [...communityItems, ...communityOpps.map(o => ({
-    id: o.id, title: o.title, funder: o.partners?.name || '', country: o.country || '',
-    amount_max: o.amount_max, currency: o.currency, grant_type: o.grant_type,
-    priority_score: o.priority_score, highlights: o.highlights || [],
-    description: o.description, status: o.status, categories: o.categories,
-  }))]
+  const allCommunity: MixedGrant[] = []
+  const communityIds = new Set<string>()
 
   const partnerOrgs = partners.value
   const partnerOpps = partnerOpportunities.value
   const worldwide = scrapedItems.value.filter(g =>
-    !communityIds.has(g.id) &&
-    !(g.funder && ['foundation', 'fund', 'trust', 'programme', 'UN', 'EU', 'UNESCO', 'Commonwealth'].some(k =>
-      g.funder!.toLowerCase().includes(k.toLowerCase())
-    ))
+    g.status === 'approved-active-open' || g.status === 'approved' || g.status === 'open'
   )
   const crew = props.filteredInternalGrants || []
   const egProjectItems = projectItems.value
 
   return [
-    { key: 'community', icon: '🌱', label: 'Community Opportunities', count: allCommunity.length, items: allCommunity.slice(0, 20) },
+    { key: 'community', icon: '🌱', label: 'Community Opportunities', count: 0, items: [] as MixedGrant[] },
     { key: 'crew', icon: '👥', label: 'Crew Projects', count: crew.length, items: crew.slice(0, 20) },
     { key: 'partners', icon: '🤝', label: 'Partner Grants', count: partnerOrgs.length + partnerOpps.length,     items: [...partnerOrgs.slice(0, 10).map(p => ({ id: p.id, title: p.name, funder: p.partner_type, country: p.country, description: p.mission, status: p.status, highlights: [] as string[], categories: undefined as string[] | undefined, grant_type: undefined as string | undefined, priority_score: undefined as number | undefined, amount_max: undefined as string | undefined, currency: undefined as string | undefined, direct_beneficiaries: undefined as number | undefined })), ...partnerOpps.slice(0, 10).map(o => ({ id: o.id, title: o.title, funder: o.partners?.name || '', country: o.country, amount_max: o.amount_max, currency: o.currency, description: o.description, status: o.status, highlights: o.highlights || [], categories: o.categories, grant_type: o.grant_type, priority_score: o.priority_score, direct_beneficiaries: undefined as number | undefined }))].slice(0, 20) },
     { key: 'worldwide', icon: '🌍', label: 'Worldwide Grants', count: worldwide.length, items: worldwide.slice(0, 20) },
@@ -358,8 +318,6 @@ const categories = computed(() => {
     ...(props.isManager ? [{ key: 'claims', icon: '⚖️', label: 'Claims Review', count: props.claims?.length || 0, items: [] as MixedGrant[] }] : []),
   ]
 })
-
-const categoryCount = computed(() => categories.value.filter(c => c.count > 0).length)
 
 const visibleCategories = computed(() => {
   const q = props.searchQuery?.toLowerCase()
@@ -768,35 +726,6 @@ const visibleCategories = computed(() => {
   font-weight: 400;
 }
 
-.gstore-hero-stats {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-bottom: 32px;
-}
-
-.gstore-hero-stat {
-  text-align: center;
-}
-
-.gstore-hero-stat-num {
-  display: block;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.gstore-hero-stat-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-tertiary);
-  margin-top: 4px;
-  letter-spacing: 0.02em;
-}
-
 .gstore-hero-hint {
   font-size: 13px;
   color: var(--text-tertiary);
@@ -1141,14 +1070,6 @@ const visibleCategories = computed(() => {
 
   .gstore-hero-title {
     font-size: 28px;
-  }
-
-  .gstore-hero-stats {
-    gap: 24px;
-  }
-
-  .gstore-hero-stat-num {
-    font-size: 22px;
   }
 
   .gstore-card {

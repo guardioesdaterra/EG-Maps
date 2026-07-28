@@ -1328,3 +1328,12 @@ h2 {
   .impact-card { flex: 0 0 200px; padding: 1.5rem 1rem; }
 }
 </style>
+
+<style>
+html[data-page="/eg-grants"] header,
+header {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+</style>

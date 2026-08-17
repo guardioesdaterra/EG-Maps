@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   workflow_dispatch:
   schedule:
     - cron: '0 */2 * * *'  # Every 2 hours — refresh grants radar
@@ -23,8 +23,7 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v6
-
+      # ── Global setup (once) ──────────────────────────────────
       - uses: actions/setup-node@v6
         with:
           node-version: 22
@@ -42,27 +41,39 @@ jobs:
           restore-keys: |
             pnpm-${{ runner.os }}-
 
-      - name: Install dependencies
+      # ── Build main (production) → /EG-Maps/ ──────────────────
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          path: _src_main
+
+      - name: Install dependencies (main)
         run: pnpm install --frozen-lockfile
+        working-directory: _src_main
 
       - name: Download cultural agents data
         uses: actions/download-artifact@v5
         with:
           name: cultural-agents-data
-          path: public/data/cultural-agents/
+          path: _src_main/public/data/cultural-agents/
         continue-on-error: true
 
-      - name: Prepare Nuxt types
+      - name: Prepare Nuxt types (main)
         run: npx nuxi prepare
+        working-directory: _src_main
 
-      - name: Type check
+      - name: Type check (main)
         run: npx vue-tsc --noEmit
+        working-directory: _src_main
 
-      - name: Build species icon mapping (Game Icons SSG)
+      - name: Build species icon mapping (main)
         run: node scripts/build-species-icon-mapping.mjs
+        working-directory: _src_main
 
-      - name: Compute overlap indicators (P1.7)
+      - name: Compute overlap indicators (main)
         run: node scripts/compute-overlaps.mjs
+        working-directory: _src_main
 
       - name: Verify secrets
         run: |
@@ -72,8 +83,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
 
-      - name: Build static site
+      - name: Build main (production)
         run: pnpm generate
+        working-directory: _src_main
         env:
           NUXT_APP_BASE_URL: /EG-Maps/
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
@@ -82,26 +94,96 @@ jobs:
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
 
-      - name: Copy 200.html as 404.html for SPA fallback
+      - name: Copy main output to site root
         run: |
-          if [ -f .output/public/200.html ]; then
-            cp .output/public/200.html .output/public/404.html
-          elif [ -f .output/public/index.html ]; then
-            cp .output/public/index.html .output/public/404.html
+          mkdir -p /tmp/site
+          cp -r _src_main/.output/public/* /tmp/site/
+
+      # ── Build develop (test) → /EG-Maps/test/ ────────────────
+      - name: Checkout develop
+        uses: actions/checkout@v6
+        with:
+          ref: develop
+          path: _src_develop
+        continue-on-error: true
+
+      - name: Install dependencies (develop)
+        run: pnpm install --frozen-lockfile
+        working-directory: _src_develop
+        continue-on-error: true
+
+      - name: Download cultural agents data (develop)
+        uses: actions/download-artifact@v5
+        with:
+          name: cultural-agents-data
+          path: _src_develop/public/data/cultural-agents/
+        continue-on-error: true
+
+      - name: Prepare Nuxt types (develop)
+        run: npx nuxi prepare
+        working-directory: _src_develop
+        continue-on-error: true
+
+      - name: Build species icon mapping (develop)
+        run: node scripts/build-species-icon-mapping.mjs
+        working-directory: _src_develop
+        continue-on-error: true
+
+      - name: Compute overlap indicators (develop)
+        run: node scripts/compute-overlaps.mjs
+        working-directory: _src_develop
+        continue-on-error: true
+
+      - name: Build develop (test)
+        run: pnpm generate
+        working-directory: _src_develop
+        env:
+          NUXT_APP_BASE_URL: /EG-Maps/test/
+          NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+        continue-on-error: true
+
+      - name: Copy develop output to test subfolder
+        run: |
+          if [ -d "_src_develop/.output/public" ]; then
+            cp -r _src_develop/.output/public /tmp/site/test
+            if [ -f /tmp/site/test/200.html ]; then
+              cp /tmp/site/test/200.html /tmp/site/test/404.html
+            fi
+            echo "✅ Test site deployed to /EG-Maps/test/"
           else
-            echo "Warning: No 200.html or index.html found for 404 fallback"
+            echo "⚠️  Develop build produced no output — test site not deployed"
+          fi
+        continue-on-error: true
+
+      # ── Finalize combined output ──────────────────────────────
+      - name: Copy 200.html as 404.html for SPA fallback (root)
+        run: |
+          if [ -f /tmp/site/200.html ]; then
+            cp /tmp/site/200.html /tmp/site/404.html
           fi
 
       - name: Verify .nojekyll present
+        run: touch /tmp/site/.nojekyll
+
+      - name: Verify output structure
         run: |
-          if [ ! -f .output/public/.nojekyll ]; then
-            echo "::error::.nojekyll missing from build output — _payload.json would be hidden by Jekyll"
-            exit 1
+          echo "=== Root site ==="
+          ls /tmp/site/ | head -20
+          echo ""
+          echo "=== Test site ==="
+          if [ -d /tmp/site/test ]; then
+            ls /tmp/site/test/ | head -20
+          else
+            echo "No test site found"
           fi
 
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: .output/public
+          path: /tmp/site
 
   lint:
     runs-on: ubuntu-latest

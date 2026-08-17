@@ -1605,6 +1605,77 @@
   color: var(--info);
 }
 
+/* ── Crew popup overlay (full-screen modal) ── */
+.crew-popup-overlay-fixed {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-navigation, 1000);
+  background: var(--shadow-color);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+}
+.crew-popup-content-fixed {
+  position: relative;
+  max-width: 34rem;
+  width: 100%;
+  max-height: min(90vh, 40rem);
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--obs-panel-border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 20px 60px var(--shadow-color);
+  scrollbar-width: thin;
+  scrollbar-color: var(--obs-panel-border) transparent;
+}
+.crew-popup-content-fixed::-webkit-scrollbar {
+  width: 6px;
+}
+.crew-popup-content-fixed::-webkit-scrollbar-track {
+  background: transparent;
+}
+.crew-popup-content-fixed::-webkit-scrollbar-thumb {
+  background: var(--obs-panel-border);
+  border-radius: 3px;
+}
+.crew-popup-content-fixed::-webkit-scrollbar-thumb:hover {
+  background: var(--tool-btn-muted-border);
+}
+.crew-popup-close-btn-fixed {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: calc(var(--z-navigation, 1000) + 2);
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--obs-panel-border);
+  border: 1px solid var(--obs-panel-border);
+  border-radius: 50%;
+  color: var(--obs-text-body);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.crew-popup-close-btn-fixed:hover {
+  background: var(--tool-btn-muted-border);
+  color: var(--bg-tertiary);
+  transform: scale(1.08);
+  box-shadow: 0 0 20px var(--obs-panel-border);
+}
+.crew-popup-close-btn-fixed:active {
+  transform: scale(0.92);
+}
+
 /* ── Observatory glass-panel tokens ── */
 :root {
   --obs-panel-bg: rgba(0, 0, 0, 0.75);

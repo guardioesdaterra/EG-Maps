@@ -143,62 +143,22 @@ export function buildCrewPopupHTML(crew: CrewRegionData, translations?: CrewPopu
     : null
 
   return `
-    <div class="project-popup-wrapper" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere; overflow: hidden;">
-      <div class="project-popup-header">
-        <div class="project-corner-accent top-left"></div>
-        <div class="project-corner-accent top-right"></div>
-        <div class="project-header-content">
-          <div class="project-status-bar">
-            <span class="project-badge">Earth Guardians Crew</span>
-            <span class="project-indicator" style="background: ${color}"></span>
-          </div>
-          <h3 class="project-title" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere;">${escapeHtml(crew.region)}</h3>
-        </div>
-        <div class="project-header-line"></div>
+    <div class="preview-card" data-type="crew" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere; overflow: hidden;">
+      <div class="preview-card__photo preview-card__photo--icon" style="background-color: ${color}18;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5" style="opacity:0.7"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <div class="preview-card__photo-accent" style="background: ${color};"></div>
       </div>
-      <div class="project-popup-body">
-        <div class="project-stat-row">
-          <div class="project-stat-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-          <div class="project-stat-content">
-            <span class="project-stat-label">${t.activeCrews}</span>
-            <span class="project-stat-value">${crew.activeCrews}</span>
-          </div>
+      <div class="preview-card__body">
+        <p class="preview-card__eyebrow">Earth Guardians Crew</p>
+        <h4 class="preview-card__title">${escapeHtml(crew.region)}</h4>
+        <div class="preview-card__tags">
+          <span class="preview-card__tag" style="color: ${color};">${crew.activeCrews} ${t.activeCrews}</span>
+          <span class="preview-card__tag">${crew.totalMembers.toLocaleString()} ${t.totalMembers}</span>
         </div>
-        <div class="project-stat-row">
-          <div class="project-stat-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          </div>
-          <div class="project-stat-content">
-            <span class="project-stat-label">${t.totalMembers}</span>
-            <span class="project-stat-value">${crew.totalMembers.toLocaleString()}</span>
-          </div>
-        </div>
-        <div class="project-stat-row">
-          <div class="project-stat-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          </div>
-          <div class="project-stat-content">
-            <span class="project-stat-label">${t.countries}</span>
-            <span class="project-stat-value">${crew.countries}</span>
-          </div>
-        </div>
-        ${growth !== null ? `
-        <div class="project-divider"></div>
-        <div class="project-metrics">
-          <div class="project-metric">
-            <div class="project-metric-header">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>
-              <span>${t.growthSince2022}</span>
-            </div>
-            <span class="project-metric-value direct">+${growth}%</span>
-          </div>
-        </div>` : ''}
       </div>
-      <div class="project-popup-footer">
-        <div class="project-footer-glow" style="background: ${color}"></div>
-      </div>
+      <button class="preview-card__expand" data-action="expand" title="View details">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+      </button>
     </div>
   `
 }
@@ -223,43 +183,22 @@ export function buildCrewLocationPopupHTML(crew: { name: string; country: string
   const statusLabel = isActive ? 'Active' : 'Inactive'
 
   return `
-    <div class="project-popup-wrapper" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere; overflow: hidden;">
-      <div class="project-popup-header">
-        <div class="project-corner-accent top-left"></div>
-        <div class="project-corner-accent top-right"></div>
-        <div class="project-header-content">
-          <div class="project-status-bar">
-            <span class="project-badge">Earth Guardians Crew</span>
-            <span class="project-badge" style="background: ${statusColor}; color: ${isActive ? '#fff' : '#000'}; margin-left: 6px;">${statusLabel}</span>
-            <span class="project-indicator" style="background: ${statusColor}"></span>
-          </div>
-          <h3 class="project-title" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere;">${escapeHtml(crew.name)}</h3>
-        </div>
-        <div class="project-header-line"></div>
+    <div class="preview-card" data-type="crew" style="word-wrap: break-word; white-space: normal; overflow-wrap: anywhere; overflow: hidden;">
+      <div class="preview-card__photo preview-card__photo--icon" style="background-color: ${statusColor}18;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${statusColor}" stroke-width="1.5" style="opacity:0.7"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div class="preview-card__photo-accent" style="background: ${statusColor};"></div>
       </div>
-      <div class="project-popup-body">
-        <div class="project-stat-row">
-          <div class="project-stat-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          </div>
-          <div class="project-stat-content">
-            <span class="project-stat-label">${t.city}</span>
-            <span class="project-stat-value">${escapeHtml(location)}</span>
-          </div>
-        </div>
-        <div class="project-stat-row">
-          <div class="project-stat-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          </div>
-          <div class="project-stat-content">
-            <span class="project-stat-label">${t.region}</span>
-            <span class="project-stat-value">${escapeHtml(crew.region)}</span>
-          </div>
+      <div class="preview-card__body">
+        <p class="preview-card__eyebrow">Earth Guardians Crew</p>
+        <h4 class="preview-card__title">${escapeHtml(crew.name)}</h4>
+        <div class="preview-card__tags">
+          <span class="preview-card__tag" style="color: ${statusColor};">${statusLabel}</span>
+          <span class="preview-card__tag">${escapeHtml(location)}</span>
         </div>
       </div>
-      <div class="project-popup-footer">
-        <div class="project-footer-glow" style="background: ${statusColor}"></div>
-      </div>
+      <button class="preview-card__expand" data-action="expand" title="View details">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+      </button>
     </div>
   `
 }

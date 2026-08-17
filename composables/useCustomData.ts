@@ -21,6 +21,7 @@ export interface CustomDataset {
 const datasets = ref<CustomDataset[]>([])
 const idCounter = ref(0)
 const selectedCustomFeature = ref<GeoJSON.Feature | null>(null)
+const showImportModal = ref(false)
 const COLORS = ['#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
 
 export function useCustomData() {
@@ -88,6 +89,7 @@ export function useCustomData() {
   return {
     datasets,
     selectedCustomFeature,
+    showImportModal,
     selectFeature,
     importFile,
     addDataset,

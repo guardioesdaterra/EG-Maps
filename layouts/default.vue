@@ -119,6 +119,29 @@
               </div>
             </Transition>
           </div>
+
+          
+          <div :class="separatorClass" />
+
+          
+          <div class="relative" ref="importBtnRef">
+            <button
+              @click="showImportModal = !showImportModal"
+              class="group relative flex flex-col items-center"
+              aria-label="Import custom data"
+            >
+              <div
+                :class="[tooltipClass, 'opacity-0 group-hover:opacity-100 transition-opacity duration-150']"
+              >
+                Import Data
+                <div :class="tooltipArrowClass" />
+              </div>
+
+              <div :class="utilityIconClass">
+                <Icon name="lucide:plus" class="h-4 w-4" />
+              </div>
+            </button>
+          </div>
         </div>
       </div>
     </nav>
@@ -129,6 +152,7 @@
 
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n as useAppI18n } from '@/composables/useI18n'
+import { useCustomData } from '@/composables/useCustomData'
 
 const route = useRoute()
 
@@ -177,6 +201,7 @@ const headerItems: NavItem[] = [
 ]
 
 const { isDark, toggle: toggleDarkMode } = useDarkMode()
+const { showImportModal } = useCustomData()
 
 const isMapRoute = computed(() =>
   route.path.startsWith('/project-grants') || route.path.startsWith('/endangered-species') || route.path.startsWith('/vulcan-observatory') || route.path.startsWith('/active-crews')

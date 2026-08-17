@@ -1,11 +1,10 @@
 /**
  * components/ImportDataWidget.vue
- * @why Composite import widget — combines ImportButton, ImportModal, CustomLayerPanel, and a feature detail popup with image URL support. Shows all properties from the selected feature in a table.
+ * @why Composite import widget — manages ImportModal, CustomLayerPanel, and feature detail popup. Modal state is shared via useCustomData composable so the dock trigger can open it.
  */
 <template>
   <div v-if="!isEmbed">
-    <ImportButton @open="showModal = true" />
-    <ImportModal :show="showModal" @close="showModal = false" @add="handleAdd" />
+    <ImportModal :show="showImportModal" @close="showImportModal = false" @add="handleAdd" />
     <div class="absolute bottom-4 right-4 z-[900] min-w-[200px] max-w-[280px]" :style="{ bottom: '5rem' }">
       <CustomLayerPanel />
     </div>
@@ -35,8 +34,7 @@ import type { ImportResult, ImportFormat } from '~/lib/parsers/index'
 
 defineProps<{ isEmbed?: boolean }>()
 
-const { addDataset, selectedCustomFeature, selectFeature } = useCustomData()
-const showModal = ref(false)
+const { addDataset, selectedCustomFeature, selectFeature, showImportModal } = useCustomData()
 const popupOverlayRef = ref<HTMLElement | null>(null)
 
 watch(selectedCustomFeature, (f) => {
@@ -45,7 +43,7 @@ watch(selectedCustomFeature, (f) => {
 
 function handleAdd(result: ImportResult, format: ImportFormat) {
   addDataset(result, format)
-  showModal.value = false
+  showImportModal.value = false
 }
 
 const featureTitle = computed(() => {

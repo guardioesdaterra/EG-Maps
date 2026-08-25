@@ -275,3 +275,8 @@ pnpm test:watch     # Watch mode
 ---
 
 *Last updated: 2026-05-23*
+
+## Companion docs
+
+- [`DOCUMENTATION.md`](./DOCUMENTATION.md) — Full architecture, modules-by-module index, conventions, deployment, ops runbook.
+- [`BUGS-AND-FIXES.md`](./BUGS-AND-FIXES.md) — Deep bug + improvement audit (35+ findings, severities, fixes). Read before touching `useMapBase`, `useThreeGlobe`, `useSupabase`, or any page-level modal.

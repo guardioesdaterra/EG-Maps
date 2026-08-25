@@ -5,7 +5,7 @@
  * @deps vue (computed, ref, onMounted, onUnmounted); @/lib/project-data (allProjectsData); @/lib/crew-data (crewOverallStats); @/lib/utils (formatCompact)
  */
 <template>
-  <main class="bg-white dark:bg-[var(--bg-primary)] text-black dark:text-[var(--text-primary)]">
+  <main id="main-content" class="bg-white dark:bg-[var(--bg-primary)] text-black dark:text-[var(--text-primary)]">
     <section class="mx-auto flex min-h-auto lg:min-h-[100svh] w-container flex-col justify-center px-4 py-8 sm:px-fluid-sm sm:section-padding pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-section">
       <div class="grid gap-fluid-xl lg:grid-cols-[1fr_1.1fr] lg:items-center">
         <header class="max-w-[min(100%,38rem)]">

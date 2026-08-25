@@ -5,7 +5,7 @@
  * @deps vue (ref, watch); ~/composables/useSupabase (useSupabase)
  */
 <template>
-  <div class="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+  <main id="main-content" role="main" class="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
     <div class="text-center">
       <div v-if="error">
         <p class="text-red-400 font-semibold">Authentication Error</p>
@@ -18,7 +18,7 @@
         <p class="text-[var(--text-secondary)]">Signing you in...</p>
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">

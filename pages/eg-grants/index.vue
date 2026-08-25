@@ -5,7 +5,7 @@
  * @deps vue (ref, reactive, computed, watch, onMounted, onBeforeUnmount); ~/lib/project-data (allProjectsData); ~/composables/useToast (useToast); ~/composables/useSupabase (useSupabase); ~/composables/useI18n (useI18n); ~/composables/useDeviceCapabilities (useDeviceCapabilities); ~/composables/useAdaptiveQuality (useAdaptiveQuality)
  */
 <template>
-  <div class="grants-portal relative min-h-screen overflow-hidden bg-[#08080a]">
+  <div id="main-content" role="main" class="grants-portal relative min-h-screen overflow-hidden bg-[#08080a]">
     <GlobeView :projects="allProjectsData" @ready="onGlobeReady" />
     <DotField
       class="absolute inset-0"

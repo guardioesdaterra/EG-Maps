@@ -6,7 +6,7 @@
  * @deps vue (ref, watch, computed, defineAsyncComponent); @/composables/useMapBase (useMapBase); ~/composables/useSpeciesData (useSpeciesIndex)
  */
 <template>
-  <div class="w-full h-[100svh] relative overflow-hidden bg-black" role="main" aria-label="Interactive Map Visualization">
+  <div id="main-content" class="w-full h-[100svh] relative overflow-hidden bg-black" role="main" aria-label="Interactive Map Visualization">
     
     <Transition name="fade">
       <div v-if="isLoading" class="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center">

@@ -10,7 +10,7 @@
     <div class="absolute inset-0 pointer-events-none" style="box-shadow: inset 0 0 clamp(50px, 15vw, 200px) clamp(10px, 4vw, 50px) rgba(0,0,0,0.8)" />
 
     
-    <div class="relative z-10 flex flex-col items-center px-4 text-center">
+    <div class="relative z-10 flex flex-col items-center px-4 text-center" role="alert">
       
         <div class="mb-[clamp(1.5rem,4vw,3rem)] animate-float">
           <div class="w-[clamp(4rem,12vw,6rem)] h-[clamp(4rem,12vw,6rem)] rounded-full bg-[var(--bg-tertiary)] border-2 border-[var(--text-primary)]/20 flex items-center justify-center">

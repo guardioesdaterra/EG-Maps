@@ -75,7 +75,7 @@
     </header>
 
     
-    <nav v-if="showDock && !hideAll" class="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] xs:bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
+    <nav v-if="showDock && !hideAll" class="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] xs:bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2" aria-label="Primary navigation">
       <div :class="dockShellClass">
         <div class="flex items-center gap-1">
           <GooeyNav :items="navItems" />

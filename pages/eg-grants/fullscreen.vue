@@ -5,7 +5,7 @@
  * @deps vue (ref, reactive, computed, watch, onMounted); ~/lib/project-data (allProjectsData); ~/composables/useI18n (useI18n); ~/composables/useSupabase (useSupabase); ~/composables/useSupabaseAuth (useSupabaseAuth)
  */
 <template>
-  <div class="fs-grants min-h-screen bg-black text-white">
+  <div id="main-content" role="main" class="fs-grants min-h-screen bg-black text-white">
     <div v-if="!sessionReady" class="fixed inset-0 flex items-center justify-center bg-black" style="z-index: 99999">
       <div class="w-5 h-5 border border-white/30 border-t-white rounded-full animate-spin" />
     </div>

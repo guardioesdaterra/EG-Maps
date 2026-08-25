@@ -4,7 +4,7 @@
  * @component iframe
  */
 <template>
-  <main class="bg-white dark:bg-[var(--bg-primary)] text-black dark:text-[var(--text-primary)] min-h-screen">
+  <main id="main-content" class="bg-white dark:bg-[var(--bg-primary)] text-black dark:text-[var(--text-primary)] min-h-screen">
     <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       
       <header class="mb-8">

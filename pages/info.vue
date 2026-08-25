@@ -5,7 +5,7 @@
  * @deps vue (computed, ref, onMounted, onBeforeUnmount); @/lib/project-data (allProjectsData); @/lib/utils (formatCompact)
  */
 <template>
-  <main class="flex min-h-[100svh] items-center justify-center bg-[var(--bg-primary)] section-padding-x py-[max(4.75rem,8vh)] pb-[max(7rem,env(safe-area-inset-bottom))] text-[var(--text-primary)]">
+  <main id="main-content" class="flex min-h-[100svh] items-center justify-center bg-[var(--bg-primary)] section-padding-x py-[max(4.75rem,8vh)] pb-[max(7rem,env(safe-area-inset-bottom))] text-[var(--text-primary)]">
     <section class="w-container-narrow max-h-[calc(100svh-9rem)] overflow-hidden rounded-fluid-lg border-2 border-[var(--border-color)] bg-[var(--bg-tertiary)] text-[var(--text-primary)] shadow-[0_0_0_1px_var(--border-color)]">
       <header class="border-b-2 border-[var(--border-color)] card-padding-lg">
         <div class="flex flex-col gap-fluid sm:flex-row sm:items-start sm:justify-between">

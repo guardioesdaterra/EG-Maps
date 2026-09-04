@@ -33,7 +33,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
 
   const { pointsData: _rawPointsData, polygonsData: _rawPolygonsData, protectedData: _rawProtectedData, waterData: _rawWaterData, culturalData: _rawCulturalData, features: allFeatures, speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL, initialRegion)
 
-  const { combinedData: culturalAgentsCombined, load: loadCulturalAgents } = useCulturalAgentsData(baseURL)
+  const { combinedData: culturalAgentsCombined, sourceCounts, load: loadCulturalAgents } = useCulturalAgentsData(baseURL)
 
   const EMPTY_FC: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] }
   const pointsData = computed(() => _rawPointsData.value ?? EMPTY_FC)
@@ -61,6 +61,18 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
       type: 'FeatureCollection',
       features: baseFeatures.length ? [...baseFeatures, ...agents] : agents,
     }
+  })
+
+  // Cultural-agent counts derived from `culturalAgentsCombined` (already
+  // contains mapa_cultura + floresta_ativista + community, deduped).
+  const culturalTotalCount = computed(() => culturalAgentsCombined.value?.features?.length ?? 0)
+  const culturalSourceCounts = computed<Record<string, number>>(() => {
+    const out: Record<string, number> = { mapa_cultura: 0, floresta_ativista: 0, community: 0 }
+    for (const f of culturalAgentsCombined.value?.features ?? []) {
+      const s = (f.properties as { source?: string } | undefined)?.source
+      if (s && s in out) out[s]++
+    }
+    return out
   })
 
   controls.setupObservatory({
@@ -271,6 +283,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     yearMin, yearMax, selectedPhases, searchTerm, sobDemandaOnly, filtersExpanded,
     displayCounts, startCounterAnimation, animatedCount,
     mapContainerRef, filteredCount,
+    culturalTotalCount, culturalSourceCounts,
     debouncedFilter,
     clearPin, getShareUrl, copyShareUrl,
   }

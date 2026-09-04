@@ -55,6 +55,7 @@ export default defineNuxtConfig({
     '/project-grants/3d': { prerender: false },
     '/active-crews': { prerender: false },
     '/active-crews/3d': { prerender: false },
+    '/squarespace/**': { prerender: true },
   },
 
   app: {
@@ -114,8 +115,15 @@ export default defineNuxtConfig({
     preset: 'static',
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d', '/iframe'],
-      ignore: ['/manifest.json'],
+      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d', '/iframe', '/squarespace/active-crews'],
+      // /manifest.json is a static asset, not a page. The prerender crawler
+      // follows <link rel="manifest" href="…"> and tries to fetch it as a
+      // route; with a non-root baseURL it follows the prefixed form, so we
+      // ignore every base-prefixed variant.
+      ignore: [
+        '/manifest.json',
+        `${baseURL}manifest.json`.replace(/\/+$/, '') || '/manifest.json',
+      ],
     },
     compressPublicAssets: true,
   },

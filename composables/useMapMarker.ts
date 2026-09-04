@@ -50,7 +50,7 @@ export interface RebuildArgs {
 
 const SOURCE = 'markers'
 
-const LAYER_SUFFIXES = ['_cg', '_c', '_cn', '_pg', '_p', '_pl'] as const
+const LAYER_SUFFIXES = ['_cg', '_c', '_cn', '_pg', '_p', '_pl', '_mg', '_mm', '_ml'] as const
 
 const CLUSTER_PALETTES: Record<MarkerDataset, readonly [string, string, string, string]> = {
   'project-grants':       ['#06b6d4', '#22c55e', '#eab308', '#ef4444'],
@@ -59,7 +59,12 @@ const CLUSTER_PALETTES: Record<MarkerDataset, readonly [string, string, string, 
   'vulcan-observatory':   ['#22c55e', '#f59e0b', '#ef4444', '#dc2626'],
 }
 
-const CLUSTERED_DATASETS = new Set<MarkerDataset>(['project-grants', 'endangered-species', 'active-crews', 'vulcan-observatory'])
+const CLUSTERED_DATASETS = new Set<MarkerDataset>(['project-grants', 'endangered-species', 'vulcan-observatory'])
+
+const CREW_MOSAIC_RADIUS_DEG = 0.045
+const CREW_MOSAIC_ZOOM_MIN = 2
+const CREW_MOSAIC_ZOOM_MAX = 7
+const MAX_CREW_BUBBLES = 8
 
 /* ══════════════════════════════════════════════════════════════════════════
    🏠 SWARM 2 · COMPOSABLE STATE + LIFECYCLE (8)
@@ -200,12 +205,11 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     console.time(label)
     removeSource(id)
     const isClustered = CLUSTERED_DATASETS.has(ds)
-    const clusterMaxZoom = ds === 'active-crews' ? 8 : 16
     map.addSource(id, {
       type: 'geojson', data,
       cluster: isClustered,
       clusterRadius: isClustered ? 50 : undefined,
-      clusterMaxZoom: isClustered ? clusterMaxZoom : undefined,
+      clusterMaxZoom: isClustered ? 16 : undefined,
     })
     console.timeEnd(label)
   }
@@ -234,10 +238,15 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     if (!map) return
     const label = `[perf] addLayers ${id}`
     console.time(label)
-    const isClustered = CLUSTERED_DATASETS.has(ds)
-    if (isClustered) addClusterLayers(id, CLUSTER_PALETTES[ds])
-    const pf = isClustered ? ['!', ['has', 'point_count']] as FilterSpecification : undefined
-    addPointLayers(id, pf)
+    if (ds === 'active-crews') {
+      addCrewMosaicLayers(id)
+      addCrewLocationLayers(id)
+    } else {
+      const isClustered = CLUSTERED_DATASETS.has(ds)
+      if (isClustered) addClusterLayers(id, CLUSTER_PALETTES[ds])
+      const pf = isClustered ? ['!', ['has', 'point_count']] as FilterSpecification : undefined
+      addPointLayers(id, pf)
+    }
     console.timeEnd(label)
   }
 
@@ -256,6 +265,104 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       'text-size': ['interpolate', ['linear'], ['zoom'], 2, 0, 6, 9, 10, 12, 16, 14],
       'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
       'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.40)', 'text-halo-width': 2 } })
+  }
+
+  function addCrewMosaicLayers(id: string) {
+    if (!map) return
+
+    const mosaicSize = (mosaic: string, orig: string, low: number) =>
+      ['interpolate', ['linear'], ['zoom'],
+        CREW_MOSAIC_ZOOM_MIN, low,
+        CREW_MOSAIC_ZOOM_MAX, ['coalesce', ['get', orig], low]] as unknown as ExpressionSpecification
+
+    const mosaicFade = (low: number, high: number) =>
+      ['interpolate', ['linear'], ['zoom'],
+        CREW_MOSAIC_ZOOM_MIN, low,
+        CREW_MOSAIC_ZOOM_MAX - 1, high] as unknown as ExpressionSpecification
+
+    const colorExpr = ['match', ['get', '_bubbleIndex'],
+      0, '#22c55e',
+      1, '#22c55e',
+      2, '#3b82f6',
+      3, '#3b82f6',
+      4, '#3b82f6',
+      5, '#a855f7',
+      6, '#a855f7',
+      7, '#a855f7',
+      '#ec4899'] as unknown as ExpressionSpecification
+
+    const allBubblesFilter = ['==', '_type', 'crewRegion'] as FilterSpecification
+    const primaryFilter = ['all',
+      ['==', '_type', 'crewRegion'],
+      ['==', '_isPrimary', true],
+    ] as FilterSpecification
+
+    map.addLayer({
+      id: `${id}_mg`, type: 'circle', source: id,
+      filter: allBubblesFilter, paint: {
+        'circle-color': colorExpr,
+        'circle-radius': mosaicSize('_mosaicRadius', '_bubbleRadius', 7),
+        'circle-blur': 0.7,
+        'circle-opacity': mosaicFade(0.32, 0),
+      },
+    })
+
+    map.addLayer({
+      id: `${id}_mm`, type: 'circle', source: id,
+      filter: allBubblesFilter, paint: {
+        'circle-color': 'rgba(0,0,0,0.88)',
+        'circle-radius': mosaicSize('_mosaicRadius', '_bubbleRadius', 5),
+        'circle-stroke-color': colorExpr,
+        'circle-stroke-width': ['interpolate', ['linear'], ['zoom'],
+          CREW_MOSAIC_ZOOM_MIN, 2,
+          CREW_MOSAIC_ZOOM_MAX, 1] as unknown as ExpressionSpecification,
+        'circle-opacity': mosaicFade(0.96, 0),
+      },
+    })
+
+    map.addLayer({
+      id: `${id}_ml`, type: 'symbol', source: id,
+      filter: primaryFilter, layout: {
+        'text-field': ['get', 'label'],
+        'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
+        'text-size': mosaicSize('_mosaicRadius', '_bubbleRadius', 10),
+        'text-allow-overlap': true,
+        'text-ignore-placement': true,
+      }, paint: {
+        'text-color': '#fff',
+        'text-halo-color': 'rgba(0,0,0,0.6)',
+        'text-halo-width': 1.5,
+        'text-opacity': mosaicFade(1, 0),
+      },
+    })
+  }
+
+  function addCrewLocationLayers(id: string) {
+    if (!map) return
+    const locationFilter = ['all',
+      ['!', ['has', 'point_count']],
+      ['==', '_type', 'crewLocation'],
+    ] as FilterSpecification
+    const locOpacity = ['interpolate', ['linear'], ['zoom'],
+      CREW_MOSAIC_ZOOM_MIN, 0,
+      CREW_MOSAIC_ZOOM_MAX, 1] as unknown as ExpressionSpecification
+
+    map.addLayer({ id: `${id}_pg`, type: 'circle', source: id, filter: locationFilter, paint: {
+      'circle-color': ['get', 'color'],
+      'circle-radius': ['*', ['coalesce', ['get', 'size'], 6], 1.8],
+      'circle-blur': 0.6, 'circle-opacity': ['*', 0.30, locOpacity] } })
+    map.addLayer({ id: `${id}_p`, type: 'circle', source: id, filter: locationFilter, paint: {
+      'circle-color': 'rgba(0,0,0,0.85)',
+      'circle-radius': ['coalesce', ['get', 'size'], 6],
+      'circle-stroke-color': ['get', 'color'],
+      'circle-stroke-width': 2.5, 'circle-opacity': ['*', 0.96, locOpacity] } })
+    map.addLayer({ id: `${id}_pl`, type: 'symbol', source: id, filter: locationFilter, layout: {
+      'text-field': ['coalesce', ['get', 'label'], ''],
+      'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 8, 7, 14, 10],
+      'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
+      'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.65)', 'text-halo-width': 1.5,
+      'text-opacity': locOpacity } })
   }
 
   function addPointLayers(id: string, filter?: FilterSpecification) {
@@ -283,14 +390,22 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   function setupEvents(id: string, ds: MarkerDataset, a: RebuildArgs) {
     if (!map) return
     detach()
-    const pL = `${id}_p`
-    const cL = `${id}_c`
-    reg(pL, 'click', onPoint(ds, a))
-    reg(cL, 'click', onCluster(id))
-    reg(cL, 'mouseenter', ptr)
-    reg(cL, 'mouseleave', nop)
-    reg(pL, 'mouseenter', ptr)
-    reg(pL, 'mouseleave', nop)
+    if (ds === 'active-crews') {
+      reg(`${id}_mm`, 'click', onPoint(ds, a))
+      reg(`${id}_mg`, 'mouseenter', onMosaicHoverIn)
+      reg(`${id}_mg`, 'mouseleave', onMosaicHoverOut)
+      reg(`${id}_mm`, 'mouseenter', onMosaicHoverIn)
+      reg(`${id}_mm`, 'mouseleave', onMosaicHoverOut)
+    } else {
+      const pL = `${id}_p`
+      const cL = `${id}_c`
+      reg(pL, 'click', onPoint(ds, a))
+      reg(cL, 'click', onCluster(id))
+      reg(cL, 'mouseenter', ptr)
+      reg(cL, 'mouseleave', nop)
+      reg(pL, 'mouseenter', ptr)
+      reg(pL, 'mouseleave', nop)
+    }
   }
 
   function onPoint(ds: MarkerDataset, a: RebuildArgs) {
@@ -320,6 +435,28 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   const ptr = () => { if (map) map.getCanvas().style.cursor = 'pointer' }
 
   const nop = () => { if (map) map.getCanvas().style.cursor = '' }
+
+  function onMosaicHoverIn(e: MapLayerMouseEvent) {
+    if (!map) return
+    map.getCanvas().style.cursor = 'pointer'
+    const f = e.features?.[0]
+    if (!f) return
+    const idx = f.layer.id
+    if (map.getLayer(idx)) {
+      map.setPaintProperty(idx, 'circle-stroke-width', 3.5)
+    }
+  }
+
+  function onMosaicHoverOut(e: MapLayerMouseEvent) {
+    if (!map) return
+    map.getCanvas().style.cursor = ''
+    const f = e.features?.[0]
+    if (!f) return
+    const idx = f.layer.id
+    if (map.getLayer(idx)) {
+      map.setPaintProperty(idx, 'circle-stroke-width', 2)
+    }
+  }
 
   function reg(lid: string, evt: keyof MapLayerEventType, fn: (e: MapLayerMouseEvent) => void) {
     map!.on(evt, lid, fn as (ev: MapLayerEventType[typeof evt] & object) => void)
@@ -399,9 +536,11 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   }
 
   function dispatchCrewRegion(p: Record<string, unknown>, coords: [number, number]) {
+    const origLat = (p._origLat as number) ?? coords[1]
+    const origLng = (p._origLng as number) ?? coords[0]
     const crew: CrewRegionData = {
       id: p.id as string, region: p.region as string,
-      latitude: coords[1], longitude: coords[0],
+      latitude: origLat, longitude: origLng,
       activeCrews: p.activeCrews as number, inactiveCrews: p.inactiveCrews as number,
       totalMembers: p.totalMembers as number, countries: p.countries as number,
       history: p.history as CrewRegionData['history'],
@@ -526,22 +665,34 @@ function toCrewGeoJSON(regions: CrewRegionData[], locations: CrewLocation[]): Ge
 }
 
 function buildCrewRegionMarkers(regions: CrewRegionData[]): GeoJSON.Feature[] {
-  return regions
-    .filter(r => (r.activeCrews !== 0 || r.inactiveCrews !== 0) && isValidCoordinate(r.latitude, r.longitude))
-    .map(r => {
-      const mf = Math.min(Math.max(r.totalMembers / 200, 0.5), 5)
-      return {
+  const features: GeoJSON.Feature[] = []
+  for (const r of regions) {
+    if ((r.activeCrews === 0 && r.inactiveCrews === 0) || !isValidCoordinate(r.latitude, r.longitude)) continue
+    const bubbles = Math.min(Math.max(r.activeCrews, 1), MAX_CREW_BUBBLES)
+    const positions = computeCrewMosaicPositions(bubbles, r.latitude, r.longitude)
+    const color = r.activeCrews > 20 ? '#22c55e' : r.activeCrews > 5 ? '#3b82f6' : '#a855f7'
+    const bubbleRadius = bubbles === 1 ? 7 : bubbles <= 3 ? 5.5 : bubbles <= 6 ? 4.5 : 4
+
+    for (let i = 0; i < bubbles; i++) {
+      const pos = positions[i]
+      const isPrimary = i === 0
+      features.push({
         type: 'Feature',
-        geometry: { type: 'Point', coordinates: [r.longitude, r.latitude] },
+        geometry: { type: 'Point', coordinates: [pos.lng, pos.lat] },
         properties: {
           id: r.id, _type: 'crewRegion',
-          color: r.activeCrews > 20 ? '#22c55e' : r.activeCrews > 5 ? '#3b82f6' : '#a855f7',
-          size: 5 + mf * 3, label: String(r.activeCrews),
+          _bubbleIndex: i, _isPrimary: isPrimary,
+          _origLat: r.latitude, _origLng: r.longitude,
+          _mosaicLat: pos.lat, _mosaicLng: pos.lng,
+          _mosaicRadius: pos.radius, _bubbleRadius: bubbleRadius,
+          color, size: bubbleRadius * 2, label: isPrimary ? String(r.activeCrews) : '',
           region: r.region, activeCrews: r.activeCrews, inactiveCrews: r.inactiveCrews,
           totalMembers: r.totalMembers, countries: r.countries, history: r.history,
         },
-      }
-    })
+      })
+    }
+  }
+  return features
 }
 
 function buildCrewLocationPoints(locations: CrewLocation[]): GeoJSON.Feature[] {
@@ -594,6 +745,43 @@ function groupCrewsByCoord(locations: CrewLocation[]): CrewLocation[][] {
     map.get(key)!.push(loc)
   }
   return [...map.values()]
+}
+
+function computeCrewMosaicPositions(count: number, centerLat: number, centerLng: number) {
+  const latRad = centerLat * Math.PI / 180
+  const lngScale = Math.max(Math.cos(latRad), 0.1)
+  const positions: Array<{ lat: number; lng: number; radius: number }> = []
+
+  if (count === 1) {
+    positions.push({ lat: centerLat, lng: centerLng, radius: 7 })
+    return positions
+  }
+
+  positions.push({ lat: centerLat, lng: centerLng, radius: 5.5 })
+
+  if (count <= 7) {
+    for (let i = 0; i < count - 1; i++) {
+      const angle = (i / (count - 1)) * Math.PI * 2 - Math.PI / 2
+      const lat = centerLat + Math.sin(angle) * CREW_MOSAIC_RADIUS_DEG
+      const lng = centerLng + Math.cos(angle) * CREW_MOSAIC_RADIUS_DEG / lngScale
+      positions.push({ lat, lng, radius: 4 })
+    }
+  } else {
+    for (let i = 0; i < 6; i++) {
+      const angle = (i / 6) * Math.PI * 2 - Math.PI / 2
+      const lat = centerLat + Math.sin(angle) * CREW_MOSAIC_RADIUS_DEG
+      const lng = centerLng + Math.cos(angle) * CREW_MOSAIC_RADIUS_DEG / lngScale
+      positions.push({ lat, lng, radius: 4 })
+    }
+    for (let i = 0; i < 2; i++) {
+      const angle = (i / 2) * Math.PI * 2 + Math.PI / 4
+      const lat = centerLat + Math.sin(angle) * CREW_MOSAIC_RADIUS_DEG * 1.65
+      const lng = centerLng + Math.cos(angle) * CREW_MOSAIC_RADIUS_DEG * 1.65 / lngScale
+      positions.push({ lat, lng, radius: 3.5 })
+    }
+  }
+
+  return positions
 }
 
 const CULTURAL_SUBTYPE_COLORS: Record<string, string> = {

@@ -64,6 +64,26 @@
     {
       "type": "Feature",
       "properties": {
+        "name": "DJ FLOU",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "1861",
+        "single_url": "https://rede.florestaativista.org/agente/1861/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.1019475,
+          -22.8196674
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "name": "Taciane alves silva",
         "type": "cultural",
         "subtype": "rural",
@@ -164,7 +184,7 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Moe & Banda",
+        "name": "Adriano Silvio de Melo",
         "type": "cultural",
         "subtype": "rural",
         "source": "floresta_ativista",
@@ -216,8 +236,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -47.3430733,
-          -22.7759586
+          -47.3576791,
+          -22.7405641
         ]
       }
     },
@@ -304,6 +324,26 @@
     {
       "type": "Feature",
       "properties": {
+        "name": "Antônio Rafael de Lima Andrade",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "11170",
+        "single_url": "https://rede.florestaativista.org/agente/11170/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.5460158,
+          -21.8043547
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "name": "Lares Morari",
         "type": "cultural",
         "subtype": "rural",
@@ -324,20 +364,20 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Anna Esteves",
+        "name": "Paulo Ismael Godoy Cardoso",
         "type": "cultural",
         "subtype": "rural",
         "source": "floresta_ativista",
-        "source_id": "61414",
-        "single_url": "https://rede.florestaativista.org/agente/61414/",
+        "source_id": "57418",
+        "single_url": "https://rede.florestaativista.org/agente/57418/",
         "status": "active",
         "description": "Cultural agent from Floresta Ativista"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -45.4340674,
-          -21.5565914
+          -46.3183325,
+          -20.7193467
         ]
       }
     },
@@ -404,7 +444,7 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Marlon de Oliveira Vieira ",
+        "name": "Marlon de Oliveira Vieira",
         "type": "cultural",
         "subtype": "rural",
         "source": "floresta_ativista",
@@ -416,8 +456,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.9870773,
-          -20.9155726
+          -46.9962785,
+          -20.9279093
         ]
       }
     },
@@ -438,6 +478,26 @@
         "coordinates": [
           -45.9308047,
           -21.6743974
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Matheus Macêdo",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "85537",
+        "single_url": "https://rede.florestaativista.org/agente/85537/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -45.4659013,
+          -22.2428031
         ]
       }
     },
@@ -484,20 +544,20 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Pepe Bueno & Os Estranhos",
+        "name": "Larissa Feola",
         "type": "cultural",
         "subtype": "rural",
         "source": "floresta_ativista",
-        "source_id": "113904",
-        "single_url": "https://rede.florestaativista.org/agente/113904/",
+        "source_id": "112811",
+        "single_url": "https://rede.florestaativista.org/agente/112811/",
         "status": "active",
         "description": "Cultural agent from Floresta Ativista"
       },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -47.09251,
-          -22.9353917
+          -47.4275764,
+          -22.6157265
         ]
       }
     },
@@ -844,7 +904,7 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "MATEUS COUTO FELICIANO",
+        "name": "Aline Monzani",
         "type": "cultural",
         "subtype": "rural",
         "source": "floresta_ativista",
@@ -856,8 +916,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -47.6136466,
-          -21.9166357
+          -47.6208882,
+          -21.9113494
         ]
       }
     },
@@ -1238,6 +1298,526 @@
         "coordinates": [
           -47.059564,
           -22.9056391
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Edu_Inclus",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "238921",
+        "single_url": "https://rede.florestaativista.org/agente/238921/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -45.933604700778,
+          -22.463837050961
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Indecisão Coletiva",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "241889",
+        "single_url": "https://rede.florestaativista.org/agente/241889/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.9533866,
+          -22.4300569
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lucas Fursy",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "241892",
+        "single_url": "https://rede.florestaativista.org/agente/241892/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.5647928,
+          -21.7900318
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rogério Elias Cantalicio",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "249337",
+        "single_url": "https://rede.florestaativista.org/agente/249337/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.5657105,
+          -21.7867496
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Máyron Alexssander",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "256847",
+        "single_url": "https://rede.florestaativista.org/agente/256847/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -45.7800024,
+          -22.5541683
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nanda Dearo",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "256946",
+        "single_url": "https://rede.florestaativista.org/agente/256946/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.6033425,
+          -21.7878296
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Reinaldo Teixeira e Silva",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "258098",
+        "single_url": "https://rede.florestaativista.org/agente/258098/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.1417513,
+          -21.248913
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Carlos Alexandre Molina Noccioli",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "268057",
+        "single_url": "https://rede.florestaativista.org/agente/268057/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.532184,
+          -21.376329
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Banda Supersonic Oasis Cover Brasil",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "326373",
+        "single_url": "https://rede.florestaativista.org/agente/326373/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.0493804,
+          -22.9453343
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Mox",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "326743",
+        "single_url": "https://rede.florestaativista.org/agente/326743/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.0540599,
+          -22.9051531
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sheila",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "327323",
+        "single_url": "https://rede.florestaativista.org/agente/327323/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.6493269,
+          -22.725165
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "PAOLY ALMEIDA BAPTISTELLA",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "328476",
+        "single_url": "https://rede.florestaativista.org/agente/328476/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.809514045563,
+          -21.701400929408
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "BANDA STR80",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "330339",
+        "single_url": "https://rede.florestaativista.org/agente/330339/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.9191644,
+          -22.0185154
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "NADA",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "330376",
+        "single_url": "https://rede.florestaativista.org/agente/330376/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.9775118,
+          -23.0083695
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pedra Branca",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "332867",
+        "single_url": "https://rede.florestaativista.org/agente/332867/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -45.6136594,
+          -22.4750475
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bheatriz Brito Vianna",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "334505",
+        "single_url": "https://rede.florestaativista.org/agente/334505/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.0652496,
+          -22.8974675
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Layane Camille da Silva",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "336465",
+        "single_url": "https://rede.florestaativista.org/agente/336465/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.5978082,
+          -21.7893808
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Julia Camilo de Souza",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "336642",
+        "single_url": "https://rede.florestaativista.org/agente/336642/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.5540239,
+          -21.7888744
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sarah Martins Silva",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "338630",
+        "single_url": "https://rede.florestaativista.org/agente/338630/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.9894194,
+          -23.0312797
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ramses Paraguassu",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "338880",
+        "single_url": "https://rede.florestaativista.org/agente/338880/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.6308716,
+          -22.7184197
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Exkil",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "338917",
+        "single_url": "https://rede.florestaativista.org/agente/338917/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.6309105,
+          -22.7190417
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Matheus Pellegrini Coelho Bertoli",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "340175",
+        "single_url": "https://rede.florestaativista.org/agente/340175/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.0488316,
+          -22.8897668
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "João Paulo Xavier",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "340729",
+        "single_url": "https://rede.florestaativista.org/agente/340729/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.8379497,
+          -23.2235867
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Marcela Reis",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "342104",
+        "single_url": "https://rede.florestaativista.org/agente/342104/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -45.4340674,
+          -21.5565914
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Juliana Sousa",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "342595",
+        "single_url": "https://rede.florestaativista.org/agente/342595/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.9425,
+          -22.372222
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Marina Rosa",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "346370",
+        "single_url": "https://rede.florestaativista.org/agente/346370/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.8805398,
+          -21.5951341
         ]
       }
     }

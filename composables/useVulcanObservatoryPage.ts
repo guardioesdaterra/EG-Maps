@@ -33,20 +33,46 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
 
   const { pointsData: _rawPointsData, polygonsData: _rawPolygonsData, protectedData: _rawProtectedData, waterData: _rawWaterData, culturalData: _rawCulturalData, features: allFeatures, speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL, initialRegion)
 
-  const { combinedData: culturalAgentsCombined, sourceCounts: culturalAgentCounts, load: loadCulturalAgents, submitPin: submitCommunityPin } = useCulturalAgentsData(baseURL)
+  const { combinedData: culturalAgentsCombined, sourceCounts, load: loadCulturalAgents } = useCulturalAgentsData(baseURL)
 
   const EMPTY_FC: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] }
   const pointsData = computed(() => _rawPointsData.value ?? EMPTY_FC)
   const polygonsData = computed(() => _rawPolygonsData.value)
   const protectedData = computed(() => _rawProtectedData.value)
   const waterData = computed(() => _rawWaterData.value)
+
+  /**
+   * Combined cultural layer for the observatory map.
+   *
+   * `culturalAgentsCombined` already contains:
+   *   - Mapa Cultura BR (digested from public/map-culture.json)
+   *   - Floresta Ativista (live HTTP fetch, deduplicated against Mapa Cultura)
+   *   - Community pins (Supabase)
+   *
+   * `_rawCulturalData` is the curated rare-earth/cultural-features.geojson
+   * overlay; we append the API/community layer on top.
+   */
   const culturalData = computed<GeoJSON.FeatureCollection | undefined>(() => {
-    if (!_rawCulturalData.value && !culturalAgentsCombined.value?.features?.length) return undefined
-    const base = _rawCulturalData.value ?? EMPTY_FC
+    const base = _rawCulturalData.value
     const agents = culturalAgentsCombined.value?.features ?? []
-    if (!agents.length) return _rawCulturalData.value
-    const merged = base.features.length ? [...base.features, ...agents] : agents
-    return { ...base, features: merged }
+    if (!agents.length) return base
+    const baseFeatures = base?.features ?? []
+    return {
+      type: 'FeatureCollection',
+      features: baseFeatures.length ? [...baseFeatures, ...agents] : agents,
+    }
+  })
+
+  // Cultural-agent counts derived from `culturalAgentsCombined` (already
+  // contains mapa_cultura + floresta_ativista + community, deduped).
+  const culturalTotalCount = computed(() => culturalAgentsCombined.value?.features?.length ?? 0)
+  const culturalSourceCounts = computed<Record<string, number>>(() => {
+    const out: Record<string, number> = { mapa_cultura: 0, floresta_ativista: 0, community: 0 }
+    for (const f of culturalAgentsCombined.value?.features ?? []) {
+      const s = (f.properties as { source?: string } | undefined)?.source
+      if (s && s in out) out[s]++
+    }
+    return out
   })
 
   controls.setupObservatory({
@@ -257,6 +283,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     yearMin, yearMax, selectedPhases, searchTerm, sobDemandaOnly, filtersExpanded,
     displayCounts, startCounterAnimation, animatedCount,
     mapContainerRef, filteredCount,
+    culturalTotalCount, culturalSourceCounts,
     debouncedFilter,
     clearPin, getShareUrl, copyShareUrl,
   }

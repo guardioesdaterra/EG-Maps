@@ -1,23 +1,48 @@
 /**
  * pages/vulcan-observatory/index.vue
- * @why Vulcan observatory 2D map — observatory claims with phase filters, search, data table
- * @component index
- * @deps @/composables/useI18n (useI18n); @/composables/useVulcanObservatoryPage (useVulcanObservatoryPage)
+ * @why Vulcan observatory 2D map — observatory claims with phase filters,
+ *      search, data table, and cultural-agent overlay (Mapa Cultura BR +
+ *      Floresta Ativista + community pins).
+ *
+ * Data flow:
+ *   public/data/rare-earth/pococaldas/*.geojson      → useRareEarthData
+ *     ├ points / overlaps / polygons / protected / water / deep_analysis
+ *     └ cultural-features.geojson (curated REE-region overlay)
+ *
+ *   public/data/cultural-agents/cultural-agents.json → useCulturalAgentsData
+ *     ├ source: mapa_cultura     (digested from public/map-culture.json)
+ *     └ source: floresta_ativista (live HTTP, merged by sync-cultural-agents.py)
+ *   public/data/cultural-agents/floresta-ativista.json → useCulturalAgentsData
+ *     └ additive source (loaded independently as defence-in-depth)
+ *   Supabase community_pins (status='approved') → useCulturalAgentsData
+ *     └ source: community
+ *
+ *   The combined culturalData is passed to MapView2D as
+ *   `:rare-earth-cultural` and rendered via setupCulturalLayers.
+ *
+ * @deps @/composables/useI18n (useI18n);
+ *       @/composables/useVulcanObservatoryPage (useVulcanObservatoryPage)
+ * @connections /vulcan-observatory/3d.vue (shares the same data composable)
  */
 <template>
   <div id="main-content" class="relative w-full h-[100svh] overflow-hidden">
-    
     <Transition name="fade">
-      <div v-if="isLoading || error" class="obs-loading-overlay fixed inset-0 bg-zinc-950/90 backdrop-blur-md flex flex-col items-center justify-center gap-4">
+      <div
+        v-if="isLoading || error"
+        class="obs-loading-overlay fixed inset-0 bg-zinc-950/90 backdrop-blur-md flex flex-col items-center justify-center gap-4"
+      >
         <template v-if="error && !isLoading">
           <div class="text-center">
             <Icon name="lucide:alert-triangle" class="text-4xl mb-3 mx-auto text-red-400" />
-            <h2 class="text-fluid-sm font-bold text-red-400 uppercase tracking-wider mb-1">{{ t('observatory.error.loadFailed') }}</h2>
+            <h2 class="text-fluid-sm font-bold text-red-400 uppercase tracking-wider mb-1">
+              {{ t('observatory.error.loadFailed') }}
+            </h2>
             <p class="text-fluid-xs text-zinc-500 mb-4">{{ error.message }}</p>
             <button
               type="button"
               class="px-fluid-md py-fluid-xs text-fluid-xs font-bold rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
-              @click="loadRareEarthData()">
+              @click="loadRareEarthData()"
+            >
               {{ t('observatory.error.retry') }}
             </button>
           </div>
@@ -30,13 +55,18 @@
             </div>
           </div>
           <div class="text-center">
-            <h2 class="text-fluid-sm font-bold text-zinc-200 uppercase tracking-wider mb-1">{{ t('loading.observatoryOfVulcan') }}</h2>
+            <h2 class="text-fluid-sm font-bold text-zinc-200 uppercase tracking-wider mb-1">
+              {{ t('loading.observatoryOfVulcan') }}
+            </h2>
             <p class="text-fluid-xs text-zinc-500">{{ loadingMessage }}</p>
           </div>
           <div class="w-[clamp(10rem,24vw,14rem)] h-1 bg-zinc-800 rounded-full overflow-hidden">
             <div
               class="h-full rounded-full transition-all duration-500 ease-out"
-              :style="{ width: `${loadProgress}%`, background: `linear-gradient(90deg, var(--obs-red), var(--obs-amber))` }"
+              :style="{
+                width: `${loadProgress}%`,
+                background: 'linear-gradient(90deg, var(--obs-red), var(--obs-amber))',
+              }"
             />
           </div>
           <span class="text-fluid-xs text-zinc-600 font-mono">{{ loadProgress }}%</span>
@@ -62,9 +92,9 @@
             :controls="controls"
             :stats="stats"
             :data="data"
-            :on-rede-corporativa="() => showRedeCorporativa = true"
-            :on-data-download="() => showDownload = true"
-            :on-user-contribution="() => showUserContribution = true"
+            :on-rede-corporativa="() => (showRedeCorporativa = true)"
+            :on-data-download="() => (showDownload = true)"
+            :on-user-contribution="() => (showUserContribution = true)"
             :on-expand-to-full-brazil="() => expandToFullBrazil(loadFullBrazil)"
             :user-pin="userPin"
             :user-pin-shared="userPinShared"
@@ -80,9 +110,9 @@
                 :active-tab="activeTab"
                 :danger-items="speculatorIndex"
                 :show-all="showAll"
-                style="position: relative; height: 100%;"
-                @update:active-tab="(tab) => activeTab = tab"
-                @update:show-all="(v) => showAll = v"
+                style="position: relative; height: 100%"
+                @update:active-tab="(tab) => (activeTab = tab)"
+                @update:show-all="(v) => (showAll = v)"
                 @fly-to-enterprise="zoomToDanger"
                 @fly-to-coord="flyToCoord"
               />
@@ -91,17 +121,45 @@
         </template>
       </MapView2D>
 
-      
       <GeoPoliticalTimeline :visible="showTimeline" @close="showTimeline = false" />
-      <RedeCorporativa :visible="showRedeCorporativa" @close="showRedeCorporativa = false" @fly-to-enterprise="flyToEnterprise" />
+      <RedeCorporativa
+        :visible="showRedeCorporativa"
+        @close="showRedeCorporativa = false"
+        @fly-to-enterprise="flyToEnterprise"
+      />
       <DataDownloadPanel :visible="showDownload" @close="showDownload = false" />
-      <ClaimReportModal :visible="showClaimReport" :claim="reportClaim" @close="showClaimReport = false" />
-      <ExportModal :visible="showExport" :map-container="mapContainerRef" :filter-summary="activeFilterSummary" @close="showExport = false" />
+      <ClaimReportModal
+        :visible="showClaimReport"
+        :claim="reportClaim"
+        @close="showClaimReport = false"
+      />
+      <ExportModal
+        :visible="showExport"
+        :map-container="mapContainerRef"
+        :filter-summary="activeFilterSummary"
+        @close="showExport = false"
+      />
       <KeyboardShortcuts :visible="showShortcuts" @close="showShortcuts = false" />
-      <GeoLocateModal :visible="showGeoLocate" @close="showGeoLocate = false" @locate="onGeoLocate" />
-      <UserContributionModal :visible="showUserContribution" @close="showUserContribution = false" />
-      <ClaimsDataTable :visible="showDataTable" :data="allFeatures" @close="showDataTable = false" @fly-to="(coords: [number, number]) => flyToTarget = { lng: coords[0], lat: coords[1], zoom: 8 }" />
-      <ClaimDetailModal :visible="showClaimDetail" :claim="claimDetailProps" @close="closeClaimDetail" />
+      <GeoLocateModal
+        :visible="showGeoLocate"
+        @close="showGeoLocate = false"
+        @locate="onGeoLocate"
+      />
+      <UserContributionModal
+        :visible="showUserContribution"
+        @close="showUserContribution = false"
+      />
+      <ClaimsDataTable
+        :visible="showDataTable"
+        :data="allFeatures"
+        @close="showDataTable = false"
+        @fly-to="(coords: [number, number]) => (flyToTarget = { lng: coords[0], lat: coords[1], zoom: 8 })"
+      />
+      <ClaimDetailModal
+        :visible="showClaimDetail"
+        :claim="claimDetailProps"
+        @close="closeClaimDetail"
+      />
 
       <template #fallback>
         <div class="flex h-[100svh] w-full items-center justify-center bg-zinc-950 text-white">
@@ -113,7 +171,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { useI18n } from '@/composables/useI18n'
 import { useVulcanObservatoryPage } from '@/composables/useVulcanObservatoryPage'
 
@@ -121,27 +178,75 @@ const { t } = useI18n()
 
 useHead({
   title: 'Observatory of Vulcan | Earth Guardians',
-  meta: [{ name: 'description', content: 'Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.' }],
+  meta: [
+    {
+      name: 'description',
+      content:
+        'Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.',
+    },
+  ],
 })
 
 const {
-  controls, stats, data,
-  pointsData, filteredPoints, polygonsData, protectedData, waterData, culturalData,
-  layerVis, flyToTarget, onMapInit,
-  allFeatures, speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error,
-  loadRareEarthData, loadFullBrazil, isRegional,
-  showRedeCorporativa, showDownload, showUserContribution, showAll,
-  showClaimDetail, claimDetailProps, closeClaimDetail,
-  userPin, userPinShared, pinPickerMode, shareCopied,
-  togglePinPicker, flyToUserPin, copyPinUrl, loadingMessage,
-  flyToEnterprise, zoomToDanger, flyToCoord, onGeoLocate, expandToFullBrazil,
-  activeTab, activeFilterSummary,
-  showShortcuts, showDataTable, showTimeline, showExport, showGeoLocate, showClaimReport, reportClaim,
-  mapContainerRef, filteredCount, clearPin,
+  controls,
+  stats,
+  data,
+  pointsData,
+  filteredPoints,
+  polygonsData,
+  protectedData,
+  waterData,
+  culturalData,
+  layerVis,
+  flyToTarget,
+  onMapInit,
+  allFeatures,
+  speculatorIndex,
+  deepAnalysis,
+  isLoading,
+  loadPhase,
+  loadProgress,
+  error,
+  loadRareEarthData,
+  loadFullBrazil,
+  isRegional,
+  showRedeCorporativa,
+  showDownload,
+  showUserContribution,
+  showAll,
+  showClaimDetail,
+  claimDetailProps,
+  closeClaimDetail,
+  userPin,
+  userPinShared,
+  pinPickerMode,
+  shareCopied,
+  togglePinPicker,
+  flyToUserPin,
+  copyPinUrl,
+  loadingMessage,
+  flyToEnterprise,
+  zoomToDanger,
+  flyToCoord,
+  onGeoLocate,
+  expandToFullBrazil,
+  activeTab,
+  activeFilterSummary,
+  showShortcuts,
+  showDataTable,
+  showTimeline,
+  showExport,
+  showGeoLocate,
+  showClaimReport,
+  reportClaim,
+  mapContainerRef,
+  filteredCount,
+  clearPin,
 } = useVulcanObservatoryPage('pococaldas')
-
 </script>
 
 <style>
-.obs-loading-overlay { z-index: calc(var(--obs-z-modal-backdrop) - 1); }
+.obs-loading-overlay {
+  z-index: calc(var(--obs-z-modal-backdrop) - 1);
+}
 </style>

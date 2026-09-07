@@ -211,7 +211,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import type { Feature, FeatureCollection, Point } from 'geojson'
 import { useI18n } from '@/composables/useI18n'
 
@@ -398,7 +397,6 @@ function formatCount(n: number): string {
 }
 
 // Watch filtered count → reset pagination
-import { watch } from 'vue'
 watch([filteredFeatures], () => resetPage(), { flush: 'post' })
 </script>
 

@@ -190,13 +190,11 @@ const navItems: NavItem[] = [
   { path: '/endangered-species', labelKey: 'nav.endangeredSpecies', icon: 'lucide:bird', variant: 'green' },
   { path: '/vulcan-observatory', labelKey: 'nav.observatoryOfVulcan', icon: 'lucide:microscope', variant: 'orange' },
   { path: '/active-crews', labelKey: 'nav.activeCrews', icon: 'lucide:users-round', variant: 'cyan' },
-  { path: '/eg-grants', labelKey: 'nav.egGrants', icon: 'lucide:hand-coins', variant: 'purple' },
   { path: 'https://www.earthguardians.org/crews', labelKey: 'nav.joinEarthGuardians', icon: 'lucide:users', variant: 'cyan', external: true },
 ]
 
 const headerItems: NavItem[] = [
   { path: '/', labelKey: 'nav.home', icon: 'lucide:home', variant: 'cyan' },
-  { path: '/eg-grants', labelKey: 'nav.egGrants', icon: 'lucide:hand-coins', variant: 'purple' },
   { path: '/info', labelKey: 'nav.info', icon: 'lucide:info', variant: 'cyan' },
 ]
 

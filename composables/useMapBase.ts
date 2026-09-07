@@ -346,8 +346,12 @@ export function useMapBase(config: MapBaseConfig) {
       crews: isRee ? [] : crewsData.value,
       crewLocations: isRee ? [] : crewLocationsData.value,
       selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
-      rareEarthFeatures: isRee ? [] : (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
-      culturalFeatures: undefined,
+      rareEarthFeatures: isRee
+        ? (props.rareEarthFiltered ?? props.rareEarthPoints)?.features
+        : undefined,
+      culturalFeatures: isRee
+        ? props.rareEarthCultural?.features
+        : undefined,
     })
     console.timeEnd(`[perf] rebuildMarkers ${activeDataset.value}`)
   }
@@ -364,8 +368,12 @@ export function useMapBase(config: MapBaseConfig) {
       crews: isRee ? [] : crewsData.value,
       crewLocations: isRee ? [] : crewLocationsData.value,
       selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
-      rareEarthFeatures: isRee ? [] : (props.rareEarthFiltered ?? props.rareEarthPoints)?.features,
-      culturalFeatures: undefined,
+      rareEarthFeatures: isRee
+        ? (props.rareEarthFiltered ?? props.rareEarthPoints)?.features
+        : undefined,
+      culturalFeatures: isRee
+        ? props.rareEarthCultural?.features
+        : undefined,
     })
     console.timeEnd(`[perf] updateMarkerData ${activeDataset.value}`)
   }
@@ -471,8 +479,12 @@ export function useMapBase(config: MapBaseConfig) {
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-left')
       }
 
+      let styleLoadFired = false
       map.on('style.load', () => {
-        console.timeEnd('[perf] initMap → style.load')
+        if (!styleLoadFired) {
+          styleLoadFired = true
+          console.timeEnd('[perf] initMap → style.load')
+        }
         onStyleLoad?.(map!)
       })
 
@@ -629,9 +641,10 @@ export function useMapBase(config: MapBaseConfig) {
     if (connections.showConnections.value && quality.settings.value.showParticles) connections.startParticles()
   })
 
-  watch(() => [props.rareEarthPoints, props.rareEarthPolygons], () => {
+  watch(() => [props.rareEarthPoints, props.rareEarthPolygons, props.rareEarthCultural], () => {
     if (!map || activeDataset.value !== 'vulcan-observatory') return
     setupRareEarthLayers()
+    rebuildMarkers()
   })
 
   watch(showHexGrid, async (visible) => {

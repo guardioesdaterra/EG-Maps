@@ -244,7 +244,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     } else {
       const isClustered = CLUSTERED_DATASETS.has(ds)
       if (isClustered) addClusterLayers(id, CLUSTER_PALETTES[ds])
-      const pf = isClustered ? ['!', ['has', 'point_count']] as FilterSpecification : undefined
+      const pf = isClustered ? ['!has', 'point_count'] as FilterSpecification : undefined
       addPointLayers(id, pf)
     }
     console.timeEnd(label)
@@ -339,10 +339,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
 
   function addCrewLocationLayers(id: string) {
     if (!map) return
-    const locationFilter = ['all',
-      ['!', ['has', 'point_count']],
-      ['==', '_type', 'crewLocation'],
-    ] as FilterSpecification
+    const locationFilter = ['==', '_type', 'crewLocation'] as FilterSpecification
     const locOpacity = ['interpolate', ['linear'], ['zoom'],
       CREW_MOSAIC_ZOOM_MIN, 0,
       CREW_MOSAIC_ZOOM_MAX, 1] as unknown as ExpressionSpecification

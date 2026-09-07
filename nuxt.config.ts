@@ -47,15 +47,6 @@ export default defineNuxtConfig({
   routeRules: {
     '/**': { prerender: true },
     '/globe': { redirect: `${baseURL}project-grants/3d` },
-    '/vulcan-observatory': { prerender: true },
-    '/vulcan-observatory/3d': { prerender: true },
-    '/endangered-species': { prerender: false },
-    '/endangered-species/3d': { prerender: false },
-    '/project-grants': { prerender: false },
-    '/project-grants/3d': { prerender: false },
-    '/active-crews': { prerender: false },
-    '/active-crews/3d': { prerender: false },
-    '/squarespace/**': { prerender: true },
   },
 
   app: {
@@ -128,9 +119,7 @@ export default defineNuxtConfig({
     compressPublicAssets: true,
   },
 
-  experimental: {
-    appManifest: false,
-  },
+  experimental: {},
 
   vite: {
     build: {

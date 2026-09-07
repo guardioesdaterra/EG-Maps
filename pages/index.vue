@@ -24,7 +24,7 @@
             :enter="{ opacity: 1, y: 0, transition: { duration: 400 } }"
             class="text-[1.75rem] xs:text-fluid-5xl font-black leading-[1.1] tracking-normal text-center sm:text-left"
           >
-            {{ t('home.title') }}
+            {{ t('home.ourWork') }}
           </h1>
           <p
             v-motion
@@ -32,26 +32,18 @@
             :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 100 } }"
             class="mt-2 sm:mt-fluid-sm max-w-[min(100%,34rem)] text-[0.95rem] xs:text-fluid-lg leading-[1.6] text-black/70 dark:text-[var(--text-secondary)] text-center sm:text-left"
           >
-            {{ t('home.subtitle') }}
+            {{ t('home.ourWorkDesc') }}
           </p>
 
           <div
             v-motion
             :initial="{ opacity: 0, y: 15 }"
             :enter="{ opacity: 1, y: 0, transition: { duration: 400, delay: 200 } }"
-            class="mt-4 sm:mt-fluid-md grid grid-cols-3 gap-1.5 sm:gap-2 border-y border-black dark:border-[var(--border-color)] text-center"
+            class="mt-4 sm:mt-fluid-md grid grid-cols-1 gap-1.5 sm:gap-2 border-y border-black dark:border-[var(--border-color)] text-center"
           >
             <div class="py-2.5 sm:py-fluid-sm">
               <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ crewOverallStats.totalActiveCrews }}</p>
-              <p class="mt-0.5 text-[clamp(10px,1.5vw,13px)] xs:text-[clamp(11px,1.6vw,14px)] sm:text-[clamp(12px,1.8vw,15px)] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.crewsCount') }}</p>
-            </div>
-            <div class="py-2.5 sm:py-fluid-sm">
-              <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ projectStats.totalProjects }}</p>
-              <p class="mt-0.5 text-[clamp(10px,1.5vw,13px)] xs:text-[clamp(11px,1.6vw,14px)] sm:text-[clamp(12px,1.8vw,15px)] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.projectsCount') }}</p>
-            </div>
-            <div class="py-2.5 sm:py-fluid-sm">
-              <p class="text-[1.25rem] sm:text-fluid-3xl font-black leading-none">{{ speciesCount }}</p>
-              <p class="mt-0.5 text-[clamp(10px,1.5vw,13px)] xs:text-[clamp(11px,1.6vw,14px)] sm:text-[clamp(12px,1.8vw,15px)] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.speciesCount') }}</p>
+              <p class="mt-0.5 text-[clamp(10px,1.5vw,13px)] xs:text-[clamp(11px,1.6vw,14px)] sm:text-[clamp(12px,1.8vw,15px)] font-bold uppercase tracking-[0.16em] text-black/55 dark:text-[var(--text-muted)]">{{ t('home.activeCrewsCount') }}</p>
             </div>
           </div>
         </header>
@@ -121,60 +113,20 @@
 <script setup lang="ts">
 
 import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { allProjectsData } from '@/lib/project-data'
 import { crewOverallStats } from '@/lib/crew-data'
-import { formatCompact } from '@/lib/utils'
 
 const { t } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
 
 useHead({
-  title: computed(() => `${t('home.title')} - ${t('home.subtitle')}`),
+  title: computed(() => `${t('home.ourWork')} - ${t('home.ourWorkDesc')}`),
   meta: [
-    { name: 'description', content: computed(() => t('home.projectGrantsDesc')) },
+    { name: 'description', content: computed(() => t('home.ourWorkDesc')) },
     { name: 'keywords', content: 'earth guardians, environmental, endangered species, project grants, climate action, data visualization' },
-    { property: 'og:title', content: computed(() => t('home.title')) },
-    { property: 'og:description', content: computed(() => t('home.projectGrantsDesc')) },
+    { property: 'og:title', content: computed(() => t('home.ourWork')) },
+    { property: 'og:description', content: computed(() => t('home.ourWorkDesc')) },
     { property: 'og:type', content: 'website' },
   ],
-})
-
-const speciesCount = ref(0)
-const taxonomicGroupCount = ref(0)
-
-const abortController = new AbortController()
-onUnmounted(() => abortController.abort())
-
-onMounted(async () => {
-  try {
-    const res = await fetch(`${baseURL}data/species/index.json`, { signal: abortController.signal })
-    if (res.ok) {
-      const index = await res.json()
-      const datasets = index.datasets ?? []
-      let total = 0
-      const allGroups = new Set<string>()
-      for (const ds of datasets) {
-        total += ds.speciesCount ?? 0
-        for (const grp of Object.keys(ds.taxonomicGroups ?? {})) {
-          allGroups.add(grp)
-        }
-      }
-      speciesCount.value = total
-      taxonomicGroupCount.value = allGroups.size
-    }
-  } catch { /* ignore */ }
-})
-
-const projectStats = computed(() => {
-  const totalProjects = allProjectsData.length
-  const totalDirectBeneficiaries = allProjectsData.reduce((sum, p) => sum + p.direct_beneficiaries, 0)
-  const totalIndirectBeneficiaries = allProjectsData.reduce((sum, p) => sum + p.indirect_beneficiaries, 0)
-
-  return {
-    totalProjects,
-    totalDirectBeneficiaries,
-    totalIndirectBeneficiaries,
-  }
 })
 
 const datasets = computed(() => [
@@ -186,55 +138,63 @@ const datasets = computed(() => [
     description: t('home.projectGrantsDesc'),
     ariaLabel: 'View Project Grants data visualization',
     stats: [
-      `${projectStats.value.totalProjects} ${t('home.projectsCount')}`,
-      `${formatCompact(projectStats.value.totalDirectBeneficiaries + projectStats.value.totalIndirectBeneficiaries)}+ ${t('home.beneficiariesCount')}`,
+      `$190K+ ${t('home.dispersed')}`,
+      `${t('home.120projects')}`,
+      `${t('home.300kTrees')}`,
+      `${t('home.131crews')}`,
     ],
   },
   {
     path: '/endangered-species',
     icon: 'lucide:bird',
-    label: 'Species',
-    title: t('home.speciesTitle'),
-    description: t('home.speciesDesc'),
-    ariaLabel: 'View Endangered Species data visualization',
+    label: 'Campaigns',
+    title: t('home.campaignsTitle'),
+    description: t('home.campaignsDesc'),
+    ariaLabel: 'View Campaigns and Endangered Species',
     stats: [
-      `${speciesCount.value} ${t('home.speciesCount')}`,
-      `${taxonomicGroupCount.value} ${t('home.groupsCount')}`,
-    ],
-  },
-  {
-    path: '/vulcan-observatory',
-    icon: 'lucide:microscope',
-    label: 'Vulcan',
-    title: t('home.observatoryTitle'),
-    description: t('home.observatoryDesc'),
-    ariaLabel: 'View Observatory of Vulcan data visualization',
-    stats: [
-      '20K+ mining processes',
-      '6 categories',
+      `${t('home.speciesCampaigns')}`,
+      `${t('home.globalAction')}`,
     ],
   },
   {
     path: '/active-crews',
     icon: 'lucide:users-round',
-    label: 'Crews',
-    title: t('home.activeCrewsTitle'),
-    description: t('home.activeCrewsDesc'),
-    ariaLabel: 'View Active Crews data visualization',
+    label: 'Crew Projects',
+    title: t('home.crewProjectsTitle'),
+    description: t('home.crewProjectsDesc'),
+    ariaLabel: 'View Crew Projects',
     stats: [
-      `${crewOverallStats.totalActiveCrews} ${t('home.activeCrewsCount')}`,
-      `${crewOverallStats.totalMembers.toLocaleString()}+ ${t('home.crewMembersCount')}`,
+      `${t('home.largeScale')}`,
+      `${t('home.smallScale')}`,
     ],
+    single: true,
   },
   {
-    path: '/eg-grants',
-    icon: 'lucide:hand-heart',
-    label: 'EG Grants',
-    title: 'EG Grants',
-    description: 'Worldwide socio-environmental grants. Sign in to submit or review.',
-    ariaLabel: 'Open EG Grants app',
-    stats: ['Submit & Review', 'Crew Access'],
+    path: '/masterclasses',
+    icon: 'lucide:graduation-cap',
+    label: 'Masterclasses',
+    title: t('home.masterclassesTitle'),
+    description: t('home.masterclassesDesc'),
+    ariaLabel: 'View Masterclasses',
+    stats: [
+      `${t('home.pastTrainings')}`,
+      `${t('home.skillBuilding')}`,
+    ],
     single: true,
+  },
+  {
+    path: 'https://www.earthguardians.org/crews',
+    icon: 'lucide:rocket',
+    label: 'Start a Crew',
+    title: t('home.startACrewTitle'),
+    description: t('home.startACrewDesc'),
+    ariaLabel: 'Start a Crew',
+    stats: [
+      `${t('home.joinGlobal')}`,
+      `${t('home.youthLed')}`,
+    ],
+    single: true,
+    external: true,
   },
 ])
 

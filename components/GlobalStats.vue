@@ -47,7 +47,7 @@
       </div>
     </div>
 
-    <div v-if="isExpanded" :class="`grid ${isMobile ? 'grid-cols-2 gap-2.5' : 'grid-cols-4 gap-3'} mt-3`">
+    <div v-if="isExpanded" :class="`grid ${isMobile ? 'grid-cols-2 gap-2.5' : 'grid-cols-3 gap-3'} mt-3`">
       <UiStatCard
         icon="lucide:zap"
         :value="stats.activeInitiatives"
@@ -68,20 +68,40 @@
       />
       <UiStatCard
         icon="lucide:users"
-        :value="stats.totalDirectBeneficiaries"
-        :display-value="formatNumber(stats.totalDirectBeneficiaries)"
-        :label="t('stats.directBeneficiaries')"
-        accent-color="text-[var(--text-primary)]"
-        :glow-color-r-g-b="[128, 128, 128]"
+        :value="stats.totalBeneficiaries"
+        :display-value="formatNumber(stats.totalBeneficiaries)"
+        :label="t('stats.totalBeneficiaries')"
+        accent-color="text-orange-400"
+        :glow-color-r-g-b="[251, 146, 60]"
+        :is-mobile="isMobile"
+      />
+    </div>
+    <div v-if="isExpanded" :class="`grid ${isMobile ? 'grid-cols-2 gap-2.5' : 'grid-cols-3 gap-3'} mt-3`">
+      <UiStatCard
+        icon="lucide:tree-pine"
+        :value="300000"
+        :display-value="'300K+'"
+        :label="t('stats.treesPlanted')"
+        accent-color="text-green-600"
+        :glow-color-r-g-b="[22, 163, 74]"
         :is-mobile="isMobile"
       />
       <UiStatCard
-        icon="lucide:bar-chart-2"
-        :value="stats.totalIndirectBeneficiaries"
-        :display-value="formatNumber(stats.totalIndirectBeneficiaries)"
-        :label="t('stats.indirectBeneficiaries')"
-        accent-color="text-orange-400"
-        :glow-color-r-g-b="[251, 146, 60]"
+        icon="lucide:banknote"
+        :value="190000"
+        :display-value="'$190K+'"
+        :label="t('stats.dispersed')"
+        accent-color="text-purple-400"
+        :glow-color-r-g-b="[192, 132, 252]"
+        :is-mobile="isMobile"
+      />
+      <UiStatCard
+        icon="lucide:users-round"
+        :value="131"
+        :display-value="'131'"
+        :label="t('stats.activeCrews')"
+        accent-color="text-cyan-400"
+        :glow-color-r-g-b="[34, 211, 238]"
         :is-mobile="isMobile"
       />
     </div>
@@ -127,12 +147,14 @@ const stats = computed(() => {
   const countriesCount = uniqueCountries.size
   const totalDirectBeneficiaries = props.projects.reduce((sum, p) => sum + p.direct_beneficiaries, 0)
   const totalIndirectBeneficiaries = props.projects.reduce((sum, p) => sum + p.indirect_beneficiaries, 0)
+  const totalBeneficiaries = totalDirectBeneficiaries + totalIndirectBeneficiaries
 
   return {
     activeInitiatives,
     countriesCount,
     totalDirectBeneficiaries,
     totalIndirectBeneficiaries,
+    totalBeneficiaries,
   }
 })
 

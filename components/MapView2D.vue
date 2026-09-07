@@ -60,6 +60,13 @@
     <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" :style="{ zIndex: 'var(--z-map-base)' }" />
     <slot name="overlays" />
 
+    <div v-if="activeDataset === 'active-crews' && !hideAll" class="absolute top-4 left-1/2 -translate-x-1/2 z-[var(--z-map-banner)] pointer-events-none">
+      <div class="bg-black/70 backdrop-blur-sm border border-cyan-800/40 rounded-lg px-4 py-2 text-center">
+        <p class="text-white font-bold text-sm xs:text-base tracking-wide">{{ t('stats.activeCrewsWorldwide') }}</p>
+        <p class="text-cyan-300 text-xs mt-0.5">{{ t('stats.activeCrewsSubtitle') }}</p>
+      </div>
+    </div>
+
     <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" />
     <SpeciesFilterPanel v-if="activeDataset === 'endangered-species' && showFilterPanel" ref="speciesFilterPanelRef" :species="speciesIndexData" @filter-change="handleFilterChange" @group-selection-change="handleSpeciesGroupSelection" @close="showFilterPanel = false" />
 

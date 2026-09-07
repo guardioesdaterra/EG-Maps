@@ -109,6 +109,13 @@
               <span class="stat-label">{{ t('stats.countries') }}</span>
             </div>
           </div>
+          <div class="crew-sidebar-copy">
+            <p class="crew-sidebar-text">{{ t('stats.crewsSidebarDesc') }}</p>
+            <p class="crew-sidebar-text">{{ t('stats.crewsSidebarSupport') }}</p>
+            <a href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer" class="crew-sidebar-link">
+              {{ t('stats.crewsSidebarCta') }}
+            </a>
+          </div>
           <div class="legend-section">
             <span class="legend-title">{{ t('stats.markerLegend') }}</span>
             <div class="legend-items">
@@ -445,6 +452,34 @@ const speciesLegendItems = computed(() => [
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: clamp(0.375rem, 1vw, 0.5rem);
+}
+
+.crew-sidebar-copy {
+  margin-top: clamp(0.5rem, 1.2vw, 0.75rem);
+  padding-top: clamp(0.5rem, 1.2vw, 0.75rem);
+  border-top: 1px solid var(--panel-border);
+}
+
+.crew-sidebar-text {
+  font-size: clamp(0.5625rem, 1.5vw, 0.6875rem);
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin-bottom: clamp(0.375rem, 1vw, 0.5rem);
+}
+
+.crew-sidebar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: clamp(0.5625rem, 1.5vw, 0.6875rem);
+  font-weight: 700;
+  color: var(--accent-cyan);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.crew-sidebar-link:hover {
+  opacity: 0.8;
 }
 
 .stat-cell {

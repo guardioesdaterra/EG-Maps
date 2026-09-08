@@ -1,5 +1,5 @@
 /*!
- * squarespace-embed.js — Earth Guardians active crews Squarespace launcher.
+ * squarespace-embed.js — Earth Guardians Squarespace component launcher.
  *
  * What this does
  * --------------
@@ -26,7 +26,8 @@
  *
  * The script auto-mounts when the DOM is ready. Multiple containers are
  * supported — pass `data-target="<css-selector>"` or rely on the default
- * (`[data-eg-embed="active-crews"]` then `#eg-active-crews` fallback).
+ * (`[data-eg-embed]` then `#eg-active-crews` fallback). Each container may
+ * override data-path, data-theme, data-min-height, data-accent and data-label.
  *
  * Build note
  * ----------
@@ -45,7 +46,7 @@
 
   var PROTOCOL = 'squarespace-embed';
   var PROTOCOL_VERSION = 1;
-  var DEFAULT_SELECTOR = '[data-eg-embed="active-crews"], #eg-active-crews';
+  var DEFAULT_SELECTOR = '[data-eg-embed], #eg-active-crews';
 
   /** Read a data-* attribute with a typed default. */
   function attr(el, name, fallback) {
@@ -72,7 +73,7 @@
     container.style.position = container.style.position || 'relative';
 
     var iframe = document.createElement('iframe');
-    iframe.title = 'Earth Guardians — Active crews';
+    iframe.title = 'Earth Guardians — ' + (cfg.label || 'Embedded component');
     iframe.loading = 'lazy';
     iframe.allow = 'geolocation';
     iframe.allowTransparency = 'true';
@@ -88,7 +89,10 @@
       'color-scheme:light dark'
     ].join(';');
     var path = cfg.path || '/squarespace/active-crews';
-    var url = new URL(path, cfg.origin);
+    // Keep a configured GitHub Pages subpath (for example /EG-Maps/test/).
+    // A leading slash would otherwise escape that subpath.
+    var originBase = cfg.origin.endsWith('/') ? cfg.origin : cfg.origin + '/';
+    var url = new URL(path.replace(/^\/+/, ''), originBase);
     url.searchParams.set('embed', '1');
     if (cfg.theme) url.searchParams.set('theme', cfg.theme);
     if (cfg.accent) url.searchParams.set('accent', cfg.accent.replace('#', ''));
@@ -107,23 +111,27 @@
       var data = event.data;
       if (!data || data.source !== PROTOCOL || data.version !== PROTOCOL_VERSION) return;
       switch (data.type) {
-        case 'embed:ready':
+      case 'embed:ready':
+          if (event.source !== iframe.contentWindow) break;
           post(m2, 'host:ready', { theme: cfg.theme || 'auto', channel: channel });
           // Match height to current container.
           post(m2, 'host:resize', { height: container.clientHeight });
           break;
         case 'embed:height':
+          if (event.source !== iframe.contentWindow) break;
           if (typeof data.payload === 'number') {
             var h = Math.max(cfg.minHeight, data.payload);
             iframe.style.height = h + 'px';
           }
           break;
         case 'embed:click':
+          if (event.source !== iframe.contentWindow) break;
           container.dispatchEvent(new CustomEvent('eg-embed:click', {
             bubbles: true, detail: data.payload,
           }));
           break;
         case 'embed:error':
+          if (event.source !== iframe.contentWindow) break;
           container.dispatchEvent(new CustomEvent('eg-embed:error', {
             bubbles: true, detail: data.payload,
           }));
@@ -163,6 +171,7 @@
       target: attr(script, 'data-target', ''),
       path: attr(script, 'data-path', '/squarespace/active-crews'),
       accent: attr(script, 'data-accent', ''),
+      label: attr(script, 'data-label', ''),
     };
   }
 
@@ -181,7 +190,16 @@
     style.textContent = 'iframe[allowtransparency]{background:transparent !important}';
     document.head.appendChild(style);
 
-    containers.forEach(function (c) { mount(c, cfg); });
+    containers.forEach(function (c) {
+      mount(c, {
+        origin: attr(c, 'data-origin', cfg.origin),
+        theme: attr(c, 'data-theme', cfg.theme),
+        minHeight: parseInt(attr(c, 'data-min-height', String(cfg.minHeight)), 10) || cfg.minHeight,
+        path: attr(c, 'data-path', cfg.path),
+        accent: attr(c, 'data-accent', cfg.accent),
+        label: attr(c, 'data-label', cfg.label),
+      });
+    });
   }
 
   if (document.readyState === 'loading') {

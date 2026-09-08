@@ -60,6 +60,7 @@ export function buildMapConnectionFeatures({
 
 function buildProjectConnectionFeatures(projects: ProjectData[], isMobile: boolean): MapConnectionFeature[] {
   const projectsToProcess = isMobile ? projects.slice(0, Math.min(15, projects.length)) : projects
+  const maxConnections = isMobile ? 3 : 7
   const incomingCountByProject = new Map<string, number>()
   const edgeKeys = new Set<string>()
   const features: MapConnectionFeature[] = []
@@ -78,6 +79,7 @@ function buildProjectConnectionFeatures(projects: ProjectData[], isMobile: boole
   }
 
   projectsToProcess.forEach((project) => {
+    if (features.length >= maxConnections) return
     if (!isValidCoordinate(project.latitude, project.longitude)) return
 
     const projectKey = project.project_title
@@ -92,7 +94,7 @@ function buildProjectConnectionFeatures(projects: ProjectData[], isMobile: boole
 
     if (!availableTargetNames.length) return
 
-    const targetName = availableTargetNames[Math.floor(Math.random() * availableTargetNames.length)]
+    const targetName = availableTargetNames[stableIndex(projectKey, availableTargetNames.length)]
     const target = projectsToProcess.find(p => p.project_title === targetName)!
     if (!target) return
 
@@ -114,6 +116,7 @@ function buildProjectConnectionFeatures(projects: ProjectData[], isMobile: boole
 
 function buildSpeciesConnectionFeatures(species: SpeciesLike[], isMobile: boolean): MapConnectionFeature[] {
   const speciesToProcess = isMobile ? species.slice(0, Math.min(50, species.length)) : species
+  const maxConnections = isMobile ? 5 : 10
   const incomingCountByGroup = new Map<string, Map<string, number>>()
   const edgeKeys = new Set<string>()
   const features: MapConnectionFeature[] = []
@@ -127,6 +130,7 @@ function buildSpeciesConnectionFeatures(species: SpeciesLike[], isMobile: boolea
   }
 
   speciesToProcess.forEach((source) => {
+    if (features.length >= maxConnections) return
     if (!isValidCoordinate(source.lat, source.lng)) return
 
     const group = source.taxonomicGroup
@@ -147,7 +151,7 @@ function buildSpeciesConnectionFeatures(species: SpeciesLike[], isMobile: boolea
 
     if (!availableTargetKeys.length) return
 
-    const targetKey = availableTargetKeys[Math.floor(Math.random() * availableTargetKeys.length)]
+    const targetKey = availableTargetKeys[stableIndex(sourceKey, availableTargetKeys.length)]
     const target = speciesToProcess.find(s => (s.id || s.commonName) === targetKey)!
     if (!target) return
 
@@ -192,12 +196,14 @@ function buildCrewConnectionFeatures(locations: CrewLocationLike[], isMobile: bo
 
   const features: MapConnectionFeature[] = []
   const edgeKeys = new Set<string>()
+  const maxConnections = isMobile ? 4 : 8
 
   for (const [region, regionLocs] of byRegion) {
     const color = CREW_REGION_COLORS[region] ?? '#22c55e'
     const processLocs = isMobile ? regionLocs.slice(0, Math.min(10, regionLocs.length)) : regionLocs
 
     for (let i = 0; i < processLocs.length; i++) {
+      if (features.length >= maxConnections) return features
       const source = processLocs[i]
       const sourceKey = `${source.name}|${source.city}`
 
@@ -209,7 +215,7 @@ function buildCrewConnectionFeatures(locations: CrewLocationLike[], isMobile: bo
       })
 
       if (targets.length === 0) continue
-      const target = targets[Math.floor(Math.random() * targets.length)]
+      const target = targets[stableIndex(sourceKey, targets.length)]
       const targetKey = `${target.name}|${target.city}`
 
       features.push(createConnectionFeature({
@@ -227,6 +233,13 @@ function buildCrewConnectionFeatures(locations: CrewLocationLike[], isMobile: bo
   }
 
   return features
+}
+
+function stableIndex(value: string, length: number): number {
+  if (length <= 1) return 0
+  let hash = 0
+  for (let i = 0; i < value.length; i++) hash = (hash * 31 + value.charCodeAt(i)) >>> 0
+  return hash % length
 }
 
 function createConnectionFeature({

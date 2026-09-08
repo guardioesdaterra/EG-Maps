@@ -37,6 +37,7 @@ export interface ConnectionOptions {
   qualityRef?: Ref<ParticleQualityConfig | null>
   /** Reactive quality blur for connection line layers */
   qualityBlur?: Ref<number>
+  initialShowConnections?: boolean
 }
 
 export function useMapConnections(
@@ -47,8 +48,8 @@ export function useMapConnections(
   const getMap = (): MapLibreMap | null =>
     map && typeof map === 'object' && 'value' in map ? (map as Ref<MapLibreMap | null>).value : resolveMap(map as MapGetter)
 
-  const { zIndex = 2, isMounted = () => true, quality, qualityRef, qualityBlur } = options
-  const showConnections = ref(true)
+  const { zIndex = 2, isMounted = () => true, quality, qualityRef, qualityBlur, initialShowConnections = true } = options
+  const showConnections = ref(initialShowConnections)
   const connectionFeatures = ref<MapConnectionFeature[]>([])
   let particleSystem: MapParticleSystem | null = null
   let isPaused = false
@@ -174,6 +175,7 @@ export function useMapConnections(
   }
 
   let startRetries = 0
+  let startRetryTimer: ReturnType<typeof setTimeout> | null = null
   const MAX_START_RETRIES = 5
 
   function startParticles() {
@@ -187,7 +189,11 @@ export function useMapConnections(
     if (!m.isStyleLoaded() && startRetries < MAX_START_RETRIES) {
       startRetries++
       if (import.meta.dev) console.warn(`[useMapConnections] startParticles: map not ready, retry ${startRetries}/${MAX_START_RETRIES}`)
-      setTimeout(() => startParticles(), 300)
+      if (startRetryTimer) clearTimeout(startRetryTimer)
+      startRetryTimer = setTimeout(() => {
+        startRetryTimer = null
+        startParticles()
+      }, 300)
       return
     }
     startRetries = 0
@@ -212,6 +218,11 @@ export function useMapConnections(
   }
 
   function cleanup() {
+    if (startRetryTimer) {
+      clearTimeout(startRetryTimer)
+      startRetryTimer = null
+    }
+    startRetries = 0
     cleanupParticles()
     teardownVisibilityTracking()
     cleanupDeferredSync()

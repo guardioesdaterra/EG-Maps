@@ -559,6 +559,27 @@
       "cancel": "Cancelar",
       "download": "Baixar",
       "exporting": "Exportando..."
+    },
+    "v2": {
+      "community": {
+        "eyebrow": "Um observatório vivo",
+        "title": "Evidência vira poder coletivo",
+        "lead": "Isto não é um painel sobre um lugar. É uma ferramenta comunitária para ler como a extração, a água, os territórios protegidos e a vida cultural se encontram no entorno de Poços de Caldas.",
+        "readTitle": "Leia o território",
+        "readText": "Comece observando as camadas juntas. Um requerimento não é um veredito: é um registro público que precisa de contexto, verificação e conhecimento local.",
+        "connectTitle": "Conecte as evidências",
+        "connectText": "Agentes culturais, água, territórios protegidos e registros minerários revelam relações que dados isolados escondem.",
+        "actTitle": "Eleve o contexto comunitário",
+        "actText": "Use o Monitor de Campo para documentar observações, compartilhar um ponto do território ou conectar-se ao movimento Earth Guardians.",
+        "methodology": "Método e cuidado",
+        "methodologyText": "Os dados reúnem registros públicos e fontes voltadas à comunidade. Use-os como convite à investigação, não como substituto do consentimento comunitário ou de uma determinação legal.",
+        "monitor": "Abrir Monitor de Campo",
+        "sources": "Ver fontes dos dados"
+      },
+      "brandTitle": "Observatório Comunitário Vulcano",
+      "brandSub": "Poços de Caldas · inteligência comunitária",
+      "brandTitleGlobe": "Observatório Comunitário Vulcano · Globo",
+      "brandSubGlobe": "Poços de Caldas · inteligência comunitária · 3D"
     }
   },
   "loading": {

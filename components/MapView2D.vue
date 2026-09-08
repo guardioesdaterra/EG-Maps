@@ -7,6 +7,11 @@
  */
 <template>
   <div id="main-content" class="w-full h-[100svh] relative overflow-hidden bg-black" role="main" aria-label="Interactive Map Visualization">
+    <div v-if="!runtime.online && !hideAll" class="absolute top-3 left-1/2 -translate-x-1/2 z-[var(--z-map-banner)] rounded-full border border-amber-400/40 bg-black/80 px-3 py-1.5 text-xs text-amber-200 backdrop-blur-sm" role="status">
+      Offline mode — cached data remains available
+    </div>
+    <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute top-4 right-4 z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/70 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm" aria-label="Find nearby crews, projects and campaigns" @click="nearbyOpen = true">⌖ Nearby</button>
+    <NearbyPanel v-if="nearbyOpen" :projects="projectsData" :crew-locations="crewLocationsData" @close="nearbyOpen = false" @navigate="navigateToLocation" />
     
     <Transition name="fade">
       <div v-if="isLoading" class="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center">
@@ -57,7 +62,14 @@
       <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[clamp(10rem,24vw,16rem)] -rotate-90 origin-center" loading="lazy" />
     </div>
 
-    <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" :style="{ zIndex: 'var(--z-map-base)' }" />
+    <div ref="mapContainerRef" tabindex="0" role="region" aria-label="Interactive world map. Use search or map controls to explore locations." class="absolute top-0 right-0 bottom-0 w-auto transition-[left] duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400" :style="{ left: clusterPanelOpen ? 'min(360px, 88vw)' : '0', zIndex: 'var(--z-map-base)' }" />
+    <ClusterResultsPanel
+      v-if="clusterPanelOpen"
+      :items="clusterPanelItems"
+      :dataset-label="clusterPanelDataset"
+      @close="closeClusterPanel"
+      @select="selectClusterItem"
+    />
     <slot name="overlays" />
 
     <div v-if="activeDataset === 'active-crews' && !hideAll" class="absolute top-4 left-1/2 -translate-x-1/2 z-[var(--z-map-banner)] pointer-events-none">
@@ -134,7 +146,10 @@ import type { MapBaseProps } from '@/composables/useMapBase'
 import { useMapBase } from '@/composables/useMapBase'
 import { useSpeciesIndex } from '~/composables/useSpeciesData'
 import { useMapCustomLayers } from '~/composables/useMapCustomLayers'
+import { useAppRuntime } from '~/composables/useAppRuntime'
 import ImportDataWidget from '~/components/ImportDataWidget.vue'
+import ClusterResultsPanel, { type ClusterResultItem } from '~/components/map/ClusterResultsPanel.vue'
+import NearbyPanel from '~/components/map/NearbyPanel.vue'
 
 const SpeciesFilterPanel = defineAsyncComponent(() => import('~/components/SpeciesFilterPanel.vue'))
 const ProjectFilterPanel = defineAsyncComponent(() => import('~/components/ProjectFilterPanel.vue'))
@@ -144,6 +159,8 @@ const SpeciesPanel = defineAsyncComponent(() => import('~/components/SpeciesPane
 
 const props = withDefaults(defineProps<MapBaseProps>(), { defaultDataset: 'project-grants' })
 const emit = defineEmits<{ mapInit: [map: maplibregl.Map] }>()
+const runtime = useAppRuntime()
+const nearbyOpen = ref(false)
 
 const mapContainerRef = ref<HTMLElement | null>(null)
 const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
@@ -232,6 +249,11 @@ const {
   handleSearchOpenChange, handleSpeciesGroupSelection, toggleLegendGroup,
   navigateToLocation,
   initMap,
+  clusterPanelItems, clusterPanelDataset, clusterPanelOpen, closeClusterPanel,
 } = ctx
+
+function selectClusterItem(item: ClusterResultItem) {
+  navigateToLocation(item.coordinates[1], item.coordinates[0])
+}
 
 </script>

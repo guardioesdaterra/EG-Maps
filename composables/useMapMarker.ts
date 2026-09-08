@@ -34,6 +34,7 @@ export interface MarkerCallbacks {
   openProjectPreview?:   (p: ProjectData) => void
   openSpeciesPreview?:   (s: Species | SpeciesIndexItem) => void
   openCrewPreview?:      (c: CrewRegionData | CrewLocation) => void
+  openCluster?:          (payload: { dataset: MarkerDataset; coordinates: [number, number]; featureIds: string[] }) => void
 }
 
 export interface RebuildArgs {
@@ -427,6 +428,14 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       const coords = (f.geometry as GeoJSON.Point).coordinates as [number, number]
       if (cid == null) return
       const src = map.getSource(id) as GeoJSONSource | undefined
+      if (src && typeof src.getClusterLeaves === 'function') {
+        const leaves = await src.getClusterLeaves(cid, 1000, 0)
+        callbacks.openCluster?.({
+          dataset: currentDataset ?? 'project-grants',
+          coordinates: coords,
+          featureIds: leaves.map((leaf) => String(leaf.properties?.id ?? '')).filter(Boolean),
+        })
+      }
       if (src && typeof src.getClusterExpansionZoom === 'function') {
         const z = await src.getClusterExpansionZoom(cid)
         map.flyTo({ center: coords, zoom: Math.min(Math.max(z, map.getZoom() + 1), map.getMaxZoom()), duration: 600, essential: true })

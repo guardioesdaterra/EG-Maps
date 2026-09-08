@@ -21,7 +21,7 @@
     role="region"
     aria-label="Earth Guardians active crews map"
   >
-    <div ref="mapRef" class="eg-embed-canvas" />
+    <div ref="mapContainer" class="eg-embed-canvas" />
     <div v-if="!isMapReady" class="eg-embed-loading" role="status" aria-live="polite">
       <LoadingSpinner :message="loadingMessage" size="md" />
     </div>
@@ -60,6 +60,7 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import Icon from '@/components/Icon.vue'
 
 defineOptions({ name: 'SquarespaceActiveCrews' })
+definePageMeta({ layout: false })
 
 const rootRef = ref<HTMLElement | null>(null)
 

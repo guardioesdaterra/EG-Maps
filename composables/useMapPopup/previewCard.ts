@@ -110,7 +110,7 @@ export function usePreviewCard(baseURL?: string) {
       closeOnClick: true,
       closeOnMove: true,
       offset: 16,
-      maxWidth: '320px',
+      maxWidth: '380px',
       anchor: 'bottom',
     })
       .setLngLat(lngLat)

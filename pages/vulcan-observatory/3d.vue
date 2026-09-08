@@ -244,13 +244,11 @@
           </footer>
 
           <!-- ── Hero / intro panel ────────────────────────────────── -->
-          <ObservatoryHero
+          <CommunityContextPanel
             :cultural-count="culturalTotalCount"
-            :mapa-count="culturalSourceCounts.mapa_cultura ?? 0"
-            :floresta-count="culturalSourceCounts.floresta_ativista ?? 0"
             :community-count="culturalSourceCounts.community ?? 0"
             :rare-earth-count="totalCount"
-            @close="dismissHero"
+            @monitor="onUserContribution"
           />
         </template>
       </MapView3D>
@@ -291,7 +289,7 @@ import { useVulcanObservatoryPage } from '@/composables/useVulcanObservatoryPage
 
 import MapView3D from '@/components/MapView3D.vue'
 import ObservatorySidebar from '@/components/observatory/ObservatorySidebar.vue'
-import ObservatoryHero from '@/components/ObservatoryHero.vue'
+import CommunityContextPanel from '@/components/observatory/CommunityContextPanel.vue'
 import GeoPoliticalTimeline from '@/components/GeoPoliticalTimeline.vue'
 import RedeCorporativa from '@/components/RedeCorporativa.vue'
 import DataDownloadPanel from '@/components/DataDownloadPanel.vue'
@@ -309,12 +307,12 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'
 const { t } = useI18n()
 
 useHead({
-  title: 'Observatory of Vulcan Globe (3D) | Earth Guardians',
+  title: 'Vulcan Community Observatory Globe (3D) · Poços de Caldas | Earth Guardians',
   meta: [
     {
       name: 'description',
       content:
-        'Brazil rare-earth mining claims on a 3D globe with Mapa Cultura BR and Floresta Ativista community agents — capital invasion, socio-environmental impact, cultural resistance.',
+        'A 3D community observatory for Poços de Caldas: public mining records, water, protected territories and cultural agents brought together for context-aware Earth Guardians action.',
     },
   ],
 })
@@ -378,7 +376,6 @@ function updatePhases(value: Set<string>) {
   controls.selectedPhases.value = value
   controls.debouncedFilter()
 }
-function dismissHero() { /* hero auto-hides via its own v-if — pass-through only */ }
 function onJumpToCultural(coord: [number, number], _name: string) {
   flyToTarget.value = { lng: coord[0], lat: coord[1], zoom: 6 }
 }

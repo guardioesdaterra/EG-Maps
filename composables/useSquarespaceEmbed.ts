@@ -18,6 +18,7 @@
  */
 import { ref, onMounted, onBeforeUnmount, readonly } from 'vue'
 import type { Ref } from 'vue'
+import { useEventListener, useResizeObserver } from '@vueuse/core'
 
 export type SquarespaceEmbedTheme = 'auto' | 'light' | 'dark'
 
@@ -77,15 +78,16 @@ export interface SquarespaceEmbedApi {
 export function useSquarespaceEmbed(opts: UseSquarespaceEmbedOptions): SquarespaceEmbedApi {
   const channel = opts.channel ?? 'eg-maps-active-crews'
   const minHeight = opts.minHeight ?? 360
-  const trusted = new Set(opts.trustedOrigins ?? [])
+  const trusted = new Set(opts.trustedOrigins ?? ['https://earthguardians.org', 'https://www.earthguardians.org'])
 
   const theme = ref<SquarespaceEmbedTheme>(opts.initialTheme ?? 'auto')
   const lastInbound = ref<string>('')
   const isReady = ref<boolean>(false)
 
-  let resizeObserver: ResizeObserver | null = null
   let mediaQuery: MediaQueryList | null = null
   let mediaListener: ((e: MediaQueryListEvent) => void) | null = null
+  let stopResizeObserver: (() => void) | null = null
+  let stopMessageListener: (() => void) | null = null
 
   const post = (msg: Omit<SquarespaceEmbedHostMessage, 'source' | 'version' | 'payload'> & {
     payload?: unknown
@@ -97,6 +99,7 @@ export function useSquarespaceEmbed(opts: UseSquarespaceEmbedOptions): Squarespa
       payload: msg.payload,
     }
     // window.parent covers the standard iframe case; window.top covers nested embeds.
+    if (typeof window === 'undefined') return
     const target = (window.parent !== window ? window.parent : null) ?? window.top ?? null
     if (!target || target === window) return
     // '*' is safe here because we never trust inbound payloads — they're validated below.
@@ -115,13 +118,13 @@ export function useSquarespaceEmbed(opts: UseSquarespaceEmbedOptions): Squarespa
 
   const setTheme = (t: SquarespaceEmbedTheme) => {
     theme.value = t
-    document.documentElement.classList.toggle('dark', t === 'dark')
+    if (typeof document !== 'undefined') document.documentElement.classList.toggle('dark', t === 'dark')
   }
 
   const handleMessage = (event: MessageEvent) => {
     const data = event.data as SquarespaceEmbedHostMessage | undefined
     if (!data || data.source !== 'squarespace-embed' || data.version !== 1) return
-    if (trusted.size > 0 && !trusted.has(event.origin)) return
+    if (!trusted.has(event.origin) && event.origin !== window.location.origin) return
     lastInbound.value = data.type
     switch (data.type) {
       case 'host:ready': {
@@ -157,13 +160,6 @@ export function useSquarespaceEmbed(opts: UseSquarespaceEmbedOptions): Squarespa
     }
   }
 
-  const attachAutoResize = () => {
-    const root = opts.rootRef.value
-    if (!root) return
-    resizeObserver = new ResizeObserver(() => reportHeight())
-    resizeObserver.observe(root)
-  }
-
   const attachThemeProbe = () => {
     if (typeof window === 'undefined' || !window.matchMedia) return
     mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
@@ -178,10 +174,11 @@ export function useSquarespaceEmbed(opts: UseSquarespaceEmbedOptions): Squarespa
     }
   }
 
+  stopResizeObserver = useResizeObserver(opts.rootRef, () => reportHeight()).stop
+  stopMessageListener = useEventListener('message', handleMessage)
+
   onMounted(() => {
-    attachAutoResize()
     attachThemeProbe()
-    window.addEventListener('message', handleMessage)
     // Announce readiness so the host can acknowledge.
     isReady.value = true
     post({ type: 'embed:ready', payload: { channel } })
@@ -189,12 +186,13 @@ export function useSquarespaceEmbed(opts: UseSquarespaceEmbedOptions): Squarespa
   })
 
   onBeforeUnmount(() => {
-    window.removeEventListener('message', handleMessage)
-    resizeObserver?.disconnect()
-    resizeObserver = null
     if (mediaQuery && mediaListener) mediaQuery.removeEventListener('change', mediaListener)
     mediaQuery = null
     mediaListener = null
+    stopResizeObserver?.()
+    stopMessageListener?.()
+    stopResizeObserver = null
+    stopMessageListener = null
   })
 
   return {
@@ -206,8 +204,10 @@ export function useSquarespaceEmbed(opts: UseSquarespaceEmbedOptions): Squarespa
     emitError,
     setTheme,
     destroy: () => {
-      window.removeEventListener('message', handleMessage)
-      resizeObserver?.disconnect()
+      stopResizeObserver?.()
+      stopMessageListener?.()
+      stopResizeObserver = null
+      stopMessageListener = null
     },
   }
 }

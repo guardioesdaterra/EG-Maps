@@ -252,8 +252,6 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
       }
       if (s.tab) activeTab.value = s.tab as ObservatoryTabKey
       debouncedFilter()
-    } else {
-      setTimeout(() => { showGeoLocate.value = true }, 800)
     }
 
     window.addEventListener('keydown', handleKeydown)

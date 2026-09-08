@@ -1,151 +1,115 @@
-/**
- * pages/campaigns.vue
- * @why Campaigns page — connects Endangered Species work to EG Crews and community action
- * @component campaigns
- * @deps vue (computed); @/composables/useI18n (useI18n)
- */
 <template>
-  <main id="main-content" class="min-h-[100svh] bg-white dark:bg-[var(--bg-primary)] text-black dark:text-[var(--text-primary)]">
-    <section class="mx-auto w-container px-4 py-8 sm:px-fluid-sm sm:section-padding pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-section">
-      <header class="max-w-[min(100%,48rem)] mb-8 sm:mb-12">
-        <div class="mb-4 sm:mb-6">
-          <img
-            :src="`${baseURL}eg-logo.png`"
-            alt="Earth Guardians"
-            class="h-[clamp(2rem,12vw,4rem)] w-auto"
-            loading="eager"
-          />
+  <main id="main-content" class="campaigns-page">
+    <section class="campaigns-shell">
+      <header class="campaigns-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Earth Guardians · campaigns & action</p>
+          <h1>Campaigns are how ideas become collective action.</h1>
+          <p class="hero-lede">Explore the issues Earth Guardians works on, learn from youth-led movements, and find a practical next step for your community.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://www.earthguardians.org/eg-resources" target="_blank" rel="noopener noreferrer">Explore official resources <Icon name="lucide:arrow-up-right" /></a>
+            <NuxtLink class="button button-secondary" to="/active-crews">See the global crew network <Icon name="lucide:map" /></NuxtLink>
+          </div>
         </div>
-        <h1 class="text-[1.75rem] xs:text-fluid-4xl font-black leading-[1.1] tracking-normal">
-          {{ t('campaigns.title') }}
-        </h1>
-        <p class="mt-3 sm:mt-4 max-w-[min(100%,42rem)] text-[0.95rem] xs:text-fluid-lg leading-[1.6] text-black/70 dark:text-[var(--text-secondary)]">
-          {{ t('campaigns.description') }}
-        </p>
+        <aside class="hero-note">
+          <span class="hero-note-index">01 / 05</span>
+          <strong>Youth-led, locally rooted, globally connected.</strong>
+          <p>Campaigns connect education, direct action, crews, mentorship, partnerships and project grants.</p>
+        </aside>
       </header>
 
-      <div class="grid gap-6 sm:gap-8 lg:grid-cols-2">
-        <article class="rounded-fluid-lg border-2 border-black dark:border-[var(--border-color)] bg-white dark:bg-[var(--card)] overflow-hidden">
-          <div class="p-4 sm:p-6">
-            <div class="flex items-center gap-3 mb-3 sm:mb-4">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-black bg-black dark:bg-[var(--text-primary)] text-white dark:text-black">
-                <Icon name="lucide:leaf" class="h-5 w-5" />
-              </div>
-              <h2 class="text-[1.15rem] xs:text-fluid-2xl font-black leading-tight tracking-normal">{{ t('campaigns.endangeredSpeciesTitle') }}</h2>
-            </div>
-            <p class="text-[0.85rem] xs:text-fluid-sm leading-6 text-black/65 dark:text-[var(--text-secondary)]">
-              {{ t('campaigns.endangeredSpeciesDesc') }}
-            </p>
-            <div class="mt-4 flex flex-wrap gap-2">
-              <NuxtLink
-                to="/endangered-species"
-                class="inline-flex items-center justify-center gap-1.5 rounded-fluid bg-black dark:bg-[var(--text-primary)] px-4 py-2 text-xs font-black text-white dark:text-black hover:opacity-90 transition-opacity"
-              >
-                <Icon name="lucide:map" class="h-3.5 w-3.5" />
-                {{ t('home.2d') }}
-              </NuxtLink>
-              <NuxtLink
-                to="/endangered-species/3d"
-                class="inline-flex items-center justify-center gap-1.5 rounded-fluid border-2 border-black dark:border-[var(--border-color)] px-4 py-2 text-xs font-black text-black dark:text-[var(--text-primary)] hover:bg-black hover:text-white dark:hover:bg-[var(--text-primary)] dark:hover:text-black transition-colors"
-              >
-                <Icon name="lucide:globe" class="h-3.5 w-3.5" />
-                {{ t('home.3d') }}
-              </NuxtLink>
-            </div>
-          </div>
-        </article>
-
-        <article class="rounded-fluid-lg border-2 border-black dark:border-[var(--border-color)] bg-white dark:bg-[var(--card)] overflow-hidden">
-          <div class="p-4 sm:p-6">
-            <div class="flex items-center gap-3 mb-3 sm:mb-4">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-black bg-black dark:bg-[var(--text-primary)] text-white dark:text-black">
-                <Icon name="lucide:users-round" class="h-5 w-5" />
-              </div>
-              <h2 class="text-[1.15rem] xs:text-fluid-2xl font-black leading-tight tracking-normal">{{ t('campaigns.crewActionTitle') }}</h2>
-            </div>
-            <p class="text-[0.85rem] xs:text-fluid-sm leading-6 text-black/65 dark:text-[var(--text-secondary)]">
-              {{ t('campaigns.crewActionDesc') }}
-            </p>
-            <div class="mt-4 flex flex-wrap gap-2">
-              <NuxtLink
-                to="/active-crews"
-                class="inline-flex items-center justify-center gap-1.5 rounded-fluid bg-black dark:bg-[var(--text-primary)] px-4 py-2 text-xs font-black text-white dark:text-black hover:opacity-90 transition-opacity"
-              >
-                <Icon name="lucide:map" class="h-3.5 w-3.5" />
-                {{ t('home.2d') }}
-              </NuxtLink>
-              <NuxtLink
-                to="/active-crews/3d"
-                class="inline-flex items-center justify-center gap-1.5 rounded-fluid border-2 border-black dark:border-[var(--border-color)] px-4 py-2 text-xs font-black text-black dark:text-[var(--text-primary)] hover:bg-black hover:text-white dark:hover:bg-[var(--text-primary)] dark:hover:text-black transition-colors"
-              >
-                <Icon name="lucide:globe" class="h-3.5 w-3.5" />
-                {{ t('home.3d') }}
-              </NuxtLink>
-            </div>
-          </div>
-        </article>
-      </div>
-
-      <section class="mt-8 sm:mt-12 max-w-[min(100%,48rem)]">
-        <h2 class="text-[1.25rem] xs:text-fluid-3xl font-black leading-tight tracking-normal mb-4 sm:mb-6">
-          {{ t('campaigns.howItWorksTitle') }}
-        </h2>
-        <div class="grid gap-4 sm:gap-6 sm:grid-cols-3">
-          <div class="rounded-fluid-lg border-2 border-black dark:border-[var(--border-color)] p-4 sm:p-5">
-            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-black dark:bg-[var(--text-primary)] text-white dark:text-black text-sm font-black mb-3">1</div>
-            <h3 class="text-sm font-black uppercase tracking-wide mb-2">{{ t('campaigns.step1Title') }}</h3>
-            <p class="text-xs leading-5 text-black/65 dark:text-[var(--text-secondary)]">{{ t('campaigns.step1Desc') }}</p>
-          </div>
-          <div class="rounded-fluid-lg border-2 border-black dark:border-[var(--border-color)] p-4 sm:p-5">
-            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-black dark:bg-[var(--text-primary)] text-white dark:text-black text-sm font-black mb-3">2</div>
-            <h3 class="text-sm font-black uppercase tracking-wide mb-2">{{ t('campaigns.step2Title') }}</h3>
-            <p class="text-xs leading-5 text-black/65 dark:text-[var(--text-secondary)]">{{ t('campaigns.step2Desc') }}</p>
-          </div>
-          <div class="rounded-fluid-lg border-2 border-black dark:border-[var(--border-color)] p-4 sm:p-5">
-            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-black dark:bg-[var(--text-primary)] text-white dark:text-black text-sm font-black mb-3">3</div>
-            <h3 class="text-sm font-black uppercase tracking-wide mb-2">{{ t('campaigns.step3Title') }}</h3>
-            <p class="text-xs leading-5 text-black/65 dark:text-[var(--text-secondary)]">{{ t('campaigns.step3Desc') }}</p>
-          </div>
+      <section class="section-block" aria-labelledby="campaign-library-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">Campaign library</p><h2 id="campaign-library-title">Choose your entry point.</h2></div>
+          <p>Endangered species is one part of a wider movement. Start with the issue, then choose how you want to participate.</p>
+        </div>
+        <div class="campaign-grid">
+          <article class="campaign-card campaign-card-featured">
+            <div class="card-top"><span class="card-kicker">Biodiversity · live map</span><Icon name="lucide:leaf" /></div>
+            <h3>Endangered species</h3>
+            <p>Discover species data and habitat stories, then use the map as a starting point for learning, advocacy and local protection.</p>
+            <div class="card-meta"><span>2D map + 3D globe</span><span>Data explorer</span></div>
+            <div class="card-actions"><NuxtLink class="button button-primary" to="/endangered-species">Open 2D map <Icon name="lucide:arrow-right" /></NuxtLink><NuxtLink class="text-link" to="/endangered-species/3d">Open 3D globe <Icon name="lucide:globe-2" /></NuxtLink></div>
+          </article>
+          <article class="campaign-card">
+            <div class="card-top"><span class="card-kicker">Climate action · collective day</span><Icon name="lucide:megaphone" /></div>
+            <h3>Choose Action Now</h3>
+            <p>A youth-led global day of action connecting grassroots projects, community resilience and a platform of climate justice demands.</p>
+            <div class="card-meta"><span>Toolkit</span><span>Direct action</span></div>
+            <div class="card-actions"><a class="button button-secondary" href="https://www.earthguardians.org/can" target="_blank" rel="noopener noreferrer">Learn about CAN <Icon name="lucide:arrow-up-right" /></a></div>
+          </article>
+          <article class="campaign-card">
+            <div class="card-top"><span class="card-kicker">Systems · everyday action</span><Icon name="lucide:recycle" /></div>
+            <h3>Sustainable solutions</h3>
+            <p>Explore waste reduction, environmental audits, EarthTracks and community-scale solutions that turn daily choices into systemic momentum.</p>
+            <div class="card-meta"><span>Waste reduction</span><span>Toolkits</span></div>
+            <div class="card-actions"><a class="button button-secondary" href="https://www.earthguardians.org/sustainable-solutions-waste-reduction" target="_blank" rel="noopener noreferrer">Explore solutions <Icon name="lucide:arrow-up-right" /></a></div>
+          </article>
+          <article class="campaign-card">
+            <div class="card-top"><span class="card-kicker">People · network</span><Icon name="lucide:users-round" /></div>
+            <h3>Crews & local action</h3>
+            <p>Join a youth-led, intergenerational group and move from awareness to a project with people who share your place and purpose.</p>
+            <div class="card-meta"><span>Global network</span><span>Local projects</span></div>
+            <div class="card-actions"><NuxtLink class="button button-secondary" to="/active-crews">Find a crew <Icon name="lucide:arrow-right" /></NuxtLink></div>
+          </article>
+          <article class="campaign-card">
+            <div class="card-top"><span class="card-kicker">Resources · funding</span><Icon name="lucide:hand-heart" /></div>
+            <h3>Project grants</h3>
+            <p>Turn a community idea into a funded project through youth-led grants, practical guides and a network built to help action grow.</p>
+            <div class="card-meta"><span>Micro-grants</span><span>Project guides</span></div>
+            <div class="card-actions"><NuxtLink class="button button-secondary" to="/project-grants">Explore grant projects <Icon name="lucide:arrow-right" /></NuxtLink></div>
+          </article>
         </div>
       </section>
 
-      <section class="mt-8 sm:mt-12 max-w-[min(100%,48rem)]">
-        <div class="rounded-fluid-lg border-2 border-black dark:border-[var(--border-color)] bg-black dark:bg-[var(--text-primary)] text-white dark:text-black p-6 sm:p-8 text-center">
-          <h2 class="text-[1.25rem] xs:text-fluid-3xl font-black leading-tight tracking-normal mb-3 sm:mb-4">
-            {{ t('campaigns.ctaTitle') }}
-          </h2>
-          <p class="text-sm leading-6 text-white/80 dark:text-black/70 mb-4 sm:mb-6 max-w-[min(100%,36rem)] mx-auto">
-            {{ t('campaigns.ctaDesc') }}
-          </p>
-          <a
-            href="https://www.earthguardians.org/crews"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center justify-center gap-2 rounded-fluid bg-white dark:bg-[var(--bg-primary)] px-6 py-3 text-sm font-black text-black dark:text-[var(--text-primary)] hover:opacity-90 transition-opacity"
-          >
-            <Icon name="lucide:users" class="h-4 w-4" />
-            {{ t('campaigns.joinCrew') }}
-          </a>
+      <section class="pathway-section" aria-labelledby="pathway-title">
+        <div class="section-heading"><div><p class="eyebrow">A simple pathway</p><h2 id="pathway-title">Learn. Organize. Fund.</h2></div><p>Every campaign can become a local project. Choose the next step that matches where you are today.</p></div>
+        <div class="pathway-grid">
+          <div class="pathway-step"><span>01</span><Icon name="lucide:book-open" /><h3>Learn</h3><p>Use campaign pages, maps, videos and toolkits to understand an issue without losing its human context.</p><a href="https://www.earthguardians.org/eg-resources" target="_blank" rel="noopener noreferrer">Browse resources <Icon name="lucide:arrow-up-right" /></a></div>
+          <div class="pathway-step"><span>02</span><Icon name="lucide:handshake" /><h3>Organize</h3><p>Join or start a Crew, build relationships, and design an action grounded in your community’s needs.</p><a href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer">Join a Crew <Icon name="lucide:arrow-up-right" /></a></div>
+          <div class="pathway-step"><span>03</span><Icon name="lucide:sparkles" /><h3>Fund</h3><p>Move from intention to implementation with project grants, mentorship and a global network of peers.</p><NuxtLink to="/project-grants">See project grants <Icon name="lucide:arrow-right" /></NuxtLink></div>
         </div>
       </section>
+
+      <section class="campaign-cta"><div><p class="eyebrow">The movement is open</p><h2>We won’t wait. It’s our future, we decide.</h2><p>Earth Guardians centers youth leadership and the voices of communities most affected by environmental and climate injustice.</p></div><a class="button button-light" href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer">Become an Earth Guardian <Icon name="lucide:arrow-up-right" /></a></section>
+      <p class="source-note">Campaign context adapted from Earth Guardians’ official <a href="https://www.earthguardians.org/" target="_blank" rel="noopener noreferrer">mission</a>, <a href="https://www.earthguardians.org/eg-resources" target="_blank" rel="noopener noreferrer">resources</a>, <a href="https://www.earthguardians.org/can" target="_blank" rel="noopener noreferrer">CAN</a> and <a href="https://www.earthguardians.org/youth-leadership-training" target="_blank" rel="noopener noreferrer">youth leadership</a> pages.</p>
     </section>
   </main>
 </template>
 
 <script setup lang="ts">
-
-import { computed } from 'vue'
-
-const { t } = useI18n()
-const baseURL = useRuntimeConfig().app.baseURL
-
 useHead({
-  title: computed(() => `${t('campaigns.title')} - Earth Guardians`),
-  meta: [
-    { name: 'description', content: computed(() => t('campaigns.description')) },
-    { property: 'og:title', content: computed(() => t('campaigns.title')) },
-    { property: 'og:description', content: computed(() => t('campaigns.description')) },
-  ],
+  title: 'Campaigns · Earth Guardians',
+  meta: [{ name: 'description', content: 'Explore Earth Guardians campaigns, biodiversity data, youth-led action, crews and project grants.' }],
 })
-
 </script>
+
+<style scoped>
+.campaigns-page { min-height: 100svh; background: #f7f7f2; color: #101412; }
+.campaigns-shell { width: min(1180px, calc(100% - 2rem)); margin: 0 auto; padding: clamp(2rem, 6vw, 5rem) 0 5rem; }
+.campaigns-hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(240px, .65fr); gap: clamp(2rem, 8vw, 7rem); align-items: end; padding-bottom: clamp(3rem, 8vw, 7rem); }
+.eyebrow, .card-kicker { margin: 0; color: #087f70; font: 700 .68rem/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .13em; text-transform: uppercase; }
+.hero-copy h1 { max-width: 790px; margin: .8rem 0 1.2rem; font-size: clamp(2.8rem, 7vw, 6.8rem); line-height: .93; letter-spacing: -.075em; }
+.hero-lede { max-width: 610px; margin: 0; color: rgba(16,20,18,.68); font-size: clamp(1rem, 1.7vw, 1.25rem); line-height: 1.55; }
+.hero-actions, .card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem; margin-top: 1.6rem; }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 44px; padding: .7rem 1rem; border-radius: 999px; font-size: .78rem; font-weight: 800; text-decoration: none; transition: transform 160ms ease, background 160ms ease, color 160ms ease; }
+.button:hover { transform: translateY(-2px); }.button svg, .text-link svg, .pathway-step a svg { width: 15px; height: 15px; }.button-primary { background: #101412; color: #fff; }.button-secondary { border: 1px solid rgba(16,20,18,.2); color: #101412; }.button-secondary:hover { background: #101412; color: #fff; }.button-light { background: #f7f7f2; color: #101412; }
+.hero-note { padding: 1.4rem 0 0 1.4rem; border-left: 1px solid rgba(16,20,18,.25); }.hero-note-index { display: block; margin-bottom: 2.8rem; color: #087f70; font: 700 .7rem ui-monospace, monospace; }.hero-note strong { display: block; max-width: 230px; font-size: 1.25rem; line-height: 1.15; }.hero-note p { max-width: 250px; margin: .8rem 0 0; color: rgba(16,20,18,.62); font-size: .85rem; line-height: 1.55; }
+.section-block, .pathway-section { padding: clamp(2.5rem, 6vw, 5rem) 0; border-top: 1px solid rgba(16,20,18,.18); }.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 2rem; margin-bottom: 2rem; }.section-heading h2 { margin: .5rem 0 0; font-size: clamp(2rem, 4vw, 3.7rem); line-height: .95; letter-spacing: -.06em; }.section-heading > p { max-width: 370px; margin: 0; color: rgba(16,20,18,.62); font-size: .9rem; line-height: 1.55; }
+.campaign-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }.campaign-card { display: flex; min-height: 300px; flex-direction: column; padding: clamp(1.2rem, 3vw, 2rem); border: 1px solid rgba(16,20,18,.16); border-radius: 1.25rem; background: rgba(255,255,255,.62); }.campaign-card-featured { border-color: #087f70; background: #d9f3e8; }.card-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }.card-top > svg { width: 22px; height: 22px; color: #087f70; }.campaign-card h3 { margin: 2.7rem 0 .7rem; font-size: clamp(1.35rem, 2.3vw, 2.1rem); letter-spacing: -.045em; }.campaign-card p { max-width: 46ch; margin: 0; color: rgba(16,20,18,.65); font-size: .9rem; line-height: 1.55; }.card-meta { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: auto; padding-top: 1.5rem; color: #087f70; font: 700 .68rem ui-monospace, monospace; text-transform: uppercase; letter-spacing: .08em; }.card-meta span + span::before { content: '·'; margin-right: .5rem; color: rgba(16,20,18,.35); }.text-link, .pathway-step a { display: inline-flex; align-items: center; gap: .4rem; color: #087f70; font-size: .78rem; font-weight: 800; text-decoration: none; }
+.pathway-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1rem; }.pathway-step { position: relative; padding: 1.4rem 0; border-top: 2px solid #101412; }.pathway-step > span { color: #087f70; font: 700 .7rem ui-monospace, monospace; }.pathway-step > svg { display: block; width: 28px; height: 28px; margin: 2.5rem 0 1.2rem; }.pathway-step h3 { margin: 0 0 .5rem; font-size: 1.3rem; }.pathway-step p { max-width: 32ch; margin: 0 0 1rem; color: rgba(16,20,18,.64); font-size: .85rem; line-height: 1.55; }
+.campaign-cta { display: flex; align-items: end; justify-content: space-between; gap: 2rem; margin-top: 2rem; padding: clamp(1.5rem, 4vw, 3rem); border-radius: 1.5rem; background: #101412; color: #fff; }.campaign-cta h2 { max-width: 600px; margin: .6rem 0 .7rem; font-size: clamp(1.8rem, 4vw, 3.5rem); line-height: .98; letter-spacing: -.055em; }.campaign-cta p:not(.eyebrow) { max-width: 550px; margin: 0; color: rgba(255,255,255,.68); font-size: .9rem; line-height: 1.55; }.source-note { margin: 2rem 0 0; color: rgba(16,20,18,.52); font-size: .72rem; line-height: 1.5; }.source-note a { color: inherit; text-decoration: underline; }
+@media (max-width: 760px) { .campaigns-shell { width: min(100% - 1.2rem, 1180px); }.campaigns-hero, .section-heading, .campaign-cta { display: block; }.hero-note { margin-top: 2.5rem; padding-top: 1rem; padding-left: 1rem; }.hero-note-index { margin-bottom: 1rem; }.section-heading > p { margin-top: 1rem; }.campaign-grid, .pathway-grid { grid-template-columns: 1fr; }.campaign-card { min-height: 260px; }.campaign-cta .button { margin-top: 1.5rem; } }
+@media (prefers-color-scheme: dark) { .campaigns-page { background: #0b110f; color: #f1f5f2; }.hero-lede, .hero-note p, .section-heading > p, .campaign-card p, .pathway-step p, .source-note { color: rgba(241,245,242,.68); }.hero-note, .section-block, .pathway-section { border-color: rgba(241,245,242,.2); }.campaign-card { border-color: rgba(241,245,242,.18); background: rgba(255,255,255,.04); }.campaign-card-featured { background: rgba(8,127,112,.23); }.button-secondary { border-color: rgba(241,245,242,.28); color: #f1f5f2; }.button-secondary:hover { background: #f1f5f2; color: #0b110f; }.pathway-step { border-color: #f1f5f2; }.campaign-cta { background: #d9f3e8; color: #101412; }.campaign-cta p:not(.eyebrow) { color: rgba(16,20,18,.68); }.button-light { background: #101412; color: #fff; } }
+:global(.dark) .campaigns-page { background: #0b110f; color: #f1f5f2; }
+:global(.dark) .campaigns-page .hero-lede, :global(.dark) .campaigns-page .hero-note p, :global(.dark) .campaigns-page .section-heading > p, :global(.dark) .campaigns-page .campaign-card p, :global(.dark) .campaigns-page .pathway-step p, :global(.dark) .campaigns-page .source-note { color: rgba(241,245,242,.68); }
+:global(.dark) .campaigns-page .hero-note, :global(.dark) .campaigns-page .section-block, :global(.dark) .campaigns-page .pathway-section { border-color: rgba(241,245,242,.2); }
+:global(.dark) .campaigns-page .campaign-card { border-color: rgba(241,245,242,.18); background: rgba(255,255,255,.04); }
+:global(.dark) .campaigns-page .campaign-card-featured { background: rgba(8,127,112,.23); }
+:global(.dark) .campaigns-page .button-secondary { border-color: rgba(241,245,242,.28); color: #f1f5f2; }
+:global(.dark) .campaigns-page .button-secondary:hover { background: #f1f5f2; color: #0b110f; }
+:global(.dark) .campaigns-page .pathway-step { border-color: #f1f5f2; }
+:global(.dark) .campaigns-page .campaign-cta { background: #d9f3e8; color: #101412; }
+:global(.dark) .campaigns-page .campaign-cta p:not(.eyebrow) { color: rgba(16,20,18,.68); }
+:global(.dark) .campaigns-page .button-light { background: #101412; color: #fff; }
+</style>

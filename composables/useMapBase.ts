@@ -469,6 +469,7 @@ export function useMapBase(config: MapBaseConfig) {
   function initMap() {
     console.time('[perf] initMap total')
     console.time('[perf] initMap → MapLibre constructor')
+    if (map?.loaded()) return
     if (!mapContainerRef.value) return
 
     if (!detectWebGLSupport()) {

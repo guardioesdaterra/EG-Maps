@@ -34,7 +34,7 @@
             />
           </div>
           <template v-if="user">
-            <div v-if="isManager" class="gstore-create-btn" role="button" tabindex="0" @click="emit('open-create-grant')" @keydown.enter="emit('open-create-grant')" aria-label="Create new grant">
+            <div v-if="isManager" class="gstore-create-btn" role="button" tabindex="0" @click="emit('open-create-grant')" @keydown.enter.prevent="emit('open-create-grant')" @keydown.space.prevent="emit('open-create-grant')" aria-label="Create new grant">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               <span>Create Grant</span>
             </div>
@@ -107,7 +107,8 @@
               tabindex="0"
               :aria-label="`View details: ${g.title}`"
               @click="($emit as any)('view-detail', g)"
-              @keydown.enter="($emit as any)('view-detail', g)"
+              @keydown.enter.prevent="($emit as any)('view-detail', g)"
+              @keydown.space.prevent="($emit as any)('view-detail', g)"
             >
               <div class="gstore-card-top">
                 <span v-if="g.grant_type" class="gstore-card-type" :class="g.grant_type">

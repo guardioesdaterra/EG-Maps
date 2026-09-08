@@ -88,6 +88,9 @@
             <button
               @click="showLangMenu = !showLangMenu"
               class="group relative flex flex-col items-center"
+              :aria-expanded="showLangMenu"
+              aria-haspopup="menu"
+              :aria-label="t('nav.language')"
             >
               <div
                 :class="[tooltipClass, 'opacity-0 group-hover:opacity-100 transition-opacity duration-150']"
@@ -106,6 +109,8 @@
               <div
                 v-if="showLangMenu"
                 :class="dropdownClass"
+                role="menu"
+                :aria-label="t('nav.language')"
               >
                 <button
                   v-for="loc in availableLocales"

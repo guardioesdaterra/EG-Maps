@@ -11,11 +11,11 @@
       <span class="data-label">{{ t('grantsPortal.footerLabel') }}</span>
       <h1 class="footer-title">{{ t('grantsPortal.footerTitle1') }}<br/>{{ t('grantsPortal.footerTitle2') }}</h1>
       <div class="footer-links">
-        <a href="https://www.earthguardians.org/" target="_blank" class="footer-link">
+        <a href="https://www.earthguardians.org/" target="_blank" rel="noopener noreferrer" class="footer-link">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
           <span>earthguardians.org</span>
         </a>
-        <a href="https://www.instagram.com/earthguardians/" target="_blank" class="footer-link">
+        <a href="https://www.instagram.com/earthguardians/" target="_blank" rel="noopener noreferrer" class="footer-link">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
           <span>@earthguardians</span>
         </a>
@@ -33,7 +33,7 @@
       <div class="mt-6 flex items-center justify-center gap-6 text-[10px] text-white/25">
         <span>PO Box 1561 Laurel, MD 20725</span>
         <span>Tax ID/EIN: 84-1397083</span>
-        <a href="https://www.earthguardians.org/privacy-policy" target="_blank" class="hover:text-white/50 transition-colors underline underline-offset-2">Privacy Policy</a>
+        <a href="https://www.earthguardians.org/privacy-policy" target="_blank" rel="noopener noreferrer" class="hover:text-white/50 transition-colors underline underline-offset-2">Privacy Policy</a>
       </div>
     </div>
   </section>

@@ -9,18 +9,26 @@
 <template>
   <div class="top-right-auth">
     <div v-if="user" class="relative">
-      <button class="auth-avatar" :class="isManager ? 'manager' : ''" @click="showDropdown = !showDropdown" :title="isManager ? t('grantsPortal.manager') + ' — ' + t('grantsPortal.viewDashboard') : t('grantsPortal.crewMember') + ' — ' + t('grantsPortal.viewDashboard')">
+      <button
+        class="auth-avatar"
+        :class="isManager ? 'manager' : ''"
+        :aria-expanded="showDropdown"
+        aria-haspopup="menu"
+        @click="showDropdown = !showDropdown"
+        @keydown.escape="showDropdown = false"
+        :title="isManager ? t('grantsPortal.manager') + ' — ' + t('grantsPortal.viewDashboard') : t('grantsPortal.crewMember') + ' — ' + t('grantsPortal.viewDashboard')"
+      >
         <span class="auth-avatar-letter">{{ isManager ? 'M' : 'C' }}</span>
         <span class="auth-avatar-email">{{ user.email?.split('@')[0] }}</span>
       </button>
       <Transition name="modal-fade">
-        <div v-if="showDropdown" class="auth-dropdown" @click.stop>
+        <div v-if="showDropdown" class="auth-dropdown" role="menu" :aria-label="t('grantsPortal.viewDashboard')" @click.stop>
           <div class="auth-dropdown-header">
             <span class="auth-dropdown-role">{{ isManager ? t('grantsPortal.manager') : t('grantsPortal.crewMember') }}</span>
             <span class="auth-dropdown-email">{{ user.email }}</span>
           </div>
           <hr class="border-white/10 my-1" />
-          <button class="auth-dropdown-item auth-dropdown-item--danger" @click="$emit('signOut')">
+          <button class="auth-dropdown-item auth-dropdown-item--danger" role="menuitem" @click="$emit('signOut')">
             {{ t('grantsPortal.signOut') }}
           </button>
         </div>

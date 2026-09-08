@@ -38,11 +38,17 @@ onMounted(async () => {
   if (!canvasRef.value) return
   const { useThreeGlobe } = await import('~/composables/useThreeGlobe')
   globeApi = useThreeGlobe(canvasRef, props.projects)
-  await globeApi.init()
+  globeApi.ready.catch(() => {})
+  try {
+    await globeApi.init()
+  } catch {
+    // CDN unavailable — page content still reveals without the globe
+  }
   emit('ready')
 })
 
 onBeforeUnmount(() => {
+  globeApi?.ready.catch(() => {})
   globeApi = null
 })
 

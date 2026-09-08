@@ -347,7 +347,9 @@ export function useMapBase(config: MapBaseConfig) {
       crewLocations: isRee ? [] : crewLocationsData.value,
       selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
       rareEarthFeatures: isRee
-        ? (props.rareEarthFiltered ?? props.rareEarthPoints)?.features
+        ? (props.rareEarthFiltered?.features?.length
+          ? props.rareEarthFiltered.features
+          : props.rareEarthPoints?.features)
         : undefined,
       culturalFeatures: isRee
         ? props.rareEarthCultural?.features
@@ -369,7 +371,9 @@ export function useMapBase(config: MapBaseConfig) {
       crewLocations: isRee ? [] : crewLocationsData.value,
       selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
       rareEarthFeatures: isRee
-        ? (props.rareEarthFiltered ?? props.rareEarthPoints)?.features
+        ? (props.rareEarthFiltered?.features?.length
+          ? props.rareEarthFiltered.features
+          : props.rareEarthPoints?.features)
         : undefined,
       culturalFeatures: isRee
         ? props.rareEarthCultural?.features
@@ -641,7 +645,7 @@ export function useMapBase(config: MapBaseConfig) {
     if (connections.showConnections.value && quality.settings.value.showParticles) connections.startParticles()
   })
 
-  watch(() => [props.rareEarthPoints, props.rareEarthPolygons, props.rareEarthCultural], () => {
+  watch(() => [props.rareEarthPoints, props.rareEarthPolygons, props.rareEarthCultural, props.rareEarthFiltered], () => {
     if (!map || activeDataset.value !== 'vulcan-observatory') return
     setupRareEarthLayers()
     rebuildMarkers()

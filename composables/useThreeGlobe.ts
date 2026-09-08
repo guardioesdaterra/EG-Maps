@@ -58,6 +58,7 @@ export function useThreeGlobe(
     ]
     await Promise.all(SCRIPTS.map(loadScript))
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- external globals loaded via CDN scripts
     const win = window as unknown as { THREE: any; gsap: any; ScrollTrigger: any }
     const THREE = win.THREE
     const gsap = win.gsap
@@ -156,6 +157,7 @@ export function useThreeGlobe(
     }
     panelImages.length = PANEL_COUNT
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- THREE.js Mesh objects with dynamic properties
     const panels: any[] = []
     const MAX_PANEL_W = 0.4
     const MAX_PANEL_H = 0.35

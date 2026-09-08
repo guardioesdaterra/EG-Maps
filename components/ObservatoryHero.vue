@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useI18n } from '@/composables/useI18n'
 
 const { t } = useI18n()
@@ -92,6 +92,10 @@ defineEmits<{
 }>()
 
 const visible = ref(true)
+
+onMounted(() => {
+  if (window.innerWidth < 768) visible.value = false
+})
 
 function formatCount(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}K`

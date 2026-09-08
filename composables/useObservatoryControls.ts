@@ -309,6 +309,10 @@ export function useObservatoryControls(): ObservatoryControls {
     loadFullBrazil = data.loadFullBrazil
     isRegional = data.isRegional
 
+    watch(pointsData, () => {
+      updateFilter()
+    })
+
     const raw = pointsData.value
     if (raw?.features?.length) {
       filteredPoints.value = raw as GeoJSON.FeatureCollection
@@ -466,10 +470,6 @@ export function useObservatoryControls(): ObservatoryControls {
     lastFilterResult = result
     filteredPoints.value = result
   }
-
-  watch(pointsData, () => {
-    updateFilter()
-  })
 
   function handleKeydown(e: KeyboardEvent) {
     if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'TEXTAREA') return

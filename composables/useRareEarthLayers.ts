@@ -101,7 +101,7 @@ function addPointLayers(map: MapLibreMap, source: string) {
     id: 'ree-point-glow',
     type: 'circle',
     source,
-    filter: ['!', ['has', 'point_count']],
+    filter: ['!has', 'point_count'],
     paint: {
       'circle-color': CAT_COLOR_MATCH,
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 5, 10, 9, 14, 13, 18, 17],
@@ -114,7 +114,7 @@ function addPointLayers(map: MapLibreMap, source: string) {
     id: 'ree-point-circle',
     type: 'circle',
     source,
-    filter: ['!', ['has', 'point_count']],
+    filter: ['!has', 'point_count'],
     paint: {
       'circle-color': CAT_COLOR_MATCH,
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 3, 10, 5, 14, 7, 18, 9],
@@ -179,7 +179,7 @@ function addPointLayers(map: MapLibreMap, source: string) {
     id: 'ree-point-hover',
     type: 'circle',
     source,
-    filter: ['all', ['!', ['has', 'point_count']]],
+    filter: ['all', ['!has', 'point_count']],
     paint: {
       'circle-color': 'transparent',
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 5, 10, 8, 14, 10, 18, 14],
@@ -559,7 +559,7 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
 
   map.addLayer({
     id: 'ree-overlap-glow', type: 'circle', source: REE_SOURCE_POINTS,
-    filter: ['all', ['!', ['has', 'point_count']], ['>', ['to-number', ['coalesce', ['get', 'overlaps_count'], ['length', ['get', 'ov']]]], 0]],
+    filter: ['all', ['!has', 'point_count'], ['>', ['to-number', ['coalesce', ['get', 'overlaps_count'], ['length', ['get', 'ov']]]], 0]],
     paint: { 'circle-color': '#f59e0b', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 10, 10, 14, 14, 18], 'circle-opacity': 0.25, 'circle-blur': 0.9, 'circle-stroke-color': '#f59e0b', 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 2], 'circle-stroke-opacity': 0.5 },
   })
 }

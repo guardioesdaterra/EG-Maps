@@ -5,13 +5,15 @@
  * @deps vue (ref, onMounted, onUnmounted, readonly); ~/lib/supabase (getSupabaseClient)
  */
 import { ref, onMounted, onUnmounted, readonly } from 'vue'
-import type { User, Subscription } from '@supabase/supabase-js'
+import type { User } from '@supabase/supabase-js'
 import { getSupabaseClient } from '~/lib/supabase'
+
+interface AuthSubscription { unsubscribe(): void }
 
 const currentUser = ref<User | null>(null)
 const sessionReady = ref(false)
 let initialized = false
-let authSubscription: Subscription | null = null
+let authSubscription: AuthSubscription | null = null
 
 export function useSupabase() {
   const client = getSupabaseClient()

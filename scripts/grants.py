@@ -690,6 +690,7 @@ def make_grant(title, source_name, url, description="", funder="",
         "title":           title.strip(),
         "funder":          funder.strip(),
         "source":          source_name,
+        "source_id":       uid,              # alias for Supabase compat
         "url":             url,
         "description":     description.strip()[:MAX_DESCRIPTION_LEN],
         "deadline":        deadline,
@@ -707,9 +708,10 @@ def make_grant(title, source_name, url, description="", funder="",
         "deadline_days":   days,
         "amount_usd":      round(usd_val, 2) if usd_val > 0 else None,
         "relevance":       base_relevance,
-        "priority_score":  priority,
+        "priority_score":  max(0, priority),  # clamp to non-negative
         "fetched_at":      datetime.now(timezone.utc).isoformat(),
         "status":          status,         # open/closed/unknown (grant's temporal state)
+        "grant_status":    status,         # alias for Supabase column
         "is_standing":     is_standing,    # true for hardcoded reference entries
     }
 def _cpath(key): return CACHE_DIR / f"{hashlib.md5(key.encode()).hexdigest()}.json"

@@ -255,7 +255,6 @@ export function useEmbedBasemap(opts: UseEmbedBasemapOptions): UseEmbedBasemapAp
           src?.setData(geo)
         }
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.warn('[eg-embed] land geojson fetch failed', err)
       }
     } else {
@@ -286,7 +285,6 @@ export function useEmbedBasemap(opts: UseEmbedBasemapOptions): UseEmbedBasemapAp
           src?.setData(geo)
         }
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.warn('[eg-embed] land geojson fetch failed', err)
       }
     }

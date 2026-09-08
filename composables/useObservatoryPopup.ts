@@ -41,6 +41,7 @@ export interface RareEarthPopupContent {
   subtitle?: string
   badges: RareEarthPopupBadge[]
   fields: Array<{ label: string; value: string }>
+  collapsedFields?: Array<{ label: string; value: string }>
   dangerScore: number
   lastEvent?: { text: string; freshness: 'recent' | 'active' | 'stale' }
   overlaps?: RareEarthPopupOverlap[]
@@ -149,9 +150,7 @@ export function buildRareEarthPopupContent(
     { label: t('observatory.popups.area'), value: formatArea(areaHa) },
     { label: t('observatory.popups.substances'), value: subs },
   ]
-  if (ano) {
-    fields.push({ label: t('observatory.popups.year'), value: String(ano) })
-  }
+  const anoField = ano ? { label: t('observatory.popups.year'), value: String(ano), collapsed: true as const } : null
 
   const lastEvent = lastEventText
     ? { text: lastEventText, freshness: ageFreshness(ano) }
@@ -194,6 +193,7 @@ export function buildRareEarthPopupContent(
     subtitle: subs,
     badges,
     fields,
+    collapsedFields: anoField ? [anoField] : undefined,
     dangerScore,
     lastEvent,
     overlaps,
@@ -266,6 +266,13 @@ function rareEarthPopupHTML(c: RareEarthPopupContent, t: (_key: string) => strin
     })
     .join('')
 
+  const collapsedFieldsHTML = c.collapsedFields && c.collapsedFields.length
+    ? `<details style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
+        <summary style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;cursor:pointer;list-style:none;user-select:none">▸ ${escapeText(c.collapsedFields[0].label)}</summary>
+        <div style="font-size:10.5px;color:var(--text-secondary);font-weight:500;margin-top:3px">${escapeText(c.collapsedFields[0].value)}</div>
+      </details>`
+    : ''
+
   return `
     <div class="ree-popup__inner" style="--ree-accent:${dangerColorVal}">
       <div class="ree-popup__header">
@@ -280,6 +287,7 @@ function rareEarthPopupHTML(c: RareEarthPopupContent, t: (_key: string) => strin
           <div class="ree-popup__danger-score" style="color:${dangerColorVal}">${c.dangerScore.toFixed(1)}</div>
         </div>
         <div class="ree-popup__fields">${fieldsHTML}</div>
+        ${collapsedFieldsHTML}
         ${lastEventHTML}
         ${overlapsHTML}
       </div>

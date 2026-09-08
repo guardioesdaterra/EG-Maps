@@ -39,3 +39,7 @@ package-lock.json
 # Large data files (use build scripts to regenerate)
 public/data/species/icmbio-brazil.json
 public/data/species/iucn.json
+
+# opencode local config (contains provider API keys)
+.opencode.local.json
+opencode.local.json

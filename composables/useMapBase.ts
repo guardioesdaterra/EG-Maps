@@ -29,6 +29,8 @@ import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { ParticleQualityConfig } from '@/lib/map-effects'
+import type { ClusterResultItem } from '@/components/map/ClusterResultsPanel.vue'
+import { useAppRuntime } from '@/composables/useAppRuntime'
 
 export interface MapBaseProps {
   projects?: ProjectData[]
@@ -68,6 +70,7 @@ export function useMapBase(config: MapBaseConfig) {
   const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
 
   const quality = useAdaptiveQuality()
+  const runtime = useAppRuntime()
 
   const particleQuality = computed<ParticleQualityConfig>(() => ({
     particleMaxCount: quality.settings.value.particleMaxCount,
@@ -95,11 +98,14 @@ export function useMapBase(config: MapBaseConfig) {
   })
   const activeDataset = ref<MapBaseProps['defaultDataset']>(props.defaultDataset || 'project-grants')
   const selectedSpeciesGroups = ref<string[]>([])
+  const clusterPanelItems = ref<ClusterResultItem[]>([])
+  const clusterPanelDataset = ref('Cluster results')
+  const clusterPanelOpen = ref(false)
   const hasError = ref(false)
   const errorMessage = ref('')
   const noWebglSupport = ref(false)
   const isLoading = ref(true)
-  const showHexGrid = ref(true)
+  const showHexGrid = runtime.hexGridPreference
   const showFilterPanel = ref(false)
   const speciesFilterPanelRef = ref<{ toggleTaxonomicGroup: (_group: string) => void } | null>(null)
 
@@ -127,11 +133,19 @@ export function useMapBase(config: MapBaseConfig) {
   })
 
   const isSmallViewport = ref(false)
+  let viewportResizeFrame: number | null = null
   function checkViewportSize() {
     if (import.meta.server) return
     const w = window.innerWidth
     const h = window.innerHeight
     isSmallViewport.value = w < 400 || h < 300 || (w < 500 && h < 500 && Math.abs(w - h) < 150)
+  }
+  function scheduleViewportCheck() {
+    if (viewportResizeFrame !== null) return
+    viewportResizeFrame = window.requestAnimationFrame(() => {
+      viewportResizeFrame = null
+      checkViewportSize()
+    })
   }
   const hideControls = computed(() => {
     if (controlsForced.value) return false
@@ -160,6 +174,7 @@ export function useMapBase(config: MapBaseConfig) {
       zIndex: isGlobe ? 30 : 2,
       qualityRef: particleQuality,
       qualityBlur: connectionBlur,
+      initialShowConnections: runtime.connectionsPreference.value,
     },
   )
   const { showConnections, toggleConnections } = connections
@@ -246,6 +261,33 @@ export function useMapBase(config: MapBaseConfig) {
     lastFocusedEl = document.activeElement as HTMLElement
     crewPopup.open(crew)
   }
+  function openClusterPanel(payload: { dataset: string; coordinates: [number, number]; featureIds: string[] }) {
+    const ids = new Set(payload.featureIds)
+    const items: ClusterResultItem[] = []
+    if (payload.dataset === 'project-grants') {
+      for (const project of projectsData.value) if (ids.has(project.project_title)) items.push({ id: project.project_title, title: project.project_title, subtitle: project.country_province, color: '#22d3ee', coordinates: [project.longitude, project.latitude] })
+      clusterPanelDataset.value = 'Project grants'
+    } else if (payload.dataset === 'active-crews') {
+      for (const crew of crewsData.value) if (ids.has(crew.id)) items.push({ id: crew.id, title: crew.region, subtitle: `${crew.activeCrews} active crews · ${crew.countries} countries`, color: '#22c55e', coordinates: [crew.longitude, crew.latitude] })
+      for (const location of crewLocationsData.value) {
+        const id = `${location.name}-${location.lat}-${location.lng}`
+        if (ids.has(id)) items.push({ id, title: location.name, subtitle: `${location.city}, ${location.country}`, color: location.status === 'active' ? '#22c55e' : '#f59e0b', coordinates: [location.lng, location.lat] })
+      }
+      clusterPanelDataset.value = 'Active crews'
+    } else if (payload.dataset === 'endangered-species') {
+      for (const species of visibleSpecies.value) if (ids.has(species.id)) items.push({ id: species.id, title: species.commonName || species.scientificName, subtitle: species.scientificName, color: '#a855f7', coordinates: [species.lng, species.lat] })
+      clusterPanelDataset.value = 'Endangered species'
+    } else {
+      clusterPanelDataset.value = 'Observatory results'
+    }
+    clusterPanelItems.value = items
+    clusterPanelOpen.value = items.length > 0
+    if (items.length > 0) runtime.emit({ type: 'cluster:open', dataset: payload.dataset, count: items.length })
+  }
+  function closeClusterPanel() {
+    clusterPanelOpen.value = false
+    clusterPanelItems.value = []
+  }
   function handleSpeciesSelected(species: SpeciesIndexItem) {
     speciesPanel.closePanel()
     const full = speciesData.value.find(s => s.id === species.id) ?? species
@@ -308,13 +350,15 @@ export function useMapBase(config: MapBaseConfig) {
     openProjectPreview,
     openSpeciesPreview,
     openCrewPreview,
+    openCluster: openClusterPanel,
   })
 
   const rareEarthController = useRareEarthController({
     map: mapRef,
     isActive: computed(() => activeDataset.value === 'vulcan-observatory'),
     getProps: () => ({
-      rareEarthPoints: props.rareEarthFiltered ?? props.rareEarthPoints,
+      rareEarthPoints: props.rareEarthPoints,
+      rareEarthFiltered: props.rareEarthFiltered,
       rareEarthPolygons: props.rareEarthPolygons,
       rareEarthProtected: props.rareEarthProtected,
       rareEarthWater: props.rareEarthWater ?? undefined,
@@ -384,7 +428,7 @@ export function useMapBase(config: MapBaseConfig) {
 
   function navigateToLocation(lat: number, lng: number) {
     if (map) {
-      map.flyTo({ center: [lng, lat], zoom: isMobile.value ? (isGlobe ? 3 : 6) : (isGlobe ? 4 : 6), duration: 1500, essential: true })
+      map.flyTo({ center: [lng, lat], zoom: isMobile.value ? (isGlobe ? 3 : 6) : (isGlobe ? 4 : 6), duration: runtime.reducedMotion.value ? 0 : 1500, essential: true })
     }
   }
 
@@ -438,6 +482,7 @@ export function useMapBase(config: MapBaseConfig) {
     window.removeEventListener('resize', onResize)
     if (map) {
       onBeforeCleanup?.()
+      connections.cleanup()
       marker.cleanup()
       map.remove()
       map = null
@@ -490,6 +535,9 @@ export function useMapBase(config: MapBaseConfig) {
           console.timeEnd('[perf] initMap → style.load')
         }
         onStyleLoad?.(map!)
+        if (activeDataset.value === 'vulcan-observatory') {
+          setupRareEarthLayers()
+        }
       })
 
       map.on('load', () => {
@@ -593,7 +641,7 @@ export function useMapBase(config: MapBaseConfig) {
   onMounted(() => {
     console.time('[perf] useMapBase onMounted → initMap')
     checkViewportSize()
-    window.addEventListener('resize', checkViewportSize)
+    window.addEventListener('resize', scheduleViewportCheck, { passive: true })
     showFilterPanel.value = false
     initMap()
   })
@@ -606,7 +654,11 @@ export function useMapBase(config: MapBaseConfig) {
     previewCard.close()
     marker.cleanup()
     window.removeEventListener('resize', onResize)
-    window.removeEventListener('resize', checkViewportSize)
+    window.removeEventListener('resize', scheduleViewportCheck)
+    if (viewportResizeFrame !== null) {
+      window.cancelAnimationFrame(viewportResizeFrame)
+      viewportResizeFrame = null
+    }
     if (map) {
       map.remove()
       map = null
@@ -652,12 +704,14 @@ export function useMapBase(config: MapBaseConfig) {
   })
 
   watch(showHexGrid, async (visible) => {
+    runtime.hexGridPreference.value = visible
     if (!visible) return
     await nextTick()
     hexGrid.setupHexGrid()
   })
 
   watch(connections.showConnections, () => {
+    runtime.connectionsPreference.value = connections.showConnections.value
     if (activeDataset.value === 'active-crews') {
       connections.addConnections('active-crews', [], [], crewLocationsData.value)
     } else {
@@ -693,6 +747,7 @@ export function useMapBase(config: MapBaseConfig) {
     filteredProjectsList, filteredSpeciesList, visibleProjects, visibleSpecies,
     activeDataset, selectedSpeciesGroups,
     hasError, errorMessage, noWebglSupport, isLoading,
+    clusterPanelItems, clusterPanelDataset, clusterPanelOpen, closeClusterPanel,
     showHexGrid, showFilterPanel, speciesFilterPanelRef,
     connections, showConnections, toggleConnections,
     hexGrid, onResize,

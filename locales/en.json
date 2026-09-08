@@ -549,10 +549,10 @@
       "exporting": "Exporting..."
     },
     "v2": {
-      "brandTitle": "Observatory of Vulcan",
-      "brandSub": "Rare-earth mining × cultural resistance",
-      "brandTitleGlobe": "Observatory of Vulcan (Globe)",
-      "brandSubGlobe": "Rare-earth mining × cultural resistance · 3D",
+      "brandTitle": "Vulcan Community Observatory",
+      "brandSub": "Poços de Caldas · community intelligence",
+      "brandTitleGlobe": "Vulcan Community Observatory · Globe",
+      "brandSubGlobe": "Poços de Caldas · community intelligence · 3D",
       "claimsTotal": "claims",
       "actions": "Actions",
       "bottomTools": "Filter & pin tools",
@@ -607,6 +607,21 @@
         "unknownSource": "Unknown",
         "pagePrev": "Previous page",
         "pageNext": "Next page"
+      },
+      "community": {
+        "eyebrow": "A living observatory",
+        "title": "Evidence becomes collective power",
+        "lead": "This is not a dashboard about a place. It is a community tool for reading how extraction, water, protected territories and cultural life meet around Poços de Caldas.",
+        "readTitle": "Read the territory",
+        "readText": "Start with layers together. A claim is not a verdict: it is a public record that needs context, verification and local knowledge.",
+        "connectTitle": "Connect the evidence",
+        "connectText": "Cultural agents, water, protected territories and mining records reveal relationships that isolated datasets hide.",
+        "actTitle": "Raise community context",
+        "actText": "Use Field Monitor to document observations, share a territory pin or connect with the wider Earth Guardians movement.",
+        "methodology": "Method and care",
+        "methodologyText": "Data is assembled from public records and community-facing sources. Treat it as an invitation to investigate, not as a substitute for community consent or legal determination.",
+        "monitor": "Open Field Monitor",
+        "sources": "View data sources"
       }
     },
     "error": {

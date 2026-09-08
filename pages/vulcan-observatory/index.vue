@@ -19,7 +19,7 @@
  * @deps @/composables/useI18n (useI18n);
  *       @/composables/useVulcanObservatoryPage (useVulcanObservatoryPage);
  *       @/components/observatory/ObservatorySidebar.vue (Cultural browser — replaces the old 6-tab grid);
- *       @/components/ObservatoryHero.vue (intro overlay)
+ *       @/components/observatory/CommunityContextPanel.vue (community context overlay)
  * @connections /vulcan-observatory/3d.vue (3D counterpart sharing the same data composable)
  */
 <template>
@@ -392,13 +392,11 @@
           </footer>
 
           <!-- ── Hero / intro panel (auto-hides after first dismiss) ── -->
-          <ObservatoryHero
+          <CommunityContextPanel
             :cultural-count="culturalTotalCount"
-            :mapa-count="culturalSourceCounts.mapa_cultura ?? 0"
-            :floresta-count="culturalSourceCounts.floresta_ativista ?? 0"
             :community-count="culturalSourceCounts.community ?? 0"
             :rare-earth-count="totalCount"
-            @close="dismissHero"
+            @monitor="onUserContribution"
           />
         </template>
       </MapView2D>
@@ -440,7 +438,7 @@ import { useVulcanObservatoryPage } from '@/composables/useVulcanObservatoryPage
 
 import MapView2D from '@/components/MapView2D.vue'
 import ObservatorySidebar from '@/components/observatory/ObservatorySidebar.vue'
-import ObservatoryHero from '@/components/ObservatoryHero.vue'
+import CommunityContextPanel from '@/components/observatory/CommunityContextPanel.vue'
 import GeoPoliticalTimeline from '@/components/GeoPoliticalTimeline.vue'
 import RedeCorporativa from '@/components/RedeCorporativa.vue'
 import DataDownloadPanel from '@/components/DataDownloadPanel.vue'
@@ -458,12 +456,12 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'
 const { t } = useI18n()
 
 useHead({
-  title: 'Observatory of Vulcan | Earth Guardians',
+  title: 'Vulcan Community Observatory · Poços de Caldas | Earth Guardians',
   meta: [
     {
       name: 'description',
       content:
-        'Brazil rare-earth mining claims overlaid with Mapa Cultura BR and Floresta Ativista community agents — capital invasion, socio-environmental impact, cultural resistance.',
+        'A community observatory for Poços de Caldas: public mining records, water, protected territories and cultural agents brought together for context-aware Earth Guardians action.',
     },
   ],
 })
@@ -546,9 +544,6 @@ function onExpandToFullBrazil() {
 function updatePhases(value: Set<string>) {
   controls.selectedPhases.value = value
   controls.debouncedFilter()
-}
-function dismissHero() {
-  // hero auto-hides via its own v-if — pass-through only
 }
 function onJumpToCultural(coord: [number, number], name: string) {
   flyToTarget.value = { lng: coord[0], lat: coord[1], zoom: 10 }

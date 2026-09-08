@@ -260,6 +260,7 @@
 
 const { t } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL || '/'
+const embedBaseURL = import.meta.client ? new URL(baseURL, window.location.origin).toString() : baseURL
 
 const copiedId = ref<string | null>(null)
 let copyTimeout: ReturnType<typeof setTimeout> | null = null
@@ -288,7 +289,7 @@ const pickerDatasets = [
 const pickerIframeSrc = computed(() => {
   if (!pickerMode.value) return ''
   const path = pickerMode.value === '3d' ? `${pickerDataset.value}/3d` : pickerDataset.value
-  return `${baseURL}${path}?hideAll=true`
+  return `${embedBaseURL}${path}?hideAll=true`
 })
 
 const pickerIframeTitle = computed(() => {
@@ -302,7 +303,7 @@ const pickerEmbedCode = computed(() => {
   const ds = pickerDatasets.find(d => d.key === pickerDataset.value)
   const mode = pickerMode.value.toUpperCase()
   const path = pickerMode.value === '3d' ? `${pickerDataset.value}/3d` : pickerDataset.value
-  const src = `${baseURL}${path}?hideAll=true`
+  const src = `${embedBaseURL}${path}?hideAll=true`
   const label = `${ds?.label ?? ''} — ${mode}`
   return `\n<iframe\n  src="${src}"\n  style="width: 100%; height: 500px; border: none;"\n  loading="lazy"\n  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"\n  title="${label}"\n></iframe>`
 })
@@ -318,26 +319,26 @@ const compareConfigs: CompareItem[] = [
   {
     key: 'comp-active-crews',
     label: 'Active Crews',
-    src2d: `${baseURL}active-crews?embed=true&hideAll=true`,
-    src3d: `${baseURL}active-crews/3d?embed=true&hideAll=true`,
+    src2d: `${embedBaseURL}active-crews?embed=true&hideAll=true`,
+    src3d: `${embedBaseURL}active-crews/3d?embed=true&hideAll=true`,
   },
   {
     key: 'comp-project-grants',
     label: 'Project Grants',
-    src2d: `${baseURL}project-grants?embed=true&hideAll=true`,
-    src3d: `${baseURL}project-grants/3d?embed=true&hideAll=true`,
+    src2d: `${embedBaseURL}project-grants?embed=true&hideAll=true`,
+    src3d: `${embedBaseURL}project-grants/3d?embed=true&hideAll=true`,
   },
   {
     key: 'comp-endangered-species',
     label: 'Endangered Species',
-    src2d: `${baseURL}endangered-species?embed=true&hideAll=true`,
-    src3d: `${baseURL}endangered-species/3d?embed=true&hideAll=true`,
+    src2d: `${embedBaseURL}endangered-species?embed=true&hideAll=true`,
+    src3d: `${embedBaseURL}endangered-species/3d?embed=true&hideAll=true`,
   },
   {
     key: 'comp-vulcan-observatory',
     label: 'Observatory of Vulcan',
-    src2d: `${baseURL}vulcan-observatory?embed=true&hideAll=true`,
-    src3d: `${baseURL}vulcan-observatory/3d?embed=true&hideAll=true`,
+    src2d: `${embedBaseURL}vulcan-observatory?embed=true&hideAll=true`,
+    src3d: `${embedBaseURL}vulcan-observatory/3d?embed=true&hideAll=true`,
   },
 ]
 
@@ -356,7 +357,7 @@ interface IframeConfig {
 const iframeConfigs: IframeConfig[] = [
   {
     key: 'fullScreen',
-    src: `${baseURL}active-crews/3d`,
+    src: `${embedBaseURL}active-crews/3d`,
     params: '',
     placeholderClass: 'h-96',
     iframeClass: 'h-96',
@@ -367,7 +368,7 @@ const iframeConfigs: IframeConfig[] = [
   },
   {
     key: 'fixed100',
-    src: `${baseURL}active-crews/3d?embed=true`,
+    src: `${embedBaseURL}active-crews/3d?embed=true`,
     params: 'embed=true',
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
@@ -378,7 +379,7 @@ const iframeConfigs: IframeConfig[] = [
   },
   {
     key: 'responsive',
-    src: `${baseURL}active-crews/3d?embed=true`,
+    src: `${embedBaseURL}active-crews/3d?embed=true`,
     params: 'embed=true',
     placeholderClass: 'relative w-full',
     iframeClass: 'absolute inset-0 w-full h-full',
@@ -389,7 +390,7 @@ const iframeConfigs: IframeConfig[] = [
   },
   {
     key: 'smallCard',
-    src: `${baseURL}active-crews/3d?embed=true`,
+    src: `${embedBaseURL}active-crews/3d?embed=true`,
     params: 'embed=true',
     placeholderClass: 'w-[300px] h-[250px]',
     iframeClass: 'w-full h-full',
@@ -400,7 +401,7 @@ const iframeConfigs: IframeConfig[] = [
   },
   {
     key: 'mediumCard',
-    src: `${baseURL}active-crews/3d?embed=true`,
+    src: `${embedBaseURL}active-crews/3d?embed=true`,
     params: 'embed=true',
     placeholderClass: 'w-full max-w-[600px] aspect-[3/2]',
     iframeClass: 'w-full h-full',
@@ -411,7 +412,7 @@ const iframeConfigs: IframeConfig[] = [
   },
   {
     key: 'largeCard',
-    src: `${baseURL}active-crews/3d?embed=true`,
+    src: `${embedBaseURL}active-crews/3d?embed=true`,
     params: 'embed=true',
     placeholderClass: 'w-full max-w-[900px] aspect-[3/2]',
     iframeClass: 'w-full h-full',
@@ -422,7 +423,7 @@ const iframeConfigs: IframeConfig[] = [
   },
   {
     key: 'fullScreenInteractive',
-    src: `${baseURL}active-crews/3d?embed=true&controls=true`,
+    src: `${embedBaseURL}active-crews/3d?embed=true&controls=true`,
     params: 'embed=true&controls=true',
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
@@ -434,7 +435,7 @@ const iframeConfigs: IframeConfig[] = [
 
   {
     key: 'activeCrews2d',
-    src: `${baseURL}active-crews?embed=true`,
+    src: `${embedBaseURL}active-crews?embed=true`,
     params: 'embed=true',
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
@@ -446,7 +447,7 @@ const iframeConfigs: IframeConfig[] = [
 
   {
     key: 'projectGrants3d',
-    src: `${baseURL}project-grants/3d?embed=true`,
+    src: `${embedBaseURL}project-grants/3d?embed=true`,
     params: 'embed=true',
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
@@ -457,7 +458,7 @@ const iframeConfigs: IframeConfig[] = [
   },
   {
     key: 'projectGrants2d',
-    src: `${baseURL}project-grants?embed=true`,
+    src: `${embedBaseURL}project-grants?embed=true`,
     params: 'embed=true',
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
@@ -469,7 +470,7 @@ const iframeConfigs: IframeConfig[] = [
 
   {
     key: 'endangeredSpecies3d',
-    src: `${baseURL}endangered-species/3d?embed=true`,
+    src: `${embedBaseURL}endangered-species/3d?embed=true`,
     params: 'embed=true',
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
@@ -480,7 +481,7 @@ const iframeConfigs: IframeConfig[] = [
   },
   {
     key: 'endangeredSpecies2d',
-    src: `${baseURL}endangered-species?embed=true`,
+    src: `${embedBaseURL}endangered-species?embed=true`,
     params: 'embed=true',
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
@@ -492,7 +493,7 @@ const iframeConfigs: IframeConfig[] = [
 
   {
     key: 'observatory3d',
-    src: `${baseURL}vulcan-observatory/3d?embed=true`,
+    src: `${embedBaseURL}vulcan-observatory/3d?embed=true`,
     params: 'embed=true',
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
@@ -503,7 +504,7 @@ const iframeConfigs: IframeConfig[] = [
   },
   {
     key: 'observatory',
-    src: `${baseURL}vulcan-observatory?embed=true`,
+    src: `${embedBaseURL}vulcan-observatory?embed=true`,
     params: 'embed=true',
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
@@ -515,7 +516,7 @@ const iframeConfigs: IframeConfig[] = [
 
   {
     key: 'noControl',
-    src: `${baseURL}active-crews/3d?no-control=true`,
+    src: `${embedBaseURL}active-crews/3d?no-control=true`,
     params: 'no-control=true',
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
@@ -526,7 +527,7 @@ const iframeConfigs: IframeConfig[] = [
   },
   {
     key: 'hideAll',
-    src: `${baseURL}active-crews/3d?hideAll=true`,
+    src: `${embedBaseURL}active-crews/3d?hideAll=true`,
     params: 'hideAll=true',
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
@@ -535,6 +536,17 @@ const iframeConfigs: IframeConfig[] = [
     embedWidth: '100%',
     embedHeight: '500px',
   },
+  ...['overview', 'community', 'crew', 'partners', 'worldwide', 'egprojects'].map((view) => ({
+    key: `grants_${view}`,
+    src: `${embedBaseURL}squarespace/eg-grants?view=${view}`,
+    params: `view=${view}`,
+    placeholderClass: 'min-h-[320px]',
+    iframeClass: 'min-h-[320px]',
+    allow: 'clipboard-write; fullscreen',
+    embedLabel: `EG Grants — ${view}`,
+    embedWidth: '100%',
+    embedHeight: 'auto',
+  })),
 ]
 
 function buildEmbedCode(item: IframeConfig): string {
@@ -549,6 +561,16 @@ function buildEmbedCode(item: IframeConfig): string {
     title="${item.embedLabel}"
   ></iframe>
 </div>`
+  }
+  if (item.embedHeight === 'auto') {
+    return `
+<iframe
+  src="${item.src}"
+  style="width: 100%; min-height: 360px; border: none;"
+  loading="lazy"
+  allow="${item.allow}"
+  title="${item.embedLabel}"
+></iframe>`
   }
   return `
 <iframe

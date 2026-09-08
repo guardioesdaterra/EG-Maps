@@ -50,6 +50,8 @@
     <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-15" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
 
     <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" :style="{ zIndex: 'var(--z-map-base)' }" />
+    <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute top-4 right-4 z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/70 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm" aria-label="Find nearby crews, projects and campaigns" @click="nearbyOpen = true">⌖ Nearby</button>
+    <NearbyPanel v-if="nearbyOpen" :projects="projectsData" :crew-locations="crewLocationsData" @close="nearbyOpen = false" @navigate="navigateToLocation" />
     <slot name="overlays" />
 
     <div v-if="isMobile && !hideAll" class="absolute top-[clamp(4.5rem,12vw,6rem)] xs:top-[clamp(4.5rem,12vw,6rem)] left-1/2 -translate-x-1/2 pointer-events-none px-2" :style="{ zIndex: 'var(--z-map-banner)' }">
@@ -128,6 +130,7 @@ import { useMapBase } from '@/composables/useMapBase'
 import { useSpeciesIndex } from '~/composables/useSpeciesData'
 import { useMapCustomLayers } from '~/composables/useMapCustomLayers'
 import ImportDataWidget from '~/components/ImportDataWidget.vue'
+import NearbyPanel from '~/components/map/NearbyPanel.vue'
 
 const DataBubble = defineAsyncComponent(() => import('~/components/DataBubble.vue'))
 const MapControls = defineAsyncComponent(() => import('~/components/MapControls.vue'))
@@ -144,6 +147,7 @@ const emit = defineEmits<{ mapInit: [map: maplibregl.Map] }>()
 const mapContainerRef = ref<HTMLElement | null>(null)
 const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
 const starCanvasRef = ref<HTMLCanvasElement | null>(null)
+const nearbyOpen = ref(false)
 
 const showDataLoading = ref(false)
 const dataStatusText = ref('')

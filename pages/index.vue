@@ -90,10 +90,10 @@
                 :aria-label="dataset.ariaLabel"
               >
                 <Icon :name="dataset.single ? 'lucide:arrow-right' : 'lucide:map'" class="h-3.5 w-3.5 sm:h-3 sm:w-3" />
-                <span>{{ dataset.single ? 'Open' : (t('home.2d') || '2D') }}</span>
+                <span>{{ dataset.single ? 'Open' : (dataset.campaignHub ? 'Explore' : (t('home.2d') || '2D')) }}</span>
               </NuxtLink>
               <NuxtLink
-                v-if="!dataset.single"
+                v-if="!dataset.single && !dataset.campaignHub"
                 :to="`${dataset.path}/3d`"
                 class="flex flex-1 items-center justify-center gap-1.5 min-h-[44px] px-3 py-2.5 sm:py-2 text-xs sm:text-xs font-black transition-colors bg-black dark:bg-[var(--text-primary)] text-white dark:text-black hover:bg-white dark:hover:bg-[var(--bg-primary)] hover:text-black dark:hover:text-[var(--text-primary)] focus:outline-none focus:ring-4 focus:ring-black/20 dark:focus:ring-[var(--text-primary)]/20 active:scale-[0.97]"
               >
@@ -132,6 +132,7 @@ useHead({
 const datasets = computed(() => [
   {
     path: '/project-grants',
+    campaignHub: false,
     icon: 'lucide:hand-heart',
     label: 'Grants',
     title: t('home.projectGrantsTitle'),
@@ -145,12 +146,13 @@ const datasets = computed(() => [
     ],
   },
   {
-    path: '/endangered-species',
+    path: '/campaigns',
     icon: 'lucide:bird',
     label: 'Campaigns',
     title: t('home.campaignsTitle'),
     description: t('home.campaignsDesc'),
     ariaLabel: 'View Campaigns and Endangered Species',
+    campaignHub: true,
     stats: [
       `${t('home.speciesCampaigns')}`,
       `${t('home.globalAction')}`,
@@ -158,6 +160,7 @@ const datasets = computed(() => [
   },
   {
     path: '/active-crews',
+    campaignHub: false,
     icon: 'lucide:users-round',
     label: 'Crew Projects',
     title: t('home.crewProjectsTitle'),
@@ -171,6 +174,7 @@ const datasets = computed(() => [
   },
   {
     path: '/masterclasses',
+    campaignHub: false,
     icon: 'lucide:graduation-cap',
     label: 'Masterclasses',
     title: t('home.masterclassesTitle'),
@@ -184,6 +188,7 @@ const datasets = computed(() => [
   },
   {
     path: 'https://www.earthguardians.org/crews',
+    campaignHub: false,
     icon: 'lucide:rocket',
     label: 'Start a Crew',
     title: t('home.startACrewTitle'),

@@ -20,6 +20,7 @@ import { buildEnterpriseNetworkLines } from '@/lib/enterprise-data'
 
 export interface RareEarthControllerProps {
   rareEarthPoints?: GeoJSON.FeatureCollection
+  rareEarthFiltered?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
   rareEarthProtected?: GeoJSON.FeatureCollection
   rareEarthWater?: GeoJSON.FeatureCollection | null
@@ -91,12 +92,20 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
   }
 
   function setupLayers() {
-    if (layersSetup) return
     const m = map.value
     if (!m) return
     if (!m.isStyleLoaded()) return
+    // MapLibre removes custom sources/layers when the style changes. Do not
+    // trust the local flag alone; recover whenever the canonical source is
+    // missing (for example after the MapTiler fallback style is applied).
+    if (layersSetup && m.getSource('ree-points')) return
+    layersSetup = false
     const p = getProps()
-    if (!p.rareEarthPoints) return
+    // Do not mark the controller as initialized with the placeholder empty
+    // FeatureCollection used while the async observatory data is loading.
+    // Doing so prevents the later points watcher from ever creating the
+    // claims/polygon layers.
+    if (!p.rareEarthPoints?.features?.length) return
 
     setupRareEarthLayersInternal(m, {
       points: p.rareEarthPoints,
@@ -130,17 +139,27 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
 
   let pointsDebounceTimer: ReturnType<typeof setTimeout> | null = null
   const stopPointsWatch = watch(
-    () => getProps().rareEarthPoints,
-    (newVal) => {
-      if (!isActiveGetter() || !newVal || !map.value || !map.value.isStyleLoaded()) return
+    () => [getProps().rareEarthPoints, getProps().rareEarthFiltered] as const,
+    ([rawPoints, filteredPoints]) => {
+      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
+      // The map can finish loading before the async GeoJSON request. In that
+      // case there is no `ree-points` source yet; bootstrap every observatory
+      // layer from the newly arrived points instead of silently dropping it.
+      const pointsSourceExists = Boolean(map.value.getSource('ree-points'))
+      if (!layersSetup || !pointsSourceExists) {
+        layersSetup = false
+        setupLayers()
+        return
+      }
       if (pointsDebounceTimer) clearTimeout(pointsDebounceTimer)
       pointsDebounceTimer = setTimeout(() => {
         try {
           const src = map.value?.getSource('ree-points') as maplibregl.GeoJSONSource | undefined
+          const newVal = filteredPoints?.features?.length ? filteredPoints : rawPoints
           if (src && newVal) src.setData(newVal)
-          const netFc = buildEnterpriseNetworkLines(newVal)
+          const netFc = newVal ? buildEnterpriseNetworkLines(newVal) : null
           const netSrc = map.value?.getSource('ree-network') as maplibregl.GeoJSONSource | undefined
-          if (netSrc) netSrc.setData(netFc)
+          if (netSrc && netFc) netSrc.setData(netFc)
         } catch { /* ignore */ }
       }, 16)
     },

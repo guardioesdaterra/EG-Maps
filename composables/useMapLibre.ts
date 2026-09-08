@@ -6,9 +6,10 @@
  */
 export function getMapStyle(apiKey: string, tileResolution?: 'low' | 'medium' | 'high'): string {
   const resParam = tileResolution && tileResolution !== 'high' ? `&res=${tileResolution}` : ''
-  return apiKey
-    ? `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${apiKey}${resParam}`
-    : `https://api.maptiler.com/maps/satellite-v4/style.json?key=${apiKey}${resParam}`
+  if (apiKey) {
+    return `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${apiKey}${resParam}`
+  }
+  return 'https://demotiles.maplibre.org/style.json'
 }
 
 export function detectWebGLSupport(): boolean {

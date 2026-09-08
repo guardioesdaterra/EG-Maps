@@ -220,7 +220,7 @@ export function useMapBase(config: MapBaseConfig) {
   useFocusTrap(crewOverlayRef, { active: crewOverlayActive })
 
   let map: maplibregl.Map | null = null
-  let isMounted = true
+  let isMounted = false
   let loadingTimeout: ReturnType<typeof setTimeout> | null = null
   let lastFocusedEl: HTMLElement | null = null
   let rebuildPending = false
@@ -639,6 +639,7 @@ export function useMapBase(config: MapBaseConfig) {
   /* ── lifecycle ────────────────────────────────────────────────────── */
 
   onMounted(() => {
+    isMounted = true
     console.time('[perf] useMapBase onMounted → initMap')
     checkViewportSize()
     window.addEventListener('resize', scheduleViewportCheck, { passive: true })

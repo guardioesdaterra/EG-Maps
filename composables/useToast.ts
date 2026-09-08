@@ -22,9 +22,19 @@ const DEFAULT_DURATIONS: Record<ToastMessage['kind'], number> = {
   error: 7000,
 }
 
+const timers = new Map<string, ReturnType<typeof setTimeout> | number>()
+
+function dismissToast(state: { toasts: ToastMessage[] }, id: string) {
+  if (timers.has(id)) {
+    const timer = timers.get(id)
+    if (timer) clearTimeout(timer)
+    timers.delete(id)
+  }
+  state.toasts = state.toasts.filter(t => t.id !== id)
+}
+
 export function useToast() {
   const state = useState<ToastState>('toast', () => ({ toasts: [] }))
-  const timers = new Map<string, ReturnType<typeof setTimeout> | number>()
 
   function push(toast: Omit<ToastMessage, 'id' | 'createdAt'>): string {
     const id = makeId()
@@ -39,7 +49,7 @@ export function useToast() {
       if (typeof window !== 'undefined') {
         timers.set(id, window.setTimeout(() => {
           timers.delete(id)
-          dismiss(id)
+          state.value.toasts = state.value.toasts.filter(t => t.id !== id)
         }, full.durationMs))
       }
     }
@@ -47,12 +57,7 @@ export function useToast() {
   }
 
   function dismiss(id: string) {
-    if (timers.has(id)) {
-      const timer = timers.get(id)
-      if (timer) clearTimeout(timer)
-      timers.delete(id)
-    }
-    state.value.toasts = state.value.toasts.filter(t => t.id !== id)
+    dismissToast(state.value, id)
   }
 
   function clear() {

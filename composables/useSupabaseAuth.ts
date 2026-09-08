@@ -67,9 +67,12 @@ export function useSupabaseAuth() {
   }
 
   async function signOut() {
-    isManager.value = false
     isManagerReady.value = false
-    await client.auth.signOut()
+    try {
+      await client.auth.signOut()
+    } finally {
+      isManagerReady.value = true
+    }
   }
 
   return { user, isManager, isManagerReady, signIn, signOut, sessionReady }

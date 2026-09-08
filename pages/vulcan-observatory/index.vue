@@ -23,7 +23,7 @@
  * @connections /vulcan-observatory/3d.vue (3D counterpart sharing the same data composable)
  */
 <template>
-  <div id="main-content" class="relative w-full h-[100svh] overflow-hidden bg-black">
+  <div id="main-content" tabindex="-1" class="relative w-full h-[100svh] overflow-hidden bg-black focus:outline-none">
     <!-- ── Loading overlay ─────────────────────────────────────────────── -->
     <Transition name="fade">
       <div

@@ -1,5 +1,5 @@
 <template>
-  <main ref="rootRef" class="eg-grants-embed" :data-view="view" aria-label="Earth Guardians grants embed">
+  <main id="main-content" tabindex="-1" ref="rootRef" class="eg-grants-embed" :data-view="view" aria-label="Earth Guardians grants embed">
     <header class="eg-grants-embed-header">
       <div>
         <p class="eyebrow">Earth Guardians</p>

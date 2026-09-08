@@ -1,5 +1,5 @@
 <template>
-  <main id="main-content" class="campaigns-page">
+  <main id="main-content" tabindex="-1" class="campaigns-page">
     <section class="campaigns-shell">
       <header class="campaigns-hero">
         <div class="hero-copy">

@@ -105,7 +105,9 @@ export function usePreviewCard(baseURL?: string) {
     map: MapLibreMap,
     onExpand: () => void,
   ) {
-    popup = new maplibregl.Popup({
+    if (popup) popup.remove()
+
+    const instance = new maplibregl.Popup({
       closeButton: false,
       closeOnClick: true,
       closeOnMove: true,
@@ -116,18 +118,21 @@ export function usePreviewCard(baseURL?: string) {
       .setLngLat(lngLat)
       .setHTML(html)
       .addTo(map)
+    popup = instance
 
     isOpen.value = true
 
-    popup.on('close', () => {
+    instance.on('close', () => {
+      if (popup !== instance) return
       isOpen.value = false
       currentItem.value = null
       currentType.value = null
       popup = null
+      currentMap = null
     })
 
     nextTick(() => {
-      const popupEl = popup?.getElement()
+      const popupEl = instance.getElement()
       if (!popupEl) return
 
       popupEl.classList.add('preview-card-popup')

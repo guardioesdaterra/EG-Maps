@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 
-import { ref, watch } from 'vue'
+import { ref, watch, onBeforeUnmount } from 'vue'
 import { useSupabase } from '~/composables/useSupabase'
 
 useHead({ title: 'Auth Callback | Earth Guardians' })
@@ -31,10 +31,18 @@ useHead({ title: 'Auth Callback | Earth Guardians' })
 const { client, sessionReady } = useSupabase()
 const error = ref('')
 
+const SIGN_UP_URL = '/eg-grants?signup=1'
+const fallbackTimer = setTimeout(() => {
+  if (!sessionReady.value && !error.value) {
+    error.value = 'Sign-in is taking too long. Continue to the grants portal.'
+  }
+}, 15000)
+
+onBeforeUnmount(() => clearTimeout(fallbackTimer))
+
 watch(sessionReady, async (ready) => {
   if (!ready) return
-
-  const SIGN_UP_URL = '/eg-grants?signup=1'
+  clearTimeout(fallbackTimer)
 
   if (window.location.search || window.location.hash) {
     window.history.replaceState({}, '', window.location.pathname)

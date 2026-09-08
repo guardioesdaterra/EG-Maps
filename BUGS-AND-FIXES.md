@@ -39,7 +39,7 @@ if (!url || !key) {
 ```
 **Fix:** Export `getSupabaseClient()` to throw, OR return a no-op proxy that succeeds on `from()` and returns `{ data: null, error: { message: 'Supabase not configured' } }`. Update `useSupabase.ts` to alert the user once via `useToast` if not configured.
 
-### B2. 🐞🔒 [CRIT] `useSupabase` subscription is shared but cleaned per-component
+### B2. ✅ FIXED (2026-09-08) — 🐞🔒 [CRIT] `useSupabase` subscription is shared but cleaned per-component
 **File:** `composables/useSupabase.ts:14, 31-39`
 **Issue:** `authSubscription` is module-scope. When component #1 mounts, `initialized` becomes true and the subscription is created. When component #1 unmounts, `onUnmounted` calls `authSubscription.unsubscribe()` and sets it to `null`. Component #2, still mounted, no longer gets auth updates and `currentUser` stops reflecting the real session state. Components using `useSupabaseAuth` will incorrectly show "not manager" after navigation.
 **Fix:** Use a reference count:
@@ -61,17 +61,17 @@ onUnmounted(() => {
 })
 ```
 
-### B3. 🐞🔒 [CRIT] `useThreeGlobe` silently returns after CDN load failure
+### B3. ✅ FIXED (2026-09-08) — 🐞🔒 [CRIT] `useThreeGlobe` silently returns after CDN load failure
 **File:** `composables/useThreeGlobe.ts:64`
 **Issue:** If any of the three CDN scripts blocks network, fail (CSP, offline), or `THREE` is undefined after the `Promise.all`, the function `resolveReady?.(); return;` line silently resolves. The page continues to render as if the hero is ready, with no warning, no fallback, and no entry in `useEffect`/`mounted` userspace. The page renders blank.
 **Fix:** Reject the `ready` promise with an explicit error; consumers should catch and render a fallback. Add a CSP-friendly hint in `docs/CONTRIBUTING.md`.
 
-### B4. 🐞 [CRIT] ScrollTrigger tweens outside `gsap.context` are never reverted
+### B4. ✅ FIXED (2026-09-08) — 🐞 [CRIT] ScrollTrigger tweens outside `gsap.context` are never reverted
 **File:** `composables/useThreeGlobe.ts:266-268`
 **Issue:** Three `gsap.to(globe.scale, ...)`, `gsap.to(camera.position, ...)`, `gsap.to(globe.rotation, ...)` are created BEFORE the `gsap.context(() => {})` block (line 273). They use `scrollTrigger` so they appear "scoped" but `ctx.revert()` inside cleanup only kills tweens registered INSIDE the context. These three tweens leak; on remount they accumulate (3 extra ScrollTriggers per remount) and 2 min later the browser locks up.
 **Fix:** Move those three `gsap.to` calls into the `gsap.context` block (right before its closing brace).
 
-### B5. 🐞 [CRIT] Touch gesture scrolls the page (passive + no preventDefault)
+### B5. ✅ FIXED (2026-09-08) — 🐞 [CRIT] Touch gesture scrolls the page (passive + no preventDefault)
 **File:** `composables/useThreeGlobe.ts:235-256`
 **Issue:** `touchstart`/`touchmove`/`touchend` are registered with `{ passive: true }` and the touchmove handler mutates `scene.rotation` directly without preventing default. On mobile, vertical drag → page scrolls AND globe rotates simultaneously → user feels "fighting" controls.
 **Fix:** For `touchstart` and `touchmove`, mark non-passive and `preventDefault()` when `isDragging`. Or use `Pointer Events` which unify mouse/touch.
@@ -80,7 +80,7 @@ onUnmounted(() => {
 
 ## 2. High-impact bugs
 
-### B6. 🐞 [HIGH] `useToast` timers leak across unmount + double dismissal
+### B6. ✅ FIXED (2026-09-08) — 🐞 [HIGH] `useToast` timers leak across unmount + double dismissal
 **File:** `composables/useToast.ts:27, 49`
 **Issue:** `timers` is per-call (created in the composable instance). On unmount, no cleanup; pending timeouts continue running and call `dismiss` on a `useState('toast')` value that may still be alive, but if a long-lived toast outlives the caller, the timer callback will try to mutate state that no longer owns the toast.
 Also, calling `dismiss(id)` twice (manually + by timer firing) is idempotent thanks to the `timers.delete` guard, but in `clear()` the `state.value.toasts = []` does not receive the original array reference — list-based watchers may not fire if any consumer mutated state into the original list.
@@ -113,12 +113,12 @@ For `vulcan-observatory` (which the code separately excluded at line 498) this s
 **Issue:** ~150 calls to `console.time`/`timeEnd`/`timeLog`/`warn` exist across hot map paths. Each marker rebuild, species load, or init prints multiple console lines. They were intended to be dev-only.
 **Fix:** Wrap as `if (import.meta.dev) { console.time(label); ... }`. Or extract to a `lib/logger.ts` that conditionally logs.
 
-### B11. ♿ [HIGH] Skip-link target missing on 10/12 pages
+### B11. ✅ FIXED (2026-09-08) — ♿ [HIGH] Skip-link target missing on 10/12 pages
 **File:** `app.vue:8` and pages
 **Issue:** `app.vue:9` renders `href="#main-content"` but only `pages/vulcan-observatory/index.vue` and `pages/vulcan-observatory/3d.vue` carry `id="main-content"`. Other 10 pages have a `<main>` element but no matching `id`, so pressing Tab and Enter on the skip-link takes users to the page top — violating WCAG 2.4.1.
 **Fix:** Add `id="main-content"` to the top-level `<main>` of every page (or use a layout-level wrapper). The existing `app.vue` skip-link styling already handles focus-visible.
 
-### B12. 🐞 [HIGH] `useFocusTrap` fires for every overlay but only Vue-mounted checks matter
+### B12. ❌ FALSE POSITIVE — 🐞 [HIGH] `useFocusTrap` fires for every overlay but only Vue-mounted checks matter
 **File:** `composables/useFocusTrap.ts:31-35`
 **Issue:** When the focus trap's `active` is the bare boolean `true` (not a ref), `isActive = computed(() => !!options.active)` evaluates to true once per scope. The watcher at line 69 runs `immediate: true`, which adds the keydown listener. If `options.active` later flips to `false`, the listener is correctly removed, but `previouslyFocused` is a *closure* variable shared across composable instances. A subsequent overlay opens and gets the OLD `previouslyFocused`, restoring focus to the wrong element.
 **Fix:** Move `previouslyFocused` inside an effect — derive it freshly inside the activation branch each time it activates.
@@ -137,7 +137,7 @@ For `vulcan-observatory` (which the code separately excluded at line 498) this s
 
 ## 3. Medium-impact bugs
 
-### B15. 🐞 [MED] `useSupabaseAuth.signOut()` flips `isManager` *before* await
+### B15. ✅ FIXED (2026-09-08) — 🐞 [MED] `useSupabaseAuth.signOut()` flips `isManager` *before* await
 **File:** `composables/useSupabaseAuth.ts:69-73`
 **Issue:**
 ```ts
@@ -155,7 +155,7 @@ If `signOut()` throws mid-await (network failure, etc.), `isManager` is already 
 **Issue:** `cleanup` removes the canvas event listeners and disposes panels + renders, but does NOT dispose `markerGroup` geometries (e.g., `dotGeo`, `ringGeo`, `pulseGeo`). The renderer may be reused but its internal allocations persist on subsequent remounts. Over many SPA navigations (page transitions), the GPU memory creeps up.
 **Fix:** Walk `markerGroup.children` and `dispose()` each geometry + material.
 
-### B17. 🐞 [MED] `getMapStyle` never returns the fallback to caller when key missing
+### B17. ✅ FIXED (2026-09-08) — 🐞 [MED] `getMapStyle` never returns the fallback to caller when key missing
 **File:** `composables/useMapLibre.ts` (referenced by `useMapBase.ts:441`)
 **Issue:** If `MAPTILER_API_KEY` is `''`, the URL `https://api.maptiler.com/maps/streets-v2/style.json?key=` is sent. MapTiler returns an error JSON, which becomes the error path after 2 retries. Better: when no key, use `https://demotiles.maplibre.org/style.json` immediately.
 **Fix:** Add early return inside `getMapStyle` when `!apiKey`.
@@ -165,7 +165,7 @@ If `signOut()` throws mid-await (network failure, etc.), `isManager` is already 
 **Issue:** Buttons in the grants card-list are `<div @click="…">` with no `role="button"`, no `tabindex`, no `aria-label`. Already noted in `audit.md` line 53.
 **Fix:** Replace with `<button>` or add `role="button" tabindex="0" @keydown.enter="…"` and `aria-label`.
 
-### B19. 🐞 [MED] `useMapPopup/previewCard.ts` only tracks last popup
+### B19. ✅ FIXED (2026-09-08) — 🐞 [MED] `useMapPopup/previewCard.ts` only tracks last popup
 **File:** `composables/useMapPopup/previewCard.ts` (referenced by `useMapBase.ts`)
 **Issue:** Same pattern as the rare-earth observer (`useRareEarthLayers.ts:206`): each click creates a new `maplibregl.Popup` and overwrites the tracked reference. If a user clicks marker A → preview; then clicks marker B → preview, the popup belonging to A is still attached to the map DOM. Each open piles on.
 **Fix:** `previousPopup?.remove()` before assigning the new one. Or track a `Set<maplibregl.Popup>`.
@@ -200,7 +200,7 @@ If `signOut()` throws mid-await (network failure, etc.), `isManager` is already 
 **Issue:** Per-file symbols (referenced from `useMapBase.ts`) — change in locale re-reopens popup, but transitions look janky.
 **Fix:** Animation fade-in transition.
 
-### B26. 🐞 [MED] `pages/auth/callback.vue` has no per-error retry
+### B26. ✅ FIXED (2026-09-08) — 🐞 [MED] `pages/auth/callback.vue` has no per-error retry
 **File:** `pages/auth/callback.vue`
 **Issue:** On Supabase auth error, shows the error and a "Back to Home" link. Users with no JS or stale cache can be stuck.
 **Fix:** Add `setTimeout(() => navigateTo('/'), 5000)` fallback.
@@ -220,12 +220,12 @@ If `signOut()` throws mid-await (network failure, etc.), `isManager` is already 
 **Issue:** The deploy script greps `.env` (`grep NUXT_PUBLIC_SUPABASE_URL .env` — but the latter file is gitignored and may not exist). It then calls `npx supabase secrets set …=…`. If `.env` is missing, the env var is empty and Secrets get set to empty strings. The next deploy of any edge function that reads the secret will silently fail.
 **Fix:** Use `--env-file` if Node ≥ 20, or `dotenv -e .env -- npx supabase secrets set …`. Document the required env keys.
 
-### B30. 🐞 [MED] `nuxt.config.ts:118` `ignore: ['/EG-Maps/manifest.json']` is an absolute mistype
+### B30. ❌ FALSE POSITIVE — 🐞 [MED] `nuxt.config.ts:118` `ignore: ['/EG-Maps/manifest.json']` is an absolute mistype
 **File:** `nuxt.config.ts:118`
 **Issue:** `nitro.prerender.ignore` is matched against routes. `/EG-Maps/manifest.json` looks like an absolute path; if the deploy baseURL is `/`, this expects the manifest at the literal `/EG-Maps/manifest.json` path. Likely a typo for `/manifest.json`.
 **Fix:** Replace with `/manifest.json`.
 
-### B31. 🐞 [MED] `app.vue:32` `skipLabel` is reactive but `app.vue:9` uses string interpolation once
+### B31. ❌ FALSE POSITIVE — 🐞 [MED] `app.vue:32` `skipLabel` is reactive but `app.vue:9` uses string interpolation once
 **File:** `app.vue:8-9, 31-32`
 **Issue:** The reactive `skipLabel` is correctly used. Score this as OK — listed for completeness. No fix needed.
 
@@ -234,11 +234,11 @@ If `signOut()` throws mid-await (network failure, etc.), `isManager` is already 
 **Issue:** Texture (`earth_atmos_2048.jpg`) is fetched from `https://threejs.org/examples/...` at runtime. Adds ~600 KB and one DNS+TLS round trip to LCP. Publish the asset in `public/textures/` to avoid the dependency on `threejs.org` uptime.
 **Fix:** Bundle the texture locally.
 
-### B33. 🐞 [MED] `useAdaptiveQuality` watches `connectionLineBlur` but presets list is fine — TYPE ISSUE
+### B33. ❌ FALSE POSITIVE — 🐞 [MED] `useAdaptiveQuality` watches `connectionLineBlur` but presets list is fine — TYPE ISSUE
 **File:** `composables/useAdaptiveQuality.ts:26-51`
 **Issue:** `connectionLineBlur` is declared but only used inside `useMapBase.ts:80`. Since it's internal to `useAdaptiveQuality`, returning it via `quality.settings.value.connectionLineBlur` is correct. **OK**. Not a bug. Listed for cross-reference.
 
-### B34. 🐞 [MED] `useMapBase.ts:413` `initMap` is exposed in return, allows double-call
+### B34. ✅ FIXED (2026-09-08) — 🐞 [MED] `useMapBase.ts:413` `initMap` is exposed in return, allows double-call
 **File:** `composables/useMapBase.ts:696`
 **Issue:** `initMap` is returned and any caller can invoke it. There's no idempotency guard. Combined with the watch chain, users could call from devtools and cause double-map instances.
 **Fix:** Add `if (map) return` guard at top.
@@ -420,16 +420,31 @@ The following fixes are safe + low-risk and were applied in this review pass:
 
 1. ✅ **B30** — `nuxt.config.ts:118` mistype fixed (`/EG-Maps/manifest.json` → `/manifest.json`). Single-line path-string edit, no behavior change.
 
+### Fixes applied in the 2026-09-08 follow-up pass
+
+2. ✅ **B2** — `useSupabase` subscription reference-counted (mount/unmount pair; teardown only at zero).
+3. ✅ **B3** — `useThreeGlobe` `ready` now rejects on CDN failure / missing globals / init throw; `GlobeView.vue` catches and still reveals page content; no unhandled rejections.
+4. ✅ **B4** — The 3 GSAP ScrollTrigger tweens moved inside `gsap.context` (safe: the closure vars `globe`/`camera` are captured by reference; `targetX`/`panels` rAF tick path is untouched).
+5. ✅ **B5** — `touchmove` non-passive + `preventDefault()` while dragging the globe canvas.
+6. ✅ **B6** — `useToast` timers moved to module scope (matching the shared `useState`), so auto-dismiss always fires.
+7. ✅ **B11** — Skip-link: every route has exactly one `#main-content` with `tabindex="-1"` (incl. `MapView2D`/`MapView3D`, squarespace embeds); duplicate `role="main"` removed from `eg-grants/fullscreen.vue`.
+8. ✅ **B15** — `useSupabaseAuth.signOut()` no longer clears `isManager` before the await; `isManagerReady` wrapped in try/finally.
+9. ✅ **B17** — `getMapStyle` with empty apiKey returns `https://demotiles.maplibre.org/style.json` instead of a broken `?key=` URL.
+10. ✅ **B19** — `previewCard.ts` close handler is instance-aware; stale close events can't clobber the active popup.
+11. ✅ **B26** — `auth/callback.vue` watchdog timer surfaces an error + link after 15s hang; cleared on success/unmount.
+12. ✅ **B34** — `initMap` skips re-init when a loaded map exists, but still rebuilds for the retry button after tile errors.
+
+> **Resolved as false positives (no fix needed):**
+>
+> - **B12** — `previouslyFocused` is declared *inside* `useFocusTrap()`, so each composable instance has its own closure, re-snapshotted fresh on every activation. The audit's premise (shared closure across instances) does not hold.
+> - **B30** — listed above; the base-prefixed `ignore` entry is intentional (prerender crawler follows `<link rel="manifest">` with baseURL prefix), already correct in current `nuxt.config.ts`.
+> - **B31, B33** — already OK per the audit itself.
+
 > **Deliberately NOT applied (would require test coverage first):**
 >
-> - **B4** — Moving 3 GSAP tweens into the `gsap.context` block in `useThreeGlobe.ts`. The fix is correct in principle, but the closure references `targetX`/`currentX`/`panels` that are also used by `animate()` outside the context. A safe refactor requires splitting the ScrollTrigger setup into the context while keeping the rAF tick path independent. **Tracked for a follow-up PR.**
-> - **B2** — `useSupabase` reference-counted subscription unmount. Needs behaviour test (`tests/useSupabase.test.ts` does not exist).
 > - **B7** — Bundling `three/gsap` via `package.json` instead of CDN. Affects the production bundle size and offline-mode behavior; needs a `pnpm-lock.yaml` re-key and bundle verification.
 > - **B10** — Wrapping `console.time/timeEnd` calls in `import.meta.dev` guards. ~150 edits; benefits from a single `lib/logger.ts` utility extracted from existing call sites.
-> - **B11** — Adding `id="main-content"` to 10 pages. Each page has its own `<main>` element with slightly different attributes — manual edits per file. Listed in §12 below as concrete TODO with exact-line references.
 > - **B29** — `package.json:26` deploy script env handling. The current script relies on `grep` against a gitignored `.env`; replacing requires either dotenv-loading or a multi-env rewrite.
-
-> **Decision:** documentation priority overrode blind sweeps. The audit above is the canonical to-do; each fix carries enough context for a follow-up PR without further question.
 
 ---
 
@@ -437,22 +452,13 @@ The following fixes are safe + low-risk and were applied in this review pass:
 
 | # | Action | File:Target |
 |---|--------|-------------|
-| B11 | Add `id="main-content"` | `pages/index.vue` line 8 (`<main>` tag) |
-| B11 | Same | `pages/info.vue` line 8 |
-| B11 | Same | `pages/iframe.vue` line 8 |
-| B11 | Same | `pages/eg-grants/index.vue` (top-level `<main>` element — search for `<main`) |
-| B11 | Same | `pages/eg-grants/fullscreen.vue` |
-| B11 | Same | `pages/auth/callback.vue` (no `<main>` — wrap or use `role="main"`) |
-| B11 | Same | `pages/project-grants/*.vue` (currently only `<ClientOnly><MapView2D>` — wrap in `role="main"`) |
-| B11 | Same | `pages/endangered-species/*.vue` |
-| B11 | Same | `pages/active-crews/*.vue` |
-| B2  | Ref-counted subscription | `composables/useSupabase.ts:14,31-39` |
-| B4  | Move 3 GSAP tweens into context | `composables/useThreeGlobe.ts:266-268, 280-281` |
+| ~~B11~~ | ✅ Done 2026-09-08 — all routes have `#main-content` + `tabindex="-1"` | all pages + `MapView2D/3D.vue` |
+| ~~B2~~ | ✅ Done 2026-09-08 | `composables/useSupabase.ts` |
+| ~~B4~~ | ✅ Done 2026-09-08 | `composables/useThreeGlobe.ts` |
 | B7  | Move three/gsap to npm | `package.json` deps + `composables/useThreeGlobe.ts:54-58` + `vite.optimizeDeps.include` |
 | B10 | Wrap console calls in dev guards | `lib/logger.ts` (new) + ~150 call sites in `composables/useMapBase.ts`, `useMapMarker.ts`, `useSpeciesData.ts` |
 | B18 | `<div @click>` → `<button>` | `components/grants/GrantsDashboard.vue:107,116` (per existing audit.md) |
 | B22 | Remove `v-html` for email | `pages/eg-grants/index.vue:155` |
-| B30 | Already done ✅ | `nuxt.config.ts:118` |
 | A1  | Add `aria-label` to dock nav | `layouts/default.vue:78-146` |
 | A7  | `rel="noopener"` external links | `components/grants/GrantsFooter.vue` |
 | A12 | `role="alert"` on error banner | `error.vue` |

@@ -340,26 +340,26 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   function addCrewLocationLayers(id: string) {
     if (!map) return
     const locationFilter = ['==', '_type', 'crewLocation'] as FilterSpecification
-    const locOpacity = ['interpolate', ['linear'], ['zoom'],
+    const locOpacity = (max: number) => ['interpolate', ['linear'], ['zoom'],
       CREW_MOSAIC_ZOOM_MIN, 0,
-      CREW_MOSAIC_ZOOM_MAX, 1] as unknown as ExpressionSpecification
+      CREW_MOSAIC_ZOOM_MAX, max] as unknown as ExpressionSpecification
 
     map.addLayer({ id: `${id}_pg`, type: 'circle', source: id, filter: locationFilter, paint: {
       'circle-color': ['get', 'color'],
       'circle-radius': ['*', ['coalesce', ['get', 'size'], 6], 1.8],
-      'circle-blur': 0.6, 'circle-opacity': ['*', 0.30, locOpacity] } })
+      'circle-blur': 0.6, 'circle-opacity': locOpacity(0.30) } })
     map.addLayer({ id: `${id}_p`, type: 'circle', source: id, filter: locationFilter, paint: {
       'circle-color': 'rgba(0,0,0,0.85)',
       'circle-radius': ['coalesce', ['get', 'size'], 6],
       'circle-stroke-color': ['get', 'color'],
-      'circle-stroke-width': 2.5, 'circle-opacity': ['*', 0.96, locOpacity] } })
+      'circle-stroke-width': 2.5, 'circle-opacity': locOpacity(0.96) } })
     map.addLayer({ id: `${id}_pl`, type: 'symbol', source: id, filter: locationFilter, layout: {
       'text-field': ['coalesce', ['get', 'label'], ''],
       'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
       'text-size': ['interpolate', ['linear'], ['zoom'], 8, 7, 14, 10],
       'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
       'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.65)', 'text-halo-width': 1.5,
-      'text-opacity': locOpacity } })
+      'text-opacity': locOpacity(1) } })
   }
 
   function addPointLayers(id: string, filter?: FilterSpecification) {

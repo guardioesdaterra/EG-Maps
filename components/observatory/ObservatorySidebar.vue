@@ -211,6 +211,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import type { Feature, FeatureCollection, Point } from 'geojson'
 import { useI18n } from '@/composables/useI18n'
 
@@ -287,6 +288,10 @@ const sortKey = ref<'source' | 'name'>('source')
 const page = ref(1)
 const PAGE_SIZE = 30
 
+onMounted(() => {
+  if (window.innerWidth < 768) open.value = false
+})
+
 const sourceFilter = ref<Record<string, boolean>>({
   mapa_cultura: true,
   floresta_ativista: true,
@@ -303,7 +308,7 @@ function toggleSource(id: string) { sourceFilter.value[id] = !sourceFilter.value
 function toggleSubtype(id: string) { subtypeFilter.value[id] = !subtypeFilter.value[id] }
 
 // ── Derived ─────────────────────────────────────────────────────────────
-type CulturalFeature = Feature<Point, Record<string, any>>
+type CulturalFeature = Feature<Point, Record<string, unknown>>
 const allFeatures = computed<CulturalFeature[]>(() => {
   const fc = props.rareEarthCultural
   return ((fc?.features ?? []) as CulturalFeature[])
@@ -403,9 +408,9 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
 <style scoped>
 .vulc-panel {
   position: absolute;
-  top: clamp(4rem, 8vh, 5rem);
+  top: clamp(3.5rem, 7vh, 4.5rem);
   right: clamp(0.6rem, 1.2vw, 1rem);
-  bottom: clamp(4rem, 8vh, 5rem);
+  bottom: clamp(3.75rem, 8.5vh, 5rem);
   width: clamp(20rem, 26vw, 24rem);
   max-height: calc(100svh - 10rem);
   z-index: 530;

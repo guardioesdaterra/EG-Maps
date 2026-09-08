@@ -218,11 +218,15 @@ pnpm test:watch     # Watch mode
 
 | Priority | Issue | Location |
 |----------|-------|----------|
-| Critical | `UnifiedMap.vue` and `GlobeView.vue` duplication | Both map components |
+| Critical | `UnifiedMap.vue` and `GlobeView.vue` duplication (~40% shared code) | Both map components |
 | **Fixed** | `rebuildMarkers()`/`updateMarkerData()` passed `speciesIndexData.value` (unfiltered) instead of `visibleSpecies.value` (filtered) — region/ecosystem/threat/text search filters had zero effect on markers | useMapBase.ts:338,356 |
-| High | `keepPopupFullyVisible()` calculates offset but never applies it | UnifiedMap.vue:408-411 |
+| **Fixed** | Hash-based change detection included `fetched_at` (changes every run) — all records appeared "new", 0 updates, N inserts | sync-grants-to-supabase.ts:230 |
+| **Fixed** | `existingColumns()` made N+1 queries (one per column) — now single query with fallback | sync-grants-to-supabase.ts:130 |
+| **Fixed** | `make_grant()` missing `source_id` and `grant_status` fields expected by Supabase sync | grants.py:693,713 |
+| **Fixed** | `status` value "pending" not in sync whitelist — silently coerced to "unknown" | sync-grants-to-supabase.ts:244 |
+| **Fixed** | `useSupabase.ts` imported `Subscription` type removed in Supabase v2 | useSupabase.ts:8 |
+| **Fixed** | CI lint/unit-tests had `continue-on-error: true` — failures silently passed | deploy.yml:190,218 |
 | High | MapTiler API key exposed in client-side code | nuxt.config.ts |
-| Medium | No ESLint/Prettier config | Project root |
 | Medium | `formatCompact()` duplicated | index.vue, info.vue |
 | Medium | Inline `<style>` injection in GlobeView | GlobeView.vue:783 |
 

@@ -234,6 +234,109 @@
             </nav>
           </header>
 
+          <!-- ── Left-side: Mining claim filters ──────────────────── -->
+          <aside v-show="leftSidebarOpen" class="vulc-leftpanel" aria-label="Mining claim filters">
+            <div class="vulc-leftpanel__scroll">
+              <div class="vulc-leftpanel__section">
+                <h3 class="vulc-leftpanel__heading">{{ t('observatory.layers.title') }}</h3>
+                <div
+                  v-for="c in categoryStats" :key="c.key"
+                  class="vulc-leftpanel__check"
+                  role="checkbox"
+                  :aria-checked="controls.layerVis.value[c.key]"
+                  :aria-label="c.label"
+                  tabindex="0"
+                  @click="controls.toggleLayer(c.key)"
+                  @keydown.enter="controls.toggleLayer(c.key)"
+                  @keydown.space.prevent="controls.toggleLayer(c.key)"
+                >
+                  <div :class="['vulc-leftpanel__box', !controls.layerVis.value[c.key] && 'is-off']" :style="{ '--cb-c': c.color }">
+                    <Icon v-if="controls.layerVis.value[c.key]" name="lucide:check" class="w-2.5 h-2.5" />
+                  </div>
+                  <span class="vulc-leftpanel__label">{{ c.label }}</span>
+                </div>
+              </div>
+
+              <hr class="vulc-leftpanel__divider">
+
+              <div class="vulc-leftpanel__section">
+                <div
+                  v-for="ex in controls.extraLayers" :key="ex.key"
+                  class="vulc-leftpanel__check"
+                  role="checkbox"
+                  :aria-checked="controls.layerVis.value[ex.key]"
+                  :aria-label="t(ex.labelKey)"
+                  tabindex="0"
+                  @click="controls.toggleLayer(ex.key)"
+                  @keydown.enter="controls.toggleLayer(ex.key)"
+                  @keydown.space.prevent="controls.toggleLayer(ex.key)"
+                >
+                  <div :class="['vulc-leftpanel__box', !controls.layerVis.value[ex.key] && 'is-off']" :style="{ '--cb-c': ex.color }">
+                    <Icon v-if="controls.layerVis.value[ex.key]" name="lucide:check" class="w-2.5 h-2.5" />
+                  </div>
+                  <span class="vulc-leftpanel__label">{{ t(ex.labelKey) }}</span>
+                </div>
+              </div>
+
+              <hr class="vulc-leftpanel__divider">
+
+              <div class="vulc-leftpanel__section">
+                <h3 class="vulc-leftpanel__heading">{{ t('observatory.layers.protectedAreas') }}</h3>
+                <div
+                  class="vulc-leftpanel__check"
+                  role="checkbox"
+                  :aria-checked="controls.layerVis.value['protected_ti'] !== false"
+                  :aria-label="t('observatory.layers.indigenousLands')"
+                  tabindex="0"
+                  @click="controls.toggleLayer('protected_ti')"
+                  @keydown.enter="controls.toggleLayer('protected_ti')"
+                  @keydown.space.prevent="controls.toggleLayer('protected_ti')"
+                >
+                  <div :class="['vulc-leftpanel__box', controls.layerVis.value['protected_ti'] === false && 'is-off']" style="--cb-c: #c0392b">
+                    <Icon v-if="controls.layerVis.value['protected_ti'] !== false" name="lucide:check" class="w-2.5 h-2.5" />
+                  </div>
+                  <span class="vulc-leftpanel__label">{{ t('observatory.layers.indigenousLands') }}</span>
+                </div>
+                <div
+                  class="vulc-leftpanel__check"
+                  role="checkbox"
+                  :aria-checked="controls.layerVis.value['protected_quilombo'] !== false"
+                  :aria-label="t('observatory.layers.quilombolaTerritories')"
+                  tabindex="0"
+                  @click="controls.toggleLayer('protected_quilombo')"
+                  @keydown.enter="controls.toggleLayer('protected_quilombo')"
+                  @keydown.space.prevent="controls.toggleLayer('protected_quilombo')"
+                >
+                  <div :class="['vulc-leftpanel__box', controls.layerVis.value['protected_quilombo'] === false && 'is-off']" style="--cb-c: #f39c12">
+                    <Icon v-if="controls.layerVis.value['protected_quilombo'] !== false" name="lucide:check" class="w-2.5 h-2.5" />
+                  </div>
+                  <span class="vulc-leftpanel__label">{{ t('observatory.layers.quilombolaTerritories') }}</span>
+                </div>
+                <div
+                  class="vulc-leftpanel__check"
+                  role="checkbox"
+                  :aria-checked="controls.layerVis.value['overlaps'] !== false"
+                  :aria-label="t('observatory.layers.overlaps')"
+                  tabindex="0"
+                  @click="controls.toggleLayer('overlaps')"
+                  @keydown.enter="controls.toggleLayer('overlaps')"
+                  @keydown.space.prevent="controls.toggleLayer('overlaps')"
+                >
+                  <div :class="['vulc-leftpanel__box', controls.layerVis.value['overlaps'] === false && 'is-off']" style="--cb-c: #ff00ff">
+                    <Icon v-if="controls.layerVis.value['overlaps'] !== false" name="lucide:check" class="w-2.5 h-2.5" />
+                  </div>
+                  <span class="vulc-leftpanel__label">{{ t('observatory.layers.overlaps') }}</span>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="vulc-leftpanel__toggle" :aria-label="leftSidebarOpen ? 'Collapse layers' : 'Expand layers'" @click="leftSidebarOpen = false">
+              <Icon name="lucide:chevron-left" class="w-3.5 h-3.5" />
+            </button>
+          </aside>
+          <button v-if="!leftSidebarOpen" type="button" class="vulc-leftpanel__show" aria-label="Show layers" @click="leftSidebarOpen = true">
+            <Icon name="lucide:layers" class="w-4 h-4" />
+          </button>
+
           <!-- ── Right-side: Cultural browser + filters ──────────────── -->
           <ObservatorySidebar
             :rare-earth-cultural="culturalData"
@@ -331,6 +434,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useI18n } from '@/composables/useI18n'
 import { useVulcanObservatoryPage } from '@/composables/useVulcanObservatoryPage'
 
@@ -420,6 +524,11 @@ const {
 } = useVulcanObservatoryPage('pococaldas')
 
 const { categoryStats, totalCount } = stats
+
+const leftSidebarOpen = ref(false)
+onMounted(() => {
+  if (window.innerWidth >= 768) leftSidebarOpen.value = true
+})
 
 // Hoist callbacks for template (so they're defined before used)
 function onRedeCorporativa() {
@@ -651,6 +760,122 @@ function onJumpToCultural(coord: [number, number], name: string) {
   backdrop-filter: blur(14px) saturate(1.2);
   -webkit-backdrop-filter: blur(14px) saturate(1.2);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Left Panel (mining claim filters) ─────────────────────────────── */
+.vulc-leftpanel {
+  position: absolute;
+  top: clamp(3.5rem, 7vh, 4.5rem);
+  left: clamp(0.5rem, 1vw, 0.75rem);
+  bottom: clamp(3.75rem, 8.5vh, 5rem);
+  width: clamp(14rem, 20vw, 17rem);
+  z-index: 530;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  background: rgba(8, 8, 10, 0.88);
+  backdrop-filter: blur(16px) saturate(1.25);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+.vulc-leftpanel__scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.65rem 0.75rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+.vulc-leftpanel__scroll::-webkit-scrollbar { width: 4px; }
+.vulc-leftpanel__scroll::-webkit-scrollbar-track { background: transparent; }
+.vulc-leftpanel__scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
+.vulc-leftpanel__section { display: flex; flex-direction: column; gap: 0.15rem; }
+.vulc-leftpanel__heading {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 0 0.3rem;
+}
+.vulc-leftpanel__divider {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin: 0.4rem 0;
+}
+.vulc-leftpanel__check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+.vulc-leftpanel__check:hover { background: rgba(255, 255, 255, 0.03); }
+.vulc-leftpanel__check:focus-visible { outline: 2px solid var(--obs-red, #e74c3c); outline-offset: -2px; }
+.vulc-leftpanel__box {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  border: 2px solid var(--cb-c, #666);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.vulc-leftpanel__box.is-off { opacity: 0.3; }
+.vulc-leftpanel__box svg { width: 0.6rem; height: 0.6rem; color: #fff; }
+.vulc-leftpanel__label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+.vulc-leftpanel__check:hover .vulc-leftpanel__label { color: #fff; }
+.vulc-leftpanel__toggle {
+  flex-shrink: 0;
+  padding: 0.35rem;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, background 0.15s;
+  text-align: center;
+}
+.vulc-leftpanel__toggle:hover { color: #fff; background: rgba(255, 255, 255, 0.04); }
+.vulc-leftpanel__show {
+  position: absolute;
+  top: clamp(3.5rem, 7vh, 4.5rem);
+  left: clamp(0.5rem, 1vw, 0.75rem);
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 8, 10, 0.88);
+  backdrop-filter: blur(16px) saturate(1.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-family: inherit;
+  z-index: 530;
+  pointer-events: auto;
+  transition: background 0.15s, color 0.15s;
+}
+.vulc-leftpanel__show:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+@media (max-width: 768px) {
+  .vulc-leftpanel { display: none; }
+  .vulc-leftpanel__show { display: none; }
 }
 .vulc-bottombar__left,
 .vulc-bottombar__right {

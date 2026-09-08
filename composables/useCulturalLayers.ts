@@ -265,7 +265,7 @@ export function setupCulturalLayers(
     id: 'ree-cultural-glow',
     type: 'circle',
     source: CULTURAL_SOURCE,
-    filter: ['all', ['!', ['has', 'point_count']],
+    filter: ['all', ['!has', 'point_count'],
       ['any', ['==', ['get', 'status'], 'critical'], ['==', ['get', 'status'], 'threatened'], ['==', ['get', 'status'], 'at_risk']]
     ],
     paint: {
@@ -284,7 +284,7 @@ export function setupCulturalLayers(
     id: 'ree-cultural-point',
     type: 'circle',
     source: CULTURAL_SOURCE,
-    filter: ['!', ['has', 'point_count']],
+    filter: ['!has', 'point_count'],
     paint: {
       'circle-color': [
         'case',
@@ -326,7 +326,7 @@ export function setupCulturalLayers(
     id: 'ree-cultural-hover',
     type: 'circle',
     source: CULTURAL_SOURCE,
-    filter: ['all', ['!', ['has', 'point_count']]],
+    filter: ['all', ['!has', 'point_count']],
     paint: {
       'circle-color': 'transparent',
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 5, 12, 8, 16, 11],
@@ -340,7 +340,7 @@ export function setupCulturalLayers(
     id: 'ree-cultural-label',
     type: 'symbol',
     source: CULTURAL_SOURCE,
-    filter: ['all', ['!', ['has', 'point_count']], ['has', 'name']],
+    filter: ['all', ['!has', 'point_count'], ['has', 'name']],
     layout: {
       'text-field': ['get', 'name'],
       'text-font': ['Open Sans Regular'],
@@ -433,20 +433,20 @@ export function setCulturalFilter(map: MapLibreMap, filter: CulturalTypeFilter) 
   const expression = buildFilterExpression(filter) as maplibregl.FilterSpecification
 
   if (map.getLayer('ree-cultural-point')) {
-    map.setFilter('ree-cultural-point', ['all', ['!', ['has', 'point_count']], expression] as maplibregl.FilterSpecification)
+    map.setFilter('ree-cultural-point', ['all', ['!has', 'point_count'], expression] as maplibregl.FilterSpecification)
   }
   if (map.getLayer('ree-cultural-label')) {
-    map.setFilter('ree-cultural-label', ['all', ['!', ['has', 'point_count']], ['has', 'name'], expression] as maplibregl.FilterSpecification)
+    map.setFilter('ree-cultural-label', ['all', ['!has', 'point_count'], ['has', 'name'], expression] as maplibregl.FilterSpecification)
   }
 }
 
 export function clearCulturalFilter(map: MapLibreMap) {
   activeFilter = {}
   if (map.getLayer('ree-cultural-point')) {
-    map.setFilter('ree-cultural-point', ['!', ['has', 'point_count']])
+    map.setFilter('ree-cultural-point', ['!has', 'point_count'])
   }
   if (map.getLayer('ree-cultural-label')) {
-    map.setFilter('ree-cultural-label', ['all', ['!', ['has', 'point_count']], ['has', 'name']])
+    map.setFilter('ree-cultural-label', ['all', ['!has', 'point_count'], ['has', 'name']])
   }
 }
 

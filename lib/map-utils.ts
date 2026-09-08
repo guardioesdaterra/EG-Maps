@@ -564,6 +564,14 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
     </div>`
   }
 
+  const anoVal = props.ano ?? props.y
+  const anoHTML = anoVal
+    ? `<details style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
+        <summary style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;cursor:pointer;list-style:none;user-select:none">▸ Ano de Protocolo</summary>
+        <div style="font-size:10.5px;color:var(--text-secondary);font-weight:500;margin-top:3px">${escapeHtml(String(anoVal))}</div>
+      </details>`
+    : ''
+
   return `
     <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;min-width:250px;position:relative">
       <!-- Corner accents -->
@@ -593,6 +601,7 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
           <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">UF</div><div style="font-size:10.5px;color:var(--text-secondary);font-weight:500">${escapeHtml(props.u || '—')}</div></div>
           <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Area</div><div style="font-size:10.5px;color:var(--text-secondary);font-weight:500">${area}</div></div>
         </div>
+        ${anoHTML}
         <div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
           <div style="display:flex;align-items:center;gap:6px">
             <span style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Danger Level</span>

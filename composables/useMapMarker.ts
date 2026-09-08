@@ -59,7 +59,7 @@ const CLUSTER_PALETTES: Record<MarkerDataset, readonly [string, string, string, 
   'vulcan-observatory':   ['#22c55e', '#f59e0b', '#ef4444', '#dc2626'],
 }
 
-const CLUSTERED_DATASETS = new Set<MarkerDataset>(['project-grants', 'endangered-species', 'vulcan-observatory'])
+const CLUSTERED_DATASETS = new Set<MarkerDataset>(['project-grants', 'endangered-species', 'vulcan-observatory', 'active-crews'])
 
 const CREW_MOSAIC_RADIUS_DEG = 0.045
 const CREW_MOSAIC_ZOOM_MIN = 2
@@ -239,6 +239,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     const label = `[perf] addLayers ${id}`
     console.time(label)
     if (ds === 'active-crews') {
+      addClusterLayers(id, CLUSTER_PALETTES[ds])
       addCrewMosaicLayers(id)
       addCrewLocationLayers(id)
     } else {
@@ -291,8 +292,9 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       7, '#a855f7',
       '#ec4899'] as unknown as ExpressionSpecification
 
-    const allBubblesFilter = ['==', '_type', 'crewRegion'] as FilterSpecification
+    const allBubblesFilter = ['all', ['!has', 'point_count'], ['==', '_type', 'crewRegion']] as FilterSpecification
     const primaryFilter = ['all',
+      ['!has', 'point_count'],
       ['==', '_type', 'crewRegion'],
       ['==', '_isPrimary', true],
     ] as FilterSpecification
@@ -339,7 +341,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
 
   function addCrewLocationLayers(id: string) {
     if (!map) return
-    const locationFilter = ['==', '_type', 'crewLocation'] as FilterSpecification
+    const locationFilter = ['all', ['!has', 'point_count'], ['==', '_type', 'crewLocation']] as FilterSpecification
     const locOpacity = (max: number) => ['interpolate', ['linear'], ['zoom'],
       CREW_MOSAIC_ZOOM_MIN, 0,
       CREW_MOSAIC_ZOOM_MAX, max] as unknown as ExpressionSpecification
@@ -393,6 +395,9 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       reg(`${id}_mg`, 'mouseleave', onMosaicHoverOut)
       reg(`${id}_mm`, 'mouseenter', onMosaicHoverIn)
       reg(`${id}_mm`, 'mouseleave', onMosaicHoverOut)
+      reg(`${id}_c`, 'click', onCluster(id))
+      reg(`${id}_c`, 'mouseenter', ptr)
+      reg(`${id}_c`, 'mouseleave', nop)
     } else {
       const pL = `${id}_p`
       const cL = `${id}_c`

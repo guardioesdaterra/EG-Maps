@@ -28,23 +28,35 @@ interface TileRecord {
 const DB_NAME = 'eg-maps-tile-cache'
 const DB_VERSION = 1
 const STORE_NAME = 'tiles'
-const MAX_CACHE_ENTRIES = 50000
+const MAX_CACHE_ENTRIES = 10000
 
 let dbPromise: Promise<IDBDatabase> | null = null
 
 function openDB(): Promise<IDBDatabase> {
   if (dbPromise) return dbPromise
   dbPromise = new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION)
-    req.onupgradeneeded = () => {
-      const db = req.result
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const store = db.createObjectStore(STORE_NAME, { keyPath: 'key' })
-        store.createIndex('timestamp', 'timestamp', { unique: false })
+    try {
+      const req = indexedDB.open(DB_NAME, DB_VERSION)
+      req.onupgradeneeded = () => {
+        const db = req.result
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          const store = db.createObjectStore(STORE_NAME, { keyPath: 'key' })
+          store.createIndex('timestamp', 'timestamp', { unique: false })
+        }
       }
+      req.onsuccess = () => resolve(req.result)
+      req.onerror = () => {
+        dbPromise = null
+        reject(req.error)
+      }
+      req.onblocked = () => {
+        dbPromise = null
+        reject(new Error('IndexedDB blocked'))
+      }
+    } catch (err) {
+      dbPromise = null
+      reject(err)
     }
-    req.onsuccess = () => resolve(req.result)
-    req.onerror = () => reject(req.error)
   })
   return dbPromise
 }
@@ -94,6 +106,7 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
       await statsP
       isInitialized.value = true
     } catch {
+      // IndexedDB may be unavailable or full — continue without caching
       isInitialized.value = true
     }
   }
@@ -152,7 +165,19 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
       stats.value.cacheSizeBytes += data.byteLength
       stats.value.cacheSizeFormatted = formatBytes(stats.value.cacheSizeBytes)
       tx.oncomplete = () => maybeEvict()
-    } catch { /* ignore */ }
+      tx.onerror = () => {
+        // Quota exceeded or disk full — evict old tiles and retry once
+        maybeEvict()
+      }
+    } catch (err: unknown) {
+      // Handle IndexedDB quota/disk errors (FILE_ERROR_NO_SPACE, QuotaExceededError)
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('QuotaExceededError') || msg.includes('FILE_ERROR_NO_SPACE') || msg.includes('disk')) {
+        console.warn('[OfflineTiles] Storage quota exceeded, evicting old tiles')
+        maybeEvict()
+      }
+      // Silently ignore — tile will be fetched from network instead
+    }
   }
 
   async function hasTile(z: number, x: number, y: number): Promise<boolean> {
@@ -181,12 +206,14 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
       countReq.onsuccess = () => {
         if (countReq.result > MAX_CACHE_ENTRIES) {
           const index = store.index('timestamp')
-          const range = IDBKeyRange.upperBound(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          // Evict tiles older than 1 day (more aggressive than 7 days)
+          const range = IDBKeyRange.upperBound(Date.now() - 24 * 60 * 60 * 1000)
           const cursorReq = index.openCursor(range)
           let deleted = 0
+          const toDelete = countReq.result - MAX_CACHE_ENTRIES
           cursorReq.onsuccess = () => {
             const cursor = cursorReq.result
-            if (cursor && deleted < countReq.result - MAX_CACHE_ENTRIES) {
+            if (cursor && deleted < toDelete) {
               store.delete(cursor.primaryKey)
               deleted++
               cursor.continue()
@@ -309,7 +336,14 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
               const buf = await resp.arrayBuffer()
               await setTile(z, clampedX, y, buf, resp.headers.get('content-type') || 'image/jpeg')
             }
-          } catch { /* ignore */ }
+          } catch (err: unknown) {
+            // Network or quota error — skip this tile, continue with others
+            const msg = err instanceof Error ? err.message : String(err)
+            if (msg.includes('QuotaExceededError') || msg.includes('FILE_ERROR_NO_SPACE')) {
+              console.warn('[OfflineTiles] Storage full during prefetch, stopping')
+              break
+            }
+          }
           done++
           prefetchProgress.value = done
         }

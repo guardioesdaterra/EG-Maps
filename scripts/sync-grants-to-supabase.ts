@@ -71,9 +71,28 @@ function loadGrants(filePath: string): Grant[] {
   throw new Error("Unknown JSON structure — expected { grants: [...] } or an array");
 }
 
-function toUUID(shortId: string): string {
-  if (shortId.length === 12) return `00000000-0000-0000-0000-${shortId}`;
-  return shortId;
+/**
+ * Generate a deterministic UUID v5 from a namespace + name.
+ * Uses crypto.subtle for cross-platform support.
+ */
+const UUID_V5_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // RFC 4122 DNS namespace
+async function toUUID(name: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const nameBytes = encoder.encode(name);
+  const namespaceBytes = Uint8Array.from(
+    UUID_V5_NAMESPACE.replace(/-/g, '').match(/.{2}/g)!.map(h => parseInt(h, 16))
+  );
+  // Concatenate namespace + name for SHA-1 hashing
+  const data = new Uint8Array(namespaceBytes.length + nameBytes.length);
+  data.set(namespaceBytes);
+  data.set(nameBytes, namespaceBytes.length);
+  const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+  const hash = new Uint8Array(hashBuffer);
+  // Set version 5 and variant bits per RFC 4122
+  hash[6] = (hash[6] & 0x0f) | 0x50;
+  hash[8] = (hash[8] & 0x3f) | 0x80;
+  const hex = Array.from(hash.slice(0, 16)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20,32)}`;
 }
 
 function loadAgents(filePath: string): CulturalAgent[] {
@@ -111,10 +130,18 @@ async function existingColumns(
   table: string,
   wanted: Set<string>,
 ): Promise<Set<string>> {
+  // Single-query approach: try selecting all wanted columns at once.
+  // If it succeeds, all exist. If it fails, probe individually (rare fallback).
+  const cols = [...wanted];
+  const { error } = await supabase.from(table).select(cols.join(",")).limit(1);
+  if (!error) {
+    return new Set<string>(["id", ...cols]);
+  }
+  // Fallback: individual probes (only on schema mismatch)
   const results = await Promise.all(
-    [...wanted].map(async (col) => {
-      const { error } = await supabase.from(table).select(col).limit(0);
-      return { col, exists: !error || !/(column|does not exist)/i.test(error.message) };
+    cols.map(async (col) => {
+      const { error: e } = await supabase.from(table).select(col).limit(0);
+      return { col, exists: !e || !/(column|does not exist)/i.test(e.message) };
     }),
   );
   const existing = new Set<string>(["id"]);
@@ -195,9 +222,10 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
   ]);
   const cols = await existingColumns(supabase, "scraped_grants", allWanted);
 
-  const records: Record<string, unknown>[] = grants.map((g) => {
+  const records: Record<string, unknown>[] = [];
+  for (const g of grants) {
     const r: Record<string, unknown> = {};
-    if (cols.has("id"))                r.id = toUUID(g.id);
+    if (cols.has("id"))                r.id = await toUUID(g.id);
     if (cols.has("title"))             r.title = g.title || "Untitled Grant";
     if (cols.has("funder"))            r.funder = g.funder || "";
     if (cols.has("source"))            r.source = g.source || "";
@@ -213,7 +241,7 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
     if (cols.has("categories"))        r.categories = Array.isArray(g.categories) ? g.categories.filter(Boolean) : [];
     if (cols.has("language"))          r.language = g.language || "en";
     if (cols.has("relevance"))         r.relevance = typeof g.relevance === "number" ? Math.max(0, Math.min(100, g.relevance)) : 0;
-    if (cols.has("status"))            r.status = ["open", "closed", "unknown"].includes(g.status) ? g.status : "unknown";
+    if (cols.has("status"))            r.status = ["open", "closed", "unknown", "pending"].includes(g.status) ? g.status : "unknown";
     if (cols.has("grant_status"))      r.grant_status = g.status || "unknown";
     if (cols.has("fetched_at"))        r.fetched_at = g.fetched_at || new Date().toISOString();
     if (cols.has("grant_type"))        r.grant_type = g.grant_type || "general";
@@ -224,11 +252,13 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
     if (cols.has("amount_usd"))        r.amount_usd = g.amount_usd ?? null;
     if (cols.has("priority_score"))    r.priority_score = typeof g.priority_score === "number" ? g.priority_score : 0;
     if (cols.has("is_standing"))       r.is_standing = Boolean(g.is_standing);
-    return r;
-  });
+    records.push(r);
+  }
 
-  const hashFields = ["title", "funder", "source", "url", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories", "language", "relevance", "status", "grant_status", "grant_type", "grant_types", "highlights", "urgency", "deadline_days", "amount_usd", "priority_score", "is_standing"];
-  const selectCols = "id, " + hashFields.join(", ");
+  // Fields used for change detection — excludes fetched_at (changes every run)
+  // and is_standing (always false after filtering, wastes hash space)
+  const hashFields = ["title", "funder", "source", "url", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories", "language", "relevance", "status", "grant_status", "grant_type", "grant_types", "highlights", "urgency", "deadline_days", "amount_usd", "priority_score"];
+  const selectCols = "id, " + hashFields.join(", ") + ", is_standing";
 
   const { inserted, updated, skipped, errors } = await batchUpsert(
     supabase, "scraped_grants", records,

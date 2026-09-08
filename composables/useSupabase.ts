@@ -12,15 +12,15 @@ interface AuthSubscription { unsubscribe(): void }
 
 const currentUser = ref<User | null>(null)
 const sessionReady = ref(false)
-let initialized = false
+let refCount = 0
 let authSubscription: AuthSubscription | null = null
 
 export function useSupabase() {
   const client = getSupabaseClient()
 
   onMounted(() => {
-    if (!initialized) {
-      initialized = true
+    refCount += 1
+    if (refCount === 1) {
       client.auth.getSession().then(({ data: { session } }) => {
         currentUser.value = session?.user ?? null
       }).catch(() => {
@@ -35,7 +35,8 @@ export function useSupabase() {
   })
 
   onUnmounted(() => {
-    if (authSubscription) {
+    refCount = Math.max(0, refCount - 1)
+    if (refCount === 0 && authSubscription) {
       authSubscription.unsubscribe()
       authSubscription = null
     }

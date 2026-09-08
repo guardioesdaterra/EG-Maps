@@ -36,7 +36,11 @@ export function useThreeGlobe(
   const baseURL = (useRuntimeConfig().app?.baseURL as string) || '/'
   let cleanup: (() => void) | null = null
   let resolveReady: (() => void) | null = null
-  const ready = new Promise<void>(r => { resolveReady = r })
+  let rejectReady: ((_reason?: unknown) => void) | null = null
+  const ready = new Promise<void>((resolve, reject) => {
+    resolveReady = resolve
+    rejectReady = reject
+  })
 
   function loadScript(src: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -45,7 +49,7 @@ export function useThreeGlobe(
       const s = document.createElement('script')
       s.src = src
       s.onload = () => resolve()
-      s.onerror = reject
+      s.onerror = () => reject(new Error(`[useThreeGlobe] Failed to load script: ${src}`))
       document.head.appendChild(s)
     })
   }
@@ -56,13 +60,24 @@ export function useThreeGlobe(
       'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js',
       'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js',
     ]
-    await Promise.all(SCRIPTS.map(loadScript))
+    try {
+      await Promise.all(SCRIPTS.map(loadScript))
+    } catch (err) {
+      console.warn('[useThreeGlobe] CDN scripts unavailable, globe hero disabled:', err)
+      rejectReady?.(err)
+      return
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- external globals loaded via CDN scripts
     const win = window as unknown as { THREE: any; gsap: any; ScrollTrigger: any }
     const THREE = win.THREE
     const gsap = win.gsap
-    if (!THREE || !gsap) { resolveReady?.(); return }
+    if (!THREE || !gsap) {
+      const err = new Error('[useThreeGlobe] THREE/gsap globals missing after script load')
+      console.warn(err)
+      rejectReady?.(err)
+      return
+    }
 
     gsap.registerPlugin(win.ScrollTrigger)
 
@@ -246,6 +261,7 @@ export function useThreeGlobe(
       const t = e.touches[0]
       if (!t) return
       if (isDragging) {
+        e.preventDefault()
         const dx = t.clientX - lastTouchX
         const dy = t.clientY - lastTouchY
         scene.rotation.y += dx * 0.005
@@ -262,17 +278,17 @@ export function useThreeGlobe(
     }
 
     canvas.addEventListener('touchstart', touchStartHandler, { passive: true })
-    canvas.addEventListener('touchmove', touchMoveHandler, { passive: true })
+    canvas.addEventListener('touchmove', touchMoveHandler, { passive: false })
     canvas.addEventListener('touchend', touchEndHandler, { passive: true })
-
-    gsap.to(globe.rotation, { y: Math.PI * 2, scrollTrigger: { trigger: '#ui-overlay', start: 'top top', end: 'bottom bottom', scrub: 1.5 } })
-    gsap.to(globe.scale, { x: 2.5, y: 2.5, z: 2.5, ease: 'power2.out', scrollTrigger: { trigger: '#details', start: 'bottom center', endTrigger: '#grants-portal', end: 'bottom bottom', scrub: 3, invalidateOnRefresh: true } })
-    gsap.to(camera.position, { z: 2.8, ease: 'power2.out', scrollTrigger: { trigger: '#details', start: 'bottom center', endTrigger: '#grants-portal', end: 'bottom bottom', scrub: 3, invalidateOnRefresh: true } })
 
     let targetX = 3
     let currentX = 3
 
     const ctx = gsap.context(() => {
+      gsap.to(globe.rotation, { y: Math.PI * 2, scrollTrigger: { trigger: '#ui-overlay', start: 'top top', end: 'bottom bottom', scrub: 1.5 } })
+      gsap.to(globe.scale, { x: 2.5, y: 2.5, z: 2.5, ease: 'power2.out', scrollTrigger: { trigger: '#details', start: 'bottom center', endTrigger: '#grants-portal', end: 'bottom bottom', scrub: 3, invalidateOnRefresh: true } })
+      gsap.to(camera.position, { z: 2.8, ease: 'power2.out', scrollTrigger: { trigger: '#details', start: 'bottom center', endTrigger: '#grants-portal', end: 'bottom bottom', scrub: 3, invalidateOnRefresh: true } })
+
       ScrollTrigger.create({
         trigger: '#hero',
         start: 'top top',
@@ -377,7 +393,17 @@ export function useThreeGlobe(
     resolveReady?.()
   }
 
+  async function initSafe() {
+    try {
+      await init()
+    } catch (err) {
+      console.warn('[useThreeGlobe] init failed:', err)
+      rejectReady?.(err)
+      throw err
+    }
+  }
+
   onBeforeUnmount(() => cleanup?.())
 
-  return { init, ready }
+  return { init: initSafe, ready }
 }

@@ -5,7 +5,7 @@
  * @deps vue (computed); @/composables/useI18n (useI18n)
  */
 <template>
-  <main id="main-content" class="min-h-[100svh] bg-white dark:bg-[var(--bg-primary)] text-black dark:text-[var(--text-primary)]">
+  <main id="main-content" tabindex="-1" class="min-h-[100svh] bg-white dark:bg-[var(--bg-primary)] text-black dark:text-[var(--text-primary)]">
     <section class="mx-auto w-container px-4 py-8 sm:px-fluid-sm sm:section-padding pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-section">
       <header class="max-w-[min(100%,48rem)] mb-8 sm:mb-12">
         <div class="mb-4 sm:mb-6">

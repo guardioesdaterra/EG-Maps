@@ -15,10 +15,12 @@
  */
 <template>
   <div
+    id="main-content"
+    tabindex="-1"
     ref="rootRef"
     class="eg-embed-root"
     :class="themeClass"
-    role="region"
+    role="main"
     aria-label="Earth Guardians active crews map"
   >
     <div ref="mapContainer" class="eg-embed-canvas" />

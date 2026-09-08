@@ -6,7 +6,7 @@
  * @deps vue (ref, watch, computed, defineAsyncComponent); @/composables/useMapBase (useMapBase); ~/composables/useSpeciesData (useSpeciesIndex)
  */
 <template>
-  <div id="main-content" class="w-full h-[100svh] relative overflow-hidden bg-black" role="main" aria-label="Interactive Map Visualization">
+  <div id="main-content" tabindex="-1" class="w-full h-[100svh] relative overflow-hidden bg-black focus:outline-none" role="main" aria-label="Interactive Map Visualization">
     <div v-if="!runtime.online && !hideAll" class="absolute top-3 left-1/2 -translate-x-1/2 z-[var(--z-map-banner)] rounded-full border border-amber-400/40 bg-black/80 px-3 py-1.5 text-xs text-amber-200 backdrop-blur-sm" role="status">
       Offline mode — cached data remains available
     </div>

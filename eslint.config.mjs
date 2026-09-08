@@ -18,7 +18,7 @@ export default withNuxt(
       'prefer-const': 'error',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
     },
   },
 )

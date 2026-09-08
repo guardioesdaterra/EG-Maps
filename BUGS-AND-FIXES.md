@@ -123,7 +123,7 @@ For `vulcan-observatory` (which the code separately excluded at line 498) this s
 **Issue:** When the focus trap's `active` is the bare boolean `true` (not a ref), `isActive = computed(() => !!options.active)` evaluates to true once per scope. The watcher at line 69 runs `immediate: true`, which adds the keydown listener. If `options.active` later flips to `false`, the listener is correctly removed, but `previouslyFocused` is a *closure* variable shared across composable instances. A subsequent overlay opens and gets the OLD `previouslyFocused`, restoring focus to the wrong element.
 **Fix:** Move `previouslyFocused` inside an effect — derive it freshly inside the activation branch each time it activates.
 
-### B13. 🐞 [HIGH] The "old" `GrantsDashboard.vue` line 1078 was previously noted as duplicated `useI18n` import — still present
+### B13. ❌ FALSE POSITIVE — 🐞 [HIGH] The "old" `GrantsDashboard.vue` line 1078 was previously noted as duplicated `useI18n` import — still present
 **File:** `components/grants/GrantsDashboard.vue` / `audit.md:13`
 **Issue:** From the audit: "The useI18n import in GrantsDashboard.vue is duplicated (already imported at line 227)". Not yet fixed.
 **Fix:** Grep for `import.*useI18n` and dedupe.
@@ -160,7 +160,7 @@ If `signOut()` throws mid-await (network failure, etc.), `isManager` is already 
 **Issue:** If `MAPTILER_API_KEY` is `''`, the URL `https://api.maptiler.com/maps/streets-v2/style.json?key=` is sent. MapTiler returns an error JSON, which becomes the error path after 2 retries. Better: when no key, use `https://demotiles.maplibre.org/style.json` immediately.
 **Fix:** Add early return inside `getMapStyle` when `!apiKey`.
 
-### B18. 🐞 [MED] Two `<div>` claimed buttons lack keyboard semantics in grants dashboard
+### B18. ✅ FIXED (2026-09-08) — 🐞 [MED] Two `<div>` claimed buttons lack keyboard semantics in grants dashboard
 **File:** `components/grants/GrantsDashboard.vue:107-115`, `:116-126` (per audit.md)
 **Issue:** Buttons in the grants card-list are `<div @click="…">` with no `role="button"`, no `tabindex`, no `aria-label`. Already noted in `audit.md` line 53.
 **Fix:** Replace with `<button>` or add `role="button" tabindex="0" @keydown.enter="…"` and `aria-label`.
@@ -175,12 +175,12 @@ If `signOut()` throws mid-await (network failure, etc.), `isManager` is already 
 **Issue:** Filtering by phase/region/year on observatory data can leave zero results. Without an empty state, the user sees an empty map without explanation.
 **Fix:** Add `hasNoResults = computed(() => filteredFeatures.length === 0)` and a "no claims match filters" panel.
 
-### B21. 🐞 [MED] `GrantsAuth` dropdown has no role/aria-expanded
+### B21. ✅ FIXED (2026-09-08) — 🐞 [MED] `GrantsAuth` dropdown has no role/aria-expanded
 **File:** `components/grants/GrantsAuth.vue:170-185`
 **Issue:** The avatar dropdown is a click-only UI. Already noted in `audit.md`.
 **Fix:** Add `role="menu"` to the dropdown, `aria-expanded` on the trigger, focus first item on open.
 
-### B22. 🐞 [MED] `v-html` on email + grant description in `pages/eg-grants/index.vue`
+### B22. ❌ FALSE POSITIVE — 🐞 [MED] `v-html` on email + grant description in `pages/eg-grants/index.vue`
 **File:** `pages/eg-grants/index.vue:155`
 **Issue:** `<p class="contact-text" v-html="contactEmailHtml" />`. If `contactEmailHtml` is built from user-controlled strings without `escapeHtml`, this is an XSS vector. The other usage at `page 66` is safe (interpolating literal HTML tags).
 **Fix:** Use `escapeHtml` to render mailto links, or build with a `<a>` component.
@@ -433,6 +433,13 @@ The following fixes are safe + low-risk and were applied in this review pass:
 10. ✅ **B19** — `previewCard.ts` close handler is instance-aware; stale close events can't clobber the active popup.
 11. ✅ **B26** — `auth/callback.vue` watchdog timer surfaces an error + link after 15s hang; cleared on success/unmount.
 12. ✅ **B34** — `initMap` skips re-init when a loaded map exists, but still rebuilds for the retry button after tile errors.
+13. ✅ **B18** — gstore-card / create-grant div buttons: Enter + Space activation with preventDefault (aria/tabindex were already present).
+14. ✅ **B21** — GrantsAuth dropdown: `aria-expanded`, `aria-haspopup`, `role="menu"`/`menuitem`, Escape closes.
+15. ✅ **A1** — Language switcher button + menu labeled (`aria-label`, `aria-expanded`, `role="menu"`).
+16. ✅ **A7** — GrantsFooter external links carry `rel="noopener noreferrer"`.
+17. ❌ **B13** — False positive: only one `useI18n` import exists in `GrantsDashboard.vue` (line 176).
+18. ❌ **B22** — False positive: `contactEmailHtml` is built from a hardcoded literal anchor + translation key; no user-controlled input reaches `v-html`.
+19. ❌ **A12 / S4** — False positives: `error.vue` already has `role="alert"`; `buildClaimReportMailtoUrl` already `encodeURIComponent`s subject and body.
 
 > **Resolved as false positives (no fix needed):**
 >
@@ -457,10 +464,10 @@ The following fixes are safe + low-risk and were applied in this review pass:
 | ~~B4~~ | ✅ Done 2026-09-08 | `composables/useThreeGlobe.ts` |
 | B7  | Move three/gsap to npm | `package.json` deps + `composables/useThreeGlobe.ts:54-58` + `vite.optimizeDeps.include` |
 | B10 | Wrap console calls in dev guards | `lib/logger.ts` (new) + ~150 call sites in `composables/useMapBase.ts`, `useMapMarker.ts`, `useSpeciesData.ts` |
-| B18 | `<div @click>` → `<button>` | `components/grants/GrantsDashboard.vue:107,116` (per existing audit.md) |
-| B22 | Remove `v-html` for email | `pages/eg-grants/index.vue:155` |
-| A1  | Add `aria-label` to dock nav | `layouts/default.vue:78-146` |
-| A7  | `rel="noopener"` external links | `components/grants/GrantsFooter.vue` |
+| ~~B18~~ | ✅ Done 2026-09-08 — Space+Enter activation | `components/grants/GrantsDashboard.vue` |
+| ~~B22~~ | ❌ False positive — hardcoded literal, no user input | `pages/eg-grants/index.vue` |
+| ~~A1~~ | ✅ Done 2026-09-08 — language button/menu labeled | `layouts/default.vue` |
+| ~~A7~~ | ✅ Done 2026-09-08 | `components/grants/GrantsFooter.vue` |
 | A12 | `role="alert"` on error banner | `error.vue` |
 | S4  | `encodeURIComponent` in mailto builder | `lib/observatory-analysis.ts` (search `buildClaimReportMailtoUrl`) |
 | T1  | Add tests for `useMapBase`, `useMapMarker`, `useMapConnections`, `useGrants`, `useCulturalLayers` | new files in `tests/` |

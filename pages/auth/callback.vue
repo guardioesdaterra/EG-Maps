@@ -84,7 +84,7 @@ async function checkMembershipAndRedirect(signUpUrl: string) {
     return
   }
 
-  navigateTo('/eg-grants')
+  navigateTo(signUpUrl)
 }
 
 </script>

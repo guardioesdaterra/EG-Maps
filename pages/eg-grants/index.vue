@@ -6,59 +6,66 @@
  */
 <template>
   <div id="main-content" tabindex="-1" role="main" class="grants-portal relative min-h-screen overflow-hidden bg-[#08080a]">
-    <GlobeView :projects="allProjectsData" @ready="onGlobeReady" />
-    <DotField
-      class="absolute inset-0"
-      :style="{ zIndex: 'var(--z-dots)' }"
-      :dot-radius="2"
-      :dot-spacing="18"
-      :cursor-radius="350"
-      :bulge-strength="35"
-      :glow-radius="100"
-      gradient-from="rgba(124, 255, 103, 0.25)"
-      gradient-to="rgba(160, 255, 188, 0.15)"
-      glow-color="rgba(0, 255, 133, 0.08)"
-    />
-    <div v-if="showScrollIndicator" class="scroll-indicator">{{ t('grantsPortal.scrollToExplore') }}</div>
     <div v-if="!sessionReady" class="fixed inset-0 flex items-center justify-center bg-[#08080a]" style="z-index: 99999">
       <div class="w-6 h-6 border-2 border-green-400/30 border-t-green-400 rounded-full animate-spin" />
     </div>
-    <GrantsAuth v-if="!isEmbed && sessionReady" :user="user" :is-manager="isManager" @sign-in="signIn" @sign-out="handleSignOut" />
 
-    
-    <Transition name="modal-fade">
-      <div v-if="showCrewPopup && !showCrewSignup" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" :style="{ zIndex: 'var(--z-confirm)' }" @click.self="dismissCrewPopup">
-        <div class="bg-[#111] border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl text-center">
-          <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-green-500/10 flex items-center justify-center">
-            <svg class="w-6 h-6 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          </div>
-          <h3 class="text-white font-bold text-sm mb-2">{{ t('grantsPortal.crewCheckTitle') }}</h3>
-          <p class="text-white/50 text-xs mb-5">{{ t('grantsPortal.crewCheckDesc') }}</p>
-          <div class="flex flex-col gap-2">
-            <button class="w-full px-3 py-2 text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors" @click="openCrewSignup">{{ t('grantsPortal.signUpAsCrew') }}</button>
-            <button class="w-full px-3 py-2 text-xs font-semibold text-white/60 hover:text-white rounded-lg transition-colors" @click="dismissCrewPopup">{{ t('grantsPortal.continueAsViewer') }}</button>
+    <div v-else-if="!user" class="fixed inset-0 flex items-center justify-center bg-[#08080a]" style="z-index: 99999">
+      <div class="text-center max-w-sm mx-4">
+        <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-green-500/10 flex items-center justify-center">
+          <svg class="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </div>
+        <h2 class="text-white text-xl font-bold mb-2">Sign In Required</h2>
+        <p class="text-white/50 text-sm mb-6">{{ t('grantsPortal.grantsSignInSection') }}</p>
+        <button class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="signIn">
+          {{ t('grantsPortal.signInBtn') }}
+        </button>
+      </div>
+    </div>
+
+    <div v-else-if="!isManager" class="fixed inset-0 flex items-center justify-center bg-[#08080a]" style="z-index: 99999">
+      <div class="text-center max-w-sm mx-4">
+        <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center">
+          <svg class="w-8 h-8 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18.36 6.64a9 9 0 11-12.73 0M12 9v.01M12 13v.01"/></svg>
+        </div>
+        <h2 class="text-white text-xl font-bold mb-2">Access Restricted</h2>
+        <p class="text-white/50 text-sm mb-6">EG Grants is only available to Earth Guardians staff accounts.</p>
+        <button class="px-6 py-3 text-sm font-bold bg-white/10 text-white/70 hover:bg-white/15 rounded-lg transition-colors" @click="signOut">
+          Sign Out
+        </button>
+      </div>
+    </div>
+
+    <template v-else>
+      <GlobeView :projects="allProjectsData" @ready="onGlobeReady" />
+      <DotField
+        class="absolute inset-0"
+        :style="{ zIndex: 'var(--z-dots)' }"
+        :dot-radius="2"
+        :dot-spacing="18"
+        :cursor-radius="350"
+        :bulge-strength="35"
+        :glow-radius="100"
+        gradient-from="rgba(124, 255, 103, 0.25)"
+        gradient-to="rgba(160, 255, 188, 0.15)"
+        glow-color="rgba(0, 255, 133, 0.08)"
+      />
+      <div v-if="showScrollIndicator" class="scroll-indicator">{{ t('grantsPortal.scrollToExplore') }}</div>
+
+      <Transition name="modal-fade">
+        <div v-if="confirmSignOut" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" :style="{ zIndex: 'var(--z-confirm)' }" @click.self="confirmSignOut = false">
+          <div class="bg-[#111] border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+            <h3 class="text-white font-bold text-sm mb-2">{{ t('grantsPortal.signOutConfirmTitle') }}</h3>
+            <p class="text-white/50 text-xs mb-5">{{ t('grantsPortal.signOutConfirmDesc') }}</p>
+            <div class="flex gap-2 justify-end">
+              <button class="px-3 py-1.5 text-xs font-semibold text-white/60 hover:text-white rounded-lg transition-colors" @click="confirmSignOut = false">{{ t('grantsPortal.cancel') }}</button>
+              <button class="px-3 py-1.5 text-xs font-bold bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition-colors" @click="signOut(); confirmSignOut = false">{{ t('grantsPortal.signOut') }}</button>
+            </div>
           </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
 
-    <CrewSignupModal :show="showCrewSignup" :user-email="user?.email" @close="closeCrewSignup" @registered="onCrewRegistered" />
-
-    
-    <Transition name="modal-fade">
-      <div v-if="confirmSignOut" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" :style="{ zIndex: 'var(--z-confirm)' }" @click.self="confirmSignOut = false">
-        <div class="bg-[#111] border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-          <h3 class="text-white font-bold text-sm mb-2">{{ t('grantsPortal.signOutConfirmTitle') }}</h3>
-          <p class="text-white/50 text-xs mb-5">{{ t('grantsPortal.signOutConfirmDesc') }}</p>
-          <div class="flex gap-2 justify-end">
-            <button class="px-3 py-1.5 text-xs font-semibold text-white/60 hover:text-white rounded-lg transition-colors" @click="confirmSignOut = false">{{ t('grantsPortal.cancel') }}</button>
-            <button class="px-3 py-1.5 text-xs font-bold bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition-colors" @click="signOut(); confirmSignOut = false">{{ t('grantsPortal.signOut') }}</button>
-          </div>
-        </div>
-      </div>
-    </Transition>
-
-    <div id="ui-overlay" class="relative" :style="{ zIndex: 'var(--z-ui)' }">
+      <div id="ui-overlay" class="relative" :style="{ zIndex: 'var(--z-ui)' }">
       
       <section id="hero" class="min-h-screen flex flex-col justify-center px-[10%] pointer-events-auto">
         <span class="data-label hero-reveal">{{ t('grantsPortal.heroLabel') }}</span>
@@ -261,6 +268,7 @@
         @created="onGrantCreated"
       />
     </div>
+    </template>
   </div>
 </template>
 
@@ -270,13 +278,11 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import type { GrantRecord, ScrapedGrant, LeaderboardEntry, EGProjectGrant } from '~/composables/useGrants'
 import type { ClaimRecord, DetailGrantData } from '~/lib/types'
 import { allProjectsData } from '~/lib/project-data'
-import GrantsAuth from '~/components/grants/GrantsAuth.vue'
 import GrantsDashboard from '~/components/grants/GrantsDashboard.vue'
 import GrantDetailModal from '~/components/grants/GrantDetailModal.vue'
 import GrantEditModal from '~/components/grants/GrantEditModal.vue'
 import RegistryModal from '~/components/grants/RegistryModal.vue'
 import GrantsFooter from '~/components/grants/GrantsFooter.vue'
-import CrewSignupModal from '~/components/grants/CrewSignupModal.vue'
 import ClaimGrantModal from '~/components/grants/ClaimGrantModal.vue'
 import ReviewClaimModal from '~/components/grants/ReviewClaimModal.vue'
 import CreateGrantModal from '~/components/grants/CreateGrantModal.vue'
@@ -323,14 +329,9 @@ const impactStats = computed(() => [
 ])
 const { user, isManager, isManagerReady, signIn, signOut, sessionReady } = useSupabaseAuth()
 const confirmSignOut = ref(false)
-const showCrewPopup = ref(false)
-const showCrewSignup = ref(false)
-const viewerDismissed = ref(false)
 
-const isEmbed = computed(() => {
-  if (import.meta.server) return false
-  return new URLSearchParams(window.location.search).get('embed') === 'true'
-})
+const accessGranted = computed(() => sessionReady.value && !!user.value && isManager.value)
+
 const { client } = useSupabase()
 const { listGrants, listScrapedGrants, reviewGrant: apiReviewGrant, reviewScrapedGrant: apiReviewScraped, updateScrapedGrant: apiUpdateScrapedGrant, getStats, voteGrant, voteScrapedGrant, deleteVote, getLeaderboard, listClaims } = useGrants()
 
@@ -761,63 +762,22 @@ function handleSignOut() {
   confirmSignOut.value = true
 }
 
-function dismissCrewPopup() {
-  showCrewPopup.value = false
-  viewerDismissed.value = true
-}
-
-function openCrewSignup() {
-  showCrewPopup.value = false
-  showCrewSignup.value = true
-}
-
-function closeCrewSignup() {
-  showCrewSignup.value = false
-}
-
-function onCrewRegistered(_memberId: string) {
-  showCrewSignup.value = false
-  viewerDismissed.value = true
-}
-
-async function checkCrewMembership() {
-  if (!isManagerReady.value) {
-    for (let i = 0; i < 100; i++) {
-      await new Promise(r => setTimeout(r, 50))
-      if (isManagerReady.value) break
-    }
-  }
-  if (isManager.value) return
-  try {
-    const { data, error: fnError } = await client.functions.invoke('crew-sync')
-    if (fnError || !data?.authorized) {
-      showCrewPopup.value = true
-    }
-  } catch { /* ignore */ }
-}
-
-watch(() => user.value?.email, (email) => {
-  if (!email || viewerDismissed.value) return
-  const route = useRoute()
-  if (route.query.signup === '1') {
-    openCrewSignup()
-  } else {
-    checkCrewMembership()
-  }
-})
-
 watch(activePortalTab, (tab) => {
+  if (!accessGranted.value) return
   if (['tabPending', 'tabOpen', 'tabClosed'].includes(tab)) loadScrapedGrants()
   if (tab === 'tabLeaderboard') loadLeaderboardData()
 })
 
-onMounted(async () => {
-  await Promise.all([loadGrants(), loadStats(), loadScrapedGrants(), loadClaims()])
+watch(accessGranted, (granted) => {
+  if (!granted) return
+  loadGrants()
+  loadStats()
+  loadScrapedGrants()
+  loadClaims()
+}, { immediate: true })
+
+onMounted(() => {
   window.addEventListener('scroll', onPageScroll, { passive: true })
-  const route = useRoute()
-  if (route.query.signup === '1' && user.value?.email) {
-    openCrewSignup()
-  }
   setTimeout(() => {
     if (!import.meta.client) return
     try {

@@ -50,7 +50,11 @@
     "icmbioScope": "Brasil",
     "suggestDataset": "Sugerir Dataset",
     "suggestDatasetSubject": "Sugerir um novo dataset para EG-Maps",
-    "viewSource": "Visitar Fonte"
+    "viewSource": "Visitar Fonte",
+    "countries": "Países",
+    "ctaGrants": "Explorar Subvencões",
+    "exploreTitle": "Explore os mapas",
+    "exploreDesc": "Mapas interativos 2D e globos 3D visualizando subvencões, equipes, campanhas e espécies ameaçadas em todo o mundo."
   },
   "mapControls": {
     "search": "Buscar",

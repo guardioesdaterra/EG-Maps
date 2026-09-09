@@ -50,7 +50,11 @@
     "suggestDataset": "データセットを提案",
     "suggestDatasetSubject": "EG-Mapsへの新しいデータセットを提案",
     "viewSource": "ソースにアクセス",
-    "crewsCount": "チーム"
+    "crewsCount": "チーム",
+    "countries": "国",
+    "ctaGrants": "助成金を探す",
+    "exploreTitle": "マップを探す",
+    "exploreDesc": "助成金、クルー、キャンペーン、絶滅危惧種を世界規模で可視化するインタラクティブな2Dマップと3Dグローブ。"
   },
   "mapControls": {
     "search": "検索",

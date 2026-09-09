@@ -50,7 +50,11 @@
     "suggestDataset": "推荐数据集",
     "suggestDatasetSubject": "为EG-Maps推荐新的数据集",
     "viewSource": "访问来源",
-    "crewsCount": "团队"
+    "crewsCount": "团队",
+    "countries": "国家",
+    "ctaGrants": "探索资助",
+    "exploreTitle": "探索地图",
+    "exploreDesc": "可视化资助、团队、行动和濒危物种的交互式2D地图和3D地球仪。"
   },
   "mapControls": {
     "search": "搜索",

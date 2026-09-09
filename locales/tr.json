@@ -50,7 +50,11 @@
     "suggestDataset": "Veri Seti Öner",
     "suggestDatasetSubject": "EG-Maps için yeni bir veri seti öner",
     "viewSource": "Kaynağı Ziyaret Et",
-    "crewsCount": "Ekipler"
+    "crewsCount": "Ekipler",
+    "countries": "Ülkeler",
+    "ctaGrants": "Hibeleri Keşfet",
+    "exploreTitle": "Haritaları keşfet",
+    "exploreDesc": "Hibeleri, ekipleri, kampanyaları ve tehlikedeki türleri dünya genelinde görselleştiren interaktif 2D haritalar ve 3D küreler."
   },
   "mapControls": {
     "search": "Ara",

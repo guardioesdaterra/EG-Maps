@@ -50,7 +50,11 @@
     "suggestDataset": "Suggerisci dataset",
     "suggestDatasetSubject": "Suggerisci un nuovo dataset per EG-Maps",
     "viewSource": "Visita Fonte",
-    "crewsCount": "Team"
+    "crewsCount": "Team",
+    "countries": "Paesi",
+    "ctaGrants": "Esplora i Contributi",
+    "exploreTitle": "Esplora le mappe",
+    "exploreDesc": "Mappe interattive 2D e globi 3D che visualizzano contributi, team, campagne e specie a rischio in tutto il mondo."
   },
   "mapControls": {
     "search": "Cerca",

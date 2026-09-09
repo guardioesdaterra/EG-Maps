@@ -72,7 +72,11 @@
     "pastTrainings": "Past trainings",
     "skillBuilding": "Skill building",
     "joinGlobal": "Join global network",
-    "youthLed": "Youth-led action"
+    "youthLed": "Youth-led action",
+    "countries": "Countries",
+    "ctaGrants": "Explore Grants",
+    "exploreTitle": "Explore the maps",
+    "exploreDesc": "Interactive 2D maps and 3D globes visualizing grants, crews, campaigns, and endangered species worldwide."
   },
   "mapControls": {
     "search": "Search",

@@ -50,7 +50,11 @@
     "suggestDataset": "Zaproponuj zbiór danych",
     "suggestDatasetSubject": "Zaproponuj nowy zbiór danych dla EG-Maps",
     "viewSource": "Odwiedź Źródło",
-    "crewsCount": "Zespoły"
+    "crewsCount": "Zespoły",
+    "countries": "Kraje",
+    "ctaGrants": "Przeglądaj Dotacje",
+    "exploreTitle": "Odkrywaj mapy",
+    "exploreDesc": "Interaktywne mapy 2D i globusy 3D wizualizujące dotacje, zespoły, kampanie i zagrożone gatunki na całym świecie."
   },
   "mapControls": {
     "search": "Szukaj",

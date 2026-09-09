@@ -50,7 +50,11 @@
     "suggestDataset": "Datensatz vorschlagen",
     "suggestDatasetSubject": "Neuen Datensatz für EG-Maps vorschlagen",
     "viewSource": "Quelle besuchen",
-    "crewsCount": "Teams"
+    "crewsCount": "Teams",
+    "countries": "Länder",
+    "ctaGrants": "Zuschüsse erkunden",
+    "exploreTitle": "Karten erkunden",
+    "exploreDesc": "Interaktive 2D-Karten und 3D-Globen, die Zuschüsse, Teams, Kampagnen und gefährdete Arten weltweit visualisieren."
   },
   "mapControls": {
     "search": "Suche",

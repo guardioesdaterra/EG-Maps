@@ -50,7 +50,11 @@
     "suggestDataset": "Dataset voorstellen",
     "suggestDatasetSubject": "Stel een nieuwe dataset voor EG-Maps voor",
     "viewSource": "Bezoek Bron",
-    "crewsCount": "Teams"
+    "crewsCount": "Teams",
+    "countries": "Landen",
+    "ctaGrants": "Subsidies verkennen",
+    "exploreTitle": "Verken de kaarten",
+    "exploreDesc": "Interactieve 2D-kaarten en 3D-globes die subsidies, teams, campagnes en bedreigde soorten wereldwijd visualiseren."
   },
   "mapControls": {
     "search": "Zoeken",

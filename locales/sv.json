@@ -50,7 +50,11 @@
     "suggestDataset": "Föreslå datamängd",
     "suggestDatasetSubject": "Föreslå en ny datamängd för EG-Maps",
     "viewSource": "Besök Källa",
-    "crewsCount": "Team"
+    "crewsCount": "Team",
+    "countries": "Länder",
+    "ctaGrants": "Utforska bidrag",
+    "exploreTitle": "Utforska kartorna",
+    "exploreDesc": "Interaktiva 2D-kartor och 3D-globar som visualiserar bidrag, team, kampanjer och hotade arter världen över."
   },
   "mapControls": {
     "search": "Sök",

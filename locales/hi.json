@@ -50,7 +50,11 @@
     "suggestDataset": "डेटासेट सुझाएं",
     "suggestDatasetSubject": "EG-Maps के लिए नया डेटासेट सुझाएं",
     "viewSource": "स्रोत पर जाएं",
-    "crewsCount": "टीमें"
+    "crewsCount": "टीमें",
+    "countries": "देश",
+    "ctaGrants": "अनुदान देखें",
+    "exploreTitle": "मानचित्र देखें",
+    "exploreDesc": "अनुदान, क्रू, अभियान और लुप्तप्राय प्रजातियों को दर्शाने वाले इंटरैक्टिव 2D मानचित्र और 3D ग्लोब।"
   },
   "mapControls": {
     "search": "खोजें",

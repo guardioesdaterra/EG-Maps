@@ -50,7 +50,11 @@
     "suggestDataset": "اقتراح مجموعة بيانات",
     "suggestDatasetSubject": "اقتراح مجموعة بيانات جديدة لـ EG-Maps",
     "viewSource": "زيارة المصدر",
-    "crewsCount": "فرق العمل"
+    "crewsCount": "فرق العمل",
+    "countries": "الدول",
+    "ctaGrants": "استكشاف المنح",
+    "exploreTitle": "استكشف الخرائط",
+    "exploreDesc": "خرائط تفاعلية ثنائية الأبعاد وكرات أرضية ثلاثية الأبعاد تصور المنح وفرق العمل والحملات والأنواع المهددة عالمياً."
   },
   "mapControls": {
     "search": "بحث",

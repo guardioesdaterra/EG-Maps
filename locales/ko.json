@@ -50,7 +50,11 @@
     "suggestDataset": "데이터셋 제안",
     "suggestDatasetSubject": "EG-Maps용 새 데이터셋 제안",
     "viewSource": "원본 방문",
-    "crewsCount": "팀"
+    "crewsCount": "팀",
+    "countries": "국가",
+    "ctaGrants": "보조금 살펴보기",
+    "exploreTitle": "지도 살펴보기",
+    "exploreDesc": "보조금, 크루, 캠페인, 멸종 위기종을 전 세계적으로 시각화하는 인터랙티브 2D 지도와 3D 글로브."
   },
   "mapControls": {
     "search": "검색",

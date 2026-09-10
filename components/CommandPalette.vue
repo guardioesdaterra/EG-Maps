@@ -21,6 +21,7 @@ const inputRef = ref<HTMLInputElement | null>(null)
 const panelRef = ref<HTMLElement | null>(null)
 const query = ref('')
 const activeIndex = ref(0)
+const lastFocusedElement = ref<HTMLElement | null>(null)
 
 watch(() => stateQuery.value, v => { query.value = v })
 watch(query, v => { setStateQuery(v) })
@@ -61,8 +62,13 @@ function focusInput() {
 
 watch(open, (isOpen) => {
   if (isOpen) {
+    lastFocusedElement.value = document.activeElement as HTMLElement | null
+    document.body.classList.add('cmd-open')
     activeIndex.value = 0
     focusInput()
+  } else {
+    document.body.classList.remove('cmd-open')
+    nextTick(() => lastFocusedElement.value?.focus())
   }
 })
 
@@ -124,6 +130,7 @@ onMounted(() => {
   }
 })
 onUnmounted(() => {
+  document.body.classList.remove('cmd-open')
   if (typeof window !== 'undefined') {
     window.removeEventListener('keydown', onGlobalKeydown)
   }
@@ -146,9 +153,7 @@ onUnmounted(() => {
         <div
           ref="panelRef"
           class="cmd-panel"
-          role="combobox"
-          :aria-expanded="true"
-          :aria-haspopup="'listbox'"
+          tabindex="-1"
         >
           <div class="cmd-input-wrap">
             <Icon name="lucide:search" class="cmd-input-icon" />
@@ -161,12 +166,17 @@ onUnmounted(() => {
               autocomplete="off"
               spellcheck="false"
               :aria-label="t('palette.searchInput')"
+              role="combobox"
+              aria-autocomplete="list"
+              :aria-expanded="true"
+              aria-controls="command-palette-results"
+              :aria-activedescendant="filteredItems[activeIndex]?.id ? `command-${filteredItems[activeIndex].id}` : undefined"
               @keydown="onKeyDown"
             />
             <kbd v-if="query" class="cmd-kbd">{{ filteredItems.length }}</kbd>
           </div>
 
-          <div class="cmd-results" role="listbox">
+          <div id="command-palette-results" class="cmd-results" role="listbox">
             <div v-if="filteredItems.length === 0" class="cmd-empty">
               {{ t('palette.noResults') }}
             </div>
@@ -184,6 +194,7 @@ onUnmounted(() => {
                   class="cmd-item"
                   :class="{ 'cmd-item--active': isActive(group.group, i) }"
                   role="option"
+                  :id="`command-${item.id}`"
                   :aria-selected="isActive(group.group, i)"
                   @click="select(item)"
                   @mouseenter="setActive(group.group, i)"
@@ -228,8 +239,8 @@ onUnmounted(() => {
 .cmd-panel {
   width: 100%;
   max-width: 560px;
-  background: rgba(15, 15, 18, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--popover, var(--bg-secondary));
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   display: flex;
@@ -305,7 +316,7 @@ onUnmounted(() => {
 .cmd-item--active,
 .cmd-item:hover {
   background: var(--info-bg);
-  color: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 .cmd-item__icon {
   width: 18px;
@@ -351,6 +362,7 @@ onUnmounted(() => {
   border-top: 1px solid var(--glass-border);
   font-size: 10px;
   color: var(--text-muted);
+  flex-wrap: wrap;
 }
 .cmd-footer kbd {
   font-size: 9px;
@@ -362,6 +374,10 @@ onUnmounted(() => {
 }
 .cmd-fade-enter-active, .cmd-fade-leave-active { transition: opacity 150ms; }
 .cmd-fade-enter-from, .cmd-fade-leave-to { opacity: 0; }
+@media (max-width: 480px) {
+  .cmd-backdrop { padding: max(4.5rem, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); }
+  .cmd-panel { max-height: calc(100svh - 5.5rem); border-radius: 14px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .cmd-fade-enter-active, .cmd-fade-leave-active { transition: none; }
   .cmd-item { transition: none; }

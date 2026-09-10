@@ -9,14 +9,16 @@
     <slot />
 
     
-    <header v-if="showUnifiedHeader" class="fixed left-2 xs:left-4 top-[clamp(4.5rem,12vw,6rem)] z-[10000] sm:left-auto sm:right-[max(1rem,env(safe-area-inset-right))] sm:top-[0.5rem]">
+    <header v-if="showUnifiedHeader" class="fixed left-2 xs:left-4 top-[max(0.5rem,env(safe-area-inset-top))] z-[10000] sm:left-auto sm:right-[max(1rem,env(safe-area-inset-right))] sm:top-[0.5rem]">
       <div :class="unifiedHeaderShellClass">
         
-        <div v-if="showViewToggle" class="map-view-switcher flex flex-col sm:flex-row items-start sm:items-center gap-0.5">
+        <div v-if="showViewToggle" class="map-view-switcher flex flex-row items-center gap-0.5">
           <NuxtLink
             :to="view2DRoute"
+            :aria-label="t('globe.view2D')"
+            :aria-current="!is3DRoute ? 'page' : undefined"
             :class="[
-              'map-view-tab map-view-tab-sm max-sm:h-8 max-sm:w-8 max-sm:justify-center max-sm:p-0',
+              'map-view-tab map-view-tab-sm min-h-10 min-w-10 max-sm:justify-center max-sm:p-0',
               !is3DRoute ? 'map-view-tab-active' : 'map-view-tab-idle'
             ]"
           >
@@ -25,8 +27,10 @@
           </NuxtLink>
           <NuxtLink
             :to="view3DRoute"
+            :aria-label="t('globe.view3D')"
+            :aria-current="is3DRoute ? 'page' : undefined"
             :class="[
-              'map-view-tab map-view-tab-sm max-sm:h-8 max-sm:w-8 max-sm:justify-center max-sm:p-0',
+              'map-view-tab map-view-tab-sm min-h-10 min-w-10 max-sm:justify-center max-sm:p-0',
               is3DRoute ? 'map-view-tab-active' : 'map-view-tab-idle'
             ]"
           >
@@ -39,12 +43,14 @@
         <div v-if="showViewToggle" :class="[headerSeparatorClass, 'hidden sm:block']" />
 
         
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-0.5">
+        <div class="flex flex-row items-center gap-0.5">
           <NuxtLink
             v-for="item in headerItems"
             :key="item.path"
             :to="item.path"
             :class="getHeaderItemClass(item.path)"
+            :aria-label="t(item.labelKey)"
+            :aria-current="isActive(item.path) ? 'page' : undefined"
           >
             <Icon :name="item.icon" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span class="hidden sm:inline text-xs">{{ t(item.labelKey) }}</span>
@@ -54,6 +60,7 @@
             target="_blank"
             rel="noopener noreferrer"
             :class="headerUtilityClass"
+            :aria-label="t('nav.crews')"
           >
             <Icon name="lucide:users" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span class="hidden sm:inline text-xs">{{ t('nav.crews') }}</span>
@@ -75,7 +82,7 @@
     </header>
 
     
-    <nav v-if="showDock && !hideAll" class="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] xs:bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2" aria-label="Primary navigation">
+    <nav v-if="showDock && !hideAll" class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] xs:bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
       <div :class="dockShellClass">
         <div class="flex items-center gap-1">
           <GooeyNav :items="navItems" />
@@ -87,10 +94,7 @@
           <div class="relative" ref="langDropdownRef">
             <button
               @click="showLangMenu = !showLangMenu"
-              class="group relative flex flex-col items-center"
-              :aria-expanded="showLangMenu"
-              aria-haspopup="menu"
-              :aria-label="t('nav.language')"
+              class="group relative flex min-h-10 min-w-10 flex-col items-center justify-center"
             >
               <div
                 :class="[tooltipClass, 'opacity-0 group-hover:opacity-100 transition-opacity duration-150']"
@@ -109,8 +113,6 @@
               <div
                 v-if="showLangMenu"
                 :class="dropdownClass"
-                role="menu"
-                :aria-label="t('nav.language')"
               >
                 <button
                   v-for="loc in availableLocales"
@@ -132,7 +134,7 @@
           <div class="relative" ref="importBtnRef">
             <button
               @click="showImportModal = !showImportModal"
-              class="group relative flex flex-col items-center"
+              class="group relative flex min-h-10 min-w-10 flex-col items-center justify-center"
               aria-label="Import custom data"
             >
               <div
@@ -195,11 +197,13 @@ const navItems: NavItem[] = [
   { path: '/endangered-species', labelKey: 'nav.endangeredSpecies', icon: 'lucide:bird', variant: 'green' },
   { path: '/vulcan-observatory', labelKey: 'nav.observatoryOfVulcan', icon: 'lucide:microscope', variant: 'orange' },
   { path: '/active-crews', labelKey: 'nav.activeCrews', icon: 'lucide:users-round', variant: 'cyan' },
+  { path: '/eg-grants', labelKey: 'nav.egGrants', icon: 'lucide:hand-coins', variant: 'purple' },
   { path: 'https://www.earthguardians.org/crews', labelKey: 'nav.joinEarthGuardians', icon: 'lucide:users', variant: 'cyan', external: true },
 ]
 
 const headerItems: NavItem[] = [
   { path: '/', labelKey: 'nav.home', icon: 'lucide:home', variant: 'cyan' },
+  { path: '/eg-grants', labelKey: 'nav.egGrants', icon: 'lucide:hand-coins', variant: 'purple' },
   { path: '/info', labelKey: 'nav.info', icon: 'lucide:info', variant: 'cyan' },
 ]
 
@@ -227,7 +231,7 @@ const view3DRoute = computed(() => {
 
 const isLightTheme = computed(() => !isDark.value)
 const unifiedHeaderShellClass = computed(() => [
-  'flex flex-col sm:flex-row w-fit max-w-[calc(100vw-2rem)] sm:max-w-full items-start sm:items-center gap-2 sm:gap-1 rounded-xl border px-1.5 py-2 sm:px-1 sm:py-1 shadow-xl backdrop-blur-xl',
+  'flex flex-row w-full sm:w-fit max-w-full items-center justify-between gap-1 rounded-xl border p-1 shadow-xl backdrop-blur-xl overflow-x-auto',
   isLightTheme.value
     ? 'bg-white/95 border-black text-black shadow-[var(--panel-shadow)]'
     : 'bg-black/80 border-white/20 text-white shadow-[var(--panel-shadow)]',
@@ -238,7 +242,7 @@ const headerSeparatorClass = computed(() => [
 ])
 const dockShellClass = 'max-w-full px-1.5 py-1.5 rounded-xl shadow-lg backdrop-blur-2xl bg-black/80 text-white'
 const headerUtilityClass = computed(() => [
-  'inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-semibold transition-colors max-sm:h-8 max-sm:w-8 max-sm:justify-center max-sm:px-0',
+  'inline-flex min-h-10 min-w-10 sm:min-h-8 sm:min-w-0 items-center justify-center gap-1 rounded-md px-2 text-xs font-semibold transition-colors max-sm:px-0',
   isLightTheme.value
     ? 'text-black hover:bg-black hover:text-white'
     : 'text-white/70 hover:bg-white/10 hover:text-white',
@@ -273,7 +277,7 @@ function getDropdownItemClass(loc: string) {
 }
 
 function getHeaderItemClass(path: string) {
-  const base = 'inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-semibold transition-colors max-sm:h-8 max-sm:w-8 max-sm:justify-center max-sm:px-0'
+  const base = 'inline-flex min-h-10 min-w-10 sm:min-h-8 sm:min-w-0 items-center justify-center gap-1 rounded-md px-2 text-xs font-semibold transition-colors max-sm:px-0'
   if (isLightTheme.value) {
     return `${base} ${isActive(path) ? 'bg-black text-white' : 'text-black hover:bg-black/10'}`
   }

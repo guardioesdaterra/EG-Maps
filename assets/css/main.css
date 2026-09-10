@@ -298,20 +298,20 @@
   }
 
   /* ─── Dark AMOLED thin scrollbar ─── */
-  .dark html {
+  html.dark {
     scrollbar-color: rgba(255, 255, 255, 0.12) var(--bg-primary);
   }
 
-  .dark html::-webkit-scrollbar-track {
+  html.dark::-webkit-scrollbar-track {
     background: var(--bg-primary);
   }
-  .dark html::-webkit-scrollbar-thumb {
+  html.dark::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.12);
   }
-  .dark html::-webkit-scrollbar-thumb:hover {
+  html.dark::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.22);
   }
-  .dark html::-webkit-scrollbar-corner {
+  html.dark::-webkit-scrollbar-corner {
     background: var(--bg-primary);
   }
 
@@ -333,6 +333,8 @@
   }
 
 }
+
+body.cmd-open { overflow: hidden; }
 
 @layer components {
   /* Cyberpunk button styles */

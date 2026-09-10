@@ -6,17 +6,21 @@
   required?
  */
 <template>
-  <div class="flex flex-col gap-1">
-    <label class="text-[11px] font-semibold text-white/50 flex items-center gap-1">
+  <div class="flex flex-col gap-1" role="group" :aria-labelledby="labelId">
+    <span :id="labelId" class="text-[11px] font-semibold text-white/50 flex items-center gap-1">
       {{ label }}
       <span v-if="required" class="text-red-400">*</span>
-    </label>
+    </span>
     <slot />
     <p v-if="hint" class="text-[10px] text-white/20 leading-relaxed">{{ hint }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
+
+import { useId } from 'vue'
+
+const labelId = `form-field-${useId()}`
 
 defineProps<{
   label: string

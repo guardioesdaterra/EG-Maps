@@ -12,7 +12,7 @@
 <template>
   <div>
     
-    <div v-if="!isEmbed" :class="`absolute ${isMobile ? 'top-[clamp(6.5rem,18vh,9rem)] right-[max(0.5rem,env(safe-area-inset-right))]' : 'top-20 right-4'} z-[700] flex flex-col gap-1.5 xs:gap-2 map-tool-stack`">
+    <div v-if="!isEmbed" :class="`absolute ${isMobile ? 'top-[clamp(4.75rem,12vh,7rem)] right-[max(0.5rem,env(safe-area-inset-right))]' : 'top-20 right-4'} z-[700] flex flex-col gap-1.5 xs:gap-2 map-tool-stack`">
       
       <UiTooltip :side="isMobile ? 'right' : 'left'">
         <template #trigger>
@@ -101,7 +101,7 @@
     <Transition name="search-panel">
       <div 
         v-if="showSearch" 
-        :class="`absolute ${isMobile ? 'top-[clamp(6.5rem,18vh,9rem)] left-[max(0.5rem,env(safe-area-inset-left))] right-[max(0.5rem,env(safe-area-inset-right))] max-w-full max-h-[calc(100svh-12rem)]' : 'top-20 right-16 w-[min(20rem,calc(100vw-5rem))] max-h-[calc(100svh-8rem)]'} z-[700] panel-cyber p-2.5 xs:p-3 overflow-hidden`"
+        :class="`absolute ${isMobile ? 'top-[clamp(4.75rem,12vh,7rem)] left-[max(0.5rem,env(safe-area-inset-left))] right-[max(0.5rem,env(safe-area-inset-right))] max-w-full max-h-[calc(100svh-6rem)]' : 'top-20 right-16 w-[min(20rem,calc(100vw-5rem))] max-h-[calc(100svh-8rem)]'} z-[700] panel-cyber p-2.5 xs:p-3 overflow-hidden flex flex-col`"
         role="dialog"
         :aria-label="t('mapControls.search')"
       >
@@ -180,7 +180,7 @@
         
         <div 
           ref="resultsContainerRef"
-          :class="`space-y-0.5 ${isMobile ? 'max-h-[42vh]' : 'max-h-[clamp(16rem,28vh,20rem)]'} overflow-y-auto cyber-scrollbar pr-1`"
+          :class="`space-y-0.5 flex-1 min-h-0 ${isMobile ? 'max-h-[42vh]' : 'max-h-[clamp(16rem,28vh,20rem)]'} overflow-y-auto cyber-scrollbar pr-1`"
           role="listbox"
           :aria-label="t('mapControls.searchResults')"
         >
@@ -296,6 +296,7 @@ interface Props {
   showConnections?: boolean
   dataset?: 'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'
   projects?: ProjectData[]
+  crews?: CrewRegionData[]
   species?: (Species | SpeciesIndexItem)[]
   filterOpen?: boolean
   isEmbed?: boolean
@@ -501,6 +502,7 @@ watch(searchResults, () => {
 })
 
 const currentProjects = computed(() => props.projects || allProjectsData)
+const currentCrews = computed(() => props.crews || [])
 
 function isProjectResult(result: SearchResult): result is ProjectData {
   return 'project_title' in result
@@ -604,7 +606,7 @@ watch([debouncedSearch, showAllItems, () => props.dataset, customDatasets], () =
       searchResults.value = []
     }
   } else if (props.dataset === 'active-crews') {
-    const crewList = currentProjects.value as unknown as CrewRegionData[]
+    const crewList = currentCrews.value
     if (q.length > 1) {
       const query = q.toLowerCase().trim()
       searchResults.value = crewList.filter((c: CrewRegionData) =>

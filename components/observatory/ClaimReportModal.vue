@@ -12,20 +12,20 @@
       <div class="relative w-full max-w-md max-h-[80vh] overflow-y-auto z-10 claim-report-panel" ref="modalRef">
         <div class="p-5">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-bold text-zinc-100 uppercase tracking-wider">{{ t('observatory.claimReport.title') }}</h2>
-            <button type="button" class="text-zinc-500 hover:text-zinc-300 text-lg leading-none" :aria-label="t('observatory.claimReport.close')" @click="$emit('close')">×</button>
+            <h2 class="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider">{{ t('observatory.claimReport.title') }}</h2>
+            <button type="button" class="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-lg leading-none" :aria-label="t('observatory.claimReport.close')" @click="$emit('close')">×</button>
           </div>
 
-          <div v-if="claim" class="mb-4 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/30">
-            <div class="text-[clamp(10px,1.5vw,13px)] text-zinc-500 uppercase tracking-wider font-bold mb-1">{{ t('observatory.claimReport.claimInfo') }}</div>
-            <div class="text-xs text-zinc-300 font-semibold">{{ claim.n || 'Unknown' }}</div>
-            <div class="text-[clamp(10px,1.5vw,13px)] text-zinc-500 mt-0.5">Processo: {{ claim.p || '—' }} · UF: {{ claim.u || '—' }}</div>
+          <div v-if="claim" class="mb-4 p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+            <div class="text-[clamp(10px,1.5vw,13px)] text-[var(--text-muted)] uppercase tracking-wider font-bold mb-1">{{ t('observatory.claimReport.claimInfo') }}</div>
+            <div class="text-xs text-[var(--text-primary)] font-semibold">{{ claim.n || 'Unknown' }}</div>
+            <div class="text-[clamp(10px,1.5vw,13px)] text-[var(--text-muted)] mt-0.5">Processo: {{ claim.p || '—' }} · UF: {{ claim.u || '—' }}</div>
           </div>
 
           <div class="space-y-3">
             <div>
-              <label class="block text-[clamp(10px,1.5vw,13px)] text-zinc-500 uppercase tracking-wider font-bold mb-1">{{ t('observatory.claimReport.reportType') }}</label>
-              <select v-model="reportType" class="w-full px-3 py-2 text-xs bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 outline-none focus:border-red-500/50">
+              <label class="block text-[clamp(10px,1.5vw,13px)] text-[var(--text-muted)] uppercase tracking-wider font-bold mb-1">{{ t('observatory.claimReport.reportType') }}</label>
+              <select v-model="reportType" class="w-full px-3 py-2 text-xs bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] outline-none focus:border-red-500/50">
                 <option value="new_activity">{{ t('observatory.claimReport.types.newActivity') }}</option>
                 <option value="pollution">{{ t('observatory.claimReport.types.pollution') }}</option>
                 <option value="conflict">{{ t('observatory.claimReport.types.conflict') }}</option>
@@ -35,32 +35,32 @@
             </div>
 
             <div>
-              <label class="block text-[clamp(10px,1.5vw,13px)] text-zinc-500 uppercase tracking-wider font-bold mb-1">{{ t('observatory.claimReport.description') }}</label>
+              <label class="block text-[clamp(10px,1.5vw,13px)] text-[var(--text-muted)] uppercase tracking-wider font-bold mb-1">{{ t('observatory.claimReport.description') }}</label>
               <textarea
 v-model="description" rows="4" maxlength="500"
-                class="w-full px-3 py-2 text-xs bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 outline-none focus:border-red-500/50 resize-none"
+                class="w-full px-3 py-2 text-xs bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] outline-none focus:border-red-500/50 resize-none"
                 :placeholder="t('observatory.claimReport.descriptionPlaceholder')" />
-              <div class="text-[clamp(9px,1.4vw,12px)] text-zinc-600 mt-0.5 text-right">{{ description.length }}/500</div>
+              <div class="text-[clamp(9px,1.4vw,12px)] text-[var(--text-muted)] mt-0.5 text-right">{{ description.length }}/500</div>
             </div>
 
             <div>
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" v-model="includeLocation" class="rounded" />
-                <span class="text-[clamp(10px,1.5vw,13px)] text-zinc-400">{{ t('observatory.claimReport.includeLocation') }}</span>
+                <span class="text-[clamp(10px,1.5vw,13px)] text-[var(--text-secondary)]">{{ t('observatory.claimReport.includeLocation') }}</span>
               </label>
-              <div v-if="includeLocation && !geoLocation" class="text-[clamp(9px,1.4vw,12px)] text-zinc-600 mt-1">
+              <div v-if="includeLocation && !geoLocation" class="text-[clamp(9px,1.4vw,12px)] text-[var(--text-muted)] mt-1">
                 {{ t('observatory.claimReport.geoPending') }}
               </div>
-              <div v-if="geoLocation" class="text-[clamp(9px,1.4vw,12px)] text-zinc-500 mt-1 font-mono">
+              <div v-if="geoLocation" class="text-[clamp(9px,1.4vw,12px)] text-[var(--text-muted)] mt-1 font-mono">
                 {{ geoLocation.lat.toFixed(5) }}, {{ geoLocation.lng.toFixed(5) }}
               </div>
             </div>
 
             <div>
-              <label class="block text-[clamp(10px,1.5vw,13px)] text-zinc-500 uppercase tracking-wider font-bold mb-1">{{ t('observatory.claimReport.contactOptional') }}</label>
+              <label class="block text-[clamp(10px,1.5vw,13px)] text-[var(--text-muted)] uppercase tracking-wider font-bold mb-1">{{ t('observatory.claimReport.contactOptional') }}</label>
               <input
 v-model="contact" type="text"
-                class="w-full px-3 py-2 text-xs bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 outline-none focus:border-red-500/50"
+                class="w-full px-3 py-2 text-xs bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] outline-none focus:border-red-500/50"
                 :placeholder="t('observatory.claimReport.contactPlaceholder')" />
             </div>
           </div>
@@ -68,7 +68,7 @@ v-model="contact" type="text"
           <div class="flex gap-2 mt-5">
             <button
 type="button"
-              class="flex-1 px-3 py-2 text-[clamp(10px,1.5vw,13px)] font-bold rounded-lg border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
+              class="flex-1 px-3 py-2 text-[clamp(10px,1.5vw,13px)] font-bold rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--text-muted)] transition-colors"
               @click="$emit('close')">
               {{ t('observatory.claimReport.cancel') }}
             </button>
@@ -77,7 +77,7 @@ type="button"
               class="flex-1 px-3 py-2 text-[clamp(10px,1.5vw,13px)] font-bold rounded-lg border transition-colors"
               :class="canSubmit
                 ? 'border-red-500/40 bg-red-500/15 text-red-400 hover:bg-red-500/25'
-                : 'border-zinc-700 bg-zinc-800 text-zinc-600 cursor-not-allowed'"
+                : 'border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-muted)] cursor-not-allowed'"
               :disabled="!canSubmit"
               @click="submitReport">
               {{ t('observatory.claimReport.submit') }}

@@ -212,4 +212,19 @@ function selectNone() {
   color: var(--obs-text-dim);
   font-size: clamp(8px, 1.3vw, 11px);
 }
+
+@media (max-width: 768px) {
+  .obs-phase-filter {
+    flex-direction: row;
+    align-items: center;
+    gap: clamp(4px, 1vw, 8px);
+    padding: clamp(4px, 1vw, 8px);
+  }
+  .obs-phase-filter__title { display: none; }
+  .obs-phase-filter__chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .obs-phase-filter__chips::-webkit-scrollbar { display: none; }
+  .obs-phase-filter__chip { white-space: nowrap; flex-shrink: 0; padding: 2px 6px; font-size: 9px; }
+  .obs-phase-filter__chip-check { display: none; }
+  .obs-phase-filter__actions { display: none; }
+}
 </style>

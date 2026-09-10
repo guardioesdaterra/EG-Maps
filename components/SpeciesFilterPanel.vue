@@ -39,18 +39,18 @@
     
     <div :class="isMobile ? 'mb-2' : 'mb-3'">
       <div class="relative">
-        <iconify-icon icon="lucide:search" class="absolute left-2.5 top-2 h-4 w-4 text-white/50 pointer-events-none" />
+        <iconify-icon icon="lucide:search" class="absolute left-2.5 top-2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
         <input
           v-model="searchQuery"
           type="text"
           :placeholder="t('filter.searchPlaceholder')"
-          class="filter-search w-full pl-8 pr-8 py-1.5 bg-black/50 border border-cyan-900/50 rounded text-sm text-white placeholder-white/50 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all"
+          class="filter-search w-full pl-8 pr-8"
           :aria-label="t('filter.searchPlaceholder')"
         />
         <button
           v-if="searchQuery"
           @click="searchQuery = ''"
-          class="absolute right-2.5 top-1.5 h-5 w-5 flex items-center justify-center rounded-full bg-gray-700/50 text-white/70 hover:text-white hover:bg-gray-600/50 transition-colors"
+          class="absolute right-2.5 top-1.5 h-5 w-5 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border-color)] transition-colors"
         >
           <iconify-icon icon="lucide:x" class="h-3 w-3" />
         </button>
@@ -66,7 +66,7 @@
         :class="`px-2 py-1 rounded text-[clamp(10px,1.5vw,13px)] font-medium transition-all duration-200 whitespace-nowrap ${
           selectedTaxonomicGroups.includes(group)
             ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50'
-            : 'bg-black/30 text-gray-400 border border-gray-700/50 hover:border-cyan-700/50 hover:text-cyan-400'
+            : 'bg-[var(--bg-secondary)] text-[var(--text-muted)] border border-[var(--border-color)] hover:border-cyan-700/50 hover:text-cyan-400'
         }`"
         :style="{ animationDelay: `${index * 50}ms` }"
       >
@@ -75,7 +75,7 @@
       <button
         v-if="taxonomicGroups.length > 4"
         @click="showAllGroups = !showAllGroups"
-        class="px-2 py-1 rounded text-[clamp(10px,1.5vw,13px)] font-medium bg-black/30 text-gray-500 border border-gray-700/50 hover:text-gray-300 transition-colors whitespace-nowrap"
+        class="px-2 py-1 rounded text-[clamp(10px,1.5vw,13px)] font-medium bg-[var(--bg-secondary)] text-[var(--text-muted)] border border-[var(--border-color)] hover:text-[var(--text-primary)] transition-colors whitespace-nowrap"
       >
         {{ t('filter.moreGroups', { count: taxonomicGroups.length - 4 }) }}
       </button>
@@ -90,7 +90,7 @@
         :class="`px-2 py-1 rounded text-[clamp(10px,1.5vw,13px)] font-medium transition-all duration-200 whitespace-nowrap ${
           selectedTaxonomicGroups.includes(group)
             ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50'
-            : 'bg-black/30 text-gray-400 border border-gray-700/50 hover:border-cyan-700/50 hover:text-cyan-400'
+            : 'bg-[var(--bg-secondary)] text-[var(--text-muted)] border border-[var(--border-color)] hover:border-cyan-700/50 hover:text-cyan-400'
         }`"
       >
         {{ groupLabel(group) }}
@@ -105,7 +105,7 @@
       >
         <iconify-icon
           :icon="taxonomicGroupCollapsed ? 'lucide:chevron-right' : 'lucide:chevron-down'"
-          class="h-4 w-4 text-white/70 transition-transform"
+          class="h-4 w-4 text-[var(--text-muted)] transition-transform"
         />
         <span class="text-[clamp(10px,1.5vw,13px)] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
           {{ t('filter.taxonomicGroup') }}
@@ -118,7 +118,7 @@
         <select
           value=""
           @change="handleTaxonomicSelect"
-          class="filter-select w-full px-2.5 py-1.5 bg-black/50 border border-cyan-900/50 rounded text-xs text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all cursor-pointer"
+          class="filter-select w-full"
           :aria-label="t('filter.taxonomicGroup')"
         >
           <option value="">{{ selectedTaxonomicGroups.length ? t('filter.addGroup') : t('filter.allGroups') }}</option>
@@ -147,7 +147,7 @@
       </label>
       <select
         v-model="filters.region"
-        class="filter-select w-full px-2.5 py-1.5 bg-black/50 border border-cyan-900/50 rounded text-xs text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all cursor-pointer"
+        class="filter-select w-full"
         :aria-label="t('filter.region')"
       >
         <option value="">{{ t('filter.allRegions') }}</option>
@@ -162,7 +162,7 @@
       </label>
       <select
         v-model="filters.ecosystem"
-        class="filter-select w-full px-2.5 py-1.5 bg-black/50 border border-cyan-900/50 rounded text-xs text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all cursor-pointer"
+        class="filter-select w-full"
         :aria-label="t('filter.ecosystem')"
       >
         <option value="">{{ t('filter.allEcosystems') }}</option>
@@ -177,7 +177,7 @@
       </label>
       <select
         v-model="filters.threatType"
-        class="filter-select w-full px-2.5 py-1.5 bg-black/50 border border-cyan-900/50 rounded text-xs text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all cursor-pointer"
+        class="filter-select w-full"
         :aria-label="t('filter.threatType')"
       >
         <option value="">{{ t('filter.allThreats') }}</option>
@@ -208,7 +208,7 @@
     
     <div :class="isMobile ? 'mt-2' : 'mt-3'">
       <button
-        class="w-full py-2 rounded text-xs font-medium transition-all duration-200 border border-cyan-900/50 text-gray-400 hover:text-white hover:border-cyan-500/50 hover:bg-cyan-500/10 flex items-center justify-center gap-1.5"
+        class="w-full py-2 rounded text-xs font-medium transition-all duration-200 border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-cyan-500/50 hover:bg-cyan-500/10 flex items-center justify-center gap-1.5"
         @click="emit('close')"
       >
         <iconify-icon icon="lucide:x" class="h-3.5 w-3.5" />

@@ -2,7 +2,7 @@
  * components/observatory/ObservatorySidebar.vue
  * @why Floating right-side panel for the Vulcan Observatory v2 — replaces
  *      the old 6-tab grid (Danger/Military/Illegal/Env/Network/Timeline)
- *      with a single, focused **Cultural Agents browser** that surfaces
+ *      with a single, focused **CULTURE AND TERRITORY** browser that surfaces
  *      Mapa Cultura BR + Floresta Ativista data as first-class content.
  *
  *      The map's cultural-layer rendering (handled by
@@ -159,15 +159,15 @@
               :aria-label="`${t('observatory.v2.panel.flyToAgent')} ${f.properties.name}`"
               @click="onCardClick(f)"
             >
-              <span class="vulc-card__pill" :style="{ background: SOURCE_COLORS[f.properties.source] || '#888' }">
+              <span v-if="!isUnknownSource(String(f.properties.source))" class="vulc-card__pill" :style="{ background: SOURCE_COLORS[f.properties.source] || '#888' }">
                 {{ t(SOURCE_LABEL_KEYS[f.properties.source] || 'observatory.v2.panel.unknownSource') }}
               </span>
-              <h3 class="vulc-card__name">{{ f.properties.name || t('observatory.v2.panel.unnamed') }}</h3>
-              <p v-if="f.properties.description" class="vulc-card__desc">{{ truncate(f.properties.description, 120) }}</p>
+              <h3 class="vulc-card__name">{{ f.properties.name }}</h3>
+              <p v-if="f.properties.description && !isUnknown(String(f.properties.description))" class="vulc-card__desc">{{ truncate(String(f.properties.description), 120) }}</p>
               <div class="vulc-card__meta">
-                <span v-if="f.properties.subtype">{{ subtypeLabel(f.properties.subtype) }}</span>
-                <span v-if="f.properties.municipality">· {{ f.properties.municipality }}</span>
-                <span v-if="f.properties.state">· {{ f.properties.state }}</span>
+                <span v-if="f.properties.subtype && !isUnknown(String(f.properties.subtype))">{{ subtypeLabel(String(f.properties.subtype)) }}</span>
+                <span v-if="f.properties.municipality && !isUnknown(String(f.properties.municipality))">· {{ f.properties.municipality }}</span>
+                <span v-if="f.properties.state && !isUnknown(String(f.properties.state))">· {{ f.properties.state }}</span>
               </div>
             </button>
             <a
@@ -211,7 +211,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import type { Feature, FeatureCollection, Point } from 'geojson'
 import { useI18n } from '@/composables/useI18n'
 
@@ -309,10 +309,22 @@ function toggleSubtype(id: string) { subtypeFilter.value[id] = !subtypeFilter.va
 
 // ── Derived ─────────────────────────────────────────────────────────────
 type CulturalFeature = Feature<Point, Record<string, unknown>>
+
+const VALID_SOURCES = new Set(['mapa_cultura', 'floresta_ativista', 'community'])
+
 const allFeatures = computed<CulturalFeature[]>(() => {
   const fc = props.rareEarthCultural
   return ((fc?.features ?? []) as CulturalFeature[])
 })
+
+function isUnknownSource(source: string): boolean {
+  return !VALID_SOURCES.has(source)
+}
+
+function isUnknown(value: string): boolean {
+  const v = value.trim().toLowerCase()
+  return !v || v === 'unknown' || v === 'unnamed' || v === 'n/a' || v === '-'
+}
 
 const sourceCounts = computed(() => {
   const out: Record<string, number> = { mapa_cultura: 0, floresta_ativista: 0, community: 0 }
@@ -358,9 +370,13 @@ const sortedFeatures = computed<CulturalFeature[]>(() => {
     // source then name
     const order = ['mapa_cultura', 'floresta_ativista', 'community']
     list.sort((a, b) => {
-      const oa = order.indexOf(String(a.properties?.source ?? ''))
-      const ob = order.indexOf(String(b.properties?.source ?? ''))
-      if (oa !== ob) return (oa < 0 ? 99 : oa) - (ob < 0 ? 99 : ob)
+      const srcA = String(a.properties?.source ?? '')
+      const srcB = String(b.properties?.source ?? '')
+      const oa = order.indexOf(srcA)
+      const ob = order.indexOf(srcB)
+      const rankA = oa < 0 ? 99 : oa
+      const rankB = ob < 0 ? 99 : ob
+      if (rankA !== rankB) return rankA - rankB
       return String(a.properties?.name ?? '').localeCompare(String(b.properties?.name ?? ''))
     })
   }
@@ -412,18 +428,16 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   right: clamp(0.6rem, 1.2vw, 1rem);
   bottom: clamp(3.75rem, 8.5vh, 5rem);
   width: clamp(20rem, 26vw, 24rem);
-  max-height: calc(100svh - 10rem);
+  max-height: calc(100vh - 10rem);
   z-index: 530;
   pointer-events: auto;
   display: flex;
   flex-direction: column;
-  background: rgba(8, 8, 10, 0.88);
-  backdrop-filter: blur(16px) saturate(1.25);
-  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  background: #111113;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   font-family: inherit;
   color: rgba(255, 255, 255, 0.9);
 }
@@ -438,7 +452,6 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   gap: 0.5rem;
   padding: 0.75rem 0.85rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: linear-gradient(180deg, rgba(231, 76, 60, 0.06), transparent);
 }
 .vulc-panel__title-wrap { min-width: 0; flex: 1; }
 .vulc-panel__title {
@@ -524,7 +537,6 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   height: 0.55rem;
   border-radius: 50%;
   background: var(--pill-color, #888);
-  box-shadow: 0 0 6px var(--pill-color, #888);
 }
 .vulc-source-pill.is-on {
   background: color-mix(in srgb, var(--pill-color, #888) 14%, transparent);
@@ -560,7 +572,7 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   padding: 0.25rem 0.55rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
+  border-radius: 6px;
   color: rgba(255, 255, 255, 0.7);
   font-family: inherit;
   font-size: 10px;
@@ -755,10 +767,10 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   font-weight: 700;
 }
 .vulc-sort__select {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  color: #fff;
+  color: var(--text-primary);
   padding: 0.2rem 0.4rem;
   font-size: 10px;
   font-family: inherit;
@@ -797,7 +809,7 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 }
 .vulc-card:hover {
   background: rgba(255, 255, 255, 0.07);
@@ -911,12 +923,12 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
 /* ── Panel transition ──────────────────────────────────────────── */
 .vulc-panel-enter-active,
 .vulc-panel-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 .vulc-panel-enter-from,
 .vulc-panel-leave-to {
   opacity: 0;
-  transform: translateX(16px);
+  transform: translateX(12px);
 }
 
 @media (max-width: 900px) {

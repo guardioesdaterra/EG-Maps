@@ -9,16 +9,15 @@
  * @deps @/composables/useI18n (useI18n);
  *       @/composables/useVulcanObservatoryPage (useVulcanObservatoryPage);
  *       @/components/observatory/ObservatorySidebar.vue;
- *       @/components/ObservatoryHero.vue
  * @connections /vulcan-observatory/index.vue (2D counterpart)
  */
 <template>
-  <div id="main-content" tabindex="-1" class="relative w-full h-[100svh] overflow-hidden bg-black focus:outline-none">
+  <div id="main-content" tabindex="-1" class="relative w-full h-screen overflow-hidden bg-black focus:outline-none">
     <!-- ── Loading overlay ─────────────────────────────────────────────── -->
     <Transition name="fade">
       <div
         v-if="isLoading || error"
-        class="fixed inset-0 z-[9980] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center gap-5"
+        class="fixed inset-0 z-[9980] bg-black/90 flex flex-col items-center justify-center gap-5"
       >
         <template v-if="error && !isLoading">
           <div class="text-center">
@@ -169,16 +168,7 @@
                 <Icon name="lucide:map-pin" />
                 <span class="vulc-icon-btn__tip">{{ t('observatory.v2.nearMe') }}</span>
               </button>
-              <button
-                v-if="onUserContribution"
-                type="button"
-                class="vulc-icon-btn"
-                :aria-label="t('observatory.v2.monitor')"
-                @click="onUserContribution()"
-              >
-                <Icon name="lucide:notebook-pen" />
-                <span class="vulc-icon-btn__tip">{{ t('observatory.v2.monitor') }}</span>
-              </button>
+
               <button
                 type="button"
                 class="vulc-icon-btn vulc-icon-btn--primary"
@@ -242,14 +232,6 @@
               </div>
             </div>
           </footer>
-
-          <!-- ── Hero / intro panel ────────────────────────────────── -->
-          <CommunityContextPanel
-            :cultural-count="culturalTotalCount"
-            :community-count="culturalSourceCounts.community ?? 0"
-            :rare-earth-count="totalCount"
-            @monitor="onUserContribution"
-          />
         </template>
       </MapView3D>
 
@@ -275,7 +257,7 @@
       <ClaimDetailModal :visible="showClaimDetail" :claim="claimDetailProps" @close="closeClaimDetail" />
 
       <template #fallback>
-        <div class="flex h-[100svh] w-full items-center justify-center bg-zinc-950 text-white">
+        <div class="flex h-screen w-full items-center justify-center bg-zinc-950 text-white">
           <LoadingSpinner :message="t('loading.observatoryOfVulcanGlobe')" :inline="true" />
         </div>
       </template>
@@ -289,7 +271,6 @@ import { useVulcanObservatoryPage } from '@/composables/useVulcanObservatoryPage
 
 import MapView3D from '@/components/MapView3D.vue'
 import ObservatorySidebar from '@/components/observatory/ObservatorySidebar.vue'
-import CommunityContextPanel from '@/components/observatory/CommunityContextPanel.vue'
 import GeoPoliticalTimeline from '@/components/GeoPoliticalTimeline.vue'
 import RedeCorporativa from '@/components/RedeCorporativa.vue'
 import DataDownloadPanel from '@/components/DataDownloadPanel.vue'
@@ -363,8 +344,6 @@ const {
   reportClaim,
   mapContainerRef,
   clearPin,
-  culturalTotalCount,
-  culturalSourceCounts,
 } = useVulcanObservatoryPage()
 
 const { categoryStats, totalCount } = stats
@@ -398,10 +377,8 @@ function onJumpToCultural(coord: [number, number], _name: string) {
   align-items: center;
   gap: clamp(0.5rem, 1.5vw, 1rem);
   padding: 0 clamp(0.5rem, 1.5vw, 1rem);
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.45) 80%, transparent 100%);
-  backdrop-filter: blur(14px) saturate(1.2);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
-  border-bottom: 1px solid rgba(231, 76, 60, 0.18);
+  background: #0a0a0c;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .vulc-topbar__brand {
   display: flex;
@@ -476,7 +453,7 @@ function onJumpToCultural(coord: [number, number], _name: string) {
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
   flex-shrink: 0;
 }
 .vulc-icon-btn svg, .vulc-icon-btn :deep(svg) { width: 60%; height: 60%; }
@@ -484,7 +461,6 @@ function onJumpToCultural(coord: [number, number], _name: string) {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.18);
   color: #fff;
-  transform: translateY(-1px);
 }
 .vulc-icon-btn.is-active {
   background: color-mix(in srgb, var(--obs-red, #e74c3c) 22%, transparent);
@@ -537,9 +513,7 @@ function onJumpToCultural(coord: [number, number], _name: string) {
   align-items: center;
   gap: clamp(0.5rem, 1.5vw, 1rem);
   padding: 0 clamp(0.5rem, 1.5vw, 1rem);
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.55) 80%, transparent 100%);
-  backdrop-filter: blur(14px) saturate(1.2);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  background: #0a0a0c;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 .vulc-bottombar__left,
@@ -615,12 +589,19 @@ function onJumpToCultural(coord: [number, number], _name: string) {
 .vulc-pin-info__btn--danger { border-color: transparent; color: rgba(255, 255, 255, 0.4); }
 .vulc-pin-info__btn--danger:hover { color: var(--obs-red, #e74c3c); }
 @media (max-width: 768px) {
-  .vulc-bottombar { height: auto; padding: 0.4rem 0.5rem; gap: 0.4rem; grid-template-columns: 1fr; }
-  .vulc-bottombar__center { grid-row: 2; }
+  .vulc-bottombar {
+    height: auto;
+    padding: 0.35rem 0.5rem;
+    gap: 0.35rem;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+  }
+  .vulc-bottombar__left { order: 1; min-width: 0; overflow: hidden; }
+  .vulc-bottombar__center { order: 2; min-width: 0; }
+  .vulc-bottombar__right { order: 3; min-width: 0; }
   .vulc-pin-info strong { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .vulc-topbar__pulse, .vulc-icon-btn { animation: none; transition: none; }
-  .vulc-icon-btn:hover { transform: none; }
 }
 </style>

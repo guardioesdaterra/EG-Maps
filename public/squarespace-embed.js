@@ -4,7 +4,7 @@
  * What this does
  * --------------
  * 1. Creates a transparent iframe that loads the prerendered Nuxt page at
- *    `${ORIGIN}/squarespace/active-crews`.
+ *    `${ORIGIN}/iframe/squarespace`.
  * 2. Listens for `embed:height` postMessage events from inside the iframe and
  *    resizes the iframe to match (so the page never has scrollbars).
  * 3. Forwards the host Squarespace page's theme (light/dark/auto) into the
@@ -88,7 +88,7 @@
       'min-height:' + cfg.minHeight + 'px',
       'color-scheme:light dark'
     ].join(';');
-    var path = cfg.path || '/squarespace/active-crews';
+    var path = cfg.path || '/iframe/squarespace';
     // Keep a configured GitHub Pages subpath (for example /EG-Maps/test/).
     // A leading slash would otherwise escape that subpath.
     var originBase = cfg.origin.endsWith('/') ? cfg.origin : cfg.origin + '/';
@@ -169,7 +169,7 @@
       theme: attr(script, 'data-theme', 'auto'),
       minHeight: parseInt(attr(script, 'data-min-height', '480'), 10) || 480,
       target: attr(script, 'data-target', ''),
-      path: attr(script, 'data-path', '/squarespace/active-crews'),
+      path: attr(script, 'data-path', '/iframe/squarespace'),
       accent: attr(script, 'data-accent', ''),
       label: attr(script, 'data-label', ''),
     };

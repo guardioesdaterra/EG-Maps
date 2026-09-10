@@ -14,7 +14,7 @@
  *       to the embed without DOM coupling.
  *
  * @functions useSquarespaceEmbed
- * @connections pages/squarespace/active-crews.vue
+ * @connections pages/iframe/squarespace.vue
  */
 import { ref, onMounted, onBeforeUnmount, readonly } from 'vue'
 import type { Ref } from 'vue'

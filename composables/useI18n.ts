@@ -58,13 +58,15 @@ export function useI18n() {
   })
   const vLocale = i18n?.locale ?? ref<Locale>('en')
 
-  watch(
-    ui.locale,
-    (val) => {
-      if (val && vLocale.value !== val) vLocale.value = val
-    },
-    { immediate: true },
-  )
+  if (import.meta.client) {
+    watch(
+      ui.locale,
+      (val) => {
+        if (val && vLocale.value !== val) vLocale.value = val
+      },
+      { immediate: true },
+    )
+  }
   if (i18n) {
     watch(vLocale, (val) => {
       if (ui.locale.value !== val) ui.setLocale(val as Locale)

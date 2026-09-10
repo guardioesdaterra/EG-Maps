@@ -584,7 +584,7 @@
         "sources": "Data sources:"
       },
       "panel": {
-        "title": "Cultural Agents",
+        "title": "CULTURE AND TERRITORY",
         "subtitle": "Mapa Cultura + Floresta Ativista",
         "collapse": "Collapse panel",
         "expand": "Expand panel",
@@ -603,11 +603,11 @@
         "sortBy": "Sort",
         "sortSource": "Source",
         "sortName": "Name",
-        "agentsShown": "agents",
-        "empty": "No cultural agents match the current filters.",
+        "agentsShown": "entries",
+        "empty": "No entries match the current filters.",
         "flyToAgent": "Fly to",
         "openOnSource": "Open on source site",
-        "unnamed": "Unnamed agent",
+        "unnamed": "Unnamed entry",
         "unknownSource": "Unknown",
         "pagePrev": "Previous page",
         "pageNext": "Next page"

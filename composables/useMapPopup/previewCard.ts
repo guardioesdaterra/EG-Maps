@@ -146,7 +146,7 @@ export function usePreviewCard(baseURL?: string) {
         })
       }
 
-      const cardBody = popupEl.querySelector('.preview-card__body') as HTMLElement | null
+      const cardBody = popupEl.querySelector('.pc__body') as HTMLElement | null
       if (cardBody) {
         cardBody.style.cursor = 'pointer'
         cardBody.addEventListener('click', (e) => {

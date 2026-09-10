@@ -198,8 +198,8 @@ async function handleSubmit() {
 }
 
 .create-modal {
-  background: #111;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   max-width: 600px;
   width: 100%;
@@ -215,27 +215,27 @@ async function handleSubmit() {
   padding: 24px 24px 0;
   position: sticky;
   top: 0;
-  background: #111;
+  background: var(--bg-tertiary);
   z-index: 1;
 }
 
 .create-modal-title {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   margin: 0 0 4px;
 }
 
 .create-modal-subtitle {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   margin: 0;
 }
 
 .create-close-btn {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   font-size: 16px;
   cursor: pointer;
   padding: 4px 8px;
@@ -244,8 +244,8 @@ async function handleSubmit() {
 }
 
 .create-close-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
 }
 
 .create-modal-body {
@@ -292,7 +292,7 @@ async function handleSubmit() {
 .create-label {
   font-size: 12px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
 }
 
 .create-required {
@@ -302,11 +302,11 @@ async function handleSubmit() {
 .create-input,
 .create-textarea,
 .create-select {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 8px 12px;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 13px;
   font-family: inherit;
   outline: none;
@@ -321,7 +321,7 @@ async function handleSubmit() {
 
 .create-input::placeholder,
 .create-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--text-muted);
 }
 
 .create-textarea {
@@ -338,8 +338,8 @@ async function handleSubmit() {
 }
 
 .create-select option {
-  background: #1a1a1a;
-  color: #fff;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .create-modal-footer {
@@ -347,18 +347,18 @@ async function handleSubmit() {
   justify-content: flex-end;
   gap: 8px;
   padding: 16px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--border-color);
   position: sticky;
   bottom: 0;
-  background: #111;
+  background: var(--bg-tertiary);
 }
 
 .create-cancel-btn {
   padding: 8px 16px;
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
   font-family: inherit;
@@ -367,8 +367,8 @@ async function handleSubmit() {
 }
 
 .create-cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: #fff;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .create-submit-btn {

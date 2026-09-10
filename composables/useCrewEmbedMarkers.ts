@@ -9,7 +9,7 @@
  *       separation effect. Click → emits a `host:open` postMessage.
  *
  * @functions useCrewEmbedMarkers
- * @connections composables/useSquarespaceEmbed.ts, pages/squarespace/active-crews.vue
+ * @connections composables/useSquarespaceEmbed.ts, pages/iframe/squarespace.vue
  */
 import { ref, onBeforeUnmount, type Ref } from 'vue'
 import type {

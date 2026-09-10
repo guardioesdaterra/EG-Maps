@@ -40,7 +40,11 @@ export default defineNuxtConfig({
       { code: 'nl', language: 'nl-NL', name: 'Nederlands', file: 'nl.json' },
       { code: 'de', language: 'de-DE', name: 'Deutsch', file: 'de.json' },
     ],
-    detectBrowserLanguage: false,
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_lang',
+      redirectOn: 'none',
+    },
   },
 
   ssr: true,
@@ -106,7 +110,7 @@ export default defineNuxtConfig({
     preset: 'static',
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d', '/iframe', '/squarespace/active-crews', '/squarespace/eg-grants', '/campaigns', '/crew-projects', '/masterclasses'],
+      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d', '/iframe', '/iframe/squarespace', '/campaigns', '/crew-projects', '/masterclasses'],
       // /manifest.json is a static asset, not a page. The prerender crawler
       // follows <link rel="manifest" href="…"> and tries to fetch it as a
       // route; with a non-root baseURL it follows the prefixed form, so we
@@ -119,7 +123,7 @@ export default defineNuxtConfig({
     compressPublicAssets: true,
   },
 
-  experimental: {},
+  experimental: { appManifest: false },
 
   vite: {
     build: {
@@ -150,7 +154,12 @@ export default defineNuxtConfig({
       chunkSizeWarningLimit: 600,
     },
     optimizeDeps: {
-      include: ['maplibre-gl'],
+      include: [
+        'maplibre-gl',
+        'clsx',
+        'tailwind-merge',
+        'iconify-icon',
+      ],
     },
     server: {
       hmr: {

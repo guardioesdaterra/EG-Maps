@@ -130,12 +130,12 @@ export function setupWaterLayers(
 
     const html = `<div class="ree-popup-wrapper" style="padding:14px;min-width:200px;position:relative">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-        <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:#3b82f6;color:#fff">WATER</span>
-        <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(59,130,246,0.2);color:#60a5fa">${typeLabel}</span>
+        <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:var(--info);color:#fff">WATER</span>
+        <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(59,130,246,0.2);color:var(--info)">${typeLabel}</span>
       </div>
-      <h3 style="margin:0;font-size:13px;font-weight:700;color:#e8e8e8">${name}</h3>
-      ${sizeInfo ? `<p style="font-size:10px;color:#888;margin:6px 0 0">${sizeInfo}</p>` : ''}
-      ${p.osm_id ? `<a href="https://www.openstreetmap.org/${p.osm_id ? 'way' : 'relation'}/${p.osm_id}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:10px;color:#60a5fa">View on OSM &rarr;</a>` : ''}
+      <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--obs-text-primary)">${name}</h3>
+      ${sizeInfo ? `<p style="font-size:10px;color:var(--obs-text-muted);margin:6px 0 0">${sizeInfo}</p>` : ''}
+      ${p.osm_id ? `<a href="https://www.openstreetmap.org/${p.osm_id ? 'way' : 'relation'}/${p.osm_id}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:10px;color:var(--info)">View on OSM &rarr;</a>` : ''}
     </div>`
 
     activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })

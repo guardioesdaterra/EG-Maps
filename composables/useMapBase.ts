@@ -380,6 +380,7 @@ export function useMapBase(config: MapBaseConfig) {
       console.warn('[perf] rebuildMarkers skipped — map not ready')
       return
     }
+    if (activeDataset.value === 'vulcan-observatory') return
     console.time(`[perf] rebuildMarkers ${activeDataset.value}`)
     const isRee = activeDataset.value === 'vulcan-observatory'
     marker.rebuild({
@@ -404,6 +405,7 @@ export function useMapBase(config: MapBaseConfig) {
 
   function updateMarkerData() {
     if (!map) return
+    if (activeDataset.value === 'vulcan-observatory') return
     console.time(`[perf] updateMarkerData ${activeDataset.value}`)
     const isRee = activeDataset.value === 'vulcan-observatory'
     marker.update({

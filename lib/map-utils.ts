@@ -331,28 +331,45 @@ export function buildProjectPreviewHTML(project: ProjectData, baseURL?: string, 
   const color = getProjectColorByBeneficiaries(project.direct_beneficiaries, project.indirect_beneficiaries)
   const total = project.direct_beneficiaries + project.indirect_beneficiaries
   const t = translations || { expand: 'View details', beneficiaries: 'Beneficiaries', location: 'Location', activeCrews: 'Active Crews', totalMembers: 'Total Members' }
-  const placeholderKey = getProjectPlaceholder(project.project_title)
-  const placeholderSvg = getMarkerPlaceholder(placeholderKey)
+  const direct = project.direct_beneficiaries
+  const indirect = project.indirect_beneficiaries
+  const directPct = total > 0 ? Math.round((direct / total) * 100) : 0
 
   return `
-    <div class="preview-card" data-type="project">
-      <div class="preview-card__photo" style="background-image: url('${placeholderSvg}'); background-color: ${color}22;">
-        <div class="preview-card__photo-accent" style="background: ${color};"></div>
-      </div>
-      <div class="preview-card__body">
-        <p class="preview-card__eyebrow">Project Grantee</p>
-        <h4 class="preview-card__title">${escapeHtml(project.project_title)}</h4>
-        <p class="preview-card__subtitle">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          ${escapeHtml(project.country_province || 'Unknown location')}
-        </p>
-        <div class="preview-card__metric">
-          <span class="preview-card__metric-value" style="color: ${color};">${formatCompact(total)}</span>
-          <span class="preview-card__metric-label">${t.beneficiaries}</span>
+    <div class="pc" data-type="project" style="--pc-accent:${color}">
+      <div class="pc__accent"></div>
+      <div class="pc__body">
+        <div class="pc__head">
+          <span class="pc__badge" style="background:${color}18;color:${color}">Project</span>
+          <span class="pc__loc">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${escapeHtml(project.country_province || 'Unknown')}
+          </span>
+        </div>
+        <h4 class="pc__title">${escapeHtml(project.project_title)}</h4>
+        <div class="pc__stats">
+          <div class="pc__stat">
+            <span class="pc__stat-val" style="color:${color}">${formatCompact(total)}</span>
+            <span class="pc__stat-lbl">Total ${t.beneficiaries}</span>
+          </div>
+          <div class="pc__stat-divider"></div>
+          <div class="pc__stat">
+            <span class="pc__stat-val">${formatCompact(direct)}</span>
+            <span class="pc__stat-lbl">Direct</span>
+          </div>
+          <div class="pc__stat-divider"></div>
+          <div class="pc__stat">
+            <span class="pc__stat-val">${formatCompact(indirect)}</span>
+            <span class="pc__stat-lbl">Indirect</span>
+          </div>
+        </div>
+        <div class="pc__bar-track">
+          <div class="pc__bar-fill" style="width:${directPct}%;background:${color}"></div>
         </div>
       </div>
-      <button class="preview-card__expand" data-action="expand" title="${t.expand}">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+      <button class="pc__cta" data-action="expand" title="${t.expand}">
+        <span>${t.expand}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </button>
     </div>
   `
@@ -362,31 +379,37 @@ export function buildSpeciesPreviewHTML(species: { commonName: string; scientifi
   const color = GROUP_COLORS[species.taxonomicGroup] ?? 'var(--danger)'
   const t = translations || { expand: 'View details', beneficiaries: 'Beneficiaries', location: 'Location', activeCrews: 'Active Crews', totalMembers: 'Total Members' }
   const groupLabel = species.taxonomicGroup || 'Species'
+  const cat = (species.category ?? '').toUpperCase()
+  const catColor = cat === 'CR' ? 'var(--danger)' : cat === 'EN' ? '#f97316' : cat === 'VU' ? 'var(--warning)' : 'var(--info)'
+  const catLabel = cat || '—'
 
   let photoHTML = ''
   if (species.imageUrl) {
     const previewUrl = getPreviewImageUrl(species.imageUrl, baseURL)
     if (previewUrl) {
-      photoHTML = `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(species.commonName)}" class="preview-card__img" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />`
+      photoHTML = `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(species.commonName)}" class="pc__img" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />`
     }
   }
   const placeholderFallback = getMarkerPlaceholder(species.taxonomicGroup)
 
   return `
-    <div class="preview-card" data-type="species">
-      <div class="preview-card__photo" style="background-color: ${color}18;">
+    <div class="pc" data-type="species" style="--pc-accent:${color}">
+      <div class="pc__accent"></div>
+      <div class="pc__photo" style="background-color:${color}12">
         ${photoHTML}
-        <div class="preview-card__placeholder" style="background-image: url('${placeholderFallback}'); display: ${photoHTML ? 'none' : 'flex'};"></div>
-        <div class="preview-card__photo-accent" style="background: ${color};"></div>
-        <span class="preview-card__category-badge" style="background: ${color};">${escapeHtml(species.category)}</span>
+        <div class="pc__placeholder" style="background-image:url('${placeholderFallback}');display:${photoHTML ? 'none' : 'flex'}"></div>
       </div>
-      <div class="preview-card__body">
-        <p class="preview-card__eyebrow" style="color: ${color};">${escapeHtml(groupLabel)}</p>
-        <h4 class="preview-card__title">${escapeHtml(species.commonName)}</h4>
-        <p class="preview-card__subtitle preview-card__subtitle--italic">${escapeHtml(species.scientificName)}</p>
+      <div class="pc__body">
+        <div class="pc__head">
+          <span class="pc__badge" style="background:${color}18;color:${color}">${escapeHtml(groupLabel)}</span>
+          <span class="pc__cat-badge" style="background:${catColor};color:#fff">${escapeHtml(catLabel)}</span>
+        </div>
+        <h4 class="pc__title">${escapeHtml(species.commonName)}</h4>
+        <p class="pc__sci">${escapeHtml(species.scientificName)}</p>
       </div>
-      <button class="preview-card__expand" data-action="expand" title="${t.expand}">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+      <button class="pc__cta" data-action="expand" title="${t.expand}">
+        <span>${t.expand}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </button>
     </div>
   `
@@ -400,23 +423,65 @@ export function buildCrewPreviewHTML(crew: CrewRegionData | CrewLocation, transl
   const location = [cl.city, cl.state, cl.country].filter(Boolean).join(', ')
   const title = isRegion ? (crew as CrewRegionData).region : cl.name
 
-  return `
-    <div class="preview-card" data-type="crew">
-      <div class="preview-card__photo preview-card__photo--icon" style="background-color: ${color}18;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5" style="opacity:0.7"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <div class="preview-card__photo-accent" style="background: ${color};"></div>
-      </div>
-      <div class="preview-card__body">
-        <p class="preview-card__eyebrow">Earth Guardians Crew</p>
-        <h4 class="preview-card__title">${escapeHtml(title)}</h4>
-        <div class="preview-card__tags">${isRegion ? `
-          <span class="preview-card__tag" style="color: ${color};">${(crew as CrewRegionData).activeCrews} ${t.activeCrews}</span>
-          <span class="preview-card__tag">${(crew as CrewRegionData).totalMembers.toLocaleString()} ${t.totalMembers}</span>` : `
-          <span class="preview-card__tag">${escapeHtml(location)}</span>`}
+  if (isRegion) {
+    const r = crew as CrewRegionData
+    const total = r.activeCrews + r.inactiveCrews
+    const activePct = total > 0 ? Math.round((r.activeCrews / total) * 100) : 0
+    return `
+      <div class="pc" data-type="crew" style="--pc-accent:${color}">
+        <div class="pc__accent"></div>
+        <div class="pc__body">
+          <div class="pc__head">
+            <span class="pc__badge" style="background:${color}18;color:${color}">Crew</span>
+            <span class="pc__loc">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              ${r.countries} countries
+            </span>
+          </div>
+          <h4 class="pc__title">${escapeHtml(title)}</h4>
+          <div class="pc__stats">
+            <div class="pc__stat">
+              <span class="pc__stat-val" style="color:${color}">${r.activeCrews}</span>
+              <span class="pc__stat-lbl">${t.activeCrews}</span>
+            </div>
+            <div class="pc__stat-divider"></div>
+            <div class="pc__stat">
+              <span class="pc__stat-val">${r.totalMembers.toLocaleString()}</span>
+              <span class="pc__stat-lbl">${t.totalMembers}</span>
+            </div>
+          </div>
+          <div class="pc__bar-track">
+            <div class="pc__bar-fill" style="width:${activePct}%;background:${color}"></div>
+          </div>
         </div>
+        <button class="pc__cta" data-action="expand" title="${t.expand}">
+          <span>${t.expand}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
       </div>
-      <button class="preview-card__expand" data-action="expand" title="${t.expand}">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+    `
+  }
+
+  return `
+    <div class="pc" data-type="crew" style="--pc-accent:${color}">
+      <div class="pc__accent"></div>
+      <div class="pc__body">
+        <div class="pc__head">
+          <span class="pc__badge" style="background:${color}18;color:${color}">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Location
+          </span>
+          <span class="pc__loc" style="color:${cl.status === 'active' ? 'var(--success)' : 'var(--warning)'}">
+            <span class="pc__dot" style="background:${cl.status === 'active' ? 'var(--success)' : 'var(--warning)'}"></span>
+            ${cl.status === 'active' ? 'Active' : 'Inactive'}
+          </span>
+        </div>
+        <h4 class="pc__title">${escapeHtml(title)}</h4>
+        <p class="pc__sci">${escapeHtml(location || 'Unknown location')}</p>
+      </div>
+      <button class="pc__cta" data-action="expand" title="${t.expand}">
+        <span>${t.expand}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </button>
     </div>
   `
@@ -542,8 +607,8 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
     const ageYears = refYear ? Math.max(0, currentYear - refYear) : 99
     const evColor = ageYears < 1 ? 'var(--success)' : ageYears <= 3 ? 'var(--warning)' : 'var(--danger)'
     const evLabel = ageYears < 1 ? 'Recent' : ageYears <= 3 ? 'Active' : 'Stale'
-    lastEventHTML = `<div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
-      <div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:2px">Last event</div>
+    lastEventHTML = `<div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--obs-panel-border)">
+      <div style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:2px">Last event</div>
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         <span style="font-size:9.5px;color:var(--text-secondary);line-height:1.4;flex:1;word-wrap:break-word">${escapeHtml(lastEvent)}</span>
         <span style="font-size:7.5px;padding:1px 6px;border-radius:2px;font-weight:700;background:${evColor}22;color:${evColor}">${evLabel}</span>
@@ -558,16 +623,16 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
       `<span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;padding:1px 5px;border-radius:2px;background:rgba(231,76,60,0.18);color:var(--danger);font-weight:600;margin:1px">⚠ ${escapeHtml(o.name)}${o.distance_km ? ` <span style="opacity:0.7;font-weight:400">· ${o.distance_km}km</span>` : ''}</span>`
     ).join('')
     const more = overlaps.length > 3 ? `<span style="font-size:8px;color:var(--text-muted);margin-left:4px">+${overlaps.length - 3} more</span>` : ''
-    overlapHTML = `<div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
-      <div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:3px">Overlaps</div>
+    overlapHTML = `<div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--obs-panel-border)">
+      <div style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:3px">Overlaps</div>
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:0">${items}${more}</div>
     </div>`
   }
 
   const anoVal = props.ano ?? props.y
   const anoHTML = anoVal
-    ? `<details style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
-        <summary style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;cursor:pointer;list-style:none;user-select:none">▸ Ano de Protocolo</summary>
+    ? `<details style="margin-top:7px;padding-top:7px;border-top:1px solid var(--obs-panel-border)">
+        <summary style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;cursor:pointer;list-style:none;user-select:none">▸ Ano de Protocolo</summary>
         <div style="font-size:10.5px;color:var(--text-secondary);font-weight:500;margin-top:3px">${escapeHtml(String(anoVal))}</div>
       </details>`
     : ''
@@ -596,16 +661,16 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
       <!-- Body -->
       <div style="padding:10px 14px 12px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 14px">
-          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Process</div><div style="font-size:10.5px;color:var(--text-secondary);font-weight:500;word-wrap:break-word">${escapeHtml(props.p || '—')}</div></div>
-          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Phase</div><div style="font-size:10.5px;color:var(--text-secondary);font-weight:500">${escapeHtml(props.f || '—')}</div></div>
-          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">UF</div><div style="font-size:10.5px;color:var(--text-secondary);font-weight:500">${escapeHtml(props.u || '—')}</div></div>
-          <div><div style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Area</div><div style="font-size:10.5px;color:var(--text-secondary);font-weight:500">${area}</div></div>
+          <div><div style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Process</div><div style="font-size:10.5px;color:var(--obs-text-primary);font-weight:500;word-wrap:break-word">${escapeHtml(props.p || '—')}</div></div>
+          <div><div style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Phase</div><div style="font-size:10.5px;color:var(--obs-text-primary);font-weight:500">${escapeHtml(props.f || '—')}</div></div>
+          <div><div style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">UF</div><div style="font-size:10.5px;color:var(--obs-text-primary);font-weight:500">${escapeHtml(props.u || '—')}</div></div>
+          <div><div style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Area</div><div style="font-size:10.5px;color:var(--obs-text-primary);font-weight:500">${area}</div></div>
         </div>
         ${anoHTML}
-        <div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
+        <div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--obs-panel-border)">
           <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Danger Level</span>
-            <div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden">
+            <span style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Danger Level</span>
+            <div style="flex:1;height:4px;background:var(--obs-panel-border);border-radius:2px;overflow:hidden">
               <div style="height:100%;width:${Math.min(100, (props.ds ?? 5) * 10)}%;background:${dangerColor};border-radius:2px;box-shadow:0 0 4px ${dangerColor}"></div>
             </div>
             <span style="font-size:10px;font-weight:700;color:${dangerColor};min-width:24px;text-align:right">${(props.ds ?? 5).toFixed(1)}</span>
@@ -616,7 +681,7 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
       </div>
 
       <!-- Footer actions -->
-      <div style="display:flex;gap:6px;padding:8px 14px 12px;border-top:1px solid rgba(255,255,255,0.06)">
+      <div style="display:flex;gap:6px;padding:8px 14px 12px;border-top:1px solid var(--obs-panel-border)">
         ${anmLink}
         ${reportLink}
       </div>

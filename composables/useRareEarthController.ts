@@ -155,7 +155,14 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       pointsDebounceTimer = setTimeout(() => {
         try {
           const src = map.value?.getSource('ree-points') as maplibregl.GeoJSONSource | undefined
-          const newVal = filteredPoints?.features?.length ? filteredPoints : rawPoints
+          let newVal: GeoJSON.FeatureCollection
+          if (filteredPoints && filteredPoints.features.length > 0) {
+            newVal = filteredPoints
+          } else if (filteredPoints && !filteredPoints.features.length) {
+            newVal = { type: 'FeatureCollection', features: [] }
+          } else {
+            newVal = rawPoints
+          }
           if (src && newVal) src.setData(newVal)
           const netFc = newVal ? buildEnterpriseNetworkLines(newVal) : null
           const netSrc = map.value?.getSource('ree-network') as maplibregl.GeoJSONSource | undefined

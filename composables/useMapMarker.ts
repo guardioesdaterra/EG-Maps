@@ -158,8 +158,11 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     console.time(label)
     detach()
     addSource(SOURCE, geojson, ds)
+    console.info('[EG Maps] marker layers start', { dataset: ds, features: geojson.features.length })
     addLayers(SOURCE, ds)
+    console.info('[EG Maps] marker layers complete', { dataset: ds })
     setupEvents(SOURCE, ds, a)
+    console.info('[EG Maps] marker events complete', { dataset: ds })
     buildLookupMaps(ds, a)
     currentDataset = ds
     console.timeEnd(label)
@@ -240,9 +243,20 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     const label = `[perf] addLayers ${id}`
     console.time(label)
     if (ds === 'active-crews') {
-      addClusterLayers(id, CLUSTER_PALETTES[ds])
-      addCrewMosaicLayers(id)
-      addCrewLocationLayers(id)
+      const layerGroups: Array<[string, () => void]> = [
+        ['cluster', () => addClusterLayers(id, CLUSTER_PALETTES[ds])],
+        ['crew mosaic', () => addCrewMosaicLayers(id)],
+        ['crew locations', () => addCrewLocationLayers(id)],
+      ]
+      for (const [group, add] of layerGroups) {
+        try {
+          console.info('[EG Maps] marker layer group start', { group })
+          add()
+          console.info('[EG Maps] marker layer group complete', { group })
+        } catch (error) {
+          console.error('[EG Maps] marker layer group failed', { group, error })
+        }
+      }
     } else {
       const isClustered = CLUSTERED_DATASETS.has(ds)
       if (isClustered) addClusterLayers(id, CLUSTER_PALETTES[ds])
@@ -491,7 +505,11 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   }
 
   function reg(lid: string, evt: keyof MapLayerEventType, fn: (e: MapLayerMouseEvent) => void) {
-    map!.on(evt, lid, fn as (ev: MapLayerEventType[typeof evt] & object) => void)
+    if (!map?.getLayer(lid)) {
+      console.warn('[EG Maps] skipped event registration for missing layer', { layer: lid, event: evt })
+      return
+    }
+    map.on(evt, lid, fn as (ev: MapLayerEventType[typeof evt] & object) => void)
     handlers.push({ id: lid, evt, fn })
   }
 

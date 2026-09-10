@@ -162,7 +162,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useIntersectionObserver } from '@vueuse/core'
 import { crewOverallStats } from '@/lib/crew-data'
-import type { CarouselItem } from '@/components/Carousel.vue'
+import type { CarouselItem } from '~/lib/carousel-types'
 
 const { t } = useI18n()
 

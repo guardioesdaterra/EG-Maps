@@ -56,7 +56,9 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     const base = _rawCulturalData.value
     const agents = culturalAgentsCombined.value?.features ?? []
     if (!agents.length) return base
-    const baseFeatures = base?.features ?? []
+    const baseFeatures = (base?.features ?? []).filter(
+      (f: GeoJSON.Feature) => (f.properties as Record<string, unknown>)?.source,
+    )
     return {
       type: 'FeatureCollection',
       features: baseFeatures.length ? [...baseFeatures, ...agents] : agents,

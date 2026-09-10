@@ -147,9 +147,9 @@ const showDropdown = ref(false)
   top: calc(100% + 6px);
   right: 0;
   min-width: 200px;
-  background: rgba(17, 17, 17, 0.95);
+  background: var(--bg-tertiary);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 6px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
@@ -164,13 +164,13 @@ const showDropdown = ref(false)
   display: block;
   font-size: 0.75rem;
   font-weight: 700;
-  color: white;
+  color: var(--text-primary);
 }
 
 .auth-dropdown-email {
   display: block;
   font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -184,7 +184,7 @@ const showDropdown = ref(false)
   padding: 8px 10px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   background: none;
   border: none;
   border-radius: 6px;
@@ -193,8 +193,8 @@ const showDropdown = ref(false)
 }
 
 .auth-dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: white;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .auth-dropdown-item--danger {

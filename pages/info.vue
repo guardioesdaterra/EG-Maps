@@ -124,23 +124,6 @@
           </div>
         </section>
 
-        <section v-else-if="activeTab === 'mains'" class="grid gap-fluid-lg lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.8fr)]">
-          <div>
-            <h2 class="text-fluid-3xl font-black leading-tight">{{ t('info.mains') }}</h2>
-            <p class="mt-2 xs:mt-3 text-fluid-sm leading-7 text-[var(--text-secondary)]">{{ t('info.mainsDesc') }}</p>
-            <dl class="mt-4 xs:mt-5 grid gap-fluid sm:grid-cols-2">
-              <div class="min-w-0 rounded-fluid-lg border-2 border-[var(--border-color)] p-3 xs:p-4">
-                <dt class="text-[clamp(10px,1.5vw,13px)] xs:text-xs font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">{{ t('info.rccLoukaLabel') }}</dt>
-                <dd class="mt-1.5 xs:mt-2 break-words font-black">{{ t('info.rccLouka') }}</dd>
-              </div>
-              <div class="min-w-0 rounded-fluid-lg border-2 border-[var(--border-color)] p-3 xs:p-4">
-                <dt class="text-[clamp(10px,1.5vw,13px)] xs:text-xs font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">{{ t('info.rccTupaLeviLabel') }}</dt>
-                <dd class="mt-1.5 xs:mt-2 break-words font-black">{{ t('info.rccTupaLevi') }}</dd>
-              </div>
-            </dl>
-          </div>
-        </section>
-
         <section v-else class="grid gap-fluid-lg lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)]">
           <div>
             <h2 class="text-fluid-3xl font-black leading-tight">{{ t('info.feedback') }}</h2>
@@ -165,7 +148,7 @@
                 v-model="feedback.name"
                 type="text"
                 :placeholder="t('info.feedbackNamePlaceholder')"
-                class="w-full rounded-fluid-lg border-2 border-[var(--border-color)] px-2.5 xs:px-3 py-1.5 xs:py-2 text-xs xs:text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-4 focus:ring-[var(--border-color)]"
+                class="w-full rounded-fluid-lg border-2 border-[var(--border-color)] bg-[var(--bg-tertiary)] px-2.5 xs:px-3 py-1.5 xs:py-2 text-xs xs:text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-4 focus:ring-[var(--border-color)]"
               />
             </label>
             <label class="block">
@@ -186,7 +169,7 @@
                 v-model="feedback.message"
                 maxlength="2000"
                 :placeholder="t('info.feedbackPlaceholder')"
-                class="min-h-[clamp(6rem,18vh,11rem)] w-full resize-none rounded-fluid-lg border-2 border-[var(--border-color)] px-2.5 xs:px-3 py-1.5 xs:py-2 text-xs xs:text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-4 focus:ring-[var(--border-color)]"
+                class="min-h-[clamp(6rem,18vh,11rem)] w-full resize-none rounded-fluid-lg border-2 border-[var(--border-color)] bg-[var(--bg-tertiary)] px-2.5 xs:px-3 py-1.5 xs:py-2 text-xs xs:text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-4 focus:ring-[var(--border-color)]"
                 required
               />
             </label>
@@ -224,14 +207,13 @@ useHead({
   ],
 })
 
-type InfoTab = 'overview' | 'grants' | 'species' | 'mains' | 'feedback'
+type InfoTab = 'overview' | 'grants' | 'species' | 'feedback'
 
 const activeTab = ref<InfoTab>('overview')
 const tabs = computed<Array<{ id: InfoTab; label: string; icon: string }>>(() => [
   { id: 'overview', label: t('info.tabs.overview'), icon: 'lucide:layout-dashboard' },
   { id: 'grants', label: t('info.tabs.grants'), icon: 'lucide:hand-heart' },
   { id: 'species', label: t('info.tabs.species'), icon: 'lucide:bird' },
-  { id: 'mains', label: t('info.tabs.mains'), icon: 'lucide:crown' },
   { id: 'feedback', label: t('info.tabs.feedback'), icon: 'lucide:message-square' },
 ])
 
@@ -289,15 +271,11 @@ function submitFeedback() {
 
   if (!feedback.value.message) return
 
-  if (typeof window !== 'undefined') {
-    try {
-      const saved = JSON.parse(localStorage.getItem('eg-maps-feedback') || '[]')
-      saved.unshift({ ...feedback.value, submittedAt: new Date().toISOString() })
-      localStorage.setItem('eg-maps-feedback', JSON.stringify(saved.slice(0, 20)))
-    } catch {
-      localStorage.setItem('eg-maps-feedback', JSON.stringify([{ ...feedback.value, submittedAt: new Date().toISOString() }]))
-    }
-  }
+  const subject = encodeURIComponent(`EG-Maps Feedback — ${feedback.value.type}`)
+  const body = encodeURIComponent(
+    `Name: ${feedback.value.name || '(anonymous)'}\nType: ${feedback.value.type}\n\n${feedback.value.message}`
+  )
+  window.location.href = `mailto:tupa@earthguardians.org?subject=${subject}&body=${body}`
 
   feedbackSubmitted.value = true
   feedbackTimeout = setTimeout(() => {

@@ -536,17 +536,6 @@ const iframeConfigs: IframeConfig[] = [
     embedWidth: '100%',
     embedHeight: '500px',
   },
-  ...['overview', 'community', 'crew', 'partners', 'worldwide', 'egprojects'].map((view) => ({
-    key: `grants_${view}`,
-    src: `${embedBaseURL}squarespace/eg-grants?view=${view}`,
-    params: `view=${view}`,
-    placeholderClass: 'min-h-[320px]',
-    iframeClass: 'min-h-[320px]',
-    allow: 'clipboard-write; fullscreen',
-    embedLabel: `EG Grants — ${view}`,
-    embedWidth: '100%',
-    embedHeight: 'auto',
-  })),
 ]
 
 function buildEmbedCode(item: IframeConfig): string {

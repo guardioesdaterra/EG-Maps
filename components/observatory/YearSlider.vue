@@ -332,4 +332,23 @@ watch(() => [props.yearMin, props.yearMax], ([min, max]) => {
   font-family: ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
 }
+@media (max-width: 768px) {
+  .obs-slider {
+    flex-direction: row;
+    align-items: center;
+    gap: clamp(4px, 1vw, 8px);
+    padding: clamp(4px, 1vw, 8px);
+  }
+  .obs-slider__header { flex-shrink: 0; }
+  .obs-slider__title { display: none; }
+  .obs-slider__years { gap: 2px; }
+  .obs-slider__year-value { font-size: 11px; }
+  .obs-slider__year-sep { font-size: 10px; }
+  .obs-slider__track-wrap { flex: 1; min-width: 80px; height: 20px; }
+  .obs-slider__range-labels { display: none; }
+  .obs-slider__controls { flex-shrink: 0; gap: 4px; }
+  .obs-slider__btn { padding: 2px 6px; font-size: 9px; }
+  .obs-slider__btn-icon { width: 8px; height: 8px; }
+  .obs-slider__count { font-size: 9px; margin-left: 0; }
+}
 </style>

@@ -51,9 +51,9 @@ export interface RareEarthPopupContent {
 }
 
 function dangerColor(score: number): string {
-  if (score >= 8) return '#e74c3c'
-  if (score >= 6) return '#f39c12'
-  return '#27ae60'
+  if (score >= 8) return 'var(--danger)'
+  if (score >= 6) return 'var(--warning)'
+  return 'var(--success)'
 }
 
 function ageFreshness(year?: number): 'recent' | 'active' | 'stale' {
@@ -267,8 +267,8 @@ function rareEarthPopupHTML(c: RareEarthPopupContent, t: (_key: string) => strin
     .join('')
 
   const collapsedFieldsHTML = c.collapsedFields && c.collapsedFields.length
-    ? `<details style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
-        <summary style="font-size:7.5px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;cursor:pointer;list-style:none;user-select:none">▸ ${escapeText(c.collapsedFields[0].label)}</summary>
+    ? `<details style="margin-top:7px;padding-top:7px;border-top:1px solid var(--obs-panel-border)">
+        <summary style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;cursor:pointer;list-style:none;user-select:none">▸ ${escapeText(c.collapsedFields[0].label)}</summary>
         <div style="font-size:10.5px;color:var(--text-secondary);font-weight:500;margin-top:3px">${escapeText(c.collapsedFields[0].value)}</div>
       </details>`
     : ''

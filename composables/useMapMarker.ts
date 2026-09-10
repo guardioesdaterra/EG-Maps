@@ -392,28 +392,49 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     detach()
     if (ds === 'active-crews') {
       reg(`${id}_mm`, 'click', onPoint(ds, a))
+      reg(`${id}_ml`, 'click', onPoint(ds, a))
       reg(`${id}_mg`, 'mouseenter', onMosaicHoverIn)
       reg(`${id}_mg`, 'mouseleave', onMosaicHoverOut)
       reg(`${id}_mm`, 'mouseenter', onMosaicHoverIn)
       reg(`${id}_mm`, 'mouseleave', onMosaicHoverOut)
+      reg(`${id}_ml`, 'mouseenter', onMosaicHoverIn)
+      reg(`${id}_ml`, 'mouseleave', onMosaicHoverOut)
       reg(`${id}_c`, 'click', onCluster(id))
       reg(`${id}_c`, 'mouseenter', ptr)
       reg(`${id}_c`, 'mouseleave', nop)
+      reg(`${id}_p`, 'click', onPoint(ds, a))
+      reg(`${id}_p`, 'mouseenter', ptr)
+      reg(`${id}_p`, 'mouseleave', nop)
+      reg(`${id}_pl`, 'click', onPoint(ds, a))
+      reg(`${id}_pl`, 'mouseenter', ptr)
+      reg(`${id}_pl`, 'mouseleave', nop)
     } else {
       const pL = `${id}_p`
+      const plL = `${id}_pl`
+      const pgL = `${id}_pg`
       const cL = `${id}_c`
       reg(pL, 'click', onPoint(ds, a))
+      reg(plL, 'click', onPoint(ds, a))
+      reg(pgL, 'click', onPoint(ds, a))
       reg(cL, 'click', onCluster(id))
       reg(cL, 'mouseenter', ptr)
       reg(cL, 'mouseleave', nop)
       reg(pL, 'mouseenter', ptr)
       reg(pL, 'mouseleave', nop)
+      reg(plL, 'mouseenter', ptr)
+      reg(plL, 'mouseleave', nop)
+      reg(pgL, 'mouseenter', ptr)
+      reg(pgL, 'mouseleave', nop)
     }
   }
 
+  let _lastPointClick = 0
   function onPoint(ds: MarkerDataset, a: RebuildArgs) {
     return (e: MapLayerMouseEvent) => {
       if (!e.features?.[0]) return
+      const now = Date.now()
+      if (now - _lastPointClick < 80) return
+      _lastPointClick = now
       const f = e.features[0]
       const coords = (f.geometry as GeoJSON.Point).coordinates as [number, number]
       dispatchPoint(ds, f, coords, a)

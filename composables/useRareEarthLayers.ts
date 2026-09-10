@@ -269,15 +269,15 @@ function addSiteHandlers(map: MapLibreMap, cleanups: Array<() => void>) {
     if (!e.features?.length) return
     const p = e.features[0].properties
     const dangerScore = p.danger ?? 5
-    const dColor = dangerScore >= 9 ? '#ef4444' : dangerScore >= 7 ? '#f97316' : '#22c55e'
+    const dColor = dangerScore >= 9 ? 'var(--danger)' : dangerScore >= 7 ? 'var(--warning)' : 'var(--success)'
     closeActivePopup(map)
     const siteHtml = `<div class="ree-popup-wrapper" style="padding:14px;min-width:200px;position:relative">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
         <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${dColor};color:#fff">${dangerScore.toFixed(1)} Danger</span>
-        <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(239,68,68,0.2);color:#ef4444">CONFLICT ZONE</span>
+        <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(239,68,68,0.2);color:var(--danger)">CONFLICT ZONE</span>
       </div>
-      <h3 style="margin:0;font-size:13px;font-weight:700;color:#e8e8e8">${escapeHtml(p.name || 'Unknown')}</h3>
-      <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px">${escapeHtml(p.tag || '')}</div>
+      <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--obs-text-primary)">${escapeHtml(p.name || 'Unknown')}</h3>
+      <div style="font-size:10px;color:var(--obs-text-muted);margin-top:4px">${escapeHtml(p.tag || '')}</div>
     </div>`
     activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(siteHtml).setMaxWidth('none').addTo(map))
   }
@@ -300,15 +300,15 @@ function addProtectedAreaHandlers(map: MapLibreMap, cleanups: Array<() => void>)
       const p = e.features[0].properties
       const kind = p.kind === 'ti' ? 'Indigenous Land (Terra Indígena)' : 'Quilombola Territory'
       closeActivePopup(map)
-      const protColor = p.kind === 'ti' ? '#dc2626' : '#d97706'
+      const protColor = p.kind === 'ti' ? 'var(--danger)' : 'var(--warning)'
       const html = `<div class="ree-popup-wrapper" style="padding:14px;min-width:220px;position:relative">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
           <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${protColor};color:#fff">PROTECTED AREA</span>
-          <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(255,255,255,0.06);color:#888">${escapeHtml(kind)}</span>
+          <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:var(--obs-panel-border);color:var(--obs-text-muted)">${escapeHtml(kind)}</span>
         </div>
-        <h3 style="margin:0;font-size:13px;font-weight:700;color:#e8e8e8">${escapeHtml(p.name || 'Unknown')}</h3>
-        <p style="font-size:10px;color:#888;margin:6px 0 0;line-height:1.45">Mining claims overlapping this territory may violate Free, Prior and Informed Consent (FPIC) under ILO Convention 169.</p>
-        ${p.source_url ? `<a href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:10px;color:#5dade2">Source &rarr;</a>` : ''}
+        <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--obs-text-primary)">${escapeHtml(p.name || 'Unknown')}</h3>
+        <p style="font-size:10px;color:var(--obs-text-muted);margin:6px 0 0;line-height:1.45">Mining claims overlapping this territory may violate Free, Prior and Informed Consent (FPIC) under ILO Convention 169.</p>
+        ${p.source_url ? `<a href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:10px;color:var(--info)">Source &rarr;</a>` : ''}
       </div>`
       activePopups.set(map, new maplibregl.Popup({ offset: 8, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(html).setMaxWidth('none').addTo(map))
     }

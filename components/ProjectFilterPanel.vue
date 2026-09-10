@@ -49,18 +49,18 @@
     
     <div class="mb-3">
       <div class="relative">
-        <iconify-icon icon="lucide:search" class="absolute left-2.5 top-2 h-4 w-4 text-white/50 pointer-events-none" />
+        <iconify-icon icon="lucide:search" class="absolute left-2.5 top-2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
         <input
           v-model="searchQuery"
           type="text"
           :placeholder="t('filter.searchPlaceholder')"
-          class="filter-search w-full pl-8 pr-8 py-1.5 bg-black/50 border border-cyan-900/50 rounded text-sm text-white placeholder-white/50 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all"
+          class="filter-search w-full pl-8 pr-8"
           :aria-label="t('filter.searchPlaceholder')"
         />
         <button
           v-if="searchQuery"
           @click="searchQuery = ''"
-          class="absolute right-2.5 top-1.5 h-5 w-5 flex items-center justify-center rounded-full bg-gray-700/50 text-white/70 hover:text-white hover:bg-gray-600/50 transition-colors"
+          class="absolute right-2.5 top-1.5 h-5 w-5 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border-color)] transition-colors"
         >
           <iconify-icon icon="lucide:x" class="h-3 w-3" />
         </button>
@@ -74,7 +74,7 @@
       </label>
       <select
         v-model="filters.country"
-        class="filter-select w-full px-2.5 py-1.5 bg-black/50 border border-cyan-900/50 rounded text-xs text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all cursor-pointer"
+        class="filter-select w-full"
         :aria-label="t('filter.country')"
       >
         <option value="">{{ t('filter.allCountries') }}</option>
@@ -89,7 +89,7 @@
       </label>
       <select
         v-model="filters.beneficiaryRange"
-        class="filter-select w-full px-2.5 py-1.5 bg-black/50 border border-cyan-900/50 rounded text-xs text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all cursor-pointer"
+        class="filter-select w-full"
         :aria-label="t('filter.beneficiaryRange')"
       >
         <option value="">{{ t('filter.allRanges') }}</option>
@@ -111,7 +111,7 @@
         </span>
       </div>
       
-      <div class="h-1 bg-gray-800 rounded-full overflow-hidden">
+      <div class="h-1 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
         <div
           class="h-full bg-[var(--text-primary)] transition-all duration-300 ease-out"
           :style="{ width: `${filteredPercent}%` }"

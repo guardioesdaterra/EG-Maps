@@ -95,13 +95,13 @@ function getSubtypeLabel(subtype: string): string {
 }
 
 function getStatusBadge(status: string): string {
-  const style = STATUS_STYLES[status] || { color: '#888', label: status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), pulse: false }
+  const style = STATUS_STYLES[status] || { color: 'var(--obs-text-muted)', label: status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), pulse: false }
   const pulseStyle = style.pulse ? 'animation:pulse-badge 2s ease-in-out infinite;' : ''
   return `<span style="font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px;background:${style.color};color:#fff;${pulseStyle}">${escapeHtml(style.label)}</span>`
 }
 
 function getIndigenousBadge(): string {
-  return '<span style="font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px;background:#e74c3c;color:#fff;margin-left:4px">INDIGENOUS</span>'
+  return '<span style="font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px;background:var(--danger);color:#fff;margin-left:4px">INDIGENOUS</span>'
 }
 
 export function getPopupContent(p: Record<string, unknown>): string {
@@ -111,26 +111,26 @@ export function getPopupContent(p: Record<string, unknown>): string {
   const subtypeLabel = subtype ? getSubtypeLabel(subtype) : ''
   const statusBadge = p.status ? getStatusBadge(String(p.status)) : ''
   const indigenousBadge = p.indigenous ? getIndigenousBadge() : ''
-  const municipality = p.municipality ? `<span style="font-size:9px;color:#888;margin-left:4px">${escapeHtml(String(p.municipality))}</span>` : ''
+  const municipality = p.municipality ? `<span style="font-size:9px;color:var(--obs-text-muted);margin-left:4px">${escapeHtml(String(p.municipality))}</span>` : ''
 
   let details = ''
 
   if (typeName === 'school' && p.indigenous) {
-    details = `<p style="font-size:9px;color:#bb86fc;margin:4px 0 0">Indigenous school serving local community</p>`
+    details = `<p style="font-size:9px;color:var(--purple);margin:4px 0 0">Indigenous school serving local community</p>`
   } else if (typeName === 'health') {
-    details = `<p style="font-size:9px;color:#3498db;margin:4px 0 0">Healthcare facility</p>`
+    details = `<p style="font-size:9px;color:var(--info);margin:4px 0 0">Healthcare facility</p>`
   } else if (typeName === 'water_access') {
-    details = `<p style="font-size:9px;color:#2ecc71;margin:4px 0 0">Water infrastructure</p>`
+    details = `<p style="font-size:9px;color:var(--success);margin:4px 0 0">Water infrastructure</p>`
   } else if (subtype === 'artist_group') {
-    details = `<p style="font-size:9px;color:#9b59b6;margin:4px 0 0">Artist / cultural group</p>`
+    details = `<p style="font-size:9px;color:var(--purple);margin:4px 0 0">Artist / cultural group</p>`
   } else if (subtype === 'marginalized') {
-    details = `<p style="font-size:9px;color:#e67e22;margin:4px 0 0">Marginalized community — limited services</p>`
+    details = `<p style="font-size:9px;color:var(--warning);margin:4px 0 0">Marginalized community — limited services</p>`
   } else if (subtype === 'rural') {
-    details = `<p style="font-size:9px;color:#27ae60;margin:4px 0 0">Rural community</p>`
+    details = `<p style="font-size:9px;color:var(--success);margin:4px 0 0">Rural community</p>`
   } else if (subtype === 'event') {
-    details = `<p style="font-size:9px;color:#3498db;margin:4px 0 0">Cultural event / festival</p>`
+    details = `<p style="font-size:9px;color:var(--info);margin:4px 0 0">Cultural event / festival</p>`
   } else if (subtype === 'cultural_center') {
-    details = `<p style="font-size:9px;color:#f39c12;margin:4px 0 0">Cultural institution / venue</p>`
+    details = `<p style="font-size:9px;color:var(--warning);margin:4px 0 0">Cultural institution / venue</p>`
   }
 
   return `<div class="ree-popup-wrapper" style="padding:14px;min-width:240px;max-width:320px;position:relative">
@@ -140,13 +140,13 @@ export function getPopupContent(p: Record<string, unknown>): string {
       ${statusBadge}
       ${municipality}
     </div>
-    <h3 style="margin:0;font-size:13px;font-weight:700;color:#e8e8e8;line-height:1.3">${escapeHtml(String(p.name || 'Unknown'))}</h3>
-    ${p.description ? `<p style="font-size:10px;color:#888;margin:8px 0 0;line-height:1.5">${escapeHtml(String(p.description))}</p>` : ''}
+    <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--obs-text-primary);line-height:1.3">${escapeHtml(String(p.name || 'Unknown'))}</h3>
+    ${p.description ? `<p style="font-size:10px;color:var(--obs-text-muted);margin:8px 0 0;line-height:1.5">${escapeHtml(String(p.description))}</p>` : ''}
     ${details}
-    ${p.community ? `<p style="font-size:9px;color:#bb86fc;margin:6px 0 0">📍 ${escapeHtml(String(p.community))}</p>` : ''}
-    ${p.area_ha ? `<p style="font-size:9px;color:#888;margin:2px 0 0">Area: ${p.area_ha} ha</p>` : ''}
-    ${p.population ? `<p style="font-size:9px;color:#888;margin:2px 0 0">Population: ${p.population}</p>` : ''}
-    ${p.osm_id ? `<a href="https://www.openstreetmap.org/node/${p.osm_id}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:10px;color:#bb86fc;text-decoration:none;border-bottom:1px dotted #bb86fc">View on OpenStreetMap →</a>` : ''}
+    ${p.community ? `<p style="font-size:9px;color:var(--purple);margin:6px 0 0">📍 ${escapeHtml(String(p.community))}</p>` : ''}
+    ${p.area_ha ? `<p style="font-size:9px;color:var(--obs-text-muted);margin:2px 0 0">Area: ${p.area_ha} ha</p>` : ''}
+    ${p.population ? `<p style="font-size:9px;color:var(--obs-text-muted);margin:2px 0 0">Population: ${p.population}</p>` : ''}
+    ${p.osm_id ? `<a href="https://www.openstreetmap.org/node/${p.osm_id}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:10px;color:var(--purple);text-decoration:none;border-bottom:1px dotted var(--purple)">View on OpenStreetMap →</a>` : ''}
   </div>`
 }
 

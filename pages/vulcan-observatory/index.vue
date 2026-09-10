@@ -19,16 +19,15 @@
  * @deps @/composables/useI18n (useI18n);
  *       @/composables/useVulcanObservatoryPage (useVulcanObservatoryPage);
  *       @/components/observatory/ObservatorySidebar.vue (Cultural browser — replaces the old 6-tab grid);
- *       @/components/observatory/CommunityContextPanel.vue (community context overlay)
  * @connections /vulcan-observatory/3d.vue (3D counterpart sharing the same data composable)
  */
 <template>
-  <div id="main-content" tabindex="-1" class="relative w-full h-[100svh] overflow-hidden bg-black focus:outline-none">
+  <div id="main-content" tabindex="-1" class="relative w-full h-screen overflow-hidden bg-black focus:outline-none">
     <!-- ── Loading overlay ─────────────────────────────────────────────── -->
     <Transition name="fade">
       <div
         v-if="isLoading || error"
-        class="fixed inset-0 z-[9980] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center gap-5"
+        class="fixed inset-0 z-[9980] bg-black/90 flex flex-col items-center justify-center gap-5"
       >
         <template v-if="error && !isLoading">
           <div class="text-center">
@@ -134,7 +133,6 @@
                 <span class="vulc-icon-btn__tip">{{ t('observatory.tabs.timeline') }}</span>
               </button>
               <button
-                v-if="onRedeCorporativa"
                 type="button"
                 class="vulc-icon-btn"
                 :aria-label="t('observatory.v2.corporateNetwork')"
@@ -144,7 +142,6 @@
                 <span class="vulc-icon-btn__tip">{{ t('observatory.v2.corporateNetwork') }}</span>
               </button>
               <button
-                v-if="onDataDownload"
                 type="button"
                 class="vulc-icon-btn"
                 :aria-label="t('observatory.v2.downloadData')"
@@ -213,7 +210,6 @@
                 <span class="vulc-icon-btn__tip">{{ t('observatory.v2.fullBrazil') }}</span>
               </button>
               <button
-                v-if="onUserContribution"
                 type="button"
                 class="vulc-icon-btn"
                 :aria-label="t('observatory.v2.monitor')"
@@ -390,14 +386,6 @@
               </div>
             </div>
           </footer>
-
-          <!-- ── Hero / intro panel (auto-hides after first dismiss) ── -->
-          <CommunityContextPanel
-            :cultural-count="culturalTotalCount"
-            :community-count="culturalSourceCounts.community ?? 0"
-            :rare-earth-count="totalCount"
-            @monitor="onUserContribution"
-          />
         </template>
       </MapView2D>
 
@@ -423,7 +411,7 @@
       <ClaimDetailModal :visible="showClaimDetail" :claim="claimDetailProps" @close="closeClaimDetail" />
 
       <template #fallback>
-        <div class="flex h-[100svh] w-full items-center justify-center bg-zinc-950 text-white">
+        <div class="flex h-screen w-full items-center justify-center bg-zinc-950 text-white">
           <LoadingSpinner :message="t('loading.observatoryOfVulcan')" :inline="true" />
         </div>
       </template>
@@ -438,7 +426,6 @@ import { useVulcanObservatoryPage } from '@/composables/useVulcanObservatoryPage
 
 import MapView2D from '@/components/MapView2D.vue'
 import ObservatorySidebar from '@/components/observatory/ObservatorySidebar.vue'
-import CommunityContextPanel from '@/components/observatory/CommunityContextPanel.vue'
 import GeoPoliticalTimeline from '@/components/GeoPoliticalTimeline.vue'
 import RedeCorporativa from '@/components/RedeCorporativa.vue'
 import DataDownloadPanel from '@/components/DataDownloadPanel.vue'
@@ -516,9 +503,6 @@ const {
   reportClaim,
   mapContainerRef,
   clearPin,
-  // Cultural data
-  culturalTotalCount,
-  culturalSourceCounts,
 } = useVulcanObservatoryPage('pococaldas')
 
 const { categoryStats, totalCount } = stats
@@ -556,7 +540,7 @@ function onJumpToCultural(coord: [number, number], name: string) {
  *  Layout:  ┌─ topbar (brand · counters · actions) ─────────────────┐
  *           │                                                    │
  *           │   map fills the viewport behind glass panels        │
- *           │   right panel = Cultural browser                    │
+ *           │   right panel = CULTURE AND TERRITORY                │
  *           │                                                    │
  *           └─ bottombar (phase · year · my-territory) ───────────┘
  * ═══════════════════════════════════════════════════════════════════ */
@@ -574,10 +558,8 @@ function onJumpToCultural(coord: [number, number], name: string) {
   align-items: center;
   gap: clamp(0.5rem, 1.5vw, 1rem);
   padding: 0 clamp(0.5rem, 1.5vw, 1rem);
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.45) 80%, transparent 100%);
-  backdrop-filter: blur(14px) saturate(1.2);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
-  border-bottom: 1px solid rgba(231, 76, 60, 0.18);
+  background: #0a0a0c;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .vulc-topbar__brand {
   display: flex;
@@ -674,7 +656,7 @@ function onJumpToCultural(coord: [number, number], name: string) {
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   font-family: inherit;
-  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
   flex-shrink: 0;
 }
 .vulc-icon-btn svg,
@@ -686,7 +668,6 @@ function onJumpToCultural(coord: [number, number], name: string) {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.18);
   color: #fff;
-  transform: translateY(-1px);
 }
 .vulc-icon-btn.is-active {
   background: color-mix(in srgb, var(--obs-red, #e74c3c) 22%, transparent);
@@ -751,9 +732,7 @@ function onJumpToCultural(coord: [number, number], name: string) {
   align-items: center;
   gap: clamp(0.5rem, 1.5vw, 1rem);
   padding: 0 clamp(0.5rem, 1.5vw, 1rem);
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.55) 80%, transparent 100%);
-  backdrop-filter: blur(14px) saturate(1.2);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  background: #0a0a0c;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -768,14 +747,12 @@ function onJumpToCultural(coord: [number, number], name: string) {
   pointer-events: auto;
   display: flex;
   flex-direction: column;
-  background: rgba(8, 8, 10, 0.88);
-  backdrop-filter: blur(16px) saturate(1.25);
-  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  background: #111113;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 .vulc-leftpanel__scroll {
   flex: 1;
@@ -856,10 +833,9 @@ function onJumpToCultural(coord: [number, number], name: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(8, 8, 10, 0.88);
-  backdrop-filter: blur(16px) saturate(1.25);
+  background: #111113;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: 8px;
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   font-family: inherit;
@@ -978,13 +954,20 @@ function onJumpToCultural(coord: [number, number], name: string) {
   color: var(--obs-red, #e74c3c);
 }
 @media (max-width: 768px) {
-  .vulc-bottombar { height: auto; padding: 0.4rem 0.5rem; gap: 0.4rem; grid-template-columns: 1fr; }
-  .vulc-bottombar__center { grid-row: 2; }
+  .vulc-bottombar {
+    height: auto;
+    padding: 0.35rem 0.5rem;
+    gap: 0.35rem;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+  }
+  .vulc-bottombar__left { order: 1; min-width: 0; overflow: hidden; }
+  .vulc-bottombar__center { order: 2; min-width: 0; }
+  .vulc-bottombar__right { order: 3; min-width: 0; }
   .vulc-pin-info strong { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .vulc-topbar__pulse, .vulc-icon-btn { animation: none; transition: none; }
-  .vulc-icon-btn:hover { transform: none; }
 }
 </style>

@@ -740,11 +740,11 @@ defineExpose({ onMapClick })
 
 .obs-input, .obs-select, .obs-textarea {
   width: 100%;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: clamp(4px, 0.8vw, 8px) clamp(6px, 1.2vw, 12px);
-  color: var(--obs-text-primary);
+  color: var(--text-primary);
   font-size: clamp(11px, 1.6vw, 14px);
   font-family: inherit;
   outline: none;

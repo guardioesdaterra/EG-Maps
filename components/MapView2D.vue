@@ -140,7 +140,7 @@
 
 <script setup lang="ts">
 
-import { ref, watch, computed, defineAsyncComponent } from 'vue'
+import { ref, watch, computed, defineAsyncComponent, onErrorCaptured } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import type { MapBaseProps } from '@/composables/useMapBase'
 import { useMapBase } from '@/composables/useMapBase'
@@ -150,17 +150,33 @@ import { useAppRuntime } from '~/composables/useAppRuntime'
 import ImportDataWidget from '~/components/ImportDataWidget.vue'
 import ClusterResultsPanel, { type ClusterResultItem } from '~/components/map/ClusterResultsPanel.vue'
 import NearbyPanel from '~/components/map/NearbyPanel.vue'
+import MapRuntimeError from '~/components/map/MapRuntimeError.vue'
 
-const SpeciesFilterPanel = defineAsyncComponent(() => import('~/components/SpeciesFilterPanel.vue'))
-const ProjectFilterPanel = defineAsyncComponent(() => import('~/components/ProjectFilterPanel.vue'))
-const DataBubble = defineAsyncComponent(() => import('~/components/DataBubble.vue'))
-const MapControls = defineAsyncComponent(() => import('~/components/MapControls.vue'))
-const SpeciesPanel = defineAsyncComponent(() => import('~/components/SpeciesPanel.vue'))
+function asyncMapComponent<T>(loader: () => Promise<T>) {
+  return defineAsyncComponent({
+    loader,
+    delay: 120,
+    timeout: 20000,
+    errorComponent: MapRuntimeError,
+    onError(error, retry, fail, attempts) {
+      console.error('[EG Maps] async map component failed', { error, attempts })
+      if (attempts < 2) retry()
+      else fail()
+    },
+  })
+}
+
+const SpeciesFilterPanel = asyncMapComponent(() => import('~/components/SpeciesFilterPanel.vue'))
+const ProjectFilterPanel = asyncMapComponent(() => import('~/components/ProjectFilterPanel.vue'))
+const DataBubble = asyncMapComponent(() => import('~/components/DataBubble.vue'))
+const MapControls = asyncMapComponent(() => import('~/components/MapControls.vue'))
+const SpeciesPanel = asyncMapComponent(() => import('~/components/SpeciesPanel.vue'))
 
 const props = withDefaults(defineProps<MapBaseProps>(), { defaultDataset: 'project-grants' })
 const emit = defineEmits<{ mapInit: [map: maplibregl.Map] }>()
 const runtime = useAppRuntime()
 const nearbyOpen = ref(false)
+const capturedRuntimeError = ref('')
 
 const mapContainerRef = ref<HTMLElement | null>(null)
 const hexCanvasRef = ref<HTMLCanvasElement | null>(null)
@@ -177,6 +193,15 @@ const ctx = useMapBase({
 })
 
 const customLayerCtx = useMapCustomLayers(ctx.mapRef)
+
+onErrorCaptured((error, instance, info) => {
+  capturedRuntimeError.value = error instanceof Error ? error.message : String(error)
+  console.error('[EG Maps] MapView2D child error', { error, info, instance })
+  ctx.hasError.value = true
+  ctx.errorMessage.value = capturedRuntimeError.value
+  ctx.isLoading.value = false
+  return false
+})
 
 const showDataLoading = ref(false)
 const dataStatusText = ref('')

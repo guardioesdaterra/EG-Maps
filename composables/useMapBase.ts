@@ -225,6 +225,14 @@ export function useMapBase(config: MapBaseConfig) {
   let lastFocusedEl: HTMLElement | null = null
   let rebuildPending = false
   let initialRebuildDone = false
+  let mapCanvas: HTMLCanvasElement | null = null
+  const onWebglContextLost = (event: Event) => {
+    event.preventDefault()
+    console.error('[EG Maps] WebGL context lost during map rendering')
+    isLoading.value = false
+    hasError.value = true
+    errorMessage.value = 'The browser lost the map graphics context. Try reloading the page or disabling hardware-intensive browser extensions.'
+  }
 
   const mapRef = computed(() => map)
 
@@ -383,23 +391,38 @@ export function useMapBase(config: MapBaseConfig) {
     if (activeDataset.value === 'vulcan-observatory') return
     console.time(`[perf] rebuildMarkers ${activeDataset.value}`)
     const isRee = activeDataset.value === 'vulcan-observatory'
-    marker.rebuild({
-      dataset: activeDataset.value!,
-      projects: isRee ? [] : visibleProjects.value,
-      speciesIndex: isRee ? [] : visibleSpecies.value,
-      species: isRee ? [] : speciesData.value,
-      crews: isRee ? [] : crewsData.value,
-      crewLocations: isRee ? [] : crewLocationsData.value,
-      selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
-      rareEarthFeatures: isRee
-        ? (props.rareEarthFiltered?.features?.length
-          ? props.rareEarthFiltered.features
-          : props.rareEarthPoints?.features)
-        : undefined,
-      culturalFeatures: isRee
-        ? props.rareEarthCultural?.features
-        : undefined,
-    })
+    try {
+      console.info('[EG Maps] marker placement start', {
+        dataset: activeDataset.value,
+        projects: visibleProjects.value.length,
+        species: visibleSpecies.value.length,
+        crews: crewsData.value.length,
+        crewLocations: crewLocationsData.value.length,
+      })
+      marker.rebuild({
+        dataset: activeDataset.value!,
+        projects: isRee ? [] : visibleProjects.value,
+        speciesIndex: isRee ? [] : visibleSpecies.value,
+        species: isRee ? [] : speciesData.value,
+        crews: isRee ? [] : crewsData.value,
+        crewLocations: isRee ? [] : crewLocationsData.value,
+        selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
+        rareEarthFeatures: isRee
+          ? (props.rareEarthFiltered?.features?.length
+            ? props.rareEarthFiltered.features
+            : props.rareEarthPoints?.features)
+          : undefined,
+        culturalFeatures: isRee
+          ? props.rareEarthCultural?.features
+          : undefined,
+      })
+      console.info('[EG Maps] marker placement complete', { dataset: activeDataset.value })
+    } catch (error) {
+      console.error('[EG Maps] marker placement failed', error)
+      isLoading.value = false
+      hasError.value = true
+      errorMessage.value = `Could not render map markers: ${error instanceof Error ? error.message : String(error)}`
+    }
     console.timeEnd(`[perf] rebuildMarkers ${activeDataset.value}`)
   }
 
@@ -516,6 +539,8 @@ export function useMapBase(config: MapBaseConfig) {
         crossSourceCollisions: false,
         maxPitch: qs.antialiasing ? 60 : 45,
       } as maplibregl.MapOptions & { antialias?: boolean; preferCanvas?: boolean; crossSourceCollisions?: boolean; maxPitch?: number })
+      mapCanvas = map.getCanvas()
+      mapCanvas.addEventListener('webglcontextlost', onWebglContextLost, { passive: false })
 
       console.timeEnd('[perf] initMap → MapLibre constructor')
       console.time('[perf] initMap → style.load')
@@ -667,6 +692,8 @@ export function useMapBase(config: MapBaseConfig) {
       viewportResizeFrame = null
     }
     if (map) {
+      mapCanvas?.removeEventListener('webglcontextlost', onWebglContextLost)
+      mapCanvas = null
       map.remove()
       map = null
     }

@@ -40,7 +40,7 @@ const crewLocations = ref<CrewLocation[]>([])
 
 onMounted(async () => {
   try {
-    const res = await fetch(`${baseURL}/data/crews-locations.json`)
+    const res = await fetch(`${baseURL}data/crews-locations.json`)
     if (res.ok) {
       const geojson = await res.json()
       crewLocations.value = geojson.features.map((f: GeoJSON.Feature) => ({

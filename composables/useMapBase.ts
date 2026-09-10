@@ -498,7 +498,7 @@ export function useMapBase(config: MapBaseConfig) {
       const isRee = activeDataset.value === 'vulcan-observatory'
       const qs = quality.settings.value
 
-      const mapStyle = getMapStyle(MAPTILER_API_KEY, qs.tileResolution)
+      const mapStyle = getMapStyle(MAPTILER_API_KEY, qs.tileResolution, baseURL)
       const tileMaxZoom = qs.tileResolution === 'low' ? 14 : qs.tileResolution === 'medium' ? 17 : 22
       map = new maplibregl.Map({
         container: mapContainerRef.value,
@@ -592,7 +592,7 @@ export function useMapBase(config: MapBaseConfig) {
 
       function tryFallback() {
         if (usedFallback || !map) return
-        if (!mapStyle.includes('maptiler.com')) return
+        if (typeof mapStyle !== 'string' || !mapStyle.includes('maptiler.com')) return
         usedFallback = true
         hasError.value = false
         errorMessage.value = ''

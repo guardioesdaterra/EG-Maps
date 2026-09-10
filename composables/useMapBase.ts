@@ -225,6 +225,7 @@ export function useMapBase(config: MapBaseConfig) {
   let lastFocusedEl: HTMLElement | null = null
   let rebuildPending = false
   let initialRebuildDone = false
+  let isInitializing = false
   let mapCanvas: HTMLCanvasElement | null = null
   const onWebglContextLost = (event: Event) => {
     event.preventDefault()
@@ -492,10 +493,18 @@ export function useMapBase(config: MapBaseConfig) {
   /* ── map init ─────────────────────────────────────────────────────── */
 
   function initMap() {
+    if (isInitializing) {
+      console.warn('[EG Maps] initMap skipped — initialization already in progress')
+      return
+    }
+    if (map?.loaded()) {
+      console.info('[EG Maps] initMap skipped — map already loaded')
+      return
+    }
+    if (!mapContainerRef.value) return
+
     console.time('[perf] initMap total')
     console.time('[perf] initMap → MapLibre constructor')
-    if (map?.loaded()) return
-    if (!mapContainerRef.value) return
 
     if (!detectWebGLSupport()) {
       noWebglSupport.value = true
@@ -516,6 +525,7 @@ export function useMapBase(config: MapBaseConfig) {
 
     noWebglSupport.value = false
     isLoading.value = true
+    isInitializing = true
 
     try {
       const isRee = activeDataset.value === 'vulcan-observatory'
@@ -570,6 +580,7 @@ export function useMapBase(config: MapBaseConfig) {
 
       map.on('load', () => {
         if (!isMounted) return
+        isInitializing = false
         console.timeEnd('[perf] initMap → map.load (tiles)')
         console.time('[perf] initMap → rebuildMarkers')
         if (import.meta.dev) console.warn(`[useMapBase] map.on('load'): dataset=${activeDataset.value}`)
@@ -634,6 +645,7 @@ export function useMapBase(config: MapBaseConfig) {
           return
         }
         if (!map?.loaded()) {
+          isInitializing = false
           isLoading.value = false
           hasError.value = true
           const errObj = err as { error?: { status?: number; message?: string } }
@@ -661,6 +673,7 @@ export function useMapBase(config: MapBaseConfig) {
 
       window.addEventListener('resize', onResize)
     } catch (err) {
+      isInitializing = false
       console.error(`[${isGlobe ? 'MapView3D' : 'MapView2D'}] Failed to initialize map:`, err)
       isLoading.value = false
       hasError.value = true
@@ -680,6 +693,7 @@ export function useMapBase(config: MapBaseConfig) {
 
   onUnmounted(() => {
     isMounted = false
+    isInitializing = false
     onBeforeCleanup?.()
     if (loadingTimeout) clearTimeout(loadingTimeout)
     connections.cleanup()

@@ -162,6 +162,7 @@ export default defineNuxtConfig({
       ],
     },
     server: {
+      allowedHosts: ['3000-iqml0qixkyd9dkuby40l4-64e86ecb.us1.manus.computer'],
       hmr: {
         protocol: 'ws',
         host: 'localhost',

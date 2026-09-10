@@ -594,6 +594,9 @@ export function useMapBase(config: MapBaseConfig) {
         if (usedFallback || !map) return
         if (!mapStyle.includes('maptiler.com')) return
         usedFallback = true
+        hasError.value = false
+        errorMessage.value = ''
+        isLoading.value = true
         console.warn('MapTiler style failed, falling back to demotiles style')
         map.setStyle(DEMOTILES_STYLE)
       }

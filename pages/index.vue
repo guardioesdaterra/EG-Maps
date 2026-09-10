@@ -1,7 +1,7 @@
 <template>
-  <main id="main-content" class="home-shell" :style="gridStyle">
+  <main id="main-content" class="home-shell">
     <div class="home-atmosphere" aria-hidden="true">
-      <div class="home-noise" />
+      <div class="home-noise" :style="{ backgroundImage: `url('${baseURL}noise.png')` }" />
       <div class="home-orbit home-orbit-one" />
       <div class="home-orbit home-orbit-two" />
       <div class="home-glow home-glow-one" />
@@ -199,6 +199,89 @@
         </div>
       </section>
 
+      <section class="home-container home-mission" aria-labelledby="mission-title">
+        <div class="mission-copy">
+          <span class="section-index">04 / Why Earth Guardians</span>
+          <h2 id="mission-title">Young leaders are already building the future.</h2>
+          <p>Earth Guardians trains and empowers young people around the world to develop and implement local and global climate-justice solutions. We imagine a joyful, liberated and regenerative world led by diverse young leaders who are prepared, connected and confident in their power to create lasting change.</p>
+          <p class="mission-emphasis">Power moves when the people closest to the problem lead the solution.</p>
+          <NuxtLink to="/info" class="manifesto-link">Read our field notes <Icon name="lucide:arrow-up-right" class="h-4 w-4" /></NuxtLink>
+        </div>
+        <div class="mission-image-grid">
+          <figure class="mission-image mission-image-large">
+            <img :src="`${baseURL}images/about/field-team-01.webp`" alt="Earth Guardians youth leaders working together in the field" loading="lazy" />
+            <figcaption>Leadership in motion</figcaption>
+          </figure>
+          <figure class="mission-image mission-image-small">
+            <img :src="`${baseURL}images/about/action-01.webp`" alt="Community climate action in the field" loading="lazy" />
+            <figcaption>Local action, global signal</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="home-container home-principles" aria-labelledby="principles-title">
+        <header class="section-heading-row">
+          <div>
+            <span class="section-index">05 / What makes us different</span>
+            <h2 id="principles-title">Autonomy, community, direct action.</h2>
+          </div>
+          <p>Our strategy redistributes power by centering youth, LGBTQIA+, BIPOC, women and people with visible and invisible disabilities in the climate-justice movement.</p>
+        </header>
+        <div class="principles-grid">
+          <article v-for="principle in principles" :key="principle.title" class="principle-card">
+            <span class="principle-mark" :class="`principle-mark-${principle.tone}`" />
+            <h3>{{ principle.title }}</h3>
+            <p>{{ principle.description }}</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="home-container home-programs" aria-labelledby="programs-title">
+        <header class="section-heading-row">
+          <div>
+            <span class="section-index">06 / Programs in the field</span>
+            <h2 id="programs-title">From a crew to a movement.</h2>
+          </div>
+          <p>Across six continents, Earth Guardians combines training, resources and trust so communities can move from an idea to durable action.</p>
+        </header>
+        <div class="programs-layout">
+          <div class="program-list">
+            <article v-for="(program, index) in programs" :key="program.title" class="program-row">
+              <span class="program-number">0{{ index + 1 }}</span>
+              <div>
+                <h3>{{ program.title }}</h3>
+                <p>{{ program.description }}</p>
+              </div>
+              <Icon name="lucide:arrow-up-right" class="program-arrow" />
+            </article>
+          </div>
+          <figure class="program-feature-image">
+            <img :src="`${baseURL}images/about/action-02.webp`" alt="Earth Guardians community project" loading="lazy" />
+            <figcaption><strong>825+</strong><span>grassroots initiatives supported in the last 12 years</span></figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="home-container home-network" aria-labelledby="network-title">
+        <div class="network-panel">
+          <div>
+            <span class="section-index">07 / The network</span>
+            <h2 id="network-title">A distributed team for a shared planet.</h2>
+            <p>Six staff members, more than 130 active volunteer crews and regional councils keep programs relevant, accountable and led by the people doing the work.</p>
+          </div>
+          <div class="network-stats">
+            <div><strong>6</strong><span>continents</span></div>
+            <div><strong>130+</strong><span>active crews</span></div>
+            <div><strong>85%</strong><span>BIPOC staff</span></div>
+            <div><strong>$185K+</strong><span>crew grants since 2021</span></div>
+          </div>
+        </div>
+        <div class="network-gallery">
+          <img :src="`${baseURL}images/about/field-team-02.webp`" alt="Earth Guardians team members" loading="lazy" />
+          <img :src="`${baseURL}images/about/action-03.webp`" alt="Youth-led environmental action" loading="lazy" />
+        </div>
+      </section>
+
       <RedBookDatabases />
 
       <footer class="home-container home-footer">
@@ -335,9 +418,19 @@ const datasets = computed(() => [
   },
 ])
 
-const gridStyle = computed(() => ({
-  '--home-grid-line': isDark.value ? 'rgba(210, 235, 218, 0.055)' : 'rgba(17, 42, 31, 0.065)',
-}))
+const principles = [
+  { title: 'Non-violence', description: 'Anti-oppression work rooted in justice, peace and care for one another.', tone: 'blue' },
+  { title: 'Knowledge', description: 'Environmental education should be globally accessible, practical and shared freely.', tone: 'green' },
+  { title: 'Community', description: 'Unity sits at the heart of our work: safe spaces for authentic connection and action.', tone: 'blue' },
+]
+
+const programs = [
+  { title: 'Crew program', description: '130+ youth-led chapters work on grassroots climate and environmental justice campaigns across 47 countries.' },
+  { title: 'Large-scale projects', description: 'Agroforestry, agroecology and reforestation projects plant between 5,000 and 100,000 trees at a time.' },
+  { title: 'Project grants', description: 'More than US$185,000 has reached Earth Guardians crews since 2021 to turn local ideas into impact.' },
+  { title: 'Training & masterclasses', description: 'Virtual and in-person workshops build leadership, organizing and climate-action skills.' },
+  { title: 'Indigenous Youth Initiative', description: 'Annual in-person training connects frontline media, traditional ecological knowledge and strategic organizing.' },
+]
 
 onMounted(async () => {
   try {
@@ -421,7 +514,7 @@ onUnmounted(() => abortController.abort())
   inset: 0;
   z-index: 1;
   opacity: 0.05;
-  background-image: url('/noise.png');
+  background-image: none;
   mix-blend-mode: multiply;
 }
 
@@ -1344,6 +1437,52 @@ onUnmounted(() => abortController.abort())
   text-align: right;
 }
 
+.home-mission,
+.home-principles,
+.home-programs,
+.home-network { padding-bottom: clamp(5rem, 10vw, 9rem); }
+.home-mission { display: grid; grid-template-columns: minmax(0, .9fr) minmax(22rem, 1.1fr); gap: clamp(2rem, 7vw, 7rem); align-items: center; }
+.mission-copy h2,
+.section-heading-row h2,
+.network-panel h2 { max-width: 45rem; margin: .8rem 0 0; font-size: clamp(2.2rem, 5vw, 5rem); letter-spacing: -.065em; line-height: .94; }
+.mission-copy > p:not(.mission-emphasis) { max-width: 38rem; margin: 1.4rem 0 0; color: var(--home-muted); font-size: .98rem; line-height: 1.75; }
+.mission-emphasis { max-width: 30rem; margin: 1.25rem 0 0; color: var(--home-ink); font-family: Montserrat, Inter, sans-serif; font-size: 1.05rem; font-weight: 800; letter-spacing: -.035em; line-height: 1.35; }
+.mission-image-grid { display: grid; grid-template-columns: 1.15fr .75fr; gap: 1rem; align-items: end; }
+.mission-image, .program-feature-image { position: relative; overflow: hidden; margin: 0; border: 1px solid var(--home-line); background: var(--home-card); }
+.mission-image img, .program-feature-image img, .network-gallery img { display: block; width: 100%; height: 100%; object-fit: cover; filter: saturate(.88) contrast(1.02); transition: transform 500ms ease; }
+.mission-image:hover img, .program-feature-image:hover img, .network-gallery img:hover { transform: scale(1.04); }
+.mission-image-large { aspect-ratio: .83; }
+.mission-image-small { aspect-ratio: .78; margin-bottom: 3rem; }
+.mission-image figcaption, .program-feature-image figcaption { position: absolute; right: .65rem; bottom: .65rem; left: .65rem; padding: .5rem .65rem; background: rgba(10,24,17,.78); color: #f4f7ed; font-size: .58rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.section-heading-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(16rem, .65fr); gap: 2rem; align-items: end; padding-bottom: 2rem; border-bottom: 1px solid var(--home-line); }
+.section-heading-row > p { max-width: 30rem; margin: 0; color: var(--home-muted); font-size: .9rem; line-height: 1.7; }
+.principles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+.principle-card { min-height: 13rem; padding: 1.4rem; border: 1px solid var(--home-line); background: var(--home-card); }
+.principle-mark { display: block; width: .8rem; height: .8rem; margin-bottom: 3.2rem; border-radius: 50%; box-shadow: 0 0 0 .35rem color-mix(in srgb, currentColor 12%, transparent); }
+.principle-mark-blue { color: #4a80f5; background: #4a80f5; }
+.principle-mark-green { color: #78ba4b; background: #78ba4b; }
+.principle-card h3 { margin: 0; font-size: 1.2rem; letter-spacing: -.04em; }
+.principle-card p { margin: .55rem 0 0; color: var(--home-muted); font-size: .8rem; line-height: 1.55; }
+.programs-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(18rem, .75fr); gap: clamp(1.5rem, 5vw, 5rem); margin-top: 1.2rem; }
+.program-row { display: grid; grid-template-columns: 2.2rem 1fr auto; gap: 1rem; align-items: start; padding: 1.2rem 0; border-bottom: 1px solid var(--home-line); }
+.program-number { color: var(--home-accent-strong); font-size: .65rem; font-weight: 900; letter-spacing: .1em; }
+.program-row h3 { margin: 0; font-size: 1rem; letter-spacing: -.03em; }
+.program-row p { max-width: 38rem; margin: .35rem 0 0; color: var(--home-muted); font-size: .78rem; line-height: 1.55; }
+.program-arrow { width: 1rem; color: var(--home-muted); }
+.program-feature-image { min-height: 24rem; }
+.program-feature-image figcaption { display: flex; align-items: baseline; gap: .55rem; }
+.program-feature-image figcaption strong { color: var(--home-accent); font-family: Montserrat, Inter, sans-serif; font-size: 1.25rem; }
+.network-panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(20rem, .9fr); gap: 3rem; padding: clamp(1.5rem, 4vw, 3rem); background: var(--home-ink); color: var(--home-bg); }
+.network-panel .section-index { color: color-mix(in srgb, var(--home-bg) 58%, transparent); }
+.network-panel h2 { color: var(--home-bg); }
+.network-panel p { max-width: 34rem; margin: 1.2rem 0 0; color: color-mix(in srgb, var(--home-bg) 72%, transparent); font-size: .9rem; line-height: 1.65; }
+.network-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; align-content: end; }
+.network-stats div { padding-top: .8rem; border-top: 1px solid color-mix(in srgb, var(--home-bg) 22%, transparent); }
+.network-stats strong { display: block; font-family: Montserrat, Inter, sans-serif; font-size: clamp(1.5rem, 3vw, 2.5rem); letter-spacing: -.07em; }
+.network-stats span { display: block; margin-top: .25rem; color: color-mix(in srgb, var(--home-bg) 62%, transparent); font-size: .57rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.network-gallery { display: grid; grid-template-columns: 1.15fr .85fr; gap: 1rem; margin-top: 1rem; }
+.network-gallery img { aspect-ratio: 1.7; border: 1px solid var(--home-line); }
+
 @media (max-width: 900px) {
   .home-hero {
     grid-template-columns: 1fr;
@@ -1417,7 +1556,8 @@ onUnmounted(() => abortController.abort())
   }
 
   .explorer-header,
-  .manifesto-grid {
+  .manifesto-grid,
+  .section-heading-row {
     grid-template-columns: 1fr;
     gap: 1.4rem;
   }
@@ -1442,6 +1582,16 @@ onUnmounted(() => abortController.abort())
   .home-footer-meta {
     text-align: left;
   }
+
+  .home-mission,
+  .programs-layout,
+  .network-panel { grid-template-columns: 1fr; }
+  .mission-image-grid { max-width: 32rem; }
+  .principles-grid { grid-template-columns: 1fr; }
+  .principle-card { min-height: auto; }
+  .principle-mark { margin-bottom: 1.5rem; }
+  .program-feature-image { min-height: 18rem; }
+  .network-stats { margin-top: 1rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

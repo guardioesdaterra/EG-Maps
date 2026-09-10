@@ -145,6 +145,10 @@ jobs:
           test -d "_src_develop/.output/public"
           test -f "_src_develop/.output/public/index.html"
           test -f "_src_develop/.output/public/eg-logo.png"
+          test -f "_src_develop/.output/public/manifest.json"
+          test -f "_src_develop/.output/public/images/about/field-team-01.webp"
+          grep -q '/EG-Maps/test/_nuxt/' "_src_develop/.output/public/index.html"
+          grep -q '/EG-Maps/test/eg-logo.png' "_src_develop/.output/public/index.html"
           mkdir -p /tmp/site/test
           cp -r _src_develop/.output/public/. /tmp/site/test/
           cp /tmp/site/test/200.html /tmp/site/test/404.html

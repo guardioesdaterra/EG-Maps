@@ -105,12 +105,10 @@ jobs:
         with:
           ref: develop
           path: _src_develop
-        continue-on-error: true
 
       - name: Install dependencies (develop)
         run: pnpm install --frozen-lockfile
         working-directory: _src_develop
-        continue-on-error: true
 
       - name: Download cultural agents data (develop)
         uses: actions/download-artifact@v5
@@ -122,17 +120,14 @@ jobs:
       - name: Prepare Nuxt types (develop)
         run: npx nuxi prepare
         working-directory: _src_develop
-        continue-on-error: true
 
       - name: Build species icon mapping (develop)
         run: node scripts/build-species-icon-mapping.mjs
         working-directory: _src_develop
-        continue-on-error: true
 
       - name: Compute overlap indicators (develop)
         run: node scripts/compute-overlaps.mjs
         working-directory: _src_develop
-        continue-on-error: true
 
       - name: Build develop (test)
         run: pnpm generate
@@ -144,20 +139,16 @@ jobs:
           SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
-        continue-on-error: true
 
       - name: Copy develop output to test subfolder
         run: |
-          if [ -d "_src_develop/.output/public" ]; then
-            cp -r _src_develop/.output/public /tmp/site/test
-            if [ -f /tmp/site/test/200.html ]; then
-              cp /tmp/site/test/200.html /tmp/site/test/404.html
-            fi
-            echo "✅ Test site deployed to /EG-Maps/test/"
-          else
-            echo "⚠️  Develop build produced no output — test site not deployed"
-          fi
-        continue-on-error: true
+          test -d "_src_develop/.output/public"
+          test -f "_src_develop/.output/public/index.html"
+          test -f "_src_develop/.output/public/eg-logo.png"
+          mkdir -p /tmp/site/test
+          cp -r _src_develop/.output/public/. /tmp/site/test/
+          cp /tmp/site/test/200.html /tmp/site/test/404.html
+          echo "✅ Test site deployed to /EG-Maps/test/"
 
       # ── Finalize combined output ──────────────────────────────
       - name: Copy 200.html as 404.html for SPA fallback (root)

@@ -6,7 +6,7 @@
  */
 <template>
   <ClientOnly>
-    <MapView2D :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" />
+    <MapView2D :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" @map-init="handleMapInit" />
     <template #fallback>
       <div class="flex flex-col h-[100svh] w-full items-center justify-center bg-black text-white">
         <div class="relative mb-[clamp(1.5rem,4vw,3rem)] flex items-center justify-center loader-ring">
@@ -27,8 +27,10 @@
 
 <script setup lang="ts">
 
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent, ref as vueRef } from 'vue'
+import type { Map as MapLibreMap } from 'maplibre-gl'
 import { allCrewRegionsData, type CrewLocation } from '@/lib/crew-data'
+import { useCrewPostMessage } from '@/composables/useCrewPostMessage'
 
 const MapView2D = defineAsyncComponent(() => import('~/components/MapView2D.vue'))
 
@@ -37,6 +39,20 @@ const baseURL = useRuntimeConfig().app.baseURL
 
 const crewRegions = allCrewRegionsData
 const crewLocations = ref<CrewLocation[]>([])
+
+// Map instance ref — set when MapView2D emits mapInit
+const mapInstance = vueRef<MapLibreMap | null>(null)
+
+// PostMessage bridge: filter updates from parent Squarespace page
+useCrewPostMessage({
+  mapRef: mapInstance,
+  regions: crewRegions,
+  locations: crewLocations,
+})
+
+function handleMapInit(map: MapLibreMap) {
+  mapInstance.value = map
+}
 
 onMounted(async () => {
   try {

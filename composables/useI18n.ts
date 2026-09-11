@@ -64,7 +64,6 @@ export function useI18n() {
       (val) => {
         if (val && vLocale.value !== val) vLocale.value = val
       },
-      { immediate: true },
     )
   }
   if (i18n) {

@@ -14,7 +14,6 @@
  *        public/data/rare-earth/pococaldas/*.geojson        → useRareEarthData
  *        public/data/cultural-agents/cultural-agents.json   → useCulturalAgentsData (mapa_cultura + floresta_ativista merged)
  *        public/data/cultural-agents/floresta-ativista.json → useCulturalAgentsData (additive)
- *        Supabase community_pins (status='approved')        → useCulturalAgentsData
  *
  * @deps @/composables/useI18n (useI18n);
  *       @/composables/useVulcanObservatoryPage (useVulcanObservatoryPage);
@@ -87,7 +86,7 @@
         @map-init="onMapInit"
       >
         <template #overlays>
-          <!-- ── Topbar ──────────────────────────────────────────────── -->
+          <!-- ── Topbar (brand + stats only) ─────────────────────── -->
           <header class="vulc-topbar" role="toolbar" :aria-label="t('nav.observatoryOfVulcan')">
             <div class="vulc-topbar__brand">
               <span class="vulc-topbar__pulse" aria-hidden="true" />
@@ -118,117 +117,240 @@
                 <strong>{{ totalCount }}</strong> {{ t('observatory.v2.claimsTotal') }}
               </span>
             </div>
-
-            <!-- Action icons -->
-            <nav class="vulc-topbar__actions" :aria-label="t('observatory.v2.actions')">
-              <button
-                type="button"
-                class="vulc-icon-btn"
-                :class="{ 'is-active': controls.showTimeline.value }"
-                :aria-label="t('observatory.tabs.timeline')"
-                :aria-pressed="controls.showTimeline.value"
-                @click="controls.showTimeline.value = !controls.showTimeline.value"
-              >
-                <Icon name="lucide:clock" />
-                <span class="vulc-icon-btn__tip">{{ t('observatory.tabs.timeline') }}</span>
-              </button>
-              <button
-                type="button"
-                class="vulc-icon-btn"
-                :aria-label="t('observatory.v2.corporateNetwork')"
-                @click="onRedeCorporativa()"
-              >
-                <Icon name="lucide:share-2" />
-                <span class="vulc-icon-btn__tip">{{ t('observatory.v2.corporateNetwork') }}</span>
-              </button>
-              <button
-                type="button"
-                class="vulc-icon-btn"
-                :aria-label="t('observatory.v2.downloadData')"
-                @click="onDataDownload()"
-              >
-                <Icon name="lucide:download" />
-                <span class="vulc-icon-btn__tip">{{ t('observatory.v2.downloadData') }}</span>
-              </button>
-              <button
-                type="button"
-                class="vulc-icon-btn"
-                :class="{ 'is-active': controls.enterpriseLayerVisible.value }"
-                :aria-label="t('observatory.v2.enterpriseHq')"
-                :aria-pressed="controls.enterpriseLayerVisible.value"
-                @click="controls.toggleEnterpriseLayer()"
-              >
-                <Icon name="lucide:building-2" />
-                <span class="vulc-icon-btn__tip">{{ t('observatory.v2.enterpriseHq') }}</span>
-              </button>
-              <button
-                type="button"
-                class="vulc-icon-btn"
-                :class="{ 'is-active': controls.showDataTable.value }"
-                :aria-label="t('observatory.v2.dataTable')"
-                :aria-pressed="controls.showDataTable.value"
-                @click="controls.showDataTable.value = !controls.showDataTable.value"
-              >
-                <Icon name="lucide:table" />
-                <span class="vulc-icon-btn__tip">{{ t('observatory.v2.dataTable') }}</span>
-              </button>
-              <button
-                type="button"
-                class="vulc-icon-btn"
-                :aria-label="t('observatory.v2.export')"
-                @click="controls.showExport.value = !controls.showExport.value"
-              >
-                <Icon name="lucide:file-down" />
-                <span class="vulc-icon-btn__tip">{{ t('observatory.v2.export') }}</span>
-              </button>
-              <button
-                type="button"
-                class="vulc-icon-btn"
-                :aria-label="t('observatory.v2.shortcuts')"
-                @click="controls.showShortcuts.value = !controls.showShortcuts.value"
-              >
-                <Icon name="lucide:keyboard" />
-                <span class="vulc-icon-btn__tip">{{ t('observatory.v2.shortcuts') }}</span>
-              </button>
-              <button
-                type="button"
-                class="vulc-icon-btn"
-                :aria-label="t('observatory.v2.nearMe')"
-                @click="controls.showGeoLocate.value = !controls.showGeoLocate.value"
-              >
-                <Icon name="lucide:map-pin" />
-                <span class="vulc-icon-btn__tip">{{ t('observatory.v2.nearMe') }}</span>
-              </button>
-              <button
-                v-if="isRegional && onExpandToFullBrazil"
-                type="button"
-                class="vulc-icon-btn vulc-icon-btn--accent"
-                :aria-label="t('observatory.v2.fullBrazil')"
-                @click="onExpandToFullBrazil()"
-              >
-                <Icon name="lucide:earth" />
-                <span class="vulc-icon-btn__tip">{{ t('observatory.v2.fullBrazil') }}</span>
-              </button>
-              <button
-                type="button"
-                class="vulc-icon-btn"
-                :aria-label="t('observatory.v2.monitor')"
-                @click="onUserContribution()"
-              >
-                <Icon name="lucide:notebook-pen" />
-                <span class="vulc-icon-btn__tip">{{ t('observatory.v2.monitor') }}</span>
-              </button>
-              <button
-                type="button"
-                class="vulc-icon-btn vulc-icon-btn--primary"
-                :aria-label="t('observatory.v2.viewGlobe')"
-                @click="navigateTo('/vulcan-observatory/3d')"
-              >
-                <Icon name="lucide:globe" />
-                <span class="vulc-icon-btn__tip">{{ t('observatory.v2.viewGlobe') }}</span>
-              </button>
-            </nav>
           </header>
+
+          <!-- ── Desktop: Floating action bubble (bottom-right) ──── -->
+          <div class="vulc-actions-bubble" role="region" :aria-label="t('observatory.v2.actions')">
+            <button
+              type="button"
+              class="vulc-actions-bubble__toggle"
+              :aria-label="actionsExpanded ? 'Collapse actions' : 'Expand actions'"
+              :aria-expanded="actionsExpanded"
+              @click="actionsExpanded = !actionsExpanded"
+            >
+              <Icon :name="actionsExpanded ? 'lucide:x' : 'lucide:settings-2'" />
+            </button>
+            <Transition name="vulc-actions-expand">
+              <nav v-show="actionsExpanded" class="vulc-actions-bubble__menu" :aria-label="t('observatory.v2.actions')">
+                <button
+                  type="button"
+                  class="vulc-icon-btn"
+                  :class="{ 'is-active': controls.showTimeline.value }"
+                  :aria-label="t('observatory.tabs.timeline')"
+                  :aria-pressed="controls.showTimeline.value"
+                  @click="controls.showTimeline.value = !controls.showTimeline.value"
+                >
+                  <Icon name="lucide:clock" />
+                  <span class="vulc-icon-btn__tip">{{ t('observatory.tabs.timeline') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="vulc-icon-btn"
+                  :aria-label="t('observatory.v2.corporateNetwork')"
+                  @click="onRedeCorporativa()"
+                >
+                  <Icon name="lucide:share-2" />
+                  <span class="vulc-icon-btn__tip">{{ t('observatory.v2.corporateNetwork') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="vulc-icon-btn"
+                  :aria-label="t('observatory.v2.downloadData')"
+                  @click="onDataDownload()"
+                >
+                  <Icon name="lucide:download" />
+                  <span class="vulc-icon-btn__tip">{{ t('observatory.v2.downloadData') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="vulc-icon-btn"
+                  :class="{ 'is-active': controls.enterpriseLayerVisible.value }"
+                  :aria-label="t('observatory.v2.enterpriseHq')"
+                  :aria-pressed="controls.enterpriseLayerVisible.value"
+                  @click="controls.toggleEnterpriseLayer()"
+                >
+                  <Icon name="lucide:building-2" />
+                  <span class="vulc-icon-btn__tip">{{ t('observatory.v2.enterpriseHq') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="vulc-icon-btn"
+                  :class="{ 'is-active': controls.showDataTable.value }"
+                  :aria-label="t('observatory.v2.dataTable')"
+                  :aria-pressed="controls.showDataTable.value"
+                  @click="controls.showDataTable.value = !controls.showDataTable.value"
+                >
+                  <Icon name="lucide:table" />
+                  <span class="vulc-icon-btn__tip">{{ t('observatory.v2.dataTable') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="vulc-icon-btn"
+                  :aria-label="t('observatory.v2.export')"
+                  @click="controls.showExport.value = !controls.showExport.value"
+                >
+                  <Icon name="lucide:file-down" />
+                  <span class="vulc-icon-btn__tip">{{ t('observatory.v2.export') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="vulc-icon-btn"
+                  :aria-label="t('observatory.v2.shortcuts')"
+                  @click="controls.showShortcuts.value = !controls.showShortcuts.value"
+                >
+                  <Icon name="lucide:keyboard" />
+                  <span class="vulc-icon-btn__tip">{{ t('observatory.v2.shortcuts') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="vulc-icon-btn"
+                  :aria-label="t('observatory.v2.nearMe')"
+                  @click="controls.showGeoLocate.value = !controls.showGeoLocate.value"
+                >
+                  <Icon name="lucide:map-pin" />
+                  <span class="vulc-icon-btn__tip">{{ t('observatory.v2.nearMe') }}</span>
+                </button>
+                <button
+                  v-if="isRegional && onExpandToFullBrazil"
+                  type="button"
+                  class="vulc-icon-btn vulc-icon-btn--accent"
+                  :aria-label="t('observatory.v2.fullBrazil')"
+                  @click="onExpandToFullBrazil()"
+                >
+                  <Icon name="lucide:earth" />
+                  <span class="vulc-icon-btn__tip">{{ t('observatory.v2.fullBrazil') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="vulc-icon-btn"
+                  :aria-label="t('observatory.v2.monitor')"
+                  @click="onUserContribution()"
+                >
+                  <Icon name="lucide:notebook-pen" />
+                  <span class="vulc-icon-btn__tip">{{ t('observatory.v2.monitor') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="vulc-icon-btn vulc-icon-btn--primary"
+                  :aria-label="t('observatory.v2.viewGlobe')"
+                  @click="navigateTo('/vulcan-observatory/3d')"
+                >
+                  <Icon name="lucide:globe" />
+                  <span class="vulc-icon-btn__tip">{{ t('observatory.v2.viewGlobe') }}</span>
+                </button>
+              </nav>
+            </Transition>
+          </div>
+
+          <!-- ── Mobile: Vertical action menu (right side) ──────── -->
+          <nav class="vulc-mobile-actions" :aria-label="t('observatory.v2.actions')">
+            <button
+              type="button"
+              class="vulc-icon-btn"
+              :class="{ 'is-active': controls.showTimeline.value }"
+              :aria-label="t('observatory.tabs.timeline')"
+              :aria-pressed="controls.showTimeline.value"
+              @click="controls.showTimeline.value = !controls.showTimeline.value"
+            >
+              <Icon name="lucide:clock" />
+              <span class="vulc-icon-btn__tip">{{ t('observatory.tabs.timeline') }}</span>
+            </button>
+            <button
+              type="button"
+              class="vulc-icon-btn"
+              :aria-label="t('observatory.v2.corporateNetwork')"
+              @click="onRedeCorporativa()"
+            >
+              <Icon name="lucide:share-2" />
+              <span class="vulc-icon-btn__tip">{{ t('observatory.v2.corporateNetwork') }}</span>
+            </button>
+            <button
+              type="button"
+              class="vulc-icon-btn"
+              :aria-label="t('observatory.v2.downloadData')"
+              @click="onDataDownload()"
+            >
+              <Icon name="lucide:download" />
+              <span class="vulc-icon-btn__tip">{{ t('observatory.v2.downloadData') }}</span>
+            </button>
+            <button
+              type="button"
+              class="vulc-icon-btn"
+              :class="{ 'is-active': controls.enterpriseLayerVisible.value }"
+              :aria-label="t('observatory.v2.enterpriseHq')"
+              :aria-pressed="controls.enterpriseLayerVisible.value"
+              @click="controls.toggleEnterpriseLayer()"
+            >
+              <Icon name="lucide:building-2" />
+              <span class="vulc-icon-btn__tip">{{ t('observatory.v2.enterpriseHq') }}</span>
+            </button>
+            <button
+              type="button"
+              class="vulc-icon-btn"
+              :class="{ 'is-active': controls.showDataTable.value }"
+              :aria-label="t('observatory.v2.dataTable')"
+              :aria-pressed="controls.showDataTable.value"
+              @click="controls.showDataTable.value = !controls.showDataTable.value"
+            >
+              <Icon name="lucide:table" />
+              <span class="vulc-icon-btn__tip">{{ t('observatory.v2.dataTable') }}</span>
+            </button>
+            <button
+              type="button"
+              class="vulc-icon-btn"
+              :aria-label="t('observatory.v2.export')"
+              @click="controls.showExport.value = !controls.showExport.value"
+            >
+              <Icon name="lucide:file-down" />
+              <span class="vulc-icon-btn__tip">{{ t('observatory.v2.export') }}</span>
+            </button>
+            <button
+              type="button"
+              class="vulc-icon-btn"
+              :aria-label="t('observatory.v2.shortcuts')"
+              @click="controls.showShortcuts.value = !controls.showShortcuts.value"
+            >
+              <Icon name="lucide:keyboard" />
+              <span class="vulc-icon-btn__tip">{{ t('observatory.v2.shortcuts') }}</span>
+            </button>
+            <button
+              type="button"
+              class="vulc-icon-btn"
+              :aria-label="t('observatory.v2.nearMe')"
+              @click="controls.showGeoLocate.value = !controls.showGeoLocate.value"
+            >
+              <Icon name="lucide:map-pin" />
+              <span class="vulc-icon-btn__tip">{{ t('observatory.v2.nearMe') }}</span>
+            </button>
+            <button
+              v-if="isRegional && onExpandToFullBrazil"
+              type="button"
+              class="vulc-icon-btn vulc-icon-btn--accent"
+              :aria-label="t('observatory.v2.fullBrazil')"
+              @click="onExpandToFullBrazil()"
+            >
+              <Icon name="lucide:earth" />
+              <span class="vulc-icon-btn__tip">{{ t('observatory.v2.fullBrazil') }}</span>
+            </button>
+            <button
+              type="button"
+              class="vulc-icon-btn"
+              :aria-label="t('observatory.v2.monitor')"
+              @click="onUserContribution()"
+            >
+              <Icon name="lucide:notebook-pen" />
+              <span class="vulc-icon-btn__tip">{{ t('observatory.v2.monitor') }}</span>
+            </button>
+            <button
+              type="button"
+              class="vulc-icon-btn vulc-icon-btn--primary"
+              :aria-label="t('observatory.v2.viewGlobe')"
+              @click="navigateTo('/vulcan-observatory/3d')"
+            >
+              <Icon name="lucide:globe" />
+              <span class="vulc-icon-btn__tip">{{ t('observatory.v2.viewGlobe') }}</span>
+            </button>
+          </nav>
 
           <!-- ── Left-side: Mining claim filters ──────────────────── -->
           <aside v-show="leftSidebarOpen" class="vulc-leftpanel" aria-label="Mining claim filters">
@@ -344,38 +466,6 @@
             @jump-to-cultural="onJumpToCultural"
           />
 
-          <!-- ── Bottombar: my territory ── -->
-          <footer class="vulc-bottombar" role="toolbar" :aria-label="t('observatory.v2.bottomTools')">
-            <div class="vulc-bottombar__left" />
-
-            <div class="vulc-bottombar__center" />
-
-            <div class="vulc-bottombar__right">
-              <button
-                type="button"
-                class="vulc-pin-btn"
-                :class="{ 'is-active': pinPickerMode }"
-                :aria-label="pinPickerMode ? t('observatory.myTerritory.cancel') : t('observatory.myTerritory.dropPin')"
-                @click="togglePinPicker"
-              >
-                <Icon name="lucide:map-pin" />
-                <span class="hidden sm:inline">{{ pinPickerMode ? t('observatory.myTerritory.cancel') : t('observatory.myTerritory.dropPin') }}</span>
-              </button>
-              <div v-if="userPin" class="vulc-pin-info">
-                <div class="flex items-center gap:1.5 min-w-0 truncate">
-                  <span v-if="userPinShared" class="vulc-pin-info__badge">SHARED</span>
-                  <strong class="truncate">{{ userPin.label }}</strong>
-                </div>
-                <div class="flex gap-1">
-                  <button type="button" class="vulc-pin-info__btn vulc-pin-info__btn--ok" @click="flyToUserPin">{{ t('observatory.myTerritory.flyTo') }}</button>
-                  <button type="button" class="vulc-pin-info__btn" @click="copyPinUrl">{{ shareCopied ? t('observatory.myTerritory.copied') : t('observatory.myTerritory.share') }}</button>
-                  <button type="button" class="vulc-pin-info__btn vulc-pin-info__btn--danger" :aria-label="t('observatory.myTerritory.clear')" @click="clearPin">
-                    <Icon name="lucide:x" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </footer>
         </template>
       </MapView2D>
 
@@ -467,13 +557,6 @@ const {
   showClaimDetail,
   claimDetailProps,
   closeClaimDetail,
-  userPin,
-  userPinShared,
-  pinPickerMode,
-  shareCopied,
-  togglePinPicker,
-  flyToUserPin,
-  copyPinUrl,
   loadingMessage,
   flyToEnterprise,
   zoomToDanger,
@@ -488,12 +571,12 @@ const {
   showClaimReport,
   reportClaim,
   mapContainerRef,
-  clearPin,
 } = useVulcanObservatoryPage('pococaldas')
 
 const { categoryStats, totalCount } = stats
 
 const leftSidebarOpen = ref(false)
+const actionsExpanded = ref(false)
 onMounted(() => {
   if (window.innerWidth >= 768) leftSidebarOpen.value = true
 })
@@ -523,12 +606,17 @@ function onJumpToCultural(coord: [number, number], name: string) {
 <style>
 /* ════════════════════════════════════════════════════════════════════════
  *  Vulcan Observatory v2 — culture-first overlay shell
- *  Layout:  ┌─ topbar (brand · counters · actions) ─────────────────┐
- *           │                                                    │
- *           │   map fills the viewport behind glass panels        │
- *           │   right panel = CULTURE AND TERRITORY                │
- *           │                                                    │
- *           └─ bottombar (phase · year · my-territory) ───────────┘
+ *  Layout:
+ *    Desktop:  ┌─ topbar (brand · counters) ───────────────────────┐
+ *              │                                                   │
+ *              │   map fills the viewport behind glass panels      │
+ *              │   right panel = CULTURE AND TERRITORY             │
+ *              │                                                   │
+ *              │   bottom-right: floating action bubble            │
+ *              └───────────────────────────────────────────────────┘
+ *    Mobile:   ┌─ topbar (brand · counters) ───────────────────────┐
+ *              │   right side: vertical action menu                │
+ *              └───────────────────────────────────────────────────┘
  * ═══════════════════════════════════════════════════════════════════ */
 
 .vulc-topbar {
@@ -540,7 +628,7 @@ function onJumpToCultural(coord: [number, number], name: string) {
   z-index: 540;
   pointer-events: auto;
   display: grid;
-  grid-template-columns: minmax(0, auto) 1fr minmax(0, auto);
+  grid-template-columns: minmax(0, auto) 1fr;
   align-items: center;
   gap: clamp(0.5rem, 1.5vw, 1rem);
   padding: 0 clamp(0.5rem, 1.5vw, 1rem);
@@ -623,12 +711,7 @@ function onJumpToCultural(coord: [number, number], name: string) {
   font-variant-numeric: tabular-nums;
 }
 
-.vulc-topbar__actions {
-  display: flex;
-  align-items: center;
-  gap: clamp(0.2rem, 0.5vw, 0.35rem);
-  flex-shrink: 0;
-}
+/* ── Icon buttons (shared) ──────────────────────────────────────── */
 .vulc-icon-btn {
   position: relative;
   width: clamp(1.85rem, 3.5vw, 2.25rem);
@@ -697,29 +780,106 @@ function onJumpToCultural(coord: [number, number], name: string) {
 .vulc-icon-btn:hover .vulc-icon-btn__tip {
   opacity: 1;
 }
+
+/* ── Desktop: Floating action bubble (bottom-right) ─────────────── */
+.vulc-actions-bubble {
+  position: absolute;
+  bottom: clamp(1rem, 3vh, 1.5rem);
+  right: clamp(0.75rem, 1.5vw, 1.25rem);
+  z-index: 550;
+  pointer-events: auto;
+  display: none;
+}
+.vulc-actions-bubble__toggle {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111113;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.2s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+.vulc-actions-bubble__toggle svg {
+  width: 55%;
+  height: 55%;
+}
+.vulc-actions-bubble__toggle:hover {
+  background: #1a1a1e;
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  transform: scale(1.05);
+}
+.vulc-actions-bubble__menu {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  background: #111113;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+.vulc-actions-bubble__menu .vulc-icon-btn__tip {
+  right: calc(100% + 8px);
+  left: auto;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ── Mobile: Vertical action menu (right side pillar) ───────────── */
+.vulc-mobile-actions {
+  position: absolute;
+  top: clamp(3.5rem, 7vh, 4.5rem);
+  right: clamp(0.35rem, 0.8vw, 0.5rem);
+  bottom: 0;
+  z-index: 540;
+  pointer-events: auto;
+  display: none;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.4rem;
+  background: rgba(10, 10, 12, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.vulc-mobile-actions::-webkit-scrollbar { display: none; }
+.vulc-mobile-actions .vulc-icon-btn {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* ── Desktop show/hide ──────────────────────────────────────────── */
+@media (min-width: 769px) {
+  .vulc-actions-bubble { display: block; }
+}
+/* ── Mobile show/hide ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .vulc-mobile-actions { display: flex; }
+}
+
+/* ── Actions expand transition ──────────────────────────────────── */
+.vulc-actions-expand-enter-active { transition: opacity 0.15s ease, transform 0.15s ease; }
+.vulc-actions-expand-leave-active { transition: opacity 0.1s ease, transform 0.1s ease; }
+.vulc-actions-expand-enter-from,
+.vulc-actions-expand-leave-to { opacity: 0; transform: translateY(8px); }
+
+/* ── Topbar responsive ──────────────────────────────────────────── */
 @media (max-width: 640px) {
   .vulc-topbar { height: 3rem; padding: 0 0.5rem; gap: 0.35rem; }
   .vulc-topbar__brand { gap: 0.4rem; }
   .vulc-stat__label, .vulc-stat__total { display: none; }
-  .vulc-icon-btn { width: 1.75rem; height: 1.75rem; }
-}
-
-/* ── Bottombar ───────────────────────────────────────────────────────── */
-.vulc-bottombar {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: clamp(3.5rem, 8vh, 4.25rem);
-  z-index: 540;
-  pointer-events: auto;
-  display: grid;
-  grid-template-columns: minmax(0, auto) 1fr minmax(0, auto);
-  align-items: center;
-  gap: clamp(0.5rem, 1.5vw, 1rem);
-  padding: 0 clamp(0.5rem, 1.5vw, 1rem);
-  background: #0a0a0c;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* ── Left Panel (mining claim filters) ─────────────────────────────── */
@@ -727,7 +887,7 @@ function onJumpToCultural(coord: [number, number], name: string) {
   position: absolute;
   top: clamp(3.5rem, 7vh, 4.5rem);
   left: clamp(0.5rem, 1vw, 0.75rem);
-  bottom: clamp(3.75rem, 8.5vh, 5rem);
+  bottom: clamp(1rem, 3vh, 1.5rem);
   width: clamp(14rem, 20vw, 17rem);
   z-index: 530;
   pointer-events: auto;
@@ -833,124 +993,6 @@ function onJumpToCultural(coord: [number, number], name: string) {
 @media (max-width: 768px) {
   .vulc-leftpanel { display: none; }
   .vulc-leftpanel__show { display: none; }
-}
-.vulc-bottombar__left,
-.vulc-bottombar__right {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-.vulc-bottombar__center {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.vulc-pin-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.75rem;
-  background: transparent;
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  border-radius: 6px;
-  color: rgb(16, 185, 129);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.15s, border-color 0.15s;
-  flex-shrink: 0;
-}
-.vulc-pin-btn svg {
-  width: 0.85rem;
-  height: 0.85rem;
-}
-.vulc-pin-btn:hover {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgb(16, 185, 129);
-}
-.vulc-pin-btn.is-active {
-  background: rgba(16, 185, 129, 0.22);
-  border-color: rgb(16, 185, 129);
-  color: #fff;
-}
-.vulc-pin-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding-left: 0.6rem;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  min-width: 0;
-  flex: 1;
-  overflow: hidden;
-}
-.vulc-pin-info__badge {
-  font-size: 9px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 3px;
-  background: rgba(243, 156, 18, 0.18);
-  color: rgb(243, 156, 18);
-  flex-shrink: 0;
-}
-.vulc-pin-info strong {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.85);
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 8rem;
-}
-.vulc-pin-info__btn {
-  padding: 0.2rem 0.5rem;
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.7);
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.15s, color 0.15s;
-  flex-shrink: 0;
-}
-.vulc-pin-info__btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-}
-.vulc-pin-info__btn--ok {
-  border-color: rgba(16, 185, 129, 0.5);
-  color: rgb(16, 185, 129);
-}
-.vulc-pin-info__btn--ok:hover {
-  background: rgba(16, 185, 129, 0.12);
-}
-.vulc-pin-info__btn--danger {
-  border-color: transparent;
-  color: rgba(255, 255, 255, 0.4);
-}
-.vulc-pin-info__btn--danger:hover {
-  color: var(--obs-red, #e74c3c);
-}
-@media (max-width: 768px) {
-  .vulc-bottombar {
-    height: auto;
-    padding: 0.35rem 0.5rem;
-    gap: 0.35rem;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-  }
-  .vulc-bottombar__left { order: 1; min-width: 0; overflow: hidden; }
-  .vulc-bottombar__center { order: 2; min-width: 0; }
-  .vulc-bottombar__right { order: 3; min-width: 0; }
-  .vulc-pin-info strong { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

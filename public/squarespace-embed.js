@@ -92,7 +92,14 @@
     // Keep a configured GitHub Pages subpath (for example /EG-Maps/test/).
     // A leading slash would otherwise escape that subpath.
     var originBase = cfg.origin.endsWith('/') ? cfg.origin : cfg.origin + '/';
-    var url = new URL(path.replace(/^\/+/, ''), originBase);
+    var routePath = path.replace(/^\/+/, '');
+    // Prepend baseURL if configured on the container
+    var baseUrl = container.getAttribute('data-base-url') || '';
+    if (baseUrl) {
+      baseUrl = baseUrl.replace(/\/+$/, '');
+      routePath = baseUrl + '/' + routePath;
+    }
+    var url = new URL(routePath, originBase);
     url.searchParams.set('embed', '1');
     if (cfg.theme) url.searchParams.set('theme', cfg.theme);
     if (cfg.accent) url.searchParams.set('accent', cfg.accent.replace('#', ''));

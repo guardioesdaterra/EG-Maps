@@ -1,10 +1,3 @@
-/**
- * components/map/ProjectPopup.vue
- * @why Project grant popup for map markers — shows title, funder, amount, category badge
- * @component ProjectPopup
- * @props project: ProjectData | null
- * @deps vue (computed); @/lib/colors (getProjectColorByBeneficiaries); @/lib/utils (formatCompact)
- */
 <script setup lang="ts">
 
 import { computed } from 'vue'
@@ -41,233 +34,257 @@ const hasStats = computed(() => {
   return props.project.direct_beneficiaries > 0 || props.project.indirect_beneficiaries > 0
 })
 
+const directPct = computed(() => {
+  if (totalBeneficiaries.value === 0) return 0
+  return Math.round((props.project!.direct_beneficiaries / totalBeneficiaries.value) * 100)
+})
+
 </script>
 
 <template>
-  <article v-if="project" class="project-popup">
-    <div
-      class="project-popup__accent"
-      :style="{ background: accentColor }"
-      aria-hidden="true"
-    />
-
-    <header class="project-popup__head">
-      <div class="project-popup__group-row">
-        <span class="project-popup__group" :style="{ borderColor: accentColor, color: accentColor }">
+  <article v-if="project" class="pp">
+    <!-- Hero accent strip -->
+    <div class="pp__hero" :style="{ background: `linear-gradient(135deg, ${accentColor}18 0%, transparent 100%)` }">
+      <div class="pp__hero-bar" :style="{ background: accentColor }" />
+      <div class="pp__hero-content">
+        <span class="pp__badge" :style="{ background: accentColor + '20', color: accentColor, borderColor: accentColor + '40' }">
           {{ t('stats.projectGrantees') }}
         </span>
-      </div>
-      <h2 class="project-popup__title">{{ project.project_title }}</h2>
-      <p v-if="project.country_province" class="project-popup__location">
-        <Icon name="lucide:map-pin" size="0.75rem" />
-        <span>{{ project.country_province }}</span>
-      </p>
-    </header>
-
-    <div v-if="hasStats" class="project-popup__body">
-      <div class="project-popup__stats">
-        <div v-if="project.direct_beneficiaries > 0" class="project-popup__stat">
-          <Icon name="lucide:users" size="0.75rem" class="project-popup__stat-icon" />
-          <div class="project-popup__stat-body">
-            <span class="project-popup__stat-label">{{ t('stats.directBeneficiaries') }}</span>
-            <span class="project-popup__stat-value">{{ formatCompact(project.direct_beneficiaries) }}</span>
-          </div>
-        </div>
-        <div v-if="project.indirect_beneficiaries > 0" class="project-popup__stat">
-          <Icon name="lucide:clock" size="0.75rem" class="project-popup__stat-icon" />
-          <div class="project-popup__stat-body">
-            <span class="project-popup__stat-label">{{ t('stats.indirectBeneficiaries') }}</span>
-            <span class="project-popup__stat-value">{{ formatCompact(project.indirect_beneficiaries) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="project-popup__total" :style="{ background: accentColor + '12', borderColor: accentColor + '30' }">
-        <span class="project-popup__total-label">{{ t('stats.totalBeneficiaries') }}</span>
-        <span class="project-popup__total-value" :style="{ color: accentColor }">
-          {{ formatCompact(totalBeneficiaries) }}
-        </span>
+        <h2 class="pp__title">{{ project.project_title }}</h2>
+        <p v-if="project.country_province" class="pp__location">
+          <Icon name="lucide:map-pin" size="0.85rem" />
+          <span>{{ project.country_province }}</span>
+        </p>
       </div>
     </div>
 
-    <footer class="project-popup__footer">
-      <a
-        :href="mapsUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="project-popup__action"
-        :style="{ '--action-clr': accentColor }"
-      >
-        <Icon name="lucide:navigation" size="0.75rem" />
-        <span>Open in Google Maps</span>
-      </a>
-    </footer>
+    <!-- Stats grid -->
+    <div v-if="hasStats" class="pp__content">
+      <div class="pp__stats">
+        <div v-if="project.direct_beneficiaries > 0" class="pp__stat" :style="{ borderColor: accentColor + '25' }">
+          <div class="pp__stat-icon" :style="{ background: accentColor + '15', color: accentColor }">
+            <Icon name="lucide:users" size="1rem" />
+          </div>
+          <div class="pp__stat-body">
+            <span class="pp__stat-label">{{ t('stats.directBeneficiaries') }}</span>
+            <span class="pp__stat-value" :style="{ color: accentColor }">{{ formatCompact(project.direct_beneficiaries) }}</span>
+          </div>
+        </div>
+        <div v-if="project.indirect_beneficiaries > 0" class="pp__stat" :style="{ borderColor: 'var(--stat-card-border)' }">
+          <div class="pp__stat-icon" :style="{ background: 'var(--stat-card-bg)', color: 'var(--text-muted)' }">
+            <Icon name="lucide:clock" size="1rem" />
+          </div>
+          <div class="pp__stat-body">
+            <span class="pp__stat-label">{{ t('stats.indirectBeneficiaries') }}</span>
+            <span class="pp__stat-value">{{ formatCompact(project.indirect_beneficiaries) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total row -->
+      <div class="pp__total" :style="{ borderColor: accentColor + '30' }">
+        <div class="pp__total-left">
+          <span class="pp__total-label">{{ t('stats.totalBeneficiaries') }}</span>
+          <span class="pp__total-value" :style="{ color: accentColor }">{{ formatCompact(totalBeneficiaries) }}</span>
+        </div>
+        <div class="pp__bar-track">
+          <div class="pp__bar-fill" :style="{ width: directPct + '%', background: accentColor }" />
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="pp__actions">
+        <a
+          :href="mapsUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="pp__action-btn"
+          :style="{ '--action-clr': accentColor }"
+        >
+          <Icon name="lucide:navigation" size="0.85rem" />
+          <span>Open in Google Maps</span>
+        </a>
+      </div>
+    </div>
   </article>
 </template>
 
 <style scoped>
-.project-popup {
+.pp {
   display: flex;
   flex-direction: column;
   color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
-  position: relative;
 }
 
-.project-popup__accent {
+/* ── Hero ── */
+.pp__hero {
+  position: relative;
+  padding: 1.25rem 1.5rem 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.pp__hero-bar {
   position: absolute;
   top: 0;
   left: 0;
   width: 4px;
   height: 100%;
   border-radius: 4px 0 0 4px;
-  transition: background 0.25s ease;
 }
-
-.project-popup__head {
-  padding-bottom: 1rem;
+.pp__hero-content {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.35rem;
+  padding-left: 0.5rem;
 }
-
-.project-popup__group-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
-}
-
-.project-popup__group {
+.pp__badge {
+  display: inline-flex;
+  align-self: flex-start;
   font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   font-weight: 700;
   border: 1px solid;
-  padding: 0.1rem 0.55rem;
-  border-radius: 4px;
-  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 5px;
   line-height: 1.4;
 }
-
-.project-popup__title {
-  font-size: 1.15rem;
+.pp__title {
+  font-size: 1.35rem;
   font-weight: 800;
   line-height: 1.25;
   margin: 0;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   overflow-wrap: break-word;
 }
-
-.project-popup__location {
+.pp__location {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
   margin: 0;
-  margin-top: 0.15rem;
-}
-
-.project-popup__body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.project-popup__stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-}
-
-.project-popup__stat {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.55rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  padding: 0.7rem;
-}
-
-.project-popup__stat-icon {
-  color: rgba(255, 255, 255, 0.35);
-  flex-shrink: 0;
   margin-top: 0.1rem;
 }
 
-.project-popup__stat-body {
+/* ── Content ── */
+.pp__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+/* ── Stats ── */
+.pp__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+.pp__stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  background: var(--stat-card-bg);
+  border: 1px solid var(--stat-card-border);
+  border-radius: 10px;
+  padding: 0.85rem;
+}
+.pp__stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.pp__stat-body {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
   min-width: 0;
 }
-
-.project-popup__stat-label {
-  font-size: 0.625rem;
+.pp__stat-label {
+  font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
   font-weight: 700;
 }
-
-.project-popup__stat-value {
-  font-size: 1rem;
+.pp__stat-value {
+  font-size: 1.2rem;
   font-weight: 800;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 }
 
-.project-popup__total {
+/* ── Total ── */
+.pp__total {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
   border: 1px solid;
-  border-radius: 8px;
-  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  background: var(--stat-card-bg);
 }
-
-.project-popup__total-label {
-  font-size: 0.7rem;
+.pp__total-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.pp__total-label {
+  font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
 }
-
-.project-popup__total-value {
-  font-size: 1rem;
+.pp__total-value {
+  font-size: 1.15rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
-
-.project-popup__footer {
-  display: flex;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-top: 0.85rem;
-  margin-top: 0.5rem;
+.pp__bar-track {
+  flex: 1;
+  height: 4px;
+  background: var(--stat-card-border);
+  border-radius: 2px;
+  overflow: hidden;
+  max-width: 120px;
+}
+.pp__bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
 }
 
-.project-popup__action {
+/* ── Actions ── */
+.pp__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.pp__action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 0.7rem;
+  gap: 0.4rem;
+  font-size: 0.75rem;
   color: var(--action-clr, var(--info));
   text-decoration: none;
   font-weight: 600;
-  padding: 0.25rem 0.65rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  background: var(--stat-card-bg);
+  border: 1px solid var(--stat-card-border);
   line-height: 1.4;
   transition: background 0.15s, border-color 0.2s, color 0.15s;
 }
-
-.project-popup__action:hover {
-  background: rgba(255, 255, 255, 0.08);
+.pp__action-btn:hover {
+  background: var(--stat-card-border);
   border-color: var(--action-clr, var(--info));
 }
 </style>

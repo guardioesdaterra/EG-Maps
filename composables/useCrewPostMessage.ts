@@ -78,6 +78,7 @@ function resolveRegionNames(slug: string): Set<string> {
 const ALLOWED_ORIGINS = new Set([
   'https://earthguardians.org',
   'https://www.earthguardians.org',
+  'https://guardioesdaterra.github.io',
   'http://localhost:3000',
   'http://localhost:3001',
 ])
@@ -314,17 +315,16 @@ export function useCrewPostMessage(
 
     applyHighlight(region)
 
-    // Apply zoom if provided (0..1 maps to minZoom..maxZoom)
+    flyToBounds(region)
+
+    // Apply zoom AFTER flyToBounds so explicit zoom isn't overridden
     if (payload.zoom !== undefined) {
       const m = map()
       if (m) {
         const t = Math.max(0, Math.min(1, parseFloat(payload.zoom) || 0))
-        const targetZoom = t * m.getMaxZoom()
-        m.jumpTo({ zoom: targetZoom })
+        m.jumpTo({ zoom: t * m.getMaxZoom() })
       }
     }
-
-    flyToBounds(region)
 
     // Sync URL without reload — preserve all existing params
     const params = new URLSearchParams(window.location.search)
@@ -373,6 +373,23 @@ export function useCrewPostMessage(
       applyFilters(payload)
     }
 
+    if (data.type === 'crew-view-switch') {
+      const view = data.payload?.view
+      if (view === '2d' || view === '3d') {
+        // Navigate to the other view within the same SPA (no full reload)
+        const currentPath = window.location.pathname
+        const isCurrently3d = currentPath.endsWith('/3d')
+        const wants3d = view === '3d'
+        if (isCurrently3d !== wants3d) {
+          const basePath = isCurrently3d ? currentPath.replace(/\/3d\/?$/, '') : currentPath
+          const targetPath = wants3d ? `${basePath}/3d` : basePath
+          // Preserve current query params
+          const qs = window.location.search
+          window.location.href = `${targetPath}${qs}`
+        }
+      }
+    }
+
     if (data.type === 'crew-request-state') {
       const state = getCurrentFilters()
       event.source?.postMessage(
@@ -399,6 +416,7 @@ export function useCrewPostMessage(
     const params = new URLSearchParams(window.location.search)
     const region = params.get('region')
     const ha = params.get('hideAll')
+    const zoomParam = params.get('zoom')
     if (ha === 'true') {
       hideAll.value = true
     }
@@ -406,6 +424,14 @@ export function useCrewPostMessage(
       activeRegion.value = region
       applyHighlight(region)
       flyToBounds(region)
+    }
+    // Apply explicit zoom AFTER flyToBounds so it isn't overridden
+    if (zoomParam !== null) {
+      const m = map()
+      if (m) {
+        const t = Math.max(0, Math.min(1, parseFloat(zoomParam) || 0))
+        m.jumpTo({ zoom: t * m.getMaxZoom() })
+      }
     }
   }
 

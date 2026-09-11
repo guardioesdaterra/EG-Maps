@@ -151,8 +151,6 @@ const nearbyOpen = ref(false)
 
 const showDataLoading = ref(false)
 const dataStatusText = ref('')
-let dataLoadedCount = 0
-const DATA_TOTAL = 2
 
 let starAnimationId: number | null = null
 let rotationAnimationId: number | null = null
@@ -252,6 +250,7 @@ const customLayerCtx = useMapCustomLayers(base.mapRef)
 
 if (props.defaultDataset === 'endangered-species') {
   const { data: speciesIdx, loading: speciesLoading, currentDatasetLabel } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
+  let dataPushed = false
   watch(currentDatasetLabel, (v) => {
     if (v && speciesLoading.value) {
       showDataLoading.value = true
@@ -260,27 +259,15 @@ if (props.defaultDataset === 'endangered-species') {
   })
   watch(speciesLoading, (v) => {
     if (!v) {
-      dataLoadedCount++
-      if (dataLoadedCount >= DATA_TOTAL) {
-        dataStatusText.value = 'All species data loaded ✓'
-        setTimeout(() => { showDataLoading.value = false }, 2500)
-      } else {
-        showDataLoading.value = true
-        dataStatusText.value = `${currentDatasetLabel.value || ''} loaded → next dataset...`
-        setTimeout(() => {
-          if (dataLoadedCount < DATA_TOTAL) {
-            showDataLoading.value = false
-          }
-        }, 2000)
+      if (!dataPushed && speciesIdx.value.length > 0) {
+        dataPushed = true
+        base.speciesIndexData.value = speciesIdx.value
       }
+      dataStatusText.value = 'All species data loaded ✓'
+      setTimeout(() => { showDataLoading.value = false }, 2500)
     } else {
       showDataLoading.value = true
       dataStatusText.value = t('globe.preparingData', { dataset: currentDatasetLabel.value || '' })
-    }
-  })
-  watch(speciesIdx, (val) => {
-    if (val.length > 0) {
-      base.speciesIndexData.value = val
     }
   })
 }

@@ -1,0 +1,307 @@
+<style>
+  #crew-region-filter {
+    --eg-cyan: #40e0d0;
+    --eg-cyan-bg-hover: rgba(64, 224, 208, 0.08);
+    --eg-cyan-bg-active: rgba(64, 224, 208, 0.16);
+    --eg-menu-bg: #ffffff;
+    --eg-menu-text: #1a1a1a;
+    --eg-menu-border: #e5e5e5;
+
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+    font-family: inherit;
+  }
+
+  #crew-region-filter .eg-trigger {
+    appearance: none;
+    background: transparent;
+    border: 2px solid var(--eg-cyan);
+    color: var(--eg-cyan);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-align: center;
+    text-transform: uppercase;
+    padding: 16px 40px;
+    border-radius: 6px;
+    min-width: 260px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+  }
+
+  #crew-region-filter .eg-trigger:hover {
+    background: var(--eg-cyan-bg-hover);
+  }
+
+  #crew-region-filter .eg-trigger:active {
+    transform: scale(0.98);
+  }
+
+  #crew-region-filter .eg-trigger:focus-visible {
+    outline: 2px solid var(--eg-cyan);
+    outline-offset: 3px;
+  }
+
+  #crew-region-filter .eg-trigger[aria-expanded="true"] {
+    background: var(--eg-cyan-bg-active);
+  }
+
+  #crew-region-filter .eg-trigger-sublabel {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: normal;
+    opacity: 0.8;
+    display: block;
+  }
+
+  #crew-region-filter .eg-chevron {
+    width: 12px;
+    height: 12px;
+    border-right: 2px solid var(--eg-cyan);
+    border-bottom: 2px solid var(--eg-cyan);
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+  #crew-region-filter .eg-trigger[aria-expanded="true"] .eg-chevron {
+    transform: rotate(-135deg);
+  }
+
+  #crew-region-filter .eg-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-6px);
+    background: var(--eg-menu-bg);
+    border: 1px solid var(--eg-menu-border);
+    border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    min-width: 260px;
+    padding: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 20;
+  }
+
+  #crew-region-filter .eg-menu.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  #crew-region-filter .eg-option {
+    appearance: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--eg-menu-text);
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  #crew-region-filter .eg-option:hover,
+  #crew-region-filter .eg-option:focus-visible {
+    background: var(--eg-cyan-bg-hover);
+    outline: none;
+  }
+
+  #crew-region-filter .eg-option[aria-selected="true"] {
+    background: var(--eg-cyan-bg-active);
+    color: #10756b;
+    font-weight: 700;
+  }
+
+  #crew-region-filter .eg-option-check {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--eg-cyan);
+    visibility: hidden;
+  }
+  #crew-region-filter .eg-option[aria-selected="true"] .eg-option-check {
+    visibility: visible;
+  }
+
+  #crew-region-filter .eg-divider {
+    height: 1px;
+    background: var(--eg-menu-border);
+    margin: 6px 4px;
+  }
+
+  @media (max-width: 480px) {
+    #crew-region-filter .eg-trigger {
+      width: 100%;
+      min-width: 0;
+    }
+    #crew-region-filter .eg-menu {
+      left: 0;
+      right: 0;
+      transform: translateY(-6px);
+      width: 100%;
+    }
+    #crew-region-filter .eg-menu.is-open {
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<div id="crew-region-filter">
+  <button type="button" class="eg-trigger" id="eg-trigger" aria-haspopup="listbox" aria-expanded="false">
+    <span>
+      REGIONS FILTER
+      <span class="eg-trigger-sublabel" id="eg-trigger-sublabel"></span>
+    </span>
+    <span class="eg-chevron" aria-hidden="true"></span>
+  </button>
+
+  <div class="eg-menu" id="eg-menu" role="listbox" aria-label="Select a region" tabindex="-1">
+    <button type="button" class="eg-option" role="option" data-region="" aria-selected="true">
+      All Regions
+      <svg class="eg-option-check" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="eg-divider"></div>
+    <button type="button" class="eg-option" role="option" data-region="africa" aria-selected="false">
+      Africa
+      <svg class="eg-option-check" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="eg-option" role="option" data-region="antarctica" aria-selected="false">
+      Antarctica
+      <svg class="eg-option-check" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="eg-option" role="option" data-region="asia" aria-selected="false">
+      Asia
+      <svg class="eg-option-check" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="eg-option" role="option" data-region="australia-oceania" aria-selected="false">
+      Australia/Oceania
+      <svg class="eg-option-check" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="eg-option" role="option" data-region="europe" aria-selected="false">
+      Europe
+      <svg class="eg-option-check" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="eg-option" role="option" data-region="north-america" aria-selected="false">
+      North America
+      <svg class="eg-option-check" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="eg-option" role="option" data-region="south-america" aria-selected="false">
+      South America
+      <svg class="eg-option-check" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+(function () {
+  var MAP_ORIGIN = "https://guardioesdaterra.github.io";
+  var READY_TIMEOUT_MS = 8000;
+
+  var REGION_LABELS = {
+    "": "All Regions",
+    "africa": "Africa",
+    "antarctica": "Antarctica",
+    "asia": "Asia",
+    "australia-oceania": "Australia/Oceania",
+    "europe": "Europe",
+    "north-america": "North America",
+    "south-america": "South America"
+  };
+
+  var mapReady = false;
+  var pendingRegion = null;
+
+  var trigger = document.getElementById("eg-trigger");
+  var menu = document.getElementById("eg-menu");
+  var sublabel = document.getElementById("eg-trigger-sublabel");
+  var options = Array.prototype.slice.call(menu.querySelectorAll(".eg-option"));
+  var isOpen = false;
+
+  function openMenu() {
+    isOpen = true;
+    menu.classList.add("is-open");
+    trigger.setAttribute("aria-expanded", "true");
+  }
+  function closeMenu() {
+    isOpen = false;
+    menu.classList.remove("is-open");
+    trigger.setAttribute("aria-expanded", "false");
+  }
+
+  trigger.addEventListener("click", function (e) {
+    e.stopPropagation();
+    isOpen ? closeMenu() : openMenu();
+  });
+
+  document.addEventListener("click", function (e) {
+    if (isOpen && !e.target.closest("#crew-region-filter")) closeMenu();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && isOpen) {
+      closeMenu();
+      trigger.focus();
+    }
+  });
+
+  function setActiveOption(region) {
+    options.forEach(function (opt) {
+      opt.setAttribute("aria-selected", String(opt.dataset.region === region));
+    });
+    sublabel.textContent = region ? "· " + REGION_LABELS[region] : "";
+  }
+
+  function send(region) {
+    var mapFrame = document.getElementById("crew-map-iframe") || document.querySelector(".crew-map-shape iframe");
+    if (!mapFrame) return;
+    mapFrame.contentWindow.postMessage(
+      { type: "crew-filter-update", payload: { hideAll: "true", region: region } },
+      MAP_ORIGIN
+    );
+  }
+
+  function setReady() {
+    if (mapReady) return;
+    mapReady = true;
+    if (pendingRegion !== null) {
+      send(pendingRegion);
+      pendingRegion = null;
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (event.origin !== MAP_ORIGIN) return;
+    if (event.data && event.data.type === "crew-map-ready") setReady();
+  });
+
+  setTimeout(setReady, READY_TIMEOUT_MS);
+
+  options.forEach(function (opt) {
+    opt.addEventListener("click", function () {
+      var region = opt.dataset.region;
+      setActiveOption(region);
+      closeMenu();
+      if (!mapReady) {
+        pendingRegion = region;
+        return;
+      }
+      send(region);
+    });
+  });
+})();
+</script>

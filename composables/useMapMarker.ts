@@ -682,7 +682,7 @@ const speciesGeoCache = new Map<string, GeoJSON.FeatureCollection>()
 const SPECIES_GEO_CACHE_MAX = 20
 
 function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: string[]): GeoJSON.FeatureCollection {
-  const cacheKey = `${index.length}:${raw.length}:${groups.sort().join(',')}`
+  const cacheKey = `${index.length}:${raw.length}:${[...groups].sort().join(',')}`
   const cached = speciesGeoCache.get(cacheKey)
   if (cached) return cached
   const label = `[perf] toSpeciesGeoJSON (idx=${index.length}, raw=${raw.length}, groups=${groups.length})`

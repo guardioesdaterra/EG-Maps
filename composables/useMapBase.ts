@@ -39,6 +39,8 @@ export interface MapBaseProps {
   crews?: CrewRegionData[]
   crewLocations?: CrewLocation[]
   defaultDataset?: 'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'
+  /** Override hideAll from postMessage (when embedded in Squarespace iframe). */
+  hideAll?: boolean
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthFiltered?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
@@ -121,6 +123,7 @@ export function useMapBase(config: MapBaseConfig) {
   })
 
   const hideAll = computed(() => {
+    if (props.hideAll !== undefined) return props.hideAll
     if (import.meta.server) return false
     const params = new URLSearchParams(window.location.search)
     return params.get('hideAll') === 'true'
@@ -224,6 +227,7 @@ export function useMapBase(config: MapBaseConfig) {
   let loadingTimeout: ReturnType<typeof setTimeout> | null = null
   let lastFocusedEl: HTMLElement | null = null
   let rebuildPending = false
+  let rebuildTimer: ReturnType<typeof setTimeout> | null = null
   let initialRebuildDone = false
   let isInitializing = false
   let mapCanvas: HTMLCanvasElement | null = null
@@ -707,6 +711,7 @@ export function useMapBase(config: MapBaseConfig) {
     isInitializing = false
     onBeforeCleanup?.()
     if (loadingTimeout) clearTimeout(loadingTimeout)
+    if (rebuildTimer) { clearTimeout(rebuildTimer); rebuildTimer = null }
     connections.cleanup()
     previewCard.close()
     marker.cleanup()
@@ -738,12 +743,14 @@ export function useMapBase(config: MapBaseConfig) {
   })
 
   watch([visibleSpecies, visibleProjects, selectedSpeciesGroups, speciesIndexData], () => {
-    if (!map || rebuildPending) return
+    if (!map) return
+    if (rebuildTimer) clearTimeout(rebuildTimer)
     rebuildPending = true
-    nextTick(() => {
+    rebuildTimer = setTimeout(() => {
       rebuildPending = false
+      rebuildTimer = null
       rebuildMarkers()
-    })
+    }, 60)
   })
 
   watch([visibleSpecies, visibleProjects], () => {

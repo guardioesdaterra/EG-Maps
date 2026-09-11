@@ -237,7 +237,6 @@ interface SubtypeMeta { id: string; labelKey: string; color: string }
 const SOURCES: SourceMeta[] = [
   { id: 'mapa_cultura', labelKey: 'observatory.v2.panel.sourceMapa', color: '#f39c12' },
   { id: 'floresta_ativista', labelKey: 'observatory.v2.panel.sourceFloresta', color: '#27ae60' },
-  { id: 'community', labelKey: 'observatory.v2.panel.sourceCommunity', color: '#9b59b6' },
 ]
 const SOURCE_COLORS: Record<string, string> = Object.fromEntries(SOURCES.map(s => [s.id, s.color]))
 const SOURCE_LABEL_KEYS: Record<string, string> = Object.fromEntries(SOURCES.map(s => [s.id, s.labelKey]))
@@ -295,7 +294,6 @@ onMounted(() => {
 const sourceFilter = ref<Record<string, boolean>>({
   mapa_cultura: true,
   floresta_ativista: true,
-  community: true,
 })
 const subtypeFilter = ref<Record<string, boolean>>({
   cultural_center: true,
@@ -310,7 +308,7 @@ function toggleSubtype(id: string) { subtypeFilter.value[id] = !subtypeFilter.va
 // ── Derived ─────────────────────────────────────────────────────────────
 type CulturalFeature = Feature<Point, Record<string, unknown>>
 
-const VALID_SOURCES = new Set(['mapa_cultura', 'floresta_ativista', 'community'])
+const VALID_SOURCES = new Set(['mapa_cultura', 'floresta_ativista'])
 
 const allFeatures = computed<CulturalFeature[]>(() => {
   const fc = props.rareEarthCultural
@@ -327,7 +325,7 @@ function isUnknown(value: string): boolean {
 }
 
 const sourceCounts = computed(() => {
-  const out: Record<string, number> = { mapa_cultura: 0, floresta_ativista: 0, community: 0 }
+  const out: Record<string, number> = { mapa_cultura: 0, floresta_ativista: 0 }
   for (const f of allFeatures.value) {
     const s = String(f.properties?.source ?? '')
     if (s in out) out[s]++
@@ -368,7 +366,7 @@ const sortedFeatures = computed<CulturalFeature[]>(() => {
     list.sort((a, b) => String(a.properties?.name ?? '').localeCompare(String(b.properties?.name ?? '')))
   } else {
     // source then name
-    const order = ['mapa_cultura', 'floresta_ativista', 'community']
+    const order = ['mapa_cultura', 'floresta_ativista']
     list.sort((a, b) => {
       const srcA = String(a.properties?.source ?? '')
       const srcB = String(b.properties?.source ?? '')
@@ -426,7 +424,7 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   position: absolute;
   top: clamp(3.5rem, 7vh, 4.5rem);
   right: clamp(0.6rem, 1.2vw, 1rem);
-  bottom: clamp(3.75rem, 8.5vh, 5rem);
+  bottom: clamp(1rem, 3vh, 1.5rem);
   width: clamp(20rem, 26vw, 24rem);
   max-height: calc(100vh - 10rem);
   z-index: 530;
@@ -932,7 +930,7 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
 }
 
 @media (max-width: 900px) {
-  .vulc-panel { width: min(20rem, calc(100vw - 1.5rem)); right: 0.5rem; top: 4rem; bottom: 4.5rem; max-height: none; }
+  .vulc-panel { width: min(20rem, calc(100vw - 1.5rem)); right: 0.5rem; top: 4rem; bottom: 1.5rem; max-height: none; }
 }
 @media (max-width: 640px) {
   .vulc-panel { width: calc(100vw - 1rem); left: 0.5rem; right: 0.5rem; }

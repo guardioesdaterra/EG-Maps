@@ -64,10 +64,10 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
   })
 
   // Cultural-agent counts derived from `culturalAgentsCombined` (already
-  // contains mapa_cultura + floresta_ativista + community, deduped).
+  // contains mapa_cultura + floresta_ativista, deduped).
   const culturalTotalCount = computed(() => culturalAgentsCombined.value?.features?.length ?? 0)
   const culturalSourceCounts = computed<Record<string, number>>(() => {
-    const out: Record<string, number> = { mapa_cultura: 0, floresta_ativista: 0, community: 0 }
+    const out: Record<string, number> = { mapa_cultura: 0, floresta_ativista: 0 }
     for (const f of culturalAgentsCombined.value?.features ?? []) {
       const s = (f.properties as { source?: string } | undefined)?.source
       if (s && s in out) out[s]++

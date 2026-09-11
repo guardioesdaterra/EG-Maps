@@ -259,7 +259,7 @@ const coords = computed(() => {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: 800;
-  color: var(--bg-tertiary);
+  color: #fff;
   padding: 0.1rem 0.45rem;
   border-radius: 3px;
   display: inline-block;
@@ -271,7 +271,7 @@ const coords = computed(() => {
   font-weight: 800;
   line-height: 1.2;
   margin: 0;
-  color: var(--bg-tertiary);
+  color: var(--text-primary);
   letter-spacing: -0.01em;
   overflow-wrap: break-word;
 }

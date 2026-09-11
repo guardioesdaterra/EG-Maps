@@ -150,7 +150,7 @@ async function doExport() {
       includeLegend: includeLegend.value,
       includeTitle: includeTitle.value,
     }, {
-      title: 'Observatory of Vulcan — Rare Earth Mining Claims',
+      title: 'Vulcan Observatory — Rare Earth Mining Claims',
       filterSummary: props.filterSummary,
     })
     emit('close')

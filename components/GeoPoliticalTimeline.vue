@@ -187,7 +187,7 @@
 
         
         <div class="geotimeline-footer">
-          <p>Earth Guardians — Observatory of Vulcan | Data sources: ANM, SICM, DFC, USGS, Pentagon, MPF</p>
+          <p>Earth Guardians — Vulcan Observatory | Data sources: ANM, SICM, DFC, USGS, Pentagon, MPF</p>
           <p class="footer-sub">This is an educational resource. Verify all data independently. The truth belongs to the people.</p>
         </div>
       </div>

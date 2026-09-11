@@ -344,21 +344,11 @@
             @jump-to-cultural="onJumpToCultural"
           />
 
-          <!-- ── Bottombar: phase filter + year slider + my territory ── -->
+          <!-- ── Bottombar: my territory ── -->
           <footer class="vulc-bottombar" role="toolbar" :aria-label="t('observatory.v2.bottomTools')">
-            <div class="vulc-bottombar__left">
-              <PhaseFilter :selected="controls.selectedPhases.value" @update:selected="updatePhases" />
-            </div>
+            <div class="vulc-bottombar__left" />
 
-            <div class="vulc-bottombar__center">
-              <YearSlider
-                :year-min="controls.yearMin.value"
-                :year-max="controls.yearMax.value"
-                :filtered-count="controls.filteredPoints.value?.features?.length ?? 0"
-                @update:year-min="(v: number) => (controls.yearMin.value = v)"
-                @update:year-max="(v: number) => (controls.yearMax.value = v)"
-              />
-            </div>
+            <div class="vulc-bottombar__center" />
 
             <div class="vulc-bottombar__right">
               <button
@@ -389,8 +379,7 @@
         </template>
       </MapView2D>
 
-      <!-- ── Modals (kept from v1 — same shape) ──────────────────────── -->
-      <GeoPoliticalTimeline :visible="showTimeline" @close="showTimeline = false" />
+      <!-- ── Modals ──────────────────────── -->
       <RedeCorporativa
         :visible="showRedeCorporativa"
         @close="showRedeCorporativa = false"
@@ -426,7 +415,6 @@ import { useVulcanObservatoryPage } from '@/composables/useVulcanObservatoryPage
 
 import MapView2D from '@/components/MapView2D.vue'
 import ObservatorySidebar from '@/components/observatory/ObservatorySidebar.vue'
-import GeoPoliticalTimeline from '@/components/GeoPoliticalTimeline.vue'
 import RedeCorporativa from '@/components/RedeCorporativa.vue'
 import DataDownloadPanel from '@/components/DataDownloadPanel.vue'
 import ClaimReportModal from '@/components/observatory/ClaimReportModal.vue'
@@ -436,14 +424,12 @@ import GeoLocateModal from '@/components/observatory/GeoLocateModal.vue'
 import UserContributionModal from '@/components/observatory/UserContributionModal.vue'
 import ClaimsDataTable from '@/components/observatory/ClaimsDataTable.vue'
 import ClaimDetailModal from '@/components/observatory/ClaimDetailModal.vue'
-import PhaseFilter from '@/components/observatory/PhaseFilter.vue'
-import YearSlider from '@/components/observatory/YearSlider.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
 const { t } = useI18n()
 
 useHead({
-  title: 'Vulcan Community Observatory · Poços de Caldas | Earth Guardians',
+  title: 'Vulcan Observatory · Poços de Caldas | Earth Guardians',
   meta: [
     {
       name: 'description',

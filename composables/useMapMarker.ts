@@ -4,12 +4,12 @@
  * @functions useMapMarker
  * @interfaces MarkerCallbacks, RebuildArgs
  * @types MarkerDataset
- * @deps @/lib/map-utils (GROUP_COLORS, isValidCoordinate); @/lib/colors (getProjectColorByBeneficiaries); @/lib/utils (formatCompact); @/lib/species-utils (findSpeciesAtCoord); @/lib/constants (SPECIES_COORD_TOLERANCE)
+ * @deps @/lib/map-utils (GROUP_COLORS, MAP_GROUP_COLORS, isValidCoordinate, getGroupMapColor); @/lib/colors (getProjectColorByBeneficiaries, getProjectMapColorFromProject); @/lib/utils (formatCompact); @/lib/species-utils (findSpeciesAtCoord); @/lib/constants (SPECIES_COORD_TOLERANCE)
  * @connections composables/useMapBase.ts
  */
 import type { Map as MapLibreMap, GeoJSONSource, ExpressionSpecification, FilterSpecification, MapLayerMouseEvent, MapLayerEventType } from 'maplibre-gl'
-import { GROUP_COLORS, isValidCoordinate } from '@/lib/map-utils'
-import { getProjectColorByBeneficiaries } from '@/lib/colors'
+import { GROUP_COLORS, MAP_GROUP_COLORS, isValidCoordinate, getGroupMapColor } from '@/lib/map-utils'
+import { getProjectColorByBeneficiaries, getProjectMapColorFromProject } from '@/lib/colors'
 import { formatCompact } from '@/lib/utils'
 import { findSpeciesAtCoord as _findSpeciesAtCoord } from '@/lib/species-utils'
 import { SPECIES_COORD_TOLERANCE } from '@/lib/constants'
@@ -668,7 +668,7 @@ function toProjectGeoJSON(projects: ProjectData[]): GeoJSON.FeatureCollection {
           geometry: { type: 'Point' as const, coordinates: [p.longitude, p.latitude] },
           properties: {
             id: p.project_title,
-            color: getProjectColorByBeneficiaries(p.direct_beneficiaries, p.indirect_beneficiaries),
+            color: getProjectMapColorFromProject(p),
             size: 5 + f * 3,
             label: formatCompact(total),
             ...p as unknown as Record<string, unknown>,
@@ -699,7 +699,7 @@ function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: str
       geometry: { type: 'Point', coordinates: [s.lng, s.lat] },
       properties: {
         id: s.id,
-        color: GROUP_COLORS[s.taxonomicGroup ?? ''] ?? '#B64032',
+        color: getGroupMapColor(s.taxonomicGroup ?? ''),
         size: 5 + cf * 2,
         label: '1',
       },

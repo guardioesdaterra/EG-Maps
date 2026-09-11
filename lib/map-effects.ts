@@ -4,14 +4,14 @@
  * @functions buildMapConnectionFeatures, syncMapConnectionLayers, removeMapConnectionLayers, createMapParticleSystem
  * @interfaces ConnectionProperties, MapParticleSystem, ParticleQualityConfig
  * @types DatasetKey, MapConnectionFeature
- * @deps ./colors (getProjectColorByBeneficiaries); ./map-utils (GROUP_COLORS, generateCurvedPath, isValidCoordinate)
+ * @deps ./colors (getProjectMapColor); ./map-utils (MAP_GROUP_COLORS, generateCurvedPath, isValidCoordinate)
  * @connections composables/useMapConnections.ts
  */
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { Feature, LineString } from 'geojson'
 import type { ProjectData, Species } from './types'
-import { getProjectColorByBeneficiaries } from './colors'
-import { GROUP_COLORS, generateCurvedPath, isValidCoordinate } from './map-utils'
+import { getProjectMapColor } from './colors'
+import { MAP_GROUP_COLORS, generateCurvedPath, isValidCoordinate } from './map-utils'
 
 type SpeciesLike = { id: string; lat: number; lng: number; commonName: string; taxonomicGroup: string }
 
@@ -67,7 +67,7 @@ function buildProjectConnectionFeatures(projects: ProjectData[], isMobile: boole
 
   const colorCache = new Map<ProjectData, string>()
   for (const p of projectsToProcess) {
-    colorCache.set(p, getProjectColorByBeneficiaries(p.direct_beneficiaries, p.indirect_beneficiaries))
+    colorCache.set(p, getProjectMapColor(p.direct_beneficiaries, p.indirect_beneficiaries))
   }
 
   const byColor = new Map<string, string[]>()
@@ -139,7 +139,7 @@ function buildSpeciesConnectionFeatures(species: SpeciesLike[], isMobile: boolea
     }
     const incomingCount = incomingCountByGroup.get(group)!
     const sourceKey = source.id || source.commonName
-    const color = GROUP_COLORS[group] ?? '#B64032'
+    const color = MAP_GROUP_COLORS[group] ?? '#e74c3c'
 
     const sameGroupKeys = byGroup.get(group) ?? []
     const availableTargetKeys = sameGroupKeys.filter(k => {
@@ -196,14 +196,14 @@ function buildCrewConnectionFeatures(locations: CrewLocationLike[], isMobile: bo
 
   const features: MapConnectionFeature[] = []
   const edgeKeys = new Set<string>()
-  const maxConnections = isMobile ? 4 : 8
+  const perRegionMax = isMobile ? 2 : 4
 
   for (const [region, regionLocs] of byRegion) {
     const color = CREW_REGION_COLORS[region] ?? '#22c55e'
     const processLocs = isMobile ? regionLocs.slice(0, Math.min(10, regionLocs.length)) : regionLocs
 
+    const regionFeatures: MapConnectionFeature[] = []
     for (let i = 0; i < processLocs.length; i++) {
-      if (features.length >= maxConnections) return features
       const source = processLocs[i]
       const sourceKey = `${source.name}|${source.city}`
 
@@ -218,7 +218,7 @@ function buildCrewConnectionFeatures(locations: CrewLocationLike[], isMobile: bo
       const target = targets[stableIndex(sourceKey, targets.length)]
       const targetKey = `${target.name}|${target.city}`
 
-      features.push(createConnectionFeature({
+      regionFeatures.push(createConnectionFeature({
         from: [source.lng, source.lat],
         to: [target.lng, target.lat],
         color,
@@ -230,6 +230,8 @@ function buildCrewConnectionFeatures(locations: CrewLocationLike[], isMobile: bo
 
       edgeKeys.add([sourceKey, targetKey].sort().join('::'))
     }
+
+    features.push(...regionFeatures.slice(0, perRegionMax))
   }
 
   return features

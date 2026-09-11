@@ -487,6 +487,7 @@ onUnmounted(() => abortController.abort())
   position: relative;
   min-height: 100svh;
   overflow: hidden;
+  isolation: isolate;
   background-color: var(--home-bg);
   color: var(--home-ink);
 }
@@ -514,12 +515,11 @@ onUnmounted(() => abortController.abort())
   z-index: 1;
   opacity: 0.05;
   background-image: none;
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
 }
-
 :global(.dark) .home-noise {
   opacity: 0.09;
-  mix-blend-mode: screen;
+  mix-blend-mode: normal;
 }
 
 .home-orbit {
@@ -869,9 +869,10 @@ onUnmounted(() => abortController.abort())
   overflow: hidden;
   border: 1px solid var(--home-line);
   border-radius: 1.5rem;
-  background: var(--home-card);
+  background: var(--home-card-strong);
   box-shadow: 0 2rem 5rem rgba(18, 42, 28, 0.12);
-  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .signal-card-header,

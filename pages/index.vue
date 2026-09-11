@@ -1639,6 +1639,25 @@ onUnmounted(() => abortController.abort())
 </style>
 
 <style>
+/* Keep the page readable even when a privacy mode or browser theme prevents
+ * the dark-mode bootstrap script from applying consistently. */
+.home-shell {
+  background-color: #f1f2e9 !important;
+  color: #10231b !important;
+}
+
+.home-shell .home-lede,
+.home-shell .home-kicker,
+.home-shell .home-signal-line,
+.home-shell .section-index,
+.home-shell .atlas-card p,
+.home-shell .section-heading-row > p,
+.home-shell .mission-copy > p:not(.mission-emphasis),
+.home-shell .principle-card p,
+.home-shell .program-row p {
+  color: #3f5148;
+}
+
 html.dark .home-shell {
   --home-bg: #0b1511;
   --home-ink: #eaf1e6;
@@ -1652,5 +1671,27 @@ html.dark .home-shell {
   --home-orange: #ff9a69;
   --home-violet: #b5a0f0;
   --home-coral: #ff8b9c;
+  background-color: #0b1511 !important;
+  color: #eaf1e6 !important;
+}
+
+html.dark .home-shell .home-lede,
+html.dark .home-shell .home-kicker,
+html.dark .home-shell .home-signal-line,
+html.dark .home-shell .section-index,
+html.dark .home-shell .atlas-card p,
+html.dark .home-shell .section-heading-row > p,
+html.dark .home-shell .mission-copy > p:not(.mission-emphasis),
+html.dark .home-shell .principle-card p,
+html.dark .home-shell .program-row p {
+  color: #b8c8bc;
+}
+
+@media (forced-colors: active) {
+  .home-shell,
+  html.dark .home-shell {
+    background: Canvas !important;
+    color: CanvasText !important;
+  }
 }
 </style>

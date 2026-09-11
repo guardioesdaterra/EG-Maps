@@ -250,6 +250,21 @@
     overflow-x: hidden;
   }
 
+  /* Keep the static app tree paintable in privacy/forced-rendering modes. */
+  html,
+  body,
+  #__nuxt {
+    filter: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  #__nuxt > div:first-child {
+    min-height: 100%;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
   /* ─── Global thin scrollbar — light (default) ─── */
   html {
     scrollbar-width: thin;

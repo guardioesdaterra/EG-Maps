@@ -533,10 +533,21 @@ export function useMapBase(config: MapBaseConfig) {
 
       const mapStyle = getMapStyle(MAPTILER_API_KEY, qs.tileResolution, baseURL)
       const tileMaxZoom = qs.tileResolution === 'low' ? 14 : qs.tileResolution === 'medium' ? 17 : 22
+
+      // Read zoom param: 0..1 maps linearly to minZoom..maxZoom
+      let initialZoom = isRee ? (isGlobe ? 4.2 : 9.5) : isMobile.value ? (isGlobe ? 1.0 : 1.2) : (isGlobe ? 1.8 : 2)
+      if (!import.meta.server) {
+        const urlZoom = new URLSearchParams(window.location.search).get('zoom')
+        if (urlZoom !== null) {
+          const t = Math.max(0, Math.min(1, parseFloat(urlZoom) || 0))
+          initialZoom = t * tileMaxZoom
+        }
+      }
+
       map = new maplibregl.Map({
         container: mapContainerRef.value,
         style: mapStyle,
-        zoom: isRee ? (isGlobe ? 4.2 : 9.5) : isMobile.value ? (isGlobe ? 1.5 : 1.8) : (isGlobe ? 2.5 : 3),
+        zoom: initialZoom,
         center: isRee ? (isGlobe ? [-48, -15] : [-46.533, -21.914]) : (isGlobe ? [0, 20] : [0, 0]),
         attributionControl: false,
         renderWorldCopies: !isGlobe,
@@ -562,7 +573,7 @@ export function useMapBase(config: MapBaseConfig) {
         })
       )
 
-      if (!isGlobe && !isMobile.value) {
+      if (!isGlobe && !isMobile.value && !hideAll.value) {
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-left')
       }
 

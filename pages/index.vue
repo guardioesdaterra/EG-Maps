@@ -57,18 +57,12 @@
           </div>
 
           <h1
-            v-motion
-            :initial="{ opacity: 0, y: 24 }"
-            :enter="{ opacity: 1, y: 0, transition: { duration: 520 } }"
-            class="home-title"
+            class="home-title home-animate-in"
           >
             {{ t('home.title') }}<span class="home-title-mark">.</span>
           </h1>
           <p
-            v-motion
-            :initial="{ opacity: 0, y: 18 }"
-            :enter="{ opacity: 1, y: 0, transition: { duration: 520, delay: 80 } }"
-            class="home-lede"
+            class="home-lede home-animate-in home-animate-in-delay"
           >
             A living atlas for the people, places and species shaping environmental action worldwide.
           </p>
@@ -147,9 +141,6 @@
           <article
             v-for="(dataset, index) in datasets"
             :key="dataset.path"
-            v-motion
-            :initial="{ opacity: 0, y: 24 }"
-            :visibleOnce="{ opacity: 1, y: 0, transition: { duration: 460, delay: index * 70 } }"
             class="atlas-card"
             :class="`atlas-card-${dataset.tone}`"
           >
@@ -297,7 +288,7 @@
 
 <script setup lang="ts">
 
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue'
 import { allProjectsData } from '@/lib/project-data'
 import { crewOverallStats } from '@/lib/crew-data'
 import { formatCompact } from '@/lib/utils'
@@ -306,6 +297,8 @@ const { t } = useI18n()
 const { isDark, toggle: toggleDarkMode } = useDarkMode()
 const baseURL = useRuntimeConfig().app.baseURL
 const currentYear = new Date().getFullYear()
+
+console.log('[DEBUG:index.vue] setup() — isDark:', isDark.value, 'baseURL:', baseURL)
 
 useHead({
   title: computed(() => `${t('home.title')} — ${t('home.subtitle')}`),
@@ -433,6 +426,26 @@ const programs = [
 ]
 
 onMounted(async () => {
+  console.log('[DEBUG:index.vue] onMounted — starting')
+  await nextTick()
+  const shell = document.querySelector('.home-shell')
+  const hero = document.querySelector('.home-hero')
+  const title = document.querySelector('.home-title')
+  console.log('[DEBUG:index.vue] .home-shell exists:', !!shell)
+  if (shell) {
+    const cs = getComputedStyle(shell)
+    console.log('[DEBUG:index.vue] .home-shell bg:', cs.backgroundColor, 'color:', cs.color, 'display:', cs.display, 'opacity:', cs.opacity, 'overflow:', cs.overflow, 'minHeight:', cs.minHeight)
+  }
+  console.log('[DEBUG:index.vue] .home-hero exists:', !!hero)
+  if (hero) {
+    const cs = getComputedStyle(hero)
+    console.log('[DEBUG:index.vue] .home-hero display:', cs.display, 'opacity:', cs.opacity, 'visibility:', cs.visibility)
+  }
+  console.log('[DEBUG:index.vue] .home-title exists:', !!title)
+  if (title) {
+    const cs = getComputedStyle(title)
+    console.log('[DEBUG:index.vue] .home-title opacity:', cs.opacity, 'visibility:', cs.visibility, 'transform:', cs.transform, 'textContent:', (title as HTMLElement).textContent?.substring(0, 40))
+  }
   try {
     const res = await fetch(`${baseURL}data/species/index.json`, { signal: abortController.signal })
     if (res.ok) {
@@ -446,6 +459,7 @@ onMounted(async () => {
       }
       speciesCount.value = total
       taxonomicGroupCount.value = allGroups.size
+      console.log('[DEBUG:index.vue] speciesCount:', total, 'groups:', allGroups.size)
     }
   } catch {
     // The home remains useful while the species index is unavailable or still loading.
@@ -475,21 +489,6 @@ onUnmounted(() => abortController.abort())
   overflow: hidden;
   background-color: var(--home-bg);
   color: var(--home-ink);
-}
-
-:global(.dark) .home-shell {
-  --home-bg: #0b1511;
-  --home-ink: #eaf1e6;
-  --home-muted: #a9b9ab;
-  --home-card: rgba(19, 34, 27, 0.78);
-  --home-card-strong: #14271f;
-  --home-line: rgba(229, 246, 225, 0.16);
-  --home-accent: #d7f56a;
-  --home-accent-strong: #b9da46;
-  --home-blue: #8faaf8;
-  --home-orange: #ff9a69;
-  --home-violet: #b5a0f0;
-  --home-coral: #ff8b9c;
 }
 
 .home-shell,
@@ -1607,5 +1606,50 @@ onUnmounted(() => abortController.abort())
   .manifesto-link {
     transition: none;
   }
+}
+
+@keyframes home-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-animate-in {
+  animation: home-fade-up 520ms ease-out both;
+}
+
+.home-animate-in-delay {
+  animation-delay: 80ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-animate-in,
+  .home-animate-in-delay {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+</style>
+
+<style>
+html.dark .home-shell {
+  --home-bg: #0b1511;
+  --home-ink: #eaf1e6;
+  --home-muted: #a9b9ab;
+  --home-card: rgba(19, 34, 27, 0.78);
+  --home-card-strong: #14271f;
+  --home-line: rgba(229, 246, 225, 0.16);
+  --home-accent: #d7f56a;
+  --home-accent-strong: #b9da46;
+  --home-blue: #8faaf8;
+  --home-orange: #ff9a69;
+  --home-violet: #b5a0f0;
+  --home-coral: #ff8b9c;
 }
 </style>

@@ -1,8 +1,5 @@
 <template>
   <section
-    v-motion
-    :initial="{ opacity: 0, y: 20 }"
-    :visibleOnce="{ opacity: 1, y: 0, transition: { duration: 400 } }"
     class="redbook-section"
   >
     <div class="redbook-container">
@@ -23,9 +20,6 @@
         <article
           v-for="(db, index) in databases"
           :key="db.id"
-          v-motion
-          :initial="{ opacity: 0, y: 20 }"
-          :visibleOnce="{ opacity: 1, y: 0, transition: { duration: 400, delay: index * 100 } }"
           class="redbook-card"
         >
           <div class="redbook-card-topline">

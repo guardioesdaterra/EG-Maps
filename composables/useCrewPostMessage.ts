@@ -15,8 +15,8 @@
  *
  * @connections pages/active-crews/index.vue, composables/useMapBase.ts
  */
-import { ref, computed, onMounted, onBeforeUnmount, watch, type Ref } from 'vue'
-import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl'
+import { ref, onMounted, onBeforeUnmount, watch, type Ref } from 'vue'
+import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import { useAppRuntime } from '@/composables/useAppRuntime'
 
@@ -25,6 +25,8 @@ import { useAppRuntime } from '@/composables/useAppRuntime'
 export interface CrewFilterPayload {
   region?: string
   hideAll?: string
+  /** Zoom level 0..1 (0 = min, 1 = max). */
+  zoom?: string
 }
 
 export interface CrewPostMessageOptions {
@@ -39,13 +41,15 @@ export interface CrewPostMessageOptions {
 export interface CrewPostMessageApi {
   /** Current region filter (slug or ''). */
   readonly activeRegion: Readonly<Ref<string>>
+  /** Current hideAll state (reactive, driven by postMessage or URL). */
+  readonly hideAll: Readonly<Ref<boolean>>
   /** Apply a filter programmatically. */
   applyFilters: (payload: CrewFilterPayload) => void
   /** Get the current filter state for responding to state requests. */
   getCurrentFilters: () => CrewFilterPayload
 }
 
-/* ── region slug ↔ full-name mapping ────────────────────────────────── */
+/* ── region slug → full-name mapping ────────────────────────────────── */
 
 /** Map incoming slugs (from Squarespace) to the `region` field values used
  *  in crew-data.ts and crews-locations.json. */
@@ -59,17 +63,6 @@ const SLUG_TO_REGION: Record<string, string> = {
   'europe':            'Europe',
   'north-america':     'North America',
   'south-america':     'South America',
-}
-
-/** Map full region names back to the canonical slug used by the postMessage protocol. */
-const REGION_TO_SLUG: Record<string, string> = {
-  'Africa':        'africa',
-  'East Asia':     'east-asia',
-  'South Asia':    'south-asia',
-  'Oceania':       'oceania',
-  'Europe':        'europe',
-  'North America': 'north-america',
-  'South America': 'south-america',
 }
 
 /** Expand a slug into the set of full region names it matches. */
@@ -93,7 +86,8 @@ const ALLOWED_ORIGINS = new Set([
 
 const MOSAIC_LAYERS = ['markers_mg', 'markers_mm', 'markers_ml']
 const LOCATION_LAYERS = ['markers_pg', 'markers_p', 'markers_pl']
-const ALL_CREW_LAYERS = [...MOSAIC_LAYERS, ...LOCATION_LAYERS]
+const CLUSTER_LAYERS = ['markers_cg', 'markers_c', 'markers_cn']
+const ALL_CREW_LAYERS = [...MOSAIC_LAYERS, ...LOCATION_LAYERS, ...CLUSTER_LAYERS]
 
 /* ── default world-view bounds ──────────────────────────────────────── */
 
@@ -113,6 +107,7 @@ export function useCrewPostMessage(
   const runtime = useAppRuntime()
 
   const activeRegion = ref('')
+  const hideAll = ref(false)
 
   /* ── helpers ──────────────────────────────────────────────────────── */
 
@@ -123,96 +118,111 @@ export function useCrewPostMessage(
     return Array.isArray(opts.locations) ? opts.locations : opts.locations.value
   }
 
-  /** Check whether a crew feature's `region` matches the active filter. */
-  function regionMatches(featureRegion: string | undefined, matchSet: Set<string>): boolean {
-    if (matchSet.size === 0) return true
-    return matchSet.has(featureRegion ?? '')
+  function map(): MapLibreMap | null {
+    return opts.mapRef.value
   }
 
   /* ── highlight / dim layers ───────────────────────────────────────── */
 
-  let previousRegion: string | null = null
-
   function applyHighlight(regionSlug: string) {
-    const map = opts.mapRef.value
-    if (!map || !map.isStyleLoaded()) return
+    const m = map()
+    if (!m || !m.isStyleLoaded()) return
 
     const matchSet = resolveRegionNames(regionSlug)
     const hasFilter = matchSet.size > 0
 
+    // Install smooth transitions for all crew layers
     for (const layerId of ALL_CREW_LAYERS) {
-      if (!map.getLayer(layerId)) continue
-      const layer = map.getLayer(layerId)
+      if (!m.getLayer(layerId)) continue
+      const layer = m.getLayer(layerId)
+      if (layer.type === 'circle') {
+        m.setPaintProperty(layerId, 'circle-opacity-transition', { duration: 350, delay: 0 })
+      } else if (layer.type === 'symbol') {
+        m.setPaintProperty(layerId, 'text-opacity-transition', { duration: 350, delay: 0 })
+      }
+    }
+
+    // Region filter expression: 1.0 for matching, 0.2 for non-matching
+    const matchExpr = hasFilter
+      ? (['case', ['in', ['get', 'region'], ['literal', [...matchSet]]], 1.0, 0.2] as unknown)
+      : null
+
+    for (const layerId of ALL_CREW_LAYERS) {
+      if (!m.getLayer(layerId)) continue
+      const layer = m.getLayer(layerId)
       const isText = layer.type === 'symbol'
 
       if (!hasFilter) {
-        // Reset to default zoom-based opacity (no region filter)
-        if (isText) {
-          if (MOSAIC_LAYERS.includes(layerId)) {
-            // mosaic label: text-opacity = interpolate(zoom, 2→1, 6→0)
-            map.setPaintProperty(layerId, 'text-opacity', [
-              'interpolate', ['linear'], ['zoom'], 2, 1, 6, 0],
-            )
-          } else {
-            // location label: text-opacity = interpolate(zoom, 2→0, 7→1)
-            map.setPaintProperty(layerId, 'text-opacity', [
-              'interpolate', ['linear'], ['zoom'], 2, 0, 7, 1],
-            )
-          }
-        } else {
-          if (layerId === 'markers_mg') {
-            map.setPaintProperty(layerId, 'circle-opacity', [
-              'interpolate', ['linear'], ['zoom'], 2, 0.32, 6, 0])
-          } else if (layerId === 'markers_mm') {
-            map.setPaintProperty(layerId, 'circle-opacity', [
-              'interpolate', ['linear'], ['zoom'], 2, 0.96, 6, 0])
-          } else if (layerId === 'markers_pg') {
-            map.setPaintProperty(layerId, 'circle-opacity', [
-              'interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.30])
-          } else if (layerId === 'markers_p') {
-            map.setPaintProperty(layerId, 'circle-opacity', [
-              'interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.96])
-          }
+        // ── Reset to original paint values ──
+        if (layerId === 'markers_mg') {
+          m.setPaintProperty(layerId, 'circle-opacity', ['interpolate', ['linear'], ['zoom'], 2, 0.32, 6, 0])
+        } else if (layerId === 'markers_mm') {
+          m.setPaintProperty(layerId, 'circle-opacity', ['interpolate', ['linear'], ['zoom'], 2, 0.96, 6, 0])
+        } else if (layerId === 'markers_pg') {
+          m.setPaintProperty(layerId, 'circle-opacity', ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.30])
+        } else if (layerId === 'markers_p') {
+          m.setPaintProperty(layerId, 'circle-opacity', ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.96])
+        } else if (layerId === 'markers_cg') {
+          m.setPaintProperty(layerId, 'circle-opacity', 0.30)
+        } else if (layerId === 'markers_c') {
+          m.setPaintProperty(layerId, 'circle-opacity', 0.94)
+        } else if (layerId === 'markers_ml') {
+          m.setPaintProperty(layerId, 'text-opacity', ['interpolate', ['linear'], ['zoom'], 2, 1, 6, 0])
+        } else if (layerId === 'markers_pl') {
+          m.setPaintProperty(layerId, 'text-opacity', ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 1])
+        } else if (layerId === 'markers_cn') {
+          m.setPaintProperty(layerId, 'text-opacity', 1)
         }
         continue
       }
 
-      // Region filter active — multiply zoom-opacity by highlight factor
-      const matchExpr = [
-        'case',
-        ['in', ['get', 'region'], ['literal', [...matchSet]]],
-        1.0,
-        0.2,
-      ]
-
-      if (isText) {
-        const baseOpacity = MOSAIC_LAYERS.includes(layerId)
-          ? ['interpolate', ['linear'], ['zoom'], 2, 1, 6, 0]
-          : ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 1]
-        map.setPaintProperty(layerId, 'text-opacity', ['*', baseOpacity, matchExpr])
-      } else {
-        let baseOpacity: unknown
-        if (layerId === 'markers_mg') {
-          baseOpacity = ['interpolate', ['linear'], ['zoom'], 2, 0.32, 6, 0]
-        } else if (layerId === 'markers_mm') {
-          baseOpacity = ['interpolate', ['linear'], ['zoom'], 2, 0.96, 6, 0]
-        } else if (layerId === 'markers_pg') {
-          baseOpacity = ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.30]
-        } else if (layerId === 'markers_p') {
-          baseOpacity = ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.96]
-        }
-        if (baseOpacity) {
-          map.setPaintProperty(layerId, 'circle-opacity', ['*', baseOpacity, matchExpr])
-        }
+      // ── Apply region filter ──
+      if (layerId === 'markers_mg') {
+        m.setPaintProperty(layerId, 'circle-opacity', ['*', ['interpolate', ['linear'], ['zoom'], 2, 0.32, 6, 0], matchExpr])
+      } else if (layerId === 'markers_mm') {
+        m.setPaintProperty(layerId, 'circle-opacity', ['*', ['interpolate', ['linear'], ['zoom'], 2, 0.96, 6, 0], matchExpr])
+      } else if (layerId === 'markers_pg') {
+        m.setPaintProperty(layerId, 'circle-opacity', ['*', ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.30], matchExpr])
+      } else if (layerId === 'markers_p') {
+        m.setPaintProperty(layerId, 'circle-opacity', ['*', ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.96], matchExpr])
+      } else if (layerId === 'markers_cg') {
+        m.setPaintProperty(layerId, 'circle-opacity', ['*', 0.30, matchExpr])
+      } else if (layerId === 'markers_c') {
+        m.setPaintProperty(layerId, 'circle-opacity', ['*', 0.94, matchExpr])
+      } else if (layerId === 'markers_ml') {
+        m.setPaintProperty(layerId, 'text-opacity', ['*', ['interpolate', ['linear'], ['zoom'], 2, 1, 6, 0], matchExpr])
+      } else if (layerId === 'markers_pl') {
+        m.setPaintProperty(layerId, 'text-opacity', ['*', ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 1], matchExpr])
+      } else if (layerId === 'markers_cn') {
+        m.setPaintProperty(layerId, 'text-opacity', ['*', 1, matchExpr])
       }
     }
   }
 
   /* ── flyTo ────────────────────────────────────────────────────────── */
 
+  function computeZoomForBounds(
+    m: MapLibreMap,
+    minLng: number, maxLng: number,
+    minLat: number, maxLat: number,
+  ): number {
+    const mapWidth = m.getCanvas().width
+    const mapHeight = m.getCanvas().height
+    const padding = 60
+    const availW = mapWidth - padding * 2
+    const availH = mapHeight - padding * 2
+
+    const lngDelta = maxLng - minLng || 1
+    const latDelta = maxLat - minLat || 1
+
+    const zoomW = Math.log2(360 / (lngDelta * (availW / mapWidth)))
+    const zoomH = Math.log2(180 / (latDelta * (availH / mapHeight)))
+    return Math.min(zoomW, zoomH, 8)
+  }
+
   function flyToBounds(regionSlug: string) {
-    const map = opts.mapRef.value
-    if (!map) return
+    const m = map()
+    if (!m) return
 
     const matchSet = resolveRegionNames(regionSlug)
     if (matchSet.size === 0) {
@@ -260,12 +270,13 @@ export function useCrewPostMessage(
     const reducedMotion = runtime.reducedMotion.value
 
     if (reducedMotion) {
-      map.jumpTo({
+      const targetZoom = computeZoomForBounds(m, minLng - pad, maxLng + pad, minLat - pad, maxLat + pad)
+      m.jumpTo({
         center: [(minLng + maxLng) / 2, (minLat + maxLat) / 2],
-        zoom: Math.min(Math.max(map.getZoom(), 2), 6),
+        zoom: targetZoom,
       })
     } else {
-      map.fitBounds(bounds, {
+      m.fitBounds(bounds, {
         padding: 60,
         duration: 1200,
         essential: true,
@@ -274,15 +285,15 @@ export function useCrewPostMessage(
   }
 
   function flyToDefault() {
-    const map = opts.mapRef.value
-    if (!map) return
+    const m = map()
+    if (!m) return
 
     const reducedMotion = runtime.reducedMotion.value
 
     if (reducedMotion) {
-      map.jumpTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })
+      m.jumpTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })
     } else {
-      map.fitBounds(DEFAULT_BOUNDS, {
+      m.fitBounds(DEFAULT_BOUNDS, {
         padding: 60,
         duration: 1200,
         essential: true,
@@ -296,18 +307,41 @@ export function useCrewPostMessage(
     const region = payload.region ?? ''
     activeRegion.value = region
 
+    // Update hideAll if provided
+    if (payload.hideAll !== undefined) {
+      hideAll.value = payload.hideAll === 'true'
+    }
+
     applyHighlight(region)
+
+    // Apply zoom if provided (0..1 maps to minZoom..maxZoom)
+    if (payload.zoom !== undefined) {
+      const m = map()
+      if (m) {
+        const t = Math.max(0, Math.min(1, parseFloat(payload.zoom) || 0))
+        const targetZoom = t * m.getMaxZoom()
+        m.jumpTo({ zoom: targetZoom })
+      }
+    }
+
     flyToBounds(region)
 
-    // Sync URL without reload
+    // Sync URL without reload — preserve all existing params
     const params = new URLSearchParams(window.location.search)
     if (region) {
       params.set('region', region)
     } else {
       params.delete('region')
     }
-    if (payload.hideAll) {
-      params.set('hideAll', payload.hideAll)
+    if (payload.hideAll !== undefined) {
+      if (payload.hideAll === 'true') {
+        params.set('hideAll', 'true')
+      } else {
+        params.delete('hideAll')
+      }
+    }
+    if (payload.zoom !== undefined) {
+      params.set('zoom', payload.zoom)
     }
     const qs = params.toString()
     const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname
@@ -317,6 +351,12 @@ export function useCrewPostMessage(
   function getCurrentFilters(): CrewFilterPayload {
     const payload: CrewFilterPayload = {}
     if (activeRegion.value) payload.region = activeRegion.value
+    if (hideAll.value) payload.hideAll = 'true'
+    const m = map()
+    if (m) {
+      const t = m.getZoom() / m.getMaxZoom()
+      payload.zoom = String(Math.round(t * 100) / 100)
+    }
     return payload
   }
 
@@ -358,6 +398,10 @@ export function useCrewPostMessage(
     if (import.meta.server) return
     const params = new URLSearchParams(window.location.search)
     const region = params.get('region')
+    const ha = params.get('hideAll')
+    if (ha === 'true') {
+      hideAll.value = true
+    }
     if (region) {
       activeRegion.value = region
       applyHighlight(region)
@@ -393,6 +437,7 @@ export function useCrewPostMessage(
 
   return {
     activeRegion: activeRegion as Readonly<Ref<string>>,
+    hideAll: hideAll as Readonly<Ref<boolean>>,
     applyFilters,
     getCurrentFilters,
   }

@@ -163,6 +163,8 @@ import { useCustomData } from '@/composables/useCustomData'
 
 const route = useRoute()
 
+console.log('[DEBUG:layout] setup() — route:', route.path)
+
 const { t, locale, availableLocales, localeNames, setLocale } = useAppI18n()
 
 const showDock = ref(true)
@@ -174,6 +176,7 @@ function updateDockFromHash() {
 }
 
 onMounted(() => {
+  console.log('[DEBUG:layout] onMounted — isMapRoute:', isMapRoute.value, 'showUnifiedHeader:', showUnifiedHeader.value, 'showDock:', showDock.value)
   document.addEventListener('click', handleClickOutside)
   updateDockFromHash()
   window.addEventListener('hashchange', updateDockFromHash)

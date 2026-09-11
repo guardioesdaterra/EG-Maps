@@ -52,6 +52,8 @@ export function useI18n() {
 
   const ui = useUiStore()
 
+  console.log('[DEBUG:useI18n] i18n locale:', i18n?.locale?.value, 'ui.locale:', ui.locale.value)
+
   const vt = i18n?.t ?? ((k: string, ...args: unknown[]): string => {
     const v = englishFallback(k) ?? k
     return interpolate(v, args)

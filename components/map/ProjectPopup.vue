@@ -155,7 +155,7 @@ const hasStats = computed(() => {
   font-weight: 800;
   line-height: 1.25;
   margin: 0;
-  color: var(--bg-tertiary);
+  color: var(--text-primary);
   letter-spacing: -0.01em;
   overflow-wrap: break-word;
 }
@@ -216,7 +216,7 @@ const hasStats = computed(() => {
 .project-popup__stat-value {
   font-size: 1rem;
   font-weight: 800;
-  color: var(--bg-tertiary);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 

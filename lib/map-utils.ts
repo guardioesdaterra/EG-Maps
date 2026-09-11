@@ -8,7 +8,7 @@
  * @connections components/DataBubble.vue, components/SpeciesPanel.vue, components/map/SpeciesPopup.vue, components/observatory/ClaimDetailModal.vue, components/observatory/ClaimPopup.vue, components/observatory/ClaimsDataTable.vue, components/observatory/PhaseFilter.vue, composables/useCulturalLayers.ts, composables/useDataDownload.ts, composables/useGeoJSONMarkers.ts, composables/useMapBase.ts, composables/useMapMarker.ts, composables/useMapPopup/previewCard.ts, composables/useObservatoryControls.ts, composables/useObservatoryPopup.ts, composables/useRareEarthLayers.ts
  */
 import maplibregl from 'maplibre-gl'
-import { getProjectColorByBeneficiaries, COLOR_MAMMAL } from './colors'
+import { getProjectColorByBeneficiaries, COLOR_MAMMAL, MAP_COLORS } from './colors'
 import type { ProjectData, Species } from './types'
 import type { CrewRegionData, CrewLocation } from './crew-data'
 import { isMilitaryInterest as _isMilitaryInterest, isHighEnvRisk as _isHighEnvRisk, isSuspiciousBasic, buildAnmVerifyUrl, buildClaimReportMailtoUrl, type SpeculatorIndexEntry } from './observatory-analysis'
@@ -26,6 +26,16 @@ export const GROUP_COLORS: Record<string, string> = {
   Fish: 'var(--info)',
   Plant: 'var(--success)',
   Invertebrate: 'var(--purple)'
+}
+
+export const MAP_GROUP_COLORS: Record<string, string> = {
+  Mammal: MAP_COLORS.mammal,
+  Bird: MAP_COLORS.warning,
+  Amphibian: MAP_COLORS.success,
+  Reptile: MAP_COLORS.purple,
+  Fish: MAP_COLORS.info,
+  Plant: MAP_COLORS.success,
+  Invertebrate: MAP_COLORS.purple,
 }
 
 export interface PopupTranslations {
@@ -494,6 +504,10 @@ export function isValidCoordinate(lat: number | undefined | null, lng: number | 
 
 export function getGroupColor(taxonomicGroup: string): string {
   return GROUP_COLORS[taxonomicGroup] ?? 'var(--danger)'
+}
+
+export function getGroupMapColor(taxonomicGroup: string): string {
+  return MAP_GROUP_COLORS[taxonomicGroup] ?? MAP_COLORS.danger
 }
 
 export function generateCurvedPath(from: [number, number], to: [number, number]): [number, number] {

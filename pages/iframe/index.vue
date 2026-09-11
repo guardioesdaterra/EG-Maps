@@ -283,7 +283,7 @@ const pickerDatasets = [
   { key: 'active-crews', label: 'Active Crews' },
   { key: 'project-grants', label: 'Project Grants' },
   { key: 'endangered-species', label: 'Endangered Species' },
-  { key: 'vulcan-observatory', label: 'Observatory of Vulcan' },
+  { key: 'vulcan-observatory', label: 'Vulcan Observatory' },
 ]
 
 const pickerIframeSrc = computed(() => {
@@ -336,7 +336,7 @@ const compareConfigs: CompareItem[] = [
   },
   {
     key: 'comp-vulcan-observatory',
-    label: 'Observatory of Vulcan',
+    label: 'Vulcan Observatory',
     src2d: `${embedBaseURL}vulcan-observatory?embed=true&hideAll=true`,
     src3d: `${embedBaseURL}vulcan-observatory/3d?embed=true&hideAll=true`,
   },

@@ -54,7 +54,7 @@ export async function exportMapToImage(
   const pageHeight = pdf.internal.pageSize.getHeight()
 
   if (options.includeTitle) {
-    const title = metadata?.title || 'EG-Maps Observatory of Vulcan'
+    const title = metadata?.title || 'EG-Maps Vulcan Observatory'
     const date = metadata?.date || new Date().toISOString().split('T')[0]
     pdf.setFontSize(14)
     pdf.setTextColor(30, 30, 30)
@@ -82,7 +82,7 @@ export async function exportMapToImage(
 
   pdf.setFontSize(7)
   pdf.setTextColor(150, 150, 150)
-  pdf.text('Earth Guardians South America — Observatory of Vulcan', 15, pageHeight - 5)
+  pdf.text('Earth Guardians South America — Vulcan Observatory', 15, pageHeight - 5)
   pdf.text('This document is for research and advocacy purposes.', pageWidth - 15, pageHeight - 5, { align: 'right' })
 
   const filename = buildFilename('pdf', metadata)

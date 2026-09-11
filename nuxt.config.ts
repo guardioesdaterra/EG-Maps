@@ -40,11 +40,11 @@ export default defineNuxtConfig({
       { code: 'nl', language: 'nl-NL', name: 'Nederlands', file: 'nl.json' },
       { code: 'de', language: 'de-DE', name: 'Deutsch', file: 'de.json' },
     ],
-    detectBrowserLanguage: {
-      useCookie: true,
-      cookieKey: 'i18n_lang',
-      redirectOn: 'none',
-    },
+    // Keep SSR and the first client render on the same locale. The UI store
+    // restores localStorage/navigator.language after app:mounted; letting
+    // nuxt-i18n detect the browser locale here changes en→pt before hydration
+    // and causes a full-page hydration mismatch on static subpath deploys.
+    detectBrowserLanguage: false,
   },
 
   ssr: true,

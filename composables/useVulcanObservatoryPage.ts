@@ -56,9 +56,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     const base = _rawCulturalData.value
     const agents = culturalAgentsCombined.value?.features ?? []
     if (!agents.length) return base
-    const baseFeatures = (base?.features ?? []).filter(
-      (f: GeoJSON.Feature) => (f.properties as Record<string, unknown>)?.source,
-    )
+    const baseFeatures = (base?.features ?? [])
     return {
       type: 'FeatureCollection',
       features: baseFeatures.length ? [...baseFeatures, ...agents] : agents,
@@ -237,7 +235,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
   onMounted(async () => {
     startCounterAnimation()
     await Promise.all([loadRareEarthData(), loadCulturalAgents()])
-    filteredCount.value = allFeatures.value.length
+    debouncedFilter()
     mapContainerRef.value = document.querySelector('.maplibregl-canvas-container')?.closest('.relative') as HTMLElement | null
 
     if (restoredState.value) {

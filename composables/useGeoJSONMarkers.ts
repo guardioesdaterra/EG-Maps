@@ -3,10 +3,10 @@
  * @why High-performance GeoJSON marker rendering — native MapLibre clustering for 500+ points
  * @functions speciesIndexToGeoJSON, projectsToGeoJSON, clearGeoJSONCache
  * @interfaces SpeciesIndexItem
- * @deps @/lib/map-utils (GROUP_COLORS); @/lib/colors (getProjectColorByBeneficiaries)
+ * @deps @/lib/map-utils (MAP_GROUP_COLORS, getGroupMapColor); @/lib/colors (getProjectMapColor)
  */
-import { GROUP_COLORS } from '@/lib/map-utils'
-import { getProjectColorByBeneficiaries } from '@/lib/colors'
+import { MAP_GROUP_COLORS, getGroupMapColor } from '@/lib/map-utils'
+import { getProjectMapColor } from '@/lib/colors'
 
 export interface SpeciesIndexItem {
   id: string
@@ -21,8 +21,6 @@ export interface SpeciesIndexItem {
   ecosystem?: string
   threatTypes?: string[]
 }
-
-const GROUP_COLORS_HEX: Record<string, string> = GROUP_COLORS
 
 const speciesGeoCache = new Map<string, GeoJSON.FeatureCollection>()
 const projectsGeoCache = new Map<string, GeoJSON.FeatureCollection>()
@@ -79,7 +77,7 @@ export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.Feat
           scientificName: s.scientificName,
           taxonomicGroup: s.taxonomicGroup,
           category: s.category,
-          color: GROUP_COLORS_HEX[s.taxonomicGroup] ?? '#B64032',
+          color: getGroupMapColor(s.taxonomicGroup),
           hasImage: !!s.imageUrl,
           threatCount: s.threatTypes?.length ?? 0,
         }
@@ -102,7 +100,7 @@ export function projectsToGeoJSON(projects: { latitude: number; longitude: numbe
       .filter(p => p.latitude != null && p.longitude != null && isFinite(p.latitude) && isFinite(p.longitude))
       .map(p => {
         const total = p.direct_beneficiaries + p.indirect_beneficiaries
-        const color = getProjectColorByBeneficiaries(p.direct_beneficiaries, p.indirect_beneficiaries)
+        const color = getProjectMapColor(p.direct_beneficiaries, p.indirect_beneficiaries)
         return {
           type: 'Feature' as const,
           geometry: {

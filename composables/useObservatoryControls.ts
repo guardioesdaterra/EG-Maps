@@ -416,7 +416,7 @@ export function useObservatoryControls(): ObservatoryControls {
     }, 500)
   }
 
-  watch([yearMin, yearMax], scheduleHashUpdate)
+  watch([yearMin, yearMax], () => { scheduleHashUpdate(); debouncedFilter() })
   watch(selectedPhases, scheduleHashUpdate, { deep: true })
   watch(() => layerVis.value['heatmap'], scheduleHashUpdate)
   watch(() => layerVis.value['enterprise_hq'], scheduleHashUpdate)

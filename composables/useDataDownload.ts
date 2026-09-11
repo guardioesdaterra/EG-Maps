@@ -125,7 +125,7 @@ export const DOWNLOADABLE_DATASETS: DownloadableDataset[] = [
     filename: 'vulcan-observatory-curated',
     format: 'json',
     getData: () => ({
-      reportTitle: 'Observatory of Vulcan — Curated Data Bundle',
+      reportTitle: 'Vulcan Observatory — Curated Data Bundle',
       generatedAt: new Date().toISOString(),
       source: 'Earth Guardians — EG-Maps',
       license: 'Educational use. Verify independently.',

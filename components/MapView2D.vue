@@ -72,12 +72,7 @@
     />
     <slot name="overlays" />
 
-    <div v-if="activeDataset === 'active-crews' && !hideAll" class="absolute top-4 left-1/2 -translate-x-1/2 z-[var(--z-map-banner)] pointer-events-none">
-      <div class="bg-black/70 backdrop-blur-sm border border-cyan-800/40 rounded-lg px-4 py-2 text-center">
-        <p class="text-white font-bold text-sm xs:text-base tracking-wide">{{ t('stats.activeCrewsWorldwide') }}</p>
-        <p class="text-cyan-300 text-xs mt-0.5">{{ t('stats.activeCrewsSubtitle') }}</p>
-      </div>
-    </div>
+    
 
     <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" />
     <SpeciesFilterPanel v-if="activeDataset === 'endangered-species' && showFilterPanel" ref="speciesFilterPanelRef" :species="speciesIndexData" @filter-change="handleFilterChange" @group-selection-change="handleSpeciesGroupSelection" @close="showFilterPanel = false" />
@@ -205,11 +200,10 @@ onErrorCaptured((error, instance, info) => {
 
 const showDataLoading = ref(false)
 const dataStatusText = ref('')
-let dataLoadedCount = 0
-const DATA_TOTAL = 2
 
 if (props.defaultDataset === 'endangered-species') {
   const { data: speciesIdx, loading: speciesLoading, currentDatasetLabel } = useSpeciesIndex(['iucn', 'icmbio-brazil'])
+  let dataPushed = false
   watch(currentDatasetLabel, (v) => {
     if (v && speciesLoading.value) {
       showDataLoading.value = true
@@ -218,27 +212,15 @@ if (props.defaultDataset === 'endangered-species') {
   })
   watch(speciesLoading, (v) => {
     if (!v) {
-      dataLoadedCount++
-      if (dataLoadedCount >= DATA_TOTAL) {
-        dataStatusText.value = 'All species data loaded ✓'
-        setTimeout(() => { showDataLoading.value = false }, 2500)
-      } else {
-        showDataLoading.value = true
-        dataStatusText.value = `${currentDatasetLabel.value || ''} loaded → next dataset...`
-        setTimeout(() => {
-          if (dataLoadedCount < DATA_TOTAL) {
-            showDataLoading.value = false
-          }
-        }, 2000)
+      if (!dataPushed && speciesIdx.value.length > 0) {
+        dataPushed = true
+        ctx.speciesIndexData.value = speciesIdx.value
       }
+      dataStatusText.value = 'All species data loaded ✓'
+      setTimeout(() => { showDataLoading.value = false }, 2500)
     } else {
       showDataLoading.value = true
       dataStatusText.value = t('globe.preparingData', { dataset: currentDatasetLabel.value || '' })
-    }
-  })
-  watch(speciesIdx, (val) => {
-    if (val.length > 0) {
-      ctx.speciesIndexData.value = val
     }
   })
 }

@@ -6,7 +6,7 @@
  */
 <template>
   <ClientOnly>
-    <MapView2D :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" @map-init="handleMapInit" />
+    <MapView2D :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" :hide-all="crewPostMsg.hideAll.value" @map-init="handleMapInit" />
     <template #fallback>
       <div class="flex flex-col h-[100svh] w-full items-center justify-center bg-black text-white">
         <div class="relative mb-[clamp(1.5rem,4vw,3rem)] flex items-center justify-center loader-ring">
@@ -44,7 +44,7 @@ const crewLocations = ref<CrewLocation[]>([])
 const mapInstance = vueRef<MapLibreMap | null>(null)
 
 // PostMessage bridge: filter updates from parent Squarespace page
-useCrewPostMessage({
+const crewPostMsg = useCrewPostMessage({
   mapRef: mapInstance,
   regions: crewRegions,
   locations: crewLocations,

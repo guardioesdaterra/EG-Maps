@@ -86,10 +86,7 @@ export function getThumbnailUrl(originalUrl: string, width: number, baseURL?: st
   if (!originalUrl) return ''
 
   if (!originalUrl.startsWith('http://') && !originalUrl.startsWith('https://')) {
-    if (width === MARKER_THUMB_SIZE) {
-      return getThumbnailPath(originalUrl, width, baseURL)
-    }
-    return resolveLocalUrl(originalUrl, baseURL)
+    return getThumbnailPath(originalUrl, width, baseURL)
   }
 
   if (originalUrl.includes('commons.wikimedia.org/wiki/Special:FilePath/')) {

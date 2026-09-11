@@ -352,7 +352,7 @@ export function buildProjectPreviewHTML(project: ProjectData, baseURL?: string, 
         <div class="pc__head">
           <span class="pc__badge" style="background:${color}18;color:${color}">Project</span>
           <span class="pc__loc">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             ${escapeHtml(project.country_province || 'Unknown')}
           </span>
         </div>
@@ -379,7 +379,7 @@ export function buildProjectPreviewHTML(project: ProjectData, baseURL?: string, 
       </div>
       <button class="pc__cta" data-action="expand" title="${t.expand}">
         <span>${t.expand}</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </button>
     </div>
   `

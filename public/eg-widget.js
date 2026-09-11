@@ -74,7 +74,14 @@
     iframe.style.cssText = 'display:block;width:100%;border:0;background:transparent;min-height:' + cfg.minHeight + 'px;color-scheme:light dark';
 
     var base = cfg.origin.endsWith('/') ? cfg.origin : cfg.origin + '/';
-    var url = new URL(cfg.path.replace(/^\/+/, ''), base);
+    var routePath = cfg.path.replace(/^\/+/, '');
+    // Prepend baseURL (e.g. /test/) if configured on the container
+    var baseUrl = attr(container, 'data-base-url', '');
+    if (baseUrl) {
+      baseUrl = baseUrl.replace(/\/+$/, '');
+      routePath = baseUrl + '/' + routePath;
+    }
+    var url = new URL(routePath, base);
     url.searchParams.set('embed', '1');
     if (cfg.theme) url.searchParams.set('theme', cfg.theme);
     if (cfg.accent) url.searchParams.set('accent', cfg.accent.replace('#', ''));
@@ -171,7 +178,13 @@
     iframe.scrolling = 'no';
     iframe.style.cssText = 'display:block;width:100%;border:0;background:transparent;min-height:' + cfg.minHeight + 'px;color-scheme:light dark';
 
-    var url = new URL(cfg.path.replace(/^\/+/, ''), base);
+    var routePath = cfg.path.replace(/^\/+/, '');
+    var baseUrl = attr(container, 'data-base-url', '');
+    if (baseUrl) {
+      baseUrl = baseUrl.replace(/\/+$/, '');
+      routePath = baseUrl + '/' + routePath;
+    }
+    var url = new URL(routePath, base);
     url.searchParams.set('embed', '1');
     url.searchParams.set('hideAll', '1');
     if (cfg.theme) url.searchParams.set('theme', cfg.theme);

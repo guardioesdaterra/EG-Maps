@@ -1,17 +1,10 @@
-/**
- * components/map/SpeciesPopup.vue
- * @why Endangered species popup for map markers — shows common name, scientific name, IUCN status, image
- * @component SpeciesPopup
- * @props species: Species | null
- * @deps vue (ref, computed, watch); @/composables/useI18n (useI18n); @/lib/map-utils (GROUP_COLORS); @/lib/image-utils (getMarkerPlaceholder)
- */
 <script setup lang="ts">
 
 import { ref, computed, watch } from 'vue'
 import type { Species } from '@/lib/types'
 import { useI18n } from '@/composables/useI18n'
 import { GROUP_COLORS } from '@/lib/map-utils'
-import { getMarkerPlaceholder } from '@/lib/image-utils'
+import { getMarkerPlaceholder, getPopupImageUrl } from '@/lib/image-utils'
 
 const props = defineProps<{
   species: Species | null
@@ -41,8 +34,7 @@ const region = computed(() => content.value?.region ?? props.species?.region ?? 
 const baseURL = (useRuntimeConfig().app.baseURL || '/').replace(/\/$/, '')
 const imageSrc = computed(() => {
   if (!props.species?.imageUrl) return ''
-  if (props.species.imageUrl.startsWith('http')) return props.species.imageUrl
-  return `${baseURL}/${props.species.imageUrl.replace(/^\//, '')}`
+  return getPopupImageUrl(props.species.imageUrl, baseURL)
 })
 
 const fallbackPlaceholder = computed(() => getMarkerPlaceholder(props.species?.taxonomicGroup))
@@ -75,15 +67,15 @@ const endangermentLevel = computed(() => {
   return 'default'
 })
 
-const endangermentColors: Record<string, string> = {
-  critical: 'var(--danger)',
-  endangered: 'var(--warning)',
-  vulnerable: 'var(--warning)',
-  near: 'var(--text-muted)',
-  default: 'var(--text-muted)',
+const endangermentStyles: Record<string, { bg: string; color: string; border: string; icon: string }> = {
+  critical: { bg: '#e74c3c18', color: '#e74c3c', border: '#e74c3c30', icon: 'lucide:alert-triangle' },
+  endangered: { bg: '#f39c1218', color: '#f39c12', border: '#f39c1230', icon: 'lucide:alert-circle' },
+  vulnerable: { bg: '#f39c1218', color: '#f39c12', border: '#f39c1230', icon: 'lucide:shield-alert' },
+  near: { bg: 'var(--stat-card-bg)', color: 'var(--text-muted)', border: 'var(--stat-card-border)', icon: 'lucide:info' },
+  default: { bg: 'var(--stat-card-bg)', color: 'var(--text-muted)', border: 'var(--stat-card-border)', icon: 'lucide:info' },
 }
 
-const endangermentColor = computed(() => endangermentColors[endangermentLevel.value] ?? color.value)
+const endangermentStyle = computed(() => endangermentStyles[endangermentLevel.value] ?? endangermentStyles.default)
 
 const coords = computed(() => {
   if (!props.species) return ''
@@ -95,369 +87,408 @@ const coords = computed(() => {
 </script>
 
 <template>
-  <article v-if="species" class="species-popup">
-    <div
-      class="species-popup__accent"
-      :style="{ background: color }"
-      aria-hidden="true"
-    />
+  <article v-if="species" class="sp">
+    <div class="sp__grid">
+      <!-- Left column: image -->
+      <div class="sp__media">
+        <figure v-if="imageSrc" class="sp__figure">
+          <div v-if="imageLoading && !imageError" class="sp__shimmer" :style="{ '--shimmer-color': color + '20' }" />
+          <img
+            v-show="!imageError"
+            :src="imageSrc"
+            :alt="species.commonName"
+            loading="lazy"
+            class="sp__img"
+            :class="{ 'sp__img--loaded': !imageLoading }"
+            @error="handleImageError"
+            @load="handleImageLoad"
+          />
+          <div v-if="imageError" class="sp__fallback" :style="{ borderColor: color + '30' }">
+            <div class="sp__fallback-icon" :style="{ backgroundImage: `url(${fallbackPlaceholder})` }" />
+            <span class="sp__fallback-label">{{ t('general.imageNotAvailable') }}</span>
+          </div>
+          <figcaption v-if="species.imageCredit && !imageError" class="sp__credit">
+            {{ species.imageCredit }}
+          </figcaption>
+        </figure>
 
-    <header class="species-popup__head">
-      <div class="species-popup__group-row">
-        <span class="species-popup__group" :style="{ borderColor: color, color }">
-          {{ t(`taxonomy.${species.taxonomicGroup}`) }}
-        </span>
-        <span
-          v-if="species.category"
-          class="species-popup__cat"
-          :style="{ background: color }"
+        <!-- Endangerment badge (prominent on image side) -->
+        <div
+          v-if="endangerment"
+          class="sp__endangerment"
+          :style="{ background: endangermentStyle.bg, borderColor: endangermentStyle.border, color: endangermentStyle.color }"
         >
-          {{ species.category }}
-        </span>
-      </div>
-      <h2 class="species-popup__title">{{ species.commonName }}</h2>
-      <p class="species-popup__sci">{{ species.scientificName }}</p>
-    </header>
-
-    <figure v-if="imageSrc" class="species-popup__media">
-      <div v-if="imageLoading && !imageError" class="species-popup__img-shimmer" :style="{ '--shimmer-color': color + '20' }" />
-      <img
-        v-show="!imageError"
-        :src="imageSrc"
-        :alt="species.commonName"
-        loading="lazy"
-        class="species-popup__img"
-        :class="{ 'species-popup__img--loaded': !imageLoading }"
-        @error="handleImageError"
-        @load="handleImageLoad"
-      />
-      <div v-if="imageError" class="species-popup__img-fallback" :style="{ borderColor: color + '30' }">
-        <div class="species-popup__img-fallback-icon" :style="{ backgroundImage: `url(${fallbackPlaceholder})` }" />
-        <span class="species-popup__img-fallback-label">{{ t('general.imageNotAvailable') }}</span>
-      </div>
-      <figcaption v-if="species.imageCredit && !imageError" class="species-popup__credit">
-        {{ species.imageCredit }}
-      </figcaption>
-    </figure>
-
-    <div class="species-popup__body">
-      <section v-if="endangerment" class="species-popup__section">
-        <h3 class="species-popup__h3">{{ t('species.endangerment') }}</h3>
-        <p class="species-popup__p" :style="{ color: endangermentColor }">
-          {{ endangerment }}
-        </p>
-      </section>
-
-      <section v-if="description" class="species-popup__section">
-        <h3 class="species-popup__h3">{{ t('species.about') }}</h3>
-        <p class="species-popup__p">{{ description }}</p>
-      </section>
-
-      <section v-if="ecosystemNeeds" class="species-popup__section">
-        <h3 class="species-popup__h3">{{ t('species.ecosystem') }}</h3>
-        <p class="species-popup__p">{{ ecosystemNeeds }}</p>
-      </section>
-
-      <section v-if="actions" class="species-popup__section">
-        <h3 class="species-popup__h3">{{ t('species.actions') }}</h3>
-        <p class="species-popup__p">{{ actions }}</p>
-      </section>
-
-      <section v-if="species.threatTypes?.length" class="species-popup__section">
-        <h3 class="species-popup__h3">{{ t('species.threatTypes') }}</h3>
-        <div class="species-popup__threats">
-          <span
-            v-for="threat in species.threatTypes"
-            :key="threat"
-            class="species-popup__threat"
-            :style="{ borderColor: color + '40', color, background: color + '0d' }"
-          >
-            {{ threat }}
-          </span>
+          <Icon :name="endangermentStyle.icon" size="0.9rem" />
+          <div class="sp__endangerment-body">
+            <span class="sp__endangerment-label">{{ t('species.endangerment') }}</span>
+            <span class="sp__endangerment-value">{{ endangerment }}</span>
+          </div>
         </div>
-      </section>
-    </div>
 
-    <footer class="species-popup__footer">
-      <div v-if="region" class="species-popup__chip">
-        <Icon name="lucide:map-pin" size="0.75rem" />
-        <span>{{ region }}</span>
+        <!-- Quick info chips -->
+        <div class="sp__chips">
+          <div v-if="region" class="sp__chip">
+            <Icon name="lucide:map-pin" size="0.75rem" />
+            <span>{{ region }}</span>
+          </div>
+          <div v-if="species.ecosystem" class="sp__chip">
+            <Icon name="lucide:leaf" size="0.75rem" />
+            <span>{{ species.ecosystem }}</span>
+          </div>
+          <div class="sp__chip">
+            <Icon name="lucide:crosshair" size="0.75rem" />
+            <span>{{ coords }}</span>
+          </div>
+        </div>
       </div>
-      <div v-if="species.ecosystem" class="species-popup__chip">
-        <Icon name="lucide:leaf" size="0.75rem" />
-        <span>{{ species.ecosystem }}</span>
+
+      <!-- Right column: content -->
+      <div class="sp__body">
+        <header class="sp__head">
+          <div class="sp__group-row">
+            <span class="sp__group" :style="{ borderColor: color, color }">
+              {{ t(`taxonomy.${species.taxonomicGroup}`) }}
+            </span>
+            <span
+              v-if="species.category"
+              class="sp__cat"
+              :style="{ background: color }"
+            >
+              {{ species.category }}
+            </span>
+          </div>
+          <h2 class="sp__title">{{ species.commonName }}</h2>
+          <p class="sp__sci">{{ species.scientificName }}</p>
+        </header>
+
+        <div class="sp__content">
+          <section v-if="description" class="sp__section">
+            <h3 class="sp__h3">{{ t('species.about') }}</h3>
+            <p class="sp__p">{{ description }}</p>
+          </section>
+
+          <section v-if="ecosystemNeeds" class="sp__section">
+            <h3 class="sp__h3">{{ t('species.ecosystem') }}</h3>
+            <p class="sp__p">{{ ecosystemNeeds }}</p>
+          </section>
+
+          <section v-if="actions" class="sp__section">
+            <h3 class="sp__h3">{{ t('species.actions') }}</h3>
+            <p class="sp__p">{{ actions }}</p>
+          </section>
+
+          <section v-if="species.threatTypes?.length" class="sp__section">
+            <h3 class="sp__h3">{{ t('species.threatTypes') }}</h3>
+            <div class="sp__threats">
+              <span
+                v-for="threat in species.threatTypes"
+                :key="threat"
+                class="sp__threat"
+                :style="{ borderColor: color + '40', color, background: color + '0d' }"
+              >
+                {{ threat }}
+              </span>
+            </div>
+          </section>
+        </div>
+
+        <!-- Footer link -->
+        <footer v-if="species.iucnUrl" class="sp__footer">
+          <a
+            :href="species.iucnUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="sp__link"
+            :style="{ '--link-clr': color }"
+          >
+            <Icon name="lucide:external-link" size="0.8rem" />
+            <span>{{ t('species.iucnProfile') }}</span>
+          </a>
+        </footer>
       </div>
-      <div class="species-popup__chip">
-        <Icon name="lucide:crosshair" size="0.75rem" />
-        <span>{{ coords }}</span>
-      </div>
-      <div v-if="species.iucnUrl" class="species-popup__footer-right">
-        <a
-          :href="species.iucnUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="species-popup__link"
-          :style="{ '--link-clr': color }"
-        >
-          <Icon name="lucide:external-link" size="0.75rem" />
-          <span>{{ t('species.iucnProfile') }}</span>
-        </a>
-      </div>
-    </footer>
+    </div>
   </article>
 </template>
 
 <style scoped>
-.species-popup {
-  --popup-radius: 10px;
+.sp {
   display: flex;
   flex-direction: column;
   color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
-  position: relative;
 }
 
-.species-popup__accent {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  border-radius: 4px 0 0 4px;
-  transition: background 0.25s ease;
+/* ── Two-column grid ── */
+.sp__grid {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(0, 1.2fr);
+  min-height: 0;
 }
 
-.species-popup__head {
-  padding-bottom: 1rem;
+/* ── Left: media ── */
+.sp__media {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  border-right: 1px solid var(--border-color);
 }
-
-.species-popup__group-row {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 0.25rem;
-  flex-wrap: wrap;
-}
-
-.species-popup__group {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-weight: 700;
-  border: 1px solid;
-  padding: 0.1rem 0.55rem;
-  border-radius: 4px;
-  display: inline-block;
-  line-height: 1.4;
-}
-
-.species-popup__cat {
-  font-size: 0.55rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 800;
-  color: #fff;
-  padding: 0.1rem 0.45rem;
-  border-radius: 3px;
-  display: inline-block;
-  line-height: 1.4;
-}
-
-.species-popup__title {
-  font-size: 1.35rem;
-  font-weight: 800;
-  line-height: 1.2;
-  margin: 0;
-  color: var(--text-primary);
-  letter-spacing: -0.01em;
-  overflow-wrap: break-word;
-}
-
-.species-popup__sci {
-  font-size: 0.85rem;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.4);
-  margin: 0;
-  overflow-wrap: break-word;
-}
-
-.species-popup__media {
+.sp__figure {
   position: relative;
-  margin: 0 0 1rem 0;
-  border-radius: var(--popup-radius);
+  margin: 0;
+  min-height: clamp(12rem, 30vh, 18rem);
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  min-height: clamp(10rem, 30vh, 14rem);
+  background: var(--stat-card-bg);
 }
-
-.species-popup__img {
+.sp__img {
   width: 100%;
-  height: clamp(10rem, 30vh, 14rem);
+  height: 100%;
   object-fit: cover;
   display: block;
-  transition: opacity 0.4s ease, transform 0.3s ease;
+  transition: opacity 0.4s ease;
   opacity: 0;
+  min-height: clamp(12rem, 30vh, 18rem);
 }
+.sp__img--loaded { opacity: 1; }
+.sp__img:hover { transform: scale(1.02); transition: transform 0.3s ease; }
 
-.species-popup__img--loaded {
-  opacity: 1;
-}
-
-.species-popup__img:hover {
-  transform: scale(1.02);
-}
-
-.species-popup__img-shimmer {
+.sp__shimmer {
   position: absolute;
   inset: 0;
-  height: 100%;
-  background: linear-gradient(
-    110deg,
-    transparent 30%,
-    var(--shimmer-color, rgba(255,255,255,0.06)) 50%,
-    transparent 70%
-  );
+  background: linear-gradient(110deg, transparent 30%, var(--shimmer-color, rgba(255,255,255,0.06)) 50%, transparent 70%);
   background-size: 200% 100%;
   animation: shimmer 1.6s ease-in-out infinite;
   z-index: 1;
   pointer-events: none;
 }
-
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
-.species-popup__img-fallback {
+.sp__fallback {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: clamp(10rem, 30vh, 14rem);
-  gap: 0.5rem;
+  height: clamp(12rem, 30vh, 18rem);
+  gap: 0.6rem;
   border: 1px dashed;
-  border-radius: calc(var(--popup-radius) - 1px);
-  margin: 0.5rem;
-  background: rgba(255, 255, 255, 0.01);
+  margin: 0.75rem;
+  border-radius: 10px;
+  background: var(--stat-card-bg);
 }
-
-.species-popup__img-fallback-icon {
+.sp__fallback-icon {
   width: 3.5rem;
   height: 3.5rem;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  opacity: 0.25;
+  opacity: 0.3;
 }
-
-.species-popup__img-fallback-label {
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.25);
+.sp__fallback-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 600;
 }
-
-.species-popup__credit {
-  font-size: 0.625rem;
-  color: rgba(255, 255, 255, 0.3);
-  padding: 0.35rem 0.7rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.species-popup__body {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.species-popup__section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.species-popup__h3 {
-  font-size: 0.625rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.35);
-  font-weight: 700;
+.sp__credit {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  padding: 0.4rem 0.75rem;
+  border-top: 1px solid var(--stat-card-border);
   margin: 0;
 }
 
-.species-popup__p {
+/* ── Endangerment badge ── */
+.sp__endangerment {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin: 0.75rem 0.75rem 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid;
+  border-radius: 10px;
+}
+.sp__endangerment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.sp__endangerment-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  opacity: 0.7;
+}
+.sp__endangerment-value {
   font-size: 0.85rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.8);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* ── Chips ── */
+.sp__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.75rem;
+}
+.sp__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  background: var(--stat-card-bg);
+  border: 1px solid var(--stat-card-border);
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ── Right: body ── */
+.sp__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sp__head {
+  padding: 1.25rem 1.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.sp__group-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.2rem;
+  flex-wrap: wrap;
+}
+.sp__group {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  border: 1px solid;
+  padding: 0.12rem 0.6rem;
+  border-radius: 5px;
+  display: inline-block;
+  line-height: 1.4;
+}
+.sp__cat {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  color: #fff;
+  padding: 0.12rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+  line-height: 1.4;
+}
+.sp__title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--text-primary);
+  letter-spacing: -0.015em;
+  overflow-wrap: break-word;
+}
+.sp__sci {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--text-muted);
   margin: 0;
   overflow-wrap: break-word;
 }
 
-.species-popup__threats {
+/* ── Content sections ── */
+.sp__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+}
+.sp__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.sp__h3 {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin: 0;
+}
+.sp__p {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0;
+  overflow-wrap: break-word;
+}
+.sp__threats {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-  margin-top: 0.1rem;
+  margin-top: 0.15rem;
 }
-
-.species-popup__threat {
-  font-size: 0.7rem;
-  padding: 0.15rem 0.55rem;
+.sp__threat {
+  font-size: 0.72rem;
+  padding: 0.18rem 0.6rem;
   border-radius: 6px;
   border: 1px solid;
   line-height: 1.5;
 }
 
-.species-popup__footer {
+/* ── Footer ── */
+.sp__footer {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.4rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-top: 0.85rem;
-  margin-top: 0.5rem;
+  border-top: 1px solid var(--border-color);
+  padding: 0.85rem 1.5rem;
 }
-
-.species-popup__footer-right {
-  margin-left: auto;
-}
-
-.species-popup__chip {
+.sp__link {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.7rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 999px;
-  padding: 0.25rem 0.65rem;
-  color: rgba(255, 255, 255, 0.6);
-  line-height: 1.4;
-}
-
-.species-popup__link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--link-clr, var(--info));
   text-decoration: none;
   font-weight: 600;
-  padding: 0.25rem 0.65rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.3rem 0.75rem;
+  border-radius: 8px;
+  background: var(--stat-card-bg);
+  border: 1px solid var(--stat-card-border);
   line-height: 1.4;
   transition: background 0.15s, border-color 0.2s, color 0.15s;
 }
-
-.species-popup__link:hover {
-  background: rgba(255, 255, 255, 0.08);
+.sp__link:hover {
+  background: var(--stat-card-border);
   border-color: var(--link-clr, var(--info));
+}
+
+/* ── Mobile: stack ── */
+@media (max-width: 640px) {
+  .sp__grid {
+    grid-template-columns: 1fr;
+  }
+  .sp__media {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .sp__figure {
+    min-height: 12rem;
+  }
+  .sp__img {
+    min-height: 12rem;
+  }
 }
 </style>

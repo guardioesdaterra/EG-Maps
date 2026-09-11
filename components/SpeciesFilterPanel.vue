@@ -60,15 +60,25 @@
     
     <div :class="isMobile ? 'mb-2 flex flex-wrap gap-1' : 'mb-3 flex flex-wrap gap-1.5'" v-if="taxonomicGroups.length > 0">
       <button
+        @click="selectAllGroups"
+        :class="`px-2 py-1 rounded text-[clamp(10px,1.5vw,13px)] font-medium transition-all duration-200 whitespace-nowrap ${
+          selectedTaxonomicGroups.length === 0
+            ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50'
+            : 'bg-[var(--bg-secondary)] text-[var(--text-muted)] border border-[var(--border-color)] hover:border-cyan-700/50 hover:text-cyan-400'
+        }`"
+      >
+        {{ t('filter.allGroups') }}
+      </button>
+      <button
         v-for="(group, index) in taxonomicGroups.slice(0, 4)"
         :key="group"
         @click="toggleTaxonomicGroup(group)"
         :class="`px-2 py-1 rounded text-[clamp(10px,1.5vw,13px)] font-medium transition-all duration-200 whitespace-nowrap ${
-          selectedTaxonomicGroups.includes(group)
+          selectedTaxonomicGroups.length === 0 || selectedTaxonomicGroups.includes(group)
             ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50'
             : 'bg-[var(--bg-secondary)] text-[var(--text-muted)] border border-[var(--border-color)] hover:border-cyan-700/50 hover:text-cyan-400'
         }`"
-        :style="{ animationDelay: `${index * 50}ms` }"
+        :style="{ animationDelay: `${(index + 1) * 50}ms` }"
       >
         {{ groupLabel(group) }}
       </button>
@@ -88,7 +98,7 @@
         :key="group"
         @click="toggleTaxonomicGroup(group)"
         :class="`px-2 py-1 rounded text-[clamp(10px,1.5vw,13px)] font-medium transition-all duration-200 whitespace-nowrap ${
-          selectedTaxonomicGroups.includes(group)
+          selectedTaxonomicGroups.length === 0 || selectedTaxonomicGroups.includes(group)
             ? 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50'
             : 'bg-[var(--bg-secondary)] text-[var(--text-muted)] border border-[var(--border-color)] hover:border-cyan-700/50 hover:text-cyan-400'
         }`"
@@ -110,8 +120,11 @@
         <span class="text-[clamp(10px,1.5vw,13px)] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
           {{ t('filter.taxonomicGroup') }}
         </span>
-        <span v-if="selectedTaxonomicGroups.length" class="ml-auto px-1.5 py-0.5 rounded text-[clamp(10px,1.5vw,13px)] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+        <span v-if="selectedTaxonomicGroups.length > 0" class="ml-auto px-1.5 py-0.5 rounded text-[clamp(10px,1.5vw,13px)] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
           {{ selectedTaxonomicGroups.length }}
+        </span>
+        <span v-else class="ml-auto px-1.5 py-0.5 rounded text-[clamp(10px,1.5vw,13px)] bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+          {{ taxonomicGroups.length }}
         </span>
       </button>
       <div v-if="!taxonomicGroupCollapsed" class="animate-fade-in">
@@ -121,12 +134,12 @@
           class="filter-select w-full"
           :aria-label="t('filter.taxonomicGroup')"
         >
-          <option value="">{{ selectedTaxonomicGroups.length ? t('filter.addGroup') : t('filter.allGroups') }}</option>
+          <option value="">{{ t('filter.allGroups') }}</option>
           <option v-for="group in taxonomicGroups" :key="group" :value="group">
-            {{ selectedTaxonomicGroups.includes(group) ? t('filter.removeGroup', { group: groupLabel(group) }) : groupLabel(group) }}
+            {{ (selectedTaxonomicGroups.length === 0 || selectedTaxonomicGroups.includes(group)) ? t('filter.removeGroup', { group: groupLabel(group) }) : groupLabel(group) }}
           </option>
         </select>
-        <div v-if="selectedTaxonomicGroups.length" :class="isMobile ? 'mt-1.5 flex flex-wrap gap-1' : 'mt-1.5 flex flex-wrap gap-1.5'">
+        <div v-if="selectedTaxonomicGroups.length > 0" :class="isMobile ? 'mt-1.5 flex flex-wrap gap-1' : 'mt-1.5 flex flex-wrap gap-1.5'">
           <button
             v-for="group in selectedTaxonomicGroups"
             :key="`selected-${group}`"
@@ -296,17 +309,26 @@ function groupLabel(group: string) {
 }
 
 function toggleTaxonomicGroup(group: string) {
-  if (selectedTaxonomicGroups.value.includes(group)) {
+  if (selectedTaxonomicGroups.value.length === 0) {
+    selectedTaxonomicGroups.value = [group]
+  } else if (selectedTaxonomicGroups.value.includes(group)) {
     selectedTaxonomicGroups.value = selectedTaxonomicGroups.value.filter(g => g !== group)
   } else {
     selectedTaxonomicGroups.value = [...selectedTaxonomicGroups.value, group]
   }
 }
 
+function selectAllGroups() {
+  selectedTaxonomicGroups.value = []
+}
+
 function handleTaxonomicSelect(event: Event) {
   const group = (event.target as HTMLSelectElement).value
-  if (!group) return
-  toggleTaxonomicGroup(group)
+  if (!group) {
+    selectAllGroups()
+  } else {
+    toggleTaxonomicGroup(group)
+  }
   ;(event.target as HTMLSelectElement).value = ''
 }
 
@@ -351,10 +373,12 @@ const totalCount = computed(() => props.species.length)
 const filteredPercent = computed(() => totalCount.value ? Math.round((filteredCount.value / totalCount.value) * 100) : 0)
 
 watch(filteredSpecies, (newFiltered) => {
+  if (props.species.length === 0) return
   emit('filter-change', newFiltered)
 }, { immediate: true })
 
 watch(selectedTaxonomicGroups, (groups) => {
+  if (props.species.length === 0) return
   emit('group-selection-change', groups)
 }, { immediate: true })
 

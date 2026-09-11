@@ -1,0 +1,122 @@
+<style>
+  #crew-view-switcher {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+  }
+
+  #crew-view-switcher .eg-switch {
+    display: inline-flex;
+    border: 2px solid #40e0d0;
+    border-radius: 999px;
+    padding: 3px;
+    gap: 3px;
+  }
+
+  #crew-view-switcher .eg-switch-option {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: #40e0d0;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 10px 26px;
+    border-radius: 999px;
+    cursor: pointer;
+    min-width: 64px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  #crew-view-switcher .eg-switch-option[aria-pressed="true"] {
+    background: #40e0d0;
+    color: #ffffff;
+  }
+
+  #crew-view-switcher .eg-switch-option:focus-visible {
+    outline: 2px solid #40e0d0;
+    outline-offset: 3px;
+  }
+</style>
+
+<div id="crew-view-switcher" role="radiogroup" aria-label="Map view">
+  <div class="eg-switch">
+    <button type="button" class="eg-switch-option" id="eg-view-2d" role="radio" aria-checked="true" aria-pressed="true">2D</button>
+    <button type="button" class="eg-switch-option" id="eg-view-3d" role="radio" aria-checked="false" aria-pressed="false">3D</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  var MAP_ORIGIN = "https://guardioesdaterra.github.io";
+  var READY_TIMEOUT_MS = 8000;
+
+  var mapReady = false;
+  var pendingView = null;
+  var currentView = "2d";
+
+  var btn2d = document.getElementById("eg-view-2d");
+  var btn3d = document.getElementById("eg-view-3d");
+
+  function setActive(view) {
+    currentView = view;
+    btn2d.setAttribute("aria-pressed", String(view === "2d"));
+    btn2d.setAttribute("aria-checked", String(view === "2d"));
+    btn3d.setAttribute("aria-pressed", String(view === "3d"));
+    btn3d.setAttribute("aria-checked", String(view === "3d"));
+  }
+
+  function send(view) {
+    var mapFrame = document.getElementById("crew-map-iframe") || document.querySelector(".crew-map-shape iframe");
+    if (!mapFrame) return;
+    mapFrame.contentWindow.postMessage(
+      { type: "crew-view-switch", payload: { view: view } },
+      MAP_ORIGIN
+    );
+  }
+
+  function setReady() {
+    if (mapReady) return;
+    mapReady = true;
+    if (pendingView !== null) {
+      send(pendingView);
+      pendingView = null;
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (event.origin !== MAP_ORIGIN) return;
+    if (event.data && event.data.type === "crew-map-ready") setReady();
+    // If the iframe can't switch views internally, it asks us to swap iframe.src
+    if (event.data && event.data.type === "crew-request-navigate") {
+      var view = event.data.payload && event.data.payload.view;
+      if (view === "2d" || view === "3d") {
+        var mapFrame = document.getElementById("crew-map-iframe");
+        if (mapFrame) {
+          var currentSrc = mapFrame.src;
+          var newSrc = view === "3d"
+            ? currentSrc.replace(/\/active-crews(\/?)(\?.*)?$/, "/active-crews/3d$1$2")
+            : currentSrc.replace(/\/active-crews\/3d(\/?)(\?.*)?$/, "/active-crews$1$2");
+          if (newSrc !== currentSrc) mapFrame.src = newSrc;
+          setActive(view);
+        }
+      }
+    }
+  });
+
+  setTimeout(setReady, READY_TIMEOUT_MS);
+
+  function selectView(view) {
+    if (view === currentView) return;
+    setActive(view);
+    if (!mapReady) {
+      pendingView = view;
+      return;
+    }
+    send(view);
+  }
+
+  btn2d.addEventListener("click", function () { selectView("2d"); });
+  btn3d.addEventListener("click", function () { selectView("3d"); });
+})();
+</script>

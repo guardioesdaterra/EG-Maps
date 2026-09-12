@@ -55,6 +55,9 @@ function handleMapInit(map: MapLibreMap) {
 }
 
 onMounted(async () => {
+  // Signal ideal iframe dimensions for 3D globe mode (roughly square)
+  crewPostMsg.sendResizeHint('min(70vh, 90vw)', '70vh')
+
   try {
     const res = await fetch(`${baseURL}data/crews-locations.json`)
     if (res.ok) {

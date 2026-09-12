@@ -102,6 +102,18 @@
         }
       }
     }
+    // Resize the iframe container when the globe requests it
+    if (event.data && event.data.type === "crew-resize") {
+      var payload = event.data.payload || {};
+      var section = document.querySelector(".crew-map-section");
+      if (section && payload.width) {
+        section.style.width = payload.width;
+        section.style.maxWidth = payload.width;
+      }
+      if (section && payload.height) {
+        section.style.height = payload.height;
+      }
+    }
   });
 
   setTimeout(setReady, READY_TIMEOUT_MS);

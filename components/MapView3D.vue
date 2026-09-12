@@ -198,7 +198,9 @@ function startAutoRotate(map: maplibregl.Map) {
     if (!map || !base.isMounted || isUserInteracting) { rotationAnimationId = null; return }
     if (document.hidden) { rotationAnimationId = requestAnimationFrame(rotate); return }
     const center = map.getCenter()
-    map.easeTo({ center: [center.lng - 0.15, center.lat], duration: 0, easing: (t) => t })
+    // Use jumpTo (instant) instead of easeTo to avoid creating an internal
+    // MapLibre animation that conflicts with user drag interactions.
+    map.jumpTo({ center: [center.lng - 0.15, center.lat] })
     rotationAnimationId = requestAnimationFrame(rotate)
   }
   rotationAnimationId = requestAnimationFrame(rotate)
@@ -219,13 +221,23 @@ const base = useMapBase({
   onMapReady: (map) => {
     emit('mapInit', map)
     customLayerCtx.syncNow()
+    // Focus the map canvas so it can receive keyboard and pointer events
+    // immediately — avoids the "must zoom before drag" issue on some browsers.
+    try { map.getCanvas().focus() } catch { /* ignore */ }
     if (base.quality.settings.value.starCount > 0) {
       setTimeout(() => initStarCanvas(), 500)
     }
     if (base.quality.settings.value.autoRotate) {
       startAutoRotate(map)
     }
-    function pauseAutoRotate() { isUserInteracting = true; stopAutoRotate(); if (interactionTimeout) clearTimeout(interactionTimeout) }
+    function pauseAutoRotate() {
+      isUserInteracting = true
+      stopAutoRotate()
+      // Immediately stop any in-flight MapLibre animation (easeTo/flyTo)
+      // so it doesn't compete with the user's drag.
+      try { map.stop() } catch { /* ignore */ }
+      if (interactionTimeout) clearTimeout(interactionTimeout)
+    }
     function resumeAutoRotate() {
       isUserInteracting = false
       if (interactionTimeout) clearTimeout(interactionTimeout)

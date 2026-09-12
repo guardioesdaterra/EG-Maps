@@ -157,6 +157,7 @@ let rotationAnimationId: number | null = null
 let isUserInteracting = false
 let interactionTimeout: ReturnType<typeof setTimeout> | null = null
 let visibilityHandler: (() => void) | null = null
+let starResizeCleanup: (() => void) | null = null
 
 function initStarCanvas() {
   const canvas = starCanvasRef.value
@@ -166,14 +167,39 @@ function initStarCanvas() {
   const stars: { x: number; y: number; r: number; a: number; da: number }[] = []
   const count = base.quality.settings.value.starCount
   if (count === 0) return
-  canvas.width = canvas.offsetWidth * devicePixelRatio
-  canvas.height = canvas.offsetHeight * devicePixelRatio
-  ctx.scale(devicePixelRatio, devicePixelRatio)
-  const w = canvas.offsetWidth
-  const h = canvas.offsetHeight
+
+  function resize() {
+    const w = window.innerWidth
+    const h = window.innerHeight
+    canvas.width = w * devicePixelRatio
+    canvas.height = h * devicePixelRatio
+    canvas.style.width = w + 'px'
+    canvas.style.height = h + 'px'
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0)
+    return { w, h }
+  }
+
+  let dims = resize()
+  let w = dims.w
+  let h = dims.h
+
   for (let i = 0; i < count; i++) {
     stars.push({ x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.5 + 0.5, a: Math.random(), da: (Math.random() - 0.5) * 0.02 })
   }
+
+  function onResize() {
+    dims = resize()
+    w = dims.w
+    h = dims.h
+    // Re-scatter stars that are out of bounds
+    for (const s of stars) {
+      if (s.x > w) s.x = Math.random() * w
+      if (s.y > h) s.y = Math.random() * h
+    }
+  }
+  window.addEventListener('resize', onResize)
+  starResizeCleanup = () => { window.removeEventListener('resize', onResize) }
+
   function draw() {
     if (!ctx || !canvas) return
     if (document.hidden) { starAnimationId = requestAnimationFrame(draw); return }
@@ -190,6 +216,7 @@ function initStarCanvas() {
 
 function stopStarCanvas() {
   if (starAnimationId !== null) { cancelAnimationFrame(starAnimationId); starAnimationId = null }
+  if (starResizeCleanup) { starResizeCleanup(); starResizeCleanup = null }
 }
 
 function startAutoRotate(map: maplibregl.Map) {
@@ -233,9 +260,6 @@ const base = useMapBase({
     function pauseAutoRotate() {
       isUserInteracting = true
       stopAutoRotate()
-      // Immediately stop any in-flight MapLibre animation (easeTo/flyTo)
-      // so it doesn't compete with the user's drag.
-      try { map.stop() } catch { /* ignore */ }
       if (interactionTimeout) clearTimeout(interactionTimeout)
     }
     function resumeAutoRotate() {

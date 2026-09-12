@@ -292,7 +292,7 @@
     var mapFrame = document.getElementById("crew-map-iframe") || document.querySelector(".crew-map-shape iframe");
     if (!mapFrame) return;
     mapFrame.contentWindow.postMessage(
-      { type: "crew-filter-update", payload: { hideAll: "true", region: region } },
+      { type: "crew-filter-update", payload: { region: region } },
       MAP_ORIGIN
     );
   }

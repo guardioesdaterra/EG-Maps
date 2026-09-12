@@ -161,7 +161,7 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
           } else if (filteredPoints && !filteredPoints.features.length) {
             newVal = { type: 'FeatureCollection', features: [] }
           } else {
-            newVal = rawPoints
+            newVal = rawPoints as GeoJSON.FeatureCollection
           }
           if (src && newVal) src.setData(newVal)
           const netFc = newVal ? buildEnterpriseNetworkLines(newVal) : null

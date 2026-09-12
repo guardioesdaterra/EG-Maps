@@ -559,7 +559,7 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
 
   map.addLayer({
     id: 'ree-overlap-glow', type: 'circle', source: REE_SOURCE_POINTS,
-    filter: ['all', ['!has', 'point_count'], ['>', ['to-number', ['coalesce', ['get', 'overlaps_count'], ['length', ['get', 'ov']]]], 0]],
+    filter: ['all', ['!has', 'point_count'], ['>', ['to-number', ['coalesce', ['get', 'overlaps_count'], ['length', ['get', 'ov']]]], 0]] as unknown as maplibregl.FilterSpecification,
     paint: { 'circle-color': '#f59e0b', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 10, 10, 14, 14, 18], 'circle-opacity': 0.25, 'circle-blur': 0.9, 'circle-stroke-color': '#f59e0b', 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 2], 'circle-stroke-opacity': 0.5 },
   })
 }

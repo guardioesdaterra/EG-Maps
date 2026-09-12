@@ -65,7 +65,7 @@ const CLUSTERED_DATASETS = new Set<MarkerDataset>(['project-grants', 'endangered
 const CREW_MOSAIC_RADIUS_DEG = 0.045
 const CREW_MOSAIC_ZOOM_MIN = 2
 const CREW_MOSAIC_ZOOM_MAX = 7
-const MAX_CREW_BUBBLES = 5
+const MAX_CREW_BUBBLES: number = 5
 
 /* ══════════════════════════════════════════════════════════════════════════
    🏠 SWARM 2 · COMPOSABLE STATE + LIFECYCLE (8)

@@ -98,7 +98,7 @@ export function useMapBase(config: MapBaseConfig) {
   const visibleSpecies = computed(() => {
     return filteredSpeciesList.value ?? (activeDataset.value === 'endangered-species' ? speciesIndexData.value : speciesData.value)
   })
-  const activeDataset = ref<MapBaseProps['defaultDataset']>(props.defaultDataset || 'project-grants')
+  const activeDataset = ref<'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'>(props.defaultDataset || 'project-grants')
   const selectedSpeciesGroups = ref<string[]>([])
   const clusterPanelItems = ref<ClusterResultItem[]>([])
   const clusterPanelDataset = ref('Cluster results')
@@ -395,7 +395,7 @@ export function useMapBase(config: MapBaseConfig) {
     }
     if (activeDataset.value === 'vulcan-observatory') return
     console.time(`[perf] rebuildMarkers ${activeDataset.value}`)
-    const isRee = activeDataset.value === 'vulcan-observatory'
+    const isRee = false
     try {
       console.info('[EG Maps] marker placement start', {
         dataset: activeDataset.value,
@@ -435,7 +435,7 @@ export function useMapBase(config: MapBaseConfig) {
     if (!map) return
     if (activeDataset.value === 'vulcan-observatory') return
     console.time(`[perf] updateMarkerData ${activeDataset.value}`)
-    const isRee = activeDataset.value === 'vulcan-observatory'
+    const isRee = false
     marker.update({
       dataset: activeDataset.value!,
       projects: isRee ? [] : visibleProjects.value,

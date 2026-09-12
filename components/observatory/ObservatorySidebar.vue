@@ -159,8 +159,8 @@
               :aria-label="`${t('observatory.v2.panel.flyToAgent')} ${f.properties.name}`"
               @click="onCardClick(f)"
             >
-              <span v-if="!isUnknownSource(String(f.properties.source))" class="vulc-card__pill" :style="{ background: SOURCE_COLORS[f.properties.source] || '#888' }">
-                {{ t(SOURCE_LABEL_KEYS[f.properties.source] || 'observatory.v2.panel.unknownSource') }}
+              <span v-if="!isUnknownSource(String(f.properties.source))" class="vulc-card__pill" :style="{ background: SOURCE_COLORS[String(f.properties.source)] || '#888' }">
+                {{ t(SOURCE_LABEL_KEYS[String(f.properties.source)] || 'observatory.v2.panel.unknownSource') }}
               </span>
               <h3 class="vulc-card__name">{{ f.properties.name }}</h3>
               <p v-if="f.properties.description && !isUnknown(String(f.properties.description))" class="vulc-card__desc">{{ truncate(String(f.properties.description), 120) }}</p>
@@ -172,7 +172,7 @@
             </button>
             <a
               v-if="f.properties.single_url"
-              :href="f.properties.single_url"
+              :href="String(f.properties.single_url)"
               target="_blank"
               rel="noopener"
               class="vulc-card__link"

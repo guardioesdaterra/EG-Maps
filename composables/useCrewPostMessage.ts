@@ -31,7 +31,8 @@ export interface CrewFilterPayload {
 
 export interface CrewPostMessageOptions {
   /** Reactive ref to the MapLibre map instance (null until ready). */
-  mapRef: Ref<MapLibreMap | null>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mapRef: Ref<any>
   /** Reactive crew region data (the 7 regions with lat/lng/counts). */
   regions: Ref<CrewRegionData[]> | CrewRegionData[]
   /** Reactive crew location data (individual crew points). */
@@ -119,7 +120,8 @@ export function useCrewPostMessage(
     return Array.isArray(opts.locations) ? opts.locations : opts.locations.value
   }
 
-  function map(): MapLibreMap | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function map(): any {
     return opts.mapRef.value
   }
 
@@ -135,7 +137,7 @@ export function useCrewPostMessage(
     // Install smooth transitions for all crew layers
     for (const layerId of ALL_CREW_LAYERS) {
       if (!m.getLayer(layerId)) continue
-      const layer = m.getLayer(layerId)
+      const layer = m.getLayer(layerId)!
       if (layer.type === 'circle') {
         m.setPaintProperty(layerId, 'circle-opacity-transition', { duration: 350, delay: 0 })
       } else if (layer.type === 'symbol') {
@@ -150,7 +152,7 @@ export function useCrewPostMessage(
 
     for (const layerId of ALL_CREW_LAYERS) {
       if (!m.getLayer(layerId)) continue
-      const layer = m.getLayer(layerId)
+      const layer = m.getLayer(layerId)!
       const isText = layer.type === 'symbol'
 
       if (!hasFilter) {
@@ -202,8 +204,9 @@ export function useCrewPostMessage(
 
   /* ── flyTo ────────────────────────────────────────────────────────── */
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function computeZoomForBounds(
-    m: MapLibreMap,
+    m: any,
     minLng: number, maxLng: number,
     minLat: number, maxLat: number,
   ): number {

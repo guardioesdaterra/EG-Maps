@@ -154,16 +154,7 @@
   var section = document.getElementById("crew-map-section");
 
   window.addEventListener("message", function (event) {
-    if (event.origin !== MAP_ORIGIN) return;
-    if (event.data && event.data.type === "crew-resize") {
-      var payload = event.data.payload || {};
-      if (section) {
-        section.setAttribute("data-mode", "3d");
-        if (payload.width) section.style.width = payload.width;
-        if (payload.height) section.style.height = payload.height;
-      }
-    }
-    // Reset to 2D mode when view switches back
+    // crew-view-changed comes from the switcher (same window, empty origin)
     if (event.data && event.data.type === "crew-view-changed") {
       var view = event.data.payload && event.data.payload.view;
       if (section) {
@@ -174,6 +165,16 @@
         } else if (view === "3d") {
           section.setAttribute("data-mode", "3d");
         }
+      }
+      return;
+    }
+    if (event.origin !== MAP_ORIGIN) return;
+    if (event.data && event.data.type === "crew-resize") {
+      var payload = event.data.payload || {};
+      if (section) {
+        section.setAttribute("data-mode", "3d");
+        if (payload.width) section.style.width = payload.width;
+        if (payload.height) section.style.height = payload.height;
       }
     }
   });

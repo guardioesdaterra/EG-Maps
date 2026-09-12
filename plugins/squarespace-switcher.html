@@ -64,6 +64,8 @@
     btn2d.setAttribute("aria-checked", String(view === "2d"));
     btn3d.setAttribute("aria-pressed", String(view === "3d"));
     btn3d.setAttribute("aria-checked", String(view === "3d"));
+    // Broadcast to sibling components (filter, map-iframe) in same window
+    window.postMessage({ type: "crew-view-changed", payload: { view: view } }, "*");
   }
 
   function send(view) {

@@ -158,11 +158,11 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     console.time(label)
     detach()
     addSource(SOURCE, geojson, ds)
-    console.info('[EG Maps] marker layers start', { dataset: ds, features: geojson.features.length })
+    console.log('[EG Maps] marker layers start', { dataset: ds, features: geojson.features.length })
     addLayers(SOURCE, ds)
-    console.info('[EG Maps] marker layers complete', { dataset: ds })
+    console.log('[EG Maps] marker layers complete', { dataset: ds })
     setupEvents(SOURCE, ds, a)
-    console.info('[EG Maps] marker events complete', { dataset: ds })
+    console.log('[EG Maps] marker events complete', { dataset: ds })
     buildLookupMaps(ds, a)
     currentDataset = ds
     console.timeEnd(label)
@@ -249,9 +249,9 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       ]
       for (const [group, add] of layerGroups) {
         try {
-          console.info('[EG Maps] marker layer group start', { group })
+          console.log('[EG Maps] marker layer group start', { group })
           add()
-          console.info('[EG Maps] marker layer group complete', { group })
+          console.log('[EG Maps] marker layer group complete', { group })
         } catch (error) {
           console.error('[EG Maps] marker layer group failed', { group, error })
         }

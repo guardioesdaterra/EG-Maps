@@ -43,6 +43,12 @@
     transform: scale(0.98);
   }
 
+  #crew-region-filter.is-disabled .eg-trigger {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
   #crew-region-filter .eg-trigger:focus-visible {
     outline: 2px solid var(--eg-cyan);
     outline-offset: 3px;
@@ -225,14 +231,29 @@
 
   var mapReady = false;
   var pendingRegion = null;
+  var isDisabled = false;
 
+  var filterEl = document.getElementById("crew-region-filter");
   var trigger = document.getElementById("eg-trigger");
   var menu = document.getElementById("eg-menu");
   var sublabel = document.getElementById("eg-trigger-sublabel");
   var options = Array.prototype.slice.call(menu.querySelectorAll(".eg-option"));
   var isOpen = false;
 
+  function setDisabled(disabled) {
+    isDisabled = disabled;
+    if (disabled) {
+      filterEl.classList.add("is-disabled");
+      trigger.setAttribute("aria-disabled", "true");
+      if (isOpen) closeMenu();
+    } else {
+      filterEl.classList.remove("is-disabled");
+      trigger.removeAttribute("aria-disabled");
+    }
+  }
+
   function openMenu() {
+    if (isDisabled) return;
     isOpen = true;
     menu.classList.add("is-open");
     trigger.setAttribute("aria-expanded", "true");
@@ -244,6 +265,7 @@
   }
 
   trigger.addEventListener("click", function (e) {
+    if (isDisabled) return;
     e.stopPropagation();
     isOpen ? closeMenu() : openMenu();
   });
@@ -285,11 +307,25 @@
   }
 
   window.addEventListener("message", function (event) {
+    // crew-view-changed comes from the switcher (same window, empty origin)
+    if (event.data && event.data.type === "crew-view-changed") {
+      var view = event.data.payload && event.data.payload.view;
+      setDisabled(view === "3d");
+      return;
+    }
     if (event.origin !== MAP_ORIGIN) return;
     if (event.data && event.data.type === "crew-map-ready") setReady();
   });
 
   setTimeout(setReady, READY_TIMEOUT_MS);
+
+  // Detect initial view from iframe src on load
+  (function detectInitialView() {
+    var mapFrame = document.getElementById("crew-map-iframe") || document.querySelector(".crew-map-shape iframe");
+    if (mapFrame && /\/active-crews\/3d/.test(mapFrame.src)) {
+      setDisabled(true);
+    }
+  })();
 
   options.forEach(function (opt) {
     opt.addEventListener("click", function () {

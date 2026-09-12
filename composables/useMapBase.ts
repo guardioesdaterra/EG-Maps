@@ -396,7 +396,7 @@ export function useMapBase(config: MapBaseConfig) {
     console.time(`[perf] rebuildMarkers ${activeDataset.value}`)
     const isRee = false
     try {
-      console.info('[EG Maps] marker placement start', {
+      console.log('[EG Maps] marker placement start', {
         dataset: activeDataset.value,
         projects: visibleProjects.value.length,
         species: visibleSpecies.value.length,
@@ -420,7 +420,7 @@ export function useMapBase(config: MapBaseConfig) {
           ? props.rareEarthCultural?.features
           : undefined,
       })
-      console.info('[EG Maps] marker placement complete', { dataset: activeDataset.value })
+      console.log('[EG Maps] marker placement complete', { dataset: activeDataset.value })
     } catch (error) {
       console.error('[EG Maps] marker placement failed', error)
       isLoading.value = false
@@ -501,7 +501,7 @@ export function useMapBase(config: MapBaseConfig) {
       return
     }
     if (map?.loaded()) {
-      console.info('[EG Maps] initMap skipped — map already loaded')
+      console.log('[EG Maps] initMap skipped — map already loaded')
       return
     }
     if (!mapContainerRef.value) return

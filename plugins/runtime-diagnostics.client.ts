@@ -12,7 +12,7 @@ export default defineNuxtPlugin(() => {
   window.addEventListener('unhandledrejection', (event) => {
     console.error(prefix, 'unhandled rejection', event.reason)
   })
-  console.info(prefix, 'diagnostics enabled', {
+  console.log(prefix, 'diagnostics enabled', {
     href: window.location.href,
     basePath: document.baseURI,
     webgl: Boolean(document.createElement('canvas').getContext('webgl')),

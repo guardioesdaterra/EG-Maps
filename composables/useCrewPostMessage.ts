@@ -204,9 +204,8 @@ export function useCrewPostMessage(
 
   /* ── flyTo ────────────────────────────────────────────────────────── */
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function computeZoomForBounds(
-    m: any,
+    m: MapLibreMap,
     minLng: number, maxLng: number,
     minLat: number, maxLat: number,
   ): number {

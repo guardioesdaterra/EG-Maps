@@ -412,6 +412,11 @@ export function useCrewPostMessage(
     window.parent.postMessage({ type: 'crew-map-ready' }, '*')
   }
 
+  /** Signal ideal dimensions to the parent so it can resize the iframe container. */
+  function sendResizeHint(width: string, height: string) {
+    window.parent.postMessage({ type: 'crew-resize', payload: { width, height } }, '*')
+  }
+
   /* ── initial URL param filter (on map ready) ──────────────────────── */
 
   function applyInitialUrlFilter() {
@@ -469,5 +474,6 @@ export function useCrewPostMessage(
     hideAll: hideAll as Readonly<Ref<boolean>>,
     applyFilters,
     getCurrentFilters,
+    sendResizeHint,
   }
 }

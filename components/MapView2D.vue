@@ -147,7 +147,8 @@ import ClusterResultsPanel, { type ClusterResultItem } from '~/components/map/Cl
 import NearbyPanel from '~/components/map/NearbyPanel.vue'
 import MapRuntimeError from '~/components/map/MapRuntimeError.vue'
 
-function asyncMapComponent<T>(loader: () => Promise<T>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function asyncMapComponent(loader: () => Promise<any>) {
   return defineAsyncComponent({
     loader,
     delay: 120,

@@ -20,7 +20,7 @@ export const useAppRuntime = createSharedComposable(() => {
   const supportsGeolocation = useSupported(() => typeof navigator !== 'undefined' && 'geolocation' in navigator)
   const supportsClipboard = useSupported(() => typeof navigator !== 'undefined' && 'clipboard' in navigator)
   const supportsWorkers = useSupported(() => typeof Worker !== 'undefined')
-  const params = useUrlSearchParams<'history', { dataset?: string; theme?: AppTheme; reducedMotion?: string }>('history')
+  const params = useUrlSearchParams('history') as Record<string, string | undefined>
   const themePreference = useLocalStorage<AppTheme>('eg-theme', 'auto')
   const connectionsPreference = useLocalStorage('eg-show-connections', true)
   const hexGridPreference = useLocalStorage('eg-show-hex-grid', true)

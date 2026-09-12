@@ -267,7 +267,7 @@ export function setupCulturalLayers(
     source: CULTURAL_SOURCE,
     filter: ['all', ['!has', 'point_count'],
       ['any', ['==', ['get', 'status'], 'critical'], ['==', ['get', 'status'], 'threatened'], ['==', ['get', 'status'], 'at_risk']]
-    ],
+    ] as unknown as maplibregl.FilterSpecification,
     paint: {
       'circle-color': [
         'case',

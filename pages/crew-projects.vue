@@ -172,6 +172,7 @@
 import { computed } from 'vue'
 
 const { t } = useI18n()
+const baseURL = useRuntimeConfig().app.baseURL
 
 useHead({
   title: computed(() => `${t('crewProjects.title')} — Earth Guardians`),

@@ -8,6 +8,7 @@
  */
 import { ref, computed, nextTick, onMounted, onUnmounted, watch, type Ref } from 'vue'
 import maplibregl from 'maplibre-gl'
+import { useRoute } from 'vue-router'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import { useFocusTrap } from '@/composables/useFocusTrap'
@@ -66,6 +67,7 @@ export function useMapBase(config: MapBaseConfig) {
   const { isGlobe, props, mapContainerRef, hexCanvasRef, onStyleLoad, onMapReady, onBeforeCleanup } = config
 
   const { t, locale, localeNames } = useI18n()
+  const route = useRoute()
   const speciesPanel = useSpeciesPanel()
   const baseURL = useRuntimeConfig().app.baseURL
   const isMobile = useMediaQuery('(max-width: 768px)')
@@ -113,26 +115,23 @@ export function useMapBase(config: MapBaseConfig) {
 
   const isEmbed = computed(() => {
     if (import.meta.server) return false
-    return new URLSearchParams(window.location.search).get('embed') === 'true'
+    return route.query.embed === 'true'
   })
 
   const noControl = computed(() => {
     if (import.meta.server) return false
-    const params = new URLSearchParams(window.location.search)
-    return params.get('no-control') === 'true'
+    return route.query['no-control'] === 'true'
   })
 
   const hideAll = computed(() => {
     if (props.hideAll !== undefined) return props.hideAll
     if (import.meta.server) return false
-    const params = new URLSearchParams(window.location.search)
-    return params.get('hideAll') === 'true'
+    return route.query.hideAll === 'true'
   })
 
   const controlsForced = computed(() => {
     if (import.meta.server) return false
-    const params = new URLSearchParams(window.location.search)
-    return params.get('controls') === 'true'
+    return route.query.controls === 'true'
   })
 
   const isSmallViewport = ref(false)
@@ -541,9 +540,9 @@ export function useMapBase(config: MapBaseConfig) {
       // Read zoom param: 0..1 maps linearly to minZoom..maxZoom
       let initialZoom = isRee ? (isGlobe ? 4.2 : 9.5) : isMobile.value ? (isGlobe ? 1.0 : 1.2) : (isGlobe ? 1.8 : 2)
       if (!import.meta.server) {
-        const urlZoom = new URLSearchParams(window.location.search).get('zoom')
-        if (urlZoom !== null) {
-          const t = Math.max(0, Math.min(1, parseFloat(urlZoom) || 0))
+        const urlZoom = route.query.zoom
+        if (urlZoom != null) {
+          const t = Math.max(0, Math.min(1, parseFloat(String(urlZoom)) || 0))
           initialZoom = t * tileMaxZoom
         }
       }

@@ -50,6 +50,13 @@
     <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-15" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
 
     <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" :style="{ zIndex: 'var(--z-map-base)' }" />
+    <ClusterResultsPanel
+      v-if="clusterPanelOpen"
+      :items="clusterPanelItems"
+      :dataset-label="clusterPanelDataset"
+      @close="closeClusterPanel"
+      @select="selectClusterItem"
+    />
     <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute top-4 right-4 z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/70 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm" aria-label="Find nearby crews, projects and campaigns" @click="nearbyOpen = true">⌖ Nearby</button>
     <NearbyPanel v-if="nearbyOpen" :projects="projectsData" :crew-locations="crewLocationsData" @close="nearbyOpen = false" @navigate="navigateToLocation" />
     <slot name="overlays" />
@@ -111,7 +118,7 @@
       <div v-if="showCrewOverlay" ref="crewOverlayRef" class="crew-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
         <button ref="crewCloseBtnRef" class="crew-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="crew-popup-content-fixed">
-          <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" />
+          <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" :projects="visibleProjects" :crew-locations="crewLocationsData" />
         </div>
       </div>
     </Transition>
@@ -131,6 +138,7 @@ import { useSpeciesIndex } from '~/composables/useSpeciesData'
 import { useMapCustomLayers } from '~/composables/useMapCustomLayers'
 import ImportDataWidget from '~/components/ImportDataWidget.vue'
 import NearbyPanel from '~/components/map/NearbyPanel.vue'
+import ClusterResultsPanel, { type ClusterResultItem } from '~/components/map/ClusterResultsPanel.vue'
 
 const DataBubble = defineAsyncComponent(() => import('~/components/DataBubble.vue'))
 const MapControls = defineAsyncComponent(() => import('~/components/MapControls.vue'))
@@ -335,12 +343,43 @@ const {
   crewCloseBtnRef, crewOverlayRef,
   openSpeciesOverlay, closeSpeciesOverlay,
   openProjectOverlay, closeProjectOverlay,
-  openCrewOverlay, closeCrewOverlay,
+  openCrewOverlay, closeCrewOverlay, openCrewLocationOverlay,
   handleSpeciesSelected,
   handleFilterChange, handleProjectFilterChange,
   handleSearchOpenChange, handleSpeciesGroupSelection,
   toggleLegendGroup, navigateToLocation,
+  clusterPanelItems, clusterPanelDataset, clusterPanelOpen, closeClusterPanel,
 } = base
+
+function selectClusterItem(item: ClusterResultItem) {
+  // Disambiguation choice → open its details popup (navigating alone would be
+  // a no-op for stacked markers sharing one coordinate).
+  const loc = crewLocationsData.value.find(l => `${l.name}-${l.lat}-${l.lng}` === item.id)
+  if (loc) {
+    closeClusterPanel()
+    openCrewLocationOverlay(loc)
+    return
+  }
+  const region = crewsData.value.find(c => c.id === item.id)
+  if (region) {
+    closeClusterPanel()
+    openCrewOverlay(region)
+    return
+  }
+  const proj = projectsData.value.find(p => p.project_title === item.id)
+  if (proj) {
+    closeClusterPanel()
+    openProjectOverlay(proj)
+    return
+  }
+  const sp = speciesIndexData.value.find(s => s.id === item.id)
+  if (sp) {
+    closeClusterPanel()
+    handleSpeciesSelected(sp)
+    return
+  }
+  navigateToLocation(item.coordinates[1], item.coordinates[0])
+}
 
 const isLoading = computed(() => base.isLoading.value)
 

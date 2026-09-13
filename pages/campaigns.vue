@@ -6,7 +6,6 @@
       <!-- Hero -->
       <header class="hero">
         <div class="hero-copy">
-          <span class="eyebrow">Earth Guardians · campaigns &amp; action</span>
           <h1 class="hero-title">{{ t('campaigns.heroTitle') }}</h1>
           <p class="hero-lede">{{ t('campaigns.heroDesc') }}</p>
           <div class="hero-actions">
@@ -21,7 +20,6 @@
           </div>
         </div>
         <aside class="hero-note">
-          <span class="hero-note-idx">01 / 04</span>
           <strong>{{ t('campaigns.heroNote') }}</strong>
           <p>{{ t('campaigns.heroNoteDesc') }}</p>
         </aside>
@@ -31,7 +29,6 @@
       <section class="section" aria-labelledby="connection-title">
         <div class="section-head">
           <div>
-            <span class="eyebrow">How it connects</span>
             <h2 id="connection-title" class="section-title">{{ t('campaigns.connectionTitle') }}</h2>
           </div>
           <p class="section-side">{{ t('campaigns.connectionDesc') }}</p>
@@ -64,7 +61,6 @@
       <section class="section" aria-labelledby="library-title">
         <div class="section-head">
           <div>
-            <span class="eyebrow">Campaign library</span>
             <h2 id="library-title" class="section-title">{{ t('campaigns.libraryTitle') }}</h2>
           </div>
           <p class="section-side">{{ t('campaigns.libraryDesc') }}</p>
@@ -142,7 +138,6 @@
       <section class="section" aria-labelledby="pathway-title">
         <div class="section-head">
           <div>
-            <span class="eyebrow">A simple pathway</span>
             <h2 id="pathway-title" class="section-title">{{ t('campaigns.pathwayTitle') }}</h2>
           </div>
           <p class="section-side">{{ t('campaigns.pathwayDesc') }}</p>
@@ -175,7 +170,6 @@
       <!-- CTA -->
       <section class="section">
         <div class="cta-block">
-          <span class="eyebrow eyebrow--light">The movement is open</span>
           <h2 class="cta-title">{{ t('campaigns.ctaTitle') }}</h2>
           <p class="cta-desc">{{ t('campaigns.ctaDesc') }}</p>
           <a class="btn btn--light" href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer">
@@ -214,16 +208,6 @@ useHead({
 }
 
 /* ── Shared ── */
-.eyebrow {
-  display: block;
-  margin: 0;
-  color: var(--primary);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.eyebrow--light { color: var(--text-muted); }
 
 /* ── Buttons ── */
 .btn {
@@ -297,14 +281,6 @@ useHead({
 .hero-note {
   padding: 1.25rem 0 0 1.25rem;
   border-left: 1px solid var(--border-color);
-}
-.hero-note-idx {
-  display: block;
-  margin-bottom: 2.5rem;
-  color: var(--primary);
-  font-size: 0.7rem;
-  font-weight: 700;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 .hero-note strong {
   display: block;
@@ -592,7 +568,6 @@ useHead({
     display: block;
   }
   .hero-note { margin-top: 2rem; padding-top: 1rem; padding-left: 1rem; }
-  .hero-note-idx { margin-bottom: 1rem; }
   .section-side { margin-top: 0.75rem; }
   .campaign-grid,
   .pathway-grid { grid-template-columns: 1fr; }

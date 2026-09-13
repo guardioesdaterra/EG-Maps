@@ -123,9 +123,10 @@
                 :key="i"
                 class="relative w-16 h-16 rounded-lg overflow-hidden border border-zinc-700 group"
               >
-                <img :src="photo" class="w-full h-full object-cover cursor-pointer" @click="previewPhoto = photo" />
+                <img :src="photo" :alt="`Uploaded photo ${i + 1}`" class="w-full h-full object-cover cursor-pointer" @click="previewPhoto = photo" />
                 <button
                   type="button"
+                  :aria-label="`Remove photo ${i + 1}`"
                   class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-red-400 text-xs transition-opacity"
                   @click="removePhoto(i)"
                 >×</button>
@@ -370,8 +371,11 @@ function selectSuggestion(suggestion: LocationSuggestion) {
   showAutocomplete.value = false
 }
 
+let autocompleteTimer: ReturnType<typeof setTimeout> | null = null
+let submitResultTimer: ReturnType<typeof setTimeout> | null = null
 function hideAutocompleteDelayed() {
-  setTimeout(() => { showAutocomplete.value = false }, 200)
+  if (autocompleteTimer) clearTimeout(autocompleteTimer)
+  autocompleteTimer = setTimeout(() => { showAutocomplete.value = false }, 200)
 }
 
 function togglePinMode() {
@@ -452,7 +456,8 @@ async function submitContribution() {
     }
   } finally {
     submitting.value = false
-    setTimeout(() => { submitResult.value = null }, 5000)
+    if (submitResultTimer) clearTimeout(submitResultTimer)
+    submitResultTimer = setTimeout(() => { submitResult.value = null }, 5000)
   }
 }
 
@@ -561,6 +566,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
+  if (autocompleteTimer) clearTimeout(autocompleteTimer)
+  if (submitResultTimer) clearTimeout(submitResultTimer)
 })
 
 watch(() => props.visible, async (v) => {

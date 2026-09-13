@@ -29,9 +29,9 @@ const mapsUrl = computed(() => {
   return `https://www.google.com/maps?q=${props.project.latitude},${props.project.longitude}`
 })
 
-const hasStats = computed(() => {
-  if (!props.project) return false
-  return props.project.direct_beneficiaries > 0 || props.project.indirect_beneficiaries > 0
+const unknownBeneficiaries = computed(() => {
+  const v = t('stats.unknownBeneficiaries')
+  return v === 'stats.unknownBeneficiaries' ? 'Unknown' : v
 })
 
 const directPct = computed(() => {
@@ -43,14 +43,13 @@ const directPct = computed(() => {
 
 <template>
   <article v-if="project" class="pp">
-    <!-- Hero accent strip -->
-    <div class="pp__hero" :style="{ background: `linear-gradient(135deg, ${accentColor}18 0%, transparent 100%)` }">
-      <div class="pp__hero-bar" :style="{ background: accentColor }" />
+    <!-- Hero -->
+    <div class="pp__hero">
       <div class="pp__hero-content">
-        <span class="pp__badge" :style="{ background: accentColor + '20', color: accentColor, borderColor: accentColor + '40' }">
-          {{ t('stats.projectGrantees') }}
-        </span>
-        <h2 class="pp__title">{{ project.project_title }}</h2>
+        <h2 class="pp__title">
+          <span class="pp__title-dot" :style="{ background: accentColor }" aria-hidden="true" />
+          <span>{{ project.project_title }}</span>
+        </h2>
         <p v-if="project.country_province" class="pp__location">
           <Icon name="lucide:map-pin" size="0.85rem" />
           <span>{{ project.country_province }}</span>
@@ -58,25 +57,32 @@ const directPct = computed(() => {
       </div>
     </div>
 
-    <!-- Stats grid -->
-    <div v-if="hasStats" class="pp__content">
+    <!-- Stats grid (zero counts render as Unknown, never 0) -->
+    <div class="pp__content">
       <div class="pp__stats">
-        <div v-if="project.direct_beneficiaries > 0" class="pp__stat" :style="{ borderColor: accentColor + '25' }">
+        <div class="pp__stat" :style="{ borderColor: accentColor + '25' }">
           <div class="pp__stat-icon" :style="{ background: accentColor + '15', color: accentColor }">
             <Icon name="lucide:users" size="1rem" />
           </div>
           <div class="pp__stat-body">
             <span class="pp__stat-label">{{ t('stats.directBeneficiaries') }}</span>
-            <span class="pp__stat-value" :style="{ color: accentColor }">{{ formatCompact(project.direct_beneficiaries) }}</span>
+            <span
+              class="pp__stat-value"
+              :class="{ 'pp__stat-value--unknown': project.direct_beneficiaries <= 0 }"
+              :style="project.direct_beneficiaries > 0 ? { color: accentColor } : undefined"
+            >{{ project.direct_beneficiaries > 0 ? formatCompact(project.direct_beneficiaries) : unknownBeneficiaries }}</span>
           </div>
         </div>
-        <div v-if="project.indirect_beneficiaries > 0" class="pp__stat" :style="{ borderColor: 'var(--stat-card-border)' }">
+        <div class="pp__stat" :style="{ borderColor: 'var(--stat-card-border)' }">
           <div class="pp__stat-icon" :style="{ background: 'var(--stat-card-bg)', color: 'var(--text-muted)' }">
-            <Icon name="lucide:clock" size="1rem" />
+            <Icon name="lucide:users-round" size="1rem" />
           </div>
           <div class="pp__stat-body">
             <span class="pp__stat-label">{{ t('stats.indirectBeneficiaries') }}</span>
-            <span class="pp__stat-value">{{ formatCompact(project.indirect_beneficiaries) }}</span>
+            <span
+              class="pp__stat-value"
+              :class="{ 'pp__stat-value--unknown': project.indirect_beneficiaries <= 0 }"
+            >{{ project.indirect_beneficiaries > 0 ? formatCompact(project.indirect_beneficiaries) : unknownBeneficiaries }}</span>
           </div>
         </div>
       </div>
@@ -85,14 +91,20 @@ const directPct = computed(() => {
       <div class="pp__total" :style="{ borderColor: accentColor + '30' }">
         <div class="pp__total-left">
           <span class="pp__total-label">{{ t('stats.totalBeneficiaries') }}</span>
-          <span class="pp__total-value" :style="{ color: accentColor }">{{ formatCompact(totalBeneficiaries) }}</span>
+          <span
+            class="pp__total-value"
+            :class="{ 'pp__total-value--unknown': totalBeneficiaries <= 0 }"
+            :style="totalBeneficiaries > 0 ? { color: accentColor } : undefined"
+          >{{ totalBeneficiaries > 0 ? formatCompact(totalBeneficiaries) : unknownBeneficiaries }}</span>
         </div>
-        <div class="pp__bar-track">
+        <div v-if="totalBeneficiaries > 0" class="pp__bar-track">
           <div class="pp__bar-fill" :style="{ width: directPct + '%', background: accentColor }" />
         </div>
       </div>
+    </div>
 
-      <!-- Actions -->
+    <!-- Actions (always visible — even for grants without beneficiary stats) -->
+    <div class="pp__content pp__content--actions">
       <div class="pp__actions">
         <a
           :href="mapsUrl"
@@ -123,33 +135,15 @@ const directPct = computed(() => {
   padding: 1.25rem 1.5rem 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border-color);
 }
-.pp__hero-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  border-radius: 4px 0 0 4px;
-}
 .pp__hero-content {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  padding-left: 0.5rem;
-}
-.pp__badge {
-  display: inline-flex;
-  align-self: flex-start;
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-weight: 700;
-  border: 1px solid;
-  padding: 0.15rem 0.6rem;
-  border-radius: 5px;
-  line-height: 1.4;
 }
 .pp__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.35rem;
   font-weight: 800;
   line-height: 1.25;
@@ -157,6 +151,12 @@ const directPct = computed(() => {
   color: var(--text-primary);
   letter-spacing: -0.015em;
   overflow-wrap: break-word;
+}
+.pp__title-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 .pp__location {
   display: inline-flex;
@@ -174,6 +174,9 @@ const directPct = computed(() => {
   flex-direction: column;
   gap: 1rem;
   padding: 1.25rem 1.5rem 1.5rem;
+}
+.pp__content--actions {
+  padding-top: 0;
 }
 
 /* ── Stats ── */
@@ -219,6 +222,12 @@ const directPct = computed(() => {
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
+}
+.pp__stat-value--unknown,
+.pp__total-value--unknown {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 /* ── Total ── */

@@ -360,15 +360,15 @@ export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): 
   }
 
   for (const f of points.features) {
-    const p = f.properties || {}
-    const rawName = String(p.nome ?? p.NOME ?? '').trim()
+    const p = (f.properties || {}) as Record<string, unknown>
+    const rawName = String(p.nome ?? p.NOME ?? p.n ?? '').trim()
     if (!rawName) continue
     const normClaim = normalizeName(rawName)
     const coords = (f.geometry as GeoJSON.Point)?.coordinates
     if (!coords || !Array.isArray(coords) || coords.length < 2) continue
-    const [lng, lat] = coords
+    const [lng, lat] = coords as [unknown, unknown]
     if (typeof lng !== 'number' || typeof lat !== 'number') continue
-    const area = Number(p.area_ha ?? p.AREA_HA ?? 0)
+    const area = Number(p.area_ha ?? p.AREA_HA ?? p.a ?? 0)
 
     for (const [entKey, claims] of enterpriseClaimMap) {
       if (normClaim.includes(entKey) || entKey.includes(normClaim)) {

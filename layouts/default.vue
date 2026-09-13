@@ -71,6 +71,21 @@
 
           
           <button
+            v-if="isMapRoute"
+            @click="toggleTileProvider"
+            :class="[headerUtilityClass, tileProvider.isFallback.value ? 'tile-provider-active' : '']"
+            :aria-label="tileProvider.isFallback.value ? t('mapTiles.switchToMaptiler') : t('mapTiles.switchToFallback')"
+            :title="tileProviderTitle"
+          >
+            <span class="relative inline-flex">
+              <Icon :name="tileProvider.isFallback.value ? 'lucide:mountain' : 'lucide:satellite'" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <span v-if="tileProvider.autoFallback.value" class="tile-provider-auto-dot" aria-hidden="true" />
+            </span>
+            <span class="hidden sm:inline text-xs">{{ tileProvider.isFallback.value ? t('mapTiles.fallback') : t('mapTiles.maptiler') }}</span>
+          </button>
+
+          
+          <button
             @click="toggleDarkMode"
             :class="headerUtilityClass"
             :aria-label="isDark ? t('nav.switchToLight') : t('nav.switchToDark')"
@@ -160,6 +175,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n as useAppI18n } from '@/composables/useI18n'
 import { useCustomData } from '@/composables/useCustomData'
+import { useMapTileProvider } from '@/composables/useMapTileProvider'
 
 const route = useRoute()
 
@@ -207,6 +223,19 @@ const headerItems: NavItem[] = [
 
 const { isDark, toggle: toggleDarkMode } = useDarkMode()
 const { showImportModal } = useCustomData()
+const tileProvider = useMapTileProvider()
+
+function toggleTileProvider() {
+  tileProvider.toggleProvider()
+}
+
+const tileProviderTitle = computed(() => {
+  const base = tileProvider.isFallback.value ? t('mapTiles.switchToMaptiler') : t('mapTiles.switchToFallback')
+  if (tileProvider.autoFallback.value && tileProvider.autoReason.value) {
+    return `${base} — ${t('mapTiles.autoFallbackActive')}`
+  }
+  return base
+})
 
 const isMapRoute = computed(() =>
   route.path.startsWith('/project-grants') || route.path.startsWith('/endangered-species') || route.path.startsWith('/vulcan-observatory') || route.path.startsWith('/active-crews')
@@ -285,6 +314,20 @@ function getHeaderItemClass(path: string) {
 </script>
 
 <style scoped>
+.tile-provider-active {
+  outline: 1px solid currentColor;
+  outline-offset: -1px;
+}
+.tile-provider-auto-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #22d3ee;
+  box-shadow: 0 0 4px #22d3ee;
+}
 nav > div {
   transition: transform 0.2s ease;
 }

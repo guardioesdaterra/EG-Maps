@@ -32,17 +32,20 @@ const { client, sessionReady } = useSupabase()
 const error = ref('')
 
 const SIGN_UP_URL = '/eg-grants?signup=1'
-const fallbackTimer = setTimeout(() => {
-  if (!sessionReady.value && !error.value) {
-    error.value = 'Sign-in is taking too long. Continue to the grants portal.'
-  }
-}, 15000)
+let fallbackTimer: ReturnType<typeof setTimeout> | null = null
+if (import.meta.client) {
+  fallbackTimer = setTimeout(() => {
+    if (!sessionReady.value && !error.value) {
+      error.value = 'Sign-in is taking too long. Continue to the grants portal.'
+    }
+  }, 15000)
+}
 
-onBeforeUnmount(() => clearTimeout(fallbackTimer))
+onBeforeUnmount(() => { if (fallbackTimer) clearTimeout(fallbackTimer) })
 
 watch(sessionReady, async (ready) => {
-  if (!ready) return
-  clearTimeout(fallbackTimer)
+  if (!ready || !import.meta.client) return
+  if (fallbackTimer) clearTimeout(fallbackTimer)
 
   if (window.location.search || window.location.hash) {
     window.history.replaceState({}, '', window.location.pathname)
@@ -60,7 +63,7 @@ watch(sessionReady, async (ready) => {
 async function checkMembershipAndRedirect(signUpUrl: string) {
   const { data: { user } } = await client.auth.getUser()
   if (!user?.email) {
-    navigateTo(signUpUrl)
+    await navigateTo(signUpUrl)
     return
   }
 
@@ -73,18 +76,19 @@ async function checkMembershipAndRedirect(signUpUrl: string) {
   } catch { /* ignored */ }
 
   if (isManager) {
-    navigateTo('/eg-grants')
+    await navigateTo('/eg-grants')
     return
   }
 
   const { data: result, error: fnError } = await client.functions.invoke('crew-sync?action=check')
 
   if (fnError || !result?.authorized) {
-    navigateTo(signUpUrl)
+    await navigateTo(signUpUrl)
     return
   }
 
-  navigateTo(signUpUrl)
+  // Crew member (non-manager) lands on the portal — managers already returned.
+  await navigateTo('/eg-grants')
 }
 
 </script>

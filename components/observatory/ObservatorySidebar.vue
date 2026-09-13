@@ -211,7 +211,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import type { Feature, FeatureCollection, Point } from 'geojson'
 import { useI18n } from '@/composables/useI18n'
 
@@ -392,6 +392,8 @@ function resetPage() { page.value = 1 }
 
 // ── Actions ─────────────────────────────────────────────────────────────
 const flashing = ref<string | null>(null)
+let flashTimer: ReturnType<typeof setTimeout> | null = null
+onUnmounted(() => { if (flashTimer) clearTimeout(flashTimer) })
 function featureKey(f: CulturalFeature): string {
   return `${f.properties?.source ?? 'x'}-${f.properties?.source_id ?? f.properties?.name ?? Math.random()}`
 }
@@ -400,7 +402,8 @@ function onCardClick(f: CulturalFeature) {
   if (!coords || coords.length < 2) return
   const coord: [number, number] = [coords[0], coords[1]]
   flashing.value = featureKey(f)
-  setTimeout(() => { flashing.value = null }, 1500)
+  if (flashTimer) clearTimeout(flashTimer)
+  flashTimer = setTimeout(() => { flashing.value = null }, 1500)
   emit('jumpToCultural', coord, String(f.properties?.name ?? ''))
   emit('flyToCoord', coord)
 }

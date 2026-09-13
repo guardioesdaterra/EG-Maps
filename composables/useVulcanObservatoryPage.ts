@@ -5,7 +5,7 @@
  * @deps vue (ref, computed, watch, onMounted, onUnmounted); @/composables/useObservatoryControls (useObservatoryControls, type ObservatoryData, type ObservatoryTabKey); @/composables/useObservatorySelection (useObservatorySelection); @/composables/useRareEarthData (useRareEarthData, type DataRegion); @/composables/useCulturalAgentsData (useCulturalAgentsData)
  * @connections pages/vulcan-observatory/3d.vue, pages/vulcan-observatory/index.vue
  */
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, shallowRef, computed, watch, onMounted, onUnmounted } from 'vue'
 import type maplibregl from 'maplibre-gl'
 import { useObservatoryControls, type ObservatoryData, type ObservatoryTabKey } from '@/composables/useObservatoryControls'
 import { useObservatorySelection } from '@/composables/useObservatorySelection'
@@ -75,13 +75,27 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     return out
   })
 
+  // Merged cultural ref (raw cultural-features.geojson + Mapa Cultura /
+  // Floresta Ativista agents) kept in sync so controls/data consumers see
+  // the same layer the map renders.
+  const mergedCulturalRef = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  watch(culturalData, (v) => { mergedCulturalRef.value = v }, { immediate: true })
+
+  function handleMapInit(map: maplibregl.Map) {
+    controls.onMapInit(map)
+    try {
+      const container = map.getContainer() as HTMLElement | null
+      if (container) controls.mapContainerRef.value = container
+    } catch { /* ignore */ }
+  }
+
   controls.setupObservatory({
     allFeatures,
     pointsData: _rawPointsData,
     polygonsData: _rawPolygonsData,
     protectedData: _rawProtectedData,
     waterData: _rawWaterData,
-    culturalData: _rawCulturalData,
+    culturalData: mergedCulturalRef as unknown as typeof _rawCulturalData,
     speculatorIndex,
     deepAnalysis,
     isLoading,
@@ -101,7 +115,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     polygonsData: _rawPolygonsData,
     protectedData: _rawProtectedData,
     waterData: _rawWaterData,
-    culturalData: _rawCulturalData,
+    culturalData: mergedCulturalRef as unknown as typeof _rawCulturalData,
     speculatorIndex,
     deepAnalysis,
     isLoading,
@@ -236,7 +250,9 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     startCounterAnimation()
     await Promise.all([loadRareEarthData(), loadCulturalAgents()])
     debouncedFilter()
-    mapContainerRef.value = document.querySelector('.maplibregl-canvas-container')?.closest('.relative') as HTMLElement | null
+    // mapContainerRef is set from the real map container in handleMapInit
+    // (map.getContainer()). No global querySelector — fragile with modals
+    // and multiple maps.
 
     if (restoredState.value) {
       const s = restoredState.value as Record<string, unknown>
@@ -269,7 +285,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     stats,
     data,
     pointsData, filteredPoints, polygonsData, protectedData, waterData, culturalData,
-    layerVis, flyToTarget, onMapInit,
+    layerVis, flyToTarget, onMapInit: handleMapInit,
     allFeatures, speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error,
     loadRareEarthData, loadFullBrazil, isRegional,
     showRedeCorporativa, showDownload, showUserContribution, showAll,

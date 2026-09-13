@@ -583,9 +583,20 @@ interface REEPopupProps {
   [key: string]: unknown
 }
 
+function sanitizeCssColor(value: unknown, fallback: string): string {
+  const v = String(value ?? '')
+  // Allow hex colors and internal var(--*) tokens only — anything else falls back.
+  if (/^#[0-9a-fA-F]{3,8}$/.test(v)) return v
+  if (/^var\(--[a-zA-Z0-9-]+\)$/.test(v)) return v
+  return fallback
+}
+
 export function buildRareEarthPopupHTML(props: REEPopupProps): string {
-  const cat = RARE_EARTH_CATEGORIES[props.c ?? ''] ?? { label: props.c || 'Unknown', color: 'var(--text-muted)' }
-  const dangerColor = (props.ds ?? 5) >= 8 ? 'var(--danger)' : (props.ds ?? 5) >= 6 ? 'var(--warning)' : 'var(--success)'
+  const rawCat = RARE_EARTH_CATEGORIES[props.c ?? ''] ?? { label: props.c || 'Unknown', color: 'var(--text-muted)' }
+  const cat = { label: rawCat.label, color: sanitizeCssColor(rawCat.color, 'var(--text-muted)') }
+  const dangerRaw = (props.ds ?? 5) >= 8 ? 'var(--danger)' : (props.ds ?? 5) >= 6 ? 'var(--warning)' : 'var(--success)'
+  const dangerColor = sanitizeCssColor(dangerRaw, 'var(--success)')
+  const netLabel = typeof props.net === 'string' ? props.net : ''
   const areaHa = Number(props.a ?? 0)
   const area = areaHa >= 10000 ? `${(areaHa / 1000).toFixed(0)}K ha` : `${areaHa.toLocaleString('en-US')} ha`
 
@@ -662,7 +673,7 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
           <span style="display:inline-flex;align-items:center;gap:4px;font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${cat.color};color:#fff;letter-spacing:0.06em;text-transform:uppercase">${escapeHtml(cat.label)}</span>
           <span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${dangerColor};color:#fff">${(props.ds ?? 5).toFixed(1)} Danger</span>
-          ${props.net ? `<span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(41,128,185,0.2);color:var(--info);letter-spacing:0.03em">${escapeHtml(props.net)}</span>` : ''}
+          ${netLabel ? `<span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(41,128,185,0.2);color:var(--info);letter-spacing:0.03em">${escapeHtml(netLabel)}</span>` : ''}
           ${flagsHTML}
         </div>
         <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--text-primary);line-height:1.35;letter-spacing:0.01em;word-wrap:break-word">${escapeHtml(props.n || 'Unknown')}</h3>
@@ -710,11 +721,13 @@ let reeOverlayPopup: maplibregl.Popup | null = null
 export function openRareEarthOverlayPopup(map: maplibregl.Map, feature: GeoJSON.Feature) {
   reeOverlayPopup?.remove()
   reeOverlayPopup = null
+  if (!feature || feature.geometry?.type !== 'Point') return
   const featureProps = (feature.properties ?? {}) as Record<string, unknown>
   const html = buildRareEarthPopupHTML(featureProps as { c?: string; ds?: number; a?: number; [key: string]: unknown })
   const coords = (feature.geometry as GeoJSON.Point).coordinates
+  if (!Array.isArray(coords) || typeof coords[0] !== 'number' || typeof coords[1] !== 'number') return
   reeOverlayPopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
-    .setLngLat([coords[0] as number, coords[1] as number])
+    .setLngLat([coords[0], coords[1]])
     .setHTML(html)
     .setMaxWidth('none')
     .addTo(map)

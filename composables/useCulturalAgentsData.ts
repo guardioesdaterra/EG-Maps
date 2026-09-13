@@ -75,9 +75,10 @@ export function useCulturalAgentsData(baseURL: string) {
 
   /** Load both static digests in parallel. floresta-ativista is optional. */
   async function loadStaticData() {
+    const base = (baseURL || '/').replace(/\/?$/, '/')
     const [merged, floresta] = await Promise.all([
-      fetchFeatureCollection(`${baseURL}data/cultural-agents/cultural-agents.json`),
-      fetchFeatureCollection(`${baseURL}data/cultural-agents/floresta-ativista.json`),
+      fetchFeatureCollection(`${base}data/cultural-agents/cultural-agents.json`),
+      fetchFeatureCollection(`${base}data/cultural-agents/floresta-ativista.json`),
     ])
     if (merged) mergedAgentsData.value = merged
     else sourceErrors.value['cultural-agents.json'] = 'Missing or invalid FeatureCollection'

@@ -1,0 +1,38 @@
+name: Regenerate crew grants map
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      # No dependencies needed — scripts/generate-crew-grants.ts uses Node stdlib only.
+      - name: Regenerate lib/crew-grants-map.ts
+        run: node scripts/generate-crew-grants.ts
+
+      - name: Verify map is self-consistent
+        run: node scripts/generate-crew-grants.ts --check
+
+      - name: Commit updated map
+        run: |
+          if git diff --quiet -- lib/crew-grants-map.ts; then
+            echo "Map unchanged — nothing to commit."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add lib/crew-grants-map.ts
+            git commit -m "chore: regenerate crew grants map" -m "Via Regenerate crew grants map workflow (scripts/generate-crew-grants.ts)."
+            git push
+          fi

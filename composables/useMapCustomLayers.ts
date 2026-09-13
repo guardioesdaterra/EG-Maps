@@ -27,24 +27,21 @@ function hasPolygon(features: GeoJSON.Feature[]): boolean {
 export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
   const { datasets, selectFeature } = useCustomData()
   const map = ref<MapLibreMap | null>(null)
-  let lastIds = new Set<string>()
   let clickHandler: ((e: MapMouseEvent) => void) | null = null
-
-  watch(mapRef, (m, oldM) => {
-    map.value = m
-    if (m && m.getStyle() && !oldM) {
-      resyncAll()
-    }
-  }, { immediate: true })
 
   const styleLoadCleanup = ref<(() => void) | null>(null)
 
-  watch(mapRef, (m) => {
+  // Single map watcher: sync instance, (re)arm style.load, resync once ready.
+  watch(mapRef, (m, oldM) => {
+    map.value = m
     if (styleLoadCleanup.value) { styleLoadCleanup.value(); styleLoadCleanup.value = null }
     if (!m) return
     const onStyle = () => resyncAll()
-    m.on('style.load', onStyle)
-    styleLoadCleanup.value = () => m.off('style.load', onStyle)
+    try { m.on('style.load', onStyle) } catch { /* ignore */ }
+    styleLoadCleanup.value = () => { try { m.off('style.load', onStyle) } catch { /* ignore */ } }
+    if (m.isStyleLoaded?.() && !oldM) {
+      resyncAll()
+    }
   }, { immediate: true })
 
   function layerExists(dsId: string, m: MapLibreMap): boolean {
@@ -132,15 +129,18 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
     const m = map.value as MapLibreMap | null
     if (!m || !m.getStyle()) return
     const currentIds = new Set(all.map(d => d.id))
-    for (const oldId of lastIds) {
-      if (!currentIds.has(oldId)) removeLayer(oldId, m)
-    }
+    // Remove datasets that no longer exist.
     for (const ds of all) {
-      if (ds.visible && !lastIds.has(ds.id)) {
+      void ds.id
+    }
+    // Sources are the source of truth (survives hide/show + style reloads).
+    for (const ds of all) {
+      const exists = layerExists(ds.id, m)
+      if (ds.visible && !exists) {
         addLayer(ds, m)
-      } else if (!ds.visible && lastIds.has(ds.id)) {
+      } else if (!ds.visible && exists) {
         removeLayer(ds.id, m)
-      } else if (ds.visible && lastIds.has(ds.id)) {
+      } else if (ds.visible && exists) {
         const srcId = SOURCE_PREFIX + ds.id
         try {
           const src = m.getSource(srcId) as GeoJSONSource | undefined
@@ -149,7 +149,24 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
         updateColors(ds.id, ds.color, m)
       }
     }
-    lastIds = currentIds
+    // Clean up removed datasets.
+    try {
+      const knownPrefixes = [SOURCE_PREFIX]
+      void knownPrefixes
+      void currentIds
+    } catch { /* ignore */ }
+    // Remove sources for ids that vanished entirely.
+    // (layerExists check above only iterates current datasets.)
+    // Best-effort: try previously known ids via style sources enumeration.
+    try {
+      const style = m.getStyle()
+      const sourceIds = style?.sources ? Object.keys(style.sources) : []
+      for (const srcId of sourceIds) {
+        if (!srcId.startsWith(SOURCE_PREFIX)) continue
+        const dsId = srcId.slice(SOURCE_PREFIX.length)
+        if (!currentIds.has(dsId)) removeLayer(dsId, m)
+      }
+    } catch { /* ignore */ }
   }, { deep: true })
 
   function setupClickHandler() {
@@ -158,7 +175,13 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
     if (clickHandler) { m.off('click', clickHandler); clickHandler = null }
     clickHandler = (e: MapMouseEvent) => {
       const bbox = [[e.point.x - 5, e.point.y - 5], [e.point.x + 5, e.point.y + 5]] as [[number, number], [number, number]]
-      const features = m.queryRenderedFeatures(bbox)
+      const customLayerIds = datasets.value.flatMap(ds => [
+        LAYER_CIRCLE_PREFIX + ds.id,
+        LAYER_LABEL_PREFIX + ds.id,
+        LAYER_LINE_PREFIX + ds.id,
+        LAYER_FILL_PREFIX + ds.id,
+      ])
+      const features = m.queryRenderedFeatures(bbox, { layers: customLayerIds })
       for (const f of features) {
         for (const prefix of ['custom_circle_', 'custom_label_', 'custom_line_', 'custom_fill_']) {
           if (f.layer.id.startsWith(prefix)) {
@@ -175,16 +198,11 @@ export function useMapCustomLayers(mapRef: Ref<MapLibreMap | null>) {
     const m = map.value as MapLibreMap | null
     if (!m || !m.getStyle()) return
     const all = datasets.value
-    const currentIds = new Set(all.map(d => d.id))
-    for (const oldId of lastIds) {
-      if (!currentIds.has(oldId)) removeLayer(oldId, m)
-    }
     for (const ds of all) {
       if (ds.visible && !layerExists(ds.id, m)) {
         addLayer(ds, m)
       }
     }
-    lastIds = currentIds
     setupClickHandler()
   }
 

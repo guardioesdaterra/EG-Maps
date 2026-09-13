@@ -108,7 +108,7 @@
 
 <script setup lang="ts">
 
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onUnmounted } from 'vue'
 import { useGeoLocate, type CitySuggestion } from '@/composables/useGeoLocate'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 
@@ -144,6 +144,7 @@ const suggestions = ref<CitySuggestion[]>([])
 nextTick(() => { cityInput.value?.focus() })
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null
+onUnmounted(() => { if (searchTimer) clearTimeout(searchTimer) })
 
 function onCityInput() {
   if (searchTimer) clearTimeout(searchTimer)

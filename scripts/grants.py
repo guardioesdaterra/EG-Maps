@@ -91,7 +91,43 @@ NON_GRANT_KEYWORDS = [
     "the page you are looking for", "file not found",
     "evento", "conferência", "seminário", "webinar", "workshop",
     "newsletter", "boletim", "reportagem",
+    # ── v2: login walls / error pages / nav chrome ──
+    "sign in to continue", "log in to", "create an account", "subscribe to continue",
+    "access denied", "forbidden", "error 404", "error 403", "bad gateway",
+    "service unavailable", "cookie policy", "privacy policy update",
+    "agenda", "programação do evento", "event schedule", "keynote speaker",
+    "obituary", "obituário", "weather forecast", "sports results",
+    "job opening", "we're hiring", "vaga de emprego", "classified",
 ]
+
+# Generic navigation/chrome headings that generic selectors (article/li/h2)
+# used to promote into "grants" — e.g. "Overview", "Our Work", "Read more".
+GENERIC_NAV_TITLES = {
+    "overview", "our work", "ourwork", "about us", "about", "contact",
+    "home", "news", "blog", "stories", "themes in this portfolio",
+    "read more", "learn more", "see all", "view all", "load more",
+    "choose from the domains below", "our initiatives", "what we do",
+    "who we are", "where we work", "annual report",
+}
+
+# A grant candidate MUST contain at least one of these (or carry a real
+# deadline + real amount). Without this gate any page mentioning "culture"
+# or "environment" scores relevance and becomes a false positive.
+GRANT_TERMS_RE = re.compile(
+    r'(edital|chamada pública|chamada de propostas|open call|call for '
+    r'(?:proposals|applications|entries|submissions)|request for proposals|'
+    r'\brfp\b|grant|grantmaking|fellowship|bolsa|subvenç|convocatória|'
+    r'convocatoria|appel à projets?|bando|bewerbung|antrag|fundo concursable|'
+    r'prize|award|scholarship|microgrant|micro-grant|seed fund|seed grant|'
+    r'bridge fund|matching fund|crowdfund|donor circle|aplicar|inscreva-se|'
+    r'candidatura|postulación|apply (?:now|here|today|by))',
+    re.I,
+)
+
+# Minimum quality bar shared by every scraper. Tuned on 581-row audit
+# (2026-06-30 exports): 64% had neither deadline nor amount.
+MIN_RELEVANCE_DEFAULT = 12
+MIN_SIGNALS_DEFAULT = 10
 
 console = Console()
 
@@ -304,6 +340,199 @@ def score_relevance(text: str, is_standing: bool = False) -> int:
         hits = min(hits, 40)
         hits = int(hits * 0.5)
     return min(100, hits)
+
+
+# ──────────────────────────────────────────────────────────────
+# URL VALIDATION + CANDIDATE QUALITY GATE (v2)
+# ──────────────────────────────────────────────────────────────
+
+LOGIN_WALL_RE = re.compile(
+    r'(sign in to continue|log in to|register or sign in|create an account|'
+    r'subscribe to continue|my account|access denied|forbidden|'
+    r'page not found|the page you are looking for|file not found|'
+    r'error 404|error 403)',
+    re.I,
+)
+
+TRACKING_PARAMS_RE = re.compile(
+    r'[?&](utm_\w+|fbclid|gclid|gclsrc|mc_cid|mc_eid|ref|source|medium|campaign|mc_|_hsenc|_hsmi|vero_id)=[^&]*',
+)
+
+
+def normalize_url(url: str) -> str:
+    """Normalize URL for comparison/dedupe — strip tracking, fragments, trailing slashes."""
+    u = (url or "").strip()
+    u = TRACKING_PARAMS_RE.sub("", u)
+    u = u.split("#")[0].rstrip("/")
+    return u
+
+
+def is_valid_grant_url(url: str) -> bool:
+    """Reject empty, non-http, too-short, or homepage-only URLs.
+
+    Homepage-only links (https://example.org/ with no path) carry no
+    grant detail — they were a major false-positive source.
+    """
+    if not url or not isinstance(url, str):
+        return False
+    u = url.strip()
+    if not re.match(r'https?://', u, re.I):
+        return False
+    if len(u) < 15 or " " in u:
+        return False
+    try:
+        parts = urlparse(u)
+        if not parts.netloc or "." not in parts.netloc:
+            return False
+        # Reject bare homepages (no path beyond "/")
+        if parts.path in ("", "/") and not parts.query:
+            return False
+    except (ValueError, AttributeError):
+        return False
+    return True
+
+
+def is_valid_grant_candidate(title: str, description: str = "",
+                             url: str = "", deadline: str = "",
+                             amount_max: str = "",
+                             min_relevance: int = MIN_RELEVANCE_DEFAULT,
+                             min_signals: int = MIN_SIGNALS_DEFAULT) -> bool:
+    """Central anti-false-positive gate. Returns True only for grant-like items.
+
+    Drops: nav/chrome headings, login walls, error pages, items with neither
+    grant vocabulary nor (deadline + amount), and low-score items.
+    """
+    t = (title or "").strip()
+    if len(t) < 15:
+        return False
+    if t.lower().strip() in GENERIC_NAV_TITLES:
+        return False
+    blob = f"{t} {description or ''}"
+    if is_likely_non_grant(t, description or ""):
+        return False
+    if LOGIN_WALL_RE.search(blob):
+        return False
+    if url and not is_valid_grant_url(url):
+        return False
+    has_terms = bool(GRANT_TERMS_RE.search(blob))
+    has_deadline = bool(deadline and deadline not in ("None", ""))
+    has_amount = bool(amount_max and amount_max not in ("None", ""))
+    if not has_terms and not (has_deadline and has_amount):
+        return False
+    relevance = score_relevance(blob)
+    signals = has_grant_signals(t, description or "", deadline, amount_max)
+    if relevance < min_relevance or signals < min_signals:
+        return False
+    return True
+
+
+def compute_quality_score(relevance: int, signals: int, has_deadline: bool,
+                          has_amount: bool, url_ok: bool = True) -> int:
+    """Composite 0-100 quality score for ranking + Supabase `quality_score`."""
+    q = min(relevance, 40) + min(signals, 30)
+    if has_deadline:
+        q += 15
+    if has_amount:
+        q += 15
+    if not url_ok:
+        q -= 30
+    return max(0, min(100, q))
+
+
+def is_scrape_hit(title: str, text: str, threshold: int = 8) -> bool:
+    """Per-card pre-filter for broad generic sweeps (article/section/li).
+
+    Lets through cards that carry grant vocabulary; otherwise requires a
+    solid relevance score. Kills nav-chrome hits ("Overview", "Our Work")
+    at the source instead of relying only on the pipeline gate.
+    """
+    t = (title or "").strip()
+    if len(t) < 15:
+        return False
+    if t.lower() in GENERIC_NAV_TITLES:
+        return False
+    if is_likely_non_grant(t, text or ""):
+        return False
+    blob = f"{t} {text or ''}"
+    if GRANT_TERMS_RE.search(blob):
+        return True
+    return score_relevance(blob) >= threshold
+
+
+async def verify_grant_urls(session, grants, max_check: int = 400):
+    """HEAD/GET each grant URL; flag broken + login-wall pages.
+
+    Mutates grants in place: sets `url_status` (ok/broken/login_wall/timeout/
+    unchecked), `url_status_code`, `url_checked_at`. Returns (kept, dropped).
+    """
+    checked_at = datetime.now(timezone.utc).isoformat()
+    kept, dropped = [], []
+    for g in grants:
+        url = g.get("url", "")
+        if not is_valid_grant_url(url):
+            g.update(url_status="broken", url_status_code=None,
+                     url_checked_at=checked_at)
+            dropped.append(g)
+            continue
+        if len(kept) + len(dropped) >= max_check:
+            g.setdefault("url_status", "unchecked")
+            kept.append(g)
+            continue
+        try:
+            timeout = aiohttp.ClientTimeout(total=15)
+            async with session.head(url, headers=HEADERS, timeout=timeout,
+                                    allow_redirects=True) as r:
+                code = r.status
+                ctype = r.headers.get("Content-Type", "")
+        except (asyncio.TimeoutError, aiohttp.ClientError, OSError):
+            try:
+                timeout = aiohttp.ClientTimeout(total=15)
+                async with session.get(url, headers=HEADERS, timeout=timeout,
+                                       allow_redirects=True) as r:
+                    code = r.status
+                    ctype = r.headers.get("Content-Type", "")
+                    if code < 400 and "text/html" in ctype:
+                        snippet = (await r.text())[:2000].lower()
+                        if LOGIN_WALL_RE.search(snippet):
+                            g.update(url_status="login_wall",
+                                     url_status_code=code,
+                                     url_checked_at=checked_at)
+                            dropped.append(g)
+                            continue
+                    else:
+                        snippet = ""
+                if code >= 400:
+                    g.update(url_status="broken", url_status_code=code,
+                             url_checked_at=checked_at)
+                    dropped.append(g)
+                    continue
+                g.update(url_status="ok", url_status_code=code,
+                         url_checked_at=checked_at)
+                kept.append(g)
+                continue
+            except asyncio.TimeoutError:
+                g.update(url_status="timeout", url_status_code=None,
+                         url_checked_at=checked_at)
+                dropped.append(g)
+                continue
+            except (aiohttp.ClientError, OSError):
+                g.update(url_status="broken", url_status_code=None,
+                         url_checked_at=checked_at)
+                dropped.append(g)
+                continue
+        if code >= 400:
+            g.update(url_status="broken", url_status_code=code,
+                     url_checked_at=checked_at)
+            dropped.append(g)
+        elif code == 405:  # HEAD not allowed — don't punish, leave unchecked
+            g.update(url_status="unchecked", url_status_code=code,
+                     url_checked_at=checked_at)
+            kept.append(g)
+        else:
+            g.update(url_status="ok", url_status_code=code,
+                     url_checked_at=checked_at)
+            kept.append(g)
+    return kept, dropped
 
 
 def parse_amount_value(amount_max, currency):
@@ -685,6 +914,16 @@ def make_grant(title, source_name, url, description="", funder="",
 
     days, urgency = compute_deadline_urgency(deadline)
 
+    content_hash = hashlib.md5(
+        f"{re.sub(r'[^\\w\\s]', '', title.lower()).strip()[:80]}::{normalize_url(url)}".encode()
+    ).hexdigest()[:16]
+    quality_score = compute_quality_score(
+        base_relevance, grant_signals,
+        has_deadline=bool(deadline and deadline not in ("None", "")),
+        has_amount=bool(amount_max and amount_max not in ("None", "")),
+        url_ok=is_valid_grant_url(url),
+    )
+
     return {
         "id":              uid,
         "title":           title.strip(),
@@ -692,6 +931,11 @@ def make_grant(title, source_name, url, description="", funder="",
         "source":          source_name,
         "source_id":       uid,              # alias for Supabase compat
         "url":             url,
+        "url_status":      "unchecked",      # filled by verify_grant_urls()
+        "url_status_code": None,
+        "url_checked_at":  "",
+        "content_hash":    content_hash,
+        "quality_score":   quality_score,
         "description":     description.strip()[:MAX_DESCRIPTION_LEN],
         "deadline":        deadline,
         "amount_max":      amount_max,
@@ -878,7 +1122,7 @@ def extract_body_text(soup):
             paragraphs.append(pt)
     return " | ".join(paragraphs[:10]) if paragraphs else ""
 
-def extract_amount(text):
+def _extract_amount_raw(text):
     """Extract first currency amount from text. Handles ranges, multiple currencies, edge cases."""
     if not text:
         return ""
@@ -912,15 +1156,24 @@ def extract_amount(text):
         return f"{cur} {m_named_range.group(2)} – {cur} {m_named_range.group(3)}"
 
     # ── Standard currencies with suffixes (million, lakh, crore, 万, 億) ──
+    # ── Standard currencies (symbols match any case; alpha codes must be
+    # UPPERCASE with word boundaries — otherwise "in 1997" matches INR,
+    # "my," matches MYR, "rm." matches RM). ──
     m = re.search(
-        r'(€|USD?\s*[\d]|EUR?\s*[\d]|GBP?\s*[\d]|£|¥|JPY|CNY?|₹|INR?|₩|KRW|฿|THB?|Rp|IDR?|RM|MYR?|PHP?|SGD?|CAD?|AUD?|NZD?|CHF?|SEK?|NOK?|DKK?)'
-        r'\s*([\d,\.]+(?:\s*(?:million|mil|thousand|万|億|lakh|crore))?)', text, re.I)
+        r'(€|\$|£|¥|₹|₩|฿|Rp|R\$|US\$)'
+        r'\s*([\d,\.]+(?:\s*(?:million|mil|thousand|万|億|lakh|crore))?)', text)
     if m:
         raw = m.group(0).strip()
         # Avoid matching single digits like "$1" unless followed by more
         num_part = re.search(r'[\d,\.]+', raw)
         if num_part and len(num_part.group().replace(',','').replace('.','')) >= 2:
             return raw
+    # UPPERCASE alpha codes only (case-SENSITIVE on purpose)
+    m_code = re.search(
+        r'\b(USD|EUR|GBP|JPY|CNY|INR|KRW|THB|IDR|MYR|PHP|SGD|CAD|AUD|NZD|CHF|SEK|NOK|DKK|BRL)\b'
+        r'\s*([\d,\.]{3,}(?:\s*(?:million|mil|thousand|lakh|crore))?)', text)
+    if m_code:
+        return m_code.group(0).strip()
 
     # ── Dollar sign with amount: "$5,000" or "$ 5000" ──
     m2 = re.search(r'\$\s*([\d,\.]{2,})', text)
@@ -954,8 +1207,8 @@ def extract_amount(text):
         elif "¥" in prefix: sym = "¥"
         return f"{sym}{m_up.group(1)}"
 
-    # ── "from X to Y" patterns ──
-    m_from_to = re.search(r'(?:from|de|von|da)\s*(?:R\$\s*|US\$\s*|\$\s*|€\s*|£\s*)?([\d,\.]+)\s*(?:to|a|até|bis|fino a)\s*(?:R\$\s*|US\$\s*|\$\s*|€\с*|£\s*)?([\d,\.]+)', text, re.I)
+    # ── "from X to Y" patterns (fixed: was €\с* with a Cyrillic с) ──
+    m_from_to = re.search(r'(?:from|de|von|da)\s*(?:R\$\s*|US\$\s*|\$\s*|€\s*|£\s*)?([\d,\.]+)\s*(?:to|a|até|bis|fino a)\s*(?:R\$\s*|US\$\s*|\$\s*|€\s*|£\s*)?([\d,\.]+)', text, re.I)
     if m_from_to:
         prefix = text[max(0, m_from_to.start()-15):m_from_to.start()]
         sym = "$"
@@ -970,6 +1223,41 @@ def extract_amount(text):
         return m_word.group(0).strip()
 
     return ""
+
+def _is_plausible_amount(raw: str) -> bool:
+    """Reject parser garbage: fragments without a real money figure.
+
+    Kills audit findings like "in.", "my,", "rm.", "in 1997," — bare years
+    (1900–2100), sub-3-digit numbers, or candidates with no digit run ≥3.
+    """
+    if not raw or len(raw.strip()) < 4:
+        return False
+    nums = re.findall(r'\d[\d,\.]*', raw)
+    if not nums:
+        return False
+    # Magnitude words always count ("$5k", "₹5 Crore", "¥20 million")
+    if re.search(r'(million|milhão|thousand|\bk\b|lakh|crore|万|億|mrd|billion|\bbn\b)', raw, re.I):
+        return True
+    for n in nums:
+        digits = re.sub(r'\D', '', n)
+        if len(digits) < 3:
+            continue
+        # Bare year without a currency SYMBOL attached → not money
+        if len(digits) == 4 and 1900 <= int(digits) <= 2100 \
+                and not re.search(r'[$€£¥₹₩฿]|R\$', raw):
+            continue
+        return True
+    return False
+
+
+def extract_amount(text):
+    """Validated wrapper — never returns garbage fragments."""
+    if not text:
+        return ""
+    raw = _extract_amount_raw(text)
+    if not raw or not _is_plausible_amount(raw):
+        return ""
+    return raw
 
 def extract_deadline(text):
     """Extract deadline from text. Supports absolute dates and relative expressions in 10+ languages."""
@@ -1064,9 +1352,11 @@ def extract_deadline(text):
     if rel_it_months:
         return (today + timedelta(days=int(rel_it_months.group(1)) * 30)).strftime("%Y-%m-%d")
 
-    # ── "closing soon" / "próximo" / "em breve" / "bald" / "prossimamente" — assume 14 days ──
-    if re.search(r'(?:closing\s+soon|pr[oó]xim[oa]|em\s+breve|soon|urgent|bald|prossimamente|prochainement|pr[oó]xim[oa])', blob):
-        return (today + timedelta(days=14)).strftime("%Y-%m-%d")
+    # ── Vague "soon"-style prose NEVER yields a date (v2 fix).
+    # The old code fabricated today+14d for words like "próximo"/"soon"/
+    # "urgent", inventing deadlines for grants that had none. Return ""
+    # and let urgency stay "unknown".
+    # (Intentionally no "closing soon" → +14 days heuristic.)
 
     # ══════════════════════════════════════════════════════════
     # ABSOLUTE DATE PATTERNS
@@ -1810,9 +2100,10 @@ async def fetch_commonwealth_foundation(session):
             t = art.find(["h2","h3","h4"]); a = art.find("a",href=True)
             if not t: continue
             title = t.get_text(strip=True)
-            if len(title) < 10: continue
             link = urljoin("https://commonwealthfoundation.com", a["href"]) if a else url
             text = art.get_text(" ")
+            if not is_scrape_hit(title, text):
+                continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=text[:MAX_DESCRIPTION_LEN], country="GLOBAL",
                 funder="Commonwealth Foundation", deadline=extract_deadline(text),
@@ -2477,10 +2768,10 @@ async def fetch_ashoka(session):
             t = art.find(["h2","h3","h4"]); a = art.find("a",href=True)
             if not t: continue
             title = t.get_text(strip=True)
-            if len(title) < 6: continue
             url  = urljoin("https://www.changemakers.com", a["href"]) if a else "https://www.changemakers.com"
             text = art.get_text(" ")
-            if score_relevance(f"{title} {text}") < 3: continue
+            if not is_scrape_hit(title, text):
+                continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=text[:MAX_DESCRIPTION_LEN], country="GLOBAL",
                 funder="Ashoka / Changemakers",
@@ -2614,9 +2905,10 @@ async def fetch_global_env(session):
             t = art.find(["h2","h3","h4"]); a = art.find("a",href=True)
             if not t: continue
             title = t.get_text(strip=True)
-            if len(title) < 10: continue
             link = urljoin(url, a["href"]) if a else url
             text = art.get_text(" ")
+            if not is_scrape_hit(title, text):
+                continue
             grants.append(make_grant(title=title, source_name=f"env:{name}", url=link,
                 description=text[:MAX_DESCRIPTION_LEN], country=country, language=lang,
                 funder=funder, deadline=extract_deadline(text)))
@@ -2786,9 +3078,10 @@ async def fetch_nordic_funding(session):
             t = art.find(["h1","h2","h3","h4"]); a = art.find("a",href=True)
             if not t: continue
             title = t.get_text(strip=True)
-            if len(title) < 8: continue
             link = urljoin(url, a["href"]) if a else url
             text = art.get_text(" ")
+            if not is_scrape_hit(title, text):
+                continue
             if score_relevance(f"{title} {text}") < 2: continue
             cty = infer_country(text, lang)
             grants.append(make_grant(title=title, source_name=f"nordic:{name}", url=link,
@@ -2818,9 +3111,10 @@ async def fetch_oceania(session):
             t = art.find(["h2","h3","h4"]); a = art.find("a",href=True)
             if not t: continue
             title = t.get_text(strip=True)
-            if len(title) < 8: continue
             link = urljoin(url, a["href"]) if a else url
             text = art.get_text(" ")
+            if not is_scrape_hit(title, text):
+                continue
             cty = infer_country(text, lang)
             grants.append(make_grant(title=title, source_name=f"oceania:{name}", url=link,
                 description=text[:MAX_DESCRIPTION_LEN], country=cty, language=lang,
@@ -2892,8 +3186,8 @@ ALL_SOURCES = {
 # ══════════════════════════════════════════════════════════════
 
 def deduplicate(grants):
-    """Remove duplicate grants. Uses URL normalization + fuzzy title matching."""
-    seen_u, seen_t, result = set(), set(), []
+    """Remove duplicate grants. Uses URL normalization + fuzzy title matching + content hash."""
+    seen_u, seen_t, seen_h, result = set(), set(), set(), []
 
     def normalize_url(url):
         """Normalize URL for deduplication — strip tracking, fragments, trailing slashes."""
@@ -2925,9 +3219,14 @@ def deduplicate(grants):
     for g in sorted(grants, key=lambda x: x.get("priority_score", x["relevance"]), reverse=True):
         uk = normalize_url(g["url"])
         tk = normalize_title(g["title"])
+        hk = g.get("content_hash", "")
 
         # Skip if URL already seen
         if uk in seen_u:
+            continue
+
+        # Skip if content hash already seen (same title+URL core)
+        if hk and hk in seen_h:
             continue
 
         # Skip if title is very similar to an existing one (fuzzy match)
@@ -2952,6 +3251,8 @@ def deduplicate(grants):
 
         seen_u.add(uk)
         seen_t.add(tk)
+        if hk:
+            seen_h.add(hk)
         result.append(g)
     return result
 
@@ -2984,7 +3285,8 @@ def save_json(grants, path):
 
 def save_csv(grants, path):
     if not grants: return
-    fields = ["id","title","grant_type","grant_types","highlights","priority_score","funder","source","url","description",
+    fields = ["id","title","grant_type","grant_types","highlights","priority_score","quality_score",
+              "content_hash","funder","source","url","url_status","url_status_code","description",
               "deadline","urgency","deadline_days","amount_max","amount_min","currency","amount_usd",
               "country","region","categories","language","relevance","status","fetched_at"]
     with open(path,"w",newline="",encoding="utf-8") as f:
@@ -3047,7 +3349,9 @@ def print_table(grants):
 
 async def run_radar(sources_filter, country_filter, keywords,
                    category_filter, highlight_filter, urgent_only, min_amount,
-                   refresh, min_relevance, output_prefix, include_standing=False):
+                   refresh, min_relevance, output_prefix, include_standing=False,
+                   min_signals=MIN_SIGNALS_DEFAULT, verify_urls=True,
+                   require_terms=True):
     if refresh:
         for f in CACHE_DIR.glob("*.json"): f.unlink()
         console.print("[yellow]Cache cleared.[/]")
@@ -3088,10 +3392,42 @@ async def run_radar(sources_filter, country_filter, keywords,
     for r in results: all_grants.extend(r)
     console.print(f"\n[green]✓ Raw:[/] {len(all_grants)}")
 
+    # ── v2 QUALITY PIPELINE ──────────────────────────────────────
+    # 1. Drop invalid URLs + obvious non-grants at ingest (cheap, offline)
+    pre = len(all_grants)
+    all_grants = [g for g in all_grants
+                  if is_valid_grant_url(g.get("url", ""))
+                  and not is_likely_non_grant(g.get("title", ""), g.get("description", ""))
+                  and (g.get("title", "").strip().lower() not in GENERIC_NAV_TITLES)]
+    console.print(f"[green]✓ URL/shape gate:[/] {len(all_grants)} kept ({pre - len(all_grants)} dropped)")
+
     unique    = deduplicate(all_grants)
     # By default, exclude standing/reference entries from output
     if not include_standing:
         unique = [g for g in unique if not g.get("is_standing", False)]
+
+    # 2. Verify URLs live (HEAD → GET fallback; flags broken/login walls)
+    url_dropped = []
+    if verify_urls and unique:
+        connector2 = aiohttp.TCPConnector(limit=MAX_CONCURRENT, ssl=False)
+        async with aiohttp.ClientSession(connector=connector2,
+                                         timeout=aiohttp.ClientTimeout(total=120)) as vsession:
+            unique, url_dropped = await verify_grant_urls(vsession, unique)
+        console.print(f"[green]✓ URL verify:[/] {len(unique)} ok, {len(url_dropped)} broken/walled")
+
+    # 3. Grant-vocabulary gate: require grant terms OR (deadline + amount)
+    if require_terms:
+        pre = len(unique)
+        gated = []
+        for g in unique:
+            blob = f"{g.get('title','')} {g.get('description','')} {g.get('funder','')}"
+            has_terms = bool(GRANT_TERMS_RE.search(blob))
+            has_both = bool(g.get("deadline")) and bool(g.get("amount_max"))
+            if has_terms or has_both or g.get("is_standing"):
+                gated.append(g)
+        unique = gated
+        console.print(f"[green]✓ Grant-terms gate:[/] {len(unique)} kept ({pre - len(unique)} dropped)")
+
     filtered  = filter_by_country(unique, country_filter)
     filtered  = filter_by_keywords(filtered, keywords)
 
@@ -3114,8 +3450,21 @@ async def run_radar(sources_filter, country_filter, keywords,
         filtered = [g for g in filtered if (g.get("amount_usd") or 0) >= min_amount]
 
     filtered = [g for g in filtered if g["relevance"] >= min_relevance]
+    # Signal gate: has_grant_signals() must clear the bar (deadline/amount/
+    # grant-terms/currency evidence). Standing entries are exempt (hand-written).
+    pre = len(filtered)
+    filtered = [g for g in filtered
+                if g.get("is_standing")
+                or has_grant_signals(g.get("title", ""), g.get("description", ""),
+                                     g.get("deadline", ""), g.get("amount_max", "")) >= min_signals]
+    console.print(f"[green]✓ Signal gate (≥{min_signals}):[/] {len(filtered)} kept ({pre - len(filtered)} dropped)")
     filtered.sort(key=lambda x: x.get("priority_score", x["relevance"]), reverse=True)
-    console.print(f"[green]✓ Final:[/] {len(filtered)} relevant grants\n")
+    # ── Quality report (feeds CI summary + Supabase quality_score) ──
+    n_dl = sum(1 for g in filtered if g.get("deadline"))
+    n_amt = sum(1 for g in filtered if g.get("amount_max"))
+    n_both = sum(1 for g in filtered if g.get("deadline") and g.get("amount_max"))
+    console.print(f"[green]✓ Final:[/] {len(filtered)} relevant grants "
+                  f"({n_dl} w/ deadline, {n_amt} w/ amount, {n_both} w/ both)\n")
 
     ts     = datetime.now().strftime("%Y%m%d_%H%M")
     prefix = f"{output_prefix}_{ts}" if output_prefix else f"grants_radar_{ts}"
@@ -3152,8 +3501,14 @@ async def run_radar(sources_filter, country_filter, keywords,
               help="Minimum grant amount in USD")
 @click.option("--refresh",  "-r", is_flag=True,
               help="Clear cache and force re-fetch")
-@click.option("--min-score","-m", default=5, type=int,
-              help="Min relevance score 0–100 (default 5)")
+@click.option("--min-score","-m", default=MIN_RELEVANCE_DEFAULT, type=int,
+              help=f"Min relevance score 0–100 (default {MIN_RELEVANCE_DEFAULT})")
+@click.option("--min-signals", default=MIN_SIGNALS_DEFAULT, type=int,
+              help=f"Min grant-signal score 0–53 (default {MIN_SIGNALS_DEFAULT})")
+@click.option("--verify-urls/--no-verify-urls", default=True,
+              help="HEAD/GET-check every URL; drop broken + login walls (default on)")
+@click.option("--require-terms/--no-require-terms", default=True,
+              help="Require grant vocabulary or deadline+amount (default on)")
 @click.option("--output",   "-o", default="grants_radar",
               help="Output file prefix")
 @click.option("--list-sources", is_flag=True)
@@ -3162,7 +3517,8 @@ async def run_radar(sources_filter, country_filter, keywords,
 @click.option("--include-standing", is_flag=True,
               help="Include reference/standing entries (omitted by default)")
 def main(country, sources, keywords, category, highlight, urgent, min_amount,
-         refresh, min_score, output, list_sources, list_types, include_standing):
+         refresh, min_score, min_signals, verify_urls, require_terms,
+         output, list_sources, list_types, include_standing):
     """
     \b
     GRANTS RADAR v2 — Earth Guardians South America
@@ -3189,7 +3545,8 @@ def main(country, sources, keywords, category, highlight, urgent, min_amount,
     logging.basicConfig(
         filename=LOG_DIR/f"radar_{datetime.now().strftime('%Y%m%d')}.log",
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    asyncio.run(run_radar(sources, country, keywords, category, highlight, urgent, min_amount, refresh, min_score, output, include_standing))
+    asyncio.run(run_radar(sources, country, keywords, category, highlight, urgent, min_amount, refresh, min_score, output, include_standing,
+                          min_signals=min_signals, verify_urls=verify_urls, require_terms=require_terms))
 
 if __name__ == "__main__":
     main()

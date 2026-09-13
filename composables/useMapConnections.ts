@@ -61,6 +61,49 @@ export function useMapConnections(
   let intersectionObserver: IntersectionObserver | null = null
   let visibilityHandler: (() => void) | null = null
 
+  /* ── rebuild coalescing ────────────────────────────────────────────
+   * Filter watchers in useMapBase fire addConnections in bursts (e.g.
+   * visibleSpecies + visibleProjects change together). The builder itself
+   * is O(n) now, but identical/burst rebuilds are still wasted work:
+   *  - skip when the inputs hash to the last built signature,
+   *  - collapse bursts with a short trailing debounce.
+   * Calls stay synchronous (callers invoke startParticles right after),
+   * so only burst duplicates are deferred, never the first build. */
+  let lastBuildAt = 0
+  let lastSignature = ''
+  let trailingTimer: ReturnType<typeof setTimeout> | null = null
+  let trailingArgs: { dataset: 'project-grants' | 'endangered-species' | 'active-crews'; projects: ProjectData[]; species: SpeciesLike[]; crewLocations?: CrewLocation[] } | null = null
+  const BUILD_BURST_MS = 120
+
+  /** O(1) input fingerprint — lengths + boundary keys + small stride sample. */
+  function signatureOf(
+    dataset: string,
+    projects: ProjectData[],
+    species: SpeciesLike[],
+    crewLocations: CrewLocation[] | undefined,
+    mobile: boolean,
+    shown: boolean,
+  ): string {
+    const sampleKeys = (arr: { [k: string]: unknown }[], key: string, n = 6): string => {
+      if (!arr.length) return '-'
+      const step = Math.max(1, Math.floor(arr.length / n))
+      let out = ''
+      for (let i = 0; i < arr.length && out.length < 256; i += step) {
+        const v = arr[i]?.[key]
+        out += String(v ?? '?').length > 24 ? String(v).slice(0, 24) : String(v ?? '?')
+        out += '|'
+      }
+      return out
+    }
+    const crew = crewLocations ?? []
+    return [
+      dataset, mobile ? 'm' : 'd', shown ? 's' : 'h',
+      projects.length, sampleKeys(projects as unknown as { [k: string]: unknown }[], 'project_title'),
+      species.length, sampleKeys(species as unknown as { [k: string]: unknown }[], 'id'),
+      crew.length, sampleKeys(crew as unknown as { [k: string]: unknown }[], 'name'),
+    ].join(':')
+  }
+
   function setupVisibilityTracking() {
     if (!containerRef.value || intersectionObserver) return
 
@@ -116,6 +159,32 @@ export function useMapConnections(
     species: SpeciesLike[],
     crewLocations?: CrewLocation[],
   ) {
+    const sig = signatureOf(dataset, projects, species, crewLocations, isMobile.value, showConnections.value)
+    if (sig === lastSignature) return
+    const now = Date.now()
+    if (now - lastBuildAt < BUILD_BURST_MS) {
+      // Burst: collapse to a trailing build with the latest inputs.
+      trailingArgs = { dataset, projects, species, crewLocations }
+      if (trailingTimer) clearTimeout(trailingTimer)
+      trailingTimer = setTimeout(() => {
+        trailingTimer = null
+        const args = trailingArgs
+        trailingArgs = null
+        if (args) doBuild(args.dataset, args.projects, args.species, args.crewLocations)
+      }, BUILD_BURST_MS)
+      return
+    }
+    doBuild(dataset, projects, species, crewLocations)
+  }
+
+  function doBuild(
+    dataset: 'project-grants' | 'endangered-species' | 'active-crews',
+    projects: ProjectData[],
+    species: SpeciesLike[],
+    crewLocations?: CrewLocation[],
+  ) {
+    lastBuildAt = Date.now()
+    lastSignature = signatureOf(dataset, projects, species, crewLocations, isMobile.value, showConnections.value)
     cleanupParticles()
     cleanupDeferredSync()
     const m = getMap()
@@ -222,6 +291,12 @@ export function useMapConnections(
       clearTimeout(startRetryTimer)
       startRetryTimer = null
     }
+    if (trailingTimer) {
+      clearTimeout(trailingTimer)
+      trailingTimer = null
+    }
+    trailingArgs = null
+    lastSignature = ''
     startRetries = 0
     cleanupParticles()
     teardownVisibilityTracking()

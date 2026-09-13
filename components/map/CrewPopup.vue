@@ -1,11 +1,17 @@
 <script setup lang="ts">
 
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
+import type { ProjectData } from '@/lib/types'
+import { formatCompact } from '@/lib/utils'
+import { crewLocationKey, crewRegionKey, projectGrantKey } from '@/lib/crew-grants'
+import { crewGrantMap, regionGrantMap, type StoredCrewGrantMatch } from '@/lib/crew-grants-map'
 
 const props = defineProps<{
   crew: CrewRegionData | CrewLocation | null
   isLocation?: boolean
+  projects?: ProjectData[]
+  crewLocations?: CrewLocation[]
 }>()
 
 const { t } = useI18n()
@@ -60,6 +66,13 @@ const regionData = computed(() => {
   return c.region || null
 })
 
+const coordsLabel = computed(() => {
+  if (!props.crew || !props.isLocation) return ''
+  const c = props.crew as CrewLocation
+  if (typeof c.lat !== 'number' || typeof c.lng !== 'number') return ''
+  return `${c.lat.toFixed(2)}, ${c.lng.toFixed(2)}`
+})
+
 const historyData = computed(() => {
   if (!props.crew || props.isLocation) return []
   const c = props.crew as CrewRegionData
@@ -77,18 +90,114 @@ const maxActiveCrews = computed(() => {
   return Math.max(...historyData.value.map(h => h.active), 1)
 })
 
+export interface CrewPopupGrant {
+  project: ProjectData
+  reason: StoredCrewGrantMatch['reason']
+  distanceKm: number | null
+}
+
+const matchedGrants = computed<CrewPopupGrant[]>(() => {
+  // Static precomputed map (scripts/generate-crew-grants.ts → lib/crew-grants-map.ts):
+  // no rematching at runtime. Keys are intersected with the (possibly filtered)
+  // project list so map filters keep working.
+  if (!props.crew || !props.projects?.length) return []
+  const byKey = new Map(props.projects.map(p => [projectGrantKey(p), p]))
+  const refs = props.isLocation
+    ? (crewGrantMap[crewLocationKey(props.crew as CrewLocation)] ?? [])
+    : (regionGrantMap[crewRegionKey(props.crew as CrewRegionData)] ?? [])
+  const out: CrewPopupGrant[] = []
+  for (const ref of refs) {
+    const project = byKey.get(ref.key)
+    if (project) out.push({ project, reason: ref.reason, distanceKm: ref.distanceKm })
+  }
+  return out
+})
+
+function grantBeneficiaries(p: ProjectData): string {
+  const total = (p.direct_beneficiaries || 0) + (p.indirect_beneficiaries || 0)
+  return total > 0 ? formatCompact(total) : ''
+}
+
+function hasBeneficiaries(p: ProjectData): boolean {
+  return (p.direct_beneficiaries || 0) + (p.indirect_beneficiaries || 0) > 0
+}
+
+const unknownBeneficiaries = computed(() => tx('stats.unknownBeneficiaries', 'Unknown'))
+
+/** Grants <10 km from the crew are that crew's own (on-site) projects */
+const SPECIFIC_MAX_KM = 10
+/** Paginated to keep region popups (up to 52 grants) usable */
+const GRANTS_PAGE_SIZE = 5
+
+const grantsPage = ref(1)
+watch(() => [props.crew, props.isLocation], () => {
+  grantsPage.value = 1
+})
+
+function isSpecificGrant(m: CrewPopupGrant): boolean {
+  return m.distanceKm !== null && m.distanceKm < SPECIFIC_MAX_KM
+}
+
+const specificGrants = computed<CrewPopupGrant[]>(() => matchedGrants.value.filter(isSpecificGrant))
+const relatedGrants = computed<CrewPopupGrant[]>(() => matchedGrants.value.filter(m => !isSpecificGrant(m)))
+const totalGrantPages = computed(() => Math.max(1, Math.ceil(relatedGrants.value.length / GRANTS_PAGE_SIZE)))
+const safeGrantPage = computed(() => Math.min(Math.max(1, grantsPage.value), totalGrantPages.value))
+const pagedRelatedGrants = computed<CrewPopupGrant[]>(() =>
+  relatedGrants.value.slice((safeGrantPage.value - 1) * GRANTS_PAGE_SIZE, safeGrantPage.value * GRANTS_PAGE_SIZE),
+)
+
+function prevGrantsPage() {
+  grantsPage.value = Math.max(1, safeGrantPage.value - 1)
+}
+function nextGrantsPage() {
+  grantsPage.value = Math.min(totalGrantPages.value, safeGrantPage.value + 1)
+}
+
+function tx(key: string, fallback: string, params?: Record<string, string>): string {
+  const translated = params ? t(key, params) : t(key)
+  return translated === key ? fallback : translated
+}
+
+const ownProjectsTitle = computed(() => !props.isLocation
+  ? tx('crews.ownProjectsRegionTitle', 'On-site crew projects')
+  : tx('crews.ownProjectsTitle', "This crew's projects"))
+
+const crewProjectBadge = computed(() => tx('crews.crewProjectBadge', 'Crew project'))
+const moreProjectsTitle = computed(() => tx('crews.moreProjects', 'More linked projects'))
+const grantsPageLabel = computed(() => tx('crews.pageOf', `Page ${safeGrantPage.value} of ${totalGrantPages.value}`, { page: String(safeGrantPage.value), pages: String(totalGrantPages.value) }))
+
+// Explicit scope labeling: a region popup aggregates the grants of ALL crews
+// in the region, while a location popup shows only that crew's grants.
+const grantsTitle = computed(() => {
+  if (!props.isLocation) {
+    const fallback = `Project grants of ${regionName.value}`
+    const translated = t('crews.projectsOfRegion', { region: regionName.value })
+    return translated === 'crews.projectsOfRegion' ? fallback : translated
+  }
+  const fallback = 'Project grants of this crew'
+  const translated = t('crews.projectsOfCrew')
+  return translated === 'crews.projectsOfCrew' ? fallback : translated
+})
+
+const grantsHint = computed(() => {
+  if (!props.isLocation) {
+    const fallback = 'Linked to crews across the whole region'
+    const translated = t('crews.projectsOfRegionHint')
+    return translated === 'crews.projectsOfRegionHint' ? fallback : translated
+  }
+  const fallback = 'Linked to this crew by place, name or proximity'
+  const translated = t('crews.projectsOfCrewHint')
+  return translated === 'crews.projectsOfCrewHint' ? fallback : translated
+})
+
 </script>
 
 <template>
   <article v-if="crew" class="cp">
     <!-- Header -->
-    <header class="cp__hero" :style="{ background: `linear-gradient(135deg, ${color}14 0%, transparent 100%)` }">
-      <div class="cp__hero-bar" :style="{ background: color }" />
+    <header class="cp__hero">
       <div class="cp__hero-content">
         <div class="cp__group-row">
-          <span class="cp__badge" :style="{ borderColor: color + '50', color }">
-            Earth Guardians Crew
-          </span>
           <span
             v-if="isLocation"
             class="cp__status"
@@ -97,16 +206,20 @@ const maxActiveCrews = computed(() => {
             <span class="cp__status-dot" :style="{ background: statusColor }" />
             {{ isActive ? 'Active' : 'Inactive' }}
           </span>
+          <span v-else class="cp__status cp__status--region">
+            <Icon name="lucide:globe" size="0.7rem" />
+            <span>{{ t('crews.region') || 'Region' }}</span>
+          </span>
         </div>
-        <h2 class="cp__title">{{ regionName }}</h2>
+        <h2 class="cp__title">
+          <span class="cp__title-dot" :style="{ background: color }" aria-hidden="true" />
+          <span>{{ regionName }}</span>
+        </h2>
         <p v-if="isLocation && locationParts" class="cp__location">
           <Icon name="lucide:map-pin" size="0.85rem" />
           <span>{{ locationParts }}</span>
         </p>
-        <p v-if="!isLocation && regionData" class="cp__location">
-          <Icon name="lucide:map-pin" size="0.85rem" />
-          <span>{{ regionData }}</span>
-        </p>
+        <p v-if="isLocation && coordsLabel" class="cp__coords">{{ coordsLabel }}</p>
       </div>
     </header>
 
@@ -137,7 +250,7 @@ const maxActiveCrews = computed(() => {
           </div>
           <div class="cp__stat">
             <div class="cp__stat-icon">
-              <Icon name="lucide:clock" size="1rem" />
+              <Icon name="lucide:users-round" size="1rem" />
             </div>
             <div class="cp__stat-body">
               <span class="cp__stat-label">{{ t('crews.totalMembers') }}</span>
@@ -178,6 +291,7 @@ const maxActiveCrews = computed(() => {
               v-for="entry in historyData"
               :key="entry.year"
               class="cp__chart-bar"
+              :title="`${entry.year}: ${entry.active} active, ${entry.inactive} inactive crews, ${entry.members} members`"
             >
               <div class="cp__chart-stack">
                 <div
@@ -210,6 +324,93 @@ const maxActiveCrews = computed(() => {
       </div>
     </template>
 
+    <!-- Related project grants (cross-dataset: project-grants ↔ active-crews) -->
+    <div v-if="matchedGrants.length > 0" class="cp__content cp__grants">
+      <h3 class="cp__section-title">
+        <Icon name="lucide:hand-coins" size="0.75rem" />
+        <span>{{ grantsTitle }}</span>
+        <span class="cp__grants-count">{{ matchedGrants.length }}</span>
+      </h3>
+      <p class="cp__grants-hint">{{ grantsHint }}</p>
+      <!-- This crew's own (on-site, <10 km) projects — highlighted, always fully shown -->
+      <div v-if="specificGrants.length > 0" class="cp__own">
+        <h4 v-if="relatedGrants.length > 0" class="cp__sub-title">
+          <Icon name="lucide:star" size="0.75rem" />
+          <span>{{ ownProjectsTitle }}</span>
+        </h4>
+        <ul class="cp__grants-list">
+          <li
+            v-for="m in specificGrants"
+            :key="`own-${m.project.project_title}__${m.project.latitude}__${m.project.longitude}`"
+            class="cp__grant cp__grant--own"
+          >
+            <div class="cp__grant-body">
+              <span class="cp__grant-badge">
+                <Icon name="lucide:star" size="0.65rem" />
+                <span>{{ crewProjectBadge }}</span>
+              </span>
+              <span class="cp__grant-title">{{ m.project.project_title }}</span>
+              <span v-if="m.project.country_province" class="cp__grant-place">
+                <Icon name="lucide:map-pin" size="0.7rem" />
+                <span>{{ m.project.country_province }}</span>
+              </span>
+            </div>
+            <span class="cp__grant-benef" :class="{ 'cp__grant-benef--unknown': !hasBeneficiaries(m.project) }">
+              {{ hasBeneficiaries(m.project) ? grantBeneficiaries(m.project) : unknownBeneficiaries }}
+            </span>
+          </li>
+        </ul>
+      </div>
+      <!-- Remaining linked projects — paginated for large regions -->
+      <div v-if="relatedGrants.length > 0" class="cp__related">
+        <h4 v-if="specificGrants.length > 0" class="cp__sub-title cp__sub-title--related">
+          <Icon name="lucide:link" size="0.75rem" />
+          <span>{{ moreProjectsTitle }}</span>
+        </h4>
+        <ul class="cp__grants-list">
+          <li
+            v-for="m in pagedRelatedGrants"
+            :key="`${m.project.project_title}__${m.project.latitude}__${m.project.longitude}`"
+            class="cp__grant"
+          >
+            <div class="cp__grant-body">
+              <span class="cp__grant-title">{{ m.project.project_title }}</span>
+              <span v-if="m.project.country_province" class="cp__grant-place">
+                <Icon name="lucide:map-pin" size="0.7rem" />
+                <span>{{ m.project.country_province }}</span>
+              </span>
+            </div>
+            <span class="cp__grant-benef" :class="{ 'cp__grant-benef--unknown': !hasBeneficiaries(m.project) }">
+              {{ hasBeneficiaries(m.project) ? grantBeneficiaries(m.project) : unknownBeneficiaries }}
+            </span>
+          </li>
+        </ul>
+        <div v-if="totalGrantPages > 1" class="cp__pager">
+          <button
+            type="button"
+            class="cp__pager-btn"
+            :disabled="safeGrantPage <= 1"
+            :aria-label="t('grantsPortal.paginationPrev')"
+            :title="t('grantsPortal.paginationPrev')"
+            @click="prevGrantsPage"
+          >
+            <Icon name="lucide:chevron-left" size="0.9rem" />
+          </button>
+          <span class="cp__pager-label">{{ grantsPageLabel }}</span>
+          <button
+            type="button"
+            class="cp__pager-btn"
+            :disabled="safeGrantPage >= totalGrantPages"
+            :aria-label="t('grantsPortal.paginationNext')"
+            :title="t('grantsPortal.paginationNext')"
+            @click="nextGrantsPage"
+          >
+            <Icon name="lucide:chevron-right" size="0.9rem" />
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Footer -->
     <footer class="cp__footer">
       <a
@@ -240,19 +441,10 @@ const maxActiveCrews = computed(() => {
   padding: 1.25rem 1.5rem 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border-color);
 }
-.cp__hero-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  border-radius: 4px 0 0 4px;
-}
 .cp__hero-content {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  padding-left: 0.5rem;
 }
 .cp__group-row {
   display: flex;
@@ -260,17 +452,6 @@ const maxActiveCrews = computed(() => {
   gap: 0.5rem;
   margin-bottom: 0.15rem;
   flex-wrap: wrap;
-}
-.cp__badge {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-weight: 700;
-  border: 1px solid;
-  padding: 0.15rem 0.6rem;
-  border-radius: 5px;
-  display: inline-block;
-  line-height: 1.4;
 }
 .cp__status {
   display: inline-flex;
@@ -282,8 +463,13 @@ const maxActiveCrews = computed(() => {
   letter-spacing: 0.08em;
   border: 1px solid;
   padding: 0.12rem 0.5rem;
-  border-radius: 5px;
+  border-radius: 6px;
   line-height: 1.4;
+}
+.cp__status--region {
+  color: var(--text-muted);
+  background: var(--stat-card-bg);
+  border-color: var(--stat-card-border);
 }
 .cp__status-dot {
   width: 5px;
@@ -292,6 +478,9 @@ const maxActiveCrews = computed(() => {
   flex-shrink: 0;
 }
 .cp__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.35rem;
   font-weight: 800;
   line-height: 1.25;
@@ -299,6 +488,12 @@ const maxActiveCrews = computed(() => {
   color: var(--text-primary);
   letter-spacing: -0.015em;
   overflow-wrap: break-word;
+}
+.cp__title-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 .cp__location {
   display: inline-flex;
@@ -308,6 +503,12 @@ const maxActiveCrews = computed(() => {
   color: var(--text-muted);
   margin: 0;
   margin-top: 0.1rem;
+}
+.cp__coords {
+  margin: 0.15rem 0 0;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Content ── */
@@ -487,6 +688,156 @@ const maxActiveCrews = computed(() => {
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--text-primary);
+}
+
+/* ── Related project grants ── */
+.cp__grants {
+  padding-top: 0;
+}
+.cp__grants-count {
+  margin-left: auto;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  background: var(--stat-card-bg);
+  border: 1px solid var(--stat-card-border);
+  border-radius: 6px;
+  padding: 0.1rem 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.cp__grants-hint {
+  margin: -0.35rem 0 0;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.cp__own,
+.cp__related {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.cp__sub-title {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  color: var(--warning);
+  margin: 0.35rem 0 0;
+}
+.cp__sub-title--related {
+  color: var(--text-muted);
+}
+.cp__grants-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cp__grant {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+  background: var(--stat-card-bg);
+  border: 1px solid var(--stat-card-border);
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+}
+.cp__grant-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+.cp__grant-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+  overflow-wrap: break-word;
+}
+.cp__grant-place {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.cp__grant-benef {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--success);
+  font-variant-numeric: tabular-nums;
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  border-radius: 6px;
+  padding: 0.15rem 0.5rem;
+}
+.cp__grant-benef--unknown {
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--stat-card-bg);
+  border: 1px solid var(--stat-card-border);
+}
+.cp__grant--own {
+  border-color: color-mix(in srgb, var(--warning) 45%, transparent);
+  background: color-mix(in srgb, var(--warning) 7%, var(--stat-card-bg));
+}
+.cp__grant-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 45%, transparent);
+  border-radius: 6px;
+  padding: 0.1rem 0.5rem;
+  margin-bottom: 0.15rem;
+}
+.cp__pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.15rem;
+}
+.cp__pager-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  color: var(--text-primary);
+  background: var(--stat-card-bg);
+  border: 1px solid var(--stat-card-border);
+  border-radius: 8px;
+  padding: 0.35rem;
+  cursor: pointer;
+  transition: border-color 0.15s, opacity 0.15s;
+}
+.cp__pager-btn:hover:not(:disabled) {
+  border-color: var(--info);
+}
+.cp__pager-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.cp__pager-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* ── Footer ── */

@@ -39,6 +39,62 @@ interface BuildConnectionOptions {
   isMobile: boolean
 }
 
+/* ── High-performance connection builder ─────────────────────────────
+ * Previous implementation was O(n²): per-point `.filter()` over the whole
+ * group plus `.find()` lookups, run over the *entire* dataset (4000+
+ * species on desktop) on every filter change — even though only a handful
+ * of lines (≤10) are ever rendered.
+ *
+ * New implementation is O(n):
+ *  1. stride-sample inputs down to a bounded working set,
+ *  2. single-pass grouping into index arrays (no per-item scans),
+ *  3. deterministic consecutive pairing inside each group — no edge-key
+ *     sets, no incoming-count maps, no hash lookups per candidate.
+ * Only maxConnections features are ever materialized.
+ */
+const MAX_SAMPLE_PROJECTS = 150
+const MAX_SAMPLE_SPECIES = 300
+const MAX_SAMPLE_CREW_PER_REGION = 40
+
+/** Deterministic stride sample — bounded working set preserving spread. */
+function strideSample<T>(arr: T[], max: number): T[] {
+  if (arr.length <= max) return arr
+  const step = arr.length / max
+  const out = new Array<T>(max)
+  for (let i = 0; i < max; i++) out[i] = arr[Math.floor(i * step)] as T
+  return out
+}
+
+/**
+ * Round-robin pairing across groups: take one consecutive pair per group
+ * per round until the budget is spent. Guarantees distinct edges without
+ * any bookkeeping — pair (2k, 2k+1) can never repeat inside a group.
+ */
+function pairRoundRobin(
+  groups: Map<string, number[]>,
+  budget: number,
+  make: (a: number, b: number, groupSize: number) => void,
+): void {
+  if (budget <= 0 || groups.size === 0) return
+  const lists = [...groups.values()].sort((x, y) => y.length - x.length)
+  const cursors = new Array<number>(lists.length).fill(0)
+  let made = 0
+  let progress = true
+  while (made < budget && progress) {
+    progress = false
+    for (let g = 0; g < lists.length && made < budget; g++) {
+      const list = lists[g] as number[]
+      const c = cursors[g] as number
+      if (c + 1 < list.length) {
+        make(list[c] as number, list[c + 1] as number, list.length)
+        cursors[g] = c + 2
+        made++
+        progress = true
+      }
+    }
+  }
+}
+
 export function buildMapConnectionFeatures({
   dataset,
   projects = [],
@@ -59,114 +115,83 @@ export function buildMapConnectionFeatures({
 }
 
 function buildProjectConnectionFeatures(projects: ProjectData[], isMobile: boolean): MapConnectionFeature[] {
-  const projectsToProcess = isMobile ? projects.slice(0, Math.min(15, projects.length)) : projects
   const maxConnections = isMobile ? 3 : 7
-  const incomingCountByProject = new Map<string, number>()
-  const edgeKeys = new Set<string>()
+  if (!projects.length || maxConnections <= 0) return []
+
+  // Bound the working set first (spread-preserving), then single-pass
+  // validate + group indices by color. O(n).
+  const pool = projects.length > MAX_SAMPLE_PROJECTS ? strideSample(projects, MAX_SAMPLE_PROJECTS) : projects
+  const sampled: ProjectData[] = []
+  for (let i = 0; i < pool.length; i++) {
+    const p = pool[i] as ProjectData
+    if (isValidCoordinate(p.latitude, p.longitude)) sampled.push(p)
+  }
+  if (sampled.length < 2) return []
+
+  const colors = new Array<string>(sampled.length)
+  const byColor = new Map<string, number[]>()
+  for (let i = 0; i < sampled.length; i++) {
+    const p = sampled[i] as ProjectData
+    const c = getProjectMapColor(p.direct_beneficiaries, p.indirect_beneficiaries)
+    colors[i] = c
+    let list = byColor.get(c)
+    if (!list) { list = []; byColor.set(c, list) }
+    list.push(i)
+  }
+
   const features: MapConnectionFeature[] = []
-
-  const colorCache = new Map<ProjectData, string>()
-  for (const p of projectsToProcess) {
-    colorCache.set(p, getProjectMapColor(p.direct_beneficiaries, p.indirect_beneficiaries))
-  }
-
-  const byColor = new Map<string, string[]>()
-  for (const p of projectsToProcess) {
-    if (!isValidCoordinate(p.latitude, p.longitude)) continue
-    const c = colorCache.get(p)!
-    if (!byColor.has(c)) byColor.set(c, [])
-    byColor.get(c)!.push(p.project_title)
-  }
-
-  projectsToProcess.forEach((project) => {
-    if (features.length >= maxConnections) return
-    if (!isValidCoordinate(project.latitude, project.longitude)) return
-
-    const projectKey = project.project_title
-    const color = colorCache.get(project)!
-
-    const sameColorKeys = byColor.get(color) ?? []
-    const availableTargetNames = sameColorKeys.filter(k =>
-      k !== projectKey &&
-      !edgeKeys.has([projectKey, k].sort().join('::')) &&
-      (incomingCountByProject.get(k) ?? 0) < 1
-    )
-
-    if (!availableTargetNames.length) return
-
-    const targetName = availableTargetNames[stableIndex(projectKey, availableTargetNames.length)]
-    const target = projectsToProcess.find(p => p.project_title === targetName)!
-    if (!target) return
-
+  pairRoundRobin(byColor, maxConnections, (a, b) => {
+    const from = sampled[a] as ProjectData
+    const to = sampled[b] as ProjectData
     features.push(createConnectionFeature({
-      from: [project.longitude, project.latitude],
-      to: [target.longitude, target.latitude],
-      color,
+      from: [from.longitude, from.latitude],
+      to: [to.longitude, to.latitude],
+      color: colors[a] as string,
       opacity: 0.2,
       weight: 1.55,
       dataset: 'project-grants',
     }))
-
-    edgeKeys.add([projectKey, targetName].sort().join('::'))
-    incomingCountByProject.set(targetName, (incomingCountByProject.get(targetName) ?? 0) + 1)
   })
 
   return features
 }
 
 function buildSpeciesConnectionFeatures(species: SpeciesLike[], isMobile: boolean): MapConnectionFeature[] {
-  const speciesToProcess = isMobile ? species.slice(0, Math.min(50, species.length)) : species
   const maxConnections = isMobile ? 5 : 10
-  const incomingCountByGroup = new Map<string, Map<string, number>>()
-  const edgeKeys = new Set<string>()
-  const features: MapConnectionFeature[] = []
+  if (!species.length || maxConnections <= 0) return []
 
-  const byGroup = new Map<string, string[]>()
-  for (const s of speciesToProcess) {
-    if (!isValidCoordinate(s.lat, s.lng)) continue
-    const key = s.id || s.commonName
-    if (!byGroup.has(s.taxonomicGroup)) byGroup.set(s.taxonomicGroup, [])
-    byGroup.get(s.taxonomicGroup)!.push(key)
+  // Bound the working set first (spread-preserving), then single-pass
+  // validate + group indices by taxonomic group. O(n).
+  const pool = species.length > MAX_SAMPLE_SPECIES ? strideSample(species, MAX_SAMPLE_SPECIES) : species
+  const sampled: SpeciesLike[] = []
+  for (let i = 0; i < pool.length; i++) {
+    const s = pool[i] as SpeciesLike
+    if (isValidCoordinate(s.lat, s.lng)) sampled.push(s)
+  }
+  if (sampled.length < 2) return []
+
+  const byGroup = new Map<string, number[]>()
+  for (let i = 0; i < sampled.length; i++) {
+    const group = (sampled[i] as SpeciesLike).taxonomicGroup
+    let list = byGroup.get(group)
+    if (!list) { list = []; byGroup.set(group, list) }
+    list.push(i)
   }
 
-  speciesToProcess.forEach((source) => {
-    if (features.length >= maxConnections) return
-    if (!isValidCoordinate(source.lat, source.lng)) return
-
+  const features: MapConnectionFeature[] = []
+  pairRoundRobin(byGroup, maxConnections, (a, b) => {
+    const source = sampled[a] as SpeciesLike
+    const target = sampled[b] as SpeciesLike
     const group = source.taxonomicGroup
-    if (!incomingCountByGroup.has(group)) {
-      incomingCountByGroup.set(group, new Map())
-    }
-    const incomingCount = incomingCountByGroup.get(group)!
-    const sourceKey = source.id || source.commonName
-    const color = MAP_GROUP_COLORS[group] ?? '#e74c3c'
-
-    const sameGroupKeys = byGroup.get(group) ?? []
-    const availableTargetKeys = sameGroupKeys.filter(k => {
-      const normalizedEdgeKey = [sourceKey, k].sort().join('::')
-      return k !== sourceKey &&
-        !edgeKeys.has(normalizedEdgeKey) &&
-        (incomingCount.get(k) ?? 0) < (isMobile ? 1 : 2)
-    })
-
-    if (!availableTargetKeys.length) return
-
-    const targetKey = availableTargetKeys[stableIndex(sourceKey, availableTargetKeys.length)]
-    const target = speciesToProcess.find(s => (s.id || s.commonName) === targetKey)!
-    if (!target) return
-
     features.push(createConnectionFeature({
       from: [source.lng, source.lat],
       to: [target.lng, target.lat],
-      color,
+      color: MAP_GROUP_COLORS[group] ?? '#e74c3c',
       opacity: 0.2,
       weight: 1.55,
       dataset: 'endangered-species',
       group,
     }))
-
-    edgeKeys.add([sourceKey, targetKey].sort().join('::'))
-    incomingCount.set(targetKey, (incomingCount.get(targetKey) ?? 0) + 1)
   })
 
   return features
@@ -184,41 +209,34 @@ const CREW_REGION_COLORS: Record<string, string> = {
 }
 
 function buildCrewConnectionFeatures(locations: CrewLocationLike[], isMobile: boolean): MapConnectionFeature[] {
-  const locs = locations.filter(l => l.status === 'active' && isValidCoordinate(l.lat, l.lng))
-  if (locs.length < 2) return []
+  if (locations.length < 2) return []
 
+  // Single-pass validate + group by region. O(n).
   const byRegion = new Map<string, CrewLocationLike[]>()
-  for (const loc of locs) {
+  for (let i = 0; i < locations.length; i++) {
+    const loc = locations[i] as CrewLocationLike
+    if (loc.status !== 'active' || !isValidCoordinate(loc.lat, loc.lng)) continue
     const region = loc.region || 'Other'
-    if (!byRegion.has(region)) byRegion.set(region, [])
-    byRegion.get(region)!.push(loc)
+    let list = byRegion.get(region)
+    if (!list) { list = []; byRegion.set(region, list) }
+    list.push(loc)
   }
+  if (byRegion.size === 0) return []
 
   const features: MapConnectionFeature[] = []
-  const edgeKeys = new Set<string>()
   const perRegionMax = isMobile ? 2 : 4
 
   for (const [region, regionLocs] of byRegion) {
     const color = CREW_REGION_COLORS[region] ?? '#22c55e'
-    const processLocs = isMobile ? regionLocs.slice(0, Math.min(10, regionLocs.length)) : regionLocs
-
-    const regionFeatures: MapConnectionFeature[] = []
-    for (let i = 0; i < processLocs.length; i++) {
-      const source = processLocs[i]
-      const sourceKey = `${source.name}|${source.city}`
-
-      const targets = processLocs.filter((_, j) => {
-        if (j === i) return false
-        const targetKey = `${processLocs[j].name}|${processLocs[j].city}`
-        const edgeKey = [sourceKey, targetKey].sort().join('::')
-        return !edgeKeys.has(edgeKey)
-      })
-
-      if (targets.length === 0) continue
-      const target = targets[stableIndex(sourceKey, targets.length)]
-      const targetKey = `${target.name}|${target.city}`
-
-      regionFeatures.push(createConnectionFeature({
+    // Bound + deterministic consecutive pairing — distinct edges, no scans.
+    const pool = regionLocs.length > MAX_SAMPLE_CREW_PER_REGION
+      ? strideSample(regionLocs, MAX_SAMPLE_CREW_PER_REGION)
+      : regionLocs
+    const pairs = Math.min(perRegionMax, Math.floor(pool.length / 2))
+    for (let k = 0; k < pairs; k++) {
+      const source = pool[k * 2] as CrewLocationLike
+      const target = pool[k * 2 + 1] as CrewLocationLike
+      features.push(createConnectionFeature({
         from: [source.lng, source.lat],
         to: [target.lng, target.lat],
         color,
@@ -227,21 +245,10 @@ function buildCrewConnectionFeatures(locations: CrewLocationLike[], isMobile: bo
         dataset: 'active-crews',
         group: region,
       }))
-
-      edgeKeys.add([sourceKey, targetKey].sort().join('::'))
     }
-
-    features.push(...regionFeatures.slice(0, perRegionMax))
   }
 
   return features
-}
-
-function stableIndex(value: string, length: number): number {
-  if (length <= 1) return 0
-  let hash = 0
-  for (let i = 0; i < value.length; i++) hash = (hash * 31 + value.charCodeAt(i)) >>> 0
-  return hash % length
 }
 
 function createConnectionFeature({
@@ -286,17 +293,38 @@ export function syncMapConnectionLayers(
   features: MapConnectionFeature[],
   qualityBlur?: number,
 ) {
-  removeMapConnectionLayers(map)
-
-  if (features.length === 0) return
+  if (features.length === 0) {
+    removeMapConnectionLayers(map)
+    return
+  }
   if (!map.isStyleLoaded()) return
+
+  const glowBlur = qualityBlur ?? 5.6
+
+  // Fast path: source + layers already exist (common case on filter changes
+  // and provider style re-syncs) — push new data in place instead of tearing
+  // down and recreating layers (avoids flicker + relayout cost).
+  const existing = map.getSource(CONNECTION_SOURCE_ID) as { setData?: (data: unknown) => void } | undefined
+  if (existing && typeof existing.setData === 'function' && map.getLayer(CONNECTION_GLOW_LAYER_ID)) {
+    try {
+      existing.setData({ type: 'FeatureCollection', features })
+      try {
+        map.setPaintProperty(CONNECTION_GLOW_LAYER_ID, 'line-blur', [
+          'interpolate', ['linear'], ['zoom'],
+          5, glowBlur * 0.5,
+          12, glowBlur,
+        ])
+      } catch { /* ignore */ }
+      return
+    } catch { /* fall through to full rebuild */ }
+  }
+
+  removeMapConnectionLayers(map)
 
   map.addSource(CONNECTION_SOURCE_ID, {
     type: 'geojson',
     data: { type: 'FeatureCollection', features },
   })
-
-  const glowBlur = qualityBlur ?? 5.6
 
   map.addLayer({
     id: CONNECTION_GLOW_LAYER_ID,

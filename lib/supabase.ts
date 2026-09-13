@@ -15,9 +15,15 @@ export function getSupabaseClient(): SupabaseClient {
   const url = config.public.supabaseUrl as string || ''
   const key = config.public.supabaseKey as string || ''
 
-  if (!url || !key) {
-    console.warn('[supabase] Missing NUXT_PUBLIC_SUPABASE_URL or NUXT_PUBLIC_SUPABASE_KEY — all Supabase operations will be no-ops')
-    return createClient('https://placeholder.supabase.co', 'placeholder-key')
+  if (!url || !key || url.includes('placeholder')) {
+    // No credentials (e.g. static GitHub Pages preview): return an inert
+    // placeholder so pages still render. Callers must gate features via
+    // isSupabaseConfigured() — every Supabase op will otherwise fail.
+    if (!client) {
+      console.warn('[supabase] Missing NUXT_PUBLIC_SUPABASE_URL or NUXT_PUBLIC_SUPABASE_KEY — Supabase features disabled')
+      client = createClient('https://placeholder.supabase.co', 'placeholder-key')
+    }
+    return client
   }
 
   client = createClient(url, key, {

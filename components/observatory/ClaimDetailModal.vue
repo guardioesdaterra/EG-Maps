@@ -10,7 +10,7 @@
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="visible" class="claim-overlay-fixed" role="dialog" aria-modal="true" aria-label="Claim details" @click.self="close" @keydown.esc="close">
+      <div v-if="visible" ref="overlayRef" class="claim-overlay-fixed" role="dialog" aria-modal="true" aria-label="Claim details" tabindex="-1" @click.self="close" @keydown.escape="close">
         <button ref="closeBtnRef" class="claim-overlay-close-btn" @click="close" aria-label="Close claim details">
           <Icon name="lucide:x" class="h-5 w-5" />
         </button>
@@ -22,8 +22,9 @@
 
 <script setup lang="ts">
 
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { buildRareEarthPopupHTML } from '@/lib/map-utils'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const props = defineProps<{
   visible: boolean
@@ -35,6 +36,9 @@ const emit = defineEmits<{
 }>()
 
 const closeBtnRef = ref<HTMLElement | null>(null)
+const overlayRef = ref<HTMLElement | null>(null)
+const isActive = computed(() => props.visible)
+useFocusTrap(overlayRef, { active: isActive })
 
 const html = computed(() => {
   if (!props.claim) return ''
@@ -45,11 +49,18 @@ function close() {
   emit('close')
 }
 
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && props.visible) close()
+}
+
 watch(() => props.visible, (v) => {
   if (v) {
-    import('vue').then(({ nextTick }) => nextTick(() => closeBtnRef.value?.focus()))
+    nextTick(() => closeBtnRef.value?.focus() ?? overlayRef.value?.focus())
   }
 })
+
+onMounted(() => window.addEventListener('keydown', handleKeydown))
+onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 
 </script>
 

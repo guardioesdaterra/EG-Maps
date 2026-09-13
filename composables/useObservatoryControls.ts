@@ -276,6 +276,7 @@ export function useObservatoryControls(): ObservatoryControls {
   let loadFullBrazil: () => Promise<void> | void = () => Promise.resolve()
   let isRegional: Ref<boolean> = ref(true)
 
+  let observatorySetupDone = false
   function setupObservatory(data: {
     allFeatures: Ref<unknown[]>
     pointsData: Ref<GeoJSON.FeatureCollection | undefined>
@@ -293,6 +294,11 @@ export function useObservatoryControls(): ObservatoryControls {
     loadFullBrazil: () => Promise<void> | void
     isRegional: Ref<boolean>
   }) {
+    // NOTE: the object returned by useObservatoryControls() captured the
+    // initial placeholder refs — reassigning `let` bindings here does not
+    // update already-destructured consumers. The Vulcan pages use their own
+    // useRareEarthData refs directly, so this stays as the filter source of
+    // truth; just guard against double-registration (HMR / keep-alive).
     allFeatures = data.allFeatures
     pointsData = data.pointsData
     polygonsData = data.polygonsData
@@ -309,12 +315,19 @@ export function useObservatoryControls(): ObservatoryControls {
     loadFullBrazil = data.loadFullBrazil
     isRegional = data.isRegional
 
-    watch(pointsData, () => {
-      updateFilter()
-    })
+    if (!observatorySetupDone) {
+      observatorySetupDone = true
+      watch(pointsData, () => {
+        updateFilter()
+      })
+    }
 
+    // Cold start: seed filtered points immediately if data already present,
+    // otherwise run the full filter once (covers the "setup after load" case
+    // where the watcher never fires initially).
+    updateFilter()
     const raw = pointsData.value
-    if (raw?.features?.length) {
+    if (raw?.features?.length && !filteredPoints.value.features?.length) {
       filteredPoints.value = raw as GeoJSON.FeatureCollection
       filteredCount.value = raw.features.length
     }
@@ -463,7 +476,20 @@ export function useObservatoryControls(): ObservatoryControls {
       features: filtered.map((d, i) => ({
         type: 'Feature',
         id: `${d.c}-${i}`,
-        properties: { ...d, id: `${d.c}-${i}` },
+        // Emit both short (p/n/a/…) and long (processo/nome/area_ha/…)
+        // schemas — network builders and popups read the long names.
+        properties: {
+          ...d,
+          id: `${d.c}-${i}`,
+          processo: d.p,
+          nome: d.n,
+          area_ha: d.a,
+          danger_score: (d as { ds?: number }).ds,
+          category: d.c,
+          fase: d.f,
+          ano: d.y,
+          network_id: d.net,
+        },
         geometry: { type: 'Point', coordinates: [d.lo, d.la] },
       })),
     }

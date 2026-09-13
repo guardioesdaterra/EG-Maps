@@ -154,10 +154,13 @@ import { allProjectsData } from '~/lib/project-data'
 import GrantsDashboard from '~/components/grants/GrantsDashboard.vue'
 import GrantDetailModal from '~/components/grants/GrantDetailModal.vue'
 import GrantEditModal from '~/components/grants/GrantEditModal.vue'
+import RegistryModal from '~/components/grants/RegistryModal.vue'
 import GrantsFooter from '~/components/grants/GrantsFooter.vue'
 import { useI18n } from '~/composables/useI18n'
 import { useSupabase } from '~/composables/useSupabase'
 import { useSupabaseAuth } from '~/composables/useSupabaseAuth'
+
+useHead({ title: 'EG Grants · Fullscreen | Earth Guardians' })
 
 const { t } = useI18n()
 const { user, isManager, isManagerReady, signIn, signOut, sessionReady } = useSupabaseAuth()

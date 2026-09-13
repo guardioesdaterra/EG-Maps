@@ -6,7 +6,7 @@
  * @deps vue (ref, computed, nextTick, onMounted, onUnmounted, watch, type Ref); @/composables/useMediaQuery (useMediaQuery); @/composables/useI18n (useI18n); @/composables/useFocusTrap (useFocusTrap); @/composables/useMapHexGrid (useMapHexGrid); @/composables/useMapPopup (useSpeciesPopup, useProjectPopup, useCrewPopup, usePreviewCard); @/composables/useMapConnections (useMapConnections); @/composables/useMapMarker (useMapMarker); @/composables/useRareEarthController (useRareEarthController); @/composables/useCulturalLayers (getPopupContent); @/composables/useSpeciesPanel (useSpeciesPanel); @/composables/useAdaptiveQuality (useAdaptiveQuality); @/lib/project-data (allProjectsData); @/lib/map-utils (openRareEarthOverlayPopup); @/composables/useMapLibre (detectWebGLSupport, getMapStyle); @/lib/constants (HEX_GRID)
  * @connections components/MapView2D.vue, components/MapView3D.vue
  */
-import { ref, computed, nextTick, onMounted, onUnmounted, watch, type Ref } from 'vue'
+import { ref, shallowRef, computed, nextTick, onMounted, onUnmounted, watch, type Ref } from 'vue'
 import maplibregl from 'maplibre-gl'
 import { useRoute } from 'vue-router'
 import { useMediaQuery } from '@/composables/useMediaQuery'
@@ -20,6 +20,8 @@ import { useRareEarthController } from '@/composables/useRareEarthController'
 import { getPopupContent } from '@/composables/useCulturalLayers'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { useAdaptiveQuality } from '@/composables/useAdaptiveQuality'
+import { useMapTileProvider } from '@/composables/useMapTileProvider'
+import { usePerformance } from '@/composables/usePerformance'
 import { allProjectsData } from '@/lib/project-data'
 import { openRareEarthOverlayPopup } from '@/lib/map-utils'
 import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
@@ -75,6 +77,8 @@ export function useMapBase(config: MapBaseConfig) {
 
   const quality = useAdaptiveQuality()
   const runtime = useAppRuntime()
+  const tileProvider = useMapTileProvider()
+  const perf = usePerformance()
 
   const particleQuality = computed<ParticleQualityConfig>(() => ({
     particleMaxCount: quality.settings.value.particleMaxCount,
@@ -222,6 +226,29 @@ export function useMapBase(config: MapBaseConfig) {
   useFocusTrap(crewOverlayRef, { active: crewOverlayActive })
 
   let map: maplibregl.Map | null = null
+  // Reactive mirror of `map` — `computed(() => map)` never updates because
+  // `map` is a plain closure variable. The rare-earth controller and custom
+  // layer hooks depend on a reactive ref, so keep them in sync on every
+  // assignment/removal (see initMap / onUnmounted).
+  const mapRef = shallowRef<maplibregl.Map | null>(null)
+  function setMapInstance(next: maplibregl.Map | null) {
+    map = next
+    mapRef.value = next
+    // Flush any fly-to target that arrived before the map existed.
+    if (next && pendingFlyToTarget) {
+      const target = pendingFlyToTarget
+      pendingFlyToTarget = null
+      next.flyTo({
+        center: [target.lng, target.lat],
+        zoom: target.zoom ?? 5,
+        duration: 1500,
+        essential: true,
+      })
+    }
+  }
+  // Fly-to requested before map creation (restored hash, sidebar jumps).
+  // Stored here and flushed in setMapInstance + style/load handlers.
+  let pendingFlyToTarget: { lng: number; lat: number; zoom?: number } | null = props.flyToTarget ?? null
   let isMounted = false
   let loadingTimeout: ReturnType<typeof setTimeout> | null = null
   let lastFocusedEl: HTMLElement | null = null
@@ -237,8 +264,6 @@ export function useMapBase(config: MapBaseConfig) {
     hasError.value = true
     errorMessage.value = 'The browser lost the map graphics context. Try reloading the page or disabling hardware-intensive browser extensions.'
   }
-
-  const mapRef = computed(() => map)
 
   /* ── overlay helpers ───────────────────────────────────────────────── */
 
@@ -493,6 +518,61 @@ export function useMapBase(config: MapBaseConfig) {
     selectedSpeciesGroups.value = groups
   }
 
+  /* ── tile provider (MapTiler #1, local fallback on poor health) ────── */
+
+  /** Resolve the MapLibre style for the current effective tile provider. */
+  function currentStyle(): string | Record<string, unknown> {
+    const qs = quality.settings.value
+    if (tileProvider.effectiveProvider.value === 'fallback' || !MAPTILER_API_KEY) {
+      return getMapStyle('', undefined, baseURL)
+    }
+    return getMapStyle(MAPTILER_API_KEY, qs.tileResolution, baseURL)
+  }
+
+  function applyProviderStyle() {
+    if (!map) return
+    tileProvider.noteStyleStart()
+    hasError.value = false
+    errorMessage.value = ''
+    isLoading.value = true
+    try {
+      map.setStyle(currentStyle())
+    } catch (err) {
+      console.error('[EG Maps] failed to switch tile provider style', err)
+      isLoading.value = false
+    }
+  }
+
+  let fpsReportTimer: ReturnType<typeof setInterval> | null = null
+  function startFpsReporting() {
+    stopFpsReporting()
+    fpsReportTimer = setInterval(() => {
+      if (!map || !isMounted) return
+      tileProvider.reportFps(perf.fps.value)
+    }, 2000)
+  }
+  function stopFpsReporting() {
+    if (fpsReportTimer) { clearInterval(fpsReportTimer); fpsReportTimer = null }
+  }
+
+  /** Re-attach data layers wiped by a style switch (provider toggle). */
+  function resyncLayersAfterStyle() {
+    if (!map) return
+    if (activeDataset.value === 'vulcan-observatory') {
+      setupRareEarthLayers()
+      return
+    }
+    const qNow = quality.settings.value
+    if (qNow.showConnections && connections.showConnections.value) {
+      if (activeDataset.value === 'active-crews') {
+        connections.addConnections('active-crews', [], [], crewLocationsData.value)
+      } else {
+        connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
+      }
+      if (qNow.showParticles) connections.startParticles()
+    }
+  }
+
   /* ── map init ─────────────────────────────────────────────────────── */
 
   function initMap() {
@@ -522,8 +602,10 @@ export function useMapBase(config: MapBaseConfig) {
       onBeforeCleanup?.()
       connections.cleanup()
       marker.cleanup()
-      map.remove()
-      map = null
+      stopFpsReporting()
+      try { (map as unknown as { __stopProviderWatch?: () => void }).__stopProviderWatch?.() } catch { /* ignore */ }
+      try { map.remove() } catch { /* ignore */ }
+      setMapInstance(null)
     }
 
     noWebglSupport.value = false
@@ -534,7 +616,12 @@ export function useMapBase(config: MapBaseConfig) {
       const isRee = activeDataset.value === 'vulcan-observatory'
       const qs = quality.settings.value
 
-      const mapStyle = getMapStyle(MAPTILER_API_KEY, qs.tileResolution, baseURL)
+      // MapTiler is the default; the provider only resolves to fallback on
+      // explicit choice, missing key, or poor network/health signals.
+      tileProvider.evaluateNetworkHints(MAPTILER_API_KEY)
+      const mapStyle = currentStyle()
+      const isMapTilerStyle = typeof mapStyle === 'string' && mapStyle.includes('maptiler.com')
+      tileProvider.noteStyleStart()
       const tileMaxZoom = qs.tileResolution === 'low' ? 14 : qs.tileResolution === 'medium' ? 17 : 22
 
       // Read zoom param: 0..1 maps linearly to minZoom..maxZoom
@@ -547,7 +634,7 @@ export function useMapBase(config: MapBaseConfig) {
         }
       }
 
-      map = new maplibregl.Map({
+      const created = new maplibregl.Map({
         container: mapContainerRef.value,
         style: mapStyle,
         zoom: initialZoom,
@@ -563,7 +650,8 @@ export function useMapBase(config: MapBaseConfig) {
         crossSourceCollisions: false,
         maxPitch: qs.antialiasing ? 60 : 45,
       } as maplibregl.MapOptions & { antialias?: boolean; preferCanvas?: boolean; crossSourceCollisions?: boolean; maxPitch?: number })
-      mapCanvas = map.getCanvas()
+      setMapInstance(created)
+      mapCanvas = map!.getCanvas()
       mapCanvas.addEventListener('webglcontextlost', onWebglContextLost, { passive: false })
 
       console.timeEnd('[perf] initMap → MapLibre constructor')
@@ -581,6 +669,21 @@ export function useMapBase(config: MapBaseConfig) {
       }
 
       let styleLoadFired = false
+      let providerSwitched = false
+      // Watch for manual header toggles / auto-degradation while this map lives.
+      const stopProviderWatch = watch(() => tileProvider.effectiveProvider.value, (next, prev) => {
+        if (!map || !isMounted || next === prev || providerSwitched) return
+        providerSwitched = true
+        try {
+          console.warn(`[tile-provider] switching style ${prev} → ${next}`)
+          applyProviderStyle()
+        } finally {
+          setTimeout(() => { providerSwitched = false }, 500)
+        }
+      })
+      // Owned here (not onUnmounted) so re-init doesn't leak watchers.
+      ;(map as unknown as { __stopProviderWatch?: () => void }).__stopProviderWatch = stopProviderWatch
+      startFpsReporting()
       map.on('style.load', () => {
         if (!styleLoadFired) {
           styleLoadFired = true
@@ -589,6 +692,17 @@ export function useMapBase(config: MapBaseConfig) {
         onStyleLoad?.(map!)
         if (activeDataset.value === 'vulcan-observatory') {
           setupRareEarthLayers()
+        } else if (initialRebuildDone) {
+          // Provider style switch wiped sources — re-attach connection lines.
+          resyncLayersAfterStyle()
+        }
+      })
+
+      let idleReported = false
+      map.on('idle', () => {
+        if (!idleReported) {
+          idleReported = true
+          tileProvider.noteStyleReady()
         }
       })
 
@@ -637,25 +751,16 @@ export function useMapBase(config: MapBaseConfig) {
       })
 
       let errorCount = 0
-      let usedFallback = false
-      const DEMOTILES_STYLE = 'https://demotiles.maplibre.org/style.json'
-
-      function tryFallback() {
-        if (usedFallback || !map) return
-        if (typeof mapStyle !== 'string' || !mapStyle.includes('maptiler.com')) return
-        usedFallback = true
-        hasError.value = false
-        errorMessage.value = ''
-        isLoading.value = true
-        console.warn('MapTiler style failed, falling back to demotiles style')
-        map.setStyle(DEMOTILES_STYLE)
-      }
 
       map.on('error', (err) => {
         console.error(`[${isGlobe ? 'MapView3D' : 'MapView2D'}] MapLibre error:`, err)
         errorCount++
-        if (errorCount >= 2) {
-          tryFallback()
+        tileProvider.noteTileError()
+        // Auto-degradation to the local fallback may have engaged above; the
+        // provider watcher swaps the style without a full re-init.
+        if (tileProvider.effectiveProvider.value === 'fallback' && isMapTilerStyle) return
+        if (errorCount >= 2 && isMapTilerStyle && tileProvider.preference.value === 'auto') {
+          tileProvider.forceAutoFallback('tile-errors')
           return
         }
         if (!map?.loaded()) {
@@ -675,8 +780,13 @@ export function useMapBase(config: MapBaseConfig) {
 
       loadingTimeout = setTimeout(() => {
         if (isLoading.value) {
-          tryFallback()
-          if (usedFallback) return
+          // Tiles/style never became ready — degrade to the local fallback in
+          // auto mode (MapTiler stays the default everywhere else).
+          if (isMapTilerStyle && tileProvider.preference.value === 'auto' && tileProvider.effectiveProvider.value === 'maptiler') {
+            console.warn('[tile-provider] style load timeout — switching to fallback')
+            tileProvider.forceAutoFallback('slow-style-load')
+            return
+          }
           isLoading.value = false
           if (!hasError.value) {
             hasError.value = true
@@ -711,6 +821,7 @@ export function useMapBase(config: MapBaseConfig) {
     onBeforeCleanup?.()
     if (loadingTimeout) clearTimeout(loadingTimeout)
     if (rebuildTimer) { clearTimeout(rebuildTimer); rebuildTimer = null }
+    stopFpsReporting()
     connections.cleanup()
     previewCard.close()
     marker.cleanup()
@@ -723,8 +834,9 @@ export function useMapBase(config: MapBaseConfig) {
     if (map) {
       mapCanvas?.removeEventListener('webglcontextlost', onWebglContextLost)
       mapCanvas = null
-      map.remove()
-      map = null
+      try { (map as unknown as { __stopProviderWatch?: () => void }).__stopProviderWatch?.() } catch { /* ignore */ }
+      try { map.remove() } catch { /* ignore */ }
+      setMapInstance(null)
     }
   })
 
@@ -762,10 +874,11 @@ export function useMapBase(config: MapBaseConfig) {
     if (connections.showConnections.value && quality.settings.value.showParticles) connections.startParticles()
   })
 
-  watch(() => [props.rareEarthPoints, props.rareEarthPolygons, props.rareEarthCultural, props.rareEarthFiltered], () => {
+  // Structural REE inputs only — filtered-points updates use the cheap
+  // setData path inside useRareEarthController (no full teardown/flicker).
+  watch(() => [props.rareEarthPoints, props.rareEarthPolygons, props.rareEarthProtected, props.rareEarthWater, props.rareEarthCultural], () => {
     if (!map || activeDataset.value !== 'vulcan-observatory') return
     setupRareEarthLayers()
-    rebuildMarkers()
   })
 
   watch(showHexGrid, async (visible) => {
@@ -786,7 +899,12 @@ export function useMapBase(config: MapBaseConfig) {
   })
 
   watch(() => props.flyToTarget, (target) => {
-    if (!target || !map) return
+    if (!target) return
+    if (!map) {
+      // Map not ready yet (restored hash / early sidebar jump) — flush on creation.
+      pendingFlyToTarget = target
+      return
+    }
     map.flyTo({
       center: [target.lng, target.lat],
       zoom: target.zoom ?? 5,
@@ -830,8 +948,11 @@ export function useMapBase(config: MapBaseConfig) {
     handleSpeciesSelected, openRareEarthOverlay,
     handleFilterChange, handleProjectFilterChange,
     handleSearchOpenChange, handleSpeciesGroupSelection, toggleLegendGroup,
-    initMap, map, mapRef,
+    initMap, mapRef,
+    // Back-compat: `map` was a null snapshot. Expose a live getter.
+    get map() { return mapRef.value },
     isMounted,
     quality,
+    tileProvider,
   }
 }

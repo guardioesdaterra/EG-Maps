@@ -63,6 +63,8 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
   let flyToHighlightTimer: ReturnType<typeof setTimeout> | null = null
   let waterCleanup: (() => void) | null = null
   let culturalCleanup: (() => void) | null = null
+  let polyCleanup: (() => void) | null = null
+  let polysAdded = false
   let layersSetup = false
 
   function addFlyToHighlight(lng: number, lat: number) {
@@ -91,15 +93,39 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     }, 5000)
   }
 
+  let setupRetryTimer: ReturnType<typeof setTimeout> | null = null
+  function scheduleSetupRetry() {
+    if (setupRetryTimer) return
+    setupRetryTimer = setTimeout(() => {
+      setupRetryTimer = null
+      setupLayers()
+    }, 300)
+  }
+
   function setupLayers() {
     const m = map.value
     if (!m) return
-    if (!m.isStyleLoaded()) return
+    if (!m.isStyleLoaded()) {
+      // Style not ready yet (or mid style-switch) — retry once it loads.
+      try { m.once('idle', () => setupLayers()) } catch { scheduleSetupRetry() }
+      return
+    }
     // MapLibre removes custom sources/layers when the style changes. Do not
     // trust the local flag alone; recover whenever the canonical source is
     // missing (for example after the MapTiler fallback style is applied).
-    if (layersSetup && m.getSource('ree-points')) return
-    layersSetup = false
+    const pointsSourceMissing = !m.getSource('ree-points')
+    if (layersSetup && !pointsSourceMissing) return
+    if (pointsSourceMissing) {
+      // Style reload wiped everything — drop stale guards so water/cultural
+      // /polygons are re-created instead of skipped.
+      layersSetup = false
+      waterCleanup = null
+      culturalCleanup = null
+      polyCleanup = null
+      polysAdded = false
+    } else {
+      layersSetup = false
+    }
     const p = getProps()
     // Do not mark the controller as initialized with the placeholder empty
     // FeatureCollection used while the async observatory data is loading.
@@ -115,6 +141,7 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       popup: options.popup,
     })
     layersSetup = true
+    if (p.rareEarthPolygons?.features?.length) polysAdded = true
 
     if (p.rareEarthWater?.features?.length && !waterCleanup) {
       waterCleanup = setupWaterLayers(m, p.rareEarthWater)
@@ -137,11 +164,25 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     },
   )
 
+  // Late map arrival (reactive mapRef now updates) — bootstrap layers.
+  const stopMapWatch = watch(
+    () => map.value,
+    (m) => {
+      if (!m || !isActiveGetter()) return
+      if (!m.isStyleLoaded()) {
+        try { m.once('idle', () => setupLayers()) } catch { scheduleSetupRetry() }
+        return
+      }
+      setupLayers()
+    },
+  )
+
   let pointsDebounceTimer: ReturnType<typeof setTimeout> | null = null
   const stopPointsWatch = watch(
     () => [getProps().rareEarthPoints, getProps().rareEarthFiltered] as const,
     ([rawPoints, filteredPoints]) => {
-      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
+      if (!isActiveGetter() || !map.value) return
+      if (!map.value.isStyleLoaded()) { scheduleSetupRetry(); return }
       // The map can finish loading before the async GeoJSON request. In that
       // case there is no `ree-points` source yet; bootstrap every observatory
       // layer from the newly arrived points instead of silently dropping it.
@@ -175,46 +216,88 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
   const stopProtectedWatch = watch(
     () => getProps().rareEarthProtected,
     (newVal) => {
-      if (!isActiveGetter() || !newVal || !map.value || !map.value.isStyleLoaded()) return
+      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
+      if (!newVal?.features?.length) return
       try {
         const src = map.value.getSource('ree-protected') as maplibregl.GeoJSONSource | undefined
-        if (src) src.setData(newVal)
+        if (src) {
+          src.setData(newVal)
+        } else {
+          // Protected arrived before points setup — bootstrap everything.
+          layersSetup = false
+          setupLayers()
+        }
       } catch { /* ignore */ }
     },
   )
 
-  let polyCleanup: (() => void) | null = null
-  let polysAdded = false
   const stopPolygonsWatch = watch(
     () => getProps().rareEarthPolygons,
     (newVal) => {
       if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
-      if (!newVal || polysAdded) return
-      const cleanup = addPolygonLayersToMap(map.value, newVal, options.popup)
-      if (cleanup) {
-        polyCleanup = cleanup
-        polysAdded = true
-      }
+      if (!newVal?.features?.length) return
+      try {
+        const src = map.value.getSource('ree-polys') as maplibregl.GeoJSONSource | undefined
+        if (src) {
+          // Region switch or late arrival — update in place, no teardown.
+          src.setData(newVal)
+          polysAdded = true
+          return
+        }
+        if (polysAdded) return
+        const cleanup = addPolygonLayersToMap(map.value, newVal, options.popup)
+        if (cleanup) {
+          polyCleanup = cleanup
+          polysAdded = true
+        } else {
+          // Points not set up yet — full bootstrap will include polys.
+          layersSetup = false
+          setupLayers()
+        }
+      } catch { /* ignore */ }
     },
   )
 
+  let pendingFlyHighlight: { lng: number; lat: number } | null = null
   const stopFlyToWatch = watch(
     () => getProps().flyToTarget,
     (target) => {
       if (!target) return
       const m = map.value
-      if (!m) return
-      m.once('moveend', () => addFlyToHighlight(target.lng, target.lat))
+      if (!m) {
+        pendingFlyHighlight = { lng: target.lng, lat: target.lat }
+        return
+      }
+      try {
+        m.once('moveend', () => addFlyToHighlight(target.lng, target.lat))
+      } catch {
+        addFlyToHighlight(target.lng, target.lat)
+      }
     },
   )
+  // Flush highlight if target arrived before the map.
+  const stopPendingFlyWatch = watch(() => map.value, (m) => {
+    if (m && pendingFlyHighlight) {
+      const t = pendingFlyHighlight
+      pendingFlyHighlight = null
+      try { m.once('moveend', () => addFlyToHighlight(t.lng, t.lat)) } catch { /* ignore */ }
+    }
+  })
 
   const stopWaterWatch = watch(
     () => getProps().rareEarthWater,
     (newVal) => {
       if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
       if (!newVal?.features?.length) return
-      if (waterCleanup) return
-      waterCleanup = setupWaterLayers(map.value, newVal)
+      try {
+        const src = map.value.getSource('ree-water') as maplibregl.GeoJSONSource | undefined
+        if (src) {
+          src.setData(newVal)
+          return
+        }
+        if (waterCleanup) return
+        waterCleanup = setupWaterLayers(map.value, newVal)
+      } catch { /* ignore */ }
     },
   )
 
@@ -239,13 +322,16 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
 
   onScopeDispose(() => {
     stopVisWatch()
+    stopMapWatch()
     stopPointsWatch()
     stopProtectedWatch()
     stopPolygonsWatch()
     stopFlyToWatch()
+    stopPendingFlyWatch()
     stopWaterWatch()
     stopCulturalWatch()
     if (pointsDebounceTimer) clearTimeout(pointsDebounceTimer)
+    if (setupRetryTimer) { clearTimeout(setupRetryTimer); setupRetryTimer = null }
     if (flyToHighlightTimer) clearTimeout(flyToHighlightTimer)
     if (flyToHighlightMarker) { flyToHighlightMarker.remove(); flyToHighlightMarker = null }
     if (polyCleanup) { polyCleanup(); polyCleanup = null }

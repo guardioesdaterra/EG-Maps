@@ -16,6 +16,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "species:index": "node scripts/create-species-index.mjs",
+    "crew-grants:generate": "node scripts/generate-crew-grants.ts",
+    "crew-grants:check": "node scripts/generate-crew-grants.ts --check",
     "postinstall": "nuxt prepare && node scripts/patch-eslint-flat-config.mjs",
     "supabase:deploy": "npx supabase secrets set SUPABASE_URL=$(grep NUXT_PUBLIC_SUPABASE_URL .env 2>/dev/null | cut -d= -f2-) SUPABASE_SERVICE_ROLE_KEY=$(grep SUPABASE_SERVICE_ROLE_KEY .env 2>/dev/null | cut -d= -f2-) SUPABASE_ANON_KEY=$(grep NUXT_PUBLIC_SUPABASE_ANON_KEY .env 2>/dev/null | cut -d= -f2-) 2>/dev/null; for name in crew-sync is-manager grants crews-create register-pin; do echo \"Deploying $name...\"; npx supabase functions deploy \"$name\" --project-ref lfyvociptzyhjtrxwhhf || echo \"⚠️  $name failed, continuing...\"; done",
     "tiles:download": "node scripts/download-tiles.mjs",

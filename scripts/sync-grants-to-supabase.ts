@@ -37,6 +37,51 @@ interface Grant {
   deadline_days?: number | null;
   amount_usd?: number | null;
   priority_score?: number;
+  // v2 quality / URL-health fields (emitted by grants.py, read by migration)
+  content_hash?: string;
+  quality_score?: number;
+  url_status?: string;
+  url_status_code?: number | null;
+  url_checked_at?: string;
+}
+
+// ── v2 quality gate ──────────────────────────────────────────────
+// Mirrors scripts/grants.py:is_valid_grant_candidate. Records that fail
+// are SKIPPED (counted + reported) instead of polluting scraped_grants.
+const NAV_TITLES = new Set([
+  "overview", "our work", "about us", "about", "contact", "home", "news",
+  "blog", "stories", "read more", "learn more", "see all", "view all",
+  "what we do", "who we are", "where we work", "annual report",
+]);
+
+function isValidGrantUrl(url: string): boolean {
+  if (!url || typeof url !== "string") return false;
+  const u = url.trim();
+  if (!/^https?:\/\//i.test(u) || u.length < 15 || u.includes(" ")) return false;
+  try {
+    const p = new URL(u);
+    if (!p.hostname.includes(".")) return false;
+    if ((p.pathname === "" || p.pathname === "/") && !p.search) return false;
+    return true;
+  } catch { return false; }
+}
+
+function grantRejectReason(g: Grant): string | null {
+  const title = (g.title || "").trim();
+  if (title.length < 15) return "title-too-short";
+  if (NAV_TITLES.has(title.toLowerCase())) return "nav-heading";
+  if (!isValidGrantUrl(g.url || "")) return "bad-url";
+  if ((g.url_status === "broken" || g.url_status === "login_wall") && !g.is_standing)
+    return `url-${g.url_status}`;
+  const blob = `${g.title} ${g.description} ${g.funder}`.toLowerCase();
+  if (/my account|register or sign in|page not found|the page you are looking for|file not found|sign in to continue|access denied/i.test(blob))
+    return "login-wall-or-404";
+  const hasTerms = /(edital|chamada|open call|call for|request for proposals|\brfp\b|grant|fellowship|bolsa|subvenç|convocat|appel à projets?|bando|prize|award|scholarship|microgrant|seed fund|inscreva-se|candidatura|apply (now|here|today|by))/i.test(blob);
+  const hasBoth = Boolean(g.deadline) && Boolean(g.amount_max);
+  if (!hasTerms && !hasBoth && !g.is_standing) return "no-grant-terms";
+  if (typeof g.relevance === "number" && g.relevance < 5 && !g.is_standing && !hasBoth)
+    return "low-relevance";
+  return null;
 }
 
 interface CulturalAgent {
@@ -208,10 +253,10 @@ async function batchUpsert(
 }
 
 async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string) {
-  const grants = loadGrants(filePath);
-  if (grants.length === 0) { console.warn("No grants to sync."); return; }
+  const grantsRaw = loadGrants(filePath);
+  if (grantsRaw.length === 0) { console.warn("No grants to sync."); return; }
 
-  console.warn(`Loaded ${grants.length} grants from ${filePath}`);
+  console.warn(`Loaded ${grantsRaw.length} grants from ${filePath}`);
 
   const allWanted = new Set([
     "id", "title", "funder", "source", "source_id", "url", "description",
@@ -219,10 +264,30 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
     "categories", "language", "relevance", "status", "grant_status",
     "fetched_at", "grant_type", "grant_types", "highlights", "urgency",
     "deadline_days", "amount_usd", "priority_score", "is_standing",
+    // v2 columns (see supabase/migrations/20260914000000_scraped_grants_v2.sql)
+    "content_hash", "quality_score", "url_status", "url_status_code",
+    "url_checked_at", "last_seen_at", "updated_at", "deadline_date",
+    "review_notes", "reviewed_at",
   ]);
   const cols = await existingColumns(supabase, "scraped_grants", allWanted);
 
+  // ── Quality gate: skip junk BEFORE building records ──
+  const quarantined: { title: string; reason: string }[] = [];
+  const grants = grantsRaw.filter((g) => {
+    const reason = grantRejectReason(g);
+    if (reason) {
+      if (quarantined.length < 50)
+        quarantined.push({ title: (g.title || "(untitled)").slice(0, 80), reason });
+      return false;
+    }
+    return true;
+  });
+  console.warn(`Quality gate: ${grantsRaw.length - grants.length} quarantined, ${grants.length} accepted`);
+  for (const q of quarantined.slice(0, 20))
+    console.warn(`  ⛔ [${q.reason}] ${q.title}`);
+
   const records: Record<string, unknown>[] = [];
+  const nowIso = new Date().toISOString();
   for (const g of grants) {
     const r: Record<string, unknown> = {};
     if (cols.has("id"))                r.id = await toUUID(g.id);
@@ -241,8 +306,17 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
     if (cols.has("categories"))        r.categories = Array.isArray(g.categories) ? g.categories.filter(Boolean) : [];
     if (cols.has("language"))          r.language = g.language || "en";
     if (cols.has("relevance"))         r.relevance = typeof g.relevance === "number" ? Math.max(0, Math.min(100, g.relevance)) : 0;
-    if (cols.has("status"))            r.status = ["open", "closed", "unknown", "pending"].includes(g.status) ? g.status : "unknown";
-    if (cols.has("grant_status"))      r.grant_status = g.status || "unknown";
+    if (cols.has("status")) {
+      // Live DB check: status IN (pending, open, closed, hidden).
+      // "pending" = fresh scrape awaiting manager review — preserve it.
+      const s = (g.status || "").toLowerCase();
+      r.status = ["open", "closed", "hidden", "pending"].includes(s) ? s : "pending";
+    }
+    if (cols.has("grant_status")) {
+      // Temporal alias: open/closed/unknown only (pending/hidden → unknown)
+      const s = String(g.grant_status ?? g.status ?? "").toLowerCase();
+      r.grant_status = s === "open" || s === "closed" ? s : "unknown";
+    }
     if (cols.has("fetched_at"))        r.fetched_at = g.fetched_at || new Date().toISOString();
     if (cols.has("grant_type"))        r.grant_type = g.grant_type || "general";
     if (cols.has("grant_types"))       r.grant_types = Array.isArray(g.grant_types) ? g.grant_types : [];
@@ -252,12 +326,23 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
     if (cols.has("amount_usd"))        r.amount_usd = g.amount_usd ?? null;
     if (cols.has("priority_score"))    r.priority_score = typeof g.priority_score === "number" ? g.priority_score : 0;
     if (cols.has("is_standing"))       r.is_standing = Boolean(g.is_standing);
+    // ── v2 quality / URL-health columns ──
+    if (cols.has("content_hash"))      r.content_hash = g.content_hash || null;
+    if (cols.has("quality_score"))     r.quality_score = typeof g.quality_score === "number" ? Math.max(0, Math.min(100, g.quality_score)) : 0;
+    if (cols.has("url_status"))        r.url_status = ["ok", "broken", "login_wall", "timeout", "blocked"].includes(g.url_status || "") ? g.url_status! : "unchecked";
+    if (cols.has("url_status_code"))   r.url_status_code = typeof g.url_status_code === "number" ? g.url_status_code : null;
+    if (cols.has("url_checked_at"))    r.url_checked_at = g.url_checked_at || null;
+    if (cols.has("last_seen_at"))      r.last_seen_at = nowIso;
+    if (cols.has("deadline_date")) {
+      const m = /^(\d{4}-\d{2}-\d{2})/.exec(g.deadline || "");
+      r.deadline_date = m ? m[1] : null;
+    }
     records.push(r);
   }
 
-  // Fields used for change detection — excludes fetched_at (changes every run)
-  // and is_standing (always false after filtering, wastes hash space)
-  const hashFields = ["title", "funder", "source", "url", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories", "language", "relevance", "status", "grant_status", "grant_type", "grant_types", "highlights", "urgency", "deadline_days", "amount_usd", "priority_score"];
+  // Fields used for change detection — excludes fetched_at/last_seen_at
+  // (change every run) and is_standing (static after filtering)
+  const hashFields = ["title", "funder", "source", "url", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories", "language", "relevance", "status", "grant_status", "grant_type", "grant_types", "highlights", "urgency", "deadline_days", "amount_usd", "priority_score", "quality_score", "url_status"];
   const selectCols = "id, " + hashFields.join(", ") + ", is_standing";
 
   const { inserted, updated, skipped, errors } = await batchUpsert(
@@ -266,7 +351,9 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
     selectCols,
   );
 
-  printResult("Grants", inserted, updated, skipped, grants.length, errors);
+  printResult("Grants", inserted, updated, skipped, grantsRaw.length, errors);
+  if (quarantined.length > 0)
+    console.warn(`  Quarantined (quality gate): ${grantsRaw.length - grants.length}`);
   if (errors.length > 0) process.exit(2);
 }
 

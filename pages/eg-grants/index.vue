@@ -151,10 +151,10 @@
             <div class="grants-copy">              <p>{{ t('grantsPortal.grantsCopy2') }}</p>
               <p>{{ t('grantsPortal.grantsCopy3') }}</p>
               <p>{{ t('grantsPortal.grantsCopy4') }}</p>
-              <NuxtLink to="https://www.earthguardians.org/project-grants" target="_blank" class="grants-cta-btn">
+              <a href="https://www.earthguardians.org/project-grants" target="_blank" rel="noopener" class="grants-cta-btn">
                 <span>{{ t('grantsPortal.grantsCta') }}</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              </NuxtLink>
+              </a>
             </div>
 
           </div>

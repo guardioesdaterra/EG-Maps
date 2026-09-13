@@ -538,7 +538,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     switch (ds) {
       case 'project-grants':   return dispatchProject(p)
       case 'endangered-species': return dispatchSpecies(p, coords, a)
-      case 'active-crews':     return dispatchCrew(p, coords)
+      case 'active-crews':     return dispatchCrew(p, coords, a)
       case 'vulcan-observatory': return dispatchRareEarth(p, coords)
     }
   }
@@ -566,14 +566,14 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     cb(full)
   }
 
-  function dispatchCrew(p: Record<string, unknown>, coords: [number, number]) {
+  function dispatchCrew(p: Record<string, unknown>, coords: [number, number], a: RebuildArgs) {
     switch (p._type) {
-      case 'crewLocation': return dispatchCrewLocation(p, coords)
+      case 'crewLocation': return dispatchCrewLocation(p, coords, a)
       case 'crewRegion':   return dispatchCrewRegion(p, coords)
     }
   }
 
-  function dispatchCrewLocation(p: Record<string, unknown>, coords: [number, number]) {
+  function dispatchCrewLocation(p: Record<string, unknown>, coords: [number, number], a: RebuildArgs) {
     const origLat = (p._origLat as number) ?? coords[1]
     const origLng = (p._origLng as number) ?? coords[0]
     const loc: CrewLocation = {
@@ -583,14 +583,22 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       lat: origLat, lng: origLng,
     }
 
-    if (p._crewGroup != null && map) {
-      const z = map.getZoom()
-      map.flyTo({
-        center: [origLng, origLat],
-        zoom: Math.min(z + 2, map.getMaxZoom(), 14),
-        duration: 500,
-        essential: true,
-      })
+    // Stacked crews (same coordinates) can't be tapped apart and the preview
+    // popup closes on map movement, so zoom-to-separate never shows details.
+    // Open the disambiguation panel instead — picking an item opens its popup.
+    if (p._crewGroup != null && callbacks.openCluster) {
+      const key = `${origLat.toFixed(3)},${origLng.toFixed(3)}`
+      const siblings = (a.crewLocations ?? []).filter(
+        l => `${l.lat.toFixed(3)},${l.lng.toFixed(3)}` === key,
+      )
+      if (siblings.length > 1) {
+        callbacks.openCluster({
+          dataset: 'active-crews',
+          coordinates: [origLng, origLat],
+          featureIds: siblings.map(l => `${l.name}-${l.lat}-${l.lng}`),
+        })
+        return
+      }
     }
 
     const cb = callbacks.openCrewPreview ?? callbacks.openCrewLocationOverlay ?? callbacks.openCrewOverlay

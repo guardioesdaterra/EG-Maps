@@ -12,11 +12,12 @@
         </p>
       </header>
 
-      <!-- 2026 Global Masterclass Series -->
+      <!-- Ongoing Global Masterclass Series -->
       <section class="section" aria-labelledby="series-2026-title">
         <div class="section-head">
           <h2 id="series-2026-title" class="section-title">{{ t('masterclasses.series2026Title') }}</h2>
           <p class="section-desc">{{ t('masterclasses.series2026Desc') }}</p>
+          <p class="section-note">{{ t('masterclasses.sessionLanguageNote') }}</p>
         </div>
 
         <div class="episodes">
@@ -72,6 +73,26 @@
                 <span class="episode-resource-label">{{ t('resources.title') }}:</span>
                 <a href="https://www.earthguardians.org/eg-resources" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.recording') }}</a>
                 <a href="https://www.earthguardians.org/eg-resources" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.slideDeck') }}</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Episode 4 — upcoming -->
+          <article class="episode episode--upcoming">
+            <div class="episode-meta">
+              <span class="episode-num">04</span>
+              <span class="episode-badge">{{ t('masterclasses.upcoming') }}</span>
+            </div>
+            <div class="episode-body">
+              <h3 class="episode-title">{{ t('masterclasses.ep4Title') }}</h3>
+              <p class="episode-speaker">{{ t('masterclasses.ep4Speaker') }}</p>
+              <p class="episode-desc">
+                {{ t('masterclasses.ep4Desc') }}
+              </p>
+              <div class="episode-resources">
+                <span class="episode-time">{{ t('masterclasses.ep4Time') }}</span>
+                <a href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.registerZoom') }}</a>
+                <span class="episode-note">{{ t('masterclasses.registerNote') }}</span>
               </div>
             </div>
           </article>
@@ -154,45 +175,6 @@
             <h3 class="past-name">{{ t('masterclasses.dataVisualizationTitle') }}</h3>
             <p class="past-desc">{{ t('masterclasses.dataVisualizationDesc') }}</p>
           </article>
-        </div>
-      </section>
-
-      <!-- Skills -->
-      <section class="section" aria-labelledby="skills-title">
-        <div class="section-head">
-          <h2 id="skills-title" class="section-title">{{ t('masterclasses.skillsTitle') }}</h2>
-        </div>
-        <div class="skills-grid">
-          <div class="skill-card">
-            <div class="skill-icon"><Icon name="lucide:file-text" /></div>
-            <h3 class="skill-name">{{ t('masterclasses.grantWritingSkill') }}</h3>
-            <p class="skill-desc">{{ t('masterclasses.grantWritingSkillDesc') }}</p>
-          </div>
-          <div class="skill-card">
-            <div class="skill-icon"><Icon name="lucide:bar-chart" /></div>
-            <h3 class="skill-name">{{ t('masterclasses.dataAnalysisSkill') }}</h3>
-            <p class="skill-desc">{{ t('masterclasses.dataAnalysisSkillDesc') }}</p>
-          </div>
-          <div class="skill-card">
-            <div class="skill-icon"><Icon name="lucide:users" /></div>
-            <h3 class="skill-name">{{ t('masterclasses.leadershipSkill') }}</h3>
-            <p class="skill-desc">{{ t('masterclasses.leadershipSkillDesc') }}</p>
-          </div>
-          <div class="skill-card">
-            <div class="skill-icon"><Icon name="lucide:message-circle" /></div>
-            <h3 class="skill-name">{{ t('masterclasses.advocacySkill') }}</h3>
-            <p class="skill-desc">{{ t('masterclasses.advocacySkillDesc') }}</p>
-          </div>
-          <div class="skill-card">
-            <div class="skill-icon"><Icon name="lucide:heart-handshake" /></div>
-            <h3 class="skill-name">{{ t('masterclasses.communitySkill') }}</h3>
-            <p class="skill-desc">{{ t('masterclasses.communitySkillDesc') }}</p>
-          </div>
-          <div class="skill-card">
-            <div class="skill-icon"><Icon name="lucide:globe" /></div>
-            <h3 class="skill-name">{{ t('masterclasses.financeSkill') }}</h3>
-            <p class="skill-desc">{{ t('masterclasses.financeSkillDesc') }}</p>
-          </div>
         </div>
       </section>
 
@@ -279,6 +261,12 @@ useHead({
   line-height: 1.55;
   color: var(--text-secondary);
   max-width: 40rem;
+}
+.section-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 /* ── Episodes (2026 Series) ── */
@@ -424,6 +412,9 @@ useHead({
   color: var(--text-muted);
 }
 
+.episode--upcoming {
+  border-color: var(--primary);
+}
 /* ── Past Masterclasses Grid ── */
 .past-grid {
   display: grid;
@@ -460,49 +451,6 @@ useHead({
   margin: 0.4rem 0 0.3rem;
 }
 .past-desc {
-  font-size: 0.72rem;
-  line-height: 1.5;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* ── Skills Grid ── */
-.skills-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
-  gap: 0.75rem;
-}
-.skill-card {
-  padding: 1.125rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px) saturate(1.3);
-  -webkit-backdrop-filter: blur(12px) saturate(1.3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-:global(.dark) .skill-card {
-  border-color: rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.03);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-.skill-icon {
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  background: var(--primary);
-  color: var(--bg-primary);
-  margin-bottom: 0.75rem;
-}
-.skill-name {
-  font-size: 0.85rem;
-  font-weight: 800;
-  margin: 0 0 0.3rem;
-}
-.skill-desc {
   font-size: 0.72rem;
   line-height: 1.5;
   color: var(--text-secondary);

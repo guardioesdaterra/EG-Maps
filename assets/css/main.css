@@ -1637,27 +1637,29 @@ select option {
 }
 .species-popup-content-fixed {
   position: relative;
+  margin: auto;
   max-width: 56rem;
   width: 100%;
   max-height: min(92vh, 50rem);
   overflow-y: auto;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  box-shadow: 0 24px 80px var(--shadow-color), 0 0 0 1px var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   scrollbar-width: thin;
   scrollbar-color: var(--obs-panel-border) transparent;
 }
 .project-popup-content-fixed {
   position: relative;
+  margin: auto;
   max-width: 32rem;
   width: 100%;
   max-height: min(92vh, 48rem);
   overflow-y: auto;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  box-shadow: 0 24px 80px var(--shadow-color), 0 0 0 1px var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   scrollbar-width: thin;
   scrollbar-color: var(--obs-panel-border) transparent;
 }
@@ -1694,7 +1696,7 @@ select option {
   border-radius: 50%;
   color: var(--obs-text-body);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: background 0.15s, color 0.15s;
   font-family: inherit;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -1703,12 +1705,10 @@ select option {
 .project-popup-close-btn-fixed:hover {
   background: var(--tool-btn-muted-border);
   color: var(--obs-text-primary);
-  transform: scale(1.08);
-  box-shadow: 0 0 20px var(--obs-panel-border);
 }
 .species-popup-close-btn-fixed:active,
 .project-popup-close-btn-fixed:active {
-  transform: scale(0.92);
+  background: var(--tool-btn-muted-border);
 }
 
 /* Vendor flora/fauna language bar inside overlay */
@@ -1758,14 +1758,15 @@ select option {
 }
 .crew-popup-content-fixed {
   position: relative;
+  margin: auto;
   max-width: 32rem;
   width: 100%;
   max-height: min(92vh, 50rem);
   overflow-y: auto;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  box-shadow: 0 24px 80px var(--shadow-color), 0 0 0 1px var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   scrollbar-width: thin;
   scrollbar-color: var(--obs-panel-border) transparent;
 }
@@ -1797,7 +1798,7 @@ select option {
   border-radius: 50%;
   color: var(--obs-text-body);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: background 0.15s, color 0.15s;
   font-family: inherit;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -1805,11 +1806,9 @@ select option {
 .crew-popup-close-btn-fixed:hover {
   background: var(--tool-btn-muted-border);
   color: var(--obs-text-primary);
-  transform: scale(1.08);
-  box-shadow: 0 0 20px var(--obs-panel-border);
 }
 .crew-popup-close-btn-fixed:active {
-  transform: scale(0.92);
+  background: var(--tool-btn-muted-border);
 }
 
 /* ── Observatory glass-panel tokens ── */
@@ -1879,22 +1878,20 @@ select option {
 .scale-fade-enter-active .species-popup-content-fixed,
 .scale-fade-enter-active .project-popup-content-fixed,
 .scale-fade-enter-active .crew-popup-content-fixed {
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-out;
+  transition: opacity 0.2s ease-out;
 }
 .scale-fade-leave-active .species-popup-content-fixed,
 .scale-fade-leave-active .project-popup-content-fixed,
 .scale-fade-leave-active .crew-popup-content-fixed {
-  transition: transform 0.2s ease-in, opacity 0.15s ease-in;
+  transition: opacity 0.15s ease-in;
 }
 .scale-fade-enter-from .species-popup-content-fixed,
 .scale-fade-enter-from .project-popup-content-fixed,
 .scale-fade-enter-from .crew-popup-content-fixed {
-  transform: scale(0.94) translateY(12px);
   opacity: 0;
 }
 .scale-fade-leave-to .species-popup-content-fixed,
 .scale-fade-leave-to .project-popup-content-fixed,
 .scale-fade-leave-to .crew-popup-content-fixed {
-  transform: scale(0.97) translateY(-6px);
   opacity: 0;
 }

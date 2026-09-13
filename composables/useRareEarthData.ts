@@ -57,11 +57,22 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
   const isRegional = ref(initialRegion === 'pococaldas')
   let overlapsByProcesso: Record<string, Array<{ name: string; kind: string; distance_km: number }>> = {}
 
-  function dataDir(): string {
-    return region.value === 'pococaldas'
-      ? `${baseURL}data/rare-earth/pococaldas/`
-      : `${baseURL}data/rare-earth/`
+  function normalizedBase(): string {
+    return (baseURL || '/').replace(/\/?$/, '/')
   }
+  function dataDir(): string {
+    const base = normalizedBase()
+    return region.value === 'pococaldas'
+      ? `${base}data/rare-earth/pococaldas/`
+      : `${base}data/rare-earth/`
+  }
+  function yieldToUI(): Promise<void> {
+    if (typeof requestAnimationFrame !== 'undefined') {
+      return new Promise(resolve => requestAnimationFrame(() => resolve()))
+    }
+    return new Promise(resolve => setTimeout(resolve, 0))
+  }
+  let loadToken = 0
 
   function transformPoints(pointsGJ: RareEarthFeatureCollection): RareEarthFeatureSummary[] {
     return pointsGJ.features.map((f: RareEarthFeature) => {
@@ -105,68 +116,92 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
 
   async function load() {
     if (isLoading.value) return
+    const token = ++loadToken
+    const startingRegion = region.value
     isLoading.value = true
     loadPhase.value = 'points'
     loadProgress.value = 0
     error.value = null
     resourceErrors.value = {}
+    // Clear previous-region layers so a failed reload never shows stale data
+    // mixed with the new region.
+    polygonsData.value = undefined
+    protectedData.value = undefined
+    waterData.value = undefined
+    culturalData.value = undefined
     const dir = dataDir()
 
-    const pointsRes = await fetch(`${dir}points.geojson`).catch(() => null)
-    if (!pointsRes?.ok) {
-      error.value = new Error('Failed to load points data — cannot render map')
-      isLoading.value = false
-      return
-    }
-    const pointsGJ = (await pointsRes.json()) as RareEarthFeatureCollection
-    features.value = transformPoints(pointsGJ)
-    pointsData.value = pointsGJ
-    loadProgress.value = 20
-
-    await new Promise(resolve => requestAnimationFrame(resolve))
-
-    loadPhase.value = 'overlaps'
-    loadProgress.value = 30
-    const overlapsUrl = region.value === 'pococaldas'
-      ? `${dir}points_overlaps.geojson`
-      : `${dir}points_with_overlaps.geojson`
-    const overlapsRes = await fetch(overlapsUrl).catch(() => null)
-    if (overlapsRes?.ok) {
-      const overlapsGJ = await overlapsRes.json()
-      overlapsByProcesso = {}
-      for (const f of overlapsGJ.features) {
-        const proc = (f.properties as Record<string, unknown>)?.processo
-        if (proc && Array.isArray((f.properties as Record<string, unknown>).overlaps) && ((f.properties as Record<string, unknown>).overlaps as unknown[]).length) {
-          overlapsByProcesso[proc as string] = (f.properties as Record<string, unknown>).overlaps as Array<{ name: string; kind: string; distance_km: number }>
-        }
+    try {
+      const pointsRes = await fetch(`${dir}points.geojson`).catch(() => null)
+      if (token !== loadToken || region.value !== startingRegion) return
+      if (!pointsRes?.ok) {
+        error.value = new Error('Failed to load points data — cannot render map')
+        loadPhase.value = 'idle'
+        return
       }
-      features.value = features.value.map(f => ({ ...f, ov: overlapsByProcesso[f.p] || null }))
+      const pointsGJ = (await pointsRes.json()) as RareEarthFeatureCollection
+      if (token !== loadToken || region.value !== startingRegion) return
+      // Fresh region → drop stale overlap index before transform.
+      overlapsByProcesso = {}
+      features.value = transformPoints(pointsGJ)
+      pointsData.value = pointsGJ
+      loadProgress.value = 20
+
+      await yieldToUI()
+      if (token !== loadToken || region.value !== startingRegion) return
+
+      loadPhase.value = 'overlaps'
+      loadProgress.value = 30
+      const overlapsUrl = region.value === 'pococaldas'
+        ? `${dir}points_overlaps.geojson`
+        : `${dir}points_with_overlaps.geojson`
+      const overlapsRes = await fetch(overlapsUrl).catch(() => null)
+      if (overlapsRes?.ok) {
+        const overlapsGJ = await overlapsRes.json()
+        overlapsByProcesso = {}
+        for (const f of overlapsGJ.features ?? []) {
+          const proc = (f.properties as Record<string, unknown>)?.processo
+          if (proc && Array.isArray((f.properties as Record<string, unknown>).overlaps) && ((f.properties as Record<string, unknown>).overlaps as unknown[]).length) {
+            overlapsByProcesso[proc as string] = (f.properties as Record<string, unknown>).overlaps as Array<{ name: string; kind: string; distance_km: number }>
+          }
+        }
+        features.value = features.value.map(f => ({ ...f, ov: overlapsByProcesso[f.p] || null }))
+      }
+      if (token !== loadToken || region.value !== startingRegion) return
+
+      loadProgress.value = 50
+      await loadResource('polygons', `${dir}polygons.geojson`, (data: RareEarthFeatureCollection) => { polygonsData.value = data })
+
+      await yieldToUI()
+      if (token !== loadToken || region.value !== startingRegion) return
+
+      loadPhase.value = 'protected'
+      loadProgress.value = 60
+      await Promise.all([
+        loadResource('protected', `${dir}protected-areas.geojson`, (data: RareEarthFeatureCollection) => { protectedData.value = data }),
+        loadResource('analysis', `${dir}deep_analysis.json`, (data: DeepAnalysis) => { deepAnalysis.value = data }),
+        loadResource('water', `${dir}waterbodies.geojson`, (data: GeoJSON.FeatureCollection) => { waterData.value = data }),
+        loadResource('cultural', `${dir}cultural-features.geojson`, (data: GeoJSON.FeatureCollection) => { culturalData.value = data }),
+      ])
+      if (token !== loadToken || region.value !== startingRegion) return
+      loadProgress.value = 100
+
+      loadPhase.value = 'complete'
+    } finally {
+      if (token === loadToken && region.value === startingRegion) {
+        isLoading.value = false
+      }
     }
-
-    loadProgress.value = 50
-    await loadResource('polygons', `${dir}polygons.geojson`, (data: RareEarthFeatureCollection) => { polygonsData.value = data })
-
-    await new Promise(resolve => requestAnimationFrame(resolve))
-
-    loadPhase.value = 'protected'
-    loadProgress.value = 60
-    await Promise.all([
-      loadResource('protected', `${dir}protected-areas.geojson`, (data: RareEarthFeatureCollection) => { protectedData.value = data }),
-      loadResource('analysis', `${dir}deep_analysis.json`, (data: DeepAnalysis) => { deepAnalysis.value = data }),
-      loadResource('water', `${dir}waterbodies.geojson`, (data: GeoJSON.FeatureCollection) => { waterData.value = data }),
-      loadResource('cultural', `${dir}cultural-features.geojson`, (data: GeoJSON.FeatureCollection) => { culturalData.value = data }),
-    ])
-    loadProgress.value = 100
-
-    loadPhase.value = 'complete'
-    isLoading.value = false
   }
 
   /** Expand from regional to full Brazil dataset */
   async function loadFullBrazil() {
     if (region.value === 'all' && pointsData.value) return
+    if (isLoading.value) return
     region.value = 'all'
     isRegional.value = false
+    // Invalidate the in-flight regional load so it cannot overwrite Brazil data.
+    loadToken++
     await load()
   }
 

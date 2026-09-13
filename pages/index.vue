@@ -9,6 +9,16 @@
           <img :src="`${baseURL}eg-logo.png`" alt="Earth Guardians" class="home-logo" />
           <h1 class="home-title">EG–Maps<span class="home-title-dot">.</span></h1>
           <p class="home-subtitle">{{ t('home.subtitle') }}</p>
+          <p class="home-submore">{{ t('home.subtitleMore') }}</p>
+          <div class="home-orgline">
+            <a href="https://www.earthguardians.org" target="_blank" rel="noopener noreferrer" class="home-orglink">
+              <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" />
+              earthguardians.org
+            </a>
+            <NuxtLink to="/info" class="home-orglink home-orglink--muted">
+              {{ t('nav.info') }}
+            </NuxtLink>
+          </div>
           <div class="home-divider" />
           <div class="home-stats">
             <div v-for="stat in overviewStats" :key="stat.label" class="home-stat">
@@ -28,7 +38,6 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <span class="bento-badge" style="color: #8e44ad">Communities</span>
               <div class="bento-icon" style="background: #8e44ad14; color: #8e44ad">
                 <Icon name="lucide:hand-heart" />
               </div>
@@ -57,35 +66,35 @@
             </div>
           </article>
 
-          <!-- 2. Campaigns — tall -->
+          <!-- 2. Campaigns — tall (species map lives inside: Biodiversity Day) -->
           <article class="bento-card bento-tall" style="--accent: #27ae60" @mousemove="trackGlow" @mouseleave="clearGlow">
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <span class="bento-badge" style="color: #27ae60">Biodiversity</span>
               <div class="bento-icon" style="background: #27ae6014; color: #27ae60">
                 <Icon name="lucide:bird" />
               </div>
               <h2 class="bento-title">{{ t('home.campaignsTitle') }}</h2>
               <p class="bento-desc">{{ t('home.campaignsDesc') }}</p>
+              <p class="bento-kicker" style="color: #27ae60">{{ t('home.campaignsKicker') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
                   <strong style="color: #27ae60">{{ speciesCount || '—' }}</strong>
                   <span>{{ t('home.speciesCount') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong style="color: #27ae60">47</strong>
-                  <span>{{ t('home.countries') }}</span>
+                  <strong style="color: #27ae60">7</strong>
+                  <span>{{ t('home.groupsCount') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/endangered-species" class="bento-link bento-link--primary" style="background: #27ae60; border-color: #27ae60">
+                <NuxtLink to="/campaigns" class="bento-link bento-link--primary" style="background: #27ae60; border-color: #27ae60">
+                  <Icon name="lucide:megaphone" class="h-3.5 w-3.5" />
+                  {{ t('home.campaignsTitle') }}
+                </NuxtLink>
+                <NuxtLink to="/endangered-species" class="bento-link">
                   <Icon name="lucide:map" class="h-3.5 w-3.5" />
                   Species Map
-                </NuxtLink>
-                <NuxtLink to="/campaigns" class="bento-link">
-                  <Icon name="lucide:megaphone" class="h-3.5 w-3.5" />
-                  Campaigns
                 </NuxtLink>
               </div>
             </div>
@@ -96,7 +105,6 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <span class="bento-badge" style="color: #f39c12">Training</span>
               <div class="bento-icon" style="background: #f39c1214; color: #f39c12">
                 <Icon name="lucide:graduation-cap" />
               </div>
@@ -104,12 +112,12 @@
               <p class="bento-desc">{{ t('home.masterclassesDesc') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong style="color: #f39c12">4</strong>
-                  <span>{{ t('home.pastTrainings') }}</span>
+                  <strong style="color: #f39c12">{{ t('home.seriesStatusValue') }}</strong>
+                  <span>{{ t('home.seriesStatusLabel') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong style="color: #f39c12">3</strong>
-                  <span>{{ t('home.skillBuilding') }}</span>
+                  <strong style="color: #f39c12">{{ t('home.archiveValue') }}</strong>
+                  <span>{{ t('home.archiveLabel') }}</span>
                 </div>
               </div>
               <div class="bento-links">
@@ -126,7 +134,6 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <span class="bento-badge" style="color: #8b5cf6">Join</span>
               <div class="bento-icon" style="background: #8b5cf614; color: #8b5cf6">
                 <Icon name="lucide:heart-handshake" />
               </div>
@@ -134,11 +141,11 @@
               <p class="bento-desc">{{ t('home.startACrewDesc') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong style="color: #8b5cf6">131</strong>
+                  <strong style="color: #8b5cf6">{{ crewOverallStats.totalActiveCrews }}</strong>
                   <span>{{ t('home.crewsCount') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong style="color: #8b5cf6">47</strong>
+                  <strong style="color: #8b5cf6">{{ crewOverallStats.totalCountries }}</strong>
                   <span>{{ t('home.countries') }}</span>
                 </div>
               </div>
@@ -160,37 +167,63 @@
             </div>
           </article>
 
-          <!-- 5. Crew Projects — full width -->
-          <article class="bento-card bento-wide" style="--accent: #10b981" @mousemove="trackGlow" @mouseleave="clearGlow">
+          <!-- 5. Crew Projects -->
+          <article class="bento-card" style="--accent: #10b981" @mousemove="trackGlow" @mouseleave="clearGlow">
             <div class="bento-glow" />
             <div class="bento-accent" />
-            <div class="bento-body bento-wide-body">
-              <div class="bento-wide-left">
-                <span class="bento-badge" style="color: #10b981">Impact</span>
-                <div class="bento-icon" style="background: #10b98114; color: #10b981">
-                  <Icon name="lucide:briefcase" />
+            <div class="bento-body">
+              <div class="bento-icon" style="background: #10b98114; color: #10b981">
+                <Icon name="lucide:briefcase" />
+              </div>
+              <h2 class="bento-title">{{ t('home.crewProjectsTitle') }}</h2>
+              <p class="bento-desc">{{ t('home.crewProjectsDesc') }}</p>
+              <div class="bento-stats">
+                <div class="bento-stat">
+                  <strong style="color: #10b981">{{ t('home.crewProjectsStatValue') }}</strong>
+                  <span>{{ t('home.crewProjectsStatLabel') }}</span>
                 </div>
-                <h2 class="bento-title">{{ t('home.crewProjectsTitle') }}</h2>
-                <p class="bento-desc">{{ t('home.crewProjectsDesc') }}</p>
-                <div class="bento-stats">
-                  <div class="bento-stat">
-                    <strong style="color: #10b981">252</strong>
-                    <span>acres restored</span>
-                  </div>
-                  <div class="bento-stat">
-                    <strong style="color: #10b981">4</strong>
-                    <span>countries</span>
-                  </div>
+                <div class="bento-stat">
+                  <strong style="color: #10b981">{{ t('home.crewProjectsPlaceValue') }}</strong>
+                  <span>{{ t('home.crewProjectsPlaceLabel') }}</span>
                 </div>
               </div>
-              <div class="bento-wide-right">
+              <div class="bento-links">
                 <NuxtLink to="/crew-projects" class="bento-link bento-link--primary" style="background: #10b981; border-color: #10b981">
                   <Icon name="lucide:mountain" class="h-3.5 w-3.5" />
-                  Large-Scale Projects
+                  Crew Projects
                 </NuxtLink>
-                <NuxtLink to="/crew-projects#small-scale" class="bento-link">
-                  <Icon name="lucide:sprout" class="h-3.5 w-3.5" />
-                  Small-Scale Projects
+              </div>
+            </div>
+          </article>
+
+          <!-- 6. Vulcan Observatory — community-driven map -->
+          <article class="bento-card" style="--accent: #f59e0b" @mousemove="trackGlow" @mouseleave="clearGlow">
+            <div class="bento-glow" />
+            <div class="bento-accent" />
+            <div class="bento-body">
+              <div class="bento-icon" style="background: #f59e0b14; color: #f59e0b">
+                <Icon name="lucide:microscope" />
+              </div>
+              <h2 class="bento-title">{{ t('home.vulcanTitle') }}</h2>
+              <p class="bento-desc">{{ t('home.vulcanDesc') }}</p>
+              <div class="bento-stats">
+                <div class="bento-stat">
+                  <strong style="color: #f59e0b">{{ t('home.vulcanFocusValue') }}</strong>
+                  <span>{{ t('home.vulcanFocusLabel') }}</span>
+                </div>
+                <div class="bento-stat">
+                  <strong style="color: #f59e0b">{{ t('home.vulcanDataValue') }}</strong>
+                  <span>{{ t('home.vulcanDataLabel') }}</span>
+                </div>
+              </div>
+              <div class="bento-links">
+                <NuxtLink to="/vulcan-observatory" class="bento-link bento-link--primary" style="background: #f59e0b; border-color: #f59e0b">
+                  <Icon name="lucide:map" class="h-3.5 w-3.5" />
+                  2D Map
+                </NuxtLink>
+                <NuxtLink to="/vulcan-observatory/3d" class="bento-link">
+                  <Icon name="lucide:globe" class="h-3.5 w-3.5" />
+                  3D Globe
                 </NuxtLink>
               </div>
             </div>
@@ -201,7 +234,13 @@
     </div>
 
     <footer class="home-footer">
-      <span class="home-footer-text">Earth Guardians / EG–Maps / {{ currentYear }}</span>
+      <span class="home-footer-text">{{ t('home.footer') }}</span>
+      <nav class="home-footer-links" aria-label="Footer">
+        <a href="https://www.earthguardians.org" target="_blank" rel="noopener noreferrer">earthguardians.org</a>
+        <NuxtLink to="/info">{{ t('nav.info') }}</NuxtLink>
+        <NuxtLink to="/campaigns">{{ t('home.campaignsTitle') }}</NuxtLink>
+        <NuxtLink to="/masterclasses">{{ t('home.masterclassesTitle') }}</NuxtLink>
+      </nav>
     </footer>
   </main>
 </template>
@@ -216,14 +255,13 @@ import { useDarkMode } from '@/composables/useDarkMode'
 const { t } = useI18n()
 const { isDark } = useDarkMode()
 const baseURL = useRuntimeConfig().app.baseURL
-const currentYear = new Date().getFullYear()
 
 useHead({
   title: computed(() => `EG–Maps — ${t('home.subtitle')}`),
   meta: [
-    { name: 'description', content: 'Interactive data visualization platform for Earth Guardians — project grants, endangered species, rare earth extraction and active crews worldwide.' },
-    { property: 'og:title', content: 'EG–Maps — Interactive Field Atlas' },
-    { property: 'og:description', content: 'Interactive data visualization platform for Earth Guardians.' },
+    { name: 'description', content: 'Official maps of Earth Guardians — project grants, endangered species, active crews, crew projects and the Vulcan Observatory community map.' },
+    { property: 'og:title', content: 'EG–Maps — Official maps of Earth Guardians' },
+    { property: 'og:description', content: 'Crews, grants, species and crew projects on interactive maps and globes.' },
     { property: 'og:type', content: 'website' },
   ],
 })
@@ -323,9 +361,39 @@ const clearGlow = (e: MouseEvent) => {
   margin: 1rem 0 0;
   font-size: clamp(0.9rem, 1.3vw, 1.1rem);
   line-height: 1.5;
+  color: var(--text-primary);
+  font-weight: 600;
+  max-width: 26rem;
+}
+.home-submore {
+  margin: 0.6rem 0 0;
+  font-size: clamp(0.8rem, 1.1vw, 0.95rem);
+  line-height: 1.55;
   color: var(--text-secondary);
   max-width: 26rem;
 }
+.home-orgline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+.home-orglink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+.home-orglink:hover { background: var(--text-primary); color: var(--bg-primary); }
+.home-orglink--muted { color: var(--text-secondary); }
+.home-orglink--muted:hover { color: var(--bg-primary); }
 .home-divider {
   width: 3rem;
   height: 1px;
@@ -447,6 +515,11 @@ const clearGlow = (e: MouseEvent) => {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+.bento-kicker {
+  font-size: 0.62rem;
+  font-weight: 700;
+  margin: 0;
+}
 .bento-icon {
   width: 2rem;
   height: 2rem;
@@ -559,6 +632,10 @@ const clearGlow = (e: MouseEvent) => {
   border-top: 1px solid var(--border-color);
   padding: 1rem 0;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
 }
 .home-footer-text {
   font-size: 0.6rem;
@@ -567,6 +644,19 @@ const clearGlow = (e: MouseEvent) => {
   text-transform: uppercase;
   color: var(--text-muted);
 }
+.home-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1rem;
+}
+.home-footer-links a {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+.home-footer-links a:hover { color: var(--text-primary); }
 
 /* ══════════════════════════════════════
    Responsive

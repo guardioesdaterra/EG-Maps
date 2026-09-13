@@ -239,10 +239,12 @@ onUnmounted(() => {
 .cmd-panel {
   width: 100%;
   max-width: 560px;
-  background: var(--popover, var(--bg-secondary));
-  border: 1px solid var(--border-color);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
   display: flex;
   flex-direction: column;
   max-height: 70vh;

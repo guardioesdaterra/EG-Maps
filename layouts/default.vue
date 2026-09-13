@@ -5,7 +5,7 @@
  * @deps vue (ref, computed, onMounted, onUnmounted); @/composables/useI18n (useI18n)
  */
 <template>
-  <div :class="[isMapRoute ? 'h-[100svh]' : 'min-h-viewport', 'bg-[var(--bg-secondary)]']">
+  <div :class="[isMapRoute ? 'h-[100svh]' : 'min-h-viewport', 'bg-transparent']">
     <slot />
 
     

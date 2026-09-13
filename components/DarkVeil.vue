@@ -1,10 +1,11 @@
 <template>
-  <canvas ref="canvasRef" class="w-full h-full block" />
+  <canvas ref="canvasRef" />
 </template>
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, watch, useTemplateRef } from 'vue';
 import { Renderer, Program, Mesh, Triangle, Vec2 } from 'ogl';
+import { useDarkMode } from '@/composables/useDarkMode';
 
 interface DarkVeilProps {
   hueShift?: number;
@@ -25,6 +26,10 @@ const props = withDefaults(defineProps<DarkVeilProps>(), {
   warpAmount: 5,
   resolutionScale: 1
 });
+
+const { isDark } = useDarkMode();
+
+const hueByTheme = (dark: number, light: number) => (isDark.value ? dark : light);
 
 const canvasRef = useTemplateRef<HTMLCanvasElement>('canvasRef');
 
@@ -117,21 +122,26 @@ const cleanup = () => {
 const resize = () => {
   if (!canvasRef.value || !renderer || !program) return;
 
-  const parent = canvasRef.value.parentElement;
-  if (!parent) return;
-
-  const w = parent.clientWidth;
-  const h = parent.clientHeight;
-  renderer.setSize(w * props.resolutionScale, h * props.resolutionScale);
-  program.uniforms.uResolution.value.set(w, h);
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const bw = Math.round(w * props.resolutionScale);
+  const bh = Math.round(h * props.resolutionScale);
+  renderer.setSize(bw, bh);
+  const canvas = canvasRef.value;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  canvas.style.position = 'fixed';
+  canvas.style.top = '0';
+  canvas.style.left = '0';
+  program.uniforms.uResolution.value.set(bw, bh);
 };
 
 const loop = () => {
   if (!program || !renderer || !mesh) return;
 
   program.uniforms.uTime.value = ((performance.now() - start) / 1000) * props.speed;
-  program.uniforms.uHueShift.value = props.hueShift;
-  program.uniforms.uNoise.value = props.noiseIntensity;
+  program.uniforms.uHueShift.value = hueByTheme(props.hueShift, 120);
+  program.uniforms.uNoise.value = hueByTheme(props.noiseIntensity, 0.06);
   program.uniforms.uScan.value = props.scanlineIntensity;
   program.uniforms.uScanFreq.value = props.scanlineFrequency;
   program.uniforms.uWarp.value = props.warpAmount;
@@ -143,9 +153,6 @@ onMounted(() => {
   if (!canvasRef.value) return;
 
   const canvas = canvasRef.value;
-  const parent = canvas.parentElement;
-  if (!parent) return;
-
   renderer = new Renderer({
     dpr: Math.min(window.devicePixelRatio, 2),
     canvas
@@ -192,12 +199,19 @@ watch(
   ],
   () => {
     if (program) {
-      program.uniforms.uHueShift.value = props.hueShift;
-      program.uniforms.uNoise.value = props.noiseIntensity;
+      program.uniforms.uHueShift.value = hueByTheme(props.hueShift, 120);
+      program.uniforms.uNoise.value = hueByTheme(props.noiseIntensity, 0.06);
       program.uniforms.uScan.value = props.scanlineIntensity;
       program.uniforms.uScanFreq.value = props.scanlineFrequency;
       program.uniforms.uWarp.value = props.warpAmount;
     }
   }
 );
+
+watch(isDark, () => {
+  if (program) {
+    program.uniforms.uHueShift.value = hueByTheme(props.hueShift, 120);
+    program.uniforms.uNoise.value = hueByTheme(props.noiseIntensity, 0.06);
+  }
+});
 </script>

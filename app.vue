@@ -6,9 +6,14 @@
  */
 <template>
   <div>
+    <ClientOnly>
+      <DarkVeil class="z-0 pointer-events-none" :resolution-scale="0.5" />
+    </ClientOnly>
     <a href="#main-content" class="skip-link">{{ skipLabel }}</a>
     <NuxtLayout>
-      <NuxtPage />
+      <div class="relative z-10">
+        <NuxtPage />
+      </div>
     </NuxtLayout>
     <ClientOnly>
       <ToastHost position="bottom-right" />

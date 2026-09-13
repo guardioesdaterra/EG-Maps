@@ -24,7 +24,8 @@
         <div class="bento">
 
           <!-- 1. Project Grants — tall -->
-          <article class="bento-card bento-tall" style="--accent: #8e44ad">
+          <article class="bento-card bento-tall" style="--accent: #8e44ad" @mousemove="trackGlow" @mouseleave="clearGlow">
+            <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
               <span class="bento-badge" style="color: #8e44ad">Communities</span>
@@ -57,7 +58,8 @@
           </article>
 
           <!-- 2. Campaigns — tall -->
-          <article class="bento-card bento-tall" style="--accent: #27ae60">
+          <article class="bento-card bento-tall" style="--accent: #27ae60" @mousemove="trackGlow" @mouseleave="clearGlow">
+            <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
               <span class="bento-badge" style="color: #27ae60">Biodiversity</span>
@@ -90,7 +92,8 @@
           </article>
 
           <!-- 3. Masterclasses -->
-          <article class="bento-card" style="--accent: #f39c12">
+          <article class="bento-card" style="--accent: #f39c12" @mousemove="trackGlow" @mouseleave="clearGlow">
+            <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
               <span class="bento-badge" style="color: #f39c12">Training</span>
@@ -119,7 +122,8 @@
           </article>
 
           <!-- 4. Start a Crew -->
-          <article class="bento-card" style="--accent: #8b5cf6">
+          <article class="bento-card" style="--accent: #8b5cf6" @mousemove="trackGlow" @mouseleave="clearGlow">
+            <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
               <span class="bento-badge" style="color: #8b5cf6">Join</span>
@@ -157,7 +161,8 @@
           </article>
 
           <!-- 5. Crew Projects — full width -->
-          <article class="bento-card bento-wide" style="--accent: #10b981">
+          <article class="bento-card bento-wide" style="--accent: #10b981" @mousemove="trackGlow" @mouseleave="clearGlow">
+            <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body bento-wide-body">
               <div class="bento-wide-left">
@@ -206,8 +211,10 @@ import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue'
 import { allProjectsData } from '@/lib/project-data'
 import { crewOverallStats } from '@/lib/crew-data'
 import { formatCompact } from '@/lib/utils'
+import { useDarkMode } from '@/composables/useDarkMode'
 
 const { t } = useI18n()
+const { isDark } = useDarkMode()
 const baseURL = useRuntimeConfig().app.baseURL
 const currentYear = new Date().getFullYear()
 
@@ -252,6 +259,19 @@ onMounted(async () => {
 })
 
 onUnmounted(() => abortController.abort())
+
+const trackGlow = (e: MouseEvent) => {
+  const card = e.currentTarget as HTMLElement
+  const rect = card.getBoundingClientRect()
+  card.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`)
+  card.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`)
+}
+
+const clearGlow = (e: MouseEvent) => {
+  const card = e.currentTarget as HTMLElement
+  card.style.setProperty('--mx', '50%')
+  card.style.setProperty('--my', '50%')
+}
 </script>
 
 <style scoped>
@@ -262,7 +282,7 @@ onUnmounted(() => abortController.abort())
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-primary);
+  background: transparent;
   color: var(--text-primary);
 }
 
@@ -355,31 +375,67 @@ onUnmounted(() => abortController.abort())
   width: 100%;
 }
 
-/* ── Card base ── */
+/* ── Card base — glassmorphism ── */
 .bento-card {
-  border-radius: 10px;
+  --mx: 50%;
+  --my: 50%;
+  position: relative;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
-.bento-card:hover {
-  border-color: var(--accent, var(--primary));
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+:global(.dark) .bento-card {
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
-:global(.dark) .bento-card:hover {
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+
+.bento-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  background: radial-gradient(
+    circle 200px at var(--mx) var(--my),
+    var(--accent, var(--primary)),
+    transparent 70%
+  );
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+:global(.dark) .bento-glow {
+  opacity: 0;
+}
+.bento-card:hover .bento-glow {
+  opacity: 0.12;
+}
+:global(.dark) .bento-card:hover .bento-glow {
+  opacity: 0.18;
 }
 
 .bento-accent {
-  height: 3px;
-  background: var(--accent, var(--primary));
+  position: relative;
+  z-index: 1;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent, var(--primary)), transparent);
   opacity: 0;
   transition: opacity 0.2s;
 }
 .bento-card:hover .bento-accent { opacity: 1; }
 
 .bento-body {
+  position: relative;
+  z-index: 1;
   padding: 1rem 1.125rem 1.125rem;
   display: flex;
   flex-direction: column;
@@ -399,6 +455,10 @@ onUnmounted(() => abortController.abort())
   justify-content: center;
   border-radius: 6px;
   margin: 0.1rem 0;
+  transition: background 0.2s;
+}
+.bento-card:hover .bento-icon {
+  background: rgba(255, 255, 255, 0.08);
 }
 .bento-title {
   font-size: 0.95rem;
@@ -447,17 +507,17 @@ onUnmounted(() => abortController.abort())
   align-items: center;
   gap: 0.25rem;
   padding: 0.3rem 0.6rem;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 0.62rem;
   font-weight: 700;
   text-decoration: none;
   color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-  background: var(--bg-primary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .bento-link:hover {
-  background: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
   border-color: var(--accent, var(--primary));
 }

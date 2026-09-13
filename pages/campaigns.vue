@@ -202,7 +202,7 @@ useHead({
 <style scoped>
 .page {
   min-height: 100svh;
-  background: var(--bg-primary);
+  background: transparent;
   color: var(--text-primary);
 }
 
@@ -246,7 +246,10 @@ useHead({
   background: transparent;
 }
 .btn--secondary:hover { background: var(--text-primary); color: var(--bg-primary); }
-.btn--light { background: var(--bg-primary); color: var(--text-primary); }
+.btn--light {
+  background: var(--primary);
+  color: #fff;
+}
 .btn--light:hover { opacity: 0.85; }
 .text-link {
   display: inline-flex;
@@ -355,9 +358,17 @@ useHead({
 .flow-step {
   flex: 1;
   padding: 1.25rem;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+:global(.dark) .flow-step {
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 .flow-icon {
   width: 2.25rem;
@@ -409,15 +420,32 @@ useHead({
   display: flex;
   flex-direction: column;
   padding: clamp(1rem, 2.5vw, 1.5rem);
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-  transition: border-color 0.2s;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-.campaign-card:hover { border-color: var(--primary); }
+:global(.dark) .campaign-card {
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.campaign-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+:global(.dark) .campaign-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
 .campaign-card--featured {
   border-color: var(--primary);
-  background: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.07);
+}
+:global(.dark) .campaign-card--featured {
+  background: rgba(255, 255, 255, 0.05);
 }
 .card-top {
   display: flex;
@@ -483,7 +511,10 @@ useHead({
 .pathway-step {
   position: relative;
   padding: 1.25rem 0;
-  border-top: 2px solid var(--text-primary);
+  border-top: 2px solid rgba(255, 255, 255, 0.12);
+}
+:global(.dark) .pathway-step {
+  border-top-color: rgba(255, 255, 255, 0.08);
 }
 .pathway-num {
   color: var(--primary);
@@ -516,9 +547,18 @@ useHead({
   justify-content: space-between;
   gap: 2rem;
   padding: clamp(1.5rem, 3.5vw, 2.5rem);
-  border-radius: 10px;
-  background: var(--text-primary);
-  color: var(--bg-primary);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  color: var(--text-primary);
+}
+:global(.dark) .cta-block {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 .cta-title {
   max-width: 550px;

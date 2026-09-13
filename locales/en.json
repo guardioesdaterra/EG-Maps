@@ -852,7 +852,10 @@
     "financeSkillDesc": "Understand funding mechanisms and resource mobilization for grassroots climate projects.",
     "ctaTitle": "Access Masterclasses",
     "ctaDesc": "Join Earth Guardians to access our full library of masterclasses and training resources.",
-    "joinCrew": "Join Earth Guardians"
+    "joinCrew": "Join Earth Guardians",
+    "moreTitle": "More Sessions & Recordings",
+    "moreDesc": "We've hosted dozens of masterclasses since 2023 — from grant writing and COP prep to data visualization and climate justice. Follow us on Instagram for highlights, clips, and upcoming sessions.",
+    "viewOnInstagram": "View on Instagram"
   },
   "a11y": {
     "skipToContent": "Skip to main content"

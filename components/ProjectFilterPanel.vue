@@ -242,9 +242,11 @@ function resetFilters() {
 
 <style scoped>
 .project-filter-panel {
-  background: #000;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(13, 13, 18, 0.92);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .project-filter-panel::-webkit-scrollbar {

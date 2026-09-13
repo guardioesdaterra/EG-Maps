@@ -72,7 +72,7 @@ async function copyClusterLink() {
 </script>
 
 <style scoped>
-.cluster-results-panel { position: absolute; inset: 0 auto 0 0; z-index: 120; width: min(360px, 88vw); display: flex; flex-direction: column; background: rgba(8, 12, 20, .94); color: #f8fafc; border-right: 1px solid rgba(148, 163, 184, .22); box-shadow: 18px 0 48px rgba(0,0,0,.28); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); }
+.cluster-results-panel { position: absolute; inset: 0 auto 0 0; z-index: 120; width: min(360px, 88vw); display: flex; flex-direction: column; background: var(--glass-bg); color: var(--text-primary); border-right: 1px solid var(--glass-border); box-shadow: 18px 0 48px rgba(0,0,0,.28); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); }
 .cluster-results-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.25rem 1rem 1rem; border-bottom: 1px solid rgba(148,163,184,.16); }
 .cluster-results-header-actions { display: flex; align-items: center; gap: .4rem; }
 .cluster-results-copy { min-width: 38px; min-height: 38px; border: 1px solid rgba(148,163,184,.22); border-radius: 999px; background: transparent; color: #67e8f9; cursor: pointer; }

@@ -76,30 +76,27 @@
             </div>
           </article>
 
-          <!-- Episode 4 -->
-          <article class="episode episode--upcoming">
+          <!-- More Sessions -->
+          <article class="episode episode--more">
             <div class="episode-meta">
-              <span class="episode-num">04</span>
-              <span class="episode-date">July 26, 2026</span>
-              <span class="episode-badge">{{ t('masterclasses.upcoming') }}</span>
+              <span class="episode-num">&hellip;</span>
+              <span class="episode-date">2023 – 2026</span>
             </div>
             <div class="episode-body">
-              <h3 class="episode-title">{{ t('masterclasses.ep4Title') }}</h3>
-              <p class="episode-speaker">{{ t('masterclasses.ep4Speaker') }}</p>
+              <h3 class="episode-title">{{ t('masterclasses.moreTitle') }}</h3>
               <p class="episode-desc">
-                {{ t('masterclasses.ep4Desc') }}
+                {{ t('masterclasses.moreDesc') }}
               </p>
               <div class="episode-actions">
                 <a
-                  href="https://us02web.zoom.us/meeting/register/CqCXrQRKQK2Ky_-IB3JCCA"
+                  href="https://www.instagram.com/earthguardians/"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="episode-cta"
                 >
-                  <Icon name="lucide:external-link" class="h-3.5 w-3.5" />
-                  {{ t('masterclasses.registerZoom') }}
+                  <Icon name="lucide:instagram" class="h-3.5 w-3.5" />
+                  {{ t('masterclasses.viewOnInstagram') }}
                 </a>
-                <span class="episode-time">{{ t('masterclasses.ep4Time') }}</span>
               </div>
             </div>
           </article>
@@ -236,7 +233,7 @@ useHead({
 <style scoped>
 .page {
   min-height: 100svh;
-  background: var(--bg-primary);
+  background: transparent;
   color: var(--text-primary);
 }
 
@@ -295,15 +292,26 @@ useHead({
   grid-template-columns: 5rem 1fr;
   gap: 1.25rem;
   padding: 1.25rem;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: border-color 0.2s;
 }
+:global(.dark) .episode {
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
 .episode:hover { border-color: var(--primary); }
-.episode--upcoming {
-  border-color: var(--primary);
-  background: var(--bg-secondary);
+.episode--more {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+:global(.dark) .episode--more {
+  border-color: rgba(255, 255, 255, 0.1);
 }
 .episode-meta {
   display: flex;
@@ -424,10 +432,18 @@ useHead({
 }
 .past-card {
   padding: 1rem 1.125rem;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: border-color 0.2s;
+}
+:global(.dark) .past-card {
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 .past-card:hover { border-color: var(--primary); }
 .past-year {
@@ -458,9 +474,17 @@ useHead({
 }
 .skill-card {
   padding: 1.125rem;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+:global(.dark) .skill-card {
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 .skill-icon {
   width: 2rem;
@@ -488,10 +512,19 @@ useHead({
 /* ── CTA Block ── */
 .cta-block {
   padding: clamp(1.5rem, 3vw, 2.5rem);
-  border-radius: 10px;
-  background: var(--text-primary);
-  color: var(--bg-primary);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   text-align: center;
+  color: var(--text-primary);
+}
+:global(.dark) .cta-block {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 .cta-title {
   font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;
@@ -518,8 +551,8 @@ useHead({
   font-size: 0.78rem;
   font-weight: 700;
   text-decoration: none;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: var(--primary);
+  color: #fff;
   transition: opacity 0.15s;
 }
 .cta-btn:hover { opacity: 0.85; }

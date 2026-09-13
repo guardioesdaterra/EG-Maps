@@ -168,9 +168,11 @@ function formatNumber(num: number): string {
 
 <style scoped>
 .stats-panel {
-  border-radius: 8px;
-  background: var(--panel-bg);
-  border-color: var(--panel-border);
-  box-shadow: var(--panel-shadow);
+  border-radius: 12px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
 }
 </style>

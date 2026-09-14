@@ -36,6 +36,39 @@ ALTER TABLE public.scraped_grants
   ADD COLUMN IF NOT EXISTS reviewed_at      timestamptz,
   ADD COLUMN IF NOT EXISTS is_standing      boolean                  DEFAULT false   NOT NULL;
 
+-- ── 1b. Self-contained rollback snapshot ────────────────────────────
+-- No external dump tooling here (CI/CLI have no pg_dump), so the migration
+-- snapshots every row it is about to touch. Restore with:
+--   UPDATE s SET amount_max=b.amount_max, amount_min=b.amount_min,
+--     status=b.status, review_notes=b.review_notes
+--   FROM public._backup_scraped_grants_20260914 b WHERE s.id=b.id;
+CREATE TABLE IF NOT EXISTS public._backup_scraped_grants_20260914
+  (LIKE public.scraped_grants INCLUDING ALL);
+INSERT INTO public._backup_scraped_grants_20260914
+SELECT s.* FROM public.scraped_grants s
+WHERE (
+  -- quarantine set (mirrors §5)
+  (s.source = 'rss:Mongabay' AND (s.reviewed IS NOT TRUE) AND s.status IN ('open','pending'))
+  OR ((s.reviewed IS NOT TRUE) AND s.status IN ('open','pending')
+      AND (s.title ILIKE '%hiring%' OR s.title ILIKE '%career opportunit%'
+        OR s.title ILIKE '%job opportunit%' OR s.title ILIKE '%vacanc%'
+        OR s.title ILIKE '%we are hiring%' OR s.title ILIKE '%is hiring%'))
+  OR ((s.reviewed IS NOT TRUE) AND s.status IN ('open','pending')
+      AND s.title ILIKE '%call for papers%')
+  -- amount-cleanup set (mirrors §4)
+  OR (s.amount_max <> '' AND s.amount_max NOT ILIKE '%million%'
+      AND s.amount_max NOT ILIKE '%milh_o%' AND s.amount_max NOT ILIKE '%thousand%'
+      AND s.amount_max NOT ILIKE '%lakh%' AND s.amount_max NOT ILIKE '%crore%'
+      AND s.amount_max NOT LIKE '%万%' AND s.amount_max NOT LIKE '%億%'
+      AND s.amount_max !~ '\$|€|£|¥|₹|₩|฿|R\$|USD|EUR|GBP|JPY|INR|KRW|CNY|THB|IDR|MYR|PHP|SGD|CAD|AUD|NZD|CHF|SEK|NOK|DKK|PLN|CZK|BRL')
+  OR (s.amount_min <> '' AND s.amount_min NOT ILIKE '%million%'
+      AND s.amount_min NOT ILIKE '%milh_o%' AND s.amount_min NOT ILIKE '%thousand%'
+      AND s.amount_min NOT ILIKE '%lakh%' AND s.amount_min NOT ILIKE '%crore%'
+      AND s.amount_min NOT LIKE '%万%' AND s.amount_min NOT LIKE '%億%'
+      AND s.amount_min !~ '\$|€|£|¥|₹|₩|฿|R\$|USD|EUR|GBP|JPY|INR|KRW|CNY|THB|IDR|MYR|PHP|SGD|CAD|AUD|NZD|CHF|SEK|NOK|DKK|PLN|CZK|BRL')
+)
+AND NOT EXISTS (SELECT 1 FROM public._backup_scraped_grants_20260914 LIMIT 1);
+
 -- ── 2. Value guards (DO blocks: no IF NOT EXISTS for constraints) ────
 DO $$
 BEGIN

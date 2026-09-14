@@ -59,7 +59,7 @@ export default defineNuxtConfig({
       title: 'Earth Guardians - Interactive Data Visualization',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=5' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover' },
         { name: 'description', content: 'Interactive maps for endangered species and project grants data visualization' },
         { name: 'theme-color', content: '#0a0a0a' },
         { property: 'og:type', content: 'website' },

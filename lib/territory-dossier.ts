@@ -25,6 +25,8 @@ export interface DossierInput {
   topTerritories: Array<{ name: string; kind: string; claims: number }>
   protectedTi: Array<{ name: string; municipality: string; area_ha: number; population: number }>
   protectedQuilombos: Array<{ name: string; municipality: string; area_ha: number; population: number }>
+  protectedUcs?: Array<{ name: string; municipality: string; area_ha: number; population: number }>
+  protectedBuffers?: Array<{ name: string; municipality: string; area_ha: number; population: number }>
   watersAssessed: number
   watersUnderPressure: number
   topWaters: Array<{ name: string; water_type: string; claimsPressure: number; claimsWatch: number; nearestLabel: string }>
@@ -81,7 +83,13 @@ export function buildDossierMarkdown(d: DossierInput): string {
   for (const a of d.protectedQuilombos) {
     L.push(`- Quilombo **${a.name}**${a.municipality ? ` (${a.municipality})` : ''}${a.area_ha ? ` — ${fmtHa(a.area_ha)}` : ''}${a.population ? ` — pop. ${a.population}` : ''}`)
   }
-  if (!d.protectedTi.length && !d.protectedQuilombos.length) L.push('- None in the loaded dataset.')
+  for (const a of d.protectedUcs ?? []) {
+    L.push(`- UC **${a.name}**${a.municipality ? ` (${a.municipality})` : ''}${a.area_ha ? ` — ${fmtHa(a.area_ha)}` : ''}`)
+  }
+  for (const a of d.protectedBuffers ?? []) {
+    L.push(`- Zona de amortecimento **${a.name}**${a.municipality ? ` (${a.municipality})` : ''}${a.area_ha ? ` — ${fmtHa(a.area_ha)}` : ''}`)
+  }
+  if (!d.protectedTi.length && !d.protectedQuilombos.length && !(d.protectedUcs ?? []).length) L.push('- None in the loaded dataset.')
   L.push('')
   L.push('## 4. Waters under pressure')
   L.push('')

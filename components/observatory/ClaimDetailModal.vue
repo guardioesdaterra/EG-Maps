@@ -150,7 +150,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 .claim-overlay-fixed {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: var(--obs-z-modal-backdrop);
   background: rgba(0, 0, 0, 0.78);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -158,13 +158,14 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
   overflow-y: auto;
 }
 .claim-overlay-close-btn {
   position: fixed;
   top: 1rem;
   right: 1rem;
-  z-index: 1001;
+  z-index: var(--obs-z-modal-close);
   width: 2.5rem;
   height: 2.5rem;
   display: flex;
@@ -184,8 +185,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 }
 .claim-overlay-content {
   max-width: 34rem;
-  width: 100%;
-  max-height: min(90vh, 40rem);
+  width: min(100%, calc(100vw - 1rem));
+  max-height: min(92dvh, 40rem);
   overflow-y: auto;
   background: var(--bg-secondary);
   border: 1px solid rgba(255, 255, 255, 0.08);

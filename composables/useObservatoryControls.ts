@@ -49,6 +49,15 @@ export interface ObservatoryLayers {
   onEnterpriseClick: (enterprise: EnterpriseHQ) => void
 }
 
+export interface ProtectedSearchHit {
+  name: string
+  kind: string
+  municipality: string
+  state: string
+  area_ha: number
+  coord: [number, number]
+}
+
 export interface ObservatoryMap {
   flyToTarget: Ref<{ lng: number; lat: number; zoom?: number } | null>
   mapRef: Ref<MapInstance | null>
@@ -59,6 +68,9 @@ export interface ObservatoryMap {
   zoomToDanger: (name: string, speculatorIndex?: Ref<{ normalizedName: string; displayName: string; centroid?: { lng: number; lat: number } }[]>) => void
   flyToEnterprise: (name: string) => void
   onEnterpriseClick: (enterprise: EnterpriseHQ) => void
+  /** Protected areas / buffer zones matching the search box (fly-to targets). */
+  protectedMatches: Ref<ProtectedSearchHit[]>
+  flyToProtectedArea: (hit: ProtectedSearchHit) => void
 }
 
 export interface ObservatoryAnimations {
@@ -73,6 +85,7 @@ export interface ObservatoryData {
   allFeatures: Ref<unknown[]>
   pointsData: Ref<GeoJSON.FeatureCollection | undefined>
   filteredPoints: Ref<GeoJSON.FeatureCollection>
+  filteredPolygons: Ref<GeoJSON.FeatureCollection>
   polygonsData: Ref<unknown>
   protectedData: Ref<unknown>
   waterData: Ref<unknown>
@@ -127,6 +140,7 @@ export interface ObservatoryKeyboard {
 export interface ObservatoryFilterLogic {
   debouncedFilter: () => void
   updateFilter: () => void
+  invalidateFilterCache: () => void
 }
 
 export interface ObservatoryControls extends ObservatoryFilters, ObservatoryLayers, ObservatoryMap, ObservatoryAnimations, ObservatoryData, ObservatoryStats, ObservatoryHash, ObservatoryKeyboard, ObservatoryFilterLogic {}
@@ -163,13 +177,15 @@ export function useObservatoryControls(): ObservatoryControls {
   categories.forEach(([key]) => { layerVis.value[key] = true })
   layerVis.value['protected_ti'] = true
   layerVis.value['protected_quilombo'] = true
+  layerVis.value['protected_uc'] = true
+  layerVis.value['protected_buffer'] = true
   layerVis.value['overlaps'] = true
   layerVis.value['foreign'] = true
   layerVis.value['enterprise_hq'] = false
   layerVis.value['heatmap'] = false
-  // Culture-first page: the Mapa Cultura / Floresta Ativista layer renders
-  // clustered, so it stays on by default like the other intel overlays.
-  layerVis.value['cultural'] = true
+  // Cultural agents/points never render on the map (sidebar browser only),
+  // so the map layer stays off and offers no toggle.
+  layerVis.value['cultural'] = false
   layerVis.value['sites'] = false
   layerVis.value['polygons'] = true
   layerVis.value['water'] = true
@@ -183,7 +199,6 @@ export function useObservatoryControls(): ObservatoryControls {
     { key: 'sites', labelKey: 'observatory.layers.conflictZones', color: '#c0392b' },
     { key: 'network', labelKey: 'observatory.layers.corpNetwork', color: '#5dade2' },
     { key: 'heatmap', labelKey: 'observatory.layers.heatmap', color: '#f39c12' },
-    { key: 'cultural', labelKey: 'observatory.layers.cultural', color: '#9b59b6' },
   ]
 
   const enterpriseLayerVisible = ref(false)
@@ -223,6 +238,70 @@ export function useObservatoryControls(): ObservatoryControls {
 
   function flyToCoord(coord: [number, number]) {
     flyToTarget.value = { lng: coord[0], lat: coord[1], zoom: 8 }
+  }
+
+  /** Bounding-box centroid of a Polygon / MultiPolygon (drops any Z dim). */
+  function protectedCentroid(f: GeoJSON.Feature): [number, number] | null {
+    const g = f.geometry as GeoJSON.Polygon | GeoJSON.MultiPolygon | null | undefined
+    if (!g || (g.type !== 'Polygon' && g.type !== 'MultiPolygon')) return null
+    const rings: number[][][] = g.type === 'Polygon'
+      ? (g.coordinates as number[][][])
+      : (g.coordinates as number[][][][]).flat()
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    let n = 0
+    for (const ring of rings) {
+      for (const c of ring) {
+        if (!Array.isArray(c) || c.length < 2) continue
+        const x = Number(c[0])
+        const y = Number(c[1])
+        if (!Number.isFinite(x) || !Number.isFinite(y)) continue
+        if (x < minX) minX = x
+        if (y < minY) minY = y
+        if (x > maxX) maxX = x
+        if (y > maxY) maxY = y
+        n++
+      }
+    }
+    if (!n) return null
+    return [(minX + maxX) / 2, (minY + maxY) / 2]
+  }
+
+  /**
+   * Protected areas / buffer zones matching the claim search box, so names
+   * like "Pedra Branca" resolve even though they are not mining claims.
+   * Requires 2+ chars; capped at 8 hits.
+   */
+  const protectedMatches = computed<ProtectedSearchHit[]>(() => {
+    const term = searchTerm.value.toLowerCase().trim()
+    if (term.length < 2) return []
+    const fc = protectedData.value as GeoJSON.FeatureCollection | null | undefined
+    const out: ProtectedSearchHit[] = []
+    for (const f of fc?.features ?? []) {
+      const p = ((f as GeoJSON.Feature).properties ?? {}) as Record<string, unknown>
+      const name = String(p.name ?? '')
+      const hay = `${name} ${p.municipality ?? ''} ${p.state ?? ''} ${p.kind ?? ''} ${p.category ?? ''} ${p.kind_raw ?? ''}`.toLowerCase()
+      if (!hay.includes(term)) continue
+      const coord = protectedCentroid(f as GeoJSON.Feature)
+      if (!coord) continue
+      out.push({
+        name: name || 'Unnamed territory',
+        kind: String(p.kind ?? ''),
+        municipality: String(p.municipality ?? ''),
+        state: String(p.state ?? ''),
+        area_ha: Number(p.area_ha ?? 0) || 0,
+        coord,
+      })
+      if (out.length >= 8) break
+    }
+    return out
+  })
+
+  function flyToProtectedArea(hit: ProtectedSearchHit) {
+    if (!hit?.coord) return
+    flyToTarget.value = { lng: hit.coord[0], lat: hit.coord[1], zoom: 11 }
   }
 
   function onGeoLocate(_lat: number, _lng: number, _city: string) {
@@ -327,6 +406,12 @@ export function useObservatoryControls(): ObservatoryControls {
         invalidateFilterCache()
         updateFilter()
       })
+      // Polygons arrive in a later chunk than points — re-filter so the
+      // mining-phase filter applies to boundaries as well as markers.
+      watch(polygonsData, () => {
+        invalidateFilterCache()
+        updateFilter()
+      })
     }
 
     // Cold start: seed filtered points immediately if data already present,
@@ -337,6 +422,10 @@ export function useObservatoryControls(): ObservatoryControls {
     if (raw?.features?.length && !filteredPoints.value.features?.length) {
       filteredPoints.value = raw as GeoJSON.FeatureCollection
       filteredCount.value = raw.features.length
+    }
+    const rawPolys = (polygonsData.value as GeoJSON.FeatureCollection | null | undefined)
+    if (rawPolys?.features?.length && !filteredPolygons.value.features?.length) {
+      filteredPolygons.value = rawPolys
     }
   }
 
@@ -444,9 +533,17 @@ export function useObservatoryControls(): ObservatoryControls {
   watch(totalCount, () => { animateCounters() })
 
   const filteredPoints = ref<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] })
+  const filteredPolygons = ref<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] })
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
   let lastFilterCriteria = ''
   let lastFilterResult: GeoJSON.FeatureCollection | null = null
+  let lastFilterInput: unknown[] | null = null
+  let lastFilterPolySource: unknown = null
+  // processo → normalized map feature, rebuilt when the points collection
+  // identity changes. Lets the filter SELECT features by reference instead
+  // of rebuilding 20.7k objects (+ 40k overlap string joins) per keystroke.
+  let featureByProcesso: Map<string, GeoJSON.Feature> | null = null
+  let featureIndexSource: unknown = null
 
   function debouncedFilter() {
     if (debounceTimer) clearTimeout(debounceTimer)
@@ -456,6 +553,10 @@ export function useObservatoryControls(): ObservatoryControls {
   function invalidateFilterCache() {
     lastFilterCriteria = ''
     lastFilterResult = null
+    lastFilterInput = null
+    lastFilterPolySource = null
+    featureByProcesso = null
+    featureIndexSource = null
   }
 
   function updateFilter() {
@@ -472,11 +573,15 @@ export function useObservatoryControls(): ObservatoryControls {
     // run (empty allFeatures, before data loads) poisoned the cache and every
     // later run with identical filters early-returned the stale EMPTY result
     // — leaving the map permanently blank.
-    const criteria = JSON.stringify({ n: allFeaturesTyped.length, term, yearMin: yearMin.value, yearMax: yearMax.value, phases: [...selectedPhases.value].sort(), sobDemanda: sobDemandaOnly.value, visKeys: visKeys.sort() })
-    if (criteria === lastFilterCriteria && lastFilterResult) {
+    const polyFC = polygonsData.value as GeoJSON.FeatureCollection | null | undefined
+    const polyLen = polyFC?.features?.length ?? 0
+    const criteria = JSON.stringify({ n: allFeaturesTyped.length, polyLen, term, yearMin: yearMin.value, yearMax: yearMax.value, phases: [...selectedPhases.value].sort(), sobDemanda: sobDemandaOnly.value, visKeys: visKeys.sort() })
+    if (criteria === lastFilterCriteria && lastFilterResult && lastFilterInput === allFeaturesTyped && lastFilterPolySource === polyFC) {
       return
     }
     lastFilterCriteria = criteria
+    lastFilterInput = allFeaturesTyped
+    lastFilterPolySource = polyFC ?? null
     const filtered = allFeaturesTyped.filter((d) => {
       if (!visKeys.includes(d.c)) return false
       if (term) {
@@ -495,21 +600,34 @@ export function useObservatoryControls(): ObservatoryControls {
       return true
     })
     filteredCount.value = filtered.length
+    // Select normalized features by reference (same objects the layers,
+    // popups and network builders already consume — scalar-only, stable
+    // processo ids). No per-keystroke object rebuild.
+    const fc = pointsData.value as GeoJSON.FeatureCollection | undefined
+    if (!fc || featureIndexSource !== fc) {
+      featureIndexSource = fc ?? null
+      featureByProcesso = new Map()
+      for (const f of fc?.features ?? []) {
+        const proc = (f.properties as Record<string, unknown> | undefined)?.processo
+        if (typeof proc === 'string' && proc) featureByProcesso.set(proc, f as GeoJSON.Feature)
+      }
+    }
+    const index = featureByProcesso ?? new Map<string, GeoJSON.Feature>()
     const result: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
       features: filtered.map((d, i) => {
-        // Scalar-only properties: strip the `ov` object array (MapLibre
-        // expressions fail on object values) and expose precomputed counts.
+        const hit = index.get(d.p)
+        if (hit) return hit
+        // Fallback (shouldn't happen — summaries and points load together):
+        // legacy inline build so a missing index entry never drops a claim.
         const { ov, ...scalar } = d
         const overlaps = Array.isArray(ov) ? ov : []
         return {
           type: 'Feature',
-          id: `${d.c}-${i}`,
-          // Emit both short (p/n/a/…) and long (processo/nome/area_ha/…)
-          // schemas — network builders and popups read the long names.
+          id: d.p || `${d.c}-${i}`,
           properties: {
             ...scalar,
-            id: `${d.c}-${i}`,
+            id: d.p || `${d.c}-${i}`,
             processo: d.p,
             nome: d.n,
             area_ha: d.a,
@@ -526,7 +644,7 @@ export function useObservatoryControls(): ObservatoryControls {
             is_foreign: d.fr ?? 0,
           },
           geometry: { type: 'Point', coordinates: [d.lo, d.la] },
-        }
+        } as GeoJSON.Feature
       }),
     }
     lastFilterResult = result
@@ -535,6 +653,40 @@ export function useObservatoryControls(): ObservatoryControls {
     // expressions cannot evaluate object values, so the overlap array (`ov`)
     // lives only in `allFeatures` summaries while the layer carries the
     // precomputed `overlaps_count` / `overlap_names` scalars.
+
+    // ── Polygons honour the SAME mining-phase / year / search / category
+    // filter so toggling a phase hides both its markers AND its boundaries.
+    // Polygon props are normalized to the same scalar shape as points
+    // (p/f/y/n/s/u/c/net/dsprocesso + long aliases), so reuse the predicate.
+    try {
+      const polyFeatures = (polyFC?.features ?? []) as GeoJSON.Feature[]
+      if (!polyFeatures.length) {
+        if (filteredPolygons.value.features?.length) {
+          filteredPolygons.value = { type: 'FeatureCollection', features: [] }
+        }
+      } else {
+        const kept = polyFeatures.filter((f) => {
+          const pr = (f.properties ?? {}) as Record<string, unknown>
+          const cat = String(pr.c ?? pr.category ?? '')
+          if (cat && !visKeys.includes(cat)) return false
+          if (term) {
+            const fields = `${pr.n ?? pr.nome ?? ''} ${pr.s ?? pr.subs ?? ''} ${pr.u ?? pr.uf ?? ''} ${pr.p ?? pr.processo ?? ''} ${pr.f ?? pr.fase ?? ''} ${pr.net ?? pr.network_id ?? ''} ${pr.dsprocesso ?? ''}`.toLowerCase()
+            if (!fields.includes(term)) return false
+          }
+          const yRaw = pr.y ?? pr.ano
+          if (typeof yRaw === 'number' && Number.isFinite(yRaw)) {
+            if (yRaw < yearMin.value || yRaw > yearMax.value) return false
+          }
+          const phaseField = String(pr.f ?? pr.fase ?? '')
+          if (!matchMiningPhase(selectedPhases.value, phaseField)) return false
+          if (sobDemandaOnly.value && !String(pr.dsprocesso ?? '').includes('DEMANDA')) return false
+          return true
+        })
+        filteredPolygons.value = { type: 'FeatureCollection', features: kept }
+      }
+    } catch {
+      /* fail-soft: points filtering already succeeded */
+    }
   }
 
   function handleKeydown(e: KeyboardEvent) {
@@ -578,7 +730,8 @@ export function useObservatoryControls(): ObservatoryControls {
     reportClaim, userLocationRadius, mapContainerRef, filteredCount,
     layerVis, enterpriseLayerVisible, extraLayers, toggleLayer, toggleEnterpriseLayer, onEnterpriseClick,
     flyToTarget, mapRef, onMapInit, flyToCoord, onGeoLocate, expandToFullBrazil, zoomToDanger, flyToEnterprise,
-    allFeatures, pointsData, filteredPoints, polygonsData, protectedData, waterData, culturalData,
+    protectedMatches, flyToProtectedArea,
+    allFeatures, pointsData, filteredPoints, filteredPolygons, polygonsData, protectedData, waterData, culturalData,
     speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error,
     loadRareEarthData, loadFullBrazil, isRegional, setupObservatory,
     categoryStats, totalCount, activeFilterCount, activeFilterSummary, formatSyncDate, formatHa,

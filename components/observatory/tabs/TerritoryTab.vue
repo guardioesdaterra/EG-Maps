@@ -107,9 +107,8 @@
       </li>
     </ul>
 
-    <!-- ── Phase + demand filters (mobile path; mirrored in the
-         desktop left panel — same shared state) ─────────────── -->
-    <PhaseFilter :selected="selectedPhases ?? NO_PHASES" @update:selected="(v) => emit('update:selectedPhases', v)" />
+    <!-- ── Demand filter (the mining-phase filter lives only in the
+         left panel — rendering it here too duplicated it) ─────── -->
     <label class="obs-check" @click.stop="emit('update:sobDemandaOnly', !sobDemandaOnly)">
       <span :class="['obs-check__box', sobDemandaOnly && 'is-on']" aria-hidden="true">
         <Icon v-if="sobDemandaOnly" name="lucide:check" />
@@ -205,6 +204,31 @@
       <Icon name="lucide:shield-check" class="obs-section-title__icon" />
       {{ t('observatory.territory.protectedTitle') }}
     </h4>
+    <!-- Search hits across protected areas + buffer zones (e.g. "Pedra Branca") -->
+    <ul v-if="(props.searchTerm ?? '').trim().length >= 2 && (props.protectedMatches ?? []).length" class="obs-card-list" role="list" :aria-label="t('observatory.layers.protectedSearch')">
+      <li v-for="hit in (props.protectedMatches ?? [])" :key="`prot-${hit.kind}-${hit.name}`" class="obs-card obs-card--hit">
+        <div class="obs-card__accent" :style="{ background: matchColor(hit.kind) }" />
+        <div class="obs-card__body">
+          <div class="obs-card__head">
+            <span class="obs-card__name">{{ hit.name }}</span>
+            <button
+              type="button"
+              class="obs-card__go"
+              :aria-label="t('observatory.territory.flyTo', { name: hit.name })"
+              @click="emit('fly-to-coord', hit.coord)"
+            >
+              <Icon name="lucide:map-pin" class="obs-card__go-icon" />
+            </button>
+          </div>
+          <div class="obs-card__meta">
+            <span class="obs-card__kind" :style="{ color: matchColor(hit.kind) }">{{ matchKindLabel(hit.kind) }}</span>
+            <span v-if="hit.municipality"><Icon name="lucide:map-pin" class="obs-card__meta-icon" />{{ hit.municipality }}{{ hit.state ? ` · ${hit.state}` : '' }}</span>
+            <span v-if="hit.area_ha"><Icon name="lucide:maximize-2" class="obs-card__meta-icon" />{{ formatHa(hit.area_ha) }} ha</span>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <p v-else-if="(props.searchTerm ?? '').trim().length >= 2" class="obs-tab__hint">{{ t('observatory.layers.noProtectedSearch') }}</p>
     <template v-for="group in protectedGroups" :key="group.key">
       <div v-if="group.items.length" class="obs-tier-head">
         <div class="obs-tier-head__accent" :style="{ background: group.color }" />
@@ -243,7 +267,6 @@ import type { DeepAnalysis } from '@/composables/useRareEarthData'
 import type { WaterThreat, WaterThreatSummary } from '@/lib/water-defense'
 import type { ForeignHolderRank } from '@/lib/enterprise-data'
 import { buildDossierMarkdown, downloadTextFile, copyTextToClipboard, type DossierInput } from '@/lib/territory-dossier'
-import PhaseFilter from '@/components/observatory/PhaseFilter.vue'
 
 const { t } = useI18n()
 
@@ -269,6 +292,14 @@ const props = defineProps<{
     pinLabel: string
   } | null
   highlight?: string | null
+  protectedMatches?: Array<{
+    name: string
+    kind: string
+    municipality: string
+    state: string
+    area_ha: number
+    coord: [number, number]
+  }>
 }>()
 
 const emit = defineEmits<{
@@ -282,18 +313,19 @@ const emit = defineEmits<{
 const highlighted = ref<string | null>(null)
 const copied = ref(false)
 let copiedTimer: ReturnType<typeof setTimeout> | null = null
-// Empty-set fallback so PhaseFilter always receives a Set (pages pass live state).
-const NO_PHASES = new Set<string>()
 
 const maxCategory = computed(() => Math.max(...(props.categoryStats ?? []).map(c => c.count), 1))
 
 const protectedGroups = computed(() => [
   { key: 'ti', labelKey: 'observatory.layers.indigenousLands', color: 'var(--danger)', items: props.protectedBreakdown?.ti ?? [] },
   { key: 'quilombo', labelKey: 'observatory.layers.quilombolaTerritories', color: 'var(--warning)', items: props.protectedBreakdown?.quilombos ?? [] },
+  { key: 'uc', labelKey: 'observatory.layers.conservationUnits', color: 'var(--success)', items: props.protectedBreakdown?.ucs ?? [] },
+  { key: 'buffer', labelKey: 'observatory.layers.bufferZones', color: 'var(--info)', items: props.protectedBreakdown?.buffers ?? [] },
 ])
 
 const protectedEmpty = computed(() =>
-  (props.protectedBreakdown?.ti.length ?? 0) + (props.protectedBreakdown?.quilombos.length ?? 0) === 0,
+  (props.protectedBreakdown?.ti.length ?? 0) + (props.protectedBreakdown?.quilombos.length ?? 0)
+  + (props.protectedBreakdown?.ucs?.length ?? 0) + (props.protectedBreakdown?.buffers?.length ?? 0) === 0,
 )
 
 function barPct(count: number): number {
@@ -314,6 +346,8 @@ function kindColor(kind: string): string {
   const k = kind.toLowerCase()
   if (k === 'ti' || k.includes('indigen')) return 'var(--danger)'
   if (k === 'quilombo' || k.includes('quilomb')) return 'var(--warning)'
+  if (k === 'uc' || k.includes('conserv') || k.includes('apa')) return 'var(--success)'
+  if (k === 'buffer' || k.includes('amortecimento')) return 'var(--info)'
   return 'var(--info)'
 }
 
@@ -321,6 +355,8 @@ function kindLabel(kind: string): string {
   const k = kind.toLowerCase()
   if (k === 'ti' || k.includes('indigen')) return 'TI'
   if (k === 'quilombo' || k.includes('quilomb')) return 'QUILOMBO'
+  if (k === 'uc' || k.includes('conserv') || k.includes('apa')) return 'UC'
+  if (k === 'buffer' || k.includes('amortecimento')) return 'ZA'
   return kind.toUpperCase().slice(0, 8)
 }
 
@@ -336,6 +372,14 @@ function onClearHighlight() {
 
 function onFlyToWater(w: WaterThreat) {
   emit('fly-to-coord', [w.lng, w.lat])
+}
+
+function matchColor(kind: string): string {
+  return kindColor(kind)
+}
+
+function matchKindLabel(kind: string): string {
+  return kindLabel(kind)
 }
 
 // ── Evidence dossier ────────────────────────────────────────────────────
@@ -369,6 +413,8 @@ const dossierInput = computed<DossierInput>(() => {
     topTerritories: (props.overlapSummary?.byTerritory ?? []).map(x => ({ name: x.name, kind: x.kind, claims: x.claims })),
     protectedTi: (props.protectedBreakdown?.ti ?? []).map(a => ({ name: a.name, municipality: a.municipality, area_ha: a.area_ha, population: a.population })),
     protectedQuilombos: (props.protectedBreakdown?.quilombos ?? []).map(a => ({ name: a.name, municipality: a.municipality, area_ha: a.area_ha, population: a.population })),
+    protectedUcs: (props.protectedBreakdown?.ucs ?? []).map(a => ({ name: a.name, municipality: a.municipality, area_ha: a.area_ha, population: a.population })),
+    protectedBuffers: (props.protectedBreakdown?.buffers ?? []).map(a => ({ name: a.name, municipality: a.municipality, area_ha: a.area_ha, population: a.population })),
     watersAssessed: props.waterSummary?.watersAssessed ?? 0,
     watersUnderPressure: props.waterSummary?.watersUnderPressure ?? 0,
     topWaters: (props.waterSummary?.top ?? []).map(w => ({

@@ -21,6 +21,7 @@ export interface RareEarthControllerProps {
   rareEarthPolygons?: GeoJSON.FeatureCollection
   rareEarthProtected?: GeoJSON.FeatureCollection
   rareEarthWater?: GeoJSON.FeatureCollection | null
+  /** Accepted but never rendered — cultural agents live in the sidebar browser only. */
   rareEarthCultural?: GeoJSON.FeatureCollection | null
   layerVisibility?: Record<string, boolean>
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null
@@ -152,7 +153,8 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       polys: p.rareEarthPolygons ?? null,
       protected: p.rareEarthProtected ?? null,
       water: p.rareEarthWater ?? null,
-      cultural: p.rareEarthCultural ?? null,
+      // Cultural agents/points never render on the map (sidebar browser only).
+      cultural: null,
       networkFeatures,
       visibility: p.layerVisibility,
       popup: options.popup,
@@ -198,6 +200,8 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
   // and dropped their update forever (the polygon blanking). Funneling
   // through setupLayers() gives every input the same retry-while-reloading
   // guarantee.
+  // NOTE: rareEarthCultural is intentionally NOT watched — cultural
+  // agents/points never render on the map (sidebar browser only).
   const stopDataWatch = watch(
     () => [
       getProps().rareEarthPoints,
@@ -205,7 +209,6 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       getProps().rareEarthPolygons,
       getProps().rareEarthProtected,
       getProps().rareEarthWater,
-      getProps().rareEarthCultural,
     ] as const,
     () => {
       if (!isActiveGetter() || !map.value) return

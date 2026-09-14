@@ -5,17 +5,17 @@
  * @consts REE_SOURCE_POINTS, REE_SOURCE_POLYS, REE_SOURCE_GEO, REE_SOURCE_SITES, REE_SOURCE_NETWORK, REE_SOURCE_PROTECTED, REE_SOURCE_CITIES, REE_LAYER_IDS, REE_SOURCE_IDS, CAT_COLOR_MATCH, POLY_COLOR_MATCH
  * @interfaces RareEarthLayerOptions
  * @types CleanupFn
- * @deps @/lib/map-utils (buildRareEarthPopupHTML, escapeHtml); @/composables/useObservatoryPopup (openRareEarthPopup); @/lib/brazilian-cities (citiesToGeoJSON); @/lib/rare-earth-geo-data (RARE_EARTH_GEO_BOUNDARIES, RARE_EARTH_CONFLICT_SITES); @/composables/useWaterLayers (WATER_SOURCE, cleanupWaterLayers); @/composables/useCulturalLayers (CULTURAL_SOURCE, cleanupCulturalLayers)
+ * @deps @/lib/map-utils (buildRareEarthPopupHTML); @/composables/useObservatoryPopup (openRareEarthPopup, openStackedObservatoryPopup); @/lib/brazilian-cities (citiesToGeoJSON); @/lib/rare-earth-geo-data (RARE_EARTH_GEO_BOUNDARIES, RARE_EARTH_CONFLICT_SITES); @/composables/useWaterLayers (WATER_SOURCE, cleanupWaterLayers); @/composables/useCulturalLayers (cleanupCulturalLayers)
  * @connections composables/useRareEarthController.ts
  */
 import type { Map as MapLibreMap, MapLayerMouseEvent, DataDrivenPropertyValueSpecification } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
-import { buildRareEarthPopupHTML, escapeHtml } from '@/lib/map-utils'
-import { openRareEarthPopup } from '@/composables/useObservatoryPopup'
+import { buildRareEarthPopupHTML } from '@/lib/map-utils'
+import { openRareEarthPopup, openStackedObservatoryPopup, type StackedHit } from '@/composables/useObservatoryPopup'
 import { citiesToGeoJSON } from '@/lib/brazilian-cities'
 import { RARE_EARTH_GEO_BOUNDARIES, RARE_EARTH_CONFLICT_SITES } from '@/lib/rare-earth-geo-data'
 import { WATER_SOURCE, cleanupWaterLayers, setupWaterLayers } from '@/composables/useWaterLayers'
-import { CULTURAL_SOURCE, cleanupCulturalLayers, setupCulturalLayers } from '@/composables/useCulturalLayers'
+import { cleanupCulturalLayers } from '@/composables/useCulturalLayers'
 
 const activePopups = new WeakMap<MapLibreMap, maplibregl.Popup>()
 
@@ -33,7 +33,7 @@ export const REE_SOURCE_PROTECTED = 'ree-protected'
 export const REE_SOURCE_CITIES = 'ree-cities'
 
 export const REE_LAYER_IDS = [
-  'ree-point-glow', 'ree-point-circle', 'ree-cluster-circle', 'ree-cluster-count', 'ree-point-hover',
+  'ree-point-glow', 'ree-point-circle', 'ree-point-hover',
   'ree-foreign-glow',
   'ree-heat-layer',
   'ree-poly-fill', 'ree-poly-glow', 'ree-poly-line', 'ree-poly-label',
@@ -42,6 +42,8 @@ export const REE_LAYER_IDS = [
   'ree-network-lines',
   'ree-protected-ti-fill', 'ree-protected-ti-line', 'ree-protected-ti-label',
   'ree-protected-quilombo-fill', 'ree-protected-quilombo-line', 'ree-protected-quilombo-label',
+  'ree-protected-uc-fill', 'ree-protected-uc-line', 'ree-protected-uc-label',
+  'ree-protected-buffer-fill', 'ree-protected-buffer-line', 'ree-protected-buffer-label',
   'ree-cities-label',
   'ree-overlap-glow',
 ] as const
@@ -51,7 +53,6 @@ export const REE_SOURCE_IDS = [
   REE_SOURCE_SITES, REE_SOURCE_NETWORK, REE_SOURCE_PROTECTED,
   REE_SOURCE_CITIES,
   WATER_SOURCE,
-  CULTURAL_SOURCE,
 ] as const
 
 export const CAT_COLOR_MATCH: DataDrivenPropertyValueSpecification<string> = ['match', ['get', 'c'],
@@ -125,39 +126,9 @@ function addPointLayers(map: MapLibreMap, source: string) {
     },
   })
 
-  map.addLayer({
-    id: 'ree-cluster-circle',
-    type: 'circle',
-    source,
-    filter: ['has', 'point_count'],
-    paint: {
-      'circle-color': [
-        'case',
-        ['>=', ['get', 'point_count'], 100], '#b91c1c',
-        ['>=', ['get', 'point_count'], 50], '#ef4444',
-        ['>=', ['get', 'point_count'], 20], '#f97316',
-        ['>=', ['get', 'point_count'], 5], '#eab308',
-        '#22c55e',
-      ],
-      'circle-radius': ['interpolate', ['linear'], ['sqrt', ['to-number', ['get', 'point_count']]], 1, 8, 10, 18, 50, 30, 100, 42],
-      'circle-opacity': ['case', ['>=', ['get', 'point_count'], 20], 0.9, 0.75],
-      'circle-stroke-color': 'rgba(255,255,255,0.25)',
-      'circle-stroke-width': 1.5,
-    },
-  })
-
-  map.addLayer({
-    id: 'ree-cluster-count',
-    type: 'symbol',
-    source,
-    filter: ['has', 'point_count'],
-    layout: {
-      'text-field': ['get', 'point_count_abbreviated'],
-      'text-font': ['Open Sans Bold'],
-      'text-size': ['interpolate', ['linear'], ['sqrt', ['to-number', ['get', 'point_count']]], 1, 9, 10, 12, 50, 14, 100, 16],
-    },
-    paint: { 'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.6)', 'text-halo-width': 1.5 },
-  })
+  // NOTE: claims render unclustered (one GPU circle per claim). Clustering
+  // was removed: with a 50km regional footprint every claim deserves its own
+  // marker, and circle layers stay at 60fps without cluster bookkeeping.
 
   map.addLayer({
     id: 'ree-heat-layer',
@@ -192,11 +163,15 @@ function addPointLayers(map: MapLibreMap, source: string) {
 
   // Foreign-held claims halo — reads the numeric `is_foreign` scalar stamped
   // at normalization time (holder joined to the curated enterprise list).
+  // NOTE: keep this filter legacy-form (plain string keys). Mixing the
+  // legacy `!has` op with `['get', ...]` comparisons trips style-spec
+  // validation (`filter[2][1]: string expected, array found`), which fires a
+  // map error event per layer and makes `setFilter` silently skip.
   map.addLayer({
     id: 'ree-foreign-glow',
     type: 'circle',
     source,
-    filter: ['all', ['!has', 'point_count'], ['==', ['get', 'is_foreign'], 1]] as maplibregl.FilterSpecification,
+    filter: ['all', ['!has', 'point_count'], ['==', 'is_foreign', 1]] as unknown as maplibregl.FilterSpecification,
     paint: {
       'circle-color': '#e74c3c',
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 11, 10, 15, 14, 19],
@@ -209,139 +184,214 @@ function addPointLayers(map: MapLibreMap, source: string) {
   })
 }
 
-function addClickHandlers(map: MapLibreMap, options: RareEarthLayerOptions, cleanups: Array<() => void>) {
-  const onPointClick = (e: MapLayerMouseEvent) => {
-    if (!e.features?.length) return
-    const p = e.features[0].properties as Record<string, unknown>
-    closeActivePopup(map)
-    if (options.onClaimClick) {
-      options.onClaimClick(p, [e.lngLat.lng, e.lngLat.lat])
-      return
-    }
-    if (options.popup) {
-      activePopups.set(map, openRareEarthPopup(map, p, [e.lngLat.lng, e.lngLat.lat], { onSidebarOpen: options.popup.onSidebarOpen }, options.popup.t, options.popup.locale))
-      return
-    }
-    const html = buildRareEarthPopupHTML(p)
-    activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(html).setMaxWidth('none').addTo(map))
-  }
-
-  const onClusterClick = (e: MapLayerMouseEvent) => {
-    if (!e.features?.length) return
-    const clusterId = e.features[0].properties?.cluster_id
-    if (clusterId == null) return
-    const source = map.getSource(REE_SOURCE_POINTS) as maplibregl.GeoJSONSource
-    if (!source) return
-    source.getClusterExpansionZoom(clusterId).then((zoom: number) => { map.flyTo({ center: e.lngLat, zoom, duration: 600 }) })
-  }
-
+/** Hover affordances only — clicks are owned by the unified stacked handler. */
+function addClickHandlers(map: MapLibreMap, _options: RareEarthLayerOptions, cleanups: Array<() => void>) {
   const onPointEnter = (e: MapLayerMouseEvent) => {
     map.getCanvas().style.cursor = 'pointer'
-    if (e.features?.length) { map.setFeatureState({ source: REE_SOURCE_POINTS, id: e.features[0].id! }, { hover: true }) }
+    if (e.features?.length) {
+      try { map.setFeatureState({ source: REE_SOURCE_POINTS, id: e.features[0].id! }, { hover: true }) } catch { /* ignore */ }
+    }
   }
   const onPointLeave = (e: MapLayerMouseEvent) => {
     map.getCanvas().style.cursor = ''
-    if (e.features?.length) { map.setFeatureState({ source: REE_SOURCE_POINTS, id: e.features[0].id! }, { hover: false }) }
+    if (e.features?.length) {
+      try { map.setFeatureState({ source: REE_SOURCE_POINTS, id: e.features[0].id! }, { hover: false }) } catch { /* ignore */ }
+    }
   }
-  const onClusterEnter = () => { map.getCanvas().style.cursor = 'pointer' }
-  const onClusterLeave = () => { map.getCanvas().style.cursor = '' }
 
-  map.on('click', 'ree-point-circle', onPointClick)
-  map.on('click', 'ree-cluster-circle', onClusterClick)
   map.on('mouseenter', 'ree-point-circle', onPointEnter)
   map.on('mouseleave', 'ree-point-circle', onPointLeave)
-  map.on('mouseenter', 'ree-cluster-circle', onClusterEnter)
-  map.on('mouseleave', 'ree-cluster-circle', onClusterLeave)
   cleanups.push(() => {
-    map.off('click', 'ree-point-circle', onPointClick)
-    map.off('click', 'ree-cluster-circle', onClusterClick)
-    map.off('mouseenter', 'ree-point-circle', onPointEnter)
-    map.off('mouseleave', 'ree-point-circle', onPointLeave)
-    map.off('mouseenter', 'ree-cluster-circle', onClusterEnter)
-    map.off('mouseleave', 'ree-cluster-circle', onClusterLeave)
+    try {
+      map.off('mouseenter', 'ree-point-circle', onPointEnter)
+      map.off('mouseleave', 'ree-point-circle', onPointLeave)
+    } catch { /* ignore */ }
   })
 }
 
-function addPolygonHandlers(map: MapLibreMap, options: RareEarthLayerOptions, cleanups: Array<() => void>) {
-  const onPolyClick = (e: MapLayerMouseEvent) => {
-    if (!e.features?.length) return
-    const p = e.features[0].properties
-    const adapted = adaptPolygonProps(p)
-    closeActivePopup(map)
-    if (options.popup) {
-      activePopups.set(map, openRareEarthPopup(map, adapted, [e.lngLat.lng, e.lngLat.lat], { onSidebarOpen: options.popup.onSidebarOpen }, options.popup.t, options.popup.locale))
-      return
-    }
-    if (options.onClaimClick) {
-      options.onClaimClick(adapted, [e.lngLat.lng, e.lngLat.lat])
-      return
-    }
-    const html = buildRareEarthPopupHTML(adapted)
-    activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(html).setMaxWidth('none').addTo(map))
-  }
-  map.on('click', 'ree-poly-fill', onPolyClick)
-  cleanups.push(() => { map.off('click', 'ree-poly-fill', onPolyClick) })
+/** No per-layer polygon click — the unified map click queries ree-poly-fill. */
+function addPolygonHandlers(_map: MapLibreMap, _options: RareEarthLayerOptions, _cleanups: Array<() => void>) {
 }
 
+/** Hover affordances only for conflict-site labels. */
 function addSiteHandlers(map: MapLibreMap, cleanups: Array<() => void>) {
-  const onSiteClick = (e: MapLayerMouseEvent) => {
-    if (!e.features?.length) return
-    const p = e.features[0].properties
-    const dangerScore = p.danger ?? 5
-    const dColor = dangerScore >= 9 ? '#e74c3c' : dangerScore >= 7 ? '#f39c12' : '#27ae60'
-    closeActivePopup(map)
-    const siteHtml = `<div class="ree-popup-wrapper" style="padding:14px;min-width:200px;position:relative">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-        <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${dColor};color:#fff">${dangerScore.toFixed(1)} Danger</span>
-        <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(239,68,68,0.2);color:#e74c3c">CONFLICT ZONE</span>
-      </div>
-      <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--obs-text-primary)">${escapeHtml(p.name || 'Unknown')}</h3>
-      <div style="font-size:10px;color:var(--obs-text-muted);margin-top:4px">${escapeHtml(p.tag || '')}</div>
-    </div>`
-    activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(siteHtml).setMaxWidth('none').addTo(map))
-  }
   const onSiteEnter = () => { map.getCanvas().style.cursor = 'pointer' }
   const onSiteLeave = () => { map.getCanvas().style.cursor = '' }
-  map.on('click', 'ree-site-label', onSiteClick)
-  map.on('mouseenter', 'ree-site-label', onSiteEnter)
-  map.on('mouseleave', 'ree-site-label', onSiteLeave)
-  cleanups.push(() => {
-    map.off('click', 'ree-site-label', onSiteClick)
-    map.off('mouseenter', 'ree-site-label', onSiteEnter)
-    map.off('mouseleave', 'ree-site-label', onSiteLeave)
-  })
+  for (const layerId of ['ree-site-label', 'ree-site-glow']) {
+    try {
+      if (!map.getLayer(layerId)) continue
+      map.on('mouseenter', layerId, onSiteEnter)
+      map.on('mouseleave', layerId, onSiteLeave)
+      cleanups.push(() => {
+        try {
+          map.off('mouseenter', layerId, onSiteEnter)
+          map.off('mouseleave', layerId, onSiteLeave)
+        } catch { /* ignore */ }
+      })
+    } catch { /* ignore */ }
+  }
 }
 
+/** Hover affordances only for protected-area fills. */
 function addProtectedAreaHandlers(map: MapLibreMap, cleanups: Array<() => void>) {
-  for (const layerId of ['ree-protected-ti-fill', 'ree-protected-quilombo-fill']) {
-    const onProtClick = (e: MapLayerMouseEvent) => {
-      if (!e.features?.length) return
-      const p = e.features[0].properties
-      const kind = p.kind === 'ti' ? 'Indigenous Land (Terra Indígena)' : 'Quilombola Territory'
-      closeActivePopup(map)
-      const protColor = p.kind === 'ti' ? '#e74c3c' : '#f39c12'
-      const html = `<div class="ree-popup-wrapper" style="padding:14px;min-width:220px;position:relative">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-          <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${protColor};color:#fff">PROTECTED AREA</span>
-          <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:var(--obs-panel-border);color:var(--obs-text-muted)">${escapeHtml(kind)}</span>
-        </div>
-        <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--obs-text-primary)">${escapeHtml(p.name || 'Unknown')}</h3>
-        <p style="font-size:10px;color:var(--obs-text-muted);margin:6px 0 0;line-height:1.45">Mining claims overlapping this territory may violate Free, Prior and Informed Consent (FPIC) under ILO Convention 169.</p>
-        ${p.source_url ? `<a href="${escapeHtml(p.source_url)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:10px;color:var(--info)">Source &rarr;</a>` : ''}
-      </div>`
-      activePopups.set(map, new maplibregl.Popup({ offset: 8, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(html).setMaxWidth('none').addTo(map))
-    }
+  for (const layerId of ['ree-protected-ti-fill', 'ree-protected-quilombo-fill', 'ree-protected-uc-fill', 'ree-protected-buffer-fill']) {
     const onProtEnter = () => { map.getCanvas().style.cursor = 'pointer' }
     const onProtLeave = () => { map.getCanvas().style.cursor = '' }
-    map.on('click', layerId, onProtClick)
-    map.on('mouseenter', layerId, onProtEnter)
-    map.on('mouseleave', layerId, onProtLeave)
-    cleanups.push(() => {
-      map.off('click', layerId, onProtClick)
-      map.off('mouseenter', layerId, onProtEnter)
-      map.off('mouseleave', layerId, onProtLeave)
-    })
+    try {
+      if (!map.getLayer(layerId)) continue
+      map.on('mouseenter', layerId, onProtEnter)
+      map.on('mouseleave', layerId, onProtLeave)
+      cleanups.push(() => {
+        try {
+          map.off('mouseenter', layerId, onProtEnter)
+          map.off('mouseleave', layerId, onProtLeave)
+        } catch { /* ignore */ }
+      })
+    } catch { /* ignore */ }
   }
+}
+
+function shortName(v: unknown, max = 18): string {
+  const s = String(v ?? '').trim()
+  if (!s || s === '—') return ''
+  return s.length > max ? `${s.slice(0, max - 1)}…` : s
+}
+
+/**
+ * Single map-level click handler: queries every visible observatory layer
+ * around the click point so overlapping markers/polygons/territories open
+ * as a tabbed popup instead of only the topmost feature winning.
+ */
+function addUnifiedObservatoryClick(map: MapLibreMap, options: RareEarthLayerOptions, cleanups: Array<() => void>) {
+  const QUERY_GROUPS: Array<{ layers: string[]; kind: StackedHit['kind'] }> = [
+    { layers: ['ree-point-circle'], kind: 'claim' },
+    { layers: ['ree-poly-fill'], kind: 'boundary' },
+    { layers: ['ree-protected-ti-fill', 'ree-protected-quilombo-fill', 'ree-protected-uc-fill', 'ree-protected-buffer-fill'], kind: 'protected' },
+    { layers: ['ree-water-poly-fill', 'ree-water-river-line'], kind: 'water' },
+    { layers: ['ree-site-glow', 'ree-site-label'], kind: 'site' },
+    { layers: ['ree-geo-fill', 'ree-geo-aquifer', 'ree-geo-conflict'], kind: 'geo' },
+  ]
+
+  const onMapClick = (e: maplibregl.MapMouseEvent) => {
+    try {
+      const liveLayers = QUERY_GROUPS.flatMap(g => g.layers).filter((id) => {
+        try {
+          if (!map.getLayer(id)) return false
+          return map.getLayoutProperty(id, 'visibility') !== 'none'
+        } catch { return false }
+      })
+      if (!liveLayers.length) return
+      const r = 8
+      const bbox: [[number, number], [number, number]] = [[e.point.x - r, e.point.y - r], [e.point.x + r, e.point.y + r]]
+      let rendered: maplibregl.MapGeoJSONFeature[] = []
+      try {
+        rendered = map.queryRenderedFeatures(bbox, { layers: liveLayers })
+      } catch { rendered = [] }
+      if (!rendered.length) {
+        closeActivePopup(map)
+        return
+      }
+
+      const seen = new Set<string>()
+      const hits: StackedHit[] = []
+      const push = (kind: StackedHit['kind'], label: string, props: Record<string, unknown>, layerId: string, dedupeKey: string) => {
+        if (seen.has(dedupeKey)) return
+        seen.add(dedupeKey)
+        hits.push({ kind, label, props, layerId })
+      }
+
+      let claimCount = 0
+      let boundaryCount = 0
+      for (const f of rendered) {
+        const layerId = (f.layer as { id?: string } | undefined)?.id ?? String(f.layer ?? '')
+        const group = QUERY_GROUPS.find(g => g.layers.includes(layerId))
+        if (!group) continue
+        const props = (f.properties ?? {}) as Record<string, unknown>
+        if (group.kind === 'claim') {
+          if (claimCount >= 8) continue
+          const proc = String(props.processo ?? props.p ?? props.id ?? '')
+          const nome = shortName(props.nome ?? props.n ?? props.NOME)
+          const label = nome ? `⛏ ${nome}` : `⛏ ${proc.slice(-6) || 'claim'}`
+          push('claim', label, props, layerId, `claim::${proc || JSON.stringify(props).slice(0, 80)}`)
+          claimCount++
+        } else if (group.kind === 'boundary') {
+          if (boundaryCount >= 4) continue
+          const proc = String(props.PROCESSO ?? props.processo ?? props.p ?? '')
+          const nome = shortName(props.NOME ?? props.nome ?? props.n ?? props.enterprise)
+          const label = nome ? `◈ ${nome}` : `◈ ${proc.slice(-6) || 'boundary'}`
+          push('boundary', label, props, layerId, `boundary::${proc || nome || JSON.stringify(props).slice(0, 80)}`)
+          boundaryCount++
+        } else if (group.kind === 'protected') {
+          const name = String(props.name ?? 'Protected area')
+          push('protected', `🛡 ${shortName(name)}`, props, layerId, `protected::${props.kind ?? ''}::${name}`)
+        } else if (group.kind === 'water') {
+          const name = String(props.name ?? 'Water body')
+          push('water', `💧 ${shortName(name)}`, props, layerId, `water::${name}::${String(props.osm_id ?? props.water_type ?? '')}`)
+        } else if (group.kind === 'site') {
+          const name = String(props.name ?? 'Conflict zone')
+          push('site', `⚠ ${shortName(name, 22)}`, props, layerId, `site::${name}`)
+        } else {
+          const name = String(props.name ?? 'Geological area')
+          push('geo', `🌍 ${shortName(name)}`, props, layerId, `geo::${String(props.type ?? '')}::${name}`)
+        }
+        if (hits.length >= 12) break
+      }
+
+      if (!hits.length) {
+        closeActivePopup(map)
+        return
+      }
+
+      const lngLat: [number, number] = [e.lngLat.lng, e.lngLat.lat]
+      closeActivePopup(map)
+
+      // Embed override: forward the top claim instead of opening a popup.
+      if (options.onClaimClick) {
+        const firstClaim = hits.find(h => h.kind === 'claim' || h.kind === 'boundary')
+        if (firstClaim) {
+          const adapted = firstClaim.kind === 'boundary' ? adaptPolygonProps(firstClaim.props) : firstClaim.props
+          options.onClaimClick(adapted, lngLat)
+          return
+        }
+      }
+
+      if (hits.length === 1) {
+        const only = hits[0]
+        if (only.kind === 'claim' || only.kind === 'boundary') {
+          const adapted = only.kind === 'boundary' ? adaptPolygonProps(only.props) : only.props
+          if (options.popup) {
+            activePopups.set(map, openRareEarthPopup(map, adapted, lngLat, { onSidebarOpen: options.popup.onSidebarOpen }, options.popup.t, options.popup.locale))
+            return
+          }
+          const html = buildRareEarthPopupHTML(adapted)
+          activePopups.set(map, new maplibregl.Popup({ offset: 12, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(html).setMaxWidth('420px').addTo(map))
+          return
+        }
+      }
+
+      if (options.popup) {
+        const popup = openStackedObservatoryPopup(map, hits, lngLat, {
+          t: options.popup.t,
+          locale: options.popup.locale,
+          onSidebarOpen: options.popup.onSidebarOpen,
+        })
+        if (popup) activePopups.set(map, popup)
+        return
+      }
+      // No i18n popup config (fallback path): show the top hit only.
+      const first = hits[0]
+      const adapted = first.kind === 'boundary' ? adaptPolygonProps(first.props) : first.props
+      const html = buildRareEarthPopupHTML(adapted)
+      activePopups.set(map, new maplibregl.Popup({ offset: 12, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(html).setMaxWidth('420px').addTo(map))
+    } catch {
+      /* fail-soft: a bad query must never break map clicks */
+    }
+  }
+
+  map.on('click', onMapClick)
+  cleanups.push(() => {
+    try { map.off('click', onMapClick) } catch { /* ignore */ }
+  })
 }
 
 export interface ObservatorySyncInput {
@@ -349,6 +399,7 @@ export interface ObservatorySyncInput {
   polys?: GeoJSON.FeatureCollection | null
   protected?: GeoJSON.FeatureCollection | null
   water?: GeoJSON.FeatureCollection | null
+  /** Accepted but never rendered — cultural agents live in the sidebar browser only. */
   cultural?: GeoJSON.FeatureCollection | null
   networkFeatures?: GeoJSON.FeatureCollection | null
   visibility?: Record<string, boolean>
@@ -376,15 +427,17 @@ function setSourceData(map: MapLibreMap, sourceId: string, data: GeoJSON.Feature
  */
 export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncInput): boolean {
   if (!map || !map.isStyleLoaded()) return false
-  const { points, polys, protected: protectedAreas, water, cultural, networkFeatures, visibility, popup, onClaimClick } = input
+  // NOTE: `cultural` is deliberately ignored here — cultural agents/points
+  // never render on the map (sidebar browser only). Any stale cultural
+  // source left by a previous version is torn down below.
+  const { points, polys, protected: protectedAreas, water, networkFeatures, visibility, popup, onClaimClick } = input
   // Proceed when ANY layer has data. Gating everything on filtered points
   // alone left the map permanently blank whenever the point set was momentarily
   // empty (initial empty FC, strict filters) while polygons/protected/water
   // were already available.
   const hasAnyData = Boolean(
     points?.features?.length || polys?.features?.length
-    || protectedAreas?.features?.length || water?.features?.length
-    || cultural?.features?.length,
+    || protectedAreas?.features?.length || water?.features?.length,
   )
   if (!hasAnyData && !map.getSource(REE_SOURCE_POINTS)) return false
 
@@ -406,8 +459,8 @@ export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncIn
       else addPolygonLayersToMap(map, polys, popup)
     }
     if (protectedAreas?.features?.length && !map.getSource(REE_SOURCE_PROTECTED)) {
-      // Late protected arrival: full bootstrap is the only path that also
-      // attaches the protected-area click handlers.
+      // Late protected arrival: full bootstrap re-attaches layers; clicks
+      // stay owned by the unified map handler regardless of arrival order.
       setupRareEarthLayers(map, {
         points: points ?? { type: 'FeatureCollection', features: [] },
         polys: polys ?? null,
@@ -421,28 +474,31 @@ export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncIn
     }
     // undefined = throttled, skip (keep on-map lines); empty FC = clear.
     if (networkFeatures !== undefined) {
-      if (networkFeatures.features.length) {
+      if (networkFeatures?.features?.length) {
         if (!setSourceData(map, REE_SOURCE_NETWORK, networkFeatures)) {
           addRareEarthNetworkLines(map, networkFeatures)
         }
-      } else if (map.getSource(REE_SOURCE_NETWORK)) {
+      } else if (map.getSource(REE_SOURCE_NETWORK) && networkFeatures) {
         setSourceData(map, REE_SOURCE_NETWORK, networkFeatures)
       }
     }
     if (water?.features?.length && !setSourceData(map, WATER_SOURCE, water)) {
-      setupWaterLayers(map, water)
+      // Clicks are owned by the unified stacked handler — water skips its
+      // own popup so overlapping water + claim clicks show tabs, not races.
+      setupWaterLayers(map, water, { attachClickHandlers: false })
     }
-    if (cultural?.features?.length && !setSourceData(map, CULTURAL_SOURCE, cultural)) {
-      setupCulturalLayers(map, cultural)
-    }
+    // No cultural rendering: tear down any stale cultural source/layers
+    // (e.g. surviving a hot reload from a version that rendered them).
+    cleanupCulturalLayers(map)
   }
-  // Water/cultural need ensuring on the bootstrap path too (the bootstrap
-  // above only wires points/polys/protected/network). Setup fns no-op when
-  // their source already exists.
+  // Water needs ensuring on the bootstrap path too (the bootstrap above only
+  // wires points/polys/protected/network). Setup fns no-op when their source
+  // already exists.
   if (!map.getSource(REE_SOURCE_POINTS)) {
-    if (water?.features?.length) setupWaterLayers(map, water)
-    if (cultural?.features?.length) setupCulturalLayers(map, cultural)
+    if (water?.features?.length) setupWaterLayers(map, water, { attachClickHandlers: false })
   }
+  // Belt and braces: cultural must never exist on the observatory map.
+  cleanupCulturalLayers(map)
 
   syncRareEarthLayerVisibility(map, visibility || {})
   return true
@@ -469,21 +525,14 @@ export function setupRareEarthLayers(
   map.addSource(REE_SOURCE_POINTS, {
     type: 'geojson',
     data: points,
-    // Stable ids so feature-state hover highlights work (raw claim GeoJSON
-    // carries no ids — without this every mousemove threw in setFeatureState).
-    generateId: true,
-    cluster: true,
-    clusterMaxZoom: 11,
-    clusterRadius: 80,
-    clusterProperties: {
-      dr: ['+', ['case', ['==', ['get', 'c'], 'direct_ree'], 1, 0]],
-      ca: ['+', ['case', ['==', ['get', 'c'], 'carbonatite_associated'], 1, 0]],
-      pg: ['+', ['case', ['==', ['get', 'c'], 'pegmatite_associated'], 1, 0]],
-      hm: ['+', ['case', ['==', ['get', 'c'], 'heavy_mineral_associated'], 1, 0]],
-      ph: ['+', ['case', ['==', ['get', 'c'], 'phosphate_associated'], 1, 0]],
-      st: ['+', ['case', ['==', ['get', 'c'], 'strategic_associated'], 1, 0]],
-      md: ['max', ['get', 'ds']],
-    },
+    // Stable feature ids from the ANM processo property (stamped at
+    // normalization time). Ids survive setData across filter changes, so
+    // hover feature-state stays consistent instead of reshuffling.
+    promoteId: 'processo',
+    // Unclustered by design: every claim renders its own GPU circle marker.
+    // (Clustering was removed — regional footprint is small enough that all
+    // 284 claims + full-Brazil sets render at 60fps without it.)
+    cluster: false,
   })
 
   addPointLayers(map, REE_SOURCE_POINTS)
@@ -508,6 +557,11 @@ export function setupRareEarthLayers(
     addProtectedAreasLayer(map, protectedAreas)
     addProtectedAreaHandlers(map, cleanups)
   }
+
+  // One map-level click owns ALL popups: overlapping markers, boundaries,
+  // protected areas, water and sites resolve to a tabbed popup instead of
+  // only the topmost layer winning.
+  addUnifiedObservatoryClick(map, options, cleanups)
 
   return () => {
     cleanups.forEach(fn => fn())
@@ -574,16 +628,19 @@ export function addRareEarthGeoBoundaries(map: MapLibreMap) {
   })
   map.addLayer({
     id: 'ree-geo-conflict', type: 'fill', source: REE_SOURCE_GEO,
-    filter: ['in', ['get', 'type'], ['literal', ['conflict', 'nuclear']]],
-    paint: { 'fill-color': '#e74c3c', 'fill-opacity': 0.08 },
+    filter: ['in', ['get', 'type'], ['literal', ['conflict', 'nuclear', 'nuclear_buffer']]],
+    paint: {
+      'fill-color': ['match', ['get', 'type'], 'nuclear_buffer', '#f87171', '#e74c3c'],
+      'fill-opacity': ['match', ['get', 'type'], 'nuclear_buffer', 0.06, 0.08],
+    },
   })
   map.addLayer({
     id: 'ree-geo-line', type: 'line', source: REE_SOURCE_GEO,
     paint: {
-      'line-color': ['match', ['get', 'type'], 'basin', '#3b82f6', 'aquifer', '#a855f7', 'conflict', '#ef4444', 'nuclear', '#dc2626', '#3b82f6'],
+      'line-color': ['match', ['get', 'type'], 'basin', '#3b82f6', 'aquifer', '#a855f7', 'conflict', '#ef4444', 'nuclear', '#dc2626', 'nuclear_buffer', '#f87171', '#3b82f6'],
       'line-width': ['interpolate', ['linear'], ['zoom'], 6, 0.8, 10, 1.2, 14, 2],
       'line-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0.3, 14, 0.5],
-      'line-dasharray': ['match', ['get', 'type'], 'conflict', ['literal', [2, 2]], 'nuclear', ['literal', [1, 1]], ['literal', [3, 2]]],
+      'line-dasharray': ['match', ['get', 'type'], 'conflict', ['literal', [2, 2]], 'nuclear', ['literal', [1, 1]], 'nuclear_buffer', ['literal', [5, 3]], ['literal', [3, 2]]],
     },
   })
   map.addLayer({
@@ -594,7 +651,7 @@ export function addRareEarthGeoBoundaries(map: MapLibreMap) {
       'text-allow-overlap': true,
     },
     paint: {
-      'text-color': ['match', ['get', 'type'], 'basin', '#3b82f6', 'aquifer', '#a855f7', 'conflict', '#ef4444', 'nuclear', '#dc2626', '#3b82f6'],
+      'text-color': ['match', ['get', 'type'], 'basin', '#3b82f6', 'aquifer', '#a855f7', 'conflict', '#ef4444', 'nuclear', '#dc2626', 'nuclear_buffer', '#f87171', '#3b82f6'],
       'text-halo-color': 'rgba(255,255,255,0.9)', 'text-halo-width': 1.5,
     },
   })
@@ -697,13 +754,50 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
     paint: { 'text-color': '#d97706', 'text-halo-color': 'rgba(0,0,0,0.9)', 'text-halo-width': 1.5 },
   })
 
+  // Conservation units (APAs, RESEX, parks…) — green. `kind` is canonicalized
+  // to 'uc' at load (see useRareEarthData), so one filter covers every UC.
+  map.addLayer({
+    id: 'ree-protected-uc-fill', type: 'fill', source: REE_SOURCE_PROTECTED,
+    filter: ['==', ['get', 'kind'], 'uc'],
+    paint: { 'fill-color': '#27ae60', 'fill-opacity': 0.12 },
+  })
+  map.addLayer({
+    id: 'ree-protected-uc-line', type: 'line', source: REE_SOURCE_PROTECTED,
+    filter: ['==', ['get', 'kind'], 'uc'],
+    paint: { 'line-color': '#27ae60', 'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1.5, 10, 2, 14, 3], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0.5, 14, 0.8] },
+  })
+  map.addLayer({
+    id: 'ree-protected-uc-label', type: 'symbol', source: REE_SOURCE_PROTECTED,
+    filter: ['==', ['get', 'kind'], 'uc'],
+    layout: { 'text-field': ['get', 'name'], 'text-font': ['Open Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 5, 0, 7, 9, 10, 11], 'text-allow-overlap': false },
+    paint: { 'text-color': '#27ae60', 'text-halo-color': 'rgba(0,0,0,0.9)', 'text-halo-width': 1.5 },
+  })
+
+  // Zonas de amortecimento — teal dashed halo (canonical kind 'buffer').
+  map.addLayer({
+    id: 'ree-protected-buffer-fill', type: 'fill', source: REE_SOURCE_PROTECTED,
+    filter: ['==', ['get', 'kind'], 'buffer'],
+    paint: { 'fill-color': '#2dd4bf', 'fill-opacity': 0.06 },
+  })
+  map.addLayer({
+    id: 'ree-protected-buffer-line', type: 'line', source: REE_SOURCE_PROTECTED,
+    filter: ['==', ['get', 'kind'], 'buffer'],
+    paint: { 'line-color': '#2dd4bf', 'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 10, 1.5, 14, 2.5], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 6, 0.5, 14, 0.8], 'line-dasharray': [5, 3] },
+  })
+  map.addLayer({
+    id: 'ree-protected-buffer-label', type: 'symbol', source: REE_SOURCE_PROTECTED,
+    filter: ['==', ['get', 'kind'], 'buffer'],
+    layout: { 'text-field': ['get', 'name'], 'text-font': ['Open Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 5, 0, 7, 9, 10, 11], 'text-allow-overlap': false },
+    paint: { 'text-color': '#2dd4bf', 'text-halo-color': 'rgba(0,0,0,0.9)', 'text-halo-width': 1.5 },
+  })
+
   // Territory-overlap halo. Reads the precomputed numeric `overlaps_count`
   // scalar — MapLibre expressions cannot evaluate object values, so the raw
   // `ov` overlap array is never embedded in layer properties (the old
   // `['length', ['get', 'ov']]` branch errored and blanked this layer).
   map.addLayer({
     id: 'ree-overlap-glow', type: 'circle', source: REE_SOURCE_POINTS,
-    filter: ['all', ['!has', 'point_count'], ['>', ['get', 'overlaps_count'], 0]] as maplibregl.FilterSpecification,
+    filter: ['all', ['!has', 'point_count'], ['>', 'overlaps_count', 0]] as unknown as maplibregl.FilterSpecification,
     paint: { 'circle-color': '#f59e0b', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 10, 10, 14, 14, 18], 'circle-opacity': 0.25, 'circle-blur': 0.9, 'circle-stroke-color': '#f59e0b', 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 2], 'circle-stroke-opacity': 0.5 },
   })
 }
@@ -713,30 +807,18 @@ const polyHandlerMap = new WeakMap<MapLibreMap, boolean>()
 export function addPolygonLayersToMap(
   map: MapLibreMap,
   polys: GeoJSON.FeatureCollection,
-  popup?: RareEarthLayerOptions['popup'],
+  _popup?: RareEarthLayerOptions['popup'],
 ): (() => void) | null {
   if (!polys?.features?.length) return null
   if (map.getSource(REE_SOURCE_POLYS)) return null
 
   map.addSource(REE_SOURCE_POLYS, { type: 'geojson', data: polys })
   addPolygonLayers(map)
-
-  const onPolyClick = (e: MapLayerMouseEvent) => {
-    if (!e.features?.length) return
-    const p = e.features[0].properties
-    closeActivePopup(map)
-    if (popup) {
-      activePopups.set(map, openRareEarthPopup(map, adaptPolygonProps(p), [e.lngLat.lng, e.lngLat.lat], { onSidebarOpen: popup.onSidebarOpen }, popup.t, popup.locale))
-      return
-    }
-    const html = buildRareEarthPopupHTML(adaptPolygonProps(p))
-    activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(html).setMaxWidth('none').addTo(map))
-  }
-  map.on('click', 'ree-poly-fill', onPolyClick)
+  // No per-layer click: the unified map click (added at bootstrap) queries
+  // ree-poly-fill alongside points/protected/water and opens tabbed popups.
   polyHandlerMap.set(map, true)
 
   return () => {
-    map.off('click', 'ree-poly-fill', onPolyClick)
     polyHandlerMap.delete(map)
     safeRemoveLayer(map, 'ree-poly-fill')
     safeRemoveLayer(map, 'ree-poly-glow')
@@ -754,7 +836,7 @@ export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<strin
   }
 
   const showPoints = vis['points'] !== false
-  ;['ree-point-glow', 'ree-point-circle', 'ree-cluster-circle', 'ree-cluster-count', 'ree-point-hover'].forEach(id => setVis(id, showPoints))
+  ;['ree-point-glow', 'ree-point-circle', 'ree-point-hover'].forEach(id => setVis(id, showPoints))
 
   setVis('ree-overlap-glow', vis['overlaps'] !== false)
 
@@ -776,11 +858,15 @@ export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<strin
 
   ;['ree-protected-ti-fill', 'ree-protected-ti-line', 'ree-protected-ti-label'].forEach(id => setVis(id, vis['protected_ti'] !== false))
   ;['ree-protected-quilombo-fill', 'ree-protected-quilombo-line', 'ree-protected-quilombo-label'].forEach(id => setVis(id, vis['protected_quilombo'] !== false))
+  ;['ree-protected-uc-fill', 'ree-protected-uc-line', 'ree-protected-uc-label'].forEach(id => setVis(id, vis['protected_uc'] !== false))
+  ;['ree-protected-buffer-fill', 'ree-protected-buffer-line', 'ree-protected-buffer-label'].forEach(id => setVis(id, vis['protected_buffer'] !== false))
 
   setVis('ree-cities-label', vis['cities'] !== false)
 
-  ;['ree-cultural-glow', 'ree-cultural-point', 'ree-cultural-hover', 'ree-cultural-label', 'ree-cultural-cluster', 'ree-cultural-cluster-count'].forEach(
-    id => setVis(id, vis['cultural'] !== false)
+  // No cultural map layers exist (sidebar browser only) — hide any stale
+  // ids if a previous style still holds them.
+  ;['ree-cultural-glow', 'ree-cultural-point', 'ree-cultural-hover', 'ree-cultural-label-major', 'ree-cultural-label-minor', 'ree-cultural-cluster', 'ree-cultural-cluster-count', 'ree-cultural-label'].forEach(
+    id => setVis(id, false)
   )
 
 }

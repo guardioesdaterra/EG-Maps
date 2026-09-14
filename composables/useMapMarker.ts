@@ -13,6 +13,7 @@ import { getProjectColorByBeneficiaries, getProjectMapColorFromProject } from '@
 import { formatCompact } from '@/lib/utils'
 import { findSpeciesAtCoord as _findSpeciesAtCoord } from '@/lib/species-utils'
 import { SPECIES_COORD_TOLERANCE } from '@/lib/constants'
+import { CULTURAL_FAMILY_STYLES, getCulturalFamily } from '@/lib/cultural-marker-taxonomy'
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
@@ -60,7 +61,10 @@ const CLUSTER_PALETTES: Record<MarkerDataset, readonly [string, string, string, 
   'vulcan-observatory':   ['#22c55e', '#f59e0b', '#ef4444', '#dc2626'],
 }
 
-const CLUSTERED_DATASETS = new Set<MarkerDataset>(['project-grants', 'endangered-species', 'vulcan-observatory', 'active-crews'])
+const CLUSTERED_DATASETS = new Set<MarkerDataset>(['endangered-species', 'vulcan-observatory'])
+// NOTE: 'project-grants' intentionally shares the active-crews system — an
+// unclustered source with same-coordinate overlap spreading + the shared
+// ClusterResultsPanel for disambiguation — instead of native GeoJSON clustering.
 
 const CREW_MOSAIC_RADIUS_DEG = 0.045
 const CREW_MOSAIC_ZOOM_MIN = 2
@@ -104,14 +108,8 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   /* ── 🏠 SWARM 3 · DATA + SOURCE MANAGEMENT (6) ───────────────────── */
 
   function rebuild(a: RebuildArgs) {
-    const label = `[perf] useMapMarker.rebuild ${a.dataset}`
-    console.time(label)
     const m = map
-    if (!m || !m.isStyleLoaded()) {
-      console.timeLog(label, 'skipped (map not ready)')
-      console.timeEnd(label)
-      return
-    }
+    if (!m || !m.isStyleLoaded()) return
     const ds = a.dataset as MarkerDataset
     speciesIndexCache = null
     if (currentDataset && currentDataset !== ds) {
@@ -119,31 +117,19 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       currentDataset = null
     }
     const geojson = toGeoJSON(ds, a)
-    console.timeLog(label, `GeoJSON: ${geojson.features.length} features`)
-    if (!geojson.features.length || tryFastPath(ds, geojson, m, a)) {
-      console.timeLog(label, 'fastPath')
-      console.timeEnd(label)
-      return
-    }
+    if (!geojson.features.length || tryFastPath(ds, geojson, m, a)) return
     fullSetup(ds, geojson, a)
-    console.timeLog(label, 'fullSetup done')
-    console.timeEnd(label)
   }
 
   function update(a: RebuildArgs) {
     const m = map
-    const label = `[perf] useMapMarker.update ${a.dataset}`
-    console.time(label)
     if (!m || currentDataset !== a.dataset || !m.getSource(SOURCE)) {
-      console.timeLog(label, 'falling back to rebuild')
-      console.timeEnd(label)
       rebuild(a)
       return
     }
     speciesIndexCache = null
     buildLookupMaps(a.dataset as MarkerDataset, a)
     updateData(SOURCE, toGeoJSON(a.dataset as MarkerDataset, a))
-    console.timeEnd(label)
   }
 
   function tryFastPath(ds: MarkerDataset, geojson: GeoJSON.FeatureCollection, m: MapLibreMap, a: RebuildArgs): boolean {
@@ -154,28 +140,17 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   }
 
   function fullSetup(ds: MarkerDataset, geojson: GeoJSON.FeatureCollection, a: RebuildArgs) {
-    const label = `[perf] fullSetup ${ds}`
-    console.time(label)
     detach()
     addSource(SOURCE, geojson, ds)
-    console.log('[EG Maps] marker layers start', { dataset: ds, features: geojson.features.length })
     addLayers(SOURCE, ds)
-    console.log('[EG Maps] marker layers complete', { dataset: ds })
     setupEvents(SOURCE, ds, a)
-    console.log('[EG Maps] marker events complete', { dataset: ds })
     buildLookupMaps(ds, a)
     currentDataset = ds
-    console.timeEnd(label)
   }
 
   function buildLookupMaps(ds: MarkerDataset, a: RebuildArgs) {
-    const label = `[perf] buildLookupMaps ${ds}`
-    console.time(label)
     if (ds === 'project-grants') {
-      if (projectMap && lastProjectsRef === a.projects) {
-        console.timeEnd(label)
-        return
-      }
+      if (projectMap && lastProjectsRef === a.projects) return
       projectMap = new Map(a.projects.map(p => [p.project_title, p]))
       lastProjectsRef = a.projects
     } else {
@@ -185,7 +160,6 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     if (ds === 'endangered-species') {
       const speciesIdx = resolveSpeciesIndex(a)
       if (speciesMap && lastSpeciesIdxRef === speciesIdx && lastSpeciesRef === a.species) {
-        console.timeEnd(label)
         return
       }
       speciesMap = new Map(speciesIdx.map(s => [s.id, s]))
@@ -198,33 +172,26 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       lastSpeciesIdxRef = null
       lastSpeciesRef = null
     }
-    console.timeEnd(label)
   }
 
   /* ── source CRUD ──────────────────────────────────────────────────── */
 
   function addSource(id: string, data: GeoJSON.FeatureCollection, ds: MarkerDataset) {
     if (!map) return
-    const label = `[perf] addSource ${id} (features=${data.features.length})`
-    console.time(label)
     removeSource(id)
-    const isClustered = CLUSTERED_DATASETS.has(ds) && ds !== 'active-crews'
+    const isClustered = CLUSTERED_DATASETS.has(ds)
     map.addSource(id, {
       type: 'geojson', data,
       cluster: isClustered,
       clusterRadius: isClustered ? 50 : undefined,
       clusterMaxZoom: isClustered ? 16 : undefined,
     })
-    console.timeEnd(label)
   }
 
   function updateData(id: string, data: GeoJSON.FeatureCollection) {
     if (!map) return
-    const label = `[perf] updateData ${id} (features=${data.features.length})`
-    console.time(label)
     const s = map.getSource(id) as GeoJSONSource | undefined
     if (s && typeof s.setData === 'function') s.setData(data)
-    console.timeEnd(label)
   }
 
   function removeSource(id: string) {
@@ -240,8 +207,6 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
 
   function addLayers(id: string, ds: MarkerDataset) {
     if (!map) return
-    const label = `[perf] addLayers ${id}`
-    console.time(label)
     if (ds === 'active-crews') {
       const layerGroups: Array<[string, () => void]> = [
         ['crew mosaic', () => addCrewMosaicLayers(id)],
@@ -249,9 +214,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       ]
       for (const [group, add] of layerGroups) {
         try {
-          console.log('[EG Maps] marker layer group start', { group })
           add()
-          console.log('[EG Maps] marker layer group complete', { group })
         } catch (error) {
           console.error('[EG Maps] marker layer group failed', { group, error })
         }
@@ -262,7 +225,6 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       const pf = isClustered ? ['!has', 'point_count'] as FilterSpecification : undefined
       addPointLayers(id, pf)
     }
-    console.timeEnd(label)
   }
 
   function addClusterLayers(id: string, palette: readonly [string, string, string, string]) {
@@ -374,11 +336,11 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       'circle-color': ['get', 'color'],
       'circle-radius': ['*', ['coalesce', ['get', 'size'], 6], 0.38],
       'circle-opacity': locOpacity(1) } })
-    map.addLayer({ id: `${id}_pl`, type: 'symbol', source: id, filter: locationFilter, layout: {
+    map.addLayer({ id: `${id}_pl`, type: 'symbol', source: id, filter: locationFilter, minzoom: 8, layout: {
       'text-field': ['coalesce', ['get', 'label'], ''],
       'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
       'text-size': ['interpolate', ['linear'], ['zoom'], 8, 7, 14, 10],
-      'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
+      'text-allow-overlap': false, 'text-ignore-placement': false }, paint: {
       'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.65)', 'text-halo-width': 1.5,
       'text-opacity': locOpacity(1) } })
   }
@@ -399,13 +361,17 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       'circle-color': ['get', 'color'],
       'circle-radius': ['*', ['coalesce', ['get', 'size'], 7], 0.38],
       'circle-opacity': 1 } })
-    map.addLayer({ id: `${id}_pl`, type: 'symbol', source: id, ...opts, layout: {
+    map.addLayer({ id: `${id}_pl`, type: 'symbol', source: id, ...opts,
+      // Point labels are the dominant symbol cost with thousands of markers:
+      // collide-detect them only at street zoom where they are readable.
+      minzoom: 12, layout: {
       'text-field': ['coalesce', ['get', 'label'], ''],
       'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
-      'text-size': ['interpolate', ['linear'], ['zoom'], 8, 7, 14, 10],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 12, 7, 14, 10],
       'text-offset': [0, 1.75],
-      'text-allow-overlap': true, 'text-ignore-placement': true }, paint: {
-      'text-color': '#f8fafc', 'text-halo-color': 'rgba(0,0,0,0.88)', 'text-halo-width': 2 } })
+      'text-allow-overlap': false, 'text-ignore-placement': false }, paint: {
+      'text-color': '#f8fafc', 'text-halo-color': 'rgba(0,0,0,0.88)', 'text-halo-width': 2,
+      'text-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0, 12.5, 1] } })
   }
 
   /* ── 🏠 SWARM 5 · EVENTS (7) ─────────────────────────────────────── */
@@ -439,9 +405,14 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       reg(pL, 'click', onPoint(ds, a))
       reg(plL, 'click', onPoint(ds, a))
       reg(pgL, 'click', onPoint(ds, a))
-      reg(cL, 'click', onCluster(id))
-      reg(cL, 'mouseenter', ptr)
-      reg(cL, 'mouseleave', nop)
+      // Only clustered datasets (endangered-species, vulcan-observatory) have
+      // cluster layers — project-grants shares the active-crews unclustered
+      // system and disambiguates stacked points via dispatchProject instead.
+      if (CLUSTERED_DATASETS.has(ds)) {
+        reg(cL, 'click', onCluster(id))
+        reg(cL, 'mouseenter', ptr)
+        reg(cL, 'mouseleave', nop)
+      }
       reg(pL, 'mouseenter', ptr)
       reg(pL, 'mouseleave', nop)
       reg(plL, 'mouseenter', ptr)
@@ -536,18 +507,51 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   function dispatchPoint(ds: MarkerDataset, f: GeoJSON.Feature, coords: [number, number], a: RebuildArgs) {
     const p = f.properties ?? {}
     switch (ds) {
-      case 'project-grants':   return dispatchProject(p)
+      case 'project-grants':   return dispatchProject(p, coords, a)
       case 'endangered-species': return dispatchSpecies(p, coords, a)
       case 'active-crews':     return dispatchCrew(p, coords, a)
       case 'vulcan-observatory': return dispatchRareEarth(p, coords)
     }
   }
 
-  function dispatchProject(p: Record<string, unknown>) {
+  function dispatchProject(p: Record<string, unknown>, coords: [number, number], a: RebuildArgs) {
+    // Stacked grants (same coordinates) can't be tapped apart — like stacked
+    // active-crews locations, open the disambiguation panel instead of a
+    // single preview. Picking an item opens its popup.
+    if (p._projectGroup != null && callbacks.openCluster) {
+      const origLat = (p._origLat as number) ?? coords[1]
+      const origLng = (p._origLng as number) ?? coords[0]
+      // Fast path: siblings resolved live via the coordinate key (no
+      // per-feature serialized id arrays in the source).
+      const key = `${origLat.toFixed(3)},${origLng.toFixed(3)}`
+      const siblings = (a.projects ?? []).filter(
+        g => `${g.latitude.toFixed(3)},${g.longitude.toFixed(3)}` === key,
+      )
+      const groupIds = siblings.length > 1
+        ? siblings.map(g => g.project_title)
+        : legacyGroupIds(p)
+      if (groupIds.length > 1) {
+        callbacks.openCluster({
+          dataset: 'project-grants',
+          coordinates: [origLng, origLat],
+          featureIds: groupIds,
+        })
+        return
+      }
+    }
     const proj = projectMap?.get(p.id as string)
     if (!proj) return
     const cb = callbacks.openProjectPreview ?? callbacks.openProjectOverlay
     cb(proj)
+  }
+
+  /** Back-compat fallback for features stamped with the old `_groupIds` JSON. */
+  function legacyGroupIds(p: Record<string, unknown>): string[] {
+    try {
+      const parsed: unknown = JSON.parse(String(p._groupIds ?? '[]'))
+      if (Array.isArray(parsed)) return parsed.filter((id): id is string => typeof id === 'string')
+    } catch { /* ignore malformed group */ }
+    return []
   }
 
   function dispatchSpecies(p: Record<string, unknown>, coords: [number, number], a: RebuildArgs) {
@@ -664,37 +668,79 @@ function toGeoJSON(ds: MarkerDataset, a: RebuildArgs): GeoJSON.FeatureCollection
 }
 
 function toProjectGeoJSON(projects: ProjectData[]): GeoJSON.FeatureCollection {
-  return {
-    type: 'FeatureCollection',
-    features: projects
-      .filter(p => isValidCoordinate(p.latitude, p.longitude))
-      .map(p => {
-        const total = p.direct_beneficiaries + p.indirect_beneficiaries
-        const f = Math.min(Math.max(total / 10000, 0.5), 5)
-        return {
-          type: 'Feature' as const,
-          geometry: { type: 'Point' as const, coordinates: [p.longitude, p.latitude] },
-          properties: {
-            id: p.project_title,
-            color: getProjectMapColorFromProject(p),
-            size: 5 + f * 3,
-            label: formatCompact(total),
-            ...p as unknown as Record<string, unknown>,
-          },
-        }
-      }),
+  // Same overlap system as active-crews crew locations: grants sharing an
+  // exact coordinate are spread on a small circle so each marker stays
+  // tappable; clicking one opens the shared disambiguation panel.
+  const valid = projects.filter(p => isValidCoordinate(p.latitude, p.longitude))
+  const groups = new Map<string, ProjectData[]>()
+  for (const p of valid) {
+    const key = `${p.latitude.toFixed(3)},${p.longitude.toFixed(3)}`
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(p)
   }
+  const features: GeoJSON.Feature[] = []
+  for (const [groupKey, group] of groups) {
+    const isMulti = group.length > 1
+    group.forEach((p, i) => {
+      let offsetLng = 0
+      let offsetLat = 0
+      if (isMulti) {
+        const angle = (i / group.length) * Math.PI * 2
+        const radius = 0.008
+        const latRad = p.latitude * Math.PI / 180
+        const lngScale = Math.max(Math.cos(latRad), 0.1)
+        offsetLng = Math.cos(angle) * radius / lngScale
+        offsetLat = Math.sin(angle) * radius
+      }
+      const total = p.direct_beneficiaries + p.indirect_beneficiaries
+      const f = Math.min(Math.max(total / 10000, 0.5), 5)
+      features.push({
+        type: 'Feature' as const,
+        geometry: { type: 'Point' as const, coordinates: [p.longitude + offsetLng, p.latitude + offsetLat] },
+        properties: {
+          ...(p as unknown as Record<string, unknown>),
+          id: p.project_title,
+          color: getProjectMapColorFromProject(p),
+          size: 5 + f * 3,
+          label: formatCompact(total),
+          _projectGroup: isMulti ? groupKey : undefined,
+          // Scalar group size only — siblings resolve at click time via the
+          // coordinate key (same as crews). The old per-feature serialized
+          // id array cost O(N²) bytes in the GeoJSON source for large stacks.
+          _groupSize: group.length,
+          _origLat: p.latitude,
+          _origLng: p.longitude,
+        },
+      })
+    })
+  }
+  return { type: 'FeatureCollection', features }
 }
 
 const speciesGeoCache = new Map<string, GeoJSON.FeatureCollection>()
 const SPECIES_GEO_CACHE_MAX = 20
 
+function speciesCacheKey(index: SpeciesIndexItem[], raw: Species[], groups: string[]): string {
+  // Length-only keys collided across different datasets with equal sizes and
+  // served stale markers. Hash a sample of stable ids + quantized coords so
+  // the key changes when the underlying data changes.
+  const sample = (arr: Array<{ id?: string; lat?: number; lng?: number }>) => {
+    let h = 0
+    const n = Math.min(arr.length, 64)
+    for (let i = 0; i < n; i++) {
+      const s = arr[(i * 7) % arr.length]
+      const str = `${s.id ?? ''}:${Math.round((s.lat ?? 0) * 100)}:${Math.round((s.lng ?? 0) * 100)}`
+      for (let j = 0; j < str.length; j++) h = ((h << 5) - h + str.charCodeAt(j)) | 0
+    }
+    return h
+  }
+  return `${index.length}:${raw.length}:${sample(index)}:${sample(raw)}:${[...groups].sort().join(',')}`
+}
+
 function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: string[]): GeoJSON.FeatureCollection {
-  const cacheKey = `${index.length}:${raw.length}:${[...groups].sort().join(',')}`
+  const cacheKey = speciesCacheKey(index, raw, groups)
   const cached = speciesGeoCache.get(cacheKey)
   if (cached) return cached
-  const label = `[perf] toSpeciesGeoJSON (idx=${index.length}, raw=${raw.length}, groups=${groups.length})`
-  console.time(label)
   const idx = filterByGroups(buildSpeciesIndex(index, raw), groups)
   const validCoords = idx.filter(s => isValidCoordinate(s.lat, s.lng))
   const features: GeoJSON.Feature[] = new Array(validCoords.length)
@@ -714,8 +760,6 @@ function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: str
     }
   }
   const result = { type: 'FeatureCollection' as const, features }
-  console.timeLog(label, `features=${features.length}`)
-  console.timeEnd(label)
   if (speciesGeoCache.size >= SPECIES_GEO_CACHE_MAX) {
     const first = speciesGeoCache.keys().next().value
     if (first) speciesGeoCache.delete(first)
@@ -855,21 +899,24 @@ function computeCrewMosaicPositions(count: number, centerLat: number, centerLng:
   return positions
 }
 
-const CULTURAL_SUBTYPE_COLORS: Record<string, string> = {
-  cultural_center: '#f39c12',
-  artist_group: '#9b59b6',
-  indigenous: '#e74c3c',
-  marginalized: '#e67e22',
-  rural: '#27ae60',
-  event: '#3498db',
+/**
+ * Cultural marker taxonomy for the Vulcan observatory path.
+ * ONE unified style for Cultural Agents (Mapa Cultura + Floresta Ativista),
+ * distinct bigger styles for curated Cultural Spaces and for Indigenous &
+ * Original Peoples (biggest — protection priority). Single source of truth
+ * lives in `@/lib/cultural-marker-taxonomy`; the maps below mirror it so
+ * this GeoJSON path and the `ree-cultural` layers always agree.
+ */
+const CULTURAL_FAMILY_COLORS: Record<string, string> = {
+  agents: CULTURAL_FAMILY_STYLES.agents.color,
+  spaces: CULTURAL_FAMILY_STYLES.spaces.color,
+  indigenous: CULTURAL_FAMILY_STYLES.indigenous.color,
 }
 
-const CULTURAL_TYPE_COLORS: Record<string, string> = {
-  school: '#3498db',
-  health: '#e74c3c',
-  cultural: '#f39c12',
-  water_access: '#2ecc71',
-  community: '#9b59b6',
+const CULTURAL_FAMILY_SIZES: Record<string, number> = {
+  agents: CULTURAL_FAMILY_STYLES.agents.baseSize + 2,
+  spaces: CULTURAL_FAMILY_STYLES.spaces.baseSize + 2.5,
+  indigenous: CULTURAL_FAMILY_STYLES.indigenous.baseSize + 2.5,
 }
 
 function toRareEarthGeoJSON(rareEarthFeatures: GeoJSON.Feature[], culturalFeatures: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
@@ -886,17 +933,24 @@ function toRareEarthGeoJSON(rareEarthFeatures: GeoJSON.Feature[], culturalFeatur
     }
   })
 
-  const cultural = culturalFeatures.map(f => {
+  const cultural = culturalFeatures.map((f, i) => {
     const p = (f.properties ?? {}) as Record<string, unknown>
-    const subtype = String(p.subtype || '')
-    const type = String(p.type || '')
-    const color = CULTURAL_SUBTYPE_COLORS[subtype] ?? CULTURAL_TYPE_COLORS[type] ?? '#9b59b6'
+    const family = getCulturalFamily(f)
+    const color = CULTURAL_FAMILY_COLORS[family] ?? CULTURAL_FAMILY_STYLES.agents.color
+    const size = CULTURAL_FAMILY_SIZES[family] ?? 9
+    const coords = (f.geometry as GeoJSON.Point | undefined)?.coordinates
+    const key = Array.isArray(coords) && coords.length >= 2
+      ? `${String(p.source ?? 'curated')}|${String(p.source_id ?? p.name ?? `idx-${i}`)}|${Number(coords[0]).toFixed(5)},${Number(coords[1]).toFixed(5)}`
+      : `cultural-${i}`
     return {
       type: 'Feature' as const, geometry: f.geometry,
       properties: {
-        id: (p.name as string) ?? (p.source_id as string) ?? 'cultural',
+        id: (p.name as string) ?? (p.source_id as string) ?? key,
         _markerType: 'cultural',
-        color, size: 8, label: '',
+        _family: family,
+        _color: color,
+        _major: family !== 'agents',
+        color, size, label: '',
         ...p,
       },
     }

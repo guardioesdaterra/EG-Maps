@@ -198,7 +198,7 @@ useHead({
 .page-shell {
   width: min(100% - 2rem, 72rem);
   margin: 0 auto;
-  padding: clamp(2rem, 5vh, 4rem) 0 clamp(4rem, 8vh, 6rem);
+  padding: clamp(2rem, 5vh, 4rem) 0 calc(clamp(4rem, 8vh, 6rem) + env(safe-area-inset-bottom));
 }
 
 /* ── Shared ── */
@@ -448,6 +448,7 @@ useHead({
   align-items: center;
   gap: 0.4rem;
   padding: 0.6rem 1.25rem;
+  min-height: 44px;
   border-radius: 6px;
   font-size: 0.78rem;
   font-weight: 700;

@@ -67,15 +67,23 @@ export function isSuspiciousBasic(props: Record<string, unknown>, speculator: Sp
   return speculator.count > 50 && speculator.subs.length <= 3 && speculator.recentPct >= 90
 }
 
+/** Memoized — runs per claim per pass (load + speculator passes + network rebuilds). */
+const normalizeCache = new Map<string, string>()
 export function normalizeName(raw: string | null | undefined): string {
   if (!raw) return ''
-  return String(raw)
+  const key = String(raw)
+  const cached = normalizeCache.get(key)
+  if (cached !== undefined) return cached
+  const out = key
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toUpperCase()
     .replace(/\b(LTDA|S\.?A\.?|S\/A|MINERACAO|MINERAÇÃO|MINERALS|MINING|METALS|MINERAIS|RECURSOS|HOLDINGS|GROUP|GMBH|INC|LLC|CORP)\b/g, '')
     .replace(/[^A-Z0-9]+/g, ' ')
     .trim()
+  // Distinct holder names are bounded by the dataset — small for the session.
+  if (normalizeCache.size < 100000) normalizeCache.set(key, out)
+  return out
 }
 
 export function computeSpeculatorIndex(points: RareEarthFeatureCollection): SpeculatorIndexEntry[] {

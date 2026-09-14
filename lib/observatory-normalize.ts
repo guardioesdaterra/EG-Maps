@@ -92,6 +92,10 @@ export interface ProtectedSummary {
 export interface ProtectedBreakdown {
   ti: ProtectedSummary[]
   quilombos: ProtectedSummary[]
+  /** Conservation units (APAs, RESEX, PARNA, …) — rendered in green. */
+  ucs: ProtectedSummary[]
+  /** Buffer zones / zonas de amortecimento — rendered in teal dashes. */
+  buffers: ProtectedSummary[]
   other: ProtectedSummary[]
 }
 
@@ -100,9 +104,36 @@ export interface ObservatoryLayerCounts {
   polygons: number
   protectedTi: number
   protectedQuilombo: number
+  protectedUc: number
+  protectedBuffer: number
   water: number
   cultural: number
   totalAreaHa: number
+}
+
+/**
+ * Canonical protected-area kind. Source files mix `kind` spellings
+ * (`ti`, `indigenous_land`, `quilombo`, `quilombola_territory`,
+ * `conservation`, `conservation_unit`, `buffer_zone`, …) — every consumer
+ * (map layers, counts, sidebar groups, search) matches on these four
+ * canonical values plus `other`.
+ */
+export function canonicalProtectedKind(kind: unknown, category?: unknown): string {
+  const k = String(kind ?? '').toLowerCase()
+  const c = String(category ?? '').toLowerCase()
+  const hay = `${k} ${c}`
+  if (k === 'ti' || k.includes('indigen')) return 'ti'
+  if (k === 'quilombo' || k.includes('quilomb')) return 'quilombo'
+  if (k === 'buffer' || k.includes('buffer') || k.includes('amortecimento') || k.includes('zona')) return 'buffer'
+  if (
+    k === 'uc' || k.includes('conserv') || k.includes('apa') || k === 'park'
+    || c.includes('conserv') || c.includes('apa') || c.includes('extractive')
+    || c.includes('national_park') || c.includes('park') || c.includes('reserve')
+    || c.includes('reserva') || c.includes('uc')
+  ) return 'uc'
+  if (hay.includes('indigen')) return 'ti'
+  if (hay.includes('quilomb')) return 'quilombo'
+  return 'other'
 }
 
 /** Case-insensitive property lookup across UPPER/lowercase source schemas. */
@@ -137,6 +168,16 @@ function asOverlapLinks(v: unknown): OverlapLink[] {
       kind: toText(o.kind) || 'unknown',
       distance_km: toNumber(o.distance_km, 0),
     }))
+}
+
+/**
+ * Read territory-overlap links carried inline on a raw claim property bag
+ * (`overlaps` / `ov`). The overlaps GeoJSON files are supersets of the base
+ * points files, so loaders single-fetch them and normalize from inline data
+ * instead of downloading + parsing a second copy of all claims.
+ */
+export function inlineOverlaps(raw: Record<string, unknown> | undefined): OverlapLink[] {
+  return asOverlapLinks(getProp(raw, 'overlaps', 'ov'))
 }
 
 /**
@@ -198,10 +239,15 @@ export function normalizePointFeature(
 ): GeoJSON.Feature<GeoJSON.Point> {
   const raw = (feature.properties ?? {}) as Record<string, unknown>
   const processo = toText(getProp(raw, 'processo'))
-  const overlaps = overlapsByProcesso[processo] ?? asOverlapLinks(getProp(raw, 'overlaps', 'ov'))
+  const overlaps = overlapsByProcesso[processo] ?? inlineOverlaps(raw)
   const nome = toText(getProp(raw, 'nome'))
   const normalized = normalizeClaimProps(raw, overlaps, dangerByHolder.get(normalizeName(nome)) ?? null)
-  return { type: 'Feature', geometry: feature.geometry, properties: { ...normalized } }
+  // Stable id = ANM processo (unique per claim). Survives filter changes so
+  // MapLibre `promoteId: 'processo'` + feature-state hover stay consistent
+  // across setData updates instead of reshuffling every keystroke.
+  const out: GeoJSON.Feature<GeoJSON.Point> = { type: 'Feature', geometry: feature.geometry, properties: { ...normalized } }
+  if (processo) out.id = processo
+  return out
 }
 
 /** Normalize a Polygon/MultiPolygon claim boundary (UPPERCASE schema). */
@@ -250,12 +296,12 @@ export function summarizeOverlaps(
   }
 }
 
-/** Split protected areas into TI / quilombo / other with display fields. */
+/** Split protected areas into TI / quilombo / UC / buffer / other with display fields. */
 export function summarizeProtected(fc: GeoJSON.FeatureCollection | undefined | null): ProtectedBreakdown {
-  const out: ProtectedBreakdown = { ti: [], quilombos: [], other: [] }
+  const out: ProtectedBreakdown = { ti: [], quilombos: [], ucs: [], buffers: [], other: [] }
   for (const f of fc?.features ?? []) {
     const p = (f.properties ?? {}) as Record<string, unknown>
-    const kind = toText(getProp(p, 'kind', 'category')).toLowerCase()
+    const kind = canonicalProtectedKind(getProp(p, 'kind', 'category'), getProp(p, 'category'))
     const entry: ProtectedSummary = {
       name: toText(getProp(p, 'name')) || 'Unnamed territory',
       kind,
@@ -267,8 +313,10 @@ export function summarizeProtected(fc: GeoJSON.FeatureCollection | undefined | n
       status: toText(getProp(p, 'status')),
       source_url: toText(getProp(p, 'source_url')),
     }
-    if (kind === 'ti' || kind.includes('indigen')) out.ti.push(entry)
-    else if (kind === 'quilombo' || kind.includes('quilomb')) out.quilombos.push(entry)
+    if (kind === 'ti') out.ti.push(entry)
+    else if (kind === 'quilombo') out.quilombos.push(entry)
+    else if (kind === 'uc') out.ucs.push(entry)
+    else if (kind === 'buffer') out.buffers.push(entry)
     else out.other.push(entry)
   }
   return out
@@ -285,10 +333,15 @@ export function buildLayerCounts(input: {
   const protectedFeatures = input.protected?.features ?? []
   let protectedTi = 0
   let protectedQuilombo = 0
+  let protectedUc = 0
+  let protectedBuffer = 0
   for (const f of protectedFeatures) {
-    const kind = toText((f.properties as Record<string, unknown> | undefined)?.kind).toLowerCase()
+    const p = (f.properties as Record<string, unknown> | undefined) ?? {}
+    const kind = canonicalProtectedKind(p.kind, p.category)
     if (kind === 'ti') protectedTi++
     else if (kind === 'quilombo') protectedQuilombo++
+    else if (kind === 'uc') protectedUc++
+    else if (kind === 'buffer') protectedBuffer++
   }
   let totalAreaHa = 0
   for (const f of input.polygons?.features ?? []) {
@@ -299,6 +352,8 @@ export function buildLayerCounts(input: {
     polygons: input.polygons?.features?.length ?? 0,
     protectedTi,
     protectedQuilombo,
+    protectedUc,
+    protectedBuffer,
     water: input.water?.features?.length ?? 0,
     cultural: input.cultural?.features?.length ?? 0,
     totalAreaHa: Math.round(totalAreaHa),

@@ -21,7 +21,7 @@
  * @connections /vulcan-observatory/3d.vue (3D counterpart sharing the same data composable)
  */
 <template>
-  <div id="main-content" tabindex="-1" class="relative w-full h-screen overflow-hidden bg-black focus:outline-none">
+  <div id="main-content" tabindex="-1" class="relative w-full h-[100svh] overflow-hidden bg-black focus:outline-none" :class="{ 'vulc-has-panel': rightPanelOpen, 'vulc-has-left': leftSidebarOpen }">
     <!-- ── Loading overlay ─────────────────────────────────────────────── -->
     <Transition name="fade">
       <div
@@ -82,7 +82,7 @@
         :default-dataset="'vulcan-observatory'"
         :rare-earth-points="pointsData"
         :rare-earth-filtered="filteredPoints"
-        :rare-earth-polygons="polygonsData"
+        :rare-earth-polygons="visiblePolygons"
         :rare-earth-protected="protectedData"
         :rare-earth-water="waterData"
         :rare-earth-cultural="culturalData"
@@ -91,38 +91,14 @@
         @map-init="onMapInit"
       >
         <template #overlays>
-          <!-- ── Topbar (brand + stats only) ─────────────────────── -->
-          <header class="vulc-topbar" role="toolbar" :aria-label="t('nav.observatoryOfVulcan')">
-            <div class="vulc-topbar__brand">
-              <span class="vulc-topbar__pulse" aria-hidden="true" />
-              <div class="flex flex-col leading-tight min-w-0">
-                <h1 class="text-sm sm:text-base font-black text-red-400 uppercase tracking-tight whitespace-nowrap truncate">
-                  {{ t('observatory.v2.brandTitle') }}
-                </h1>
-                <span class="text-[10px] sm:text-xs text-zinc-500 font-medium whitespace-nowrap truncate">
-                  {{ t('observatory.v2.brandSub') }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Live counters -->
-            <div class="vulc-topbar__stats" role="status">
-              <div
-                v-for="s in categoryStats"
-                :key="s.key"
-                class="vulc-stat"
-                :title="s.label"
-              >
-                <span class="vulc-stat__dot" :style="{ background: s.color }" aria-hidden="true" />
-                <span class="vulc-stat__count">{{ controls.animatedCount?.(s.key, s.count) ?? s.count }}</span>
-                <span class="vulc-stat__label">{{ s.label }}</span>
-              </div>
-              <span class="vulc-stat__sep" aria-hidden="true" />
-              <span class="vulc-stat__total">
-                <strong>{{ totalCount }}</strong> {{ t('observatory.v2.claimsTotal') }}
-              </span>
-            </div>
-          </header>
+          <!-- ── Merged topbar (brand + stats + menu in one bar) ─── -->
+          <ObservatoryTopbar
+            :category-stats="categoryStats"
+            :total-count="totalCount"
+            :animated-count="controls.animatedCount"
+            :on-near-me="toggleGeoLocate"
+            :near-me-active="controls.showGeoLocate.value"
+          />
 
           <!-- ── Desktop: Floating action bubble (bottom-right) ──── -->
           <div class="vulc-actions-bubble" role="region" :aria-label="t('observatory.v2.actions')">
@@ -140,10 +116,10 @@
                 <button
                   type="button"
                   class="vulc-icon-btn"
-                  :class="{ 'is-active': controls.showTimeline.value }"
+                  :class="{ 'is-active': rightPanelOpen && rightPanelTab === 'timeline' }"
                   :aria-label="t('observatory.tabs.timeline')"
-                  :aria-pressed="controls.showTimeline.value"
-                  @click="controls.showTimeline.value = !controls.showTimeline.value"
+                  :aria-pressed="rightPanelOpen && rightPanelTab === 'timeline'"
+                  @click="toggleTimeline"
                 >
                   <Icon name="lucide:clock" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.tabs.timeline') }}</span>
@@ -251,11 +227,22 @@
           <nav class="vulc-mobile-actions" :aria-label="t('observatory.v2.actions')">
             <button
               type="button"
+              class="vulc-icon-btn vulc-icon-btn--primary"
+              :class="{ 'is-active': rightPanelOpen }"
+              :aria-label="t('observatory.v2.panel.expand')"
+              :aria-pressed="rightPanelOpen"
+              @click="rightPanelOpen = !rightPanelOpen"
+            >
+              <Icon :name="rightPanelOpen ? 'lucide:panel-right-close' : 'lucide:panel-right-open'" />
+              <span class="vulc-icon-btn__tip">{{ t('observatory.v2.panel.expand') }}</span>
+            </button>
+            <button
+              type="button"
               class="vulc-icon-btn"
-              :class="{ 'is-active': controls.showTimeline.value }"
+              :class="{ 'is-active': rightPanelOpen && rightPanelTab === 'timeline' }"
               :aria-label="t('observatory.tabs.timeline')"
-              :aria-pressed="controls.showTimeline.value"
-              @click="controls.showTimeline.value = !controls.showTimeline.value"
+              :aria-pressed="rightPanelOpen && rightPanelTab === 'timeline'"
+              @click="toggleTimeline"
             >
               <Icon name="lucide:clock" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.tabs.timeline') }}</span>
@@ -385,6 +372,23 @@
                 <span v-if="activeFilterCount > 0" class="vulc-filtercount" :title="activeFilterSummary">
                   {{ t('observatory.territory.filtersActive', { count: activeFilterCount }) }}
                 </span>
+                <!-- Protected-area / buffer-zone hits for the same query -->
+                <div v-if="controls.searchTerm.value.trim().length >= 2" class="vulc-protmatches" role="list" :aria-label="t('observatory.layers.protectedSearch')">
+                  <button
+                    v-for="hit in controls.protectedMatches.value"
+                    :key="`prot-${hit.kind}-${hit.name}`"
+                    type="button"
+                    role="listitem"
+                    class="vulc-protmatch"
+                    :title="hit.municipality ? `${hit.municipality}${hit.state ? ` · ${hit.state}` : ''}` : hit.kind"
+                    @click="controls.flyToProtectedArea(hit)"
+                  >
+                    <Icon name="lucide:shield-check" class="vulc-protmatch__icon" />
+                    <span class="vulc-protmatch__name">{{ hit.name }}</span>
+                    <span class="vulc-protmatch__kind">{{ hit.kind === 'buffer' ? 'ZA' : hit.kind === 'uc' ? 'UC' : hit.kind === 'ti' ? 'TI' : hit.kind === 'quilombo' ? 'QUILOMBO' : hit.kind }}</span>
+                  </button>
+                  <span v-if="!controls.protectedMatches.value.length" class="vulc-protmatch__empty">{{ t('observatory.layers.noProtectedSearch') }}</span>
+                </div>
               </div>
 
               <hr class="vulc-leftpanel__divider">
@@ -480,6 +484,36 @@
                 <div
                   class="vulc-leftpanel__check"
                   role="checkbox"
+                  :aria-checked="controls.layerVis.value['protected_uc'] !== false"
+                  :aria-label="t('observatory.layers.conservationUnits')"
+                  tabindex="0"
+                  @click="controls.toggleLayer('protected_uc')"
+                  @keydown.enter="controls.toggleLayer('protected_uc')"
+                  @keydown.space.prevent="controls.toggleLayer('protected_uc')"
+                >
+                  <div :class="['vulc-leftpanel__box', controls.layerVis.value['protected_uc'] === false && 'is-off']" style="--cb-c: #27ae60">
+                    <Icon v-if="controls.layerVis.value['protected_uc'] !== false" name="lucide:check" class="w-2.5 h-2.5" />
+                  </div>
+                  <span class="vulc-leftpanel__label">{{ t('observatory.layers.conservationUnits') }}</span>
+                </div>
+                <div
+                  class="vulc-leftpanel__check"
+                  role="checkbox"
+                  :aria-checked="controls.layerVis.value['protected_buffer'] !== false"
+                  :aria-label="t('observatory.layers.bufferZones')"
+                  tabindex="0"
+                  @click="controls.toggleLayer('protected_buffer')"
+                  @keydown.enter="controls.toggleLayer('protected_buffer')"
+                  @keydown.space.prevent="controls.toggleLayer('protected_buffer')"
+                >
+                  <div :class="['vulc-leftpanel__box', controls.layerVis.value['protected_buffer'] === false && 'is-off']" style="--cb-c: #2dd4bf">
+                    <Icon v-if="controls.layerVis.value['protected_buffer'] !== false" name="lucide:check" class="w-2.5 h-2.5" />
+                  </div>
+                  <span class="vulc-leftpanel__label">{{ t('observatory.layers.bufferZones') }}</span>
+                </div>
+                <div
+                  class="vulc-leftpanel__check"
+                  role="checkbox"
                   :aria-checked="controls.layerVis.value['overlaps'] !== false"
                   :aria-label="t('observatory.layers.overlaps')"
                   tabindex="0"
@@ -509,8 +543,8 @@
                     {{ t('observatory.layers.polygons') }} · <strong>{{ (layerCounts?.polygons ?? polygonsData?.features?.length ?? 0).toLocaleString() }}</strong>
                   </span>
                   <span class="vulc-status__row">
-                    <span class="vulc-status__dot" :class="{ 'is-empty': !((layerCounts?.protectedTi ?? 0) + (layerCounts?.protectedQuilombo ?? 0)) }" aria-hidden="true" />
-                    {{ t('observatory.layers.protectedAreas') }} · <strong>{{ (layerCounts?.protectedTi ?? 0) + (layerCounts?.protectedQuilombo ?? 0) }}</strong>
+                    <span class="vulc-status__dot" :class="{ 'is-empty': !((layerCounts?.protectedTi ?? 0) + (layerCounts?.protectedQuilombo ?? 0) + (layerCounts?.protectedUc ?? 0) + (layerCounts?.protectedBuffer ?? 0)) }" aria-hidden="true" />
+                    {{ t('observatory.layers.protectedAreas') }} · <strong>{{ (layerCounts?.protectedTi ?? 0) + (layerCounts?.protectedQuilombo ?? 0) + (layerCounts?.protectedUc ?? 0) + (layerCounts?.protectedBuffer ?? 0) }}</strong>
                   </span>
                   <span v-if="lastSync" class="vulc-status__sync">{{ lastSync }}</span>
                   <span v-for="(msg, key) in (resourceErrors ?? {})" :key="key" class="vulc-status__error">
@@ -529,6 +563,8 @@
 
           <!-- ── Right-side: Territory / Culture / Powers / Timeline intel ── -->
           <ObservatorySidebar
+            v-model:open="rightPanelOpen"
+            v-model:active-tab="rightPanelTab"
             :rare-earth-cultural="culturalData"
             :speculator-index="speculatorIndex"
             :layer-vis="controls.layerVis.value"
@@ -549,9 +585,13 @@
             :year-min="yearMin"
             :year-max="yearMax"
             :filtered-count="filteredCount"
+            :protected-matches="controls.protectedMatches.value"
+            :cultural-loading="culturalLoading"
+            :cultural-error="culturalError?.message ?? null"
             @fly-to-coord="flyToCoord"
             @fly-to-enterprise="zoomToDanger"
             @jump-to-cultural="onJumpToCultural"
+            @retry-cultural="loadCulturalAgents"
             @report-enterprise="onReportEnterprise"
             @report-pattern="onReportPattern"
             @add-observation="onUserContribution()"
@@ -595,23 +635,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { useI18n } from '@/composables/useI18n'
 import { useVulcanObservatoryPage } from '@/composables/useVulcanObservatoryPage'
 
 import MapView2D from '@/components/MapView2D.vue'
 import ObservatorySidebar from '@/components/observatory/ObservatorySidebar.vue'
+import ObservatoryTopbar from '@/components/observatory/ObservatoryTopbar.vue'
 import PhaseFilter from '@/components/observatory/PhaseFilter.vue'
-import RedeCorporativa from '@/components/RedeCorporativa.vue'
-import DataDownloadPanel from '@/components/DataDownloadPanel.vue'
-import ClaimReportModal from '@/components/observatory/ClaimReportModal.vue'
-import ExportModal from '@/components/observatory/ExportModal.vue'
-import KeyboardShortcuts from '@/components/observatory/KeyboardShortcuts.vue'
-import GeoLocateModal from '@/components/observatory/GeoLocateModal.vue'
-import UserContributionModal from '@/components/observatory/UserContributionModal.vue'
-import ClaimsDataTable from '@/components/observatory/ClaimsDataTable.vue'
-import ClaimDetailModal from '@/components/observatory/ClaimDetailModal.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+// Below-fold modals/panels load on demand so the initial bundle stays lean
+// (all render behind `visible` gates — no feature change, just timing).
+const RedeCorporativa = defineAsyncComponent(() => import('@/components/RedeCorporativa.vue'))
+const DataDownloadPanel = defineAsyncComponent(() => import('@/components/DataDownloadPanel.vue'))
+const ClaimReportModal = defineAsyncComponent(() => import('@/components/observatory/ClaimReportModal.vue'))
+const ExportModal = defineAsyncComponent(() => import('@/components/observatory/ExportModal.vue'))
+const KeyboardShortcuts = defineAsyncComponent(() => import('@/components/observatory/KeyboardShortcuts.vue'))
+const GeoLocateModal = defineAsyncComponent(() => import('@/components/observatory/GeoLocateModal.vue'))
+const UserContributionModal = defineAsyncComponent(() => import('@/components/observatory/UserContributionModal.vue'))
+const ClaimsDataTable = defineAsyncComponent(() => import('@/components/observatory/ClaimsDataTable.vue'))
+const ClaimDetailModal = defineAsyncComponent(() => import('@/components/observatory/ClaimDetailModal.vue'))
 
 const { t } = useI18n()
 
@@ -631,6 +674,7 @@ const {
   stats,
   pointsData,
   filteredPoints,
+  filteredPolygons,
   polygonsData,
   protectedData,
   waterData,
@@ -681,14 +725,71 @@ const {
   showClaimReport,
   reportClaim,
   mapContainerRef,
+  culturalLoading,
+  culturalError,
+  loadCulturalAgents,
 } = useVulcanObservatoryPage('pococaldas')
 
 const { categoryStats, totalCount, activeFilterCount } = stats
 
+// Polygons honour the mining-phase filter (see useObservatoryControls):
+// prefer the filtered set, falling back to raw only before the first
+// filter pass runs (filtered empty + no active filters + raw present).
+const visiblePolygons = computed(() => {
+  const f = filteredPolygons.value as unknown as GeoJSON.FeatureCollection | undefined
+  const raw = polygonsData.value as unknown as GeoJSON.FeatureCollection | undefined
+  if (f?.features?.length) return f
+  if (!raw?.features?.length) return f ?? raw
+  if ((activeFilterCount?.value ?? 0) > 0) return f ?? raw
+  return raw
+})
+
 const leftSidebarOpen = ref(false)
 const actionsExpanded = ref(false)
+
+// Right intel panel state (bound to ObservatorySidebar via v-model).
+// Desktop starts open; phones/tablets start closed and auto-coordinate
+// with the left filter drawer so the two never overlap.
+type VulcPanelTab = 'territory' | 'culture' | 'power' | 'timeline'
+const isNarrowScreen = typeof window !== 'undefined' ? window.innerWidth < 769 : false
+const rightPanelOpen = ref(!isNarrowScreen)
+const rightPanelTab = ref<VulcPanelTab>('territory')
+const smallScreen = ref(isNarrowScreen)
+let viewportMql: MediaQueryList | null = null
+function handleViewportChange(e: MediaQueryListEvent) {
+  smallScreen.value = e.matches
+}
 onMounted(() => {
   if (window.innerWidth >= 768) leftSidebarOpen.value = true
+  viewportMql = window.matchMedia('(max-width: 768px)')
+  smallScreen.value = viewportMql.matches
+  viewportMql.addEventListener('change', handleViewportChange)
+})
+onUnmounted(() => {
+  viewportMql?.removeEventListener('change', handleViewportChange)
+})
+
+/** Timeline action: opens the intel panel on the timeline tab. */
+function toggleTimeline() {
+  if (rightPanelOpen.value && rightPanelTab.value === 'timeline') {
+    rightPanelOpen.value = false
+    return
+  }
+  rightPanelTab.value = 'timeline'
+  rightPanelOpen.value = true
+  controls.showTimeline.value = true
+}
+
+// Small screens: the left drawer and right sheet are mutually exclusive.
+watch(rightPanelOpen, (open) => {
+  if (open && smallScreen.value) leftSidebarOpen.value = false
+  if (!open) controls.showTimeline.value = false
+})
+watch(leftSidebarOpen, (open) => {
+  if (open && smallScreen.value) rightPanelOpen.value = false
+})
+watch(rightPanelTab, (tab) => {
+  if (tab !== 'timeline') controls.showTimeline.value = false
 })
 
 // Hoist callbacks for template (so they're defined before used)
@@ -700,6 +801,10 @@ function onDataDownload() {
 }
 function onUserContribution() {
   showUserContribution.value = true
+}
+/** Header Nearby action: opens the geolocate dialog (drops a watch pin). */
+function toggleGeoLocate() {
+  controls.showGeoLocate.value = !controls.showGeoLocate.value
 }
 function onExpandToFullBrazil() {
   loadFullBrazil()
@@ -743,111 +848,20 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
 </script>
 
 <style>
-/* ════════════════════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════════════════════════
  *  Vulcan Observatory v2 — culture-first overlay shell
- *  Layout:
- *    Desktop:  ┌─ topbar (brand · counters) ───────────────────────┐
- *              │                                                   │
- *              │   map fills the viewport behind glass panels      │
- *              │   right panel = CULTURE AND TERRITORY             │
- *              │                                                   │
- *              │   bottom-right: floating action bubble            │
- *              └───────────────────────────────────────────────────┘
- *    Mobile:   ┌─ topbar (brand · counters) ───────────────────────┐
- *              │   right side: vertical action menu                │
- *              └───────────────────────────────────────────────────┘
- * ═══════════════════════════════════════════════════════════════════ */
+ *  Single merged top bar (ObservatoryTopbar: brand · counters · menu).
+ *  The global app header is hidden on this route (see layouts/default),
+ *  so the stack owns its band alone and panels anchor below it:
+ *    merged topbar → panels/pillar → bottom dock.
+ *  Top-bar visuals live in components/observatory/ObservatoryTopbar.vue.
+ * ════════════════════════════════════════════════════════════════════════════════ */
 
-.vulc-topbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: clamp(3.25rem, 7vh, 4rem);
-  z-index: 540;
-  pointer-events: auto;
-  display: grid;
-  grid-template-columns: minmax(0, auto) 1fr;
-  align-items: center;
-  gap: clamp(0.5rem, 1.5vw, 1rem);
-  padding: 0 clamp(0.5rem, 1.5vw, 1rem);
-  background: #0a0a0c;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-.vulc-topbar__brand {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  min-width: 0;
-  padding-right: clamp(0.5rem, 1vw, 0.75rem);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-}
-.vulc-topbar__pulse {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: var(--obs-red, #e74c3c);
-  flex-shrink: 0;
-  box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
-  animation: vulc-pulse 2s ease-out infinite;
-}
-@keyframes vulc-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.6); }
-  70%  { box-shadow: 0 0 0 8px rgba(231, 76, 60, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
-}
-.vulc-topbar__stats {
-  display: flex;
-  align-items: center;
-  gap: clamp(0.4rem, 1vw, 0.75rem);
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  min-width: 0;
-}
-.vulc-topbar__stats::-webkit-scrollbar { display: none; }
-.vulc-stat {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.6rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  font-size: clamp(10px, 1.4vw, 12px);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.vulc-stat__dot {
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.vulc-stat__count {
-  font-weight: 800;
-  color: rgb(255, 255, 255);
-  font-variant-numeric: tabular-nums;
-}
-.vulc-stat__label {
-  color: rgba(255, 255, 255, 0.55);
-}
-.vulc-stat__sep {
-  width: 1px;
-  height: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  flex-shrink: 0;
-}
-.vulc-stat__total {
-  font-size: clamp(10px, 1.4vw, 12px);
-  color: rgba(255, 255, 255, 0.55);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.vulc-stat__total strong {
-  color: #fff;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
+/* No global header on this route — panels anchor below the merged bar. */
+#main-content {
+  --vulc-bar-top: calc(env(safe-area-inset-top) + 0.5rem);
+  --vulc-bar-h: 3rem;
+  --vulc-panel-top: calc(var(--vulc-bar-top) + var(--vulc-bar-h) + 0.9rem);
 }
 
 /* ── Icon buttons (shared) ──────────────────────────────────────── */
@@ -977,7 +991,7 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
 /* ── Mobile: Vertical action menu (right side pillar) ───────────── */
 .vulc-mobile-actions {
   position: absolute;
-  top: clamp(3.5rem, 7vh, 4.5rem);
+  top: var(--vulc-panel-top);
   right: clamp(0.35rem, 0.8vw, 0.5rem);
   bottom: 0;
   z-index: 540;
@@ -1014,17 +1028,12 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
 .vulc-actions-expand-enter-from,
 .vulc-actions-expand-leave-to { opacity: 0; transform: translateY(8px); }
 
-/* ── Topbar responsive ──────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .vulc-topbar { height: 3rem; padding: 0 0.5rem; gap: 0.35rem; }
-  .vulc-topbar__brand { gap: 0.4rem; }
-  .vulc-stat__label, .vulc-stat__total { display: none; }
-}
+/* ── Merged topbar responsive: handled inside ObservatoryTopbar.vue ── */
 
 /* ── Left Panel (mining claim filters) ─────────────────────────────── */
 .vulc-leftpanel {
   position: absolute;
-  top: clamp(3.5rem, 7vh, 4.5rem);
+  top: var(--vulc-panel-top);
   left: clamp(0.5rem, 1vw, 0.75rem);
   bottom: clamp(1rem, 3vh, 1.5rem);
   width: clamp(14rem, 20vw, 17rem);
@@ -1111,7 +1120,7 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
 .vulc-leftpanel__toggle:hover { color: #fff; background: rgba(255, 255, 255, 0.04); }
 .vulc-leftpanel__show {
   position: absolute;
-  top: clamp(3.5rem, 7vh, 4.5rem);
+  top: var(--vulc-panel-top);
   left: clamp(0.5rem, 1vw, 0.75rem);
   width: 2.25rem;
   height: 2.25rem;
@@ -1182,6 +1191,52 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Protected-area quick matches under the claim search ──────── */
+.vulc-protmatches {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.45rem;
+}
+.vulc-protmatch {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  background: rgba(39, 174, 96, 0.07);
+  border: 1px solid rgba(39, 174, 96, 0.25);
+  border-radius: 6px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+.vulc-protmatch:hover { background: rgba(39, 174, 96, 0.16); border-color: rgba(39, 174, 96, 0.5); }
+.vulc-protmatch:focus-visible { outline: 2px solid #27ae60; outline-offset: 1px; }
+.vulc-protmatch__icon { width: 0.75rem; height: 0.75rem; color: #27ae60; flex-shrink: 0; }
+.vulc-protmatch__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.vulc-protmatch__kind {
+  flex-shrink: 0;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+}
+.vulc-protmatch__empty { font-size: 10px; color: rgba(255, 255, 255, 0.4); padding: 0.2rem 0; }
+
 /* ── Layer status readout ─────────────────────────────────────── */
 .vulc-status { display: flex; flex-direction: column; gap: 0.2rem; }
 .vulc-status__row {
@@ -1211,12 +1266,34 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
   color: var(--obs-amber, #f39c12);
   overflow-wrap: break-word;
 }
+
+/* ── Tablet/phone: non-overlapping auto-adjust stack ──────────────
+   From top to bottom, each layer owns its band:
+     merged topbar → left drawer / right sheet / action pillar → bottom dock.
+   The left filter drawer and right intel sheet are mutually exclusive
+   (see watchers); the action pillar hides while the sheet is open. */
 @media (max-width: 768px) {
-  .vulc-leftpanel { display: none; }
-  .vulc-leftpanel__show { display: none; }
+  .vulc-mobile-actions {
+    top: var(--vulc-panel-top);
+    bottom: var(--vulc-dock-clear);
+    max-height: none;
+  }
+  .vulc-has-panel .vulc-mobile-actions { display: none; }
+  .vulc-leftpanel {
+    top: var(--vulc-panel-top);
+    bottom: var(--vulc-dock-clear);
+    width: min(19rem, calc(100vw - 4.5rem));
+  }
+  .vulc-leftpanel__show {
+    top: var(--vulc-panel-top);
+    left: 0.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .vulc-has-panel .vulc-leftpanel__show { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .vulc-topbar__pulse, .vulc-icon-btn { animation: none; transition: none; }
+  .vulc-icon-btn { animation: none; transition: none; }
 }
 </style>

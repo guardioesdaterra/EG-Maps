@@ -9,7 +9,7 @@
     <slot />
 
     
-    <header v-if="showUnifiedHeader" class="fixed left-2 xs:left-4 top-[max(0.5rem,env(safe-area-inset-top))] z-[10000] sm:left-auto sm:right-[max(1rem,env(safe-area-inset-right))] sm:top-[0.5rem]">
+    <header v-if="showUnifiedHeader" class="fixed left-2 right-2 xs:left-4 xs:right-4 top-[max(0.5rem,env(safe-area-inset-top))] z-[10000] sm:left-auto sm:right-[max(1rem,env(safe-area-inset-right))]">
       <div :class="unifiedHeaderShellClass">
         
         <div v-if="showViewToggle" class="map-view-switcher flex flex-row items-center gap-0.5">
@@ -244,7 +244,8 @@ const is3DRoute = computed(() => route.path.endsWith('/3d'))
 const noControl = computed(() => route.query['no-control'] === 'true')
 const hideAll = computed(() => route.query.hideAll === 'true')
 const controlsForced = computed(() => route.query.controls === 'true')
-const showUnifiedHeader = computed(() => (isMapRoute.value || route.path === '/info') && !noControl.value && !hideAll.value && !controlsForced.value)
+const isVulcanRoute = computed(() => route.path.startsWith('/vulcan-observatory'))
+const showUnifiedHeader = computed(() => (isMapRoute.value || route.path === '/info') && !noControl.value && !hideAll.value && !controlsForced.value && !isVulcanRoute.value)
 const showViewToggle = computed(() => isMapRoute.value && !noControl.value && !hideAll.value && !controlsForced.value)
 
 const view2DRoute = computed(() => {
@@ -258,7 +259,7 @@ const view3DRoute = computed(() => {
 
 const isLightTheme = computed(() => !isDark.value)
 const unifiedHeaderShellClass = computed(() => [
-  'flex flex-row w-full sm:w-fit max-w-full items-center justify-between gap-1 rounded-xl border p-1 shadow-xl backdrop-blur-xl overflow-x-auto',
+  'flex flex-row w-full sm:w-fit max-w-full items-center justify-between gap-1 rounded-xl border p-1 shadow-xl backdrop-blur-xl overflow-x-auto scrollbar-none',
   isLightTheme.value
     ? 'bg-white/95 border-black text-black shadow-[var(--panel-shadow)]'
     : 'bg-black/80 border-white/20 text-white shadow-[var(--panel-shadow)]',

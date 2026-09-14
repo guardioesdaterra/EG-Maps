@@ -72,14 +72,15 @@ export function useThreeGlobe(
     const win = window as unknown as { THREE: any; gsap: any; ScrollTrigger: any }
     const THREE = win.THREE
     const gsap = win.gsap
-    if (!THREE || !gsap) {
+    const ScrollTrigger = win.ScrollTrigger
+    if (!THREE || !gsap || !ScrollTrigger) {
       const err = new Error('[useThreeGlobe] THREE/gsap globals missing after script load')
       console.warn(err)
       rejectReady?.(err)
       return
     }
 
-    gsap.registerPlugin(win.ScrollTrigger)
+    gsap.registerPlugin(ScrollTrigger)
 
     const canvas = canvasRef.value
     if (!canvas) { resolveReady?.(); return }
@@ -294,21 +295,21 @@ export function useThreeGlobe(
         start: 'top top',
         end: 'bottom bottom',
         scrub: 1.5,
-        onUpdate: (self) => { targetX = 3 - 3 * self.progress },
+        onUpdate: (self: { progress: number }) => { targetX = 3 - 3 * self.progress },
       })
       ScrollTrigger.create({
         trigger: '#details',
         start: 'top top',
         end: 'bottom bottom',
         scrub: 1.5,
-        onUpdate: (self) => { targetX = -3 * self.progress },
+        onUpdate: (self: { progress: number }) => { targetX = -3 * self.progress },
       })
       ScrollTrigger.create({
         trigger: '#join',
         start: 'top top',
         end: 'bottom bottom',
         scrub: 1.5,
-        onUpdate: (self) => { targetX = -3 + 3 * self.progress },
+        onUpdate: (self: { progress: number }) => { targetX = -3 + 3 * self.progress },
       })
 
       gsap.from('.impact-card', { opacity: 0, x: -50, duration: 1, stagger: 0.1, scrollTrigger: { trigger: '#details', start: 'top center' } })
@@ -320,7 +321,7 @@ export function useThreeGlobe(
         start: 'top bottom',
         end: 'bottom top',
         scrub: 1.5,
-        onUpdate: (self) => {
+        onUpdate: (self: { progress: number }) => {
           panels.forEach((panel, i) => {
             const stagger = (i / PANEL_COUNT) * 0.4
             const panelProgress = Math.max(0, Math.min(1, (self.progress - 0.2 - stagger) / (0.6 - stagger)))

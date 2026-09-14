@@ -374,22 +374,59 @@ function distinctiveTokens(norm: string): string[] {
  * "Meteoric Resources" via METEORIC. Returns null when the holder is not a
  * tracked enterprise (domestic juniors, individuals, sigilo) — attribution
  * is never fabricated.
+ *
+ * Perf: memoized by raw name + precomputed enterprise keys. This runs once
+ * per claim at load AND once per claim per network-line rebuild (20.7k
+ * national claims × dozens of enterprises × NFD+regex without the cache
+ * was seconds of main-thread time).
  */
+const entNormKeys: string[] = []
+function getEntNormKeys(): string[] {
+  if (entNormKeys.length === 0) {
+    for (const ent of ENTERPRISES) entNormKeys.push(normalizeName(ent.name))
+  }
+  return entNormKeys
+}
+const entTokenCache = new Map<string, string[]>()
+function getEntTokens(index: number): string[] {
+  const key = ENTERPRISES[index].name
+  let tokens = entTokenCache.get(key)
+  if (!tokens) {
+    tokens = distinctiveTokens(normalizeName(key))
+    entTokenCache.set(key, tokens)
+  }
+  return tokens
+}
+const holderLinkCache = new Map<string, HolderLinkage | null>()
 export function matchEnterpriseHolder(holderName: string | null | undefined): HolderLinkage | null {
+  const cacheKey = holderName ?? ''
+  const cached = holderLinkCache.get(cacheKey)
+  if (cached !== undefined) return cached
+  const result = matchEnterpriseHolderUncached(holderName)
+  // Distinct holder names are bounded by the dataset (thousands) — the
+  // cache stays small for the session.
+  if (holderLinkCache.size < 50000) holderLinkCache.set(cacheKey, result)
+  return result
+}
+
+function matchEnterpriseHolderUncached(holderName: string | null | undefined): HolderLinkage | null {
   const normClaim = normalizeName(holderName)
   if (!normClaim) return null
-  for (const ent of ENTERPRISES) {
-    const entKey = normalizeName(ent.name)
+  const keys = getEntNormKeys()
+  for (let i = 0; i < ENTERPRISES.length; i++) {
+    const entKey = keys[i]
     if (!entKey) continue
     if (normClaim.includes(entKey) || entKey.includes(normClaim)) {
+      const ent = ENTERPRISES[i]
       return { enterprise: ent.name, country: ent.country, foreign: ent.country !== 'Brazil' }
     }
   }
   const claimTokens = new Set(distinctiveTokens(normClaim))
   if (!claimTokens.size) return null
-  for (const ent of ENTERPRISES) {
-    const entTokens = distinctiveTokens(normalizeName(ent.name))
+  for (let i = 0; i < ENTERPRISES.length; i++) {
+    const entTokens = getEntTokens(i)
     if (entTokens.some(t => claimTokens.has(t))) {
+      const ent = ENTERPRISES[i]
       return { enterprise: ent.name, country: ent.country, foreign: ent.country !== 'Brazil' }
     }
   }

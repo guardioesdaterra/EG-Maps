@@ -22,10 +22,10 @@ import {
   crewRegionKey,
   projectGrantKey,
   CREW_GRANT_MAX_DISTANCE_KM,
-} from '../lib/crew-grants.ts'
-import { allCrewRegionsData } from '../lib/crew-data.ts'
-import { allProjectsData } from '../lib/project-data.ts'
-import type { CrewLocation } from '../lib/crew-data.ts'
+} from '../lib/crew-grants'
+import { allCrewRegionsData } from '../lib/crew-data'
+import { allProjectsData } from '../lib/project-data'
+import type { CrewLocation } from '../lib/crew-data'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = join(ROOT, 'lib', 'crew-grants-map.ts')

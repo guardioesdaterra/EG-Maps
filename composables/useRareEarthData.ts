@@ -11,6 +11,8 @@ import { shallowRef, ref, computed } from 'vue'
 import { computeSpeculatorIndex, type RareEarthFeature, type RareEarthFeatureCollection, type SpeculatorIndexEntry } from '@/lib/observatory-analysis'
 import {
   buildLayerCounts,
+  canonicalProtectedKind,
+  inlineOverlaps,
   normalizePointFeature,
   normalizePolygonFeature,
   summarizeOverlaps,
@@ -88,6 +90,19 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
       ? `${base}data/rare-earth/pococaldas/`
       : `${base}data/rare-earth/`
   }
+  /**
+   * Single-fetch points URL per region. The overlaps files are strict
+   * supersets of the base points files (same features + inline `overlaps`
+   * arrays — verified), so one download + one parse + one normalize pass
+   * replaces the old two-file dance (national: −8.5MB, −1 full
+   * parse/normalize/rebuild cycle).
+   */
+  function pointsUrl(): string {
+    const dir = dataDir()
+    return region.value === 'pococaldas'
+      ? `${dir}points_overlaps.geojson`
+      : `${dir}points_with_overlaps.geojson`
+  }
   function yieldToUI(): Promise<void> {
     if (typeof requestAnimationFrame !== 'undefined') {
       return new Promise(resolve => requestAnimationFrame(() => resolve()))
@@ -106,48 +121,64 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
    * Normalize raw points into scalar-only GeoJSON (MapLibre-safe) plus
    * filter-ready summaries. Danger scores are joined from the speculator
    * index so popups/clusters show live risk instead of a 0.0 placeholder.
+   *
+   * Chunked + yielding: 20.7k national claims normalize in ~100ms slices so
+   * the loading screen keeps animating instead of wedging on one long task.
+   * `onProgress(done, total)` reports for the loader bar; stale-token checks
+   * live with the caller (this never touches shared refs).
    */
-  function normalizeAll(
+  async function normalizeAll(
     pointsGJ: RareEarthFeatureCollection,
     overlaps: OverlapsByProcesso,
     holderIndex: Map<string, SpeculatorIndexEntry>,
-  ): { fc: RareEarthFeatureCollection; summaries: RareEarthFeatureSummary[] } {
+    onProgress?: (_done: number, _total: number) => void,
+  ): Promise<{ fc: RareEarthFeatureCollection; summaries: RareEarthFeatureSummary[] }> {
     const summaries: RareEarthFeatureSummary[] = []
-    const features = pointsGJ.features.map((f: RareEarthFeature) => {
-      const norm = normalizePointFeature(
-        f as GeoJSON.Feature<GeoJSON.Point>,
-        overlaps,
-        holderIndex,
-      )
-      const p = norm.properties as unknown as Record<string, string & number> & {
-        p: string; n: string; s: string; c: string; f: string; u: string
-        a: number; ds: number; net: string; y: number; dsprocesso: string
-        hc: string; he: string; fr: number
+    const rawFeatures = pointsGJ.features as RareEarthFeature[]
+    const out = new Array<RareEarthFeature>(rawFeatures.length)
+    const CHUNK = 2500
+    for (let start = 0; start < rawFeatures.length; start += CHUNK) {
+      const end = Math.min(start + CHUNK, rawFeatures.length)
+      for (let i = start; i < end; i++) {
+        const f = rawFeatures[i]
+        const norm = normalizePointFeature(
+          f as GeoJSON.Feature<GeoJSON.Point>,
+          overlaps,
+          holderIndex,
+        )
+        const p = norm.properties as unknown as Record<string, string & number> & {
+          p: string; n: string; s: string; c: string; f: string; u: string
+          a: number; ds: number; net: string; y: number; dsprocesso: string
+          hc: string; he: string; fr: number
+        }
+        const coords = (norm.geometry as GeoJSON.Point)?.coordinates ?? [0, 0]
+        const processo = String(p.p ?? '')
+        summaries.push({
+          p: processo,
+          n: String(p.n ?? ''),
+          s: String(p.s ?? ''),
+          c: String(p.c ?? ''),
+          f: String(p.f ?? ''),
+          u: String(p.u ?? ''),
+          a: Number(p.a ?? 0),
+          ds: Number(p.ds ?? 4),
+          net: String(p.net ?? ''),
+          y: Number(p.y ?? 0),
+          lo: Number(coords[0] ?? 0),
+          la: Number(coords[1] ?? 0),
+          ov: overlaps[processo] || null,
+          dsprocesso: String(p.dsprocesso ?? ''),
+          hc: String(p.hc ?? 'Unknown'),
+          he: String(p.he ?? ''),
+          fr: Number(p.fr ?? 0),
+        })
+        out[i] = norm as unknown as RareEarthFeature
       }
-      const coords = (norm.geometry as GeoJSON.Point)?.coordinates ?? [0, 0]
-      const processo = String(p.p ?? '')
-      summaries.push({
-        p: processo,
-        n: String(p.n ?? ''),
-        s: String(p.s ?? ''),
-        c: String(p.c ?? ''),
-        f: String(p.f ?? ''),
-        u: String(p.u ?? ''),
-        a: Number(p.a ?? 0),
-        ds: Number(p.ds ?? 4),
-        net: String(p.net ?? ''),
-        y: Number(p.y ?? 0),
-        lo: Number(coords[0] ?? 0),
-        la: Number(coords[1] ?? 0),
-        ov: overlaps[processo] || null,
-        dsprocesso: String(p.dsprocesso ?? ''),
-        hc: String(p.hc ?? 'Unknown'),
-        he: String(p.he ?? ''),
-        fr: Number(p.fr ?? 0),
-      })
-      return norm as unknown as RareEarthFeature
-    })
-    return { fc: { type: 'FeatureCollection', features }, summaries }
+      onProgress?.(end, rawFeatures.length)
+      // Yield between chunks so progress paints; skip the trailing yield.
+      if (end < rawFeatures.length) await yieldToUI()
+    }
+    return { fc: { type: 'FeatureCollection', features: out }, summaries }
   }
 
   const resourceErrors = ref<Record<string, string>>({})
@@ -195,16 +226,17 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
     waterData.value = undefined
     waterThreats.value = []
     culturalData.value = undefined
-    const dir = dataDir()
 
     try {
-      // Points are critical: two attempts, then a surfaced error. Everything
-      // else below is fail-soft (recorded in resourceErrors, shown in the
-      // layer-status panel) so one bad file can't blank the whole observatory.
+      // Points are critical: two attempts, then a surfaced error. Single
+      // fetch — the overlaps file is a verified superset of the base points
+      // file, carrying inline `overlaps` (national: −8.5MB download, −1 full
+      // parse/normalize/rebuild cycle).
       let pointsRes: Response | null = null
+      const url = pointsUrl()
       for (let attempt = 1; attempt <= 2 && !pointsRes?.ok; attempt++) {
         try {
-          pointsRes = await fetchWithTimeout(`${dir}points.geojson`)
+          pointsRes = await fetchWithTimeout(url)
         } catch {
           pointsRes = null
           resourceErrors.value.points = `attempt ${attempt} failed`
@@ -219,89 +251,116 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
       delete resourceErrors.value.points
       const pointsGJ = (await pointsRes.json()) as RareEarthFeatureCollection
       if (token !== loadToken || region.value !== startingRegion) return
-      // Fresh region → drop stale overlap index before transform.
+      // Fresh region → drop stale overlap index before transform. Inline
+      // overlaps are indexed in one cheap pass (no second download).
       overlapsByProcesso = {}
-      const holderIndex = dangerByHolder(pointsGJ)
-      const normalized = normalizeAll(pointsGJ, overlapsByProcesso, holderIndex)
-      features.value = normalized.summaries
-      pointsData.value = normalized.fc
-      loadProgress.value = 20
-
-      await yieldToUI()
-      if (token !== loadToken || region.value !== startingRegion) return
-
-      loadPhase.value = 'overlaps'
-      loadProgress.value = 30
-      const overlapsUrl = region.value === 'pococaldas'
-        ? `${dir}points_overlaps.geojson`
-        : `${dir}points_with_overlaps.geojson`
-      const overlapsRes = await fetchWithTimeout(overlapsUrl, 30000).catch(() => null)
-      if (overlapsRes?.ok) {
-        const overlapsGJ = await overlapsRes.json()
-        overlapsByProcesso = {}
-        for (const f of overlapsGJ.features ?? []) {
-          const proc = (f.properties as Record<string, unknown>)?.processo
-          if (proc && Array.isArray((f.properties as Record<string, unknown>).overlaps) && ((f.properties as Record<string, unknown>).overlaps as unknown[]).length) {
-            overlapsByProcesso[proc as string] = (f.properties as Record<string, unknown>).overlaps as Array<{ name: string; kind: string; distance_km: number }>
-          }
-        }
-        // Rebuild normalized points from the RAW source now that overlaps
-        // are known, so danger scores and overlap counters include
-        // territory pressure (normalization is idempotent).
-        const rebuilt = normalizeAll(pointsGJ, overlapsByProcesso, holderIndex)
-        features.value = rebuilt.summaries
-        pointsData.value = rebuilt.fc
+      for (const f of pointsGJ.features ?? []) {
+        const raw = (f as RareEarthFeature).properties as Record<string, unknown> | undefined
+        const proc = typeof raw?.processo === 'string' ? raw.processo : ''
+        if (!proc) continue
+        const links = inlineOverlaps(raw)
+        if (links.length) overlapsByProcesso[proc] = links
       }
-      if (token !== loadToken || region.value !== startingRegion) return
-
-      loadProgress.value = 50
-      await loadResource('polygons', `${dir}polygons.geojson`, (data: RareEarthFeatureCollection) => {
-        // Normalize the UPPERCASE polygon schema to canonical scalar props
-        // (category/danger/overlaps) so fill colors, popups and the overlap
-        // glow all read the same fields as points.
-        const holderIndex = pointsData.value ? dangerByHolder(pointsData.value) : new Map()
-        polygonsData.value = {
-          type: 'FeatureCollection',
-          features: (data.features ?? []).map(f => normalizePolygonFeature(
-            f as unknown as GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon>,
-            overlapsByProcesso,
-            holderIndex,
-          ) as unknown as RareEarthFeature),
+      const holderIndex = dangerByHolder(pointsGJ)
+      const normalized = await normalizeAll(pointsGJ, overlapsByProcesso, holderIndex, (done, total) => {
+        if (token === loadToken && region.value === startingRegion) {
+          loadProgress.value = Math.round(5 + (30 * done) / Math.max(1, total))
         }
       })
-
-      await yieldToUI()
       if (token !== loadToken || region.value !== startingRegion) return
-
-      loadPhase.value = 'protected'
-      loadProgress.value = 60
-      await Promise.all([
-        loadResource('protected', `${dir}protected-areas.geojson`, (data: RareEarthFeatureCollection) => { protectedData.value = data }),
-        loadResource('analysis', `${dir}deep_analysis.json`, (data: DeepAnalysis) => { deepAnalysis.value = data }),
-        loadResource('water', `${dir}waterbodies.geojson`, (data: GeoJSON.FeatureCollection) => { waterData.value = data }),
-        loadResource('cultural', `${dir}cultural-features.geojson`, (data: GeoJSON.FeatureCollection) => { culturalData.value = data }),
-      ])
-      // Stamp mining-pressure context onto named waters (needs points ready).
-      // Locals (not ref reads): the refs were reset to undefined at the top
-      // of load(), which poisons narrowing for in-flow reads after awaits.
-      // Reassigns the wrapper so the shallowRef notifies downstream watchers.
-      const waterFC = waterData.value as GeoJSON.FeatureCollection | undefined
-      const pointsFC = pointsData.value as unknown as GeoJSON.FeatureCollection | undefined
-      if (waterFC?.features.length && pointsFC?.features.length) {
-        const threats = computeWaterThreats(waterFC, pointsFC)
-        waterThreats.value = threats
-        const enriched = enrichWaterFeatures(waterFC, threats)
-        if (enriched) waterData.value = { type: 'FeatureCollection', features: enriched.features }
-      }
-      if (token !== loadToken || region.value !== startingRegion) return
-      loadProgress.value = 100
-
-      loadPhase.value = 'complete'
+      features.value = normalized.summaries
+      pointsData.value = normalized.fc
+      loadProgress.value = 40
     } finally {
       if (token === loadToken && region.value === startingRegion) {
+        // Points-first paint: the map becomes interactive as soon as claims
+        // are ready. Heavy polygons/protected/water layers stream in behind
+        // via loadSecondary() — same visible end state, faster first paint.
         isLoading.value = false
       }
     }
+    if (token !== loadToken || region.value !== startingRegion) return
+    // Detached (callers already have their points) but token-guarded so a
+    // region switch mid-flight can never mix datasets.
+    void loadSecondary(token, startingRegion)
+  }
+
+  /**
+   * Heavy secondary layers (polygons, protected areas, analysis, water,
+   * cultural) load after first paint. Everything here is fail-soft
+   * (recorded in resourceErrors) so one bad file can't blank the map.
+   */
+  async function loadSecondary(token: number, startingRegion: DataRegion) {
+    const alive = () => token === loadToken && region.value === startingRegion
+    if (!alive()) return
+    const base = normalizedBase()
+    const dir = startingRegion === 'pococaldas'
+      ? `${base}data/rare-earth/pococaldas/`
+      : `${base}data/rare-earth/`
+
+    loadPhase.value = 'polygons'
+    loadProgress.value = 50
+    await yieldToUI()
+    if (!alive()) return
+    await loadResource('polygons', `${dir}polygons.geojson`, (data: RareEarthFeatureCollection) => {
+      if (!alive()) return
+      // Normalize the UPPERCASE polygon schema to canonical scalar props
+      // (category/danger/overlaps) so fill colors, popups and the overlap
+      // glow all read the same fields as points.
+      const holderIndex = pointsData.value ? dangerByHolder(pointsData.value) : new Map()
+      polygonsData.value = {
+        type: 'FeatureCollection',
+        features: (data.features ?? []).map(f => normalizePolygonFeature(
+          f as unknown as GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon>,
+          overlapsByProcesso,
+          holderIndex,
+        ) as unknown as RareEarthFeature),
+      }
+    })
+
+    await yieldToUI()
+    if (!alive()) return
+
+    loadPhase.value = 'protected'
+    loadProgress.value = 60
+    await Promise.all([
+      loadResource('protected', `${dir}protected-areas.geojson`, (data: RareEarthFeatureCollection) => {
+        if (!alive()) return
+        // Canonicalize `kind` once (ti | quilombo | uc | buffer | other,
+        // original kept in `kind_raw`) so map-layer filters, counts,
+        // sidebar groups and search all match on the same values.
+        for (const f of data.features ?? []) {
+          const props = (f as GeoJSON.Feature).properties as Record<string, unknown> | null | undefined
+          if (!props || typeof props !== 'object') continue
+          const rawKind = (props as Record<string, unknown>).kind
+          const rawCat = (props as Record<string, unknown>).category
+          const canon = canonicalProtectedKind(rawKind, rawCat)
+          if (typeof rawKind === 'string' && rawKind !== canon) {
+            (props as Record<string, unknown>).kind_raw = rawKind
+          }
+          (props as Record<string, unknown>).kind = canon
+        }
+        protectedData.value = data
+      }),
+      loadResource('analysis', `${dir}deep_analysis.json`, (data: DeepAnalysis) => { if (alive()) deepAnalysis.value = data }),
+      loadResource('water', `${dir}waterbodies.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) waterData.value = data }),
+      loadResource('cultural', `${dir}cultural-features.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) culturalData.value = data }),
+    ])
+    // Stamp mining-pressure context onto named waters (needs points ready).
+    // Locals (not ref reads): the refs were reset to undefined at the top
+    // of load(), which poisons narrowing for in-flow reads after awaits.
+    // Reassigns the wrapper so the shallowRef notifies downstream watchers.
+    const waterFC = waterData.value as GeoJSON.FeatureCollection | undefined
+    const pointsFC = pointsData.value as unknown as GeoJSON.FeatureCollection | undefined
+    if (waterFC?.features.length && pointsFC?.features.length) {
+      const threats = computeWaterThreats(waterFC, pointsFC)
+      waterThreats.value = threats
+      const enriched = enrichWaterFeatures(waterFC, threats)
+      if (enriched) waterData.value = { type: 'FeatureCollection', features: enriched.features }
+    }
+    if (!alive()) return
+    loadProgress.value = 100
+    loadPhase.value = 'complete'
   }
 
   /** Expand from regional to full Brazil dataset */

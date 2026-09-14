@@ -952,21 +952,27 @@ select option {
 }
 
 @keyframes noise-bg {
-  0% { background-position: 0px 0px; }
-  10% { background-position: -5% -5%; }
-  20% { background-position: -10% 5%; }
-  30% { background-position: 5% -10%; }
-  40% { background-position: -5% 15%; }
-  50% { background-position: -10% 5%; }
-  60% { background-position: 15% 0px; }
-  70% { background-position: 0px 10%; }
-  80% { background-position: -15% 0px; }
-  90% { background-position: 10% 5%; }
-  100% { background-position: 5% 0px; }
+  0% { transform: translate3d(0, 0, 0); }
+  10% { transform: translate3d(-6px, -4px, 0); }
+  20% { transform: translate3d(-3px, 6px, 0); }
+  30% { transform: translate3d(6px, -8px, 0); }
+  40% { transform: translate3d(-4px, 10px, 0); }
+  50% { transform: translate3d(-8px, 4px, 0); }
+  60% { transform: translate3d(10px, 0, 0); }
+  70% { transform: translate3d(0, 8px, 0); }
+  80% { transform: translate3d(-10px, 0, 0); }
+  90% { transform: translate3d(8px, 4px, 0); }
+  100% { transform: translate3d(4px, 0, 0); }
 }
 
 .animate-noise-bg {
   animation: noise-bg 0.2s steps(2) infinite;
+  /* Compositor-only animation: transform never triggers repaint,
+     unlike the previous background-position version which forced a
+     full-viewport re-tile 5x/sec. Pair with an oversized (-inset-3)
+     layer so edges never show during jitter. */
+  will-change: transform;
+  contain: strict;
 }
 
 /* Hex grid canvas */
@@ -1163,16 +1169,20 @@ select option {
    Rare Earth Observatory popup (new structured)
    ───────────────────────────────────────────── */
 .ree-popup-wrap .maplibregl-popup-content {
-  background: var(--obs-panel-bg);
+  background: rgba(10, 10, 14, 0.97);
   color: var(--obs-text-primary);
-  border: 1px solid var(--obs-panel-border);
-  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
   padding: 0;
-  box-shadow: 0 10px 30px var(--shadow-color);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(0, 0, 0, 0.6);
+  max-width: min(26rem, 92vw);
 }
 .ree-popup-wrap .maplibregl-popup-tip {
-  border-top-color: var(--obs-panel-bg) !important;
-  border-bottom-color: var(--obs-panel-bg) !important;
+  border-top-color: rgba(10, 10, 14, 0.97) !important;
+  border-bottom-color: rgba(10, 10, 14, 0.97) !important;
+}
+.ree-popup-wrap--stacked .maplibregl-popup-content {
+  max-width: min(27.5rem, 94vw);
 }
 .ree-popup-wrap .maplibregl-popup-close-button {
   color: var(--obs-text-muted);
@@ -1187,23 +1197,161 @@ select option {
 
 /* cyberpunk-popup consistency (legacy fallback) */
 .cyberpunk-popup .maplibregl-popup-content {
-  background: var(--obs-panel-bg);
+  background: rgba(10, 10, 14, 0.97);
   color: var(--obs-text-primary);
-  border: 1px solid var(--obs-panel-border);
-  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
   padding: 0;
-  box-shadow: 0 10px 30px var(--shadow-color);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(0, 0, 0, 0.6);
+  max-width: min(26rem, 92vw);
 }
 .cyberpunk-popup .maplibregl-popup-tip {
-  border-top-color: var(--obs-panel-bg) !important;
-  border-bottom-color: var(--obs-panel-bg) !important;
+  border-top-color: rgba(10, 10, 14, 0.97) !important;
+  border-bottom-color: rgba(10, 10, 14, 0.97) !important;
 }
 
 .ree-popup {
   font-family: inherit;
-  min-width: clamp(10rem, 50vw, 13.75rem);
-  max-width: clamp(12rem, 60vw, 18.75rem);
+  min-width: clamp(16rem, 70vw, 22rem);
+  max-width: min(26rem, 92vw);
 }
+.ree-popup--stacked {
+  min-width: clamp(18rem, 78vw, 24rem);
+  max-width: min(27.5rem, 94vw);
+}
+/* ── Stacked overlapping-layers popup ── */
+.ree-popup-wrap--stacked .maplibregl-popup-close-button {
+  width: 26px;
+  height: 26px;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 0 2px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  top: 6px;
+  right: 6px;
+}
+.ree-popup-wrap--stacked .maplibregl-popup-close-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+.ree-popup__stack-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 42px 0 12px;
+}
+.ree-popup__stack-title {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ree-popup__stack-count {
+  flex-shrink: 0;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--stack-accent, #e74c3c);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.ree-popup__tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 8px 12px 10px;
+  margin-top: 2px;
+  border-bottom: 2px solid var(--stack-accent, #e74c3c);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+.ree-popup__tabs::-webkit-scrollbar { height: 4px; }
+.ree-popup__tabs::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+.ree-popup__tab {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  flex-shrink: 0;
+  max-width: 13rem;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+.ree-popup__tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+.ree-popup__tab.is-active {
+  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--tab-accent, #e74c3c) 26%, rgba(10, 10, 14, 0.97));
+  border-color: var(--tab-accent, #e74c3c);
+  box-shadow: 0 0 0 1px var(--tab-accent, #e74c3c), 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+.ree-popup__tab:focus-visible {
+  outline: 2px solid var(--tab-accent, #e74c3c);
+  outline-offset: 2px;
+}
+.ree-popup__tab-dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ree-popup__tab-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ree-popup__tab-kind {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.ree-popup__tab-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.68);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 11rem;
+}
+.ree-popup__tab.is-active .ree-popup__tab-label { color: #fff; }
+.ree-popup__panels {
+  max-height: min(58vh, 28rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+.ree-popup__panels::-webkit-scrollbar { width: 5px; }
+.ree-popup__panels::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 3px; }
+.ree-popup__panel { min-width: 0; }
+.ree-popup__panel:focus { outline: none; }
+.ree-popup__panel:focus-visible { outline: 2px solid var(--stack-accent, #e74c3c); outline-offset: -2px; }
+.ree-popup__panel[hidden] { display: none; }
 .ree-popup__inner {
   --ree-accent: var(--danger);
 }
@@ -1844,10 +1992,28 @@ select option {
   --obs-z-leftbar: 520;
   --obs-z-rightslot: 510;
   --obs-z-bottombar: 550;
-  --obs-z-modal-backdrop: 9990;
-  --obs-z-modal: 9991;
-  --obs-z-modal-close: 9992;
-  --obs-z-toast: 10000;
+  --obs-z-modal-backdrop: 10001;
+  --obs-z-modal: 10002;
+  --obs-z-modal-close: 10003;
+  --obs-z-toast: 10004;
+
+  /* ── Vulcan vertical stack contract ──────────────────────────
+     The global app header (~2.6rem desktop / ~3.1rem mobile + offset)
+     owns the top band. The observatory topbar (brand + stat pills)
+     always sits in its own band BELOW it, and every floating panel
+     anchors below that band — one shared formula so the menu, the
+     stats and the panels can never overlap on any viewport. */
+  --vulc-bar-top: 3.5rem;
+  --vulc-bar-h: clamp(3rem, 6vh, 3.5rem);
+  --vulc-stack-gap: 0.5rem;
+  --vulc-panel-top: calc(var(--vulc-bar-top) + var(--vulc-bar-h) + var(--vulc-stack-gap));
+  --vulc-dock-clear: calc(env(safe-area-inset-bottom) + 5rem);
+}
+@media (max-width: 768px) {
+  :root {
+    --vulc-bar-top: calc(env(safe-area-inset-top) + 4rem);
+    --vulc-bar-h: 3rem;
+  }
 }
 
 /* ── Base fade transition (loading, errors, simple toggles) ── */
@@ -1894,4 +2060,110 @@ select option {
 .scale-fade-leave-to .project-popup-content-fixed,
 .scale-fade-leave-to .crew-popup-content-fixed {
   opacity: 0;
+}
+
+/* ─────────────────────────────────────────────
+   Mobile viewport foundations
+   Safe-area, overflow, tap targets, map popups
+   ───────────────────────────────────────────── */
+@layer base {
+  html, body {
+    overflow-x: clip;
+  }
+
+  body {
+    /* Dynamic viewport fixes mobile browser chrome jumps */
+    min-height: 100dvh;
+    /* Prevent horizontal overscroll from fixed full-bleed rows */
+    overscroll-behavior-x: none;
+  }
+
+  /* Interactive elements meet the 44px minimum touch target */
+  button, a, select, input[type='checkbox'], input[type='radio'] {
+    touch-action: manipulation;
+  }
+
+  /* Form fields: 16px+ font prevents iOS auto-zoom on focus */
+  input, select, textarea {
+    font-size: max(16px, 1rem);
+  }
+  @media (min-width: 768px) {
+    input, select, textarea {
+      font-size: inherit;
+    }
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbars on horizontally-scrollable mobile chrome */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Compact preview cards must fit 320px-wide phones */
+@media (max-width: 480px) {
+  .pc {
+    width: calc(100vw - 2rem);
+    max-width: calc(100vw - 2rem);
+  }
+  .pc__title, .pc__sci {
+    white-space: normal;
+  }
+  .maplibregl-popup {
+    max-width: calc(100vw - 2rem) !important;
+  }
+}
+
+/* Full-screen detail overlays become edge-to-edge sheets on phones */
+@media (max-width: 640px) {
+  .species-popup-overlay-fixed,
+  .project-popup-overlay-fixed,
+  .crew-popup-overlay-fixed {
+    padding: 0.5rem;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    align-items: flex-end;
+  }
+  .species-popup-content-fixed,
+  .project-popup-content-fixed,
+  .crew-popup-content-fixed {
+    max-height: min(94dvh, 50rem);
+    border-radius: 14px 14px 12px 12px;
+  }
+  .species-popup-close-btn-fixed,
+  .project-popup-close-btn-fixed,
+  .crew-popup-close-btn-fixed {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+}
+
+/* Filter/search panels: keep clear of header, dock and notches */
+@media (max-width: 768px) {
+  .map-filter-panel {
+    max-height: calc(100dvh - 12rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Observatory modal backdrops: clear the app
+   header/dock notches on small screens
+   ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .claims-dt-backdrop,
+  .claim-report-backdrop,
+  .export-modal-backdrop,
+  .geo-locate-backdrop,
+  .uc-backdrop,
+  .kbd-backdrop {
+    padding: 0.5rem;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
 }

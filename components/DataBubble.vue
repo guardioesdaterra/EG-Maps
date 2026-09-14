@@ -271,7 +271,7 @@ const speciesLegendItems = computed(() => [
   position: absolute;
   right: clamp(0.5rem, 4vw, 1.5rem);
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   align-items: flex-end;
 }
 
@@ -323,9 +323,14 @@ const speciesLegendItems = computed(() => [
 }
 
 .bubble-panel {
-  margin-top: 0.5rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
   min-width: clamp(10rem, 30vw, 18rem);
   max-width: clamp(12rem, 35vw, 22rem);
+  max-height: min(60dvh, 28rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   background: var(--panel-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -340,7 +345,8 @@ const speciesLegendItems = computed(() => [
   .bubble-panel {
     min-width: 11rem;
     max-width: calc(100vw - 1.5rem);
-    margin-top: 0.375rem;
+    margin-bottom: 0.375rem;
+    max-height: min(55dvh, 24rem);
   }
 }
 
@@ -557,6 +563,6 @@ const speciesLegendItems = computed(() => [
 .bubble-expand-enter-from,
 .bubble-expand-leave-to {
   opacity: 0;
-  transform: translateY(-0.5rem) scale(0.95);
+  transform: translateY(0.5rem) scale(0.95);
 }
 </style>

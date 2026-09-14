@@ -24,6 +24,7 @@ export const WATER_LAYER_IDS = [
 export function setupWaterLayers(
   map: MapLibreMap,
   waterData: GeoJSON.FeatureCollection,
+  options?: { attachClickHandlers?: boolean },
 ): () => void {
   if (!waterData?.features?.length) return () => {}
   if (!map.isStyleLoaded()) return () => {}
@@ -77,7 +78,10 @@ export function setupWaterLayers(
     id: 'ree-water-poly-label',
     type: 'symbol',
     source: WATER_SOURCE,
-    filter: ['all', ...polyGeom, ['has', 'name']] as unknown as maplibregl.FilterSpecification,
+    // NOTE: do NOT spread polyGeom here — `['all', ...polyGeom, ...]` would
+    // flatten to `['all', '==', [...], 'Polygon', ...]`, which fails
+    // style-spec validation (`filter[1]: array expected, string found`).
+    filter: ['all', polyGeom, ['has', 'name']] as unknown as maplibregl.FilterSpecification,
     layout: {
       'text-field': ['get', 'name'],
       'text-font': ['Open Sans Regular'],
@@ -114,7 +118,8 @@ export function setupWaterLayers(
     id: 'ree-water-river-label',
     type: 'symbol',
     source: WATER_SOURCE,
-    filter: ['all', ...lineGeom, ['has', 'name']] as unknown as maplibregl.FilterSpecification,
+    // Same no-spread rule as the poly label above.
+    filter: ['all', lineGeom, ['has', 'name']] as unknown as maplibregl.FilterSpecification,
     layout: {
       'text-field': ['get', 'name'],
       'text-font': ['Open Sans Regular'],
@@ -181,12 +186,15 @@ export function setupWaterLayers(
   const onWaterEnter = () => { map.getCanvas().style.cursor = 'pointer' }
   const onWaterLeave = () => { map.getCanvas().style.cursor = '' }
 
+  // The observatory's unified map click owns popups (tabbed for overlaps);
+  // water keeps hover affordances but skips its own click popup on request.
+  const attachClicks = options?.attachClickHandlers !== false
   for (const layerId of ['ree-water-poly-fill', 'ree-water-river-line']) {
-    map.on('click', layerId, onWaterClick)
+    if (attachClicks) map.on('click', layerId, onWaterClick)
     map.on('mouseenter', layerId, onWaterEnter)
     map.on('mouseleave', layerId, onWaterLeave)
     cleanups.push(() => {
-      map.off('click', layerId, onWaterClick)
+      if (attachClicks) map.off('click', layerId, onWaterClick)
       map.off('mouseenter', layerId, onWaterEnter)
       map.off('mouseleave', layerId, onWaterLeave)
     })

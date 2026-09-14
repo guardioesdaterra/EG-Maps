@@ -3,7 +3,7 @@
  * @why Shared map initialization logic — tile auth, layer setup, common event handlers
  * @functions useMapBase
  * @interfaces MapBaseProps, MapBaseConfig
- * @deps vue (ref, computed, nextTick, onMounted, onUnmounted, watch, type Ref); @/composables/useMediaQuery (useMediaQuery); @/composables/useI18n (useI18n); @/composables/useFocusTrap (useFocusTrap); @/composables/useMapHexGrid (useMapHexGrid); @/composables/useMapPopup (useSpeciesPopup, useProjectPopup, useCrewPopup, usePreviewCard); @/composables/useMapConnections (useMapConnections); @/composables/useMapMarker (useMapMarker); @/composables/useRareEarthController (useRareEarthController); @/composables/useCulturalLayers (getPopupContent); @/composables/useSpeciesPanel (useSpeciesPanel); @/composables/useAdaptiveQuality (useAdaptiveQuality); @/lib/project-data (allProjectsData); @/lib/map-utils (openRareEarthOverlayPopup); @/composables/useMapLibre (detectWebGLSupport, getMapStyle); @/lib/constants (HEX_GRID)
+ * @deps vue (ref, computed, nextTick, onMounted, onUnmounted, watch, type Ref); @/composables/useMediaQuery (useMediaQuery); @/composables/useI18n (useI18n); @/composables/useFocusTrap (useFocusTrap); @/composables/useMapHexGrid (useMapHexGrid); @/composables/useMapPopup (useSpeciesPopup, useProjectPopup, useCrewPopup, usePreviewCard); @/composables/useMapConnections (useMapConnections); @/composables/useMapMarker (useMapMarker); @/composables/useRareEarthController (useRareEarthController); @/composables/useCulturalLayers (getPopupContent); @/composables/useVulcanCircles (VULCAN_CENTER); @/composables/useSpeciesPanel (useSpeciesPanel); @/composables/useAdaptiveQuality (useAdaptiveQuality); @/lib/project-data (allProjectsData); @/lib/map-utils (openRareEarthOverlayPopup); @/composables/useMapLibre (detectWebGLSupport, getMapStyle); @/lib/constants (HEX_GRID)
  * @connections components/MapView2D.vue, components/MapView3D.vue
  */
 import { ref, shallowRef, computed, nextTick, onMounted, onUnmounted, watch, type Ref } from 'vue'
@@ -26,14 +26,36 @@ import { allProjectsData } from '@/lib/project-data'
 import { openRareEarthOverlayPopup } from '@/lib/map-utils'
 import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
 import { HEX_GRID } from '@/lib/constants'
+import { VULCAN_CENTER } from '@/composables/useVulcanCircles'
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { ParticleQualityConfig } from '@/lib/map-effects'
-import type { ClusterResultItem } from '@/components/map/ClusterResultsPanel.vue'
 import { useAppRuntime } from '@/composables/useAppRuntime'
+
+export interface ClusterResultItem {
+  id: string
+  title: string
+  subtitle: string
+  color?: string
+  coordinates: [number, number]
+}
+
+/**
+ * Vulcan observatory viewport lock: the 2D map is constrained to ~100km
+ * around the plateau center (the "Regional Zone" circle) so users can't
+ * drift out to far-field context. minZoom 8 ≈ a 100km-radius view at this
+ * latitude; maxBounds hard-clamps panning. Lifted when the full-Brazil
+ * dataset loads (see useVulcanObservatoryPage's isRegional watcher).
+ */
+export const VULCAN_MAX_BOUNDS: [[number, number], [number, number]] = [
+  [VULCAN_CENTER[0] - 0.97, VULCAN_CENTER[1] - 0.9],
+  [VULCAN_CENTER[0] + 0.97, VULCAN_CENTER[1] + 0.9],
+]
+export const VULCAN_MIN_ZOOM_2D = 8
+export const VULCAN_MIN_ZOOM_GLOBE = 4
 
 export interface MapBaseProps {
   projects?: ProjectData[]
@@ -536,7 +558,7 @@ export function useMapBase(config: MapBaseConfig) {
     errorMessage.value = ''
     isLoading.value = true
     try {
-      map.setStyle(currentStyle())
+      map.setStyle(currentStyle() as maplibregl.StyleSpecification | string)
     } catch (err) {
       console.error('[EG Maps] failed to switch tile provider style', err)
       isLoading.value = false
@@ -642,6 +664,8 @@ export function useMapBase(config: MapBaseConfig) {
         attributionControl: false,
         renderWorldCopies: !isGlobe,
         fadeDuration: 100,
+        minZoom: isRee ? (isGlobe ? VULCAN_MIN_ZOOM_GLOBE : VULCAN_MIN_ZOOM_2D) : undefined,
+        maxBounds: isRee && !isGlobe ? VULCAN_MAX_BOUNDS : undefined,
         maxZoom: tileMaxZoom,
         maxTileCacheSize: qs.maxTileCacheSize,
         maxTileCacheZoomLevels: qs.maxTileCacheZoomLevels,
@@ -658,21 +682,21 @@ export function useMapBase(config: MapBaseConfig) {
       console.time('[perf] initMap → style.load')
       console.time('[perf] initMap → map.load (tiles)')
 
-      map.addControl(
+      created.addControl(
         new maplibregl.AttributionControl({
           customAttribution: `EARTH GUARDIANS @ ${new Date().getFullYear()}`
         })
       )
 
       if (!isGlobe && !isMobile.value && !hideAll.value) {
-        map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-left')
+        created.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-left')
       }
 
       let styleLoadFired = false
       let providerSwitched = false
       // Watch for manual header toggles / auto-degradation while this map lives.
       const stopProviderWatch = watch(() => tileProvider.effectiveProvider.value, (next, prev) => {
-        if (!map || !isMounted || next === prev || providerSwitched) return
+        if (!created || !isMounted || next === prev || providerSwitched) return
         providerSwitched = true
         try {
           console.warn(`[tile-provider] switching style ${prev} → ${next}`)
@@ -682,9 +706,9 @@ export function useMapBase(config: MapBaseConfig) {
         }
       })
       // Owned here (not onUnmounted) so re-init doesn't leak watchers.
-      ;(map as unknown as { __stopProviderWatch?: () => void }).__stopProviderWatch = stopProviderWatch
+      ;(created as unknown as { __stopProviderWatch?: () => void }).__stopProviderWatch = stopProviderWatch
       startFpsReporting()
-      map.on('style.load', () => {
+      created.on('style.load', () => {
         if (!styleLoadFired) {
           styleLoadFired = true
           console.timeEnd('[perf] initMap → style.load')
@@ -699,14 +723,14 @@ export function useMapBase(config: MapBaseConfig) {
       })
 
       let idleReported = false
-      map.on('idle', () => {
+      created.on('idle', () => {
         if (!idleReported) {
           idleReported = true
           tileProvider.noteStyleReady()
         }
       })
 
-      map.on('load', () => {
+      created.on('load', () => {
         if (!isMounted) return
         isInitializing = false
         console.timeEnd('[perf] initMap → map.load (tiles)')
@@ -746,13 +770,13 @@ export function useMapBase(config: MapBaseConfig) {
         onMapReady?.(map!)
       })
 
-      map.on('resize', () => {
+      created.on('resize', () => {
         hexGrid.debouncedSetup()
       })
 
       let errorCount = 0
 
-      map.on('error', (err) => {
+      created.on('error', (err) => {
         console.error(`[${isGlobe ? 'MapView3D' : 'MapView2D'}] MapLibre error:`, err)
         errorCount++
         tileProvider.noteTileError()
@@ -763,7 +787,7 @@ export function useMapBase(config: MapBaseConfig) {
           tileProvider.forceAutoFallback('tile-errors')
           return
         }
-        if (!map?.loaded()) {
+        if (!created.loaded()) {
           isInitializing = false
           isLoading.value = false
           hasError.value = true

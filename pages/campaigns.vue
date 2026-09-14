@@ -204,7 +204,7 @@ useHead({
 .page-shell {
   width: min(100% - 2rem, 72rem);
   margin: 0 auto;
-  padding: clamp(2rem, 5vh, 4rem) 0 clamp(4rem, 8vh, 6rem);
+  padding: clamp(2rem, 5vh, 4rem) 0 calc(clamp(4rem, 8vh, 6rem) + env(safe-area-inset-bottom));
 }
 
 /* ── Shared ── */
@@ -220,7 +220,7 @@ useHead({
   font-weight: 700;
   text-decoration: none;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
-  min-height: 40px;
+  min-height: 44px;
 }
 .btn--primary { background: var(--text-primary); color: var(--bg-primary); }
 .btn--primary:hover { opacity: 0.85; }

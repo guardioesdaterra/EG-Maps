@@ -123,30 +123,6 @@ function loadGrants(filePath: string): Grant[] {
   throw new Error("Unknown JSON structure — expected { grants: [...] } or an array");
 }
 
-/**
- * Generate a deterministic UUID v5 from a namespace + name.
- * Uses crypto.subtle for cross-platform support.
- */
-const UUID_V5_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // RFC 4122 DNS namespace
-async function toUUID(name: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const nameBytes = encoder.encode(name);
-  const namespaceBytes = Uint8Array.from(
-    UUID_V5_NAMESPACE.replace(/-/g, '').match(/.{2}/g)!.map(h => parseInt(h, 16))
-  );
-  // Concatenate namespace + name for SHA-1 hashing
-  const data = new Uint8Array(namespaceBytes.length + nameBytes.length);
-  data.set(namespaceBytes);
-  data.set(nameBytes, namespaceBytes.length);
-  const hashBuffer = await crypto.subtle.digest('SHA-1', data);
-  const hash = new Uint8Array(hashBuffer);
-  // Set version 5 and variant bits per RFC 4122
-  hash[6] = (hash[6] & 0x0f) | 0x50;
-  hash[8] = (hash[8] & 0x3f) | 0x80;
-  const hex = Array.from(hash.slice(0, 16)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20,32)}`;
-}
-
 function loadAgents(filePath: string): CulturalAgent[] {
   const raw = readFileSync(filePath, "utf-8");
   const parsed = JSON.parse(raw);
@@ -209,6 +185,13 @@ async function batchUpsert(
   records: Record<string, unknown>[],
   hashFields: string[],
   selectCols: string,
+  // v2.2: conflict-target config. Grants use the natural key
+  // (source_id, source) — legacy rows carry pre-UUID ids, so id-based
+  // matching misses them and the whole batch dies on idx_scraped_source.
+  // Matching on the UNIQUE index heals legacy rows in place (ids stable).
+  keyOf: (r: Record<string, unknown>) => string = (r) => String(r.id ?? ""),
+  fetchExisting?: (batch: Record<string, unknown>[]) => Promise<Record<string, unknown>[]>,
+  onConflict = "id",
 ) {
   const BATCH_SIZE = 200;
   let inserted = 0;
@@ -218,6 +201,12 @@ async function batchUpsert(
 
   const hashFn = (r: Record<string, unknown>) => JSON.stringify(hashFields.map((f) => r[f] ?? ''));
 
+  const defaultFetch = async (batch: Record<string, unknown>[]) => {
+    const ids = batch.map((r) => (r as Record<string, unknown>).id as string);
+    const { data }: { data: SupabaseTable[] | null } = await supabase.from(table).select(selectCols).in("id", ids);
+    return (data ?? []) as unknown as Record<string, unknown>[];
+  };
+
   for (let i = 0; i < records.length; i += BATCH_SIZE) {
     const batch = records.slice(i, i + BATCH_SIZE);
     const batchNum = Math.floor(i / BATCH_SIZE) + 1;
@@ -225,24 +214,23 @@ async function batchUpsert(
 
     process.stdout.write(`Batch ${batchNum}/${totalBatches} (${batch.length})... `);
 
-    const ids = batch.map((r) => r.id as string);
-    const { data: existing }: { data: SupabaseTable[] | null } = await supabase.from(table).select(selectCols).in("id", ids);
+    const existing = await (fetchExisting ?? defaultFetch)(batch as Record<string, unknown>[]);
 
     const existMap = new Map<string, Record<string, unknown>>();
-    for (const e of existing ?? []) existMap.set(e.id as string, e);
+    for (const e of existing ?? []) existMap.set(keyOf(e), e);
 
     const toUpsert: Record<string, unknown>[] = [];
     let bIns = 0, bUpd = 0, bSki = 0;
 
     for (const r of batch) {
-      const ex = existMap.get(r.id as string);
+      const ex = existMap.get(keyOf(r));
       if (!ex) { toUpsert.push(r); bIns++; continue; }
       if (hashFn(ex) === hashFn(r)) { bSki++; continue; }
       toUpsert.push(r); bUpd++;
     }
 
     if (toUpsert.length > 0) {
-      const { error } = await supabase.from(table).upsert(toUpsert as never, { onConflict: "id", ignoreDuplicates: false });
+      const { error } = await supabase.from(table).upsert(toUpsert as never, { onConflict, ignoreDuplicates: false });
       if (error) {
         process.stdout.write(`[FAIL] ${error.message}\n`);
         errors.push(`Batch ${batchNum}: ${error.message}`);
@@ -297,7 +285,8 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
   const nowIso = new Date().toISOString();
   for (const g of grants) {
     const r: Record<string, unknown> = {};
-    if (cols.has("id"))                r.id = await toUUID(g.id);
+    // NOTE: no r.id — inserts use the DB gen_random_uuid() default and
+    // matching runs on the (source_id, source) natural key (see below).
     if (cols.has("title"))             r.title = g.title || "Untitled Grant";
     if (cols.has("funder"))            r.funder = g.funder || "";
     if (cols.has("source"))            r.source = g.source || "";
@@ -350,12 +339,26 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
   // Fields used for change detection — excludes fetched_at/last_seen_at
   // (change every run) and is_standing (static after filtering)
   const hashFields = ["title", "funder", "source", "url", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories", "language", "relevance", "status", "grant_status", "grant_type", "grant_types", "highlights", "urgency", "deadline_days", "amount_usd", "priority_score", "quality_score", "url_status"];
-  const selectCols = "id, " + hashFields.join(", ") + ", is_standing";
+  const selectCols = "id, " + hashFields.join(", ") + ", is_standing, source_id";
+
+  // Natural-key matching on UNIQUE idx_scraped_source (source_id, source).
+  const keyOf = (r: Record<string, unknown>) => `${r.source ?? ""}::${r.source_id ?? ""}`;
+  const fetchExisting = async (batch: Record<string, unknown>[]) => {
+    const sources = [...new Set(batch.map((r) => String(r.source ?? "")))];
+    const sids = [...new Set(batch.map((r) => String(r.source_id ?? "")))];
+    const { data } = await supabase.from("scraped_grants").select(selectCols)
+      .in("source", sources).in("source_id", sids) as unknown as { data: Record<string, unknown>[] | null };
+    return (data ?? []).filter((e) =>
+      batch.some((r) => keyOf(r) === keyOf(e)));
+  };
 
   const { inserted, updated, skipped, errors } = await batchUpsert(
     supabase, "scraped_grants", records,
     hashFields,
     selectCols,
+    keyOf,
+    fetchExisting,
+    "source_id,source",
   );
 
   printResult("Grants", inserted, updated, skipped, grantsRaw.length, errors);

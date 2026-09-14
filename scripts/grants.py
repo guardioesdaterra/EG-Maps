@@ -110,6 +110,9 @@ NON_GRANT_KEYWORDS = [
     # ── v2.1: conferences / calls for papers (not grants)
     "call for papers", "call for abstracts", "submit your abstract",
     "conference", "proceedings",
+    # ── v2.2: explicitly non-monetary programmes (mentorships etc.)
+    "no funding", "no stipend", "non-monetary", "no prize is offered",
+    "no monetary award",
 ]
 
 # Generic navigation/chrome headings that generic selectors (article/li/h2)
@@ -471,6 +474,10 @@ def is_valid_grant_candidate(title: str, description: str = "",
         return False
     relevance = score_relevance(blob)
     signals = has_grant_signals(t, description or "", deadline, amount_max)
+    # v2.2 completeness exemption (mirrors run_radar): fully-evidenced
+    # grants pass regardless of mission-relevance.
+    if has_terms and has_deadline and has_amount:
+        return True
     if relevance < min_relevance or signals < min_signals:
         return False
     return True
@@ -1005,6 +1012,18 @@ def infer_funder(title: str, description: str = "",
     for acro in FUNDER_ACRONYMS:
         if re.search(rf'\b{acro}\b', t):
             return acro
+    # v2.2: "Funder — Program" / "Funder: Program" titles (Terra Viva style).
+    # Left part must look like an org name, not a call phrase.
+    split = re.split(r'\s+[—–]\s+|\s*:\s+', t, maxsplit=1)
+    if len(split) == 2:
+        left = split[0].strip()
+        if (len(left) >= 3 and len(left) <= 45
+                and re.match(r'[A-ZÀ-Þ]', left)
+                and not re.search(
+                    r'(open call|call for|applications?|apply|grants?|funding|'
+                    r'opportunit|programmes?|projects?|announces?|now open)',
+                    left, re.I)):
+            return left
     t2 = CALL_PREFIX_RE.sub("", t)
     m = FUNDER_LEAD_RE.match(t2)
     if m:
@@ -1197,8 +1216,12 @@ def clean_html(html):
 
 def parse_date(s):
     if not s: return ""
-    try: return dateparser.parse(str(s), fuzzy=True).date().isoformat()
-    except (ValueError, OverflowError) as e:
+    try:
+        # v2.2: dateparser returns None (no raise) for unparseable input —
+        # guard it, a crash here used to kill the whole source batch.
+        dt = dateparser.parse(str(s), fuzzy=True)
+        return dt.date().isoformat() if dt else str(s)[:20]
+    except (ValueError, OverflowError, TypeError, AttributeError) as e:
         logging.debug(f"parse_date fail '{s[:50]}': {e}")
         return str(s)[:20]
 
@@ -1415,7 +1438,8 @@ def extract_amount(text):
     raw = _extract_amount_raw(text)
     if not raw or not _is_plausible_amount(raw):
         return ""
-    return raw
+    # v2.2: strip trailing sentence punctuation ("US$60,000." → "US$60,000")
+    return raw.strip().rstrip(".,;:")
 
 def extract_deadline(text):
     """Extract deadline from text. Supports absolute dates and relative expressions in 10+ languages."""
@@ -1523,6 +1547,10 @@ def extract_deadline(text):
         # English
         r'[Dd]eadline[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
         r'[Dd]eadline[:\s]+(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
+        r'[Dd]eadline\s+is\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
+        # v2.2: fundsforNGOs feed style "Deadline: 18-Sep-26" / "18-Sep-2026"
+        r'[Dd]eadline:?\s*(\d{1,2}-[A-Za-z]{3}-?\d{2,4})',
+        r'(\d{1,2}-[A-Za-z]{3}-\d{2,4})',
         r'[Cc]losing[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
         r'[Cc]losing[:\s]+(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
         r'[Aa]pplication\s+deadline[:\s]+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
@@ -2441,6 +2469,22 @@ async def fetch_fundsforngos(session):
                 description=content[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(content),
                 amount_max=extract_amount(content)))
+    # v2.2: main RSS feed — full content with "Deadline: 18-Sep-26" lines
+    # and <category> tags (missed by the search API above).
+    rss = await fetch(session, "https://www2.fundsforngos.org/feed/")
+    if rss:
+        feed = feedparser.parse(rss)
+        for e in feed.entries[:50]:
+            title = e.get("title","")
+            link  = e.get("link","")
+            desc  = clean_html(e.get("summary",""))
+            tags  = [t.get("term","") for t in e.get("tags",[])]
+            if not is_scrape_hit(title, f"{desc} {' '.join(tags)}"):
+                continue
+            grants.append(make_grant(title=title, source_name=SOURCE, url=link,
+                description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
+                deadline=extract_deadline(desc), amount_max=extract_amount(desc),
+                categories=[t for t in tags if t][:5]))
     # Also scrape their listing page
     html = await fetch(session, "https://www2.fundsforngos.org/listing/")
     if html:
@@ -2458,6 +2502,37 @@ async def fetch_fundsforngos(session):
                 description=text[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(text), amount_max=extract_amount(text)))
     console.print(f"  [cyan]fundsforngos.org[/] → {len(grants)}")
+    return grants
+
+
+async def fetch_terraviva(session):
+    """Terra Viva Grants — funding-news blog for agriculture, energy,
+    environment and natural resources in the developing world.
+    Public WP-JSON API; posts carry explicit deadlines + amounts and
+    "Funder — Program" titles. v2.2."""
+    grants = []
+    SOURCE = "terravivagrants.org"
+    for search_term in ["environment", "climate", "conservation", "biodiversity",
+                        "indigenous", "women", "youth", "forest", "water", "energy"]:
+        api = (f"https://www.terravivagrants.org/wp-json/wp/v2/posts"
+               f"?per_page=25&search={quote(search_term)}&_embed=true")
+        data = await fetch_json(session, api)
+        if not data or not isinstance(data, list):
+            continue
+        for p in data:
+            title   = clean_html(p.get("title", {}).get("rendered", ""))
+            content = clean_html(p.get("content", {}).get("rendered", ""))
+            url     = p.get("link", "")
+            if not is_scrape_hit(title, content):
+                continue
+            grants.append(make_grant(
+                title=title, source_name=SOURCE, url=url,
+                description=content[:MAX_DESCRIPTION_LEN],
+                country="GLOBAL", language="en",
+                deadline=extract_deadline(content),
+                amount_max=extract_amount(content),
+                categories=["environment", "developing world"]))
+    console.print(f"  [cyan]terravivagrants.org[/] → {len(grants)}")
     return grants
 
 
@@ -3332,6 +3407,7 @@ ALL_SOURCES = {
     "eco-champions":  fetch_emerging_climate_champions,
     # Global aggregators
     "fundsforngos":   fetch_fundsforngos,
+    "terraviva":      fetch_terraviva,
     "opdesk":         fetch_opportunity_desk,
     "ofy":            fetch_opportunities_for_youth,
     "eflux":          fetch_eflux,
@@ -3631,7 +3707,18 @@ async def run_radar(sources_filter, country_filter, keywords,
     if min_amount:
         filtered = [g for g in filtered if (g.get("amount_usd") or 0) >= min_amount]
 
-    filtered = [g for g in filtered if g["relevance"] >= min_relevance]
+    # v2.2 completeness exemption: a fully-evidenced grant (deadline +
+    # amount + grant vocabulary) is kept even when mission-relevance is
+    # low — it lands at the bottom by priority, managers decide. Partial
+    # items still need topical relevance.
+    def _complete(g):
+        if not (g.get("deadline") and g.get("amount_max")):
+            return False
+        return bool(GRANT_TERMS_RE.search(
+            f"{g.get('title', '')} {g.get('description', '')} {g.get('funder', '')}"))
+
+    filtered = [g for g in filtered
+                if g["relevance"] >= min_relevance or _complete(g)]
     # Signal gate: has_grant_signals() must clear the bar (deadline/amount/
     # grant-terms/currency evidence). Standing entries are exempt (hand-written).
     pre = len(filtered)

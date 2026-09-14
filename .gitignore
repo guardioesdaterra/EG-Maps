@@ -1,4 +1,7 @@
-supabase/
+supabase/*
+!supabase/migrations/
+supabase/migrations/*
+!supabase/migrations/*.sql
 *.sql.tmp
 # Nuxt
 .nuxt/

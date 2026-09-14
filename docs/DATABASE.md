@@ -27,9 +27,9 @@ Indexes: PK on `id`; B-tree on `(latitude, longitude)`, `source`, `type`
 
 ---
 
-### `scraped_grants` (1,464 rows)
+### `scraped_grants` (~5,400 rows)
 
-Auto-scraped grant opportunities from 60+ sources.
+Auto-scraped grant opportunities from 60+ sources (see `scripts/grants.py`).
 
 | Column | Type | Nullable | Default |
 |--------|------|----------|---------|
@@ -52,12 +52,39 @@ Auto-scraped grant opportunities from 60+ sources.
 | `status` | `text` | NO | `'pending'` |
 | `fetched_at` | `timestamp with tz` | NO | `now()` |
 | `created_at` | `timestamp with tz` | NO | `now()` |
+| `updated_at` | `timestamp with tz` | YES | `now()` (auto via trigger) |
 | `amount_usd` | `numeric` | YES | |
 | `deadline_days` | `integer` | YES | |
-| `viewed` | `boolean` | YES | |
 | `reviewed` | `boolean` | YES | `false` |
+| `grant_type` | `text` | YES | `'general'` |
+| `grant_types` | `text[]` | YES | `{}` (v2) |
+| `grant_status` | `text` | YES | `'unknown'` — temporal alias `open/closed/unknown` (v2) |
+| `highlights` | `text[]` | YES | `{}` |
+| `urgency` | `text` | YES | |
+| `priority_score` | `integer` | YES | `0` |
+| `content_hash` | `text` | YES | dedupe hash (v2) |
+| `quality_score` | `integer` | NO | `0` — composite 0-100 (v2) |
+| `url_status` | `text` | NO | `'unchecked'` — `ok/broken/login_wall/timeout/blocked/unchecked` (v2) |
+| `url_status_code` | `integer` | YES | (v2) |
+| `url_checked_at` | `timestamp with tz` | YES | (v2) |
+| `last_seen_at` | `timestamp with tz` | NO | `now()` (v2) |
+| `deadline_date` | `date` | YES | real date for sorting (v2) |
+| `review_notes` | `text` | NO | `''` — quarantine/cleanup trail (v2) |
+| `reviewed_at` | `timestamp with tz` | YES | (v2) |
+| `is_standing` | `boolean` | NO | `false` — hand-written reference entry (v2) |
+| `viewed` | `boolean` | YES | DEPRECATED — use `reviewed` + `status` |
+| `location_name` | `text` | YES | DEPRECATED — scraper never fills geo |
+| `latitude` / `longitude` | `numeric` | YES | DEPRECATED — scraper never fills geo |
+| `category` | `text` | YES | DEPRECATED — use `grant_type` + `grant_types` |
 
-Indexes: PK on `id`; Unique on `(source_id, source)`; B-tree on `country`, `deadline`, `fetched_at`, `relevance`, `status`
+Schema history: `supabase/migrations/20260914000000_scraped_grants_v2.sql`
+adds the v2 columns + checks + indexes, backfills them, cleans amount-parser
+garbage, and auto-quarantines (reversible, `status='hidden'` + `review_notes`)
+confirmed non-grants (Mongabay news, job postings, calls for papers).
+
+Indexes: PK on `id`; B-tree on `source`, `status`, `country`, `relevance`,
+`deadline`, `fetched_at`, plus v2 `(status, priority_score)`, `deadline_date`,
+`quality_score`, `content_hash`, `url_status`, `last_seen_at`.
 
 ---
 

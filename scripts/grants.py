@@ -98,6 +98,18 @@ NON_GRANT_KEYWORDS = [
     "agenda", "programação do evento", "event schedule", "keynote speaker",
     "obituary", "obituário", "weather forecast", "sports results",
     "job opening", "we're hiring", "vaga de emprego", "classified",
+    # ── v2.1: job postings / hiring (major false-positive source —
+    # globalsouth + ofy rows like "YLabs Hiring…", "Greenpeace Hiring…")
+    "hiring", "we are hiring", "we're hiring", "now hiring",
+    "career opportunit", "job opportunit", "remote job",
+    "vacancy", "vacancies", "vaga ", "vagas ", "trabalhe conosco",
+    "job vacancy", "position available", "open position",
+    "salary of", "salary up to", "paying up to", "per year",
+    "full-time role", "part-time opportunity", "consultant wanted",
+    "request for cv", "terms of reference",
+    # ── v2.1: conferences / calls for papers (not grants)
+    "call for papers", "call for abstracts", "submit your abstract",
+    "conference", "proceedings",
 ]
 
 # Generic navigation/chrome headings that generic selectors (article/li/h2)
@@ -222,6 +234,39 @@ def is_likely_non_grant(title: str, description: str = "") -> bool:
     return any(kw in blob for kw in NON_GRANT_KEYWORDS)
 
 
+# ── v2.1: dedicated job-posting gate ──────────────────────────────
+# Title-led: a grant never has "hiring"/"career"/"vacancy" in its title.
+# Fellowship/scholarship titles are explicitly exempt (they ARE grants).
+JOB_TITLE_RE = re.compile(
+    r'(hiring|now hiring|career opportunit|job opportunit|remote jobs?|'
+    r'vacanc|open position|we are hiring|we\'re hiring|trabalhe conosco|'
+    r'is hiring a|is hiring an)',
+    re.I,
+)
+
+JOB_EXEMPT_RE = re.compile(
+    r'(fellowship|scholarship|bolsa|bourse|beca|stipendium|grant\b)',
+    re.I,
+)
+
+
+def is_likely_job(title: str, description: str = "") -> bool:
+    """True for job/hiring posts. Fellowship & scholarship offers are
+    grants, not jobs — never flag those."""
+    t = title or ""
+    if JOB_EXEMPT_RE.search(t):
+        return False
+    if JOB_TITLE_RE.search(t):
+        return True
+    blob = f"{t} {description or ''}".lower()
+    job_body_markers = (
+        "salary of", "salary up to", "paying up to", "per year",
+        "full-time role", "terms of reference", "request for cv",
+        "position available",
+    )
+    return any(m in blob for m in job_body_markers)
+
+
 CLOSED_KEYWORDS = [
     "encerrad", "finalizada", "concluída", "concluida", "resultado",
     "selecionad", "divulgad", "closed", "expired", "ended", "completed",
@@ -335,6 +380,9 @@ def score_relevance(text: str, is_standing: bool = False) -> int:
     # ── Penalty for likely non-grant content ──
     if is_likely_non_grant(text, text):
         hits = max(0, hits - 20)
+    # ── v2.1: jobs are never grants (except fellowships, exempt above) ──
+    if is_likely_job(text, ""):
+        hits = max(0, hits - 30)
     # Moderate penalty for standing entries — they're valid reference grants, not just SEO
     if is_standing:
         hits = min(hits, 40)
@@ -410,6 +458,8 @@ def is_valid_grant_candidate(title: str, description: str = "",
     blob = f"{t} {description or ''}"
     if is_likely_non_grant(t, description or ""):
         return False
+    if is_likely_job(t, description or ""):
+        return False
     if LOGIN_WALL_RE.search(blob):
         return False
     if url and not is_valid_grant_url(url):
@@ -452,6 +502,8 @@ def is_scrape_hit(title: str, text: str, threshold: int = 8) -> bool:
     if t.lower() in GENERIC_NAV_TITLES:
         return False
     if is_likely_non_grant(t, text or ""):
+        return False
+    if is_likely_job(t, text or ""):
         return False
     blob = f"{t} {text or ''}"
     if GRANT_TERMS_RE.search(blob):
@@ -888,6 +940,9 @@ def make_grant(title, source_name, url, description="", funder="",
     # Heavy penalty for likely non-grant posts (news, results, etc.)
     if is_likely_non_grant(title, description):
         base_relevance = min(base_relevance, 10)
+    # v2.1: jobs are never grants — bury unconditionally
+    if is_likely_job(title, description):
+        base_relevance = min(base_relevance, 5)
     grant_type, type_list = classify_grant(title, description, funder, categories, language)
     highlights = compute_highlights(title, description, funder, amount_max, currency, deadline, status, categories, language)
     usd_val = parse_amount_value(amount_max, currency)
@@ -1230,14 +1285,25 @@ def _is_plausible_amount(raw: str) -> bool:
     Kills audit findings like "in.", "my,", "rm.", "in 1997," — bare years
     (1900–2100), sub-3-digit numbers, or candidates with no digit run ≥3.
     """
-    if not raw or len(raw.strip()) < 4:
+    if not raw:
         return False
     nums = re.findall(r'\d[\d,\.]*', raw)
     if not nums:
         return False
-    # Magnitude words always count ("$5k", "₹5 Crore", "¥20 million")
-    if re.search(r'(million|milhão|thousand|\bk\b|lakh|crore|万|億|mrd|billion|\bbn\b)', raw, re.I):
+    # Magnitude words always count ("$5k", "₹5 Crore", "¥20 million") —
+    # checked before the length guard so compact forms like "$5k" survive.
+    if re.search(r'(million|milhão|thousand|\bk\b|\dk\b|lakh|crore|万|億|mrd|billion|\bbn\b)', raw, re.I):
         return True
+    if len(raw.strip()) < 4:
+        return False
+    # v2.1: bare digit runs with NO money marker are not amounts
+    # ("th 501", "20000000", "501"). Real money always carries a
+    # symbol/code or a magnitude word inside the matched fragment.
+    has_marker = bool(re.search(
+        r'\$|€|£|¥|₹|₩|฿|R\$|\b(USD|EUR|GBP|JPY|INR|KRW|CNY|THB|IDR|MYR|'
+        r'PHP|SGD|CAD|AUD|NZD|CHF|SEK|NOK|DKK|PLN|CZK|BRL)\b', raw, re.I))
+    if not has_marker:
+        return False
     for n in nums:
         digits = re.sub(r'\D', '', n)
         if len(digits) < 3:
@@ -1639,7 +1705,8 @@ async def fetch_capta(session):
             content = clean_html(p.get("content", {}).get("rendered", ""))
             url     = p.get("link", "")
             # Relevance filter — skip generic blog posts, keep grant/opportunity content
-            if score_relevance(f"{title} {content}") < 2: continue
+            if not is_scrape_hit(title, content):
+                continue
             # Detect open/closed from WP post content
             raw_content = p.get("content", {}).get("rendered", "")
             status = detect_status_from_text(raw_content) or "open"
@@ -1673,7 +1740,8 @@ async def fetch_prosas(session):
                 title = t.get_text(strip=True)
                 if len(title) < 10: continue
                 # Relevance filter
-                if score_relevance(title) < 1: continue
+                if not is_scrape_hit(title, text):
+                    continue
                 link = urljoin("https://prosas.com.br", a["href"]) if a else ""
                 text = card.get_text(" ")
                 # Detect open/closed from card text and URL
@@ -1789,7 +1857,8 @@ async def fetch_casa(session):
                 title   = clean_html(p.get("title",{}).get("rendered",""))
                 content = clean_html(p.get("content",{}).get("rendered",""))
                 url     = p.get("link","")
-                if score_relevance(f"{title} {content}") < 3: continue
+                if not is_scrape_hit(title, content):
+                    continue
                 raw_content = p.get("content",{}).get("rendered","")
                 status = detect_status_from_text(raw_content) or "open"
                 grants.append(make_grant(title=title, source_name=SOURCE, url=url,
@@ -1811,7 +1880,8 @@ async def fetch_ispn(session):
             title   = clean_html(p.get("title",{}).get("rendered",""))
             content = clean_html(p.get("content",{}).get("rendered",""))
             url     = p.get("link","")
-            if score_relevance(f"{title} {content}") < 2: continue
+            if not is_scrape_hit(title, content):
+                continue
             # Detect open/closed from WP post content
             raw_content = p.get("content",{}).get("rendered","")
             status = detect_status_from_text(raw_content) or "open"
@@ -2273,7 +2343,8 @@ async def fetch_fundsforngos(session):
             title   = clean_html(p.get("title",{}).get("rendered",""))
             content = clean_html(p.get("content",{}).get("rendered",""))
             url     = p.get("link","")
-            if score_relevance(f"{title} {content}") < 4: continue
+            if not is_scrape_hit(title, content):
+                continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=content[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(content),
@@ -2286,12 +2357,14 @@ async def fetch_fundsforngos(session):
             t = art.find(["h2","h3"]); a = art.find("a",href=True)
             if not t: continue
             title = t.get_text(strip=True)
-            if len(title) < 10 or score_relevance(title) < 3: continue
+            if len(title) < 10: continue
             url = urljoin("https://www2.fundsforngos.org", a["href"]) if a else ""
             text = art.get_text(" ")
+            if not is_scrape_hit(title, text):
+                continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=text[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
-                deadline=extract_deadline(text)))
+                deadline=extract_deadline(text), amount_max=extract_amount(text)))
     console.print(f"  [cyan]fundsforngos.org[/] → {len(grants)}")
     return grants
 
@@ -2307,7 +2380,8 @@ async def fetch_opportunity_desk(session):
             title = e.get("title","")
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
-            if score_relevance(f"{title} {desc}") < 2: continue
+            if not is_scrape_hit(title, desc):
+                continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc),
@@ -2328,7 +2402,8 @@ async def fetch_opportunities_for_youth(session):
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
             tags  = [t.get("term","") for t in e.get("tags",[])]
-            if score_relevance(f"{title} {desc} {' '.join(tags)}") < 2: continue
+            if not is_scrape_hit(title, f"{desc} {' '.join(tags)}"):
+                continue
             # Infer country from tags
             country = "GLOBAL"
             tag_str = " ".join(tags).lower()
@@ -2385,6 +2460,8 @@ async def fetch_sustainable_practice(session):
                 text = detail.get_text(" ", strip=True)[:600]
             else:
                 text = title
+            if not is_scrape_hit(title, text):
+                continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=text, country="GLOBAL", language="en",
                 deadline=extract_deadline(text), amount_max=extract_amount(text),
@@ -2404,7 +2481,8 @@ async def fetch_impactfunding_substack(session):
             title = e.get("title","")
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
-            if score_relevance(f"{title} {desc}") < 2: continue
+            if not is_scrape_hit(title, desc):
+                continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc),
@@ -2424,7 +2502,8 @@ async def fetch_global_south_opportunities(session):
             title = e.get("title","")
             link  = e.get("link","")
             desc  = clean_html(e.get("summary",""))
-            if score_relevance(f"{title} {desc}") < 2: continue
+            if not is_scrape_hit(title, desc):
+                continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc), amount_max=extract_amount(desc),
@@ -2617,8 +2696,10 @@ RSS_FEEDS = [
     ("World Resources Institute",  "https://www.wri.org/feed",                                        "GLOBAL","en"),
     ("Biodiversity International", "https://www.biodiversityinternational.org/feed/",                 "GLOBAL","en"),
     ("Global Greengrants RSS",     "https://www.greengrants.org/feed/",                               "GLOBAL","en"),
-    ("The Conversation Env",       "https://theconversation.com/us/environment/articles/feed",        "GLOBAL","en"),
-    ("Mongabay",                   "https://feeds.feedburner.com/mongabay",                           "GLOBAL","en"),
+    # v2.1: pure journalism outlets removed — they publish zero open calls
+    # and produced 478 news rows in prod (audited 2026-09):
+    #   ("Mongabay", "https://feeds.feedburner.com/mongabay", ...)
+    #   ("The Conversation Env", "https://theconversation.com/us/environment/articles/feed", ...)
 
     # ── Arts + culture foundations
     ("Prince Claus Fund",         "https://princeclausfund.org/feed/",                             "GLOBAL","en"),
@@ -2693,11 +2774,20 @@ async def fetch_rss(session):
                 title = e.get("title","")
                 link  = e.get("link", url)
                 desc  = clean_html(e.get("summary") or e.get("description",""))
-                blob  = f"{title} {desc}".lower()
-                if score_relevance(blob) < 3: continue
+                # v2.1: org-news feeds only pass with explicit grant
+                # vocabulary (or deadline+amount). The old relevance>=3
+                # gate let 600+ news rows into prod with zero deadlines.
+                blob = f"{title} {desc}"
+                if is_likely_job(title, desc):
+                    continue
+                if not GRANT_TERMS_RE.search(blob):
+                    if not (extract_deadline(desc) and extract_amount(desc)):
+                        continue
+                if not is_scrape_hit(title, desc):
+                    continue
                 result.append(make_grant(title=title, source_name=f"rss:{name}",
                     url=link, description=desc[:MAX_DESCRIPTION_LEN], country=country,
-                    language=lang, deadline="",
+                    language=lang, deadline=extract_deadline(desc),
                     amount_max=extract_amount(desc)))
         except Exception as ex:
             logging.debug(f"RSS {url}: {ex}")
@@ -3082,7 +3172,6 @@ async def fetch_nordic_funding(session):
             text = art.get_text(" ")
             if not is_scrape_hit(title, text):
                 continue
-            if score_relevance(f"{title} {text}") < 2: continue
             cty = infer_country(text, lang)
             grants.append(make_grant(title=title, source_name=f"nordic:{name}", url=link,
                 description=text[:MAX_DESCRIPTION_LEN], country=cty, language=lang,
@@ -3398,6 +3487,7 @@ async def run_radar(sources_filter, country_filter, keywords,
     all_grants = [g for g in all_grants
                   if is_valid_grant_url(g.get("url", ""))
                   and not is_likely_non_grant(g.get("title", ""), g.get("description", ""))
+                  and not is_likely_job(g.get("title", ""), g.get("description", ""))
                   and (g.get("title", "").strip().lower() not in GENERIC_NAV_TITLES)]
     console.print(f"[green]✓ URL/shape gate:[/] {len(all_grants)} kept ({pre - len(all_grants)} dropped)")
 

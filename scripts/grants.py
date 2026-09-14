@@ -599,48 +599,6 @@ def parse_amount_value(amount_max, currency):
     if not amount_max or amount_max in ("None", ""):
         return 0
     raw = str(amount_max)
-    # Handle Brazilian format: "R$ 150.000,00" -> 150000.00
-    br_match = re.search(r'R\$\s*([\d\.]+(?:,\d{2})?)', raw)
-    if br_match:
-        num = br_match.group(1).replace(".", "").replace(",", ".")
-        try:
-            val = float(num)
-            return val / 5.5 if currency and currency.upper() == "BRL" else val
-        except ValueError:
-            pass
-    # Handle Indian format: "₹ 50,00,000" or "₹5 Crore"
-    crore_match = re.search(r'(?:₹|INR|Rs[.\s]*)?(\d+(?:,\d+)*)\s*(?:crore|Cr|CR)', raw, re.I)
-    if crore_match:
-        val = float(crore_match.group(1).replace(",", ""))
-        return val * 10000000 / 83  # 1 crore = 10M INR -> USD
-    lakh_match = re.search(r'(?:₹|INR|Rs[.\s]*)?(\d+(?:,\d+)*)\s*(?:lakh|Lakh|LAC)', raw, re.I)
-    if lakh_match:
-        val = float(lakh_match.group(1).replace(",", ""))
-        return val * 100000 / 83
-    # Handle "million", "thousand", "k", "万", "億" suffixes
-    m = re.search(r'([\d,]+(?:\.\d+)?)\s*(million|milhão|mil|thousand|k|万|億|mrd|billion|bn)', raw, re.I)
-    if m:
-        num = float(m.group(1).replace(",", ""))
-        suffix = m.group(2).lower()
-        if suffix in ("million", "milhão"):
-            num *= 1000000
-        elif suffix in ("thousand", "mil", "k"):
-            num *= 1000
-        elif suffix in ("万",):
-            num *= 10000
-        elif suffix in ("億",):
-            num *= 100000000
-        elif suffix in ("mrd", "billion", "bn"):
-            num *= 1000000000
-        return num
-    # Try to extract raw number
-    try:
-        val = float(re.sub(r"[^0-9.]", "", raw))
-    except (ValueError, TypeError):
-        return 0
-    if not currency:
-        return val
-    c = currency.upper()
     # Approximate exchange rates to USD (as of 2025)
     rates = {
         "BRL": 5.5,    # 1 USD ≈ 5.5 BRL
@@ -675,9 +633,55 @@ def parse_amount_value(amount_max, currency):
         "COP": 4000,   # 1 USD ≈ 4000 COP
         "PEN": 3.7,    # 1 USD ≈ 3.7 PEN
     }
-    if c in rates:
-        return val / rates[c]
-    return val
+
+    def _to_usd(num, cur):
+        if cur:
+            c = cur.upper()
+            if c in rates:
+                return num / rates[c]
+        return num
+
+    # Handle "million", "milhões", "thousand", "mil", "k", "万", "億" suffixes
+    # FIRST — "R$ 4 milhões" must not fall into the plain-BRL branch below.
+    m = re.search(r'([\d,]+(?:\.\d+)?)\s*(millions?|milh(?:ão|ões|ao|oes)|bilh(?:ão|ões|ao|oes)|billions?|thousands?|\bmil\b|k|万|億|mrd|billion|bn)', raw, re.I)
+    if m:
+        num = float(m.group(1).replace(",", ""))
+        suffix = m.group(2).lower()
+        if suffix in ("million", "millions", "milhão", "milhões", "milhoes"):
+            num *= 1000000
+        elif suffix in ("billion", "billions", "bilhão", "bilhões", "bilhoes", "mrd", "bn"):
+            num *= 1000000000
+        elif suffix in ("thousand", "thousands", "mil", "k"):
+            num *= 1000
+        elif suffix in ("万",):
+            num *= 10000
+        elif suffix in ("億",):
+            num *= 100000000
+        return _to_usd(num, currency)
+    # Handle Brazilian format: "R$ 150.000,00" -> 150000.00
+    br_match = re.search(r'R\$\s*([\d\.]+(?:,\d{2})?)', raw)
+    if br_match:
+        num = br_match.group(1).replace(".", "").replace(",", ".")
+        try:
+            val = float(num)
+            return val / 5.5 if currency and currency.upper() == "BRL" else val
+        except ValueError:
+            pass
+    # Handle Indian format: "₹ 50,00,000" or "₹5 Crore"
+    crore_match = re.search(r'(?:₹|INR|Rs[.\s]*)?(\d+(?:,\d+)*)\s*(?:crore|Cr|CR)', raw, re.I)
+    if crore_match:
+        val = float(crore_match.group(1).replace(",", ""))
+        return val * 10000000 / 83  # 1 crore = 10M INR -> USD
+    lakh_match = re.search(r'(?:₹|INR|Rs[.\s]*)?(\d+(?:,\d+)*)\s*(?:lakh|Lakh|LAC)', raw, re.I)
+    if lakh_match:
+        val = float(lakh_match.group(1).replace(",", ""))
+        return val * 100000 / 83
+    # Try to extract raw number
+    try:
+        val = float(re.sub(r"[^0-9.]", "", raw))
+    except (ValueError, TypeError):
+        return 0
+    return _to_usd(val, currency)
 
 
 def compute_deadline_urgency(deadline_str):
@@ -687,6 +691,8 @@ def compute_deadline_urgency(deadline_str):
     for fmt in [
         "%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d",
         "%B %d, %Y", "%d %B %Y", "%B %Y",
+        # v2.3: abbreviated months ("19 Jun 2026", "Sep 29, 2026")
+        "%b %d, %Y", "%d %b %Y", "%d-%b-%y", "%d-%b-%Y",
     ]:
         try:
             dt = datetime.strptime(deadline_str.split("T")[0].split(" ")[0], fmt)
@@ -1214,12 +1220,12 @@ async def fetch_json(session, url, method="GET", json_body=None, use_cache=True)
 def clean_html(html):
     return re.sub(r'\s+', ' ', BeautifulSoup(html or "", "lxml").get_text(" ")).strip()
 
-def parse_date(s):
+def parse_date(s, dayfirst=False):
     if not s: return ""
     try:
         # v2.2: dateparser returns None (no raise) for unparseable input —
         # guard it, a crash here used to kill the whole source batch.
-        dt = dateparser.parse(str(s), fuzzy=True)
+        dt = dateparser.parse(str(s), fuzzy=True, dayfirst=dayfirst)
         return dt.date().isoformat() if dt else str(s)[:20]
     except (ValueError, OverflowError, TypeError, AttributeError) as e:
         logging.debug(f"parse_date fail '{s[:50]}': {e}")
@@ -1302,6 +1308,11 @@ def _extract_amount_raw(text):
         r'R\$\s*([\d\.]+(?:,\d{2})?)\s*(?:a|até|–|-)\s*R\$\s*([\d\.]+(?:,\d{2})?)', text)
     if m_brl_range:
         return f"R$ {m_brl_range.group(1)} – R$ {m_brl_range.group(2)}"
+    # Single with magnitude: "R$ 4 milhões", "R$ 200 mil", "R$ 1,2 bilhão"
+    m_brl_mag = re.search(
+        r'R\$\s*([\d\.,]+)\s*(milh(?:ão|ões|ao|oes)|bilh(?:ão|ões|ao|oes)|\bmil\b)', text, re.I)
+    if m_brl_mag:
+        return f"R$ {m_brl_mag.group(1)} {m_brl_mag.group(2)}"
     # Single: "R$ 150.000,00" or "até R$ 150.000" or "R$150.000"
     m_brl = re.search(r'R\$\s*([\d\.]+(?:,\d{2})?)', text)
     if m_brl:
@@ -1407,7 +1418,7 @@ def _is_plausible_amount(raw: str) -> bool:
         return False
     # Magnitude words always count ("$5k", "₹5 Crore", "¥20 million") —
     # checked before the length guard so compact forms like "$5k" survive.
-    if re.search(r'(million|milhão|thousand|\bk\b|\dk\b|lakh|crore|万|億|mrd|billion|\bbn\b)', raw, re.I):
+    if re.search(r'(millions?|milh(?:ão|ões|ao|oes)|bilh(?:ão|ões|ao|oes)|billions?|thousands?|\bmil\b|\bk\b|\dk\b|lakh|crore|万|億|mrd|\bbn\b)', raw, re.I):
         return True
     if len(raw.strip()) < 4:
         return False
@@ -1543,14 +1554,25 @@ def extract_deadline(text):
     # ══════════════════════════════════════════════════════════
     # ABSOLUTE DATE PATTERNS
     # ══════════════════════════════════════════════════════════
+    # v2.3 BR ranges: "Chamada de 03/08/26 até o dia 31/08/26" — deadline
+    # is the END date. Checked before the generic DD/MM/YYYY pattern.
+    m_range = re.search(
+        r'(\d{1,2}/\d{1,2}/\d{2,4})\s*(?:a|até|ate|until|through|to|–|-)\s*'
+        r'(?:o dia\s*)?(\d{1,2}/\d{1,2}/\d{2,4})', text)
+    if m_range:
+        return parse_date(m_range.group(2), dayfirst=True)
     patterns = [
         # English
-        r'[Dd]eadline[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
-        r'[Dd]eadline[:\s]+(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
-        r'[Dd]eadline\s+is\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
+        r'[Dd]eadline[:\s]+([A-Za-z]+ \d{1,2}(?:st|nd|rd|th)?,?\s*\d{4})',
+        r'[Dd]eadline[:\s]+(\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+\s+\d{4})',
+        r'[Dd]eadline\s+is\s+(\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+\s+\d{4})',
         # v2.2: fundsforNGOs feed style "Deadline: 18-Sep-26" / "18-Sep-2026"
         r'[Dd]eadline:?\s*(\d{1,2}-[A-Za-z]{3}-?\d{2,4})',
         r'(\d{1,2}-[A-Za-z]{3}-\d{2,4})',
+        # v2.3: aggregator style "Application Deadline: 07 October 2026"
+        r'[Aa]pplication\s+[Dd]eadline:?\s*(\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+,?\s+\d{4})',
+        # v2.3: loose "deadline to submit your application is 19 June 2026"
+        r'[Dd]eadline[^.\n]{0,60}?(\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+,?\s+\d{4})',
         r'[Cc]losing[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
         r'[Cc]losing[:\s]+(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
         r'[Aa]pplication\s+deadline[:\s]+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
@@ -1583,8 +1605,8 @@ def extract_deadline(text):
         r'[Tt]ermine[:\s]+(\d{2}/\d{2}/\d{4})',
         # ISO format
         r'(\d{4}-\d{2}-\d{2})',
-        # DD/MM/YYYY
-        r'(\d{2}/\d{2}/\d{4})',
+        # DD/MM/YYYY (v2.3: also 2-digit years "31/08/26", 1-2 digit parts)
+        r'(\d{1,2}/\d{1,2}/\d{2,4})',
         # DD.MM.YYYY
         r'(\d{2}\.\d{2}\.\d{4})',
         # Brazilian date with month name: "24 de abril de 2025"
@@ -1630,7 +1652,9 @@ def extract_deadline(text):
                 mo = month_map.get(month_name, 0)
                 if mo:
                     return f"{year}-{mo:02d}-{int(day):02d}"
-            return parse_date(m.group(1) if m.lastindex else m.group(0))
+            raw_m = m.group(1) if m.lastindex else m.group(0)
+            # v2.3: slash dates are day-first outside the US ("31/08/26")
+            return parse_date(raw_m, dayfirst=("/" in raw_m))
     return ""
 
 def infer_country(text, lang):
@@ -2536,6 +2560,126 @@ async def fetch_terraviva(session):
     return grants
 
 
+async def fetch_afac(session):
+    """AFAC — Arab Fund for Arts and Culture. The /Programs listing page
+    carries per-program cards with Open Call / Deadline / Announcement
+    badges; detail pages carry amounts ("up to USD 25,000"). v2.3."""
+    grants = []
+    BASE = "https://www.arabculturefund.org"
+    html = await fetch(session, f"{BASE}/Programs")
+    if not html:
+        return grants
+    soup = BeautifulSoup(html, "lxml")
+    today = datetime.now(timezone.utc).date().isoformat()
+    for card in soup.select("a.programs-item"):
+        title_el = card.select_one(".title")
+        if not title_el:
+            continue
+        name = title_el.get_text(strip=True)
+        if len(name) < 3:
+            continue
+        url = urljoin(BASE, card.get("href", ""))
+        card_text = card.get_text(" ")
+        dl = ""
+        m = re.search(r'Deadline\s*\|\s*(\d{1,2} \w+ \d{4})', card_text)
+        if m:
+            dl = parse_date(m.group(1))
+        is_open_badge = "Open Call" in card_text
+        # Amount lives on the detail page
+        body = card_text
+        detail = await fetch(session, url)
+        if detail:
+            body = extract_body_text(BeautifulSoup(detail, "lxml")) or card_text
+        title = f"AFAC {name} Grant"
+        if not is_scrape_hit(title, body):
+            continue
+        if dl and dl < today:
+            status = "closed"
+        elif is_open_badge:
+            status = "open"
+        else:
+            status = detect_status_from_text(body) or "open"
+        grants.append(make_grant(
+            title=title, source_name="arabculturefund.org", url=url,
+            description=body[:MAX_DESCRIPTION_LEN],
+            funder="Arab Fund for Arts and Culture (AFAC)",
+            country="MENA", language="en", status=status,
+            deadline=dl or extract_deadline(body),
+            amount_max=extract_amount(body),
+            categories=["mena", "art", "culture"]))
+    console.print(f"  [cyan]arabculturefund.org[/] → {len(grants)}")
+    return grants
+
+
+async def fetch_ofa(session):
+    """Opportunities For Africans — high-volume WP RSS aggregator
+    (scholarships/fellowships/contests with "Application Deadline:" lines
+    and country tags). Strict-gated like the other aggregators. v2.3."""
+    grants = []
+    SOURCE = "opportunitiesforafricans.com"
+    rss = await fetch(session, "https://www.opportunitiesforafricans.com/feed/")
+    if not rss:
+        return grants
+    feed = feedparser.parse(rss)
+    for e in feed.entries[:40]:
+        title = e.get("title", "")
+        link = e.get("link", "")
+        desc = clean_html(e.get("summary", ""))
+        tags = [t.get("term", "") for t in e.get("tags", [])]
+        if not is_scrape_hit(title, f"{desc} {' '.join(tags)}"):
+            continue
+        grants.append(make_grant(title=title, source_name=SOURCE, url=link,
+            description=desc[:MAX_DESCRIPTION_LEN], country="AFRICA", language="en",
+            deadline=extract_deadline(desc), amount_max=extract_amount(desc),
+            categories=[t for t in tags if t][:5]))
+    console.print(f"  [cyan]opportunitiesforafricans.com[/] → {len(grants)}")
+    return grants
+
+
+async def fetch_ics(session):
+    """Instituto Clima e Sociedade (iCS) — BR climate funder with rolling
+    editais (R$ millions, "Chamada de DD/MM/YY até DD/MM/YY", "Inscrições
+    Abertas" badges). Listing + detail pages. v2.3."""
+    grants = []
+    BASE = "https://climaesociedade.org"
+    html = await fetch(session, f"{BASE}/editais/")
+    if not html:
+        return grants
+    soup = BeautifulSoup(html, "lxml")
+    seen = set()
+    for a in soup.select('a[href*="/edital/"]'):
+        url = urljoin(BASE, a["href"])
+        if url in seen:
+            continue
+        seen.add(url)
+        detail = await fetch(session, url)
+        if not detail:
+            continue
+        dsoup = BeautifulSoup(detail, "lxml")
+        h1 = dsoup.select_one("h1")
+        title = h1.get_text(strip=True) if h1 else a.get_text(strip=True)
+        if len(title) < 15:
+            continue
+        body = extract_body_text(dsoup) or dsoup.get_text(" ", strip=True)[:2000]
+        if not is_scrape_hit(title, body):
+            continue
+        blob_low = body.lower()
+        if "inscrições abertas" in blob_low or "inscricoes abertas" in blob_low:
+            status = "open"
+        elif "inscrições encerradas" in blob_low or "inscricoes encerradas" in blob_low:
+            status = "closed"
+        else:
+            status = detect_status_from_text(body) or "open"
+        grants.append(make_grant(title=title, source_name="climaesociedade.org",
+            url=url, description=body[:MAX_DESCRIPTION_LEN],
+            funder="Instituto Clima e Sociedade (iCS)",
+            country="BR", language="pt", status=status,
+            deadline=extract_deadline(body), amount_max=extract_amount(body),
+            categories=["climate", "brasil"]))
+    console.print(f"  [cyan]climaesociedade.org[/] → {len(grants)}")
+    return grants
+
+
 async def fetch_opportunity_desk(session):
     """Opportunity Desk — global grants + fellowships."""
     grants = []
@@ -3408,6 +3552,11 @@ ALL_SOURCES = {
     # Global aggregators
     "fundsforngos":   fetch_fundsforngos,
     "terraviva":      fetch_terraviva,
+    "ofa":            fetch_ofa,
+    # MENA art-activism funder
+    "afac":           fetch_afac,
+    # Brazil climate funder
+    "ics":            fetch_ics,
     "opdesk":         fetch_opportunity_desk,
     "ofy":            fetch_opportunities_for_youth,
     "eflux":          fetch_eflux,

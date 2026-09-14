@@ -1,5 +1,4 @@
-"""Grants gate + parser regression test. Stdlib only (heavy imports stubbed).
-Run: python3 scripts/grants_gates_test.py (also runs in CI sync job)."""
+"""Grants v2.1/v2.2 gate + parser regression test (run: python3 /tmp/grants_gate_test.py)."""
 import sys
 
 sys.dont_write_bytecode = True
@@ -137,5 +136,29 @@ for good in ["$10,000", "$500", "R$ 150.000,00", "\u20b95 Crore", "$5k", "USD 22
     assert G._is_plausible_amount(good), f"GOOD REJECTED: {good!r}"
 
 assert "terraviva" in G.ALL_SOURCES
+assert "afac" in G.ALL_SOURCES
+assert "ofa" in G.ALL_SOURCES
+assert "ics" in G.ALL_SOURCES
 assert G.parse_date("total garbage xyz") == "total garbage xyz"
+
+# 7. v2.3 parser upgrades (stub-tolerant: ISO when real dateutil present)
+dl_cases = [
+    ("Application Deadline: 07 October 2026", ("2026-10-07", "07 October 2026")),
+    ("Application Deadline:  20 October, 2026", ("2026-10-20", "20 October, 2026")),
+    ("Application Deadline: September 29, 2026", ("2026-09-29", "September 29, 2026")),
+    ("The deadline to submit your application is 19 June 2026 at 5:00 PM", ("2026-06-19", "19 June 2026")),
+    ("Deadline 19 Jun 2026", ("2026-06-19", "19 Jun 2026")),
+    ("Chamada de 03/08/26 até o dia 31/08/26", ("2026-08-31", "31/08/26")),
+]
+for text, opts in dl_cases:
+    got = G.extract_deadline(text)
+    assert got in opts, f"DEADLINE {text!r} -> {got!r}"
+    if REAL:
+        assert got == opts[0], f"DEADLINE ISO {text!r} -> {got!r}"
+
+# 8. BR magnitudes
+assert G.extract_amount("Valor Total: R$ 4 milhões") == "R$ 4 milhões"
+assert G.extract_amount("entre R$ 200 mil e R$ 500 mil") in ("R$ 200 mil", "R$ 200")
+assert G.parse_amount_value("R$ 4 milhões", "BRL") > 700000
+assert G.parse_amount_value("R$ 200 mil", "BRL") > 30000
 print("ALL GRANTS GATE TESTS PASSED")

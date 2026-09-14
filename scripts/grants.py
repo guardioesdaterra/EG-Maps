@@ -2803,8 +2803,9 @@ async def fetch_darwin(session):
 
 async def fetch_gates_gc(session):
     """Gates Grand Challenges homepage — "Open Grant Opportunities" cards
-    with "Applications Closes <date>" + detail pages (tiered US$ awards).
-    v2.4."""
+    with "Applications Closes <date>" + /challenge/ detail pages.
+    Emotion-CSS markup: discover via Closes-strings, walk up to the
+    challenge link, take the longest non-chrome text as title. v2.4."""
     grants = []
     html = await fetch(session, "https://gcgh.grandchallenges.org/")
     if not html:
@@ -2812,23 +2813,43 @@ async def fetch_gates_gc(session):
     soup = BeautifulSoup(html, "lxml")
     today = datetime.now(timezone.utc).date().isoformat()
     seen = set()
-    for el in soup.select("h2,h3,.card-title,.challenge-title"):
-        title = el.get_text(strip=True)
-        if len(title) < 15:
+    chrome = ("Grand Challenges", "Applications Closes", "Learn More",
+              "Open Grant Opportunities")
+    for txt in soup.find_all(string=re.compile(r'Applications?\s+Closes?')):
+        block = txt.parent
+        link = None
+        for _ in range(7):
+            if block is None or getattr(block, "name", None) in ("main", "body"):
+                break
+            if hasattr(block, "select_one"):
+                link = block.select_one('a[href*="/challenge/"]')
+                if link:
+                    break
+            block = block.parent
+        if not link:
             continue
-        card = el.parent
-        card_text = card.get_text(" ") if card else title
-        if "Closes" not in card_text and "closes" not in card_text.lower():
-            continue
-        a = el.find("a", href=True) or (card.find("a", href=True) if card else None)
-        url = urljoin("https://gcgh.grandchallenges.org", a["href"]) if a else \
-            "https://gcgh.grandchallenges.org/grant-opportunities"
+        url = urljoin("https://gcgh.grandchallenges.org", link["href"])
         if url in seen:
             continue
         seen.add(url)
+        # v2.4: collect visible texts only — skip Emotion <style>/<script>
+        # blobs (long CSS strings would outrank real titles).
+        texts = []
+        for s in block.find_all(string=True):
+            if getattr(s, "parent", None) is not None and \
+                    s.parent.name in ("style", "script", "noscript"):
+                continue
+            t = s.strip()
+            if len(t) >= 15:
+                texts.append(t)
+        cands = [t for t in texts if not any(c in t for c in chrome)]
+        if not cands:
+            continue
+        title = max(cands, key=len)
+        card_text = block.get_text(" ")
         dl = extract_deadline(card_text)
         body = card_text
-        detail = await fetch(session, url) if "grant-opportunities" not in url else None
+        detail = await fetch(session, url)
         if detail:
             body = extract_body_text(BeautifulSoup(detail, "lxml")) or card_text
             if not dl:

@@ -7,6 +7,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   getProp,
+  inlineOverlaps,
   normalizeClaimProps,
   normalizePointFeature,
   normalizePolygonFeature,
@@ -152,6 +153,25 @@ describe('normalizePointFeature / normalizePolygonFeature', () => {
     expect(f.properties?.category).toBe('direct_ree')
     expect(f.properties?.lon).toBe(-46)
   })
+
+  it('stamps a stable processo id for promoteId + feature-state', () => {
+    const f = normalizePointFeature(pt({ processo: '3260/1936', nome: 'X', category: 'direct_ree' }))
+    expect(f.id).toBe('3260/1936')
+  })
+
+  it('reads inline overlap arrays carried by the superset points files', () => {
+    const raw = {
+      processo: '1',
+      overlaps: [{ name: 'TI A', kind: 'ti', distance_km: 1 }],
+    }
+    expect(inlineOverlaps(raw)).toEqual([{ name: 'TI A', kind: 'ti', distance_km: 1 }])
+    // normalizePointFeature uses inline overlaps without an external index
+    // (`raw` already carries `processo: '1'` — spreading it after an
+    // explicit `processo` would overwrite the key, TS2783).
+    const f = normalizePointFeature(pt({ nome: 'X', category: 'direct_ree', ...raw }))
+    expect(f.properties?.overlaps_count).toBe(1)
+    expect(f.properties?.overlap_names).toContain('TI A')
+  })
 })
 
 describe('summarizeOverlaps', () => {
@@ -182,16 +202,25 @@ describe('summarizeProtected', () => {
     })),
   })
 
-  it('splits ti / quilombo / other', () => {
-    const s = summarizeProtected(fc(['ti', 'quilombo', 'uc']))
+  it('splits ti / quilombo / uc / buffer / other', () => {
+    const s = summarizeProtected(fc(['ti', 'quilombo', 'conservation_unit', 'buffer_zone', 'mystery']))
     expect(s.ti).toHaveLength(1)
     expect(s.quilombos).toHaveLength(1)
+    expect(s.ucs).toHaveLength(1)
+    expect(s.buffers).toHaveLength(1)
     expect(s.other).toHaveLength(1)
     expect(s.ti[0]!.municipality).toBe('Caldas')
   })
 
+  it('maps legacy kind spellings to canonical groups', () => {
+    const s = summarizeProtected(fc(['indigenous_land', 'quilombola_territory', 'conservation', 'APA']))
+    expect(s.ti).toHaveLength(1)
+    expect(s.quilombos).toHaveLength(1)
+    expect(s.ucs).toHaveLength(2)
+  })
+
   it('handles undefined', () => {
-    expect(summarizeProtected(undefined)).toEqual({ ti: [], quilombos: [], other: [] })
+    expect(summarizeProtected(undefined)).toEqual({ ti: [], quilombos: [], ucs: [], buffers: [], other: [] })
   })
 })
 
@@ -205,7 +234,12 @@ describe('buildLayerCounts', () => {
       } as never,
       protected: {
         type: 'FeatureCollection',
-        features: [{ properties: { kind: 'ti' } }, { properties: { kind: 'quilombo' } }],
+        features: [
+          { properties: { kind: 'ti' } },
+          { properties: { kind: 'quilombola_territory' } },
+          { properties: { kind: 'conservation_unit' } },
+          { properties: { kind: 'buffer_zone' } },
+        ],
       } as never,
       water: { type: 'FeatureCollection', features: [{}] } as never,
       cultural: undefined,
@@ -214,6 +248,8 @@ describe('buildLayerCounts', () => {
     expect(c.polygons).toBe(2)
     expect(c.protectedTi).toBe(1)
     expect(c.protectedQuilombo).toBe(1)
+    expect(c.protectedUc).toBe(1)
+    expect(c.protectedBuffer).toBe(1)
     expect(c.water).toBe(1)
     expect(c.cultural).toBe(0)
     expect(c.totalAreaHa).toBe(150)

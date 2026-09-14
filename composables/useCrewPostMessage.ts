@@ -48,6 +48,8 @@ export interface CrewPostMessageApi {
   applyFilters: (payload: CrewFilterPayload) => void
   /** Get the current filter state for responding to state requests. */
   getCurrentFilters: () => CrewFilterPayload
+  /** Signal ideal dimensions to the parent so it can resize the iframe container. */
+  sendResizeHint: (width: string, height: string) => void
 }
 
 /* ── region slug → full-name mapping ────────────────────────────────── */

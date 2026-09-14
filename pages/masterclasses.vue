@@ -77,11 +77,11 @@
             </div>
           </article>
 
-          <!-- Episode 4 — upcoming -->
-          <article class="episode episode--upcoming">
+          <!-- Episode 4 -->
+          <article class="episode">
             <div class="episode-meta">
               <span class="episode-num">04</span>
-              <span class="episode-badge">{{ t('masterclasses.upcoming') }}</span>
+              <span class="episode-date">June 2026</span>
             </div>
             <div class="episode-body">
               <h3 class="episode-title">{{ t('masterclasses.ep4Title') }}</h3>
@@ -90,8 +90,28 @@
                 {{ t('masterclasses.ep4Desc') }}
               </p>
               <div class="episode-resources">
-                <span class="episode-time">{{ t('masterclasses.ep4Time') }}</span>
-                <a href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.registerZoom') }}</a>
+                <span class="episode-resource-label">{{ t('resources.title') }}:</span>
+                <a href="https://www.earthguardians.org/eg-resources" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.recording') }}</a>
+                <a href="https://www.earthguardians.org/eg-resources" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.slideDeck') }}</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Episode 5 — upcoming -->
+          <article class="episode episode--upcoming">
+            <div class="episode-meta">
+              <span class="episode-num">05</span>
+              <span class="episode-badge">{{ t('masterclasses.upcoming') }}</span>
+            </div>
+            <div class="episode-body">
+              <h3 class="episode-title">{{ t('masterclasses.ep5Title') }}</h3>
+              <p class="episode-speaker">{{ t('masterclasses.ep5Speaker') }}</p>
+              <p class="episode-desc">
+                {{ t('masterclasses.ep5Desc') }}
+              </p>
+              <div class="episode-resources">
+                <span class="episode-time">{{ t('masterclasses.ep5Time') }}</span>
+                <a href="https://us02web.zoom.us/meeting/register/7rJ7rLRTS6GtUte_F8K7Hw" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.registerZoom') }}</a>
                 <span class="episode-note">{{ t('masterclasses.registerNote') }}</span>
               </div>
             </div>
@@ -223,7 +243,7 @@ useHead({
 .page-shell {
   width: min(100% - 2rem, 72rem);
   margin: 0 auto;
-  padding: clamp(2rem, 5vh, 4rem) 0 clamp(4rem, 8vh, 6rem);
+  padding: clamp(2rem, 5vh, 4rem) 0 calc(clamp(4rem, 8vh, 6rem) + env(safe-area-inset-bottom));
 }
 
 /* ── Header ── */
@@ -495,6 +515,7 @@ useHead({
   align-items: center;
   gap: 0.4rem;
   padding: 0.6rem 1.25rem;
+  min-height: 44px;
   border-radius: 6px;
   font-size: 0.78rem;
   font-weight: 700;

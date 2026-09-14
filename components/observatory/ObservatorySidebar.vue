@@ -80,6 +80,7 @@
             :selected-phases="selectedPhases ?? defaultPhases"
             :sob-demanda-only="sobDemandaOnly ?? false"
             :pin-threats="pinThreats ?? null"
+            :protected-matches="protectedMatches ?? []"
             @fly-to-coord="(c) => emit('flyToCoord', c)"
             @update:search-term="(v) => emit('update:searchTerm', v)"
             @update:selected-phases="(v) => emit('update:selectedPhases', v)"
@@ -94,21 +95,22 @@
 
         <!-- ══ CULTURE ═════════════════════════════════════════ -->
         <section v-else-if="activeTab === 'culture'" role="tabpanel" aria-label="Culture">
-        <!-- ── Source filter pills ─────────────────────────────── -->
-        <div class="vulc-source-pills" role="group" :aria-label="t('observatory.v2.panel.sources')">
+        <!-- ── Family filter pills (mirror the map marker taxonomy) ── -->
+        <div class="vulc-source-pills" role="group" :aria-label="t('observatory.v2.panel.families')">
           <button
-            v-for="src in SOURCES"
-            :key="src.id"
+            v-for="fam in FAMILIES"
+            :key="fam.id"
             type="button"
             class="vulc-source-pill"
-            :class="{ 'is-on': sourceFilter[src.id] }"
-            :style="{ '--pill-color': src.color }"
-            :aria-pressed="sourceFilter[src.id]"
-            @click="toggleSource(src.id)"
+            :class="{ 'is-on': familyFilter[fam.id] }"
+            :style="{ '--pill-color': fam.color }"
+            :aria-pressed="familyFilter[fam.id]"
+            :title="fam.hint"
+            @click="toggleFamily(fam.id)"
           >
             <span class="vulc-source-pill__dot" aria-hidden="true" />
-            <span class="vulc-source-pill__label">{{ t(src.labelKey) }}</span>
-            <span class="vulc-source-pill__count">{{ formatCount(sourceCounts[src.id] ?? 0) }}</span>
+            <span class="vulc-source-pill__label">{{ t(fam.labelKey) }}</span>
+            <span class="vulc-source-pill__count">{{ formatCount(familyCounts[fam.id] ?? 0) }}</span>
           </button>
         </div>
 
@@ -130,24 +132,37 @@
           </button>
         </div>
 
-        <!-- ── Search ──────────────────────────────────────────── -->
+        <!-- ── Search (debounced) ─────────────────────────────── -->
         <div class="vulc-search">
           <Icon name="lucide:search" class="vulc-search__icon" />
           <input
-            v-model="search"
+            v-model="searchInput"
             type="search"
             class="vulc-search__input"
             :placeholder="t('observatory.v2.panel.searchPlaceholder')"
             :aria-label="t('observatory.v2.panel.searchPlaceholder')"
           >
           <button
-            v-if="search"
+            v-if="searchInput"
             type="button"
             class="vulc-search__clear"
             :aria-label="t('observatory.v2.panel.searchClear')"
-            @click="search = ''"
+            @click="searchInput = ''"
           >
             <Icon name="lucide:x" />
+          </button>
+        </div>
+
+        <!-- ── Cultural agents load status (stream in after first paint) ── -->
+        <div v-if="culturalLoading" class="vulc-loadstatus" role="status">
+          <span class="vulc-loadstatus__pulse" aria-hidden="true" />
+          <span>{{ t('observatory.v2.panel.agentsLoading') }}</span>
+        </div>
+        <div v-else-if="culturalError" class="vulc-loadstatus vulc-loadstatus--error" role="alert">
+          <Icon name="lucide:alert-triangle" class="vulc-loadstatus__icon" />
+          <span>{{ culturalError }}</span>
+          <button type="button" class="vulc-loadstatus__retry" @click="emit('retryCultural')">
+            {{ t('observatory.v2.panel.agentsRetry') }}
           </button>
         </div>
 
@@ -179,20 +194,27 @@
           </div>
         </details>
 
-        <!-- ── Results count + sort ────────────────────────────── -->
+        <!-- ── Results count + sort + reset ───────────────────── -->
         <div class="vulc-results-head">
           <span class="vulc-results-count">
             <strong>{{ filteredFeatures.length }}</strong>
             <span class="vulc-results-count__of">/ {{ totalCount }}</span>
             {{ t('observatory.v2.panel.agentsShown') }}
-          </span>
-          <label class="vulc-sort">
+          </span>          <label class="vulc-sort">
             <span class="vulc-sort__label">{{ t('observatory.v2.panel.sortBy') }}</span>
             <select v-model="sortKey" class="vulc-sort__select" :aria-label="t('observatory.v2.panel.sortBy')">
+              <option value="family">{{ t('observatory.v2.panel.sortFamily') }}</option>
               <option value="source">{{ t('observatory.v2.panel.sortSource') }}</option>
               <option value="name">{{ t('observatory.v2.panel.sortName') }}</option>
             </select>
           </label>
+        </div>
+        <div v-if="hasActiveCultureFilters" class="vulc-filterbar">
+          <span class="vulc-filterbar__summary">{{ activeCultureFilterSummary }}</span>
+          <button type="button" class="vulc-filterbar__clear" @click="clearCultureFilters">
+            <Icon name="lucide:x" />
+            {{ t('observatory.v2.panel.clearFilters') }}
+          </button>
         </div>
 
         <!-- ── List ────────────────────────────────────────────── -->
@@ -213,13 +235,14 @@
               :aria-label="`${t('observatory.v2.panel.flyToAgent')} ${f.properties.name}`"
               @click="onCardClick(f)"
             >
-              <span v-if="!isUnknownSource(String(f.properties.source))" class="vulc-card__pill" :style="{ background: SOURCE_COLORS[String(f.properties.source)] || '#888' }">
-                {{ t(SOURCE_LABEL_KEYS[String(f.properties.source)] || 'observatory.v2.panel.unknownSource') }}
+              <span class="vulc-card__pill" :style="{ background: familyColor(f) }">
+                {{ familyLabel(f) }}
               </span>
               <h3 class="vulc-card__name">{{ f.properties.name }}</h3>
               <p v-if="f.properties.description && !isUnknown(String(f.properties.description))" class="vulc-card__desc">{{ truncate(String(f.properties.description), 120) }}</p>
               <div class="vulc-card__meta">
                 <span v-if="f.properties.subtype && !isUnknown(String(f.properties.subtype))">{{ subtypeLabel(String(f.properties.subtype)) }}</span>
+                <span v-if="sourceName(f)">· {{ sourceName(f) }}</span>
                 <span v-if="f.properties.municipality && !isUnknown(String(f.properties.municipality))">· {{ f.properties.municipality }}</span>
                 <span v-if="f.properties.state && !isUnknown(String(f.properties.state))">· {{ f.properties.state }}</span>
               </div>
@@ -350,6 +373,25 @@ import IllegalTab from '@/components/observatory/tabs/IllegalTab.vue'
 import EnvironmentTab from '@/components/observatory/tabs/EnvironmentTab.vue'
 import TimelineTab from '@/components/observatory/tabs/TimelineTab.vue'
 import YearSlider from '@/components/observatory/YearSlider.vue'
+import {
+  CULTURAL_FAMILIES,
+  CULTURAL_FAMILY_STYLES,
+  countCulturalFamilies,
+  getCulturalFamily,
+  type CulturalFamily,
+} from '@/lib/cultural-marker-taxonomy'
+import { VULCAN_CENTER } from '@/composables/useVulcanCircles'
+import { haversineKm } from '@/lib/water-defense'
+
+/** Poços de Caldas plateau agents surface first in the default sort. */
+const REGIONAL_KM = 120
+function isRegionalAgent(f: { geometry?: { coordinates?: unknown } }): boolean {
+  try {
+    const c = f.geometry?.coordinates as [number, number] | undefined
+    if (!c || !Number.isFinite(c[0]) || !Number.isFinite(c[1])) return false
+    return haversineKm(VULCAN_CENTER[0], VULCAN_CENTER[1], c[0], c[1]) <= REGIONAL_KM
+  } catch { return false }
+}
 
 const { t } = useI18n()
 
@@ -380,6 +422,22 @@ const props = defineProps<{
   yearMin?: number
   yearMax?: number
   filteredCount?: number
+  /** Protected-area / buffer-zone search hits (with fly-to coords). */
+  protectedMatches?: Array<{
+    name: string
+    kind: string
+    municipality: string
+    state: string
+    area_ha: number
+    coord: [number, number]
+  }>
+  /** Cultural-agent loading state (async agents stream in after first paint). */
+  culturalLoading?: boolean
+  culturalError?: string | null
+  /** v-model:open — when bound, the page controls panel visibility. */
+  open?: boolean
+  /** v-model:activeTab — when bound, the page controls the selected tab. */
+  activeTab?: PanelTabId
 }>()
 
 const emit = defineEmits<{
@@ -389,11 +447,14 @@ const emit = defineEmits<{
   reportEnterprise: [name: string, score: number, flags: string[]]
   reportPattern: [key: string]
   addObservation: [region: string]
+  retryCultural: []
   'update:yearMin': [value: number]
   'update:yearMax': [value: number]
   'update:searchTerm': [value: string]
   'update:selectedPhases': [value: Set<string>]
   'update:sobDemandaOnly': [value: boolean]
+  'update:open': [value: boolean]
+  'update:activeTab': [value: PanelTabId]
 }>()
 
 // Fallback selection when the page has not wired filter state (defensive;
@@ -408,7 +469,14 @@ const TABS: Array<{ id: PanelTabId; labelKey: string; icon: string }> = [
   { id: 'power', labelKey: 'observatory.v2.tabs.power', icon: 'lucide:landmark' },
   { id: 'timeline', labelKey: 'observatory.v2.tabs.timeline', icon: 'lucide:chart-line' },
 ]
-const activeTab = ref<PanelTabId>('territory')
+const activeTabInternal = ref<PanelTabId>('territory')
+const activeTab = computed({
+  get: () => props.activeTab ?? activeTabInternal.value,
+  set: (v: PanelTabId) => {
+    activeTabInternal.value = v
+    emit('update:activeTab', v)
+  },
+})
 const dangerShowAll = ref(false)
 
 // ── Live analysis derivations ────────────────────────────────────────────
@@ -440,15 +508,33 @@ const timelineEntries = computed<TimelineHighlight[] | null>(() => {
     .sort((a, b) => a.year - b.year)
 })
 
-// ── Source / subtype metadata ──────────────────────────────────────────
+// ── Family / source / subtype metadata ────────────────────────────────
+// Families mirror the map marker taxonomy (lib/cultural-marker-taxonomy):
+// ONE pill for Cultural Agents (Mapa Cultura + Floresta Ativista), one for
+// curated Cultural Spaces, one for Indigenous & Original Peoples.
+interface FamilyMeta { id: CulturalFamily; labelKey: string; color: string; hint: string }
 interface SourceMeta { id: string; labelKey: string; color: string }
 interface SubtypeMeta { id: string; labelKey: string; color: string }
+
+const FAMILIES: FamilyMeta[] = CULTURAL_FAMILIES.map(id => ({
+  id,
+  labelKey: CULTURAL_FAMILY_STYLES[id].labelKey,
+  color: CULTURAL_FAMILY_STYLES[id].color,
+  hint: CULTURAL_FAMILY_STYLES[id].label,
+}))
+/** Protection-priority order used for family sorting (indigenous first). */
+const FAMILY_ORDER: CulturalFamily[] = ['indigenous', 'spaces', 'agents']
+const FAMILY_LABEL_KEYS: Record<CulturalFamily, string> = Object.fromEntries(
+  FAMILIES.map(f => [f.id, f.labelKey]),
+) as Record<CulturalFamily, string>
+const FAMILY_COLORS: Record<CulturalFamily, string> = Object.fromEntries(
+  FAMILIES.map(f => [f.id, f.color]),
+) as Record<CulturalFamily, string>
 
 const SOURCES: SourceMeta[] = [
   { id: 'mapa_cultura', labelKey: 'observatory.v2.panel.sourceMapa', color: '#f39c12' },
   { id: 'floresta_ativista', labelKey: 'observatory.v2.panel.sourceFloresta', color: '#27ae60' },
 ]
-const SOURCE_COLORS: Record<string, string> = Object.fromEntries(SOURCES.map(s => [s.id, s.color]))
 const SOURCE_LABEL_KEYS: Record<string, string> = Object.fromEntries(SOURCES.map(s => [s.id, s.labelKey]))
 
 const SUBTYPES: SubtypeMeta[] = [
@@ -471,7 +557,6 @@ const TOGGLE_LAYER_KEYS = [
   'foreign',
   'enterprise_hq',
   'heatmap',
-  'cultural',
 ] as const
 const LAYER_LABELS: Record<string, string> = {
   protected_ti: 'observatory.layers.indigenousLands',
@@ -480,7 +565,6 @@ const LAYER_LABELS: Record<string, string> = {
   foreign: 'observatory.layers.foreignHeld',
   enterprise_hq: 'observatory.layers.enterpriseHq',
   heatmap: 'observatory.layers.heatmap',
-  cultural: 'observatory.layers.cultural',
 }
 const LAYER_COLORS: Record<string, string> = {
   protected_ti: '#c0392b',
@@ -489,14 +573,24 @@ const LAYER_COLORS: Record<string, string> = {
   foreign: '#e74c3c',
   enterprise_hq: '#9b59b6',
   heatmap: '#e74c3c',
-  cultural: '#3498db',
 }
 
 // ── State ───────────────────────────────────────────────────────────────
-const open = ref(true)
+// `open` / `activeTab` work uncontrolled by default but follow v-model
+// bindings when the parent page provides them (mobile auto open/close).
+const openInternal = ref(true)
+const open = computed({
+  get: () => props.open ?? openInternal.value,
+  set: (v: boolean) => {
+    openInternal.value = v
+    emit('update:open', v)
+  },
+})
 const layerSectionOpen = ref(false)
+/** Immediate input value; `search` is the debounced value used for filtering. */
+const searchInput = ref('')
 const search = ref('')
-const sortKey = ref<'source' | 'name'>('source')
+const sortKey = ref<'family' | 'source' | 'name'>('family')
 const page = ref(1)
 const PAGE_SIZE = 30
 
@@ -504,9 +598,21 @@ onMounted(() => {
   if (window.innerWidth < 768) open.value = false
 })
 
-const sourceFilter = ref<Record<string, boolean>>({
-  mapa_cultura: true,
-  floresta_ativista: true,
+// Debounce the search so each keystroke doesn't re-filter + re-sort 2000+
+// features synchronously while the user is still typing.
+let searchTimer: ReturnType<typeof setTimeout> | null = null
+watch(searchInput, (v) => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    searchTimer = null
+    search.value = v
+  }, 150)
+})
+
+const familyFilter = ref<Record<CulturalFamily, boolean>>({
+  agents: true,
+  spaces: true,
+  indigenous: true,
 })
 const subtypeFilter = ref<Record<string, boolean>>({
   cultural_center: true,
@@ -515,36 +621,33 @@ const subtypeFilter = ref<Record<string, boolean>>({
   rural: true,
 })
 
-function toggleSource(id: string) { sourceFilter.value[id] = !sourceFilter.value[id] }
+function toggleFamily(id: CulturalFamily) { familyFilter.value[id] = !familyFilter.value[id] }
 function toggleSubtype(id: string) { subtypeFilter.value[id] = !subtypeFilter.value[id] }
+
+function clearCultureFilters() {
+  familyFilter.value = { agents: true, spaces: true, indigenous: true }
+  subtypeFilter.value = { cultural_center: true, artist_group: true, indigenous: true, rural: true }
+  searchInput.value = ''
+  search.value = ''
+}
 
 // ── Derived ─────────────────────────────────────────────────────────────
 type CulturalFeature = Feature<Point, Record<string, unknown>>
-
-const VALID_SOURCES = new Set(['mapa_cultura', 'floresta_ativista'])
 
 const allFeatures = computed<CulturalFeature[]>(() => {
   const fc = props.rareEarthCultural
   return ((fc?.features ?? []) as CulturalFeature[])
 })
 
-function isUnknownSource(source: string): boolean {
-  return !VALID_SOURCES.has(source)
-}
-
 function isUnknown(value: string): boolean {
   const v = value.trim().toLowerCase()
   return !v || v === 'unknown' || v === 'unnamed' || v === 'n/a' || v === '-'
 }
 
-const sourceCounts = computed(() => {
-  const out: Record<string, number> = { mapa_cultura: 0, floresta_ativista: 0 }
-  for (const f of allFeatures.value) {
-    const s = String(f.properties?.source ?? '')
-    if (s in out) out[s]++
-  }
-  return out
-})
+/** Single-pass family counts for the pills (uses the map marker taxonomy). */
+const familyCounts = computed<Record<CulturalFamily, number>>(() =>
+  countCulturalFamilies(props.rareEarthCultural ?? { type: 'FeatureCollection', features: [] }),
+)
 
 const subtypeCounts = computed(() => {
   const out: Record<string, number> = { cultural_center: 0, artist_group: 0, indigenous: 0, rural: 0 }
@@ -557,13 +660,54 @@ const subtypeCounts = computed(() => {
 
 const totalCount = computed(() => allFeatures.value.length)
 
+function familyOf(f: CulturalFeature): CulturalFamily {
+  // Enriched collections already carry the taxonomy scalar — reuse it,
+  // otherwise resolve via the shared taxonomy (single source of truth).
+  const pre = f.properties?._family as CulturalFamily | undefined
+  if (pre === 'agents' || pre === 'spaces' || pre === 'indigenous') return pre
+  return getCulturalFamily(f)
+}
+
+function familyLabel(f: CulturalFeature): string {
+  return t(FAMILY_LABEL_KEYS[familyOf(f)])
+}
+
+function familyColor(f: CulturalFeature): string {
+  return FAMILY_COLORS[familyOf(f)]
+}
+
+/** Human source name for the card meta line (empty when unknown). */
+function sourceName(f: CulturalFeature): string {
+  const key = SOURCE_LABEL_KEYS[String(f.properties?.source ?? '')]
+  return key ? t(key) : ''
+}
+
+const hasActiveCultureFilters = computed(() => {
+  if (search.value.trim()) return true
+  if (Object.values(familyFilter.value).some(v => !v)) return true
+  if (Object.values(subtypeFilter.value).some(v => !v)) return true
+  return false
+})
+
+const activeCultureFilterSummary = computed(() => {
+  const parts: string[] = []
+  const off = (Object.entries(familyFilter.value) as Array<[CulturalFamily, boolean]>)
+    .filter(([, v]) => !v)
+    .map(([k]) => t(FAMILY_LABEL_KEYS[k]))
+  if (off.length) parts.push(`− ${off.join(', ')}`)
+  const offSub = Object.entries(subtypeFilter.value).filter(([, v]) => !v).length
+  if (offSub) parts.push(`${offSub} subtype${offSub > 1 ? 's' : ''} off`)
+  if (search.value.trim()) parts.push(`“${search.value.trim()}”`)
+  return parts.join(' · ')
+})
+
 const filteredFeatures = computed<CulturalFeature[]>(() => {
   const term = search.value.trim().toLowerCase()
   return allFeatures.value.filter((f) => {
+    // Family first: single taxonomy call, cheapest reject for 2000+ rows.
+    if (!familyFilter.value[familyOf(f)]) return false
     const p = f.properties ?? {}
-    const src = String(p.source ?? '')
     const sub = String(p.subtype ?? '')
-    if (src in sourceFilter.value && !sourceFilter.value[src]) return false
     if (sub in subtypeFilter.value && !subtypeFilter.value[sub]) return false
     if (term) {
       const hay = `${p.name ?? ''} ${p.description ?? ''} ${p.municipality ?? ''} ${p.state ?? ''}`.toLowerCase()
@@ -577,7 +721,7 @@ const sortedFeatures = computed<CulturalFeature[]>(() => {
   const list = [...filteredFeatures.value]
   if (sortKey.value === 'name') {
     list.sort((a, b) => String(a.properties?.name ?? '').localeCompare(String(b.properties?.name ?? '')))
-  } else {
+  } else if (sortKey.value === 'source') {
     // source then name
     const order = ['mapa_cultura', 'floresta_ativista']
     list.sort((a, b) => {
@@ -588,6 +732,18 @@ const sortedFeatures = computed<CulturalFeature[]>(() => {
       const rankA = oa < 0 ? 99 : oa
       const rankB = ob < 0 ? 99 : ob
       if (rankA !== rankB) return rankA - rankB
+      return String(a.properties?.name ?? '').localeCompare(String(b.properties?.name ?? ''))
+    })
+  } else {
+    // family (protection priority: indigenous → spaces → agents), regional
+    // plateau agents first within each family, then name
+    list.sort((a, b) => {
+      const ra = FAMILY_ORDER.indexOf(familyOf(a))
+      const rb = FAMILY_ORDER.indexOf(familyOf(b))
+      if (ra !== rb) return ra - rb
+      const ga = isRegionalAgent(a) ? 0 : 1
+      const gb = isRegionalAgent(b) ? 0 : 1
+      if (ga !== gb) return ga - gb
       return String(a.properties?.name ?? '').localeCompare(String(b.properties?.name ?? ''))
     })
   }
@@ -606,9 +762,16 @@ function resetPage() { page.value = 1 }
 // ── Actions ─────────────────────────────────────────────────────────────
 const flashing = ref<string | null>(null)
 let flashTimer: ReturnType<typeof setTimeout> | null = null
-onUnmounted(() => { if (flashTimer) clearTimeout(flashTimer) })
+onUnmounted(() => {
+  if (flashTimer) clearTimeout(flashTimer)
+  if (searchTimer) clearTimeout(searchTimer)
+})
 function featureKey(f: CulturalFeature): string {
-  return `${f.properties?.source ?? 'x'}-${f.properties?.source_id ?? f.properties?.name ?? Math.random()}`
+  // Stable across renders: coordinates disambiguate same-name agents (the
+  // old Math.random() fallback reshuffled :key identity every update).
+  const coords = f.geometry?.coordinates
+  const c = coords && coords.length >= 2 ? `${coords[0].toFixed(5)},${coords[1].toFixed(5)}` : 'nocoord'
+  return `${f.properties?.source ?? 'x'}-${f.properties?.source_id ?? f.properties?.name ?? 'unknown'}-${c}`
 }
 function onCardClick(f: CulturalFeature) {
   const coords = f.geometry?.coordinates
@@ -638,11 +801,11 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
 <style scoped>
 .vulc-panel {
   position: absolute;
-  top: clamp(3.5rem, 7vh, 4.5rem);
+  top: var(--vulc-panel-top, clamp(3.5rem, 7vh, 4.5rem));
   right: clamp(0.6rem, 1.2vw, 1rem);
   bottom: clamp(1rem, 3vh, 1.5rem);
   width: clamp(20rem, 26vw, 24rem);
-  max-height: calc(100vh - 10rem);
+  max-height: calc(100svh - 10rem);
   z-index: 530;
   pointer-events: auto;
   display: flex;
@@ -1036,6 +1199,95 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   cursor: pointer;
 }
 
+/* ── Cultural load status ──────────────────────────────────────── */
+.vulc-loadstatus {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  background: rgba(155, 89, 182, 0.08);
+  border: 1px solid rgba(155, 89, 182, 0.25);
+  border-radius: 6px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.75);
+}
+.vulc-loadstatus--error {
+  background: rgba(231, 76, 60, 0.08);
+  border-color: rgba(231, 76, 60, 0.35);
+}
+.vulc-loadstatus__pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a855f7;
+  flex-shrink: 0;
+  animation: vulc-pulse 1.2s ease-in-out infinite;
+}
+@keyframes vulc-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+.vulc-loadstatus__icon { width: 0.8rem; height: 0.8rem; flex-shrink: 0; color: #e74c3c; }
+.vulc-loadstatus__retry {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+}
+.vulc-loadstatus__retry:hover { background: rgba(231, 76, 60, 0.2); }
+
+/* ── Active-filter bar ─────────────────────────────────────────── */
+.vulc-filterbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  background: rgba(231, 76, 60, 0.08);
+  border: 1px solid rgba(231, 76, 60, 0.25);
+  border-radius: 6px;
+}
+.vulc-filterbar__summary {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vulc-filterbar__clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.vulc-filterbar__clear svg { width: 0.7rem; height: 0.7rem; }
+.vulc-filterbar__clear:hover {
+  background: rgba(231, 76, 60, 0.2);
+  border-color: rgba(231, 76, 60, 0.5);
+}
+.vulc-filterbar__clear:focus-visible {
+  outline: 2px solid var(--obs-red, #e74c3c);
+  outline-offset: 2px;
+}
+
 /* ── Empty ─────────────────────────────────────────────────────── */
 .vulc-empty {
   display: flex;
@@ -1182,7 +1434,7 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
 /* ── Reopen button (collapsed state) ───────────────────────────── */
 .vulc-panel__show {
   position: absolute;
-  top: clamp(3.5rem, 7vh, 4.5rem);
+  top: var(--vulc-panel-top, clamp(3.5rem, 7vh, 4.5rem));
   right: clamp(0.6rem, 1.2vw, 1rem);
   width: 2.25rem;
   height: 2.25rem;
@@ -1214,10 +1466,30 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
 }
 
 @media (max-width: 900px) {
-  .vulc-panel { width: min(20rem, calc(100vw - 1.5rem)); right: 0.5rem; top: 4rem; bottom: 1.5rem; max-height: none; }
+  .vulc-panel { width: min(20rem, calc(100vw - 1.5rem)); right: 0.5rem; top: var(--vulc-panel-top, 4rem); bottom: 1.5rem; max-height: none; }
+}
+/* Tablet/phone: the intel panel becomes a full-width sheet stacked
+   below the app header + observatory topbar and above the bottom dock
+   (shared --vulc-* contract in main.css).
+   The floating reopen button is hidden here — the page's action pillar
+   owns the reopen affordance so the two can never overlap. */
+@media (max-width: 768px) {
+  .vulc-panel {
+    width: auto;
+    left: 0.5rem;
+    right: 0.5rem;
+    top: var(--vulc-panel-top);
+    bottom: var(--vulc-dock-clear);
+    max-height: none;
+    z-index: 545;
+  }
+  .vulc-panel__show { display: none; }
+  .vulc-tabs { overflow-x: auto; scrollbar-width: none; }
+  .vulc-tabs::-webkit-scrollbar { display: none; }
+  .vulc-tab { min-width: 4.25rem; }
 }
 @media (max-width: 640px) {
-  .vulc-panel { width: calc(100vw - 1rem); left: 0.5rem; right: 0.5rem; }
+  .vulc-panel { width: auto; left: 0.5rem; right: 0.5rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

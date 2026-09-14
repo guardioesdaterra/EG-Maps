@@ -25,9 +25,19 @@
         "dsprocesso": "003.260/1936",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 36.1
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -57,9 +67,14 @@
         "dsprocesso": "007.580/1941",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 27.7
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 1.8
           }
         ],
         "has_overlap": true
@@ -89,9 +104,19 @@
         "dsprocesso": "322.004/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 31.8
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0.8
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -121,9 +146,19 @@
         "dsprocesso": "322.006/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 32.8
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0.3
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -153,9 +188,19 @@
         "dsprocesso": "003.258/1936",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 34.7
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 1.1
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -185,9 +230,14 @@
         "dsprocesso": "006.944/1941",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 39.7
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0.4
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -217,9 +267,19 @@
         "dsprocesso": "003.220/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 32.4
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 1.4
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -249,9 +309,9 @@
         "dsprocesso": "002.082/1940",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 29.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -281,9 +341,14 @@
         "dsprocesso": "370.503/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 38
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -313,9 +378,19 @@
         "dsprocesso": "164.431/1935",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 35.2
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 1.9
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -345,9 +420,19 @@
         "dsprocesso": "322.003/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 31.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 1.2
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -377,9 +462,19 @@
         "dsprocesso": "002.656/1935",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 37.2
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 1.8
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -409,9 +504,14 @@
         "dsprocesso": "164.432/1935",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 28.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -441,9 +541,19 @@
         "dsprocesso": "003.254/1936",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 36.3
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 1.5
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -473,9 +583,19 @@
         "dsprocesso": "322.002/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 34.3
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -505,9 +625,14 @@
         "dsprocesso": "370.501/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 35.6
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -537,9 +662,9 @@
         "dsprocesso": "164.401/1935",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 30.1
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -569,9 +694,19 @@
         "dsprocesso": "322.005/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 33.7
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -601,9 +736,19 @@
         "dsprocesso": "016.443/1935",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 31.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -633,9 +778,19 @@
         "dsprocesso": "322.015/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 33.7
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0.1
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -665,9 +820,9 @@
         "dsprocesso": "164.402/1935",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 27.8
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -697,9 +852,9 @@
         "dsprocesso": "164.433/1935",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 29.8
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -729,9 +884,19 @@
         "dsprocesso": "322.001/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 32.4
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 1.3
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -761,9 +926,9 @@
         "dsprocesso": "003.240/1936",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 29.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -793,9 +958,19 @@
         "dsprocesso": "003.241/1936",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 32.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 1.8
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -825,9 +1000,19 @@
         "dsprocesso": "322.007/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 33.7
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0.1
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -857,9 +1042,19 @@
         "dsprocesso": "370.502/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 36.2
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 1.9
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -937,9 +1132,14 @@
         "dsprocesso": "370.504/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 38
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -969,9 +1169,14 @@
         "dsprocesso": "370.505/1942",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 39.6
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1001,9 +1206,14 @@
         "dsprocesso": "002.134/1948",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 32.2
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1081,9 +1291,19 @@
         "dsprocesso": "058.201/1944",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 33.3
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1161,9 +1381,9 @@
         "dsprocesso": "831.866/1999",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 25.1
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1238,15 +1458,7 @@
         "uf": "MG",
         "category": "carbonatite_associated",
         "category_label": "Fonólito (alkaline complex)",
-        "dsprocesso": "830.482/1988",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 46.7
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.482/1988"
       }
     },
     {
@@ -1297,9 +1509,9 @@
         "dsprocesso": "830.615/1985",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 13.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1326,15 +1538,7 @@
         "uf": "MG",
         "category": "carbonatite_associated",
         "category_label": "Tinguaito (alkaline complex)",
-        "dsprocesso": "832.212/1997",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 44.7
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "832.212/1997"
       }
     },
     {
@@ -1382,15 +1586,7 @@
         "uf": "MG",
         "category": "carbonatite_associated",
         "category_label": "Tinguaito (alkaline complex)",
-        "dsprocesso": "830.228/2006",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 43
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.228/2006"
       }
     },
     {
@@ -1441,9 +1637,9 @@
         "dsprocesso": "830.443/2018",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 37.8
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1473,9 +1669,19 @@
         "dsprocesso": "830.444/2018",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 35.7
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1505,9 +1711,14 @@
         "dsprocesso": "830.442/2018",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 42.5
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 1.2
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1534,15 +1745,7 @@
         "uf": "MG",
         "category": "phosphate_associated",
         "category_label": "Apatita (REE-bearing phosphate)",
-        "dsprocesso": "830.652/2020",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 46.5
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.652/2020"
       }
     },
     {
@@ -1566,15 +1769,7 @@
         "uf": "MG",
         "category": "carbonatite_associated",
         "category_label": "Minério de Nióbio (carbonatite assoc.)",
-        "dsprocesso": "832.935/2021",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 25.7
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "832.935/2021"
       }
     },
     {
@@ -1598,15 +1793,7 @@
         "uf": "MG",
         "category": "carbonatite_associated",
         "category_label": "Tinguaito (alkaline complex)",
-        "dsprocesso": "831.856/1993",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 26.4
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "831.856/1993"
       }
     },
     {
@@ -1633,9 +1820,14 @@
         "dsprocesso": "003.257/1936",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 30
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1667,7 +1859,12 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 5.3
+            "distance_km": 0
+          },
+          {
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1694,15 +1891,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.020/2022",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 44.3
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "833.020/2022"
       }
     },
     {
@@ -1726,15 +1915,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.021/2022",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 45.2
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "833.021/2022"
       }
     },
     {
@@ -1763,7 +1944,12 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 11.2
+            "distance_km": 0
+          },
+          {
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1795,7 +1981,12 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 9.9
+            "distance_km": 0
+          },
+          {
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1827,7 +2018,12 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 6.8
+            "distance_km": 0
+          },
+          {
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1857,9 +2053,9 @@
         "dsprocesso": "830.461/2018",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 38.9
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 1.8
           }
         ],
         "has_overlap": true
@@ -1886,15 +2082,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.019/2022",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 45.9
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "833.019/2022"
       }
     },
     {
@@ -1918,15 +2106,7 @@
         "uf": "SP",
         "category": "carbonatite_associated",
         "category_label": "Fonólito (alkaline complex)",
-        "dsprocesso": "820.407/2022",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 39.8
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.407/2022"
       }
     },
     {
@@ -1953,9 +2133,9 @@
         "dsprocesso": "820.609/2022",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 36.1
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1982,15 +2162,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.014/2022",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 20.7
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "833.014/2022"
       }
     },
     {
@@ -2017,9 +2189,9 @@
         "dsprocesso": "833.013/2022",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 16.4
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2049,9 +2221,9 @@
         "dsprocesso": "820.609/2022",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 36
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2078,15 +2250,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.893/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 41.9
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.893/2023"
       }
     },
     {
@@ -2113,9 +2277,9 @@
         "dsprocesso": "830.886/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 15.7
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2145,9 +2309,9 @@
         "dsprocesso": "830.888/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 25.6
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2177,9 +2341,9 @@
         "dsprocesso": "820.611/2022",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 38.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 1.5
           }
         ],
         "has_overlap": true
@@ -2211,7 +2375,12 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 12.5
+            "distance_km": 0
+          },
+          {
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2238,15 +2407,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.612/2022",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 41.3
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.612/2022"
       }
     },
     {
@@ -2273,9 +2434,14 @@
         "dsprocesso": "833.018/2022",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 34.9
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2305,9 +2471,9 @@
         "dsprocesso": "830.885/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 24.4
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2337,9 +2503,9 @@
         "dsprocesso": "830.880/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 20.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2369,9 +2535,9 @@
         "dsprocesso": "830.881/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 21.6
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2401,9 +2567,9 @@
         "dsprocesso": "830.884/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 20.4
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2433,9 +2599,9 @@
         "dsprocesso": "820.610/2022",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 38.8
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 1.8
           }
         ],
         "has_overlap": true
@@ -2467,7 +2633,12 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 10.4
+            "distance_km": 0
+          },
+          {
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2497,9 +2668,9 @@
         "dsprocesso": "830.891/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 34.1
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2529,9 +2700,9 @@
         "dsprocesso": "830.882/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 21.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2561,9 +2732,19 @@
         "dsprocesso": "831.092/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 34.9
+            "name": "Aldeia Ibiramã Kiriri — Rio Verde",
+            "kind": "ti",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2593,9 +2774,9 @@
         "dsprocesso": "830.890/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 34.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2625,9 +2806,9 @@
         "dsprocesso": "830.927/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 22.6
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2654,15 +2835,7 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.089/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 47.3
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "831.089/2023"
       }
     },
     {
@@ -2689,9 +2862,9 @@
         "dsprocesso": "832.150/2022",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 30
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2718,15 +2891,7 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.088/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 47.5
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "831.088/2023"
       }
     },
     {
@@ -2750,15 +2915,7 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.090/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 48.2
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "831.090/2023"
       }
     },
     {
@@ -2782,15 +2939,7 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.091/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 47.9
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "831.091/2023"
       }
     },
     {
@@ -2814,15 +2963,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.015/2022",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 23.9
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "833.015/2022"
       }
     },
     {
@@ -2849,9 +2990,9 @@
         "dsprocesso": "832.149/2022",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 26.8
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2881,9 +3022,9 @@
         "dsprocesso": "830.883/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 21.2
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2937,9 +3078,9 @@
         "dsprocesso": "830.928/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 23
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2966,15 +3107,7 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.084/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 44.6
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "831.084/2023"
       }
     },
     {
@@ -2998,15 +3131,7 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.086/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 47.3
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "831.086/2023"
       }
     },
     {
@@ -3033,9 +3158,14 @@
         "dsprocesso": "832.377/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 29.6
+            "name": "Aldeia Xucuru Kariri — Fazenda Boa Vista",
+            "kind": "ti",
+            "distance_km": 1.2
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 1.8
           }
         ],
         "has_overlap": true
@@ -3065,9 +3195,9 @@
         "dsprocesso": "832.378/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 19.2
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3094,15 +3224,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.499/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 31
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.499/2023"
       }
     },
     {
@@ -3129,9 +3251,9 @@
         "dsprocesso": "832.379/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 18.8
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3161,9 +3283,9 @@
         "dsprocesso": "820.504/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 27
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3193,9 +3315,9 @@
         "dsprocesso": "832.661/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 21
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3225,9 +3347,14 @@
         "dsprocesso": "832.175/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 37
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3257,9 +3384,9 @@
         "dsprocesso": "832.662/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 21
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3313,9 +3440,14 @@
         "dsprocesso": "832.177/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 42.5
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0.4
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3345,9 +3477,9 @@
         "dsprocesso": "832.649/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 41.6
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 1.3
           }
         ],
         "has_overlap": true
@@ -3374,15 +3506,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.287/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 41.1
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.287/2023"
       }
     },
     {
@@ -3411,7 +3535,12 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 13.4
+            "distance_km": 1.7
+          },
+          {
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3441,9 +3570,14 @@
         "dsprocesso": "832.429/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 36.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3470,15 +3604,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "832.359/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 38.6
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "832.359/2023"
       }
     },
     {
@@ -3505,9 +3631,19 @@
         "dsprocesso": "832.349/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 36.8
+            "name": "Aldeia Ibiramã Kiriri — Rio Verde",
+            "kind": "ti",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3537,9 +3673,14 @@
         "dsprocesso": "832.409/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 44.2
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3569,9 +3710,14 @@
         "dsprocesso": "832.174/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 36
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3601,9 +3747,14 @@
         "dsprocesso": "832.360/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 27.4
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 1.1
           }
         ],
         "has_overlap": true
@@ -3633,9 +3784,9 @@
         "dsprocesso": "832.428/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 35.7
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3662,15 +3813,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "832.427/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 37.7
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "832.427/2023"
       }
     },
     {
@@ -3697,9 +3840,9 @@
         "dsprocesso": "820.286/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 35.3
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3726,15 +3869,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "832.179/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 38.5
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "832.179/2023"
       }
     },
     {
@@ -3761,9 +3896,9 @@
         "dsprocesso": "832.663/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 18.2
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3793,9 +3928,9 @@
         "dsprocesso": "832.350/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 35.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0.6
           }
         ],
         "has_overlap": true
@@ -3825,9 +3960,9 @@
         "dsprocesso": "832.351/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 37.1
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 1.3
           }
         ],
         "has_overlap": true
@@ -3857,9 +3992,9 @@
         "dsprocesso": "833.228/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 34.1
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3886,15 +4021,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.503/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 25.8
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.503/2023"
       }
     },
     {
@@ -3921,9 +4048,9 @@
         "dsprocesso": "820.538/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 28.7
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3950,15 +4077,7 @@
         "uf": "SP",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "820.319/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 43
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.319/2023"
       }
     },
     {
@@ -3985,9 +4104,9 @@
         "dsprocesso": "832.364/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 30.6
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4017,9 +4136,9 @@
         "dsprocesso": "832.376/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 26.9
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 1.9
           }
         ],
         "has_overlap": true
@@ -4046,15 +4165,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "832.375/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 44.1
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "832.375/2023"
       }
     },
     {
@@ -4078,15 +4189,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.390/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 34.9
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "833.390/2023"
       }
     },
     {
@@ -4137,9 +4240,9 @@
         "dsprocesso": "820.538/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 31.1
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4193,9 +4296,9 @@
         "dsprocesso": "832.380/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 19.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4227,7 +4330,12 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 10.3
+            "distance_km": 0
+          },
+          {
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4254,15 +4362,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "832.648/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 45
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "832.648/2023"
       }
     },
     {
@@ -4286,15 +4386,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.895/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 42.9
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.895/2023"
       }
     },
     {
@@ -4321,9 +4413,9 @@
         "dsprocesso": "830.889/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 26.7
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4353,9 +4445,9 @@
         "dsprocesso": "830.887/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 21.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4382,15 +4474,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.892/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 39.8
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.892/2023"
       }
     },
     {
@@ -4417,9 +4501,9 @@
         "dsprocesso": "832.759/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 31
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4446,15 +4530,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.036/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 34.3
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.036/2024"
       }
     },
     {
@@ -4478,15 +4554,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.040/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 28.4
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.040/2024"
       }
     },
     {
@@ -4513,9 +4581,9 @@
         "dsprocesso": "832.931/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 15
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4545,9 +4613,9 @@
         "dsprocesso": "833.250/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 18.2
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4574,15 +4642,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.493/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 49.3
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "833.493/2023"
       }
     },
     {
@@ -4606,15 +4666,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.230/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 38.1
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "833.230/2023"
       }
     },
     {
@@ -4641,9 +4693,9 @@
         "dsprocesso": "833.096/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 18.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4742,7 +4794,15 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.494/2023"
+        "dsprocesso": "833.494/2023",
+        "overlaps": [
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
+          }
+        ],
+        "has_overlap": true
       }
     },
     {
@@ -4769,9 +4829,9 @@
         "dsprocesso": "833.334/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 49.3
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4801,9 +4861,9 @@
         "dsprocesso": "830.018/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 23.8
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4857,9 +4917,9 @@
         "dsprocesso": "832.931/2023",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 14.6
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4958,15 +5018,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.039/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 15.8
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.039/2024"
       }
     },
     {
@@ -5017,9 +5069,9 @@
         "dsprocesso": "830.278/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 21.3
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5097,9 +5149,14 @@
         "dsprocesso": "830.850/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 35.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5129,9 +5186,9 @@
         "dsprocesso": "820.001/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 30.4
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 1.2
           }
         ],
         "has_overlap": true
@@ -5163,7 +5220,12 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 6.7
+            "distance_km": 0
+          },
+          {
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5238,15 +5300,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.231/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 38.1
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "833.231/2023"
       }
     },
     {
@@ -5273,9 +5327,9 @@
         "dsprocesso": "820.048/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 15.4
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5307,7 +5361,12 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 6.2
+            "distance_km": 0
+          },
+          {
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5358,15 +5417,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.364/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 45.7
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.364/2024"
       }
     },
     {
@@ -5390,15 +5441,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.232/2023",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 40.8
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "833.232/2023"
       }
     },
     {
@@ -5422,15 +5465,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.277/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 34
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.277/2024"
       }
     },
     {
@@ -5457,9 +5492,9 @@
         "dsprocesso": "830.304/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 46.9
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5489,9 +5524,9 @@
         "dsprocesso": "820.221/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 11.1
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5542,15 +5577,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.038/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 40.2
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.038/2024"
       }
     },
     {
@@ -5601,9 +5628,9 @@
         "dsprocesso": "820.037/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 13.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5630,15 +5657,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.149/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 30
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.149/2024"
       }
     },
     {
@@ -5739,7 +5758,12 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 3.7
+            "distance_km": 0
+          },
+          {
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5862,15 +5886,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.002/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 25.9
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.002/2024"
       }
     },
     {
@@ -5945,9 +5961,14 @@
         "dsprocesso": "830.301/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 32.8
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5974,15 +5995,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.373/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 47.1
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.373/2024"
       }
     },
     {
@@ -6078,15 +6091,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.164/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 19.1
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.164/2024"
       }
     },
     {
@@ -6158,15 +6163,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.148/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 27.9
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.148/2024"
       }
     },
     {
@@ -6190,15 +6187,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.166/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 33.2
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.166/2024"
       }
     },
     {
@@ -6294,15 +6283,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.041/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 29.8
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.041/2024"
       }
     },
     {
@@ -6377,9 +6358,14 @@
         "dsprocesso": "831.028/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 34.2
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -6601,9 +6587,9 @@
         "dsprocesso": "831.144/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 20.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -6681,9 +6667,14 @@
         "dsprocesso": "831.230/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 33.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 1.0
           }
         ],
         "has_overlap": true
@@ -6929,9 +6920,9 @@
         "dsprocesso": "831.231/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 28.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7059,7 +7050,7 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 7.7
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7161,9 +7152,9 @@
         "dsprocesso": "832.340/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 34.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0.4
           }
         ],
         "has_overlap": true
@@ -7193,9 +7184,14 @@
         "dsprocesso": "831.696/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 35.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7225,9 +7221,9 @@
         "dsprocesso": "832.339/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 35.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 1.0
           }
         ],
         "has_overlap": true
@@ -7257,9 +7253,9 @@
         "dsprocesso": "832.344/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 31.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7289,9 +7285,9 @@
         "dsprocesso": "832.341/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 35.5
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 1.0
           }
         ],
         "has_overlap": true
@@ -7318,15 +7314,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "832.496/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 48.5
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "832.496/2024"
       }
     },
     {
@@ -7353,9 +7341,9 @@
         "dsprocesso": "832.342/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 33.2
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7385,9 +7373,9 @@
         "dsprocesso": "832.346/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 26.6
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7417,9 +7405,19 @@
         "dsprocesso": "832.491/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 36.4
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "APA Santuário Ecológico da Pedra Branca",
+            "kind": "conservation_unit",
+            "distance_km": 1.6
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7449,9 +7447,9 @@
         "dsprocesso": "832.343/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 31.4
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7481,9 +7479,14 @@
         "dsprocesso": "180.266/1977",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 36.1
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7513,9 +7516,9 @@
         "dsprocesso": "830.940/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 22
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7545,9 +7548,14 @@
         "dsprocesso": "831.026/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 30
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
+          },
+          {
+            "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
+            "kind": "buffer_zone",
+            "distance_km": 1.6
           }
         ],
         "has_overlap": true
@@ -7577,9 +7585,9 @@
         "dsprocesso": "820.222/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 13
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7606,15 +7614,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.737/2025",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 48.5
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.737/2025"
       }
     },
     {
@@ -7638,15 +7638,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.732/2025",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 43.3
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.732/2025"
       }
     },
     {
@@ -7670,15 +7662,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.730/2025",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 43.7
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.730/2025"
       }
     },
     {
@@ -7705,9 +7689,9 @@
         "dsprocesso": "830.912/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 15.9
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7737,9 +7721,9 @@
         "dsprocesso": "830.026/2024",
         "overlaps": [
           {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 18.1
+            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
+            "kind": "conservation",
+            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -7790,15 +7774,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.165/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 24.5
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.165/2024"
       }
     },
     {
@@ -7870,15 +7846,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.162/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 21.1
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.162/2024"
       }
     },
     {
@@ -7902,15 +7870,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.162/2024",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 23.1
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.162/2024"
       }
     },
     {
@@ -7934,15 +7894,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.411/2025",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 24.5
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "831.411/2025"
       }
     },
     {
@@ -7990,15 +7942,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.137/2026",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 19.1
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.137/2026"
       }
     },
     {
@@ -8022,15 +7966,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.132/2026",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 13.3
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.132/2026"
       }
     },
     {
@@ -8054,15 +7990,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.442/2026",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 41.4
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.442/2026"
       }
     },
     {
@@ -8086,15 +8014,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.426/2026",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 46.1
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.426/2026"
       }
     },
     {
@@ -8118,15 +8038,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.428/2026",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 38.3
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.428/2026"
       }
     },
     {
@@ -8150,15 +8062,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.427/2026",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 43.5
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.427/2026"
       }
     },
     {
@@ -8206,15 +8110,7 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.495/2026",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 27.9
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "830.495/2026"
       }
     },
     {
@@ -8262,15 +8158,7 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.164/2026",
-        "overlaps": [
-          {
-            "name": "Quilombo da Favela (Chapéu Preto)",
-            "kind": "quilombo",
-            "distance_km": 22.3
-          }
-        ],
-        "has_overlap": true
+        "dsprocesso": "820.164/2026"
       }
     },
     {

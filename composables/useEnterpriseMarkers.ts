@@ -6,7 +6,7 @@
  * @connections composables/useObservatoryControls.ts
  */
 import type { Map as MapLibreMap } from 'maplibre-gl'
-import maplibregl from 'maplibre-gl'
+import type maplibregl from 'maplibre-gl'
 import { ENTERPRISES, CORPORATE_CONNECTIONS, buildEnterpriseHQGeoJSON, type EnterpriseHQ } from '@/lib/enterprise-data'
 
 const ENTERPRISE_SOURCE = 'enterprise-hq'
@@ -184,46 +184,11 @@ export function setupEnterpriseLayer(map: MapLibreMap, onClick?: (_enterprise: E
     map.on('mouseenter', ENTERPRISE_LAYER, () => { map.getCanvas().style.cursor = 'pointer' })
     map.on('mouseleave', ENTERPRISE_LAYER, () => { map.getCanvas().style.cursor = '' })
 
-    ENTERPRISES.forEach(ent => {
-      if (!ent.lat || !ent.lng) return
-      const el = document.createElement('div')
-      el.style.width = '32px'
-      el.style.height = '32px'
-      el.style.borderRadius = '50%'
-      el.style.background = ent.color
-      el.style.border = '2px solid rgba(255,255,255,0.4)'
-      el.style.boxShadow = `0 0 16px ${ent.color}66`
-      el.style.display = 'flex'
-      el.style.alignItems = 'center'
-      el.style.justifyContent = 'center'
-      el.style.cursor = 'pointer'
-      el.style.fontSize = '11px'
-      el.style.fontWeight = '800'
-      el.style.color = '#fff'
-      el.textContent = ent.name.slice(0, 2)
-      el.title = ent.name
-      el.setAttribute('role', 'button')
-      el.setAttribute('tabindex', '0')
-      el.setAttribute('aria-label', ent.name)
-      const onClick = () => { if (state.onClick) state.onClick(ent) }
-      const onKeydown = (e: KeyboardEvent) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() }
-      }
-      el.addEventListener('click', onClick)
-      el.addEventListener('keydown', onKeydown)
-
-      const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-        .setLngLat([ent.lng, ent.lat])
-        .addTo(map)
-      state.markers.push(marker)
-      state.disposers.push(() => {
-        el.removeEventListener('click', onClick)
-        el.removeEventListener('keydown', onKeydown)
-        marker.remove()
-        const clone = el.cloneNode(false) as HTMLElement
-        if (el.parentNode) el.parentNode.replaceChild(clone, el)
-      })
-    })
+    // NOTE: enterprise locations render ONLY through the GPU circle + symbol
+    // layers above. A previous revision additionally mounted one DOM
+    // `maplibregl.Marker` per enterprise — doubling draw cost, event surface
+    // and GC churn for an identical visual. Do not re-add DOM markers here;
+    // gate any future per-HQ DOM affordance behind high zoom + small counts.
 
     addEnterpriseConnections(map)
   } catch { /* ignore */ }

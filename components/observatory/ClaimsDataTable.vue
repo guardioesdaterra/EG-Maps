@@ -173,7 +173,8 @@ watch(() => props.visible, (v) => {
   border-radius: 14px;
   box-shadow: 0 16px 48px var(--shadow-color);
   width: clamp(320px, 70vw, 800px);
-  max-height: 80vh;
+  max-width: calc(100vw - 1rem);
+  max-height: min(80dvh, 60rem);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -232,7 +233,9 @@ watch(() => props.visible, (v) => {
 }
 .obs-datatable__body {
   overflow-y: auto;
+  overflow-x: auto;
   flex: 1;
+  -webkit-overflow-scrolling: touch;
 }
 .obs-datatable__table {
   width: 100%;
@@ -293,6 +296,18 @@ watch(() => props.visible, (v) => {
 }
 
 .claims-dt-backdrop { z-index: var(--obs-z-modal-backdrop); }
+
+@media (max-width: 640px) {
+  .obs-datatable {
+    width: calc(100vw - 1rem);
+    max-height: calc(100dvh - 6rem);
+    border-radius: 12px;
+  }
+  .obs-datatable__search {
+    width: 5.5rem;
+    min-height: 40px;
+  }
+}
 .modal-fade-enter-active { transition: opacity 0.2s ease; }
 .modal-fade-leave-active { transition: opacity 0.15s ease; }
 .modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }

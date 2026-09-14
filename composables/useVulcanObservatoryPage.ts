@@ -26,7 +26,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     reportClaim, userLocationRadius, mapContainerRef, filteredCount,
     layerVis, enterpriseLayerVisible, toggleLayer, toggleEnterpriseLayer,
     flyToTarget, mapRef: _mapRef, onMapInit, flyToCoord, onGeoLocate, expandToFullBrazil, zoomToDanger, flyToEnterprise,
-    filteredPoints,
+    filteredPoints, filteredPolygons,
     categoryStats, totalCount, activeFilterCount, activeFilterSummary, formatSyncDate, formatHa,
     displayCounts, startCounterAnimation, animatedCount, animateCounters,
     restoredState,
@@ -36,7 +36,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
 
   const { pointsData: _rawPointsData, polygonsData: _rawPolygonsData, protectedData: _rawProtectedData, waterData: _rawWaterData, culturalData: _rawCulturalData, features: allFeatures, speculatorIndex, deepAnalysis, layerCounts, overlapSummary, protectedSummary, waterThreats, waterSummary, resourceErrors, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL, initialRegion)
 
-  const { combinedData: culturalAgentsCombined, sourceCounts, load: loadCulturalAgents } = useCulturalAgentsData(baseURL)
+  const { combinedData: culturalAgentsCombined, sourceCounts, load: loadCulturalAgents, isLoading: culturalLoading, error: culturalError, sourceErrors: culturalSourceErrors } = useCulturalAgentsData(baseURL)
 
   const EMPTY_FC: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] }
   const pointsData = computed(() => _rawPointsData.value ?? EMPTY_FC)
@@ -60,9 +60,26 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     const agents = culturalAgentsCombined.value?.features ?? []
     if (!agents.length) return base
     const baseFeatures = (base?.features ?? [])
+    if (!baseFeatures.length) return { type: 'FeatureCollection', features: [...agents] }
+    // Cross-dedup: the curated overlay and the agent digests occasionally
+    // describe the same place (same name + ~10m coords) — keep one pin.
+    const agentKeys = new Set<string>()
+    for (const a of agents) {
+      const ap = (a.properties ?? {}) as Record<string, unknown>
+      const ac = (a.geometry as GeoJSON.Point | undefined)?.coordinates
+      if (Array.isArray(ac) && ac.length >= 2 && Number.isFinite(ac[0]) && Number.isFinite(ac[1])) {
+        agentKeys.add(`${String(ap.name ?? '').toLowerCase()}|${Number(ac[0]).toFixed(4)},${Number(ac[1]).toFixed(4)}`)
+      }
+    }
+    const kept = (baseFeatures as GeoJSON.Feature[]).filter((f) => {
+      const p = (f.properties ?? {}) as Record<string, unknown>
+      const c = (f.geometry as GeoJSON.Point | undefined)?.coordinates
+      if (!Array.isArray(c) || c.length < 2 || !Number.isFinite(c[0]) || !Number.isFinite(c[1])) return true
+      return !agentKeys.has(`${String(p.name ?? '').toLowerCase()}|${Number(c[0]).toFixed(4)},${Number(c[1]).toFixed(4)}`)
+    })
     return {
       type: 'FeatureCollection',
-      features: baseFeatures.length ? [...baseFeatures, ...agents] : agents,
+      features: [...kept, ...agents],
     }
   })
 
@@ -115,6 +132,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     allFeatures,
     pointsData: _rawPointsData,
     filteredPoints,
+    filteredPolygons,
     polygonsData: _rawPolygonsData,
     protectedData: _rawProtectedData,
     waterData: _rawWaterData,
@@ -280,7 +298,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
 
   onMounted(async () => {
     startCounterAnimation()
-    await Promise.all([loadRareEarthData(), loadCulturalAgents()])
+    await loadRareEarthData()
     debouncedFilter()
     // mapContainerRef is set from the real map container in handleMapInit
     // (map.getContainer()). No global querySelector — fragile with modals
@@ -304,6 +322,12 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
 
     window.addEventListener('keydown', handleKeydown)
     window.addEventListener('keydown', handleKeydownPage)
+
+    // Cultural agents (~1MB, sidebar browser only) start as soon as the
+    // claim points are interactive — first paint is never blocked, but agents
+    // no longer wait on requestIdleCallback, which could stall for many
+    // seconds behind map rendering (the "agents never load" report).
+    void loadCulturalAgents()
   })
 
   onUnmounted(() => {
@@ -349,11 +373,29 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     return { within10, ...nearest, pinLabel: pin.label }
   })
 
+  /**
+   * Full-Brazil escape hatch: the regional viewport lock (minZoom 8 +
+   * 100km maxBounds, set at map creation) would strand the national view,
+   * so expanding to full Brazil lifts the constraints and flies out.
+   */
+  watch(isRegional, (regional) => {
+    if (regional) return
+    const m = _mapRef.value as unknown as {
+      setMinZoom?: (_z: number) => void
+      setMaxBounds?: (_b: [[number, number], [number, number]]) => void
+    } | null
+    try {
+      m?.setMinZoom?.(0)
+      m?.setMaxBounds?.([[-180, -85], [180, 85]])
+    } catch { /* ignore */ }
+    flyToTarget.value = { lng: -48, lat: -15, zoom: 4 }
+  })
+
   return {
     controls,
     stats,
     data,
-    pointsData, filteredPoints, polygonsData, protectedData, waterData, culturalData,
+    pointsData, filteredPoints, filteredPolygons, polygonsData, protectedData, waterData, culturalData,
     layerVis, flyToTarget, onMapInit: handleMapInit,
     allFeatures, speculatorIndex, deepAnalysis, layerCounts, overlapSummary,
     protectedSummary, waterThreats, waterSummary, foreignHolders, pinThreats,
@@ -370,6 +412,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     displayCounts, startCounterAnimation, animatedCount,
     mapContainerRef, filteredCount,
     culturalTotalCount, culturalSourceCounts,
+    culturalLoading, culturalError, culturalSourceErrors, loadCulturalAgents,
     debouncedFilter,
     clearPin, getShareUrl, copyShareUrl,
   }

@@ -83,8 +83,8 @@
                   <span>{{ t('home.speciesCount') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong style="color: #27ae60">7</strong>
-                  <span>{{ t('home.groupsCount') }}</span>
+                  <strong style="color: #27ae60">{{ t('home.allValue') }}</strong>
+                  <span>{{ t('home.countries') }}</span>
                 </div>
               </div>
               <div class="bento-links">
@@ -318,6 +318,7 @@ const clearGlow = (e: MouseEvent) => {
    ══════════════════════════════════════════════ */
 .home {
   min-height: 100svh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: transparent;
@@ -386,7 +387,8 @@ const clearGlow = (e: MouseEvent) => {
   font-weight: 700;
   color: var(--primary);
   text-decoration: none;
-  padding: 0.35rem 0.7rem;
+  padding: 0.55rem 0.7rem;
+  min-height: 44px;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   transition: background 0.15s, color 0.15s;
@@ -579,7 +581,8 @@ const clearGlow = (e: MouseEvent) => {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.3rem 0.6rem;
+  padding: 0.55rem 0.6rem;
+  min-height: 44px;
   border-radius: 6px;
   font-size: 0.62rem;
   font-weight: 700;
@@ -630,7 +633,8 @@ const clearGlow = (e: MouseEvent) => {
 /* ── Footer ── */
 .home-footer {
   border-top: 1px solid var(--border-color);
-  padding: 1rem 0;
+  padding: 1rem 0 calc(1rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
   text-align: center;
   display: flex;
   flex-direction: column;

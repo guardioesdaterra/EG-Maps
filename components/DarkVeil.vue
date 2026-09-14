@@ -112,6 +112,15 @@ let program: Program | null = null;
 let mesh: Mesh | null = null;
 let frame: number | null = null;
 let start: number = 0;
+let lastFrameTime: number = 0;
+// The CPPN fragment shader is extremely ALU-heavy per pixel; 30fps is
+// visually identical for a slow ambient background and halves GPU cost.
+const FRAME_INTERVAL_MS = 1000 / 30;
+
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const cleanup = () => {
   if (frame) {
@@ -119,6 +128,7 @@ const cleanup = () => {
     frame = null;
   }
   window.removeEventListener('resize', resize);
+  document.removeEventListener('visibilitychange', onVisibilityChange);
 };
 
 const resize = () => {
@@ -138,9 +148,8 @@ const resize = () => {
   program.uniforms.uResolution.value.set(bw, bh);
 };
 
-const loop = () => {
+const renderOnce = () => {
   if (!program || !renderer || !mesh) return;
-
   program.uniforms.uTime.value = ((performance.now() - start) / 1000) * props.speed;
   program.uniforms.uHueShift.value = hueByTheme(props.hueShift, 120);
   program.uniforms.uNoise.value = hueByTheme(props.noiseIntensity, 0.06);
@@ -148,7 +157,44 @@ const loop = () => {
   program.uniforms.uScanFreq.value = props.scanlineFrequency;
   program.uniforms.uWarp.value = props.warpAmount;
   renderer.render({ scene: mesh });
+};
+
+const loop = (now: number) => {
+  frame = null;
+  if (!program || !renderer || !mesh) return;
+  // Skip frames to hold ~30fps; keep the wall-clock time uniform so the
+  // animation doesn't slow down, it just steps at a lower rate.
+  if (now - lastFrameTime < FRAME_INTERVAL_MS) {
+    frame = requestAnimationFrame(loop);
+    return;
+  }
+  lastFrameTime = now;
+  renderOnce();
   frame = requestAnimationFrame(loop);
+};
+
+const startLoop = () => {
+  if (frame || !renderer) return;
+  lastFrameTime = 0;
+  frame = requestAnimationFrame(loop);
+};
+
+const stopLoop = () => {
+  if (frame) {
+    cancelAnimationFrame(frame);
+    frame = null;
+  }
+};
+
+const onVisibilityChange = () => {
+  if (document.hidden) {
+    // Fully stop GPU work while the tab is hidden.
+    stopLoop();
+  } else if (!prefersReducedMotion()) {
+    startLoop();
+  } else {
+    renderOnce();
+  }
 };
 
 onMounted(() => {
@@ -156,7 +202,10 @@ onMounted(() => {
 
   const canvas = canvasRef.value;
   renderer = new Renderer({
-    dpr: Math.min(window.devicePixelRatio, 2),
+    // DPR 1 + resolutionScale keeps the heavy CPPN shader at a fraction of
+    // native pixels; the veil is a soft ambient background so the lower
+    // render resolution is invisible after upscaling.
+    dpr: 1,
     canvas
   });
 
@@ -180,10 +229,16 @@ onMounted(() => {
   mesh = new Mesh(gl, { geometry, program });
 
   window.addEventListener('resize', resize);
+  document.addEventListener('visibilitychange', onVisibilityChange);
   resize();
 
   start = performance.now();
-  loop();
+  if (prefersReducedMotion()) {
+    // Motion-sensitive users get a single static frame — no loop at all.
+    renderOnce();
+  } else if (!document.hidden) {
+    startLoop();
+  }
 });
 
 onUnmounted(() => {
@@ -206,6 +261,8 @@ watch(
       program.uniforms.uScan.value = props.scanlineIntensity;
       program.uniforms.uScanFreq.value = props.scanlineFrequency;
       program.uniforms.uWarp.value = props.warpAmount;
+      // Repaint immediately when the loop is paused (reduced-motion / hidden tab).
+      if (!frame) renderOnce();
     }
   }
 );

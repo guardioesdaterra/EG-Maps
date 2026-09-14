@@ -119,6 +119,45 @@ function centroidOfRings(rings) {
   for (const c of best) { x += c[0]; y += c[1] }
   return [x / best.length, y / best.length]
 }
+// ── true-overlap helpers (shared rule with compute-overlaps.mjs) ──────
+// An overlap means the claim touches the territory (distance 0) or sits
+// within OVERLAP_NEAR_KM of its edge — never "within 50km of the centroid".
+const OVERLAP_NEAR_KM = 2
+function pointInRingOv(p, ring) {
+  let inside = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1]
+    const xj = ring[j][0], yj = ring[j][1]
+    if ((yi > p[1]) !== (yj > p[1]) && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) {
+      inside = !inside
+    }
+  }
+  return inside
+}
+function segIntOv(p1, p2, p3, p4) {
+  const d = (p2[0] - p1[0]) * (p4[1] - p3[1]) - (p2[1] - p1[1]) * (p4[0] - p3[0])
+  if (!d) return false
+  const t = ((p3[0] - p1[0]) * (p4[1] - p3[1]) - (p3[1] - p1[1]) * (p4[0] - p3[0])) / d
+  const u = ((p3[0] - p1[0]) * (p2[1] - p1[1]) - (p3[1] - p1[1]) * (p2[0] - p1[0])) / d
+  return t >= 0 && t <= 1 && u >= 0 && u <= 1
+}
+function ptSegKmOv(p, a, b, kx) {
+  const px = p[0] * kx, py = p[1] * 110.57
+  const ax = a[0] * kx, ay = a[1] * 110.57
+  const bx = b[0] * kx, by = b[1] * 110.57
+  const dx = bx - ax, dy = by - ay
+  const l2 = dx * dx + dy * dy
+  const t = l2 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / l2)) : 0
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy))
+}
+function ringDistKmOv(p, ring, kx) {
+  let best = Infinity
+  for (let i = 0; i < ring.length; i++) {
+    const d = ptSegKmOv(p, ring[i], ring[(i + 1) % ring.length], kx)
+    if (d < best) best = d
+  }
+  return best
+}
 
 // ── download ───────────────────────────────────────────────────────────
 function download(url, dest) {
@@ -529,30 +568,66 @@ async function main() {
   writeFileSync(analysisPath, JSON.stringify(analysis, null, 1))
   console.log(`[sync] wrote polygons.geojson (${polyFeatures.length}) + points.geojson (${pointFeatures.length}) + deep_analysis.json`)
 
-  // Optional overlaps recompute (same 50km centroid rule as compute-overlaps).
+  // Optional overlaps recompute (true-geometry rule: boundary intersection
+  // or centroid inside the territory = overlap; otherwise linked only when
+  // within OVERLAP_NEAR_KM of the territory edge).
   if (OPTS.withOverlaps) {
     const [protPath, outPath] = OPTS.withOverlaps.split(':')
     const prot = JSON.parse(readFileSync(resolve(ROOT, protPath), 'utf8'))
-    const centers = []
+    const areas = []
     for (const f of prot.features || []) {
       const g = f.geometry
       if (!g) continue
-      const rings = g.type === 'Polygon' ? g.coordinates : (g.type === 'MultiPolygon' ? g.coordinates.flat() : null)
-      if (!rings) continue
-      const c = centroidOfRings(rings)
-      if (c) centers.push({ name: f.properties?.name, kind: f.properties?.kind, c })
+      const rings = g.type === 'Polygon' ? [g.coordinates[0]] : (g.type === 'MultiPolygon' ? g.coordinates.map(p => p[0]) : null)
+      if (!rings || !rings.length) continue
+      areas.push({ name: f.properties?.name, kind: f.properties?.kind, rings })
     }
-    const feats = pointFeatures.map((f) => {
+    const feats = pointFeatures.map((f, fi) => {
       const [x, y] = f.geometry.coordinates
+      const claimRings = (items[fi]?.rings || []).filter(r => r && r.length >= 4)
+      const kx = Math.cos((y * Math.PI) / 180) * 111.32
       const overlaps = []
-      for (const a of centers) {
-        const d = haversineKm(x, y, a.c[0], a.c[1])
-        if (d <= 50) overlaps.push({ name: a.name, kind: a.kind, distance_km: Math.round(d * 10) / 10 })
+      for (const a of areas) {
+        let touches = false
+        for (const ring of a.rings) {
+          if (pointInRingOv([x, y], ring)) { touches = true; break }
+          let crossed = false
+          for (const cr of claimRings) {
+            for (let s = 0; s < cr.length && !crossed; s++) {
+              for (let q = 0; q < ring.length; q++) {
+                if (segIntOv(cr[s], cr[(s + 1) % cr.length], ring[q], ring[(q + 1) % ring.length])) { crossed = true; break }
+              }
+            }
+            if (crossed) break
+          }
+          if (crossed) { touches = true; break }
+          if (claimRings.some(cr => cr.some(v => pointInRingOv(v, ring)))) { touches = true; break }
+          if (claimRings.some(cr => ring.some(v => pointInRingOv(v, cr)))) { touches = true; break }
+        }
+        if (touches) {
+          overlaps.push({ name: a.name, kind: a.kind, distance_km: 0 })
+          continue
+        }
+        let best = Infinity
+        for (const ring of a.rings) {
+          const d = ringDistKmOv([x, y], ring, kx)
+          if (d < best) best = d
+        }
+        if (best <= OVERLAP_NEAR_KM) {
+          overlaps.push({ name: a.name, kind: a.kind, distance_km: Math.round(best * 10) / 10 })
+        }
       }
-      return {
-        ...f,
-        properties: { ...f.properties, overlaps, has_overlap: overlaps.length > 0 },
+      // Delete-when-empty: matches compute-overlaps.mjs and the checked-in
+      // files (the app treats a missing key as "no overlaps").
+      const props = { ...f.properties }
+      if (overlaps.length > 0) {
+        props.overlaps = overlaps
+        props.has_overlap = true
+      } else {
+        delete props.overlaps
+        delete props.has_overlap
       }
+      return { ...f, properties: props }
     })
     const withOv = feats.filter(f => f.properties.has_overlap).length
     writeFileSync(resolve(ROOT, outPath), JSON.stringify({ type: 'FeatureCollection', features: feats }))

@@ -342,13 +342,290 @@ export function openRareEarthPopup(
   })
 
   const popup = new maplibregl.Popup({
-    offset: 10,
+    offset: 12,
     closeButton: true,
     className: 'ree-popup-wrap',
-    maxWidth: '320px',
+    maxWidth: '400px',
   })
     .setLngLat(lngLat)
     .setDOMContent(node)
+    .addTo(map)
+  return popup
+}
+
+export interface StackedHit {
+  kind: 'claim' | 'boundary' | 'protected' | 'water' | 'site' | 'geo'
+  label: string
+  props: Record<string, unknown>
+  layerId: string
+}
+
+interface StackedPopupConfig {
+  t: (_key: string, _params?: Record<string, unknown>) => string
+  locale: { value: string }
+  onSidebarOpen?: (_payload: { processo: string; nome: string; tab: string; coords: [number, number] }) => void
+}
+
+function adaptBoundaryProps(p: Record<string, unknown>): Record<string, unknown> {
+  return {
+    c: p.category ?? p.c ?? 'unknown',
+    ds: p.ds ?? p.danger_score ?? p.dangerScore ?? 5,
+    n: p.NOME ?? p.nome ?? p.n ?? p.enterprise ?? 'Polygon',
+    s: p.SUBS ?? p.substances ?? p.s ?? '—',
+    p: p.PROCESSO ?? p.processo ?? '',
+    f: p.FASE ?? p.fase ?? '—',
+    u: p.UF ?? p.uf ?? '',
+    a: p.AREA_HA ?? p.area_ha ?? 0,
+    net: p.network_id ?? p.net ?? '',
+    ev: p.ULT_EVENTO ?? p.ultimo_evento ?? p.ev ?? '',
+    ano: p.ANO ?? p.ano ?? p.y ?? 0,
+    numero: p.NUMERO ?? p.numero ?? 0,
+  }
+}
+
+function stackedKindColor(kind: StackedHit['kind'], props: Record<string, unknown>): string {
+  if (kind === 'claim' || kind === 'boundary') {
+    const catKey = String(props.c ?? props.category ?? 'unknown')
+    return RARE_EARTH_CATEGORIES[catKey]?.color ?? '#e74c3c'
+  }
+  if (kind === 'protected') {
+    const pk = String(props.kind ?? '')
+    if (pk === 'quilombo') return '#f39c12'
+    if (pk === 'uc') return '#27ae60'
+    if (pk === 'buffer') return '#2dd4bf'
+    return '#e74c3c'
+  }
+  if (kind === 'water') return '#3498db'
+  if (kind === 'site') return '#e74c3c'
+  return '#9b59b6'
+}
+
+function protectedPanelHTML(p: Record<string, unknown>): string {
+  const rawKind = String(p.kind ?? '')
+  const kind = rawKind === 'ti' ? 'Indigenous Land (Terra Indígena)'
+    : rawKind === 'quilombo' ? 'Quilombola Territory'
+    : rawKind === 'uc' ? 'Conservation Unit (Unidade de Conservação)'
+    : rawKind === 'buffer' ? 'Buffer Zone (Zona de Amortecimento)'
+    : 'Protected Territory'
+  const protColor = rawKind === 'ti' ? '#e74c3c'
+    : rawKind === 'quilombo' ? '#f39c12'
+    : rawKind === 'uc' ? '#27ae60'
+    : rawKind === 'buffer' ? '#2dd4bf' : '#e74c3c'
+  const badge = rawKind === 'buffer' ? 'BUFFER ZONE' : rawKind === 'uc' ? 'CONSERVATION UNIT' : 'PROTECTED AREA'
+  const name = String(p.name ?? 'Unknown')
+  const sourceUrl = typeof p.source_url === 'string' ? p.source_url : ''
+  const note = rawKind === 'uc'
+    ? 'Conservation units restrict land use by law — mining inside an APA without a license violates its creation decree and the SNUC (Law 9.985/2000).'
+    : rawKind === 'buffer'
+      ? 'Indicative buffer ring around a protected area — activities here require heightened environmental licensing scrutiny.'
+      : 'Mining claims overlapping this territory may violate Free, Prior and Informed Consent (FPIC) under ILO Convention 169.'
+  return `<div class="ree-popup__inner" style="--ree-accent:${protColor}">
+    <div class="ree-popup__header">
+      <div class="ree-popup__badges"><span class="ree-popup__badge" style="background:${protColor};color:#fff">${badge}</span></div>
+      <h3 class="ree-popup__title">${escapeText(name)}</h3>
+      <p class="ree-popup__subtitle">${escapeText(kind)}</p>
+    </div>
+    <div class="ree-popup__body">
+      <p style="font-size:11px;line-height:1.5;color:var(--obs-text-body);margin:0">${note}</p>
+      ${sourceUrl ? `<a class="ree-popup__action ree-popup__action--primary" style="margin-top:8px" href="${escapeAttr(sourceUrl)}" target="_blank" rel="noopener">Source ↗</a>` : ''}
+    </div>
+  </div>`
+}
+
+function waterPanelHTML(p: Record<string, unknown>): string {
+  const waterType = String(p.water_type ?? p.water ?? p.waterway ?? 'water')
+  const typeLabel = waterType.charAt(0).toUpperCase() + waterType.slice(1)
+  const name = String(p.name ?? 'Unnamed water body')
+  let sizeInfo = ''
+  if (p.area_km2) sizeInfo = `Area: ${p.area_km2} km²`
+  else if (p.length_km) sizeInfo = `Length: ${p.length_km} km`
+  const threat2 = Number(p.threat_claims_2km ?? 0)
+  const threat5 = Number(p.threat_claims_5km ?? 0)
+  const nearest = p.threat_nearest ? String(p.threat_nearest) : ''
+  const threatBadge = threat2 > 0
+    ? `<span class="ree-popup__badge" style="background:#e74c3c;color:#fff">UNDER PRESSURE</span>`
+    : threat5 > 0
+      ? `<span class="ree-popup__badge" style="background:#f39c12;color:#fff">WATCH</span>`
+      : ''
+  return `<div class="ree-popup__inner" style="--ree-accent:#3498db">
+    <div class="ree-popup__header">
+      <div class="ree-popup__badges"><span class="ree-popup__badge" style="background:#3498db;color:#fff">WATER</span><span class="ree-popup__badge" style="background:rgba(52,152,219,0.2);color:#5dade2">${escapeText(typeLabel)}</span>${threatBadge}</div>
+      <h3 class="ree-popup__title">${escapeText(name)}</h3>
+      ${sizeInfo ? `<p class="ree-popup__subtitle">${escapeText(sizeInfo)}</p>` : ''}
+    </div>
+    ${(threat2 > 0 || threat5 > 0) ? `<div class="ree-popup__body"><div class="ree-popup__section" style="margin-top:0;padding-top:0;border-top:0"><div class="ree-popup__section-label">Mining pressure</div><div style="font-size:11px;font-weight:600">${threat2} claims ≤2km · ${threat5} claims ≤5km</div>${nearest ? `<div style="font-size:10px;color:var(--obs-text-muted);margin-top:2px">Nearest: ${escapeText(nearest)}</div>` : ''}</div></div>` : ''}
+  </div>`
+}
+
+function sitePanelHTML(p: Record<string, unknown>): string {
+  const dangerScore = Number(p.danger ?? 5)
+  const dColor = dangerScore >= 9 ? '#e74c3c' : dangerScore >= 7 ? '#f39c12' : '#27ae60'
+  return `<div class="ree-popup__inner" style="--ree-accent:${dColor}">
+    <div class="ree-popup__header">
+      <div class="ree-popup__badges"><span class="ree-popup__badge" style="background:${dColor};color:#fff">${dangerScore.toFixed(1)} Danger</span><span class="ree-popup__badge" style="background:rgba(239,68,68,0.2);color:#e74c3c">CONFLICT ZONE</span></div>
+      <h3 class="ree-popup__title">${escapeText(String(p.name ?? 'Unknown'))}</h3>
+      <p class="ree-popup__subtitle">${escapeText(String(p.tag ?? ''))}</p>
+    </div>
+  </div>`
+}
+
+function geoPanelHTML(p: Record<string, unknown>): string {
+  const type = String(p.type ?? 'area')
+  const typeColor = type === 'basin' ? '#3b82f6' : type === 'aquifer' ? '#a855f7' : type === 'nuclear' || type === 'nuclear_buffer' ? '#dc2626' : '#3b82f6'
+  const typeLabel = type === 'nuclear_buffer' ? 'BUFFER ZONE' : escapeText(type.toUpperCase())
+  const body = type === 'nuclear_buffer'
+    ? 'Zona de amortecimento (3 km) around the INB Caldas uranium mining claim — the oversized legacy INB box was removed; only the real claim plus this buffer remain.'
+    : 'Geological context overlay — basins, aquifers and nuclear sites framing mining pressure in the region.'
+  return `<div class="ree-popup__inner" style="--ree-accent:${typeColor}">
+    <div class="ree-popup__header">
+      <div class="ree-popup__badges"><span class="ree-popup__badge" style="background:${typeColor};color:#fff">${typeLabel}</span></div>
+      <h3 class="ree-popup__title">${escapeText(String(p.name ?? 'Unnamed area'))}</h3>
+    </div>
+    <div class="ree-popup__body"><p style="font-size:11px;line-height:1.5;color:var(--obs-text-body);margin:0">${body}</p></div>
+  </div>`
+}
+
+let stackedUid = 0
+
+/** Strip a leading emoji/symbol prefix (`⛏ `, `◈ `, …) — the tab eyebrow already carries the kind. */
+function cleanTabLabel(label: string): string {
+  const cleaned = label.replace(/^[^\p{L}\p{N}]+/u, '').trim()
+  return cleaned || label
+}
+
+function tr(t: StackedPopupConfig['t'], key: string, fallback: string): string {
+  const v = t(key)
+  return v && v !== key ? v : fallback
+}
+
+/** Short translated kind eyebrow shown above each tab label. */
+function stackedKindEyebrow(kind: StackedHit['kind'], props: Record<string, unknown>, t: StackedPopupConfig['t']): string {
+  if (kind === 'claim') return tr(t, 'observatory.popups.tabClaim', 'Claim')
+  if (kind === 'boundary') return tr(t, 'observatory.popups.tabBoundary', 'Boundary')
+  if (kind === 'water') return tr(t, 'observatory.popups.tabWater', 'Water')
+  if (kind === 'site') return tr(t, 'observatory.popups.tabConflict', 'Conflict')
+  if (kind === 'geo') {
+    const gt = String(props.type ?? '').toLowerCase()
+    if (gt === 'nuclear_buffer' || gt === 'buffer') return tr(t, 'observatory.layers.bufferZones', 'Buffer Zones')
+    if (gt) return gt.charAt(0).toUpperCase() + gt.slice(1)
+    return tr(t, 'observatory.popups.tabTerrain', 'Terrain')
+  }
+  const pk = String(props.kind ?? '')
+  if (pk === 'ti') return tr(t, 'observatory.layers.indigenousLands', 'Indigenous Lands')
+  if (pk === 'quilombo') return tr(t, 'observatory.layers.quilombolaTerritories', 'Quilombola Territories')
+  if (pk === 'uc') return tr(t, 'observatory.layers.conservationUnits', 'Conservation Units')
+  if (pk === 'buffer') return tr(t, 'observatory.layers.bufferZones', 'Buffer Zones')
+  return tr(t, 'observatory.popups.protectedArea', 'Protected Area')
+}
+
+/**
+ * Open a tabbed popup for stacked/overlapping layers at one click point.
+ * Two-line tabs (kind eyebrow + feature name) under a visible "N overlapping
+ * layers" header keep every overlapping layer reachable and legible instead
+ * of only the topmost feature winning.
+ */
+export function openStackedObservatoryPopup(
+  map: MapLibreMap,
+  hits: StackedHit[],
+  lngLat: [number, number],
+  config: StackedPopupConfig,
+): maplibregl.Popup | null {
+  const list = hits.slice(0, 12)
+  if (!list.length) return null
+  const { t, locale, onSidebarOpen } = config
+  const uid = ++stackedUid
+
+  const root = document.createElement('div')
+  root.className = 'ree-popup ree-popup--stacked'
+  root.setAttribute('role', 'dialog')
+  const stackTitle = tr(t, 'observatory.popups.stackedLayers', 'Overlapping layers')
+  root.setAttribute('aria-label', `${stackTitle} (${list.length})`)
+  root.style.setProperty('--stack-accent', stackedKindColor(list[0]!.kind, list[0]!.props))
+
+  const tabsHTML = list.map((h, i) => {
+    const color = stackedKindColor(h.kind, h.props)
+    const eyebrow = stackedKindEyebrow(h.kind, h.props, t)
+    const label = cleanTabLabel(h.label)
+    return `<button type="button" role="tab" id="ree-tab-${uid}-${i}" aria-controls="ree-panel-${uid}-${i}" class="ree-popup__tab${i === 0 ? ' is-active' : ''}" data-index="${i}" aria-selected="${i === 0 ? 'true' : 'false'}" tabindex="${i === 0 ? '0' : '-1'}" title="${escapeAttr(label)}" style="--tab-accent:${color}"><span class="ree-popup__tab-dot" style="background:${color}" aria-hidden="true"></span><span class="ree-popup__tab-text"><span class="ree-popup__tab-kind" style="color:${color}">${escapeText(eyebrow)}</span><span class="ree-popup__tab-label">${escapeText(label)}</span></span></button>`
+  }).join('')
+
+  const panelsHTML = list.map((h, i) => {
+    let inner: string
+    if (h.kind === 'claim') {
+      const content = buildRareEarthPopupContent(h.props, lngLat, t, locale)
+      inner = rareEarthPopupHTML(content, t)
+    } else if (h.kind === 'boundary') {
+      const content = buildRareEarthPopupContent(adaptBoundaryProps(h.props), lngLat, t, locale)
+      inner = rareEarthPopupHTML(content, t)
+    } else if (h.kind === 'protected') {
+      inner = protectedPanelHTML(h.props)
+    } else if (h.kind === 'water') {
+      inner = waterPanelHTML(h.props)
+    } else if (h.kind === 'site') {
+      inner = sitePanelHTML(h.props)
+    } else {
+      inner = geoPanelHTML(h.props)
+    }
+    return `<section role="tabpanel" id="ree-panel-${uid}-${i}" aria-labelledby="ree-tab-${uid}-${i}" class="ree-popup__panel${i === 0 ? ' is-active' : ''}" data-index="${i}" tabindex="0"${i === 0 ? '' : ' hidden'}>${inner}</section>`
+  }).join('')
+
+  root.innerHTML = `<div class="ree-popup__stack-head"><span class="ree-popup__stack-title">${escapeText(stackTitle)}</span><span class="ree-popup__stack-count">${list.length}</span></div><div class="ree-popup__tabs" role="tablist" aria-label="${escapeAttr(stackTitle)}">${tabsHTML}</div><div class="ree-popup__panels">${panelsHTML}</div>`
+
+  const tabs = [...root.querySelectorAll<HTMLButtonElement>('.ree-popup__tab')]
+  const panels = [...root.querySelectorAll<HTMLElement>('.ree-popup__panel')]
+  function activate(index: number, focusTab = false) {
+    tabs.forEach((tb, i) => {
+      const active = i === index
+      tb.classList.toggle('is-active', active)
+      tb.setAttribute('aria-selected', active ? 'true' : 'false')
+      tb.tabIndex = active ? 0 : -1
+      if (active) {
+        const accent = getComputedStyle(tb).getPropertyValue('--tab-accent').trim()
+        if (accent) root.style.setProperty('--stack-accent', accent)
+        try { tb.scrollIntoView({ block: 'nearest', inline: 'nearest' }) } catch { /* ignore */ }
+        if (focusTab) tb.focus()
+      }
+    })
+    panels.forEach((pn, i) => {
+      const active = i === index
+      pn.classList.toggle('is-active', active)
+      if (active) pn.removeAttribute('hidden')
+      else pn.setAttribute('hidden', '')
+    })
+  }
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => activate(i))
+    tab.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); activate((i + 1) % tabs.length, true) }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); activate((i - 1 + tabs.length) % tabs.length, true) }
+      else if (e.key === 'Home') { e.preventDefault(); activate(0, true) }
+      else if (e.key === 'End') { e.preventDefault(); activate(tabs.length - 1, true) }
+    })
+  })
+
+  root.querySelectorAll<HTMLButtonElement>('[data-event="observatory:open"]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault()
+      const payload = btn.dataset.payload ? JSON.parse(btn.dataset.payload) : null
+      if (payload && onSidebarOpen) onSidebarOpen(payload)
+      const sel = useObservatorySelection()
+      sel.select({
+        processo: payload?.processo ?? null,
+        nome: payload?.nome ?? null,
+        coords: payload?.coords ?? null,
+        tab: payload?.tab ?? 'danger',
+      })
+    })
+  })
+
+  const popup = new maplibregl.Popup({
+    offset: 12,
+    closeButton: true,
+    className: 'ree-popup-wrap ree-popup-wrap--stacked',
+    maxWidth: '420px',
+  })
+    .setLngLat(lngLat)
+    .setDOMContent(root)
     .addTo(map)
   return popup
 }

@@ -165,7 +165,7 @@ assert G.parse_amount_value("R$ 200 mil", "BRL") > 30000
 # 9. v2.4 deadline shapes (worldwide funders)
 dl2 = [
     ("Closes Friday, September 18, 2026.", ("2026-09-18", "September 18, 2026")),
-    ("Closes September 26-27, 2026.", ("2026-09-26", "2026-09-27")),
+    ("Closes September 26-27, 2026.", ("2026-09-27",)),  # range → END date
     ("Closes Friday, 9 October 2026.", ("2026-10-09", "9 October 2026")),
     ("Applications Closes Sep 29, 2026", ("2026-09-29", "Sep 29, 2026")),
     ("Single Stage Deadline: Monday 31 st August 2026", ("2026-08-31", "31 st August 2026")),

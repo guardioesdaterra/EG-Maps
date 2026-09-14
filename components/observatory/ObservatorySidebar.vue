@@ -1,18 +1,24 @@
 /**
  * components/observatory/ObservatorySidebar.vue
- * @why Floating right-side panel for the Vulcan Observatory v2 — replaces
- *      the old 6-tab grid (Danger/Military/Illegal/Env/Network/Timeline)
- *      with a single, focused **CULTURE AND TERRITORY** browser that surfaces
- *      Mapa Cultura BR + Floresta Ativista data as first-class content.
+ * @why Floating right-side panel for the Vulcan Observatory v2 — tabbed
+ *      intel browser over ALL observatory data:
+ *        territory · live claims/boundaries, category mix, mining↔territory
+ *          overlaps, protected territories (TI/quilombos) + env regions
+ *        culture   · Mapa Cultura BR + Floresta Ativista agent browser
+ *        powers    · speculator danger index, military-critical numbers,
+ *          foreign capital, corporate network, illegal patterns
+ *        timeline  · year slider + claims-per-year timeline from deep_analysis
  *
- *      The map's cultural-layer rendering (handled by
- *      `useCulturalLayers.setupCulturalLayers` on the MapLibre map) still
- *      receives the full merged FeatureCollection via `:rare-earth-cultural`;
- *      this panel adds a search/filter/list UI on top of the same data.
+ *      Previously only the culture browser was mounted while Danger/
+ *      Military/Illegal/Env/Network/Timeline tab components were orphaned
+ *      (imported nowhere) and deep_analysis had no UI surface.
  *
- * @props rareEarthCultural, speculatorIndex, layerVis, toggleLayer
- * @emits flyToCoord, flyToEnterprise, jumpToCultural
- * @deps vue (ref, computed, watch); @/composables/useI18n
+ * @props rareEarthCultural, speculatorIndex, layerVis, toggleLayer,
+ *   deepAnalysis, protectedBreakdown, overlapSummary, layerCounts,
+ *   categoryStats, totalClaims, lastSync, yearMin, yearMax, filteredCount
+ * @emits flyToCoord, flyToEnterprise, jumpToCultural, reportEnterprise,
+ *   reportPattern, addObservation, update:yearMin, update:yearMax
+ * @deps vue (ref, computed, watch, onMounted, onUnmounted); @/composables/useI18n
  * @connections pages/vulcan-observatory/index.vue, pages/vulcan-observatory/3d.vue
  */
 <template>
@@ -39,7 +45,55 @@
         </button>
       </header>
 
+      <!-- ── Tab bar ─────────────────────────────────────────── -->
+      <nav class="vulc-tabs" role="tablist" :aria-label="t('observatory.v2.tabs.label')">
+        <button
+          v-for="tab in TABS"
+          :key="tab.id"
+          type="button"
+          role="tab"
+          class="vulc-tab"
+          :class="{ 'is-active': activeTab === tab.id }"
+          :aria-selected="activeTab === tab.id"
+          @click="activeTab = tab.id"
+        >
+          <Icon :name="tab.icon" class="vulc-tab__icon" />
+          <span class="vulc-tab__label">{{ t(tab.labelKey) }}</span>
+        </button>
+      </nav>
+
       <div v-show="open" class="vulc-panel__body">
+        <!-- ══ TERRITORY ══════════════════════════════════════ -->
+        <section v-if="activeTab === 'territory'" role="tabpanel" aria-label="Territory">
+          <TerritoryTab
+            :points-count="layerCounts?.points ?? totalClaims ?? 0"
+            :polygons-count="layerCounts?.polygons ?? 0"
+            :total-area-ha="layerCounts?.totalAreaHa ?? 0"
+            :overlap-summary="overlapSummary ?? null"
+            :protected-breakdown="protectedBreakdown ?? null"
+            :category-stats="categoryStats ?? []"
+            :last-sync="lastSync"
+            :deep-analysis="deepAnalysis"
+            :water-summary="waterSummary ?? null"
+            :foreign-holders="foreignHolders ?? null"
+            :search-term="searchTerm ?? ''"
+            :selected-phases="selectedPhases ?? defaultPhases"
+            :sob-demanda-only="sobDemandaOnly ?? false"
+            :pin-threats="pinThreats ?? null"
+            @fly-to-coord="(c) => emit('flyToCoord', c)"
+            @update:search-term="(v) => emit('update:searchTerm', v)"
+            @update:selected-phases="(v) => emit('update:selectedPhases', v)"
+            @update:sob-demanda-only="(v) => emit('update:sobDemandaOnly', v)"
+          />
+          <h4 class="vulc-subhead">
+            <Icon name="lucide:globe" class="vulc-subhead__icon" />
+            {{ t('observatory.tabs.env') }}
+          </h4>
+          <EnvironmentTab @fly-to-coord="(c) => emit('flyToCoord', c)" @add-observation="(r) => emit('addObservation', r)" />
+        </section>
+
+        <!-- ══ CULTURE ═════════════════════════════════════════ -->
+        <section v-else-if="activeTab === 'culture'" role="tabpanel" aria-label="Culture">
         <!-- ── Source filter pills ─────────────────────────────── -->
         <div class="vulc-source-pills" role="group" :aria-label="t('observatory.v2.panel.sources')">
           <button
@@ -205,30 +259,186 @@
             <Icon name="lucide:chevron-right" />
           </button>
         </div>
+        </section>
+
+        <!-- ══ POWERS ═══════════════════════════════════════════ -->
+        <section v-else-if="activeTab === 'power'" role="tabpanel" aria-label="Powers">
+          <h4 class="vulc-subhead">
+            <Icon name="lucide:radar" class="vulc-subhead__icon" />
+            {{ t('observatory.tabs.danger') }}
+          </h4>
+          <DangerTab
+            :items="dangerItems"
+            :show-all="dangerShowAll"
+            @fly-to-enterprise="(name) => emit('flyToEnterprise', name)"
+            @update:show-all="(v) => (dangerShowAll = v)"
+            @report-enterprise="(name, score, flags) => emit('reportEnterprise', name, score, flags)"
+          />
+          <h4 class="vulc-subhead">
+            <Icon name="lucide:landmark" class="vulc-subhead__icon" />
+            {{ t('observatory.tabs.power') }}
+          </h4>
+          <PowerTab
+            :analysis="deepAnalysis"
+            :foreign-holders="foreignHolders ?? null"
+            @fly-to-enterprise="(name) => emit('flyToEnterprise', name)"
+          />
+          <h4 class="vulc-subhead">
+            <Icon name="lucide:shield" class="vulc-subhead__icon" />
+            {{ t('observatory.tabs.military') }}
+          </h4>
+          <MilitaryTab :live="militaryLive" />
+          <h4 class="vulc-subhead">
+            <Icon name="lucide:network" class="vulc-subhead__icon" />
+            {{ t('observatory.tabs.network') }}
+          </h4>
+          <NetworkTab />
+          <h4 class="vulc-subhead">
+            <Icon name="lucide:scale" class="vulc-subhead__icon" />
+            {{ t('observatory.tabs.illegal') }}
+          </h4>
+          <IllegalTab @report-pattern="(key) => emit('reportPattern', key)" />
+        </section>
+
+        <!-- ══ TIMELINE ═════════════════════════════════════════ -->
+        <section v-else-if="activeTab === 'timeline'" role="tabpanel" aria-label="Timeline">
+          <YearSlider
+            :year-min="yearMin ?? 1935"
+            :year-max="yearMax ?? 2026"
+            :filtered-count="filteredCount ?? 0"
+            @update:year-min="(v) => emit('update:yearMin', v)"
+            @update:year-max="(v) => emit('update:yearMax', v)"
+          />
+          <TimelineTab :entries="timelineEntries" />
+        </section>
       </div>
     </aside>
   </Transition>
+  <!-- Reopen affordance (the header toggle lives inside the panel; without
+       this a collapsed panel — the mobile default — could never reopen). -->
+  <button
+    v-if="!open"
+    type="button"
+    class="vulc-panel__show"
+    :aria-label="t('observatory.v2.panel.expand')"
+    @click="open = true"
+  >
+    <Icon name="lucide:panel-right-open" />
+  </button>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import type { Feature, FeatureCollection, Point } from 'geojson'
 import { useI18n } from '@/composables/useI18n'
+import type { DeepAnalysis } from '@/composables/useRareEarthData'
+import type { SpeculatorIndexEntry } from '@/lib/observatory-analysis'
+import type { TimelineHighlight } from '@/lib/observatory-tabs'
+import type {
+  ObservatoryLayerCounts,
+  OverlapSummary,
+  ProtectedBreakdown,
+} from '@/lib/observatory-normalize'
+import type { WaterThreatSummary } from '@/lib/water-defense'
+import type { ForeignHolderRank } from '@/lib/enterprise-data'
+import TerritoryTab from '@/components/observatory/tabs/TerritoryTab.vue'
+import PowerTab from '@/components/observatory/tabs/PowerTab.vue'
+import DangerTab from '@/components/observatory/tabs/DangerTab.vue'
+import MilitaryTab from '@/components/observatory/tabs/MilitaryTab.vue'
+import NetworkTab from '@/components/observatory/tabs/NetworkTab.vue'
+import IllegalTab from '@/components/observatory/tabs/IllegalTab.vue'
+import EnvironmentTab from '@/components/observatory/tabs/EnvironmentTab.vue'
+import TimelineTab from '@/components/observatory/tabs/TimelineTab.vue'
+import YearSlider from '@/components/observatory/YearSlider.vue'
 
 const { t } = useI18n()
 
 const props = defineProps<{
   rareEarthCultural?: FeatureCollection | null
-  speculatorIndex?: Array<{ displayName: string; normalizedName: string; suspicionScore: number }>
+  speculatorIndex?: SpeculatorIndexEntry[]
   layerVis: Record<string, boolean>
   toggleLayer: (key: string) => void
+  deepAnalysis?: DeepAnalysis | null
+  protectedBreakdown?: ProtectedBreakdown | null
+  overlapSummary?: OverlapSummary | null
+  waterSummary?: WaterThreatSummary | null
+  foreignHolders?: ForeignHolderRank[] | null
+  searchTerm?: string
+  selectedPhases?: Set<string>
+  sobDemandaOnly?: boolean
+  pinThreats?: {
+    within10: number
+    nearestProcesso: string
+    nearestHolder: string
+    nearestKm: number
+    pinLabel: string
+  } | null
+  layerCounts?: ObservatoryLayerCounts | null
+  categoryStats?: Array<{ key: string; label: string; color: string; count: number }>
+  totalClaims?: number
+  lastSync?: string
+  yearMin?: number
+  yearMax?: number
+  filteredCount?: number
 }>()
 
 const emit = defineEmits<{
   flyToCoord: [coord: [number, number]]
   flyToEnterprise: [name: string]
   jumpToCultural: [coord: [number, number], name: string]
+  reportEnterprise: [name: string, score: number, flags: string[]]
+  reportPattern: [key: string]
+  addObservation: [region: string]
+  'update:yearMin': [value: number]
+  'update:yearMax': [value: number]
+  'update:searchTerm': [value: string]
+  'update:selectedPhases': [value: Set<string>]
+  'update:sobDemandaOnly': [value: boolean]
 }>()
+
+// Fallback selection when the page has not wired filter state (defensive;
+// pages always pass the live set).
+const defaultPhases = new Set<string>()
+
+// ── Tabs ────────────────────────────────────────────────────────────────
+type PanelTabId = 'territory' | 'culture' | 'power' | 'timeline'
+const TABS: Array<{ id: PanelTabId; labelKey: string; icon: string }> = [
+  { id: 'territory', labelKey: 'observatory.v2.tabs.territory', icon: 'lucide:hexagon' },
+  { id: 'culture', labelKey: 'observatory.v2.tabs.culture', icon: 'lucide:palette' },
+  { id: 'power', labelKey: 'observatory.v2.tabs.power', icon: 'lucide:landmark' },
+  { id: 'timeline', labelKey: 'observatory.v2.tabs.timeline', icon: 'lucide:chart-line' },
+]
+const activeTab = ref<PanelTabId>('territory')
+const dangerShowAll = ref(false)
+
+// ── Live analysis derivations ────────────────────────────────────────────
+const dangerItems = computed<SpeculatorIndexEntry[]>(() => props.speculatorIndex ?? [])
+
+const militaryLive = computed(() => {
+  const mc = props.deepAnalysis?.military_critical
+  if (!mc) return null
+  return {
+    criticalClaims: Number(mc.total_claims ?? 0),
+    criticalAreaHa: Number(mc.total_area_ha ?? 0),
+    usConnectedClaims: Number(mc.us_connected_claims ?? 0),
+  }
+})
+
+/** Timeline entries from deep_analysis year_counts + key_events. */
+const timelineEntries = computed<TimelineHighlight[] | null>(() => {
+  const raw = props.deepAnalysis as unknown as Record<string, unknown> | null | undefined
+  const yearCounts = raw?.year_counts as Record<string, number> | undefined
+  if (!yearCounts) return null
+  const keyEvents = (raw?.key_events ?? {}) as Record<string, string>
+  return Object.entries(yearCounts)
+    .map(([year, count]) => ({
+      year: Number(year),
+      count: Number(count) || 0,
+      event: String(keyEvents[year] ?? ''),
+    }))
+    .filter(e => Number.isFinite(e.year))
+    .sort((a, b) => a.year - b.year)
+})
 
 // ── Source / subtype metadata ──────────────────────────────────────────
 interface SourceMeta { id: string; labelKey: string; color: string }
@@ -258,6 +468,7 @@ const TOGGLE_LAYER_KEYS = [
   'protected_ti',
   'protected_quilombo',
   'overlaps',
+  'foreign',
   'enterprise_hq',
   'heatmap',
   'cultural',
@@ -266,6 +477,7 @@ const LAYER_LABELS: Record<string, string> = {
   protected_ti: 'observatory.layers.indigenousLands',
   protected_quilombo: 'observatory.layers.quilombolaTerritories',
   overlaps: 'observatory.layers.overlaps',
+  foreign: 'observatory.layers.foreignHeld',
   enterprise_hq: 'observatory.layers.enterpriseHq',
   heatmap: 'observatory.layers.heatmap',
   cultural: 'observatory.layers.cultural',
@@ -274,6 +486,7 @@ const LAYER_COLORS: Record<string, string> = {
   protected_ti: '#c0392b',
   protected_quilombo: '#f39c12',
   overlaps: '#ff00ff',
+  foreign: '#e74c3c',
   enterprise_hq: '#9b59b6',
   heatmap: '#e74c3c',
   cultural: '#3498db',
@@ -451,7 +664,7 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.75rem 0.85rem;
+  padding: 0.75rem 0.85rem 0.6rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 .vulc-panel__title-wrap { min-width: 0; flex: 1; }
@@ -494,6 +707,51 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   border-color: rgba(255, 255, 255, 0.18);
   color: #fff;
 }
+
+/* ── Tab bar ─────────────────────────────────────────────────── */
+.vulc-tabs {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  padding: 0.5rem 0.85rem 0;
+}
+.vulc-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0.45rem 0.25rem 0.4rem;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  border-radius: 6px 6px 0 0;
+}
+.vulc-tab:hover { color: rgba(255, 255, 255, 0.8); background: rgba(255, 255, 255, 0.03); }
+.vulc-tab.is-active { color: #fff; border-bottom-color: var(--obs-red, #e74c3c); background: rgba(231, 76, 60, 0.08); }
+.vulc-tab:focus-visible { outline: 2px solid var(--obs-red, #e74c3c); outline-offset: -2px; }
+.vulc-tab__icon { width: 0.95rem; height: 0.95rem; }
+.vulc-tab__label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.vulc-subhead {
+  margin: 0.9rem 0 0.15rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: clamp(9px, 1.4vw, 12px);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #fff;
+  padding: 0.5rem 0.15rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.vulc-subhead:first-child { border-top: 0; margin-top: 0; padding-top: 0; }
+.vulc-subhead__icon { width: 11px; height: 11px; color: var(--obs-red, #e74c3c); }
 
 .vulc-panel__body {
   flex: 1;
@@ -920,6 +1178,29 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   font-variant-numeric: tabular-nums;
   color: rgba(255, 255, 255, 0.6);
 }
+
+/* ── Reopen button (collapsed state) ───────────────────────────── */
+.vulc-panel__show {
+  position: absolute;
+  top: clamp(3.5rem, 7vh, 4.5rem);
+  right: clamp(0.6rem, 1.2vw, 1rem);
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111113;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-family: inherit;
+  z-index: 530;
+  pointer-events: auto;
+  transition: background 0.15s, color 0.15s;
+}
+.vulc-panel__show svg { width: 1rem; height: 1rem; }
+.vulc-panel__show:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 
 /* ── Panel transition ──────────────────────────────────────────── */
 .vulc-panel-enter-active,

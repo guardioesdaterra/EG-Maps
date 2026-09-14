@@ -345,6 +345,85 @@ export function getEnterpriseByName(name: string): EnterpriseHQ | undefined {
   return ENTERPRISES.find(e => e.name === name || name.startsWith(e.name))
 }
 
+export interface HolderLinkage {
+  enterprise: string
+  country: string
+  foreign: boolean
+}
+
+/**
+ * Generic corporate/mining words ignored by the token fallback so juniors
+ * and individuals never false-positive onto tracked enterprises.
+ */
+const HOLDER_TOKEN_STOP = new Set([
+  'MINERACAO', 'MINERACOES', 'MINERAIS', 'MINERAL', 'MINERAIS',
+  'MINERIO', 'MINERIOS', 'EXTRACAO', 'PESQUISA', 'GEOLOGIA',
+  'CONSULTORIA', 'PARTICIPACOES', 'COMERCIO', 'SERVICOS', 'INDUSTRIA',
+  'BRASIL', 'BRAZIL', 'BRASILEIRA', 'BRASILEIRO', 'CIA', 'EIRELI',
+  'FERTILIZANTES', 'ORGANICOS', 'ROYALTY', 'ENERGETIC', 'ENERGIA',
+])
+
+function distinctiveTokens(norm: string): string[] {
+  return norm.split(/[^A-Z0-9]+/).filter(t => t.length >= 6 && !HOLDER_TOKEN_STOP.has(t))
+}
+
+/**
+ * Link a raw claim-holder name to the curated enterprise list. First the
+ * strict contains-match (same as the network lines), then a distinctive-
+ * token fallback so "METEORIC CALDEIRA MINERACAO" still resolves to
+ * "Meteoric Resources" via METEORIC. Returns null when the holder is not a
+ * tracked enterprise (domestic juniors, individuals, sigilo) — attribution
+ * is never fabricated.
+ */
+export function matchEnterpriseHolder(holderName: string | null | undefined): HolderLinkage | null {
+  const normClaim = normalizeName(holderName)
+  if (!normClaim) return null
+  for (const ent of ENTERPRISES) {
+    const entKey = normalizeName(ent.name)
+    if (!entKey) continue
+    if (normClaim.includes(entKey) || entKey.includes(normClaim)) {
+      return { enterprise: ent.name, country: ent.country, foreign: ent.country !== 'Brazil' }
+    }
+  }
+  const claimTokens = new Set(distinctiveTokens(normClaim))
+  if (!claimTokens.size) return null
+  for (const ent of ENTERPRISES) {
+    const entTokens = distinctiveTokens(normalizeName(ent.name))
+    if (entTokens.some(t => claimTokens.has(t))) {
+      return { enterprise: ent.name, country: ent.country, foreign: ent.country !== 'Brazil' }
+    }
+  }
+  return null
+}
+
+export interface ForeignHolderRank {
+  name: string
+  country: string
+  claims: number
+  areaHa: number
+}
+
+/** Aggregate foreign-held claims in a (normalized) points collection. */
+export function foreignHolderRanking(points: GeoJSON.FeatureCollection | undefined | null): ForeignHolderRank[] {
+  const byKey = new Map<string, ForeignHolderRank>()
+  for (const f of points?.features ?? []) {
+    const p = (f.properties ?? {}) as Record<string, unknown>
+    const country = String(p.holder_country ?? '')
+    if (!country || country === 'Brazil' || country === 'Unknown') continue
+    const name = String(p.holder_enterprise || p.nome || p.n || 'Unknown')
+    const key = `${country}::${name}`
+    const area = Number(p.area_ha ?? p.a ?? 0) || 0
+    const prev = byKey.get(key)
+    if (prev) {
+      prev.claims++
+      prev.areaHa += area
+    } else {
+      byKey.set(key, { name, country, claims: 1, areaHa: area })
+    }
+  }
+  return [...byKey.values()].sort((a, b) => b.claims - a.claims || b.areaHa - a.areaHa)
+}
+
 export function getEnterpriseConnections(name: string): { from: CorporateConnection[]; to: CorporateConnection[] } {
   return {
     from: CORPORATE_CONNECTIONS.filter(c => c.from === name),
@@ -363,19 +442,17 @@ export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): 
     const p = (f.properties || {}) as Record<string, unknown>
     const rawName = String(p.nome ?? p.NOME ?? p.n ?? '').trim()
     if (!rawName) continue
-    const normClaim = normalizeName(rawName)
     const coords = (f.geometry as GeoJSON.Point)?.coordinates
     if (!coords || !Array.isArray(coords) || coords.length < 2) continue
     const [lng, lat] = coords as [unknown, unknown]
     if (typeof lng !== 'number' || typeof lat !== 'number') continue
     const area = Number(p.area_ha ?? p.AREA_HA ?? p.a ?? 0)
 
-    for (const [entKey, claims] of enterpriseClaimMap) {
-      if (normClaim.includes(entKey) || entKey.includes(normClaim)) {
-        claims.push({ lng, lat, area, name: rawName })
-        break
-      }
-    }
+    // Same matcher as holder linkage so network lines and per-claim
+    // attribution never disagree.
+    const link = matchEnterpriseHolder(rawName)
+    if (!link) continue
+    enterpriseClaimMap.get(normalizeName(link.enterprise))?.push({ lng, lat, area, name: rawName })
   }
 
   const features: GeoJSON.Feature[] = []

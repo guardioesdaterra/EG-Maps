@@ -60,8 +60,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -70.9754432,
-          41.9902206
+          -74.604,
+          40.5924
         ]
       },
       "properties": {
@@ -96,8 +96,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -97.1071186,
-          32.7355816
+          -77.091,
+          38.8816
         ]
       },
       "properties": {
@@ -464,7 +464,7 @@
         "name": "Tahlequah",
         "country": "USA",
         "city": "Tahlequah",
-        "state": "Arkansas",
+        "state": "Oklahoma",
         "region": "North America",
         "status": "active"
       }
@@ -510,14 +510,14 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -51.1827184,
-          -30.0878685
+          -46.6775,
+          -21.8589
         ]
       },
       "properties": {
         "name": "Cascata",
         "country": "Brazil",
-        "city": "Cascata",
+        "city": "Águas da Prata",
         "state": "São Paulo",
         "region": "South America",
         "status": "active"
@@ -591,7 +591,7 @@
         "country": "Guatemala",
         "city": "Guatemala",
         "state": "",
-        "region": "South America",
+        "region": "North America",
         "status": "active"
       }
     },
@@ -600,8 +600,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.6333824,
-          -23.5506507
+          -46.7396,
+          -23.4467
         ]
       },
       "properties": {
@@ -618,14 +618,14 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -48.1308,
-          -23.2569
+          -46.7444,
+          -21.835
         ]
       },
       "properties": {
         "name": "São Roque da Fartura",
         "country": "Brazil",
-        "city": "São Roque da Fartura",
+        "city": "Águas da Prata",
         "state": "São Paulo",
         "region": "South America",
         "status": "inactive"
@@ -708,8 +708,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          16.19,
-          59.675
+          17.0092,
+          58.7528
         ]
       },
       "properties": {
@@ -735,7 +735,7 @@
         "country": "Papua New Guinea",
         "city": "Port Moresby",
         "state": "National Capital District",
-        "region": "Europe",
+        "region": "Oceania",
         "status": "active"
       }
     },
@@ -870,15 +870,15 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          13.1535811,
-          4.6125522
+          9.2316,
+          4.1593
         ]
       },
       "properties": {
         "name": "Buea",
         "country": "Cameroun",
-        "city": "",
-        "state": "Buea",
+        "city": "Buea",
+        "state": "South West",
         "region": "Africa",
         "status": "active"
       }
@@ -1266,8 +1266,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          32.5814,
-          0.3177
+          30.0833,
+          0.1833
         ]
       },
       "properties": {
@@ -1536,24 +1536,6 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          34.7542,
-          -0.1029
-        ]
-      },
-      "properties": {
-        "name": "KENYA",
-        "country": "Kenya",
-        "city": "Kisumu",
-        "state": "",
-        "region": "Africa",
-        "status": "inactive"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
           39.2083,
           -6.7924
         ]
@@ -1752,8 +1734,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -1.6880314,
-          12.0753083
+          -4.2961,
+          11.1766
         ]
       },
       "properties": {
@@ -1770,15 +1752,15 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -1.6880314,
-          12.0753083
+          -2.3627,
+          12.2526
         ]
       },
       "properties": {
         "name": "Koudougou",
         "country": "BURKINA FASO",
-        "city": "",
-        "state": "",
+        "city": "Koudougou",
+        "state": "Boulkiemdé",
         "region": "Africa",
         "status": "active"
       }
@@ -1788,15 +1770,15 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -1.6880314,
-          12.0753083
+          -4.1714,
+          11.2361
         ]
       },
       "properties": {
         "name": "Legueme Tolotama",
         "country": "BURKINA FASO",
-        "city": "",
-        "state": "",
+        "city": "Léguéma",
+        "state": "Houet",
         "region": "Africa",
         "status": "active"
       }

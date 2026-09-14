@@ -7,7 +7,7 @@
 <template>
   <div>
     <ClientOnly>
-      <DarkVeil class="z-0 pointer-events-none" :resolution-scale="0.5" />
+      <DarkVeil class="z-0 pointer-events-none" :resolution-scale="0.5" :opacity="veilOpacity" />
     </ClientOnly>
     <a href="#main-content" class="skip-link">{{ skipLabel }}</a>
     <NuxtLayout>
@@ -31,6 +31,11 @@ import { useRoute } from 'vue-router'
 
 const { t } = useI18n()
 const skipLabel = computed(() => t('a11y.skipToContent'))
+
+const veilOpacity = computed(() => {
+  const p = route.path
+  return (p === '/campaigns' || p === '/masterclasses') ? 0.35 : 1
+})
 
 const config = useRuntimeConfig()
 const plausibleDomain = config.public.plausibleDomain as string | undefined

@@ -1,0 +1,525 @@
+{
+ "id": "sigmine-webapp",
+ "url": "https://geo.anm.gov.br/portal/apps/webappviewer/index.html?id=6a8f5ccc4b6a4c2bba79759aa952d908",
+ "title": "SIGMINE",
+ "totalRequests": 154,
+ "byHost": {
+  "geo.anm.gov.br": {
+   "count": 122,
+   "bytes": 11887530
+  },
+  "services.arcgisonline.com": {
+   "count": 17,
+   "bytes": 124745
+  },
+  "server.arcgisonline.com": {
+   "count": 12,
+   "bytes": 120332
+  },
+  "static.arcgis.com": {
+   "count": 1,
+   "bytes": 497485
+  },
+  "fonts.googleapis.com": {
+   "count": 1,
+   "bytes": 5973
+  },
+  "fonts.gstatic.com": {
+   "count": 1,
+   "bytes": 18640
+  }
+ },
+ "interesting": [
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/portals/self?f=json",
+   "status": 200,
+   "bytes": 13546,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/portals/self?f=json",
+   "status": 200,
+   "bytes": 13546,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest?f=json",
+   "status": 200,
+   "bytes": 82,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/oauth2/validateRedirectUri?client_id=arcgisonline&redirect_uri=https%3A%2F%2Fgeo.anm.gov.br%2Fportal%2Fhome%2Foauth-callback.html&f=json",
+   "status": 200,
+   "bytes": 14,
+   "type": "xhr"
+  },
+  {
+   "method": "POST",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/oauth2/platformSelf",
+   "status": 200,
+   "bytes": 99,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/6a8f5ccc4b6a4c2bba79759aa952d908/data?f=json",
+   "status": 200,
+   "bytes": 226922,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/6a8f5ccc4b6a4c2bba79759aa952d908?f=json",
+   "status": 200,
+   "bytes": 2617,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/6a8f5ccc4b6a4c2bba79759aa952d908?f=json",
+   "status": 200,
+   "bytes": 2617,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/1f5535fc6bbf483e97cdc002be6c2bf2?f=json",
+   "status": 200,
+   "bytes": 2924,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/1f5535fc6bbf483e97cdc002be6c2bf2/data?f=json",
+   "status": 200,
+   "bytes": 38452,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer?f=json",
+   "status": 200,
+   "bytes": 11142,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/4/0/0/8/8?f=json",
+   "status": 200,
+   "bytes": 210,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/4/8/0/8/8?f=json",
+   "status": 200,
+   "bytes": 210,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/4/0/8/8/8?f=json",
+   "status": 200,
+   "bytes": 210,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/4/8/8/8/8?f=json",
+   "status": 200,
+   "bytes": 210,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/d8421bdb5a8b499a9df223d28364e7e6/data?f=json",
+   "status": 200,
+   "bytes": 9442,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/145e583ab9d34054a0dec65010f936d7/data?f=json",
+   "status": 200,
+   "bytes": 6651,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/0bbf6938255c438ebd53e76da1244a4e/data?f=json",
+   "status": 200,
+   "bytes": 2554,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/e61b738b785a407cb15e7b656001c59f/data?f=json",
+   "status": 200,
+   "bytes": 3617,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/cdc476fd2fec4949a09b976f7408f616/data?f=json",
+   "status": 200,
+   "bytes": 1526,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/56183578dfb44f1aa24fbb5ebf536bc1/data?f=json",
+   "status": 200,
+   "bytes": 6585,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/92fd69c2e90548c88bff3fe8a2381574/data?f=json",
+   "status": 200,
+   "bytes": 8587,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/90ecbc1f0e374d459c0afe7e3ae466c1/data?f=json",
+   "status": 200,
+   "bytes": 7311,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/fee1854a69d244819c40309cad844b1b/data?f=json",
+   "status": 200,
+   "bytes": 6807,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/8/4",
+   "status": 200,
+   "bytes": 11309,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/10/3",
+   "status": 200,
+   "bytes": 6739,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/8/3",
+   "status": 200,
+   "bytes": 6211,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/10/4",
+   "status": 200,
+   "bytes": 12805,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/9/3",
+   "status": 200,
+   "bytes": 8020,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/7/5",
+   "status": 200,
+   "bytes": 9876,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/7/6",
+   "status": 200,
+   "bytes": 7373,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/7/4",
+   "status": 200,
+   "bytes": 14718,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/7/7",
+   "status": 200,
+   "bytes": 10740,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/7/3",
+   "status": 200,
+   "bytes": 9520,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer?f=json",
+   "status": 200,
+   "bytes": 27246,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/transportes/MapServer?f=json",
+   "status": 200,
+   "bytes": 6547,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/sociedade_cultura/MapServer?f=json",
+   "status": 200,
+   "bytes": 3380,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/10/5",
+   "status": 200,
+   "bytes": 7191,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/protecao_conservacao_natureza/MapServer?f=json",
+   "status": 200,
+   "bytes": 6293,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/8/5",
+   "status": 200,
+   "bytes": 13839,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/planejamento_cadastro/MapServer?f=json",
+   "status": 200,
+   "bytes": 2912,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/geociencias/MapServer?f=json",
+   "status": 200,
+   "bytes": 3335,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/informacao_militar/MapServer?f=json",
+   "status": 200,
+   "bytes": 2643,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/concessoes_comunicacao/MapServer?f=json",
+   "status": 200,
+   "bytes": 15658,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/8/6",
+   "status": 200,
+   "bytes": 10306,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/aguas_interiores/MapServer?f=json",
+   "status": 200,
+   "bytes": 6850,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/grade/MapServer?f=json",
+   "status": 200,
+   "bytes": 4430,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/dados_anm/MapServer?f=json",
+   "status": 200,
+   "bytes": 14355,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/10/6",
+   "status": 200,
+   "bytes": 6618,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/7/8",
+   "status": 200,
+   "bytes": 12210,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/9/5",
+   "status": 200,
+   "bytes": 12822,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/9/6",
+   "status": 200,
+   "bytes": 6270,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/9/4",
+   "status": 200,
+   "bytes": 11481,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/9/7",
+   "status": 200,
+   "bytes": 8897,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/10/7",
+   "status": 200,
+   "bytes": 8382,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/8/7",
+   "status": 200,
+   "bytes": 8864,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/8/8",
+   "status": 200,
+   "bytes": 10583,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/9/8",
+   "status": 200,
+   "bytes": 8405,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/10/8",
+   "status": 200,
+   "bytes": 9916,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/a633b4c448604a298def34a8cbd3594c/data?f=json",
+   "status": 200,
+   "bytes": 2367,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/a633b4c448604a298def34a8cbd3594c?f=json",
+   "status": 200,
+   "bytes": 6994,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/transportes/MapServer?f=json",
+   "status": 200,
+   "bytes": 6547,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/92fd69c2e90548c88bff3fe8a2381574?f=json",
+   "status": 200,
+   "bytes": 13610,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/92fd69c2e90548c88bff3fe8a2381574/data?f=json",
+   "status": 200,
+   "bytes": 8587,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/concessoes_comunicacao/MapServer?f=json",
+   "status": 200,
+   "bytes": 15658,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/dados_anm/MapServer/0?f=json",
+   "status": 200,
+   "bytes": 15956,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/apps/webappviewer/widgets/Query/images/icon.png?wab_dv=2.31",
+   "status": 200,
+   "bytes": 943,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/4c14da9d1d0d4b1fa26d10744ec82129/data",
+   "status": 200,
+   "bytes": 4769,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/6a8f5ccc4b6a4c2bba79759aa952d908/resources/inConfig/252466475498895.png",
+   "status": 200,
+   "bytes": 47249,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer/export?dpi=96&transparent=true&format=png32&layers=show%3A1%2C6&bbox=-12023072.73507483%2C-5193039.55367021%2C500369.9791651182%2C1851396.973089761&bboxSR=102100&imageSR=102100&size=1280%2C720&f=image",
+   "status": 200,
+   "bytes": 26469,
+   "type": "image"
+  }
+ ],
+ "errors": []
+}

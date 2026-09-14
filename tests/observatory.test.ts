@@ -11,6 +11,7 @@ import {
   RARE_EARTH_PHASES,
   getPhaseShortLabel,
   getPhaseColor,
+  matchMiningPhase,
 } from '../lib/map-utils'
 import {
   computeSpeculatorIndex,
@@ -26,6 +27,8 @@ import {
 import {
   buildEnterpriseNetworkLines,
   buildEnterpriseHQGeoJSON,
+  matchEnterpriseHolder,
+  foreignHolderRanking,
   ENTERPRISES,
 } from '../lib/enterprise-data'
 import { computeForceLayout } from '../composables/useForceLayout'
@@ -599,6 +602,83 @@ describe('RARE_EARTH_PHASES', () => {
 
   it('getPhaseColor returns fallback for unknown phases', () => {
     expect(getPhaseColor('NONEXISTENT')).toBe('var(--text-muted)')
+  })
+})
+
+describe('matchMiningPhase', () => {
+  const all = new Set(['REQUERIMENTO', 'REQUERIMENTO DE PESQUISA', 'AUTORIZAÇÃO DE PESQUISA', 'DISPONIBILIDADE', 'LICENCIAMENTO', 'CONCESSÃO', 'LAVRA'])
+
+  it('matches composite ANM phases to base filter keys', () => {
+    expect(matchMiningPhase(all, 'CONCESSÃO DE LAVRA')).toBe(true)
+    expect(matchMiningPhase(all, 'REQUERIMENTO DE LAVRA')).toBe(true)
+    expect(matchMiningPhase(all, 'AUTORIZAÇÃO DE PESQUISA')).toBe(true)
+    expect(matchMiningPhase(all, 'REQUERIMENTO DE PESQUISA')).toBe(true)
+  })
+
+  it('respects deselected phases', () => {
+    expect(matchMiningPhase(new Set(['CONCESSÃO']), 'AUTORIZAÇÃO DE PESQUISA')).toBe(false)
+    expect(matchMiningPhase(new Set(['LAVRA']), 'CONCESSÃO DE LAVRA')).toBe(true)
+  })
+
+  it('empty selection matches nothing', () => {
+    expect(matchMiningPhase(new Set(), 'LAVRA')).toBe(false)
+  })
+
+  it('rejects empty fase', () => {
+    expect(matchMiningPhase(all, '')).toBe(false)
+  })
+})
+
+describe('matchEnterpriseHolder', () => {
+  it('links suffix-bearing holder names to curated enterprises', () => {
+    expect(matchEnterpriseHolder('AXEL REE LTDA')).toEqual({ enterprise: 'Axel REE', country: 'Australia', foreign: true })
+    expect(matchEnterpriseHolder('VIRIDIS MINERACAO LTDA')).toMatchObject({ country: 'Australia', foreign: true })
+    expect(matchEnterpriseHolder('METEORIC CALDEIRA MINERACAO LTDA.')).toMatchObject({ enterprise: 'Meteoric Resources', foreign: true })
+  })
+
+  it('marks Brazilian holders domestic', () => {
+    expect(matchEnterpriseHolder('VALE S.A.')).toMatchObject({ country: 'Brazil', foreign: false })
+  })
+
+  it('returns null for unknown holders instead of fabricating', () => {
+    expect(matchEnterpriseHolder('JOAO DA SILVA')).toBeNull()
+    expect(matchEnterpriseHolder('')).toBeNull()
+    expect(matchEnterpriseHolder(null)).toBeNull()
+  })
+
+  it('never false-positives domestic juniors onto tracked enterprises', () => {
+    expect(matchEnterpriseHolder('MINEGRAL CIA. BRASILEIRA DE MINERAÇÕES')).toBeNull()
+    expect(matchEnterpriseHolder('RCO MINERACAO LTDA')).toBeNull()
+    expect(matchEnterpriseHolder('SRS: 61409892000173')).toBeNull()
+    expect(matchEnterpriseHolder('IRMAOS MARTINS SERVICOS E COMERCIO LTDA')).toBeNull()
+    expect(matchEnterpriseHolder('AURYLIO CAMPOS GUIMARAES')).toBeNull()
+  })
+})
+
+describe('foreignHolderRanking', () => {
+  const fc = (rows: Array<[string, string, number]>): GeoJSON.FeatureCollection => ({
+    type: 'FeatureCollection',
+    features: rows.map(([nome, country, area]) => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [0, 0] },
+      properties: { nome, holder_enterprise: nome, holder_country: country, area_ha: area },
+    })),
+  })
+
+  it('aggregates foreign holders sorted by claims', () => {
+    const out = foreignHolderRanking(fc([
+      ['AXEL REE LTDA', 'Australia', 100],
+      ['AXEL REE LTDA', 'Australia', 200],
+      ['VALE S.A.', 'Brazil', 5000],
+      ['JOAO', 'Unknown', 10],
+    ]))
+    expect(out).toHaveLength(1)
+    expect(out[0]).toEqual({ name: 'AXEL REE LTDA', country: 'Australia', claims: 2, areaHa: 300 })
+  })
+
+  it('returns [] without foreign claims', () => {
+    expect(foreignHolderRanking(fc([['VALE S.A.', 'Brazil', 1]]))).toEqual([])
+    expect(foreignHolderRanking(undefined)).toEqual([])
   })
 })
 

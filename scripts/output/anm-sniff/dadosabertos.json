@@ -1,0 +1,14 @@
+{
+ "id": "dadosabertos",
+ "url": "https://dadosabertos.anm.gov.br/SIGMINE/PROCESSOS_MINERARIOS/",
+ "title": "dadosabertos.anm.gov.br - /SIGMINE/PROCESSOS_MINERARIOS/",
+ "totalRequests": 1,
+ "byHost": {
+  "dadosabertos.anm.gov.br": {
+   "count": 1,
+   "bytes": 5747
+  }
+ },
+ "interesting": [],
+ "errors": []
+}

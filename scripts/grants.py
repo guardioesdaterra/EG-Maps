@@ -2815,19 +2815,23 @@ async def fetch_gates_gc(session):
     seen = set()
     chrome = ("Grand Challenges", "Applications Closes", "Learn More",
               "Open Grant Opportunities")
-    for txt in soup.find_all(string=re.compile(r'Applications?\s+Closes?')):
-        block = txt.parent
-        link = None
-        for _ in range(7):
-            if block is None or getattr(block, "name", None) in ("main", "body"):
-                break
-            if hasattr(block, "select_one"):
-                link = block.select_one('a[href*="/challenge/"]')
-                if link:
+    # v2.4: cards are <article> blocks (title + /challenge/ link +
+    # "Applications Closes" + date as sibling nodes).
+    blocks = [a for a in soup.select("article")
+              if "Closes" in a.get_text(" ")]
+    if not blocks:
+        # Fallback: walk up from any Closes text node to the challenge link.
+        for txt in soup.find_all(string=re.compile(r'Applications?\s+Closes?')):
+            block = txt.parent
+            for _ in range(7):
+                if block is None or getattr(block, "name", None) in ("main", "body"):
                     break
-            block = block.parent
-        if not link:
-            continue
+                if hasattr(block, "select_one") and \
+                        block.select_one('a[href*="/challenge/"]'):
+                    blocks.append(block)
+                    break
+                block = block.parent
+    for block in blocks:
         url = urljoin("https://gcgh.grandchallenges.org", link["href"])
         if url in seen:
             continue

@@ -1,5 +1,5 @@
 <template>
-  <canvas ref="canvasRef" />
+  <canvas ref="canvasRef" :style="{ opacity }" />
 </template>
 
 <script setup lang="ts">
@@ -15,6 +15,7 @@ interface DarkVeilProps {
   scanlineFrequency?: number;
   warpAmount?: number;
   resolutionScale?: number;
+  opacity?: number;
 }
 
 const props = withDefaults(defineProps<DarkVeilProps>(), {
@@ -24,7 +25,8 @@ const props = withDefaults(defineProps<DarkVeilProps>(), {
   speed: 0.5,
   scanlineFrequency: 0.3,
   warpAmount: 5,
-  resolutionScale: 1
+  resolutionScale: 1,
+  opacity: 1
 });
 
 const { isDark } = useDarkMode();

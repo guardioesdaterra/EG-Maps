@@ -1,14 +1,38 @@
 /**
  * components/observatory/tabs/MilitaryTab.vue
- * @why Military activity tab — shows armed conflicts, base locations, restricted zones
+ * @why Military activity tab — shows armed conflicts, base locations, restricted zones.
+ *      An optional `live` prop prepends the region's live military-critical
+ *      numbers from deep_analysis above the static reference cards.
  * @component MilitaryTab
  * @props highlight?: string | null
+ *   live?: { criticalClaims: number; criticalAreaHa: number; usConnectedClaims: number } | null
  * @emits 'update:highlight': [v: string | null]
  * @deps vue (ref); @/lib/observatory-tabs (MILITARY_ASSETS, US_INVESTMENTS)
  */
 <template>
   <div class="obs-tab">
-    
+    <!-- ── Live regional numbers (deep_analysis) ──────────── -->
+    <div v-if="live" class="obs-callout obs-callout--danger">
+      <div class="obs-callout__head">
+        <Icon name="lucide:radar" class="obs-callout__icon" />
+        <h3 class="obs-callout__title">{{ t('observatory.military.liveTitle') }}</h3>
+      </div>
+      <div class="obs-live-grid" role="list">
+        <div class="obs-live-cell" role="listitem">
+          <span class="obs-live-cell__value">{{ live.criticalClaims.toLocaleString() }}</span>
+          <span class="obs-live-cell__label">{{ t('observatory.military.liveClaims') }}</span>
+        </div>
+        <div class="obs-live-cell" role="listitem">
+          <span class="obs-live-cell__value">{{ formatHa(live.criticalAreaHa) }}</span>
+          <span class="obs-live-cell__label">{{ t('observatory.military.liveArea') }}</span>
+        </div>
+        <div class="obs-live-cell" role="listitem">
+          <span class="obs-live-cell__value">{{ live.usConnectedClaims.toLocaleString() }}</span>
+          <span class="obs-live-cell__label">{{ t('observatory.military.liveUs') }}</span>
+        </div>
+      </div>
+    </div>
+
     <div class="obs-expand">
       <button
         type="button"
@@ -127,6 +151,11 @@ const { t } = useI18n()
 
 const props = defineProps<{
   highlight?: string | null
+  live?: {
+    criticalClaims: number
+    criticalAreaHa: number
+    usConnectedClaims: number
+  } | null
 }>()
 
 const emit = defineEmits<{
@@ -135,6 +164,12 @@ const emit = defineEmits<{
 
 const infoOpen = ref(false)
 const highlighted = ref<string | null>(null)
+
+function formatHa(ha: number): string {
+  if (ha >= 1_000_000) return `${(ha / 1_000_000).toFixed(1)}M`
+  if (ha >= 1000) return `${Math.round(ha / 1000)}K`
+  return `${Math.round(ha)}`
+}
 
 function onHighlight(name: string) {
   highlighted.value = name
@@ -150,6 +185,11 @@ function onClearHighlight() {
 
 <style scoped>
 .obs-tab { display: flex; flex-direction: column; gap: 8px; }
+
+.obs-live-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.obs-live-cell { display: flex; flex-direction: column; gap: 1px; padding: 6px 4px; background: rgba(0,0,0,0.25); border: 1px solid var(--obs-panel-border); border-radius: 6px; text-align: center; min-width: 0; }
+.obs-live-cell__value { font-size: clamp(12px, 1.8vw, 16px); font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
+.obs-live-cell__label { font-size: clamp(7px, 1.2vw, 10px); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--obs-text-dim); }
 
 .obs-expand { margin: 0; }
 

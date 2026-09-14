@@ -11,6 +11,9 @@ import { useObservatoryControls, type ObservatoryData, type ObservatoryTabKey } 
 import { useObservatorySelection } from '@/composables/useObservatorySelection'
 import { useRareEarthData, type DataRegion } from '@/composables/useRareEarthData'
 import { useCulturalAgentsData } from '@/composables/useCulturalAgentsData'
+import { normalizeName } from '@/lib/observatory-analysis'
+import { foreignHolderRanking, type ForeignHolderRank } from '@/lib/enterprise-data'
+import { haversineKm } from '@/lib/water-defense'
 
 export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas') {
   const { t } = useI18n()
@@ -31,7 +34,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     debouncedFilter, updateFilter,
   } = controls
 
-  const { pointsData: _rawPointsData, polygonsData: _rawPolygonsData, protectedData: _rawProtectedData, waterData: _rawWaterData, culturalData: _rawCulturalData, features: allFeatures, speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL, initialRegion)
+  const { pointsData: _rawPointsData, polygonsData: _rawPolygonsData, protectedData: _rawProtectedData, waterData: _rawWaterData, culturalData: _rawCulturalData, features: allFeatures, speculatorIndex, deepAnalysis, layerCounts, overlapSummary, protectedSummary, waterThreats, waterSummary, resourceErrors, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL, initialRegion)
 
   const { combinedData: culturalAgentsCombined, sourceCounts, load: loadCulturalAgents } = useCulturalAgentsData(baseURL)
 
@@ -135,6 +138,12 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
 
   const showClaimDetail = ref(false)
   const claimDetailProps = ref<Record<string, unknown> | null>(null)
+  const claimDetailContext = ref<{
+    suspicionScore: number
+    suspicionFlags: string[]
+    holderClaims: number
+    holderAreaHa: number
+  } | null>(null)
   const obsSel = useObservatorySelection()
 
   watch(() => obsSel.selection.value.processo, (processo) => {
@@ -147,6 +156,28 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
         lo: sel.coords?.[0] ?? feature.lo,
         la: sel.coords?.[1] ?? feature.la,
       } as Record<string, unknown>
+      // Holder intelligence: join the speculator index so the modal can
+      // explain WHY a claim scores dangerous (flags, volume, rush).
+      const holderName = String(feature.n ?? sel.nome ?? '')
+      const entry = (speculatorIndex.value as Array<{
+        normalizedName: string
+        displayName: string
+        count: number
+        totalAreaHa: number
+        suspicionScore: number
+        suspicionFlags: string[]
+      }>).find(s =>
+        s.normalizedName === normalizeName(holderName)
+        || s.displayName === holderName,
+      )
+      claimDetailContext.value = entry
+        ? {
+            suspicionScore: entry.suspicionScore,
+            suspicionFlags: entry.suspicionFlags ?? [],
+            holderClaims: entry.count,
+            holderAreaHa: Math.round(entry.totalAreaHa),
+          }
+        : null
       showClaimDetail.value = true
     }
   })
@@ -154,6 +185,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
   function closeClaimDetail() {
     showClaimDetail.value = false
     claimDetailProps.value = null
+    claimDetailContext.value = null
   }
 
   const { pin: userPin, sharedFromUrl: userPinShared, setPin: setUserPin, clearPin, getShareUrl, copyShareUrl } = useUserPin()
@@ -280,18 +312,58 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     window.removeEventListener('keydown', handleKeydownPage)
   })
 
+  const lastSync = computed(() => {
+    const raw = deepAnalysis.value as unknown as Record<string, unknown> | undefined
+    const iso = typeof raw?.last_sync === 'string' ? raw.last_sync : undefined
+    if (!iso) return undefined
+    try {
+      return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    } catch { return iso }
+  })
+
+  /** Live foreign-holder ranking from the loaded (normalized) points. */
+  const foreignHolders = computed<ForeignHolderRank[]>(() =>
+    foreignHolderRanking(_rawPointsData.value as unknown as GeoJSON.FeatureCollection | undefined),
+  )
+
+  /**
+   * "Watch my territory": claims within 10km of the user's pin, with the
+   * nearest claim identified. Recomputed when the pin or the data changes.
+   */
+  const pinThreats = computed(() => {
+    const pin = userPin.value
+    if (!pin || !Number.isFinite(pin.lng) || !Number.isFinite(pin.lat)) return null
+    let within10 = 0
+    let nearest: { nearestProcesso: string; nearestHolder: string; nearestKm: number } | null = null
+    for (const f of allFeatures.value as Array<{
+      p: string; n: string; lo: number; la: number
+    }>) {
+      if (!Number.isFinite(f.lo) || !Number.isFinite(f.la)) continue
+      const d = haversineKm(pin.lng, pin.lat, f.lo, f.la)
+      if (d <= 10) within10++
+      if (!nearest || d < nearest.nearestKm) {
+        nearest = { nearestProcesso: f.p, nearestHolder: f.n, nearestKm: Math.round(d * 10) / 10 }
+      }
+    }
+    if (!nearest) return null
+    return { within10, ...nearest, pinLabel: pin.label }
+  })
+
   return {
     controls,
     stats,
     data,
     pointsData, filteredPoints, polygonsData, protectedData, waterData, culturalData,
     layerVis, flyToTarget, onMapInit: handleMapInit,
-    allFeatures, speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error,
+    allFeatures, speculatorIndex, deepAnalysis, layerCounts, overlapSummary,
+    protectedSummary, waterThreats, waterSummary, foreignHolders, pinThreats,
+    resourceErrors, lastSync,
+    isLoading, loadPhase, loadProgress, error,
     loadRareEarthData, loadFullBrazil, isRegional,
     showRedeCorporativa, showDownload, showUserContribution, showAll,
-    showClaimDetail, claimDetailProps, closeClaimDetail,
+    showClaimDetail, claimDetailProps, claimDetailContext, closeClaimDetail,
     userPin, userPinShared, pinPickerMode, shareCopied,
-    togglePinPicker, flyToUserPin, copyPinUrl, loadingMessage,
+    togglePinPicker, flyToUserPin, copyPinUrl, setUserPin, loadingMessage,
     toggleEnterpriseLayer, flyToEnterprise, zoomToDanger, flyToCoord, onGeoLocate, expandToFullBrazil,
     activeTab, activeFilterSummary, showShortcuts, showDataTable, showTimeline, showExport, showGeoLocate, showClaimReport, reportClaim,
     yearMin, yearMax, selectedPhases, searchTerm, sobDemandaOnly, filtersExpanded,

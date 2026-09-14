@@ -51,9 +51,9 @@ export interface RareEarthPopupContent {
 }
 
 function dangerColor(score: number): string {
-  if (score >= 8) return 'var(--danger)'
-  if (score >= 6) return 'var(--warning)'
-  return 'var(--success)'
+  if (score >= 8) return '#e74c3c'
+  if (score >= 6) return '#f39c12'
+  return '#27ae60'
 }
 
 function ageFreshness(year?: number): 'recent' | 'active' | 'stale' {

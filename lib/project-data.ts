@@ -209,9 +209,9 @@ export const allProjectsData: ProjectData[] = [
     },
     {
       project_title: "Quintal da Dita - Oficina de Saberes Indigenas (Indigenous Knowledge Workshop)",
-      country_province: "Cascata",
-      latitude: -20.4667,
-      longitude: -49.3667,
+      country_province: "Cascata, Águas da Prata (Brazil)",
+      latitude: -21.8589,
+      longitude: -46.6775,
       direct_beneficiaries: 0,
       indirect_beneficiaries: 0,
     },

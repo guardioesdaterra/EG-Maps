@@ -561,6 +561,23 @@ export function getPhaseShortLabel(phase: string): string {
   return RARE_EARTH_PHASES[phase]?.shortLabel ?? phase?.slice(0, 5) ?? '?'
 }
 
+/**
+ * ANM phase matching: source phases are composite ("CONCESSÃO DE LAVRA")
+ * while filter keys are base forms ("CONCESSÃO", "LAVRA"). Exact matching
+ * silently dropped every operating mine, so a claim passes when a selected
+ * key contains or is contained in the claim phase (case-insensitive).
+ */
+export function matchMiningPhase(selected: Set<string> | string[], fase: string): boolean {
+  const f = String(fase ?? '').trim().toUpperCase()
+  if (!f) return false
+  const keys = Array.isArray(selected) ? selected : [...selected]
+  if (!keys.length) return false
+  return keys.some(k => {
+    const key = String(k).trim().toUpperCase()
+    return !!key && (f === key || f.includes(key) || key.includes(f))
+  })
+}
+
 export function getPhaseColor(phase: string): string {
   return RARE_EARTH_PHASES[phase]?.color ?? 'var(--text-muted)'
 }

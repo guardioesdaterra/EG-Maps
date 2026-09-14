@@ -3,19 +3,16 @@
  * @why Rare earth elements 3D controller — orbit, zoom, and selection in the 3D scene
  * @functions useRareEarthController
  * @interfaces RareEarthControllerProps, RareEarthPopupConfig, RareEarthControllerOptions
- * @deps vue (watch, onScopeDispose, type Ref); @/composables/useRareEarthLayers (setupRareEarthLayers, syncRareEarthLayerVisibility, addPolygonLayersToMap, ); @/composables/useWaterLayers (setupWaterLayers); @/composables/useCulturalLayers (setupCulturalLayers, cleanupCulturalLayers, CULTURAL_SOURCE); @/lib/enterprise-data (buildEnterpriseNetworkLines)
+ * @deps vue (watch, onScopeDispose, type Ref); @/composables/useRareEarthLayers (syncObservatoryLayers, syncRareEarthLayerVisibility); @/lib/enterprise-data (buildEnterpriseNetworkLines)
  * @connections composables/useMapBase.ts
  */
 import { watch, onScopeDispose, type Ref } from 'vue'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 import {
-  setupRareEarthLayers as setupRareEarthLayersInternal,
+  syncObservatoryLayers,
   syncRareEarthLayerVisibility as syncRareEarthLayerVisibilityInternal,
-  addPolygonLayersToMap,
 } from '@/composables/useRareEarthLayers'
-import { setupWaterLayers } from '@/composables/useWaterLayers'
-import { setupCulturalLayers, cleanupCulturalLayers, CULTURAL_SOURCE } from '@/composables/useCulturalLayers'
 import { buildEnterpriseNetworkLines } from '@/lib/enterprise-data'
 
 export interface RareEarthControllerProps {
@@ -61,11 +58,20 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
 
   let flyToHighlightMarker: maplibregl.Marker | null = null
   let flyToHighlightTimer: ReturnType<typeof setTimeout> | null = null
-  let waterCleanup: (() => void) | null = null
-  let culturalCleanup: (() => void) | null = null
-  let polyCleanup: (() => void) | null = null
-  let polysAdded = false
-  let layersSetup = false
+  let reconcileTimer: ReturnType<typeof setTimeout> | null = null
+  let setupRetryTimer: ReturnType<typeof setTimeout> | null = null
+  let netResyncTimer: ReturnType<typeof setTimeout> | null = null
+  let retryCount = 0
+  // Generous budget: on slow links the 7MB water + 1MB cultural payloads can
+  // take well over the first seconds; retries are cheap no-ops once live.
+  const MAX_RETRIES = 40
+  // Enterprise-network rebuild throttle: hub-spoke construction over 20k
+  // full-Brazil claims is the heaviest per-keystroke cost. Rebuild at most
+  // once per 2s; filtered churn inside the window reuses on-map lines, and a
+  // delayed pass picks up the latest data.
+  let lastNetBuiltPoints: unknown = null
+  let lastNetBuildAt = 0
+  const NET_THROTTLE_MS = 2000
 
   function addFlyToHighlight(lng: number, lat: number) {
     const m = map.value
@@ -93,73 +99,87 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     }, 5000)
   }
 
-  let setupRetryTimer: ReturnType<typeof setTimeout> | null = null
   function scheduleSetupRetry() {
-    if (setupRetryTimer) return
+    if (setupRetryTimer || retryCount >= MAX_RETRIES) return
+    retryCount++
     setupRetryTimer = setTimeout(() => {
       setupRetryTimer = null
       setupLayers()
-    }, 300)
+    }, 350)
   }
 
+  /**
+   * Single reconcile entry point: push the latest props into the map via
+   * `syncObservatoryLayers` (setData-first, setup-if-missing). Retries while
+   * the style is not ready so late-arriving data can never be dropped when
+   * a style switch is mid-flight — the failure mode that blanked polygons.
+   */
   function setupLayers() {
     const m = map.value
-    if (!m) return
+    if (!m || !isActiveGetter()) return
     if (!m.isStyleLoaded()) {
-      // Style not ready yet (or mid style-switch) — retry once it loads.
-      try { m.once('idle', () => setupLayers()) } catch { scheduleSetupRetry() }
+      try { m.once('idle', () => setupLayers()) } catch { /* ignore */ }
+      scheduleSetupRetry()
       return
     }
-    // MapLibre removes custom sources/layers when the style changes. Do not
-    // trust the local flag alone; recover whenever the canonical source is
-    // missing (for example after the MapTiler fallback style is applied).
-    const pointsSourceMissing = !m.getSource('ree-points')
-    if (layersSetup && !pointsSourceMissing) return
-    if (pointsSourceMissing) {
-      // Style reload wiped everything — drop stale guards so water/cultural
-      // /polygons are re-created instead of skipped.
-      layersSetup = false
-      waterCleanup = null
-      culturalCleanup = null
-      polyCleanup = null
-      polysAdded = false
-    } else {
-      layersSetup = false
-    }
     const p = getProps()
-    // Do not mark the controller as initialized with the placeholder empty
-    // FeatureCollection used while the async observatory data is loading.
-    // Doing so prevents the later points watcher from ever creating the
-    // claims/polygon layers.
-    if (!p.rareEarthPoints?.features?.length) return
-
-    setupRareEarthLayersInternal(m, {
-      points: p.rareEarthPoints,
+    // Effective claim set: live filters win, raw points are the fallback.
+    // An explicitly empty filtered set means "no matches" (render empty),
+    // while undefined means "not filtered" (render raw).
+    const effectivePoints = p.rareEarthFiltered ?? p.rareEarthPoints
+    let networkFeatures: GeoJSON.FeatureCollection | null | undefined
+    if (!effectivePoints?.features?.length) {
+      // Genuine empty (no matches yet / filtered out): clear lines.
+      networkFeatures = { type: 'FeatureCollection', features: [] }
+      lastNetBuiltPoints = effectivePoints
+    } else if (effectivePoints !== lastNetBuiltPoints || Date.now() - lastNetBuildAt > NET_THROTTLE_MS) {
+      networkFeatures = buildEnterpriseNetworkLines(effectivePoints)
+      lastNetBuiltPoints = effectivePoints
+      lastNetBuildAt = Date.now()
+    } else {
+      // Filtered churn inside the throttle window: keep on-map lines, and
+      // schedule a delayed pass so the latest data still lands.
+      networkFeatures = undefined
+      if (!netResyncTimer) {
+        netResyncTimer = setTimeout(() => {
+          netResyncTimer = null
+          scheduleReconcile()
+        }, NET_THROTTLE_MS + 100)
+      }
+    }
+    const ok = syncObservatoryLayers(m, {
+      points: effectivePoints ?? null,
       polys: p.rareEarthPolygons ?? null,
       protected: p.rareEarthProtected ?? null,
-      networkFeatures: buildEnterpriseNetworkLines(p.rareEarthPoints),
+      water: p.rareEarthWater ?? null,
+      cultural: p.rareEarthCultural ?? null,
+      networkFeatures,
+      visibility: p.layerVisibility,
       popup: options.popup,
     })
-    layersSetup = true
-    if (p.rareEarthPolygons?.features?.length) polysAdded = true
-
-    if (p.rareEarthWater?.features?.length && !waterCleanup) {
-      waterCleanup = setupWaterLayers(m, p.rareEarthWater)
+    if (ok) {
+      retryCount = 0
+      if (setupRetryTimer) { clearTimeout(setupRetryTimer); setupRetryTimer = null }
+    } else {
+      scheduleSetupRetry()
     }
-
-    if (p.rareEarthCultural?.features?.length && !culturalCleanup) {
-      culturalCleanup = setupCulturalLayers(m, p.rareEarthCultural)
-    }
-
-    syncRareEarthLayerVisibilityInternal(m, p.layerVisibility || {})
   }
 
+  function scheduleReconcile() {
+    if (reconcileTimer) return
+    reconcileTimer = setTimeout(() => {
+      reconcileTimer = null
+      setupLayers()
+    }, 32)
+  }
+
+  // Visibility-only toggles apply instantly without touching sources.
   const stopVisWatch = watch(
     () => getProps().layerVisibility,
     () => {
       if (!isActiveGetter()) return
       const m = map.value
-      if (!m) return
+      if (!m || !m.isStyleLoaded()) return
       syncRareEarthLayerVisibilityInternal(m, getProps().layerVisibility || {})
     },
   )
@@ -169,92 +189,27 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     () => map.value,
     (m) => {
       if (!m || !isActiveGetter()) return
-      if (!m.isStyleLoaded()) {
-        try { m.once('idle', () => setupLayers()) } catch { scheduleSetupRetry() }
-        return
-      }
-      setupLayers()
+      scheduleReconcile()
     },
   )
 
-  let pointsDebounceTimer: ReturnType<typeof setTimeout> | null = null
-  const stopPointsWatch = watch(
-    () => [getProps().rareEarthPoints, getProps().rareEarthFiltered] as const,
-    ([rawPoints, filteredPoints]) => {
+  // One debounced reconcile for ALL structural inputs. Previously five
+  // independent watchers each early-returned while the style was reloading
+  // and dropped their update forever (the polygon blanking). Funneling
+  // through setupLayers() gives every input the same retry-while-reloading
+  // guarantee.
+  const stopDataWatch = watch(
+    () => [
+      getProps().rareEarthPoints,
+      getProps().rareEarthFiltered,
+      getProps().rareEarthPolygons,
+      getProps().rareEarthProtected,
+      getProps().rareEarthWater,
+      getProps().rareEarthCultural,
+    ] as const,
+    () => {
       if (!isActiveGetter() || !map.value) return
-      if (!map.value.isStyleLoaded()) { scheduleSetupRetry(); return }
-      // The map can finish loading before the async GeoJSON request. In that
-      // case there is no `ree-points` source yet; bootstrap every observatory
-      // layer from the newly arrived points instead of silently dropping it.
-      const pointsSourceExists = Boolean(map.value.getSource('ree-points'))
-      if (!layersSetup || !pointsSourceExists) {
-        layersSetup = false
-        setupLayers()
-        return
-      }
-      if (pointsDebounceTimer) clearTimeout(pointsDebounceTimer)
-      pointsDebounceTimer = setTimeout(() => {
-        try {
-          const src = map.value?.getSource('ree-points') as maplibregl.GeoJSONSource | undefined
-          let newVal: GeoJSON.FeatureCollection
-          if (filteredPoints && filteredPoints.features.length > 0) {
-            newVal = filteredPoints
-          } else if (filteredPoints && !filteredPoints.features.length) {
-            newVal = { type: 'FeatureCollection', features: [] }
-          } else {
-            newVal = rawPoints as GeoJSON.FeatureCollection
-          }
-          if (src && newVal) src.setData(newVal)
-          const netFc = newVal ? buildEnterpriseNetworkLines(newVal) : null
-          const netSrc = map.value?.getSource('ree-network') as maplibregl.GeoJSONSource | undefined
-          if (netSrc && netFc) netSrc.setData(netFc)
-        } catch { /* ignore */ }
-      }, 16)
-    },
-  )
-
-  const stopProtectedWatch = watch(
-    () => getProps().rareEarthProtected,
-    (newVal) => {
-      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
-      if (!newVal?.features?.length) return
-      try {
-        const src = map.value.getSource('ree-protected') as maplibregl.GeoJSONSource | undefined
-        if (src) {
-          src.setData(newVal)
-        } else {
-          // Protected arrived before points setup — bootstrap everything.
-          layersSetup = false
-          setupLayers()
-        }
-      } catch { /* ignore */ }
-    },
-  )
-
-  const stopPolygonsWatch = watch(
-    () => getProps().rareEarthPolygons,
-    (newVal) => {
-      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
-      if (!newVal?.features?.length) return
-      try {
-        const src = map.value.getSource('ree-polys') as maplibregl.GeoJSONSource | undefined
-        if (src) {
-          // Region switch or late arrival — update in place, no teardown.
-          src.setData(newVal)
-          polysAdded = true
-          return
-        }
-        if (polysAdded) return
-        const cleanup = addPolygonLayersToMap(map.value, newVal, options.popup)
-        if (cleanup) {
-          polyCleanup = cleanup
-          polysAdded = true
-        } else {
-          // Points not set up yet — full bootstrap will include polys.
-          layersSetup = false
-          setupLayers()
-        }
-      } catch { /* ignore */ }
+      scheduleReconcile()
     },
   )
 
@@ -284,59 +239,17 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     }
   })
 
-  const stopWaterWatch = watch(
-    () => getProps().rareEarthWater,
-    (newVal) => {
-      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
-      if (!newVal?.features?.length) return
-      try {
-        const src = map.value.getSource('ree-water') as maplibregl.GeoJSONSource | undefined
-        if (src) {
-          src.setData(newVal)
-          return
-        }
-        if (waterCleanup) return
-        waterCleanup = setupWaterLayers(map.value, newVal)
-      } catch { /* ignore */ }
-    },
-  )
-
-  const stopCulturalWatch = watch(
-    () => getProps().rareEarthCultural,
-    (newVal) => {
-      if (!isActiveGetter() || !map.value || !map.value.isStyleLoaded()) return
-      const m = map.value
-      if (!newVal?.features?.length) {
-        if (culturalCleanup) { culturalCleanup(); culturalCleanup = null }
-        return
-      }
-      const src = m.getSource(CULTURAL_SOURCE) as maplibregl.GeoJSONSource | undefined
-      if (src) {
-        src.setData(newVal)
-      } else if (!culturalCleanup) {
-        culturalCleanup = setupCulturalLayers(m, newVal)
-        syncRareEarthLayerVisibilityInternal(m, getProps().layerVisibility || {})
-      }
-    },
-  )
-
   onScopeDispose(() => {
     stopVisWatch()
     stopMapWatch()
-    stopPointsWatch()
-    stopProtectedWatch()
-    stopPolygonsWatch()
+    stopDataWatch()
     stopFlyToWatch()
     stopPendingFlyWatch()
-    stopWaterWatch()
-    stopCulturalWatch()
-    if (pointsDebounceTimer) clearTimeout(pointsDebounceTimer)
+    if (reconcileTimer) { clearTimeout(reconcileTimer); reconcileTimer = null }
+    if (netResyncTimer) { clearTimeout(netResyncTimer); netResyncTimer = null }
     if (setupRetryTimer) { clearTimeout(setupRetryTimer); setupRetryTimer = null }
     if (flyToHighlightTimer) clearTimeout(flyToHighlightTimer)
     if (flyToHighlightMarker) { flyToHighlightMarker.remove(); flyToHighlightMarker = null }
-    if (polyCleanup) { polyCleanup(); polyCleanup = null }
-    if (waterCleanup) { waterCleanup(); waterCleanup = null }
-    if (culturalCleanup) { culturalCleanup(); culturalCleanup = null }
   })
 
   return { setupLayers, addFlyToHighlight }

@@ -1,0 +1,51 @@
+name: Daily ANM Vulcan sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily 06:30 UTC — after the ANM nightly dump refresh (zips are
+    # typically re-stamped ~05:00–06:00 UTC).
+    - cron: '30 6 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      # No dependencies needed — scripts/sync-anm-vulcan.mjs uses Node
+      # stdlib only (manual SHP+DBF parsers, https downloads).
+
+      - name: Sync Vulcan claims from ANM
+        run: >
+          node scripts/sync-anm-vulcan.mjs
+          --with-overlaps public/data/rare-earth/pococaldas/protected-areas.geojson:public/data/rare-earth/pococaldas/points_overlaps.geojson
+          --report scripts/output/anm-sync-report.json
+
+      - name: Upload sync report
+        uses: actions/upload-artifact@v5
+        with:
+          name: anm-sync-report
+          path: scripts/output/anm-sync-report.json
+          if-no-files-found: error
+
+      - name: Commit updated data
+        run: |
+          if git diff --quiet -- public/data/rare-earth/pococaldas/; then
+            echo "Vulcan data unchanged — nothing to commit."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add public/data/rare-earth/pococaldas/
+            git commit -m "chore(data): daily ANM Vulcan sync" -m "Via Daily ANM Vulcan sync workflow (scripts/sync-anm-vulcan.mjs). See scripts/output/anm-sync-report.json in the workflow run artifacts for added/removed claims."
+            git push
+          fi

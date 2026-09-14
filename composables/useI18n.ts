@@ -1,63 +1,27 @@
 /**
  * composables/useI18n.ts
- * @why Internationalization — loads locale JSON, provides t() global translation function
+ * @why Internationalization — wraps vue-i18n's $t with the same call signature
+ *  as the project's previous useI18n so all existing call sites work unchanged.
+ *  vue-i18n (configured via @nuxtjs/i18n) handles locale lookup, fallback to
+ *  English, lazy bundle loading, and interpolation.
  * @functions useI18n
- * @interfaces Translation
  * @types Locale
  * @deps @/stores/ui (useUiStore, type SupportedLocale)
  * @connections app.vue, components/DataBubble.vue, components/GlobalStats.vue, components/MapControls.vue, components/ProjectFilterPanel.vue, components/RedeCorporativa.vue, components/SpeciesFilterPanel.vue, components/SpeciesPanel.vue, components/map/SpeciesPopup.vue, components/observatory/ObservatoryLayout.vue, composables/useMapBase.ts, composables/useMapPopup/previewCard.ts, composables/useMapPopup/speciesPopup.ts, layouts/default.vue, pages/vulcan-observatory/3d.vue, pages/vulcan-observatory/index.vue, plugins/command-palette.client.ts
  */
-import enTranslations from '../locales/en.json'
 import { useUiStore, type SupportedLocale } from '@/stores/ui'
 
 export type Locale = SupportedLocale
 
-export interface Translation {
-  [key: string]: string | Translation
-}
-
 const localeIds: Locale[] = ['en', 'es', 'pt', 'fr', 'ja', 'zh', 'ar', 'hi', 'nl', 'de']
 
-function deepGet(obj: Translation | undefined, path: string[]): string | undefined {
-  if (!obj) return undefined
-  let current: string | Translation = obj
-  for (const part of path) {
-    if (current === undefined || current === null || typeof current !== 'object') return undefined
-    current = (current as Translation)[part]
-  }
-  return typeof current === 'string' ? current : undefined
-}
-
-function englishFallback(key: string): string | undefined {
-  return deepGet(enTranslations as Translation, key.split('.'))
-}
-
-/**
- * Composable that wraps vue-i18n's $t with the same call signature as the
- * project's previous useI18n so all existing call sites work unchanged.
- *
- * - vue-i18n handles the current-locale lookup, lazy bundle loading, and
- *   interpolation (this is configured by @nuxtjs/i18n in nuxt.config.ts)
- * - This wrapper provides an English fallback for missing keys (preserving
- *   the previous behavior)
- * - The locale ref comes from the Pinia UI store so cross-component changes
- *   are reactive everywhere
- * - The vue-i18n Composer is retrieved via useNuxtApp().$i18n, not by
- *   importing useI18n, so we don't conflict with the auto-imported version
- *   from @nuxtjs/i18n
- */
 export function useI18n() {
   const nuxtApp = useNuxtApp()
   const i18n = (nuxtApp as Record<string, unknown>).$i18n as { t: (_key: string, ..._args: unknown[]) => string; locale: import('vue').Ref<string> } | undefined
 
   const ui = useUiStore()
 
-  console.log('[DEBUG:useI18n] i18n locale:', i18n?.locale?.value, 'ui.locale:', ui.locale.value)
-
-  const vt = i18n?.t ?? ((k: string, ...args: unknown[]): string => {
-    const v = englishFallback(k) ?? k
-    return interpolate(v, args)
-  })
+  const vt = i18n?.t ?? ((k: string): string => k)
   const vLocale = i18n?.locale ?? ref<Locale>('en')
 
   if (import.meta.client) {
@@ -75,12 +39,7 @@ export function useI18n() {
   }
 
   function t(key: string, ...args: unknown[]): string {
-    const value = vt(key, ...args)
-    if (value === key) {
-      const fb = englishFallback(key)
-      if (fb !== undefined) return interpolate(fb, args)
-    }
-    return value
+    return vt(key, ...args)
   }
 
   function setLocale(newLocale: Locale) {
@@ -109,17 +68,4 @@ export function useI18n() {
     } satisfies Record<Locale, string>,
     setLocale,
   }
-}
-
-function interpolate(template: string, args: unknown[]): string {
-  let result = template
-  args.forEach((arg, index) => {
-    result = result.replace(new RegExp(`\\{${index}\\}`, 'g'), String(arg))
-  })
-  if (args.length === 1 && args[0] && typeof args[0] === 'object') {
-    for (const [k, v] of Object.entries(args[0] as Record<string, unknown>)) {
-      result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v))
-    }
-  }
-  return result
 }

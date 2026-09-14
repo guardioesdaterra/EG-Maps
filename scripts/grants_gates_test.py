@@ -161,4 +161,21 @@ assert G.extract_amount("Valor Total: R$ 4 milhões") == "R$ 4 milhões"
 assert G.extract_amount("entre R$ 200 mil e R$ 500 mil") in ("R$ 200 mil", "R$ 200")
 assert G.parse_amount_value("R$ 4 milhões", "BRL") > 700000
 assert G.parse_amount_value("R$ 200 mil", "BRL") > 30000
+
+# 9. v2.4 deadline shapes (worldwide funders)
+dl2 = [
+    ("Closes Friday, September 18, 2026.", ("2026-09-18", "September 18, 2026")),
+    ("Closes September 26-27, 2026.", ("2026-09-26", "2026-09-27")),
+    ("Closes Friday, 9 October 2026.", ("2026-10-09", "9 October 2026")),
+    ("Applications Closes Sep 29, 2026", ("2026-09-29", "Sep 29, 2026")),
+    ("Single Stage Deadline: Monday 31 st August 2026", ("2026-08-31", "31 st August 2026")),
+    ("Stage 1 deadline for applications: Monday 20 th July 2026.", ("2026-07-20", "20 th July 2026")),
+]
+for text, opts in dl2:
+    got = G.extract_deadline(text)
+    assert got in opts, f"DEADLINE {text!r} -> {got!r}"
+    if REAL:
+        assert got == opts[0], f"DEADLINE ISO {text!r} -> {got!r}"
+for src in ("cepf_calls", "darwin", "gates_gc"):
+    assert src in G.ALL_SOURCES, src
 print("ALL GRANTS GATE TESTS PASSED")

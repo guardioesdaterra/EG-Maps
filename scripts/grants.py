@@ -1561,18 +1561,25 @@ def extract_deadline(text):
         r'(?:o dia\s*)?(\d{1,2}/\d{1,2}/\d{2,4})', text)
     if m_range:
         return parse_date(m_range.group(2), dayfirst=True)
+    # v2.4: "Closes Friday, September 18, 2026" / "Closes Sep 29, 2026"
+    # (CEPF, Gates Grand Challenges). Spaced ordinals "31 st August".
+    ORD = r'(?:\s*(?:st|nd|rd|th))?'
     patterns = [
         # English
-        r'[Dd]eadline[:\s]+([A-Za-z]+ \d{1,2}(?:st|nd|rd|th)?,?\s*\d{4})',
-        r'[Dd]eadline[:\s]+(\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+\s+\d{4})',
-        r'[Dd]eadline\s+is\s+(\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+\s+\d{4})',
+        rf'[Dd]eadline[:\s]+([A-Za-z]+ \d{{1,2}}{ORD},?\s*\d{{4}})',
+        rf'[Dd]eadline[:\s]+(\d{{1,2}}{ORD}\s+[A-Za-z]+\s+\d{{4}})',
+        rf'[Dd]eadline\s+is\s+(\d{{1,2}}{ORD}\s+[A-Za-z]+\s+\d{{4}})',
+        rf'[Cc]loses?(?:\s+\w+,?)?\s+([A-Za-z]+ \d{{1,2}}{ORD},?\s+\d{{4}})',
+        rf'[Cc]loses?(?:\s+\w+,?)?\s+(\d{{1,2}}{ORD}\s+[A-Za-z]+,?\s+\d{{4}})',
+        # v2.4: month-day ranges "September 26-27, 2026" → END date
+        r'([A-Za-z]+) (\d{1,2})\s*[–-]\s*(\d{1,2}),?\s*(\d{4})',
         # v2.2: fundsforNGOs feed style "Deadline: 18-Sep-26" / "18-Sep-2026"
         r'[Dd]eadline:?\s*(\d{1,2}-[A-Za-z]{3}-?\d{2,4})',
         r'(\d{1,2}-[A-Za-z]{3}-\d{2,4})',
         # v2.3: aggregator style "Application Deadline: 07 October 2026"
-        r'[Aa]pplication\s+[Dd]eadline:?\s*(\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+,?\s+\d{4})',
+        rf'[Aa]pplication\s+[Dd]eadline:?\s*(\d{{1,2}}{ORD}\s+[A-Za-z]+,?\s+\d{{4}})',
         # v2.3: loose "deadline to submit your application is 19 June 2026"
-        r'[Dd]eadline[^.\n]{0,60}?(\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+,?\s+\d{4})',
+        rf'[Dd]eadline[^.\n]{{0,60}}?(\d{{1,2}}{ORD}\s+[A-Za-z]+,?\s+\d{{4}})',
         r'[Cc]losing[:\s]+([A-Za-z]+ \d{1,2},?\s*\d{4})',
         r'[Cc]losing[:\s]+(\d{1,2}\s+[A-Za-z]+\s+\d{4})',
         r'[Aa]pplication\s+deadline[:\s]+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
@@ -1637,6 +1644,19 @@ def extract_deadline(text):
         m = re.search(pat, text)
         if m:
             d = m.group(0)
+            # v2.4: month-day ranges "September 26-27, 2026" → END date
+            rng = re.fullmatch(
+                r'([A-Za-z]+) (\d{1,2})\s*[–-]\s*(\d{1,2}),?\s*(\d{4})',
+                d.strip())
+            if rng:
+                en_mo = {"january":1,"jan":1,"february":2,"feb":2,"march":3,"mar":3,
+                         "april":4,"apr":4,"may":5,"june":6,"jun":6,"july":7,"jul":7,
+                         "august":8,"aug":8,"september":9,"sept":9,"sep":9,
+                         "october":10,"oct":10,"november":11,"nov":11,
+                         "december":12,"dec":12}
+                mo = en_mo.get(rng.group(1).lower(), 0)
+                if mo:
+                    return f"{rng.group(4)}-{mo:02d}-{int(rng.group(3)):02d}"
             # Normalize CJK dates: "2024年12月31日" → "2024-12-31"
             cjk = re.search(r'(\d{4})[年년]\s*(\d{1,2})[月월]\s*(\d{1,2})[日일]', d)
             if cjk:
@@ -2680,6 +2700,154 @@ async def fetch_ics(session):
     return grants
 
 
+async def fetch_cepf_calls(session):
+    """CEPF open calls page — hotspot + call title + "Closes <date>"
+    blocks with links to call detail pages (amounts there). v2.4."""
+    grants = []
+    html = await fetch(session, "https://www.cepf.net/grants/open-calls-for-proposals")
+    if not html:
+        return grants
+    soup = BeautifulSoup(html, "lxml")
+    today = datetime.now(timezone.utc).date().isoformat()
+    seen = set()
+    for txt in soup.find_all(string=re.compile(r'Closes?\b')):
+        parent = txt.parent
+        block = parent
+        for _ in range(4):
+            if block is None or block.name in ("main", "body"):
+                break
+            sib_text = block.get_text(" ")
+            if len(sib_text) > 60:
+                break
+            block = block.parent
+        scope = block if block is not None else parent
+        scope_text = scope.get_text(" ") if scope else str(txt)
+        link_el = scope.select_one("a[href]") if scope and hasattr(scope, "select_one") else None
+        url = urljoin("https://www.cepf.net", link_el["href"]) if link_el else \
+            "https://www.cepf.net/grants/open-calls-for-proposals"
+        if url in seen:
+            continue
+        seen.add(url)
+        head = scope.select_one("h1,h2,h3,h4") if scope and hasattr(scope, "select_one") else None
+        hotspot = head.get_text(strip=True) if head else ""
+        title = f"CEPF {hotspot} — Call for Proposals" if hotspot else \
+            "CEPF — Call for Proposals"
+        dl = extract_deadline(str(txt))
+        body = scope_text
+        detail = await fetch(session, url) if url != "https://www.cepf.net/grants/open-calls-for-proposals" else None
+        if detail:
+            body = extract_body_text(BeautifulSoup(detail, "lxml")) or scope_text
+            if not dl:
+                dl = extract_deadline(body)
+        if not is_scrape_hit(title, body):
+            continue
+        status = "closed" if (dl and dl < today) else "open"
+        grants.append(make_grant(
+            title=title, source_name="cepf.net", url=url,
+            description=body[:MAX_DESCRIPTION_LEN],
+            funder="Critical Ecosystem Partnership Fund",
+            country="GLOBAL", language="en", status=status,
+            deadline=dl or extract_deadline(body),
+            amount_max=extract_amount(body),
+            categories=["conservation", "biodiversity"]))
+    console.print(f"  [cyan]cepf.net calls[/] → {len(grants)}")
+    return grants
+
+
+async def fetch_darwin(session):
+    """UK Darwin Initiative Round 32 — scheme blocks on how-to-apply with
+    open/closed status words, deadlines ("Monday 31 st August 2026") and
+    scheme detail pages (amounts £200k–£1M). v2.4."""
+    grants = []
+    BASE = "https://www.darwininitiative.org.uk"
+    html = await fetch(session, f"{BASE}/how-to-apply/")
+    if not html:
+        return grants
+    soup = BeautifulSoup(html, "lxml")
+    page_text = soup.get_text(" ")
+    today = datetime.now(timezone.utc).date().isoformat()
+    for m in re.finditer(
+            r'Darwin Initiative\s+(Main|Extra|Capability\s*(?:&|and)\s*Capacity)'
+            r'(.{0,400}?)((?:Stage\s*\d|Single Stage)?\s*(?:–|-)?\s*'
+            r'(open|closed)[^.]{0,120}?deadline\s+([^\n.]{4,60}))',
+            page_text, re.I | re.S):
+        scheme = re.sub(r'\s+', ' ', m.group(1)).strip()
+        status_word = m.group(4).lower()
+        dl_raw = m.group(5).strip()
+        dl = extract_deadline(dl_raw) or extract_deadline(m.group(0))
+        link_el = soup.find("a", href=re.compile(r'how-to-apply|scheme|guidance', re.I))
+        url = urljoin(BASE, link_el["href"]) if link_el else f"{BASE}/how-to-apply/"
+        title = f"Darwin Initiative {scheme} — Biodiversity Grants (UK)"
+        body = m.group(0)
+        detail = await fetch(session, url)
+        if detail:
+            body = extract_body_text(BeautifulSoup(detail, "lxml")) or body
+        if not is_scrape_hit(title, body):
+            continue
+        if dl and dl < today:
+            status = "closed"
+        else:
+            status = "open" if status_word == "open" else (
+                "closed" if status_word == "closed" else "open")
+        grants.append(make_grant(
+            title=title, source_name="darwininitiative.org.uk", url=url,
+            description=body[:MAX_DESCRIPTION_LEN],
+            funder="UK DEFRA Darwin Initiative",
+            country="GLOBAL", language="en", status=status,
+            deadline=dl or extract_deadline(body),
+            amount_max=extract_amount(body),
+            categories=["conservation", "biodiversity", "poverty reduction"]))
+    console.print(f"  [cyan]darwininitiative.org.uk[/] → {len(grants)}")
+    return grants
+
+
+async def fetch_gates_gc(session):
+    """Gates Grand Challenges homepage — "Open Grant Opportunities" cards
+    with "Applications Closes <date>" + detail pages (tiered US$ awards).
+    v2.4."""
+    grants = []
+    html = await fetch(session, "https://gcgh.grandchallenges.org/")
+    if not html:
+        return grants
+    soup = BeautifulSoup(html, "lxml")
+    today = datetime.now(timezone.utc).date().isoformat()
+    seen = set()
+    for el in soup.select("h2,h3,.card-title,.challenge-title"):
+        title = el.get_text(strip=True)
+        if len(title) < 15:
+            continue
+        card = el.parent
+        card_text = card.get_text(" ") if card else title
+        if "Closes" not in card_text and "closes" not in card_text.lower():
+            continue
+        a = el.find("a", href=True) or (card.find("a", href=True) if card else None)
+        url = urljoin("https://gcgh.grandchallenges.org", a["href"]) if a else \
+            "https://gcgh.grandchallenges.org/grant-opportunities"
+        if url in seen:
+            continue
+        seen.add(url)
+        dl = extract_deadline(card_text)
+        body = card_text
+        detail = await fetch(session, url) if "grant-opportunities" not in url else None
+        if detail:
+            body = extract_body_text(BeautifulSoup(detail, "lxml")) or card_text
+            if not dl:
+                dl = extract_deadline(body)
+        if not is_scrape_hit(title, body):
+            continue
+        status = "closed" if (dl and dl < today) else "open"
+        grants.append(make_grant(
+            title=title, source_name="gcgh.grandchallenges.org", url=url,
+            description=body[:MAX_DESCRIPTION_LEN],
+            funder="Gates Foundation Grand Challenges",
+            country="GLOBAL", language="en", status=status,
+            deadline=dl or extract_deadline(body),
+            amount_max=extract_amount(body),
+            categories=["health", "development", "innovation"]))
+    console.print(f"  [cyan]grandchallenges.org[/] → {len(grants)}")
+    return grants
+
+
 async def fetch_opportunity_desk(session):
     """Opportunity Desk — global grants + fellowships."""
     grants = []
@@ -3574,6 +3742,9 @@ ALL_SOURCES = {
     "hispanophone":   fetch_hispanophone,
     # Global env foundations
     "greengrants":    fetch_global_greengrants,
+    "cepf_calls":     fetch_cepf_calls,
+    "darwin":         fetch_darwin,
+    "gates_gc":       fetch_gates_gc,
     "wellbeing":      fetch_wellbeing_economy,
     "ashoka":         fetch_ashoka,
     "globalenv":      fetch_global_env,

@@ -97,11 +97,12 @@ END $$;
 -- ── 3. Backfill new columns from existing data ───────────────────────
 -- Temporal alias: open/closed pass through, everything else → unknown
 -- (mirrors sync-grants-to-supabase.ts).
+-- NOTE: ADD COLUMN ... DEFAULT pre-fills existing rows, so this must be
+-- unconditional (a WHERE grant_status IS NULL filter would match nothing).
 UPDATE public.scraped_grants
    SET grant_status = CASE WHEN status = 'open' THEN 'open'
                            WHEN status = 'closed' THEN 'closed'
-                           ELSE 'unknown' END
- WHERE grant_status IS NULL OR grant_status NOT IN ('open', 'closed', 'unknown');
+                           ELSE 'unknown' END;
 
 -- Real date for sorting/filtering (deadline is free text).
 UPDATE public.scraped_grants
@@ -129,9 +130,13 @@ UPDATE public.scraped_grants
          + CASE WHEN amount_max <> '' THEN 15 ELSE 0 END, 100)
  WHERE quality_score = 0;
 
+-- NOTE: ADD COLUMN DEFAULT now() pre-fills existing rows with the migration
+-- timestamp, so IS NULL never matches — align old rows to fetched_at instead.
+-- Guard keeps it idempotent on re-runs (later syncs write fresher values).
 UPDATE public.scraped_grants
    SET last_seen_at = fetched_at
- WHERE last_seen_at IS NULL;
+ WHERE last_seen_at IS NULL
+    OR (fetched_at < now() - interval '1 day' AND last_seen_at > fetched_at);
 
 -- ── 4. Amount-parser garbage cleanup (pre-_is_plausible_amount rows) ──
 -- Conservative: only wipe fragments with NO currency marker at all
@@ -204,6 +209,50 @@ UPDATE public.scraped_grants
  WHERE (reviewed IS NOT TRUE)
    AND status IN ('open', 'pending')
    AND title ILIKE '%call for papers%';
+
+-- ── 5b. Dedupe merge (needs §3 content_hash backfill — runs after it) ──
+-- Keeps the reviewed row (else oldest), hides the rest. The hash caught
+-- real cross-source dupes (e.g. rss:Green Grants vs rss:Global Greengrants).
+INSERT INTO public._backup_scraped_grants_20260914
+SELECT s.* FROM public.scraped_grants s
+WHERE (s.reviewed IS NOT TRUE) AND s.status IN ('open','pending')
+  AND (s.title IN ('Current grants','Get in touch','How To Apply','What''s New','Introduction','Eligibility','Apresentação','Ressources','Prosas Editais','Fundação Ford','Google Brasil','Resistência','Cross-cutting priorities')
+       OR s.url ILIKE 'mailto:%'
+       OR s.content_hash IN (SELECT content_hash FROM public.scraped_grants GROUP BY content_hash HAVING count(*)>1))
+  AND NOT EXISTS (SELECT 1 FROM public._backup_scraped_grants_20260914 b WHERE b.id = s.id);
+
+WITH ranked AS (
+  SELECT id, ROW_NUMBER() OVER (
+    PARTITION BY content_hash
+    ORDER BY reviewed DESC NULLS LAST, fetched_at ASC, id ASC) AS rn
+  FROM public.scraped_grants
+)
+UPDATE public.scraped_grants s
+   SET status = 'hidden',
+       review_notes = CASE WHEN s.review_notes = '' THEN 'dedupe 2026-09: same title+URL already kept under another source'
+                           ELSE s.review_notes || ' | dedupe 2026-09' END
+  FROM ranked r
+ WHERE s.id = r.id AND r.rn > 1
+   AND (s.reviewed IS NOT TRUE) AND s.status IN ('open','pending');
+
+-- ── 5c. Nav-chrome residue (exact 2026-09 audit list) ─────────────────
+-- Future short titles are blocked at the sync title-too-short gate.
+UPDATE public.scraped_grants
+   SET status = 'hidden',
+       review_notes = CASE WHEN review_notes = '' THEN 'auto-quarantine 2026-09: nav-chrome heading, not a grant'
+                           ELSE review_notes || ' | auto-quarantine 2026-09: nav-chrome' END
+ WHERE (reviewed IS NOT TRUE) AND status IN ('open','pending')
+   AND title IN ('Current grants','Get in touch','How To Apply','What''s New','Introduction','Eligibility','Apresentação','Ressources','Prosas Editais','Fundação Ford','Google Brasil','Resistência');
+
+-- ── 5d. URL-less residue: mailto: links + nav headings with homepage URLs.
+-- Fund homepages (AWF, EEA, LeverForChange, FAU) stay pending — real funders,
+-- manager decides. Reviewed rows are never touched.
+UPDATE public.scraped_grants
+   SET status = 'hidden',
+       review_notes = CASE WHEN review_notes = '' THEN 'auto-quarantine 2026-09: no grant detail (mailto/nav url)'
+                           ELSE review_notes || ' | auto-quarantine 2026-09: no grant detail' END
+ WHERE (reviewed IS NOT TRUE) AND status IN ('open','pending')
+   AND (title = 'Cross-cutting priorities' OR url ILIKE 'mailto:%');
 
 -- ── 6. Indexes for the review queue + public listing ─────────────────
 CREATE INDEX IF NOT EXISTS idx_scraped_grant_status

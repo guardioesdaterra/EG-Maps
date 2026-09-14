@@ -46,7 +46,12 @@
         </template>
         <template v-else>
           <div class="relative">
-            <div class="w-20 h-20 border-4 border-zinc-800 border-t-red-500 rounded-full animate-spin" />
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 text-red-500" viewBox="0 0 24 24">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path fill="currentColor" d="M20.27,4.74a4.93,4.93,0,0,1,1.52,4.61,5.32,5.32,0,0,1-4.1,4.51,5.12,5.12,0,0,1-5.2-1.5,5.53,5.53,0,0,0,6.13-1.48A5.66,5.66,0,0,0,20.27,4.74ZM12.32,11.53a5.49,5.49,0,0,0-1.47-6.2A5.57,5.57,0,0,0,4.71,3.72,5.17,5.17,0,0,1,9.53,2.2,5.52,5.52,0,0,1,13.9,6.45,5.28,5.28,0,0,1,12.32,11.53ZM19.2,20.29a4.92,4.92,0,0,1-4.72,1.49,5.32,5.32,0,0,1-4.34-4.05A5.2,5.2,0,0,1,11.6,12.5a5.6,5.6,0,0,0,1.51,6.13A5.63,5.63,0,0,0,19.2,20.29ZM3.79,19.38A5.18,5.18,0,0,1,2.32,14a5.3,5.3,0,0,1,4.59-4,5,5,0,0,1,4.58,1.61,5.55,5.55,0,0,0-6.32,1.69A5.46,5.46,0,0,0,3.79,19.38ZM12.23,12a5.11,5.11,0,0,0,3.66-5,5.75,5.75,0,0,0-3.18-6,5,5,0,0,1,4.42,2.3,5.21,5.21,0,0,1,.24,5.92A5.4,5.4,0,0,1,12.23,12ZM11.76,12a5.18,5.18,0,0,0-3.68,5.09,5.58,5.58,0,0,0,3.19,5.79c-1,.35-2.9-.46-4-1.68A5.51,5.51,0,0,1,11.76,12ZM23,12.63a5.07,5.07,0,0,1-2.35,4.52,5.23,5.23,0,0,1-5.91.2,5.24,5.24,0,0,1-2.67-4.77,5.51,5.51,0,0,0,5.45,3.33A5.52,5.52,0,0,0,23,12.63ZM1,11.23a5,5,0,0,1,2.49-4.5,5.23,5.23,0,0,1,5.81-.06,5.3,5.3,0,0,1,2.61,4.74A5.56,5.56,0,0,0,6.56,8.06,5.71,5.71,0,0,0,1,11.23Z">
+                <animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12" />
+              </path>
+            </svg>
             <div class="absolute inset-0 flex items-center justify-center">
               <Icon name="lucide:mountain" class="text-3xl text-red-500" />
             </div>
@@ -355,6 +360,48 @@
           <!-- ── Left-side: Mining claim filters ──────────────────── -->
           <aside v-show="leftSidebarOpen" class="vulc-leftpanel" aria-label="Mining claim filters">
             <div class="vulc-leftpanel__scroll">
+              <!-- Claim text search -->
+              <div class="vulc-leftpanel__section" role="search">
+                <div class="vulc-searchbox">
+                  <Icon name="lucide:search" class="vulc-searchbox__icon" />
+                  <input
+                    :value="controls.searchTerm.value"
+                    type="search"
+                    class="vulc-searchbox__input"
+                    :placeholder="t('observatory.territory.searchPlaceholder')"
+                    :aria-label="t('observatory.territory.searchPlaceholder')"
+                    @input="onUpdateSearchTerm(($event.target as HTMLInputElement).value)"
+                  >
+                  <button
+                    v-if="controls.searchTerm.value"
+                    type="button"
+                    class="vulc-searchbox__clear"
+                    :aria-label="t('observatory.v2.panel.searchClear')"
+                    @click="onUpdateSearchTerm('')"
+                  >
+                    <Icon name="lucide:x" />
+                  </button>
+                </div>
+                <span v-if="activeFilterCount > 0" class="vulc-filtercount" :title="activeFilterSummary">
+                  {{ t('observatory.territory.filtersActive', { count: activeFilterCount }) }}
+                </span>
+              </div>
+
+              <hr class="vulc-leftpanel__divider">
+
+              <!-- Mining phase filter -->
+              <div class="vulc-leftpanel__section">
+                <PhaseFilter :selected="controls.selectedPhases.value" @update:selected="updatePhases" />
+                <label class="vulc-leftpanel__check" @click.stop="onUpdateSobDemanda(!controls.sobDemandaOnly.value)">
+                  <div :class="['vulc-leftpanel__box', !controls.sobDemandaOnly.value && 'is-off']" style="--cb-c: #9b59b6">
+                    <Icon v-if="controls.sobDemandaOnly.value" name="lucide:check" class="w-2.5 h-2.5" />
+                  </div>
+                  <span class="vulc-leftpanel__label">{{ t('observatory.territory.sobDemanda') }}</span>
+                </label>
+              </div>
+
+              <hr class="vulc-leftpanel__divider">
+
               <div class="vulc-leftpanel__section">
                 <h3 class="vulc-leftpanel__heading">{{ t('observatory.layers.title') }}</h3>
                 <div
@@ -446,6 +493,31 @@
                   <span class="vulc-leftpanel__label">{{ t('observatory.layers.overlaps') }}</span>
                 </div>
               </div>
+
+              <hr class="vulc-leftpanel__divider">
+
+              <!-- ── Layer status: live counts per loaded source ── -->
+              <div class="vulc-leftpanel__section" role="status" :aria-label="t('observatory.layers.statusTitle')">
+                <h3 class="vulc-leftpanel__heading">{{ t('observatory.layers.statusTitle') }}</h3>
+                <div class="vulc-status">
+                  <span class="vulc-status__row">
+                    <span class="vulc-status__dot" :class="{ 'is-empty': !(layerCounts?.points || filteredPoints?.features?.length) }" aria-hidden="true" />
+                    {{ t('observatory.v2.claimsTotal') }} · <strong>{{ (layerCounts?.points ?? pointsData?.features?.length ?? 0).toLocaleString() }}</strong>
+                  </span>
+                  <span class="vulc-status__row">
+                    <span class="vulc-status__dot" :class="{ 'is-empty': !(layerCounts?.polygons || polygonsData?.features?.length) }" aria-hidden="true" />
+                    {{ t('observatory.layers.polygons') }} · <strong>{{ (layerCounts?.polygons ?? polygonsData?.features?.length ?? 0).toLocaleString() }}</strong>
+                  </span>
+                  <span class="vulc-status__row">
+                    <span class="vulc-status__dot" :class="{ 'is-empty': !((layerCounts?.protectedTi ?? 0) + (layerCounts?.protectedQuilombo ?? 0)) }" aria-hidden="true" />
+                    {{ t('observatory.layers.protectedAreas') }} · <strong>{{ (layerCounts?.protectedTi ?? 0) + (layerCounts?.protectedQuilombo ?? 0) }}</strong>
+                  </span>
+                  <span v-if="lastSync" class="vulc-status__sync">{{ lastSync }}</span>
+                  <span v-for="(msg, key) in (resourceErrors ?? {})" :key="key" class="vulc-status__error">
+                    {{ key }} · {{ t('observatory.layers.statusFailed') }} ({{ msg }})
+                  </span>
+                </div>
+              </div>
             </div>
             <button type="button" class="vulc-leftpanel__toggle" :aria-label="leftSidebarOpen ? 'Collapse layers' : 'Expand layers'" @click="leftSidebarOpen = false">
               <Icon name="lucide:chevron-left" class="w-3.5 h-3.5" />
@@ -455,15 +527,39 @@
             <Icon name="lucide:layers" class="w-4 h-4" />
           </button>
 
-          <!-- ── Right-side: Cultural browser + filters ──────────────── -->
+          <!-- ── Right-side: Territory / Culture / Powers / Timeline intel ── -->
           <ObservatorySidebar
             :rare-earth-cultural="culturalData"
             :speculator-index="speculatorIndex"
             :layer-vis="controls.layerVis.value"
             :toggle-layer="controls.toggleLayer"
+            :deep-analysis="deepAnalysis"
+            :protected-breakdown="protectedSummary"
+            :overlap-summary="overlapSummary"
+            :water-summary="waterSummary"
+            :foreign-holders="foreignHolders"
+            :search-term="controls.searchTerm.value"
+            :selected-phases="controls.selectedPhases.value"
+            :sob-demanda-only="controls.sobDemandaOnly.value"
+            :pin-threats="pinThreats"
+            :layer-counts="layerCounts"
+            :category-stats="categoryStats"
+            :total-claims="totalCount"
+            :last-sync="lastSync"
+            :year-min="yearMin"
+            :year-max="yearMax"
+            :filtered-count="filteredCount"
             @fly-to-coord="flyToCoord"
             @fly-to-enterprise="zoomToDanger"
             @jump-to-cultural="onJumpToCultural"
+            @report-enterprise="onReportEnterprise"
+            @report-pattern="onReportPattern"
+            @add-observation="onUserContribution()"
+            @update:year-min="onUpdateYearMin"
+            @update:year-max="onUpdateYearMax"
+            @update:search-term="onUpdateSearchTerm"
+            @update:selected-phases="updatePhases"
+            @update:sob-demanda-only="onUpdateSobDemanda"
           />
 
         </template>
@@ -479,7 +575,7 @@
       <ClaimReportModal :visible="showClaimReport" :claim="reportClaim" @close="showClaimReport = false" />
       <ExportModal :visible="showExport" :map-container="mapContainerRef" :filter-summary="activeFilterSummary" @close="showExport = false" />
       <KeyboardShortcuts :visible="showShortcuts" @close="showShortcuts = false" />
-      <GeoLocateModal :visible="showGeoLocate" @close="showGeoLocate = false" @locate="onGeoLocate" />
+      <GeoLocateModal :visible="showGeoLocate" @close="showGeoLocate = false" @locate="onGeoLocateWithPin" />
       <UserContributionModal :visible="showUserContribution" @close="showUserContribution = false" />
       <ClaimsDataTable
         :visible="showDataTable"
@@ -487,7 +583,7 @@
         @close="showDataTable = false"
         @fly-to="(coords: [number, number]) => (flyToTarget = { lng: coords[0], lat: coords[1], zoom: 8 })"
       />
-      <ClaimDetailModal :visible="showClaimDetail" :claim="claimDetailProps" @close="closeClaimDetail" />
+      <ClaimDetailModal :visible="showClaimDetail" :claim="claimDetailProps" :context="claimDetailContext" @close="closeClaimDetail" />
 
       <template #fallback>
         <div class="flex h-screen w-full items-center justify-center bg-zinc-950 text-white">
@@ -505,6 +601,7 @@ import { useVulcanObservatoryPage } from '@/composables/useVulcanObservatoryPage
 
 import MapView2D from '@/components/MapView2D.vue'
 import ObservatorySidebar from '@/components/observatory/ObservatorySidebar.vue'
+import PhaseFilter from '@/components/observatory/PhaseFilter.vue'
 import RedeCorporativa from '@/components/RedeCorporativa.vue'
 import DataDownloadPanel from '@/components/DataDownloadPanel.vue'
 import ClaimReportModal from '@/components/observatory/ClaimReportModal.vue'
@@ -544,6 +641,18 @@ const {
   allFeatures,
   speculatorIndex,
   deepAnalysis,
+  layerCounts,
+  overlapSummary,
+  protectedSummary,
+  waterSummary,
+  foreignHolders,
+  pinThreats,
+  setUserPin,
+  resourceErrors,
+  lastSync,
+  yearMin,
+  yearMax,
+  filteredCount,
   isLoading,
   loadPhase,
   loadProgress,
@@ -556,6 +665,7 @@ const {
   showUserContribution,
   showClaimDetail,
   claimDetailProps,
+  claimDetailContext,
   closeClaimDetail,
   loadingMessage,
   flyToEnterprise,
@@ -573,7 +683,7 @@ const {
   mapContainerRef,
 } = useVulcanObservatoryPage('pococaldas')
 
-const { categoryStats, totalCount } = stats
+const { categoryStats, totalCount, activeFilterCount } = stats
 
 const leftSidebarOpen = ref(false)
 const actionsExpanded = ref(false)
@@ -600,6 +710,35 @@ function updatePhases(value: Set<string>) {
 }
 function onJumpToCultural(coord: [number, number], name: string) {
   flyToTarget.value = { lng: coord[0], lat: coord[1], zoom: 10 }
+}
+function onReportEnterprise(name: string, score: number, flags: string[]) {
+  reportClaim.value = { n: name, score, flags }
+  showClaimReport.value = true
+}
+function onReportPattern(_key: string) {
+  // Illegal-pattern reports flow into the community Field Monitor inbox.
+  showUserContribution.value = true
+}
+function onUpdateYearMin(v: number) {
+  controls.yearMin.value = v
+  controls.debouncedFilter()
+}
+function onUpdateYearMax(v: number) {
+  controls.yearMax.value = v
+  controls.debouncedFilter()
+}
+function onUpdateSearchTerm(v: string) {
+  controls.searchTerm.value = v
+  controls.debouncedFilter()
+}
+function onUpdateSobDemanda(v: boolean) {
+  controls.sobDemandaOnly.value = v
+  controls.debouncedFilter()
+}
+/** Geolocate + drop a watch pin so the Territory tab reports nearby claims. */
+function onGeoLocateWithPin(lat: number, lng: number, city: string) {
+  onGeoLocate(lat, lng, city)
+  setUserPin({ lng, lat }, city || 'My location')
 }
 </script>
 
@@ -990,6 +1129,88 @@ function onJumpToCultural(coord: [number, number], name: string) {
   transition: background 0.15s, color 0.15s;
 }
 .vulc-leftpanel__show:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+/* ── Claim search box ─────────────────────────────────────────── */
+.vulc-searchbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2rem;
+  padding: 0 0.6rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+}
+.vulc-searchbox:focus-within {
+  border-color: rgba(231, 76, 60, 0.5);
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.12);
+}
+.vulc-searchbox__icon { width: 0.85rem; height: 0.85rem; color: rgba(255, 255, 255, 0.4); flex-shrink: 0; }
+.vulc-searchbox__input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: #fff;
+  font-size: 11px;
+  font-family: inherit;
+  padding: 0;
+  min-width: 0;
+}
+.vulc-searchbox__input::placeholder { color: rgba(255, 255, 255, 0.35); }
+.vulc-searchbox__clear {
+  width: 1rem;
+  height: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-family: inherit;
+}
+.vulc-searchbox__clear svg { width: 0.75rem; height: 0.75rem; }
+.vulc-searchbox__clear:hover { background: rgba(231, 76, 60, 0.15); color: var(--obs-red, #e74c3c); }
+.vulc-filtercount {
+  display: inline-block;
+  margin-top: 0.3rem;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--obs-amber, #f39c12);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Layer status readout ─────────────────────────────────────── */
+.vulc-status { display: flex; flex-direction: column; gap: 0.2rem; }
+.vulc-status__row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+  font-variant-numeric: tabular-nums;
+}
+.vulc-status__row strong { color: #fff; font-weight: 800; }
+.vulc-status__dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--obs-emerald, #10b981);
+  flex-shrink: 0;
+}
+.vulc-status__dot.is-empty { background: var(--obs-red, #e74c3c); }
+.vulc-status__sync {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: ui-monospace, monospace;
+}
+.vulc-status__error {
+  font-size: 10px;
+  color: var(--obs-amber, #f39c12);
+  overflow-wrap: break-word;
+}
 @media (max-width: 768px) {
   .vulc-leftpanel { display: none; }
   .vulc-leftpanel__show { display: none; }

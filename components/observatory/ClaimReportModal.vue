@@ -20,6 +20,10 @@
             <div class="text-[clamp(10px,1.5vw,13px)] text-[var(--text-muted)] uppercase tracking-wider font-bold mb-1">{{ t('observatory.claimReport.claimInfo') }}</div>
             <div class="text-xs text-[var(--text-primary)] font-semibold">{{ claim.n || 'Unknown' }}</div>
             <div class="text-[clamp(10px,1.5vw,13px)] text-[var(--text-muted)] mt-0.5">Processo: {{ claim.p || '—' }} · UF: {{ claim.u || '—' }}</div>
+            <div v-if="claim.score != null || claim.flags?.length" class="flex items-center gap-1.5 flex-wrap mt-2">
+              <span v-if="claim.score != null" class="text-[clamp(9px,1.4vw,12px)] font-extrabold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 font-mono">{{ claim.score }}</span>
+              <span v-for="flag in (claim.flags ?? []).slice(0, 4)" :key="flag" class="text-[clamp(8px,1.3vw,11px)] font-bold px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-300">{{ flag }}</span>
+            </div>
           </div>
 
           <div class="space-y-3">
@@ -104,6 +108,8 @@ const props = defineProps<{
     s?: string
     la?: number
     lo?: number
+    score?: number
+    flags?: string[]
   } | null
 }>()
 

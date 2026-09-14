@@ -125,30 +125,20 @@ export default defineNuxtConfig({
   vite: {
     build: {
       rollupOptions: {
+        onwarn(warning, warn) {
+          if (warning.code === 'PURE_ANNOTATION_DEPRECATED') return
+          if (warning.message?.includes('#__PURE__')) return
+          if (warning.code === 'CIRCULAR_DEPENDENCY') return
+          warn(warning)
+        },
         output: {
           manualChunks: {
             maplibre: ['maplibre-gl'],
             vendor: ['vue', 'vue-router'],
-            species: [
-              '~/composables/useSpeciesData.ts',
-              '~/composables/useSpeciesPanel.ts',
-              '~/composables/useSpeciesIcons.ts',
-            ],
-            mapCore: [
-              '~/composables/useMapBase.ts',
-              '~/composables/useMapCore.ts',
-            ],
-            mapUi: [
-              '~/components/MapControls.vue',
-              '~/components/SpeciesFilterPanel.vue',
-              '~/components/ProjectFilterPanel.vue',
-              '~/components/DataBubble.vue',
-              '~/components/SpeciesPanel.vue',
-            ],
           },
         },
       },
-      chunkSizeWarningLimit: 600,
+      chunkSizeWarningLimit: 1100,
     },
     optimizeDeps: {
       include: [

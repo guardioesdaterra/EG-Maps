@@ -23,7 +23,7 @@
             @click="toggleSearch"
             :aria-label="t('mapControls.search')"
           >
-            <iconify-icon icon="lucide:search" class="h-4 w-4 xs:h-5 xs:w-5" />
+            <iconify-icon icon="streamline-freehand:search-magnifier" class="h-4 w-4 xs:h-5 xs:w-5" />
             <span v-if="recentSearches.length > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full" style="background: var(--accent)" />
           </UiButton>
         </template>
@@ -40,7 +40,7 @@
             @click="toggleFilterPanel"
             :aria-label="filterOpen ? t('mapControls.hideFilters') : t('mapControls.showFilters')"
           >
-            <iconify-icon icon="lucide:sliders-horizontal" class="h-4 w-4 xs:h-5 xs:w-5" />
+            <iconify-icon icon="streamline-freehand:controls-sliders-vertical" class="h-4 w-4 xs:h-5 xs:w-5" />
           </UiButton>
         </template>
         <p>{{ filterOpen ? t('mapControls.hideFilters') : t('mapControls.showFilters') }}</p>
@@ -56,7 +56,7 @@
             @click="emit('toggle-connections')"
             :aria-label="showConnections ? t('mapControls.hideConnections') : t('mapControls.showConnections')"
           >
-            <iconify-icon :icon="showConnections ? 'lucide:route' : 'lucide:unlink-2'" class="h-4 w-4 xs:h-5 xs:w-5" />
+            <iconify-icon :icon="showConnections ? 'gis:route' : 'streamline-freehand:unlink-broken-chain-1'" class="h-4 w-4 xs:h-5 xs:w-5" />
           </UiButton>
         </template>
         <p>{{ showConnections ? t('mapControls.hideConnections') : t('mapControls.showConnections') }}</p>
@@ -73,7 +73,7 @@
             :aria-label="showHexGrid ? t('mapControls.hideHexGrid') : t('mapControls.showHexGrid')"
           >
             <iconify-icon v-if="showHexGrid" icon="lucide:grid-3x3" class="h-4 w-4 xs:h-5 xs:w-5" />
-            <iconify-icon v-else icon="lucide:layers" class="h-4 w-4 xs:h-5 xs:w-5" />
+            <iconify-icon v-else icon="gis:layers" class="h-4 w-4 xs:h-5 xs:w-5" />
           </UiButton>
         </template>
         <p>{{ showHexGrid ? t('mapControls.hideHexGrid') : t('mapControls.showHexGrid') }}</p>
@@ -89,8 +89,8 @@
             @click="toggleFullscreen"
             :aria-label="fullscreen ? t('mapControls.exitFullscreen') : t('mapControls.enterFullscreen')"
           >
-            <iconify-icon v-if="fullscreen" icon="lucide:minimize-2" class="h-4 w-4 xs:h-5 xs:w-5" />
-            <iconify-icon v-else icon="lucide:maximize-2" class="h-4 w-4 xs:h-5 xs:w-5" />
+            <iconify-icon v-if="fullscreen" icon="streamline-freehand:ui-page-scroll" class="h-4 w-4 xs:h-5 xs:w-5" />
+            <iconify-icon v-else icon="streamline-freehand:fullscreen" class="h-4 w-4 xs:h-5 xs:w-5" />
           </UiButton>
         </template>
         <p>{{ fullscreen ? t('mapControls.exitFullscreen') : t('mapControls.enterFullscreen') }}</p>
@@ -107,13 +107,13 @@
       >
         <div class="flex justify-between items-center mb-2 xs:mb-3">
           <h3 class="text-xs xs:text-sm font-bold text-[var(--tool-btn-text)] flex items-center gap-1.5 xs:gap-2">
-            <iconify-icon icon="lucide:search" class="h-3.5 w-3.5 xs:h-4 xs:w-4" />
+            <iconify-icon icon="streamline-freehand:search-magnifier" class="h-3.5 w-3.5 xs:h-4 xs:w-4" />
             {{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'vulcan-observatory' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }}
           </h3>
           <div class="flex items-center gap-1">
             <span class="text-[clamp(10px,1.5vw,13px)] text-[var(--text-muted)] hidden sm:inline">ESC</span>
             <UiButton variant="ghost" size="icon" class="h-6 w-6 text-[var(--text-muted)] hover:text-[var(--text-primary)]" @click="closeSearch" :aria-label="t('general.close')">
-              <iconify-icon icon="lucide:x" class="h-4 w-4" />
+              <iconify-icon icon="streamline-freehand:remove-delete-sign-bold" class="h-4 w-4" />
             </UiButton>
           </div>
         </div>
@@ -130,14 +130,14 @@
               @keydown="handleSearchKeydown"
               :aria-label="t('mapControls.search')"
             />
-            <iconify-icon v-if="!searchQuery" icon="lucide:search" class="absolute right-2.5 top-2.5 h-4 w-4 text-[var(--text-muted)]" />
+            <iconify-icon v-if="!searchQuery" icon="streamline-freehand:search-magnifier" class="absolute right-2.5 top-2.5 h-4 w-4 text-[var(--text-muted)]" />
             <button 
               v-else 
               class="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors p-0.5"
               @click="clearSearch"
               :aria-label="t('general.close')"
             >
-              <iconify-icon icon="lucide:x-circle" class="h-4 w-4" />
+              <iconify-icon icon="streamline-freehand:remove-delete-sign-bold" class="h-4 w-4" />
             </button>
           </div>
           <UiButton
@@ -148,7 +148,7 @@
             @click="toggleAllItems"
             :aria-label="t('mapControls.showAll')"
           >
-            <iconify-icon icon="lucide:list" class="h-4 w-4" />
+            <iconify-icon icon="streamline-freehand:lists-bullets" class="h-4 w-4" />
           </UiButton>
         </div>
 
@@ -162,7 +162,7 @@
               class="text-xs px-2 py-1 rounded transition-colors flex items-center gap-1 bg-[var(--input-bg)] text-[var(--text-muted)] hover:bg-[var(--search-result-hover-bg)] hover:text-[var(--search-result-text)]"
               @click="applyRecentSearch(recent)"
             >
-              <iconify-icon icon="lucide:clock" class="h-3 w-3" />
+              <iconify-icon icon="streamline-freehand:time-clock-circle" class="h-3 w-3" />
               {{ recent }}
             </button>
           </div>
@@ -206,7 +206,7 @@
                 </h4>
                 <div class="flex justify-between items-center">
                   <p class="text-xs text-[var(--text-muted)] flex items-center">
-                    <iconify-icon icon="lucide:map-pin" class="h-3 w-3 inline mr-1 flex-shrink-0" />
+                    <iconify-icon icon="gis:location" class="h-3 w-3 inline mr-1 flex-shrink-0" />
                     {{ getResultLocation(result) }}
                   </p>
                   <p v-if="getProjectBeneficiaries(result)" class="text-xs text-[var(--text-muted)]">
@@ -220,23 +220,23 @@
                   </p>
                 </div>
               </div>
-              <iconify-icon class="h-4 w-4 transition-all duration-150 flex-shrink-0 mt-1 text-[var(--search-result-text)] opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" icon="lucide:arrow-right" />
+              <iconify-icon class="h-4 w-4 transition-all duration-150 flex-shrink-0 mt-1 text-[var(--search-result-text)] opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" icon="streamline-freehand:share-forward" />
             </div>
           </template>
           <template v-else>
             <div v-if="searchQuery.length > 0" class="flex flex-col items-center justify-center py-6 text-center">
-              <iconify-icon icon="lucide:search-x" class="h-8 w-8 mb-2" style="color: var(--text-muted);" />
+              <iconify-icon icon="streamline-freehand:search-magnifier" class="h-8 w-8 mb-2" style="color: var(--text-muted);" />
               <p class="text-sm" style="color: var(--text-secondary);">{{ t('mapControls.noResults') }} "{{ searchQuery }}"</p>
               <p class="text-xs mt-1" style="color: var(--text-muted);">{{ t('mapControls.tryDifferent') }}</p>
             </div>
             <div v-else-if="!showAllItems" class="flex flex-col space-y-3 items-center justify-center py-6">
               <div class="relative">
-                <iconify-icon icon="lucide:search" class="h-10 w-10" style="color: var(--panel-border);" />
-                <iconify-icon icon="lucide:sparkles" class="h-4 w-4 absolute -top-1 -right-1" style="color: var(--text-muted)" />
+                <iconify-icon icon="streamline-freehand:search-magnifier" class="h-10 w-10" style="color: var(--panel-border);" />
+                <iconify-icon icon="streamline-freehand:creativity-idea-bulb" class="h-4 w-4 absolute -top-1 -right-1" style="color: var(--text-muted)" />
               </div>
               <p class="text-xs text-center" style="color: var(--text-secondary);">{{ t('mapControls.clickToNavigate') }}<br />{{ t('mapControls.browseAll') }}</p>
               <UiButton variant="outline" size="sm" class="mt-1 text-xs border-[var(--panel-border)] text-[var(--tool-btn-text)] hover:bg-[var(--tool-btn-active-bg)] hover:text-[var(--tool-btn-active-text)] transition-all" @click="toggleAllItems">
-                <iconify-icon icon="lucide:list" class="h-3 w-3 mr-1" />
+                <iconify-icon icon="streamline-freehand:lists-bullets" class="h-3 w-3 mr-1" />
                 {{ t('mapControls.showAll') }}
               </UiButton>
             </div>
@@ -256,7 +256,7 @@
             {{ showAllItems ? t('mapControls.allItems') : searchQuery ? t('mapControls.results') : t('mapControls.recent') }}: {{ searchResults.length || recentSearches.length }}
           </p>
           <p v-if="selectedIndex >= 0 && searchResults.length > 0" class="text-xs text-[var(--tool-btn-text)] flex items-center gap-1">
-            <iconify-icon icon="lucide:arrow-up-down" class="h-3 w-3" />
+            <iconify-icon icon="streamline-freehand:flip-reflect-up" class="h-3 w-3" />
             {{ selectedIndex + 1 }} {{ t('mapControls.of') || 'of' }} {{ searchResults.length }}
           </p>
         </div>

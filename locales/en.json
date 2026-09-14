@@ -266,7 +266,61 @@
       "illegal": "Illegal",
       "env": "Env Risk",
       "network": "Network",
-      "timeline": "Timeline"
+      "timeline": "Timeline",
+      "power": "Power",
+      "territory": "Territory",
+      "culture": "Culture"
+    },
+    "territory": {
+      "headline": "Claims on the ground",
+      "claims": "claims",
+      "boundaries": "boundaries",
+      "area": "claim area",
+      "withOverlaps": "w/ overlaps",
+      "synced": "ANM sync",
+      "noBoundaries": "No claim boundaries loaded — points only. Check the layer status below.",
+      "bySubstance": "Claims by substance",
+      "overlapsTitle": "Mining × territory overlaps",
+      "noOverlaps": "No territory overlaps recorded for the loaded claims.",
+      "overlappedBy": "{count} overlapping claims",
+      "overlappingClaims": "overlapping claims",
+      "protectedTitle": "Protected territories",
+      "source": "Source",
+      "noProtected": "No protected territories in the loaded dataset.",
+      "watersTitle": "Waters under pressure",
+      "noWaters": "No named waters assessed yet — water layer still loading.",
+      "watersLegend": "Claims within 2km press directly (drawdown, runoff); within 5km share aquifer or sub-basin.",
+      "pressure": "PRESSURE",
+      "watch": "WATCH",
+      "claims2km": "claims ≤2km",
+      "claims5km": "claims ≤5km",
+      "flyToWater": "Fly to {name}",
+      "dossierDownload": "Export evidence dossier",
+      "dossierCopy": "Copy dossier",
+      "dossierCopied": "Copied!",
+      "searchPlaceholder": "Search claims, holders, processos…",
+      "sobDemanda": "Sob Demanda only",
+      "filtersActive": "{count} filters active",
+      "pinTitle": "Watch: your location",
+      "pinBody": "{count} claims within 10km of {label}.",
+      "pinNearest": "Nearest: {processo} · {holder} · {km}km"
+    },
+    "claimIntel": {
+      "holderTitle": "Holder track record",
+      "claims": "claims",
+      "territoryTitle": "Territory overlaps"
+    },
+    "power": {
+      "noData": "Deep analysis not loaded yet.",
+      "militaryTitle": "Military-critical footprint",
+      "criticalClaims": "critical claims",
+      "criticalArea": "critical area",
+      "usConnected": "US-connected",
+      "foreignTitle": "Foreign capital share",
+      "sigiloTitle": "Secrecy (sigilo) claims",
+      "sigiloBody": "{total} claims under secrecy ({pct}%) covering {area} ha — hidden holders, hidden substances.",
+      "topTitle": "Top suspicious holders",
+      "claims": "claims"
     },
     "dangerPanel": {
       "title": "Top dangerous enterprises",
@@ -307,6 +361,10 @@
       "stateDeptTitle": "State Dept & Export Finance",
       "chinaBanTitle": "China Export Ban (Oct 2025)",
       "chinaBanBody": "China banned export of 12/17 REE elements to US. 78% of US weapons depend on Chinese REE. DFARS 2027 mandate: US defense contractors must source non-China REE.",
+      "liveTitle": "Live: this region",
+      "liveClaims": "critical claims",
+      "liveArea": "critical area",
+      "liveUs": "US-connected",
       "title": "title",
       "empty": "empty"
     },
@@ -389,7 +447,10 @@
       "heatmap": "Density Heatmap",
       "cultural": "Cultural & Community",
       "waterBodies": "Water Bodies",
-      "protectedAreas": "Protected Areas"
+      "protectedAreas": "Protected Areas",
+      "statusTitle": "Layer status",
+      "statusFailed": "failed",
+      "foreignHeld": "Foreign-held claims"
     },
     "culturalLayers": {
       "filterTitle": "Cultural Filters",
@@ -633,6 +694,13 @@
       "monitor": "Field Monitor",
       "viewGlobe": "View 3D Globe",
       "viewFlat": "View Flat Map",
+      "tabs": {
+        "label": "Observatory intel",
+        "territory": "Territory",
+        "culture": "Culture",
+        "power": "Powers",
+        "timeline": "Timeline"
+      },
       "hero": {
         "title": "Where mining meets resistance",
         "lead": "Brazilian rare-earth mining claims layered over the cultural fabric of the territory — Mapa Cultura BR (cultural centers, artist groups) and Floresta Ativista (rural communities) plotted together to expose the front line.",

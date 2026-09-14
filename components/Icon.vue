@@ -6,7 +6,7 @@
  */
 <template>
   <iconify-icon
-    :icon="name"
+    :icon="resolvedIcon"
     :class="iconClasses"
     :style="iconStyles"
   />
@@ -15,6 +15,7 @@
 <script setup lang="ts">
 
 import { computed } from 'vue'
+import { resolveIcon } from '~/lib/icon-map'
 
 interface Props {
   name: string
@@ -30,6 +31,8 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const iconClasses = computed(() => props.class)
+
+const resolvedIcon = computed(() => resolveIcon(props.name))
 
 const iconStyles = computed(() => {
   const styles: Record<string, string> = {}

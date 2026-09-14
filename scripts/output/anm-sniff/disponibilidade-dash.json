@@ -1,0 +1,1154 @@
+{
+ "id": "disponibilidade-dash",
+ "url": "https://geo.anm.gov.br/portal/apps/dashboards/2706303fec9541bdafdad76eb5c1da7f",
+ "title": "Painel: Disponibilidade de Áreas",
+ "totalRequests": 477,
+ "byHost": {
+  "geo.anm.gov.br": {
+   "count": 445,
+   "bytes": 48907021
+  },
+  "services.arcgisonline.com": {
+   "count": 19,
+   "bytes": 162975
+  },
+  "server.arcgisonline.com": {
+   "count": 11,
+   "bytes": 124785
+  },
+  "static.arcgis.com": {
+   "count": 2,
+   "bytes": 994970
+  }
+ },
+ "interesting": [
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/portals/self?f=json",
+   "status": 200,
+   "bytes": 13546,
+   "type": "fetch"
+  },
+  {
+   "method": "POST",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/oauth2/platformSelf",
+   "status": 200,
+   "bytes": 99,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/portals/self?f=json&culture=pt-br",
+   "status": 200,
+   "bytes": 14378,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/portals/helpmap?f=json",
+   "status": 200,
+   "bytes": 99895,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/portals/self?f=json&culture=pt-br",
+   "status": 200,
+   "bytes": 14378,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/2706303fec9541bdafdad76eb5c1da7f?f=json",
+   "status": 200,
+   "bytes": 1087,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/2706303fec9541bdafdad76eb5c1da7f/data?f=json",
+   "status": 200,
+   "bytes": 61031,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/2706303fec9541bdafdad76eb5c1da7f/resources?f=json&start=1&num=10&sortOrder=asc&sortField=resource",
+   "status": 200,
+   "bytes": 59,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/fcca53116e4a4e22a252346705d11eef?f=json",
+   "status": 200,
+   "bytes": 1068,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/fcca53116e4a4e22a252346705d11eef/data?f=json",
+   "status": 200,
+   "bytes": 6095,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer?f=json",
+   "status": 200,
+   "bytes": 27246,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/4fdc71070df14526adc030ad82978423?f=json",
+   "status": 200,
+   "bytes": 1436,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/0ce99b28efbc470e9d6a30c5b51d6c65?f=json",
+   "status": 200,
+   "bytes": 1390,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/0ce99b28efbc470e9d6a30c5b51d6c65/data?f=json",
+   "status": 200,
+   "bytes": 4807,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/4fdc71070df14526adc030ad82978423/data?f=json",
+   "status": 200,
+   "bytes": 3061,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer/1?f=json",
+   "status": 200,
+   "bytes": 4624,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/Estoque_%C3%81reas_Disponibilidade_2024/FeatureServer?f=json",
+   "status": 200,
+   "bytes": 3400,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer?f=json",
+   "status": 200,
+   "bytes": 3649,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/Estoque_%C3%81reas_Disponibilidade_2024/FeatureServer/0?f=json",
+   "status": 200,
+   "bytes": 10101,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0?f=json",
+   "status": 200,
+   "bytes": 14406,
+   "type": "fetch"
+  },
+  {
+   "method": "POST",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/oauth2/platformSelf",
+   "status": 200,
+   "bytes": 99,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&orderByFields=&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&resultType=standard&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Res_Final%3D%27Leil%C3%A3o%20-%20Arrematada%27",
+   "status": 200,
+   "bytes": 173,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&orderByFields=&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22Valor%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22sum%22%7D%5D&resultType=standard&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1",
+   "status": 200,
+   "bytes": 186,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/fcca53116e4a4e22a252346705d11eef?f=json",
+   "status": 200,
+   "bytes": 1068,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&orderByFields=&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&resultType=standard&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1",
+   "status": 200,
+   "bytes": 174,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer/1/query?f=pbf&cacheHint=true&resultOffset=0&resultRecordCount=50&where=1%3D1&orderByFields=NMEstado%20asc&outFields=*&returnGeometry=false&spatialRel=esriSpatialRelIntersects",
+   "status": 200,
+   "bytes": 1756,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/Estoque_%C3%81reas_Disponibilidade_2024/FeatureServer/0/query?f=json&cacheHint=true&orderByFields=&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&resultType=standard&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=(SituacaoAr%3D%27Para%20An%C3%A1lise%27%20OR%20SituacaoAr%3D%27Em%20An%C3%A1lise%27%20OR%20SituacaoAr%3D%27Apta%20para%20Disponibilidade%27)",
+   "status": 200,
+   "bytes": 174,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/fcca53116e4a4e22a252346705d11eef/data?f=json",
+   "status": 200,
+   "bytes": 6095,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&orderByFields=&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&resultType=standard&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1",
+   "status": 200,
+   "bytes": -1,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/4fdc71070df14526adc030ad82978423?f=json",
+   "status": 200,
+   "bytes": 1436,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/0ce99b28efbc470e9d6a30c5b51d6c65?f=json",
+   "status": 200,
+   "bytes": 1390,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&orderByFields=&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&resultType=standard&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1",
+   "status": 200,
+   "bytes": 174,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer?f=json",
+   "status": 200,
+   "bytes": 27246,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/4fdc71070df14526adc030ad82978423/data?f=json",
+   "status": 200,
+   "bytes": 3061,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/0ce99b28efbc470e9d6a30c5b51d6c65/data?f=json",
+   "status": 200,
+   "bytes": 4807,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer?f=json",
+   "status": 200,
+   "bytes": 11142,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer?f=json",
+   "status": 200,
+   "bytes": 3649,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/Estoque_%C3%81reas_Disponibilidade_2024/FeatureServer?f=json",
+   "status": 200,
+   "bytes": 3400,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer/layers?f=json",
+   "status": 200,
+   "bytes": 32637,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/3/0/0/32/32?f=json",
+   "status": 200,
+   "bytes": 2124,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/2/0/0/32/32?f=json",
+   "status": 200,
+   "bytes": 2124,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/1/0/0/32/32?f=json",
+   "status": 200,
+   "bytes": 2124,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/0/0/0/32/32?f=json",
+   "status": 200,
+   "bytes": 2124,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/4/1",
+   "status": 200,
+   "bytes": 5817,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/4/2",
+   "status": 200,
+   "bytes": 12661,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/4/4",
+   "status": 200,
+   "bytes": 12074,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/4/3",
+   "status": 200,
+   "bytes": 8050,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/2/4",
+   "status": 200,
+   "bytes": 15791,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/2/2",
+   "status": 200,
+   "bytes": 13950,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/2/1",
+   "status": 200,
+   "bytes": 15961,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/3/1",
+   "status": 200,
+   "bytes": 10843,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/5/4",
+   "status": 200,
+   "bytes": 6851,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/5/2",
+   "status": 200,
+   "bytes": 9838,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/5/3",
+   "status": 200,
+   "bytes": 7413,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/3/4",
+   "status": 200,
+   "bytes": 17021,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/5/1",
+   "status": 200,
+   "bytes": 5276,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/3/3",
+   "status": 200,
+   "bytes": 10231,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/3/2",
+   "status": 200,
+   "bytes": 11514,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/3/2/3",
+   "status": 200,
+   "bytes": 9662,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0?f=json",
+   "status": 200,
+   "bytes": 14406,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer/4?f=json",
+   "status": 200,
+   "bytes": 4892,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer/6?f=json",
+   "status": 200,
+   "bytes": 4468,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer/5?f=json",
+   "status": 200,
+   "bytes": 4266,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/Estoque_%C3%81reas_Disponibilidade_2024/FeatureServer/0?f=json",
+   "status": 200,
+   "bytes": 10101,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer/2?f=json",
+   "status": 200,
+   "bytes": 4640,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer/0?f=json",
+   "status": 200,
+   "bytes": 4636,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer/3?f=json",
+   "status": 200,
+   "bytes": 5080,
+   "type": "fetch"
+  },
+  {
+   "method": "POST",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/oauth2/platformSelf",
+   "status": 200,
+   "bytes": 99,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/portals/self?f=json",
+   "status": 200,
+   "bytes": 13546,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/portals/self?f=json",
+   "status": 200,
+   "bytes": 13546,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest?f=json",
+   "status": 200,
+   "bytes": 82,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&returnIdsOnly=true&returnCountOnly=true&cacheHint=true&outFields=Res_Final&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Rodada%3D%27Rodada%2003%27",
+   "status": 200,
+   "bytes": 11,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/oauth2/validateRedirectUri?client_id=arcgisonline&redirect_uri=https%3A%2F%2Fgeo.anm.gov.br%2Fportal%2Fhome%2Foauth-callback.html&f=json",
+   "status": 200,
+   "bytes": 14,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&returnIdsOnly=true&returnCountOnly=true&cacheHint=true&outFields=Res_Final&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Rodada%3D%27Rodada%2001%27",
+   "status": 200,
+   "bytes": 11,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&returnIdsOnly=true&returnCountOnly=true&cacheHint=true&outFields=Rodada&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1",
+   "status": 200,
+   "bytes": 11,
+   "type": "fetch"
+  },
+  {
+   "method": "POST",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/oauth2/platformSelf",
+   "status": 200,
+   "bytes": 99,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&returnIdsOnly=true&returnCountOnly=true&cacheHint=true&outFields=Res_Final&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Rodada%3D%27Rodada%2004%27",
+   "status": 200,
+   "bytes": 11,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&returnIdsOnly=true&returnCountOnly=true&cacheHint=true&outFields=Uf&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1",
+   "status": 200,
+   "bytes": 12,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&returnIdsOnly=true&returnCountOnly=true&cacheHint=true&outFields=Res_Final&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1",
+   "status": 200,
+   "bytes": 11,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&orderByFields=&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1",
+   "status": 200,
+   "bytes": 174,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&returnIdsOnly=true&returnCountOnly=true&cacheHint=true&outFields=Res_Final&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Rodada%3D%27Rodada%2005%27",
+   "status": 200,
+   "bytes": 11,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&returnIdsOnly=true&returnCountOnly=true&cacheHint=true&outFields=Res_Final&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Rodada%3D%27Rodada%2006%27",
+   "status": 200,
+   "bytes": 11,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&groupByFieldsForStatistics=Res_Final&orderByFields=Res_Final%20asc&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Rodada%3D%27Rodada%2003%27",
+   "status": 200,
+   "bytes": 573,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&groupByFieldsForStatistics=Res_Final&orderByFields=Res_Final%20asc&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Rodada%3D%27Rodada%2005%27",
+   "status": 200,
+   "bytes": 575,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&groupByFieldsForStatistics=Res_Final&orderByFields=Res_Final%20asc&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Rodada%3D%27Rodada%2006%27",
+   "status": 200,
+   "bytes": 305,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/dcaadd4072a0453bafc328dd43a06ecc/data?f=json",
+   "status": 200,
+   "bytes": 1184333,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&groupByFieldsForStatistics=Res_Final&resultRecordCount=10001&where=1%3D1&orderByFields=&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&returnGeometry=false&spatialRel=esriSpatialRelIntersects",
+   "status": 200,
+   "bytes": 633,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&groupByFieldsForStatistics=Rodada&resultRecordCount=10001&where=1%3D1&orderByFields=Rodada%20asc&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&returnGeometry=false&spatialRel=esriSpatialRelIntersects",
+   "status": 200,
+   "bytes": 541,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&groupByFieldsForStatistics=Res_Final&orderByFields=Res_Final%20asc&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Rodada%3D%27Rodada%2004%27",
+   "status": 200,
+   "bytes": 571,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&groupByFieldsForStatistics=Uf&resultRecordCount=10001&where=1%3D1&orderByFields=Uf%20asc&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22Valor%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22sum%22%7D%5D&returnGeometry=false&spatialRel=esriSpatialRelIntersects",
+   "status": 200,
+   "bytes": 1450,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&groupByFieldsForStatistics=Res_Final&orderByFields=Res_Final%20asc&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Rodada%3D%27Rodada%2001%27",
+   "status": 200,
+   "bytes": 569,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&returnIdsOnly=true&returnCountOnly=true&cacheHint=true&outFields=Rodada&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1",
+   "status": 200,
+   "bytes": 11,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&returnIdsOnly=true&returnCountOnly=true&cacheHint=true&outFields=Res_Final&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Rodada%3D%27Rodada%2002%27",
+   "status": 200,
+   "bytes": 11,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/dcaadd4072a0453bafc328dd43a06ecc?f=json",
+   "status": 200,
+   "bytes": 1343,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/becbc8ffcdaf4e04b866b91fd052e348?f=json",
+   "status": 200,
+   "bytes": 1101,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&groupByFieldsForStatistics=Rodada&resultRecordCount=10001&where=1%3D1&orderByFields=Rodada%20asc&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22Valor%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22sum%22%7D%5D&returnGeometry=false&spatialRel=esriSpatialRelIntersects",
+   "status": 200,
+   "bytes": 573,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=json&cacheHint=true&groupByFieldsForStatistics=Res_Final&orderByFields=Res_Final%20asc&outFields=*&outStatistics=%5B%7B%22onStatisticField%22%3A%22OBJECTID_1%22%2C%22outStatisticFieldName%22%3A%22value%22%2C%22statisticType%22%3A%22count%22%7D%5D&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=Rodada%3D%27Rodada%2002%27",
+   "status": 200,
+   "bytes": 576,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A0.000002983957529067993%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A10018754.171394993%7D&orderByFields=OBJECTID_1&outFields=OBJECTID_1%2CRodada&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A0.000002983957529067993%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A1",
+   "status": 200,
+   "bytes": 3591,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/apps/webappviewer/widgets/Query/VersionManager.js?wab_dv=2.31",
+   "status": 200,
+   "bytes": 2600,
+   "type": "script"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/dcaadd4072a0453bafc328dd43a06ecc?f=json",
+   "status": 200,
+   "bytes": 1343,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D&orderByFields=OBJECTID_1&outFields=OBJECTID_1%2CRodada&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.00",
+   "status": 200,
+   "bytes": 150,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&cacheHint=true&geometry=%7B%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A0.000002983957529067993%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A10018754.171394993%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&resultType=tile&returnExceededLimitFeatures=false&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=1%3D1&geometryType=esriGeometryEnvelope&inSR=102100",
+   "status": 200,
+   "bytes": 19544,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/490c3d0b1b494c7086ecfe68720180a4?f=json",
+   "status": 200,
+   "bytes": 1124,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-5009377.08569302%2C%22xmax%22%3A-5009377.085698988%2C%22ymax%22%3A0.000002983957529067993%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%",
+   "status": 200,
+   "bytes": 488,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-2504688.542845018%2C%22xmax%22%3A-7514065.62854699%2C%22ymax%22%3A0.000002983957529067993%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%",
+   "status": 200,
+   "bytes": 5586,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/490c3d0b1b494c7086ecfe68720180a4/data?f=json",
+   "status": 200,
+   "bytes": 678208,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer?f=json",
+   "status": 200,
+   "bytes": 11142,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/2/0/0/8/8?f=json",
+   "status": 200,
+   "bytes": 210,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/4fdc71070df14526adc030ad82978423/data?f=json",
+   "status": 200,
+   "bytes": 3061,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/0ce99b28efbc470e9d6a30c5b51d6c65/data?f=json",
+   "status": 200,
+   "bytes": 4807,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/2/1/0",
+   "status": 200,
+   "bytes": 12594,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/2/1/1",
+   "status": 200,
+   "bytes": 14180,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/2/2/1",
+   "status": 200,
+   "bytes": 10964,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/2/2/2",
+   "status": 200,
+   "bytes": 9705,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/2/1/2",
+   "status": 200,
+   "bytes": 19024,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/2/2/0",
+   "status": 200,
+   "bytes": 6208,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer?f=json",
+   "status": 200,
+   "bytes": 27246,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/geociencias/MapServer?f=json",
+   "status": 200,
+   "bytes": 3335,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/sociedade_cultura/MapServer?f=json",
+   "status": 200,
+   "bytes": 3380,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/protecao_conservacao_natureza/MapServer?f=json",
+   "status": 200,
+   "bytes": 6293,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/Estoque_%C3%81reas_Disponibilidade_2024/FeatureServer/0?f=json",
+   "status": 200,
+   "bytes": 10101,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0?f=json",
+   "status": 200,
+   "bytes": 14406,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-7514065.62854699%2C%22ymin%22%3A-2504688.542845018%2C%22xmax%22%3A-5009377.085698988%2C%22ymax%22%3A0.000002983957529067993%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%2",
+   "status": 200,
+   "bytes": 488,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/Estoque_%C3%81reas_Disponibilidade_2024/FeatureServer/0/query?f=json&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=%7B%22xmin%22%3A-0.000004857778549194336%2C%22ymin%22%3A0.000004857778549194336%2C%22xmax%22%3A20037508.34277919%2C%22ymax%22%3A20037508.342788905%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%7D%7D&geometryType=esriGeometryEnvelope&inSR=102100&outFields=*&outSR=102100&resultType=tile",
+   "status": 200,
+   "bytes": 187,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/56183578dfb44f1aa24fbb5ebf536bc1?f=json",
+   "status": 200,
+   "bytes": 9029,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/56183578dfb44f1aa24fbb5ebf536bc1/data?f=json",
+   "status": 200,
+   "bytes": 6585,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/geociencias/MapServer?f=json",
+   "status": 200,
+   "bytes": 3335,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/145e583ab9d34054a0dec65010f936d7?f=json",
+   "status": 200,
+   "bytes": 9076,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/145e583ab9d34054a0dec65010f936d7/data?f=json",
+   "status": 200,
+   "bytes": 6651,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/sociedade_cultura/MapServer?f=json",
+   "status": 200,
+   "bytes": 3380,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/0bbf6938255c438ebd53e76da1244a4e?f=json",
+   "status": 200,
+   "bytes": 3969,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/0bbf6938255c438ebd53e76da1244a4e/data?f=json",
+   "status": 200,
+   "bytes": 2554,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/protecao_conservacao_natureza/MapServer?f=json",
+   "status": 200,
+   "bytes": 6293,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer?f=json",
+   "status": 200,
+   "bytes": 11142,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/apps/webappviewer/widgets/Query/images/icon.png?wab_dv=2.31",
+   "status": 200,
+   "bytes": 943,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/sociedade_cultura/MapServer/2?f=json",
+   "status": 200,
+   "bytes": 4968,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/protecao_conservacao_natureza/MapServer/0?f=json",
+   "status": 200,
+   "bytes": 7926,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/Estoque_%C3%81reas_Disponibilidade_2024/FeatureServer/0?f=json",
+   "status": 200,
+   "bytes": 10101,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0?f=json",
+   "status": 200,
+   "bytes": 14406,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/estrutura_territorial/MapServer/2?f=json",
+   "status": 200,
+   "bytes": 4640,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-7514065.62854699%2C%22ymin%22%3A-1252344.271421019%2C%22xmax%22%3A-6261721.357122989%2C%22ymax%22%3A0.000002983957529067993%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%2",
+   "status": 200,
+   "bytes": 254074,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/portal/sharing/rest/content/items/4c14da9d1d0d4b1fa26d10744ec82129/data",
+   "status": 200,
+   "bytes": 4769,
+   "type": "image"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-6261721.357122989%2C%22ymin%22%3A-1252344.271421019%2C%22xmax%22%3A-5009377.085698988%2C%22ymax%22%3A0.000002983957529067993%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%",
+   "status": 200,
+   "bytes": 286240,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-7514065.62854699%2C%22ymin%22%3A-2504688.542845018%2C%22xmax%22%3A-6261721.357122989%2C%22ymax%22%3A-1252344.271421019%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%22mode",
+   "status": 200,
+   "bytes": 137217,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/Estoque_%C3%81reas_Disponibilidade_2024/FeatureServer/0/query?f=json&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=%7B%22xmin%22%3A-0.000004857778549194336%2C%22ymin%22%3A-20037508.34277919%2C%22xmax%22%3A20037508.34277919%2C%22ymax%22%3A0.000004857778549194336%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%7D%7D&geometryType=esriGeometryEnvelope&inSR=102100&outFields=*&outSR=102100&resultType=tile",
+   "status": 200,
+   "bytes": 187,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-6261721.357122989%2C%22ymin%22%3A-2504688.542845018%2C%22xmax%22%3A-5009377.085698988%2C%22ymax%22%3A-1252344.271421019%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%22mod",
+   "status": 200,
+   "bytes": 1075397,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-5009377.08569302%2C%22xmax%22%3A-7514065.62854699%2C%22ymax%22%3A-2504688.542845018%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%22mode",
+   "status": 200,
+   "bytes": 105,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/Estoque_%C3%81reas_Disponibilidade_2024/FeatureServer/0/query?f=json&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=%7B%22xmin%22%3A-20037508.342788905%2C%22ymin%22%3A0.000004857778549194336%2C%22xmax%22%3A-0.000004857778549194336%2C%22ymax%22%3A20037508.342788905%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%7D%7D&geometryType=esriGeometryEnvelope&inSR=102100&outFields=*&outSR=102100&resultType=tile",
+   "status": 200,
+   "bytes": 1804639,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-7514065.62854699%2C%22ymin%22%3A-5009377.08569302%2C%22xmax%22%3A-5009377.085698988%2C%22ymax%22%3A-2504688.542845018%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%22mode%",
+   "status": 200,
+   "bytes": 1046732,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-5009377.085698988%2C%22ymin%22%3A-5009377.08569302%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7",
+   "status": 200,
+   "bytes": 488,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-5009377.085698988%2C%22ymin%22%3A-2504688.542845018%2C%22xmax%22%3A-2504688.542850986%2C%22ymax%22%3A0.000002983957529067993%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%",
+   "status": 200,
+   "bytes": 488,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/Estoque_%C3%81reas_Disponibilidade_2024/FeatureServer/0/query?f=json&returnGeometry=true&spatialRel=esriSpatialRelIntersects&geometry=%7B%22xmin%22%3A-20037508.342788905%2C%22ymin%22%3A-20037508.34277919%2C%22xmax%22%3A-0.000004857778549194336%2C%22ymax%22%3A0.000004857778549194336%2C%22spatialReference%22%3A%7B%22wkid%22%3A102100%7D%7D&geometryType=esriGeometryEnvelope&inSR=102100&outFields=*&outSR=102100&resultType=tile",
+   "status": 200,
+   "bytes": 9461392,
+   "type": "xhr"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-5009377.085698988%2C%22ymin%22%3A-1252344.271421019%2C%22xmax%22%3A-3757032.814274987%2C%22ymax%22%3A0.000002983957529067993%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%",
+   "status": 200,
+   "bytes": 1060846,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-3757032.814274987%2C%22ymin%22%3A-1252344.271421019%2C%22xmax%22%3A-2504688.542850986%2C%22ymax%22%3A0.000002983957529067993%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%",
+   "status": 200,
+   "bytes": 105,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-5009377.085698988%2C%22ymin%22%3A-2504688.542845018%2C%22xmax%22%3A-3757032.814274987%2C%22ymax%22%3A-1252344.271421019%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%22mod",
+   "status": 200,
+   "bytes": 1064893,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-3757032.814274987%2C%22ymin%22%3A-2504688.542845018%2C%22xmax%22%3A-2504688.542850986%2C%22ymax%22%3A-1252344.271421019%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%22mod",
+   "status": 200,
+   "bytes": 105,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-2504688.542850986%2C%22ymin%22%3A-2504688.542845018%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%",
+   "status": 200,
+   "bytes": 105,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-5009377.085698988%2C%22ymin%22%3A-5009377.08569302%2C%22xmax%22%3A-2504688.542850986%2C%22ymax%22%3A-2504688.542845018%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%22mode",
+   "status": 200,
+   "bytes": 74114,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-2504688.542850986%2C%22ymin%22%3A-5009377.08569302%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A-2504688.542845018%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%",
+   "status": 200,
+   "bytes": 105,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-5009377.085698988%2C%22ymax%22%3A-5009377.08569302%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C%22mo",
+   "status": 200,
+   "bytes": 105,
+   "type": "fetch"
+  },
+  {
+   "method": "GET",
+   "url": "https://geo.anm.gov.br/arcgis/rest/services/Producao/%C3%81reas_Disponibilidade___Resultado/FeatureServer/0/query?f=pbf&geometry=%7B%22xmin%22%3A-5009377.085698988%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A-5009377.08569302%7D&orderByFields=OBJECTID_1&outFields=*&outSR=102100&quantizationParameters=%7B%22extent%22%3A%7B%22spatialReference%22%3A%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D%2C%22xmin%22%3A-10018754.171394993%2C%22ymin%22%3A-10018754.171389025%2C%22xmax%22%3A-0.000002983957529067993%2C%22ymax%22%3A0.000002983957529067993%7D%2C",
+   "status": 200,
+   "bytes": 105,
+   "type": "fetch"
+  }
+ ],
+ "errors": []
+}

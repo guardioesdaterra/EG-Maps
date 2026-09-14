@@ -12,7 +12,7 @@ import type { Map as MapInstance, MapOptions } from 'maplibre-gl'
 import type { EnterpriseHQ } from '@/lib/enterprise-data'
 import { ENTERPRISES } from '@/lib/enterprise-data'
 import { setupEnterpriseLayer, cleanupEnterpriseLayer } from '@/composables/useEnterpriseMarkers'
-import { RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
+import { RARE_EARTH_CATEGORIES, matchMiningPhase } from '@/lib/map-utils'
 import { useStateHash } from '@/composables/useStateHash'
 
 const isSmallScreen = typeof window !== 'undefined' ? window.innerWidth < 768 : false
@@ -164,9 +164,12 @@ export function useObservatoryControls(): ObservatoryControls {
   layerVis.value['protected_ti'] = true
   layerVis.value['protected_quilombo'] = true
   layerVis.value['overlaps'] = true
+  layerVis.value['foreign'] = true
   layerVis.value['enterprise_hq'] = false
   layerVis.value['heatmap'] = false
-  layerVis.value['cultural'] = false
+  // Culture-first page: the Mapa Cultura / Floresta Ativista layer renders
+  // clustered, so it stays on by default like the other intel overlays.
+  layerVis.value['cultural'] = true
   layerVis.value['sites'] = false
   layerVis.value['polygons'] = true
   layerVis.value['water'] = true
@@ -175,6 +178,7 @@ export function useObservatoryControls(): ObservatoryControls {
 
   const extraLayers = [
     { key: 'polygons', labelKey: 'observatory.layers.polygons', color: '#e74c3c' },
+    { key: 'foreign', labelKey: 'observatory.layers.foreignHeld', color: '#e74c3c' },
     { key: 'water', labelKey: 'observatory.layers.hydrography', color: '#3498db' },
     { key: 'sites', labelKey: 'observatory.layers.conflictZones', color: '#c0392b' },
     { key: 'network', labelKey: 'observatory.layers.corpNetwork', color: '#5dade2' },
@@ -318,6 +322,9 @@ export function useObservatoryControls(): ObservatoryControls {
     if (!observatorySetupDone) {
       observatorySetupDone = true
       watch(pointsData, () => {
+        // Fresh data invalidates the filter cache even when the feature
+        // count is unchanged (e.g. daily ANM reload with same total).
+        invalidateFilterCache()
         updateFilter()
       })
     }
@@ -446,16 +453,30 @@ export function useObservatoryControls(): ObservatoryControls {
     debounceTimer = setTimeout(updateFilter, 250)
   }
 
+  function invalidateFilterCache() {
+    lastFilterCriteria = ''
+    lastFilterResult = null
+  }
+
   function updateFilter() {
     const term = searchTerm.value.toLowerCase().trim()
     const catKeys = Object.keys(RARE_EARTH_CATEGORIES) as string[]
     const visKeys = Object.entries(layerVis.value).filter(([k, v]) => v && catKeys.includes(k)).map(([k]) => k)
-    const criteria = JSON.stringify({ term, yearMin: yearMin.value, yearMax: yearMax.value, phases: [...selectedPhases.value].sort(), sobDemanda: sobDemandaOnly.value, visKeys: visKeys.sort() })
+    const allFeaturesTyped = allFeatures.value as Array<{
+      c: string; n: string; s: string; u: string; p: string; f: string
+      lo: number; la: number; net?: string; y?: number; ds?: number; a?: number
+      dsprocesso?: string; hc?: string; he?: string; fr?: number
+      ov?: Array<{ name: string; kind: string; distance_km: number }> | null
+    }>
+    // NOTE: the input size is part of the cache key. Without it, the first
+    // run (empty allFeatures, before data loads) poisoned the cache and every
+    // later run with identical filters early-returned the stale EMPTY result
+    // — leaving the map permanently blank.
+    const criteria = JSON.stringify({ n: allFeaturesTyped.length, term, yearMin: yearMin.value, yearMax: yearMax.value, phases: [...selectedPhases.value].sort(), sobDemanda: sobDemandaOnly.value, visKeys: visKeys.sort() })
     if (criteria === lastFilterCriteria && lastFilterResult) {
       return
     }
     lastFilterCriteria = criteria
-    const allFeaturesTyped = allFeatures.value as Array<{ c: string; n: string; s: string; u: string; p: string; f: string; lo: number; la: number; net?: string; y?: number; dsprocesso?: string }>
     const filtered = allFeaturesTyped.filter((d) => {
       if (!visKeys.includes(d.c)) return false
       if (term) {
@@ -465,36 +486,55 @@ export function useObservatoryControls(): ObservatoryControls {
       if (typeof d.y === 'number') {
         if (d.y < yearMin.value || d.y > yearMax.value) return false
       }
+      // ANM phases are composite ("CONCESSÃO DE LAVRA") while filter keys
+      // are base forms ("CONCESSÃO", "LAVRA") — contains-matching keeps the
+      // operating mines visible (exact matching hid 52/284 claims).
       const phaseField = typeof d.f === 'string' ? d.f : ''
-      if (!selectedPhases.value.has(phaseField)) return false
+      if (!matchMiningPhase(selectedPhases.value, phaseField)) return false
       if (sobDemandaOnly.value && !String(d.dsprocesso || '').includes('DEMANDA')) return false
       return true
     })
     filteredCount.value = filtered.length
     const result: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
-      features: filtered.map((d, i) => ({
-        type: 'Feature',
-        id: `${d.c}-${i}`,
-        // Emit both short (p/n/a/…) and long (processo/nome/area_ha/…)
-        // schemas — network builders and popups read the long names.
-        properties: {
-          ...d,
+      features: filtered.map((d, i) => {
+        // Scalar-only properties: strip the `ov` object array (MapLibre
+        // expressions fail on object values) and expose precomputed counts.
+        const { ov, ...scalar } = d
+        const overlaps = Array.isArray(ov) ? ov : []
+        return {
+          type: 'Feature',
           id: `${d.c}-${i}`,
-          processo: d.p,
-          nome: d.n,
-          area_ha: d.a,
-          danger_score: (d as { ds?: number }).ds,
-          category: d.c,
-          fase: d.f,
-          ano: d.y,
-          network_id: d.net,
-        },
-        geometry: { type: 'Point', coordinates: [d.lo, d.la] },
-      })),
+          // Emit both short (p/n/a/…) and long (processo/nome/area_ha/…)
+          // schemas — network builders and popups read the long names.
+          properties: {
+            ...scalar,
+            id: `${d.c}-${i}`,
+            processo: d.p,
+            nome: d.n,
+            area_ha: d.a,
+            danger_score: d.ds ?? 4,
+            category: d.c,
+            fase: d.f,
+            ano: d.y,
+            network_id: d.net,
+            overlaps_count: overlaps.length,
+            overlap_names: overlaps.map(o => o.name).join('; '),
+            overlap_kinds: [...new Set(overlaps.map(o => o.kind))].join(','),
+            holder_country: d.hc ?? 'Unknown',
+            holder_enterprise: d.he ?? '',
+            is_foreign: d.fr ?? 0,
+          },
+          geometry: { type: 'Point', coordinates: [d.lo, d.la] },
+        }
+      }),
     }
     lastFilterResult = result
     filteredPoints.value = result
+    // NOTE: properties stay scalar-only on purpose — MapLibre `get`/`match`
+    // expressions cannot evaluate object values, so the overlap array (`ov`)
+    // lives only in `allFeatures` summaries while the layer carries the
+    // precomputed `overlaps_count` / `overlap_names` scalars.
   }
 
   function handleKeydown(e: KeyboardEvent) {
@@ -545,6 +585,6 @@ export function useObservatoryControls(): ObservatoryControls {
     displayCounts, startCounterAnimation, animatedCount, animateCounters,
     restoredState, updateHash,
     handleKeydown,
-    debouncedFilter, updateFilter,
+    debouncedFilter, updateFilter, invalidateFilterCache,
   }
 }

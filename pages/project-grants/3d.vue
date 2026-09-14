@@ -10,7 +10,6 @@
     <template #fallback>
       <div class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
         <LoadingSpinner
-          icon="svg-spinners:wind-toy"
           :message="t('loading.projectGrantsGlobe')"
           :inline="true"
         />

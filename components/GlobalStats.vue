@@ -32,8 +32,8 @@
           @click="isExpanded = !isExpanded"
           :title="isExpanded ? t('stats.collapse') : t('stats.expand')"
         >
-          <iconify-icon v-if="isExpanded" icon="lucide:chevron-down" :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
-          <iconify-icon v-else icon="lucide:chevron-up" :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
+          <iconify-icon v-if="isExpanded" icon="streamline-freehand:move-cross-over" :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
+          <iconify-icon v-else icon="streamline-freehand:move-cross-over" :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
         </UiButton>
         <UiButton
           variant="ghost"
@@ -42,14 +42,14 @@
           @click="closePanel"
           :title="t('stats.close')"
         >
-          <iconify-icon icon="lucide:x" :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
+          <iconify-icon icon="streamline-freehand:remove-delete-sign-bold" :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
         </UiButton>
       </div>
     </div>
 
     <div v-if="isExpanded" :class="`grid ${isMobile ? 'grid-cols-2 gap-2.5' : 'grid-cols-3 gap-3'} mt-3`">
       <UiStatCard
-        icon="lucide:zap"
+        icon="streamline-freehand:power-button"
         :value="stats.activeInitiatives"
         :display-value="formatNumber(stats.activeInitiatives)"
         :label="t('stats.projectGrantees')"
@@ -58,7 +58,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        icon="lucide:globe"
+        icon="gis:globe"
         :value="stats.countriesCount"
         :display-value="formatNumber(stats.countriesCount)"
         :label="t('stats.countries')"
@@ -67,7 +67,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        icon="lucide:users"
+        icon="streamline-freehand:human-resources-businessman"
         :value="stats.totalBeneficiaries"
         :display-value="formatNumber(stats.totalBeneficiaries)"
         :label="t('stats.totalBeneficiaries')"
@@ -87,7 +87,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        icon="lucide:banknote"
+        icon="streamline-freehand:money-bill-fly"
         :value="190000"
         :display-value="'$190K+'"
         :label="t('stats.dispersed')"
@@ -96,7 +96,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        icon="lucide:users-round"
+        icon="streamline-freehand:user-multiple"
         :value="131"
         :display-value="'131'"
         :label="t('stats.activeCrews')"

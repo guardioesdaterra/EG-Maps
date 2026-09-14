@@ -121,7 +121,7 @@ onBeforeUnmount(() => {
             @click="closePanel"
             :aria-label="t('general.close')"
           >
-            <iconify-icon icon="lucide:x" class="h-4 w-4" />
+            <iconify-icon icon="streamline-freehand:remove-delete-sign-bold" class="h-4 w-4" />
           </button>
         </div>
 

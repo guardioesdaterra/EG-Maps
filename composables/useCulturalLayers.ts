@@ -199,6 +199,9 @@ export function setupCulturalLayers(
   map.addSource(CULTURAL_SOURCE, {
     type: 'geojson',
     data: culturalData,
+    // Stable ids so feature-state hover highlights work (agent GeoJSON
+    // carries no ids — without this every mousemove threw in setFeatureState).
+    generateId: true,
     cluster: true,
     clusterMaxZoom: 14,
     clusterRadius: 40,

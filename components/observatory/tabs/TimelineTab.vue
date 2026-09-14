@@ -1,7 +1,10 @@
 /**
  * components/observatory/tabs/TimelineTab.vue
- * @why Chronological timeline tab — ordered events with date filtering
+ * @why Chronological timeline tab — ordered events with date filtering.
+ *      Accepts live `entries` (year/count/event from deep_analysis) and
+ *      falls back to the static TIMELINE_HIGHLIGHTS when absent.
  * @component TimelineTab
+ * @props entries?: TimelineHighlight[] | null (live deep_analysis entries)
  * @deps vue (computed, ref); @/lib/observatory-tabs (TIMELINE_HIGHLIGHTS)
  */
 <template>
@@ -35,7 +38,7 @@
 
     <ol class="obs-timeline" role="list">
       <li
-        v-for="entry in TIMELINE_HIGHLIGHTS"
+        v-for="entry in resolvedEntries"
         :key="entry.year"
         class="obs-timeline__event"
         :class="{
@@ -83,18 +86,27 @@
 <script setup lang="ts">
 
 import { computed, ref } from 'vue'
-import { TIMELINE_HIGHLIGHTS } from '@/lib/observatory-tabs'
+import { TIMELINE_HIGHLIGHTS, type TimelineHighlight } from '@/lib/observatory-tabs'
 
 const { t } = useI18n()
 
+const props = defineProps<{
+  entries?: TimelineHighlight[] | null
+}>()
+
 const narrativeOpen = ref(false)
 
-const maxCount = computed(() => Math.max(...TIMELINE_HIGHLIGHTS.map(e => e.count), 1))
+/** Live deep_analysis entries win; static highlights are the fallback. */
+const resolvedEntries = computed<TimelineHighlight[]>(() =>
+  props.entries?.length ? [...props.entries].sort((a, b) => a.year - b.year) : TIMELINE_HIGHLIGHTS,
+)
+
+const maxCount = computed(() => Math.max(...resolvedEntries.value.map(e => e.count), 1))
 
 const cumMap = computed(() => {
   const m: Record<number, number> = {}
   let cum = 0
-  for (const e of TIMELINE_HIGHLIGHTS) {
+  for (const e of resolvedEntries.value) {
     cum += e.count
     m[e.year] = cum
   }

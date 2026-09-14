@@ -1,7 +1,7 @@
 /**
  * composables/useRareEarthLayers.ts
  * @why Rare earth 3D visualization layers — element spheres, connection lines, annotations
- * @functions cleanupRareEarthLayers, setupRareEarthLayers, adaptPolygonProps, addRareEarthGeoBoundaries, addRareEarthConflictSites, addRareEarthNetworkLines, addBrazilianCitiesLayer, addProtectedAreasLayer, addPolygonLayersToMap, syncRareEarthLayerVisibility, buildNetworkLinesFromClaims
+ * @functions cleanupRareEarthLayers, setupRareEarthLayers, syncObservatoryLayers, hasObservatoryLayers, adaptPolygonProps, addRareEarthGeoBoundaries, addRareEarthConflictSites, addRareEarthNetworkLines, addBrazilianCitiesLayer, addProtectedAreasLayer, addPolygonLayersToMap, syncRareEarthLayerVisibility, buildNetworkLinesFromClaims
  * @consts REE_SOURCE_POINTS, REE_SOURCE_POLYS, REE_SOURCE_GEO, REE_SOURCE_SITES, REE_SOURCE_NETWORK, REE_SOURCE_PROTECTED, REE_SOURCE_CITIES, REE_LAYER_IDS, REE_SOURCE_IDS, CAT_COLOR_MATCH, POLY_COLOR_MATCH
  * @interfaces RareEarthLayerOptions
  * @types CleanupFn
@@ -14,8 +14,8 @@ import { buildRareEarthPopupHTML, escapeHtml } from '@/lib/map-utils'
 import { openRareEarthPopup } from '@/composables/useObservatoryPopup'
 import { citiesToGeoJSON } from '@/lib/brazilian-cities'
 import { RARE_EARTH_GEO_BOUNDARIES, RARE_EARTH_CONFLICT_SITES } from '@/lib/rare-earth-geo-data'
-import { WATER_SOURCE, cleanupWaterLayers } from '@/composables/useWaterLayers'
-import { CULTURAL_SOURCE, cleanupCulturalLayers } from '@/composables/useCulturalLayers'
+import { WATER_SOURCE, cleanupWaterLayers, setupWaterLayers } from '@/composables/useWaterLayers'
+import { CULTURAL_SOURCE, cleanupCulturalLayers, setupCulturalLayers } from '@/composables/useCulturalLayers'
 
 const activePopups = new WeakMap<MapLibreMap, maplibregl.Popup>()
 
@@ -34,6 +34,7 @@ export const REE_SOURCE_CITIES = 'ree-cities'
 
 export const REE_LAYER_IDS = [
   'ree-point-glow', 'ree-point-circle', 'ree-cluster-circle', 'ree-cluster-count', 'ree-point-hover',
+  'ree-foreign-glow',
   'ree-heat-layer',
   'ree-poly-fill', 'ree-poly-glow', 'ree-poly-line', 'ree-poly-label',
   'ree-geo-fill', 'ree-geo-aquifer', 'ree-geo-conflict', 'ree-geo-line', 'ree-geo-label',
@@ -188,6 +189,24 @@ function addPointLayers(map: MapLibreMap, source: string) {
       'circle-stroke-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.7, 0],
     },
   })
+
+  // Foreign-held claims halo — reads the numeric `is_foreign` scalar stamped
+  // at normalization time (holder joined to the curated enterprise list).
+  map.addLayer({
+    id: 'ree-foreign-glow',
+    type: 'circle',
+    source,
+    filter: ['all', ['!has', 'point_count'], ['==', ['get', 'is_foreign'], 1]] as maplibregl.FilterSpecification,
+    paint: {
+      'circle-color': '#e74c3c',
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 11, 10, 15, 14, 19],
+      'circle-opacity': 0.22,
+      'circle-blur': 0.9,
+      'circle-stroke-color': '#e74c3c',
+      'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 2],
+      'circle-stroke-opacity': 0.65,
+    },
+  })
 }
 
 function addClickHandlers(map: MapLibreMap, options: RareEarthLayerOptions, cleanups: Array<() => void>) {
@@ -269,12 +288,12 @@ function addSiteHandlers(map: MapLibreMap, cleanups: Array<() => void>) {
     if (!e.features?.length) return
     const p = e.features[0].properties
     const dangerScore = p.danger ?? 5
-    const dColor = dangerScore >= 9 ? 'var(--danger)' : dangerScore >= 7 ? 'var(--warning)' : 'var(--success)'
+    const dColor = dangerScore >= 9 ? '#e74c3c' : dangerScore >= 7 ? '#f39c12' : '#27ae60'
     closeActivePopup(map)
     const siteHtml = `<div class="ree-popup-wrapper" style="padding:14px;min-width:200px;position:relative">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
         <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${dColor};color:#fff">${dangerScore.toFixed(1)} Danger</span>
-        <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(239,68,68,0.2);color:var(--danger)">CONFLICT ZONE</span>
+        <span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(239,68,68,0.2);color:#e74c3c">CONFLICT ZONE</span>
       </div>
       <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--obs-text-primary)">${escapeHtml(p.name || 'Unknown')}</h3>
       <div style="font-size:10px;color:var(--obs-text-muted);margin-top:4px">${escapeHtml(p.tag || '')}</div>
@@ -300,7 +319,7 @@ function addProtectedAreaHandlers(map: MapLibreMap, cleanups: Array<() => void>)
       const p = e.features[0].properties
       const kind = p.kind === 'ti' ? 'Indigenous Land (Terra Indígena)' : 'Quilombola Territory'
       closeActivePopup(map)
-      const protColor = p.kind === 'ti' ? 'var(--danger)' : 'var(--warning)'
+      const protColor = p.kind === 'ti' ? '#e74c3c' : '#f39c12'
       const html = `<div class="ree-popup-wrapper" style="padding:14px;min-width:220px;position:relative">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
           <span style="font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${protColor};color:#fff">PROTECTED AREA</span>
@@ -325,6 +344,117 @@ function addProtectedAreaHandlers(map: MapLibreMap, cleanups: Array<() => void>)
   }
 }
 
+export interface ObservatorySyncInput {
+  points?: GeoJSON.FeatureCollection | null
+  polys?: GeoJSON.FeatureCollection | null
+  protected?: GeoJSON.FeatureCollection | null
+  water?: GeoJSON.FeatureCollection | null
+  cultural?: GeoJSON.FeatureCollection | null
+  networkFeatures?: GeoJSON.FeatureCollection | null
+  visibility?: Record<string, boolean>
+  popup?: RareEarthLayerOptions['popup']
+  onClaimClick?: RareEarthLayerOptions['onClaimClick']
+}
+
+function setSourceData(map: MapLibreMap, sourceId: string, data: GeoJSON.FeatureCollection): boolean {
+  try {
+    const src = map.getSource(sourceId) as maplibregl.GeoJSONSource | undefined
+    if (!src || typeof (src as { setData?: unknown }).setData !== 'function') return false
+    ;(src as maplibregl.GeoJSONSource).setData(data)
+    return true
+  } catch { return false }
+}
+
+/**
+ * Reconcile every observatory source with the latest data WITHOUT tearing
+ * down the whole stack. Sources that exist are updated in place (`setData`,
+ * no flicker); sources missing after a style switch are re-created with
+ * their layers and handlers. This single entry point replaces the previous
+ * five independent watchers that could each silently drop an update when
+ * the style was mid-reload (`isStyleLoaded() === false` → early return)
+ * and leave a layer — typically polygons — permanently blank.
+ */
+export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncInput): boolean {
+  if (!map || !map.isStyleLoaded()) return false
+  const { points, polys, protected: protectedAreas, water, cultural, networkFeatures, visibility, popup, onClaimClick } = input
+  // Proceed when ANY layer has data. Gating everything on filtered points
+  // alone left the map permanently blank whenever the point set was momentarily
+  // empty (initial empty FC, strict filters) while polygons/protected/water
+  // were already available.
+  const hasAnyData = Boolean(
+    points?.features?.length || polys?.features?.length
+    || protectedAreas?.features?.length || water?.features?.length
+    || cultural?.features?.length,
+  )
+  if (!hasAnyData && !map.getSource(REE_SOURCE_POINTS)) return false
+
+  if (!map.getSource(REE_SOURCE_POINTS)) {
+    // Nothing set up yet (first load after style ready) — full bootstrap.
+    // An empty point set still creates the source so later setData fills it.
+    setupRareEarthLayers(map, {
+      points: points ?? { type: 'FeatureCollection', features: [] },
+      polys: polys ?? null,
+      protected: protectedAreas ?? null,
+      networkFeatures: networkFeatures ?? null,
+      popup,
+      onClaimClick,
+    })
+  } else {
+    if (points?.features?.length) setSourceData(map, REE_SOURCE_POINTS, points)
+    if (polys?.features?.length) {
+      if (map.getSource(REE_SOURCE_POLYS)) setSourceData(map, REE_SOURCE_POLYS, polys)
+      else addPolygonLayersToMap(map, polys, popup)
+    }
+    if (protectedAreas?.features?.length && !map.getSource(REE_SOURCE_PROTECTED)) {
+      // Late protected arrival: full bootstrap is the only path that also
+      // attaches the protected-area click handlers.
+      setupRareEarthLayers(map, {
+        points: points ?? { type: 'FeatureCollection', features: [] },
+        polys: polys ?? null,
+        protected: protectedAreas,
+        networkFeatures: networkFeatures ?? null,
+        popup,
+        onClaimClick,
+      })
+    } else if (protectedAreas?.features?.length) {
+      setSourceData(map, REE_SOURCE_PROTECTED, protectedAreas)
+    }
+    // undefined = throttled, skip (keep on-map lines); empty FC = clear.
+    if (networkFeatures !== undefined) {
+      if (networkFeatures.features.length) {
+        if (!setSourceData(map, REE_SOURCE_NETWORK, networkFeatures)) {
+          addRareEarthNetworkLines(map, networkFeatures)
+        }
+      } else if (map.getSource(REE_SOURCE_NETWORK)) {
+        setSourceData(map, REE_SOURCE_NETWORK, networkFeatures)
+      }
+    }
+    if (water?.features?.length && !setSourceData(map, WATER_SOURCE, water)) {
+      setupWaterLayers(map, water)
+    }
+    if (cultural?.features?.length && !setSourceData(map, CULTURAL_SOURCE, cultural)) {
+      setupCulturalLayers(map, cultural)
+    }
+  }
+  // Water/cultural need ensuring on the bootstrap path too (the bootstrap
+  // above only wires points/polys/protected/network). Setup fns no-op when
+  // their source already exists.
+  if (!map.getSource(REE_SOURCE_POINTS)) {
+    if (water?.features?.length) setupWaterLayers(map, water)
+    if (cultural?.features?.length) setupCulturalLayers(map, cultural)
+  }
+
+  syncRareEarthLayerVisibility(map, visibility || {})
+  return true
+}
+
+/** True when the core observatory claim layers exist on the map. */
+export function hasObservatoryLayers(map: MapLibreMap): boolean {
+  try {
+    return Boolean(map.getSource(REE_SOURCE_POINTS))
+  } catch { return false }
+}
+
 export function setupRareEarthLayers(
   map: MapLibreMap,
   options: RareEarthLayerOptions,
@@ -339,6 +469,9 @@ export function setupRareEarthLayers(
   map.addSource(REE_SOURCE_POINTS, {
     type: 'geojson',
     data: points,
+    // Stable ids so feature-state hover highlights work (raw claim GeoJSON
+    // carries no ids — without this every mousemove threw in setFeatureState).
+    generateId: true,
     cluster: true,
     clusterMaxZoom: 11,
     clusterRadius: 80,
@@ -383,17 +516,24 @@ export function setupRareEarthLayers(
 }
 
 function addPolygonLayers(map: MapLibreMap) {
+  // Claim boundaries must read at every zoom: small concessions are only a
+  // few pixels wide, so the fill/outline carry real opacity (the old 0.1
+  // fill + hairline outline rendered as "0 polygons" on dark basemaps).
   map.addLayer({
     id: 'ree-poly-fill', type: 'fill', source: REE_SOURCE_POLYS,
-    paint: { 'fill-color': POLY_COLOR_MATCH, 'fill-opacity': 0.1 },
+    paint: {
+      'fill-color': POLY_COLOR_MATCH,
+      'fill-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.32, 10, 0.28, 14, 0.22],
+      'fill-antialias': true,
+    },
   })
   map.addLayer({
     id: 'ree-poly-glow', type: 'line', source: REE_SOURCE_POLYS,
-    paint: { 'line-color': POLY_COLOR_MATCH, 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 3, 10, 6, 14, 10], 'line-opacity': 0.1, 'line-blur': 3 },
+    paint: { 'line-color': POLY_COLOR_MATCH, 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 4, 10, 7, 14, 11], 'line-opacity': 0.28, 'line-blur': 3 },
   })
   map.addLayer({
     id: 'ree-poly-line', type: 'line', source: REE_SOURCE_POLYS,
-    paint: { 'line-color': POLY_COLOR_MATCH, 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 0.8, 10, 1.5, 14, 2.5], 'line-opacity': 0.5 },
+    paint: { 'line-color': POLY_COLOR_MATCH, 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.2, 10, 2, 14, 3], 'line-opacity': 0.9 },
   })
   map.addLayer({
     id: 'ree-poly-label', type: 'symbol', source: REE_SOURCE_POLYS,
@@ -557,9 +697,13 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
     paint: { 'text-color': '#d97706', 'text-halo-color': 'rgba(0,0,0,0.9)', 'text-halo-width': 1.5 },
   })
 
+  // Territory-overlap halo. Reads the precomputed numeric `overlaps_count`
+  // scalar — MapLibre expressions cannot evaluate object values, so the raw
+  // `ov` overlap array is never embedded in layer properties (the old
+  // `['length', ['get', 'ov']]` branch errored and blanked this layer).
   map.addLayer({
     id: 'ree-overlap-glow', type: 'circle', source: REE_SOURCE_POINTS,
-    filter: ['all', ['!has', 'point_count'], ['>', ['to-number', ['coalesce', ['get', 'overlaps_count'], ['length', ['get', 'ov']]]], 0]] as unknown as maplibregl.FilterSpecification,
+    filter: ['all', ['!has', 'point_count'], ['>', ['get', 'overlaps_count'], 0]] as maplibregl.FilterSpecification,
     paint: { 'circle-color': '#f59e0b', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 10, 10, 14, 14, 18], 'circle-opacity': 0.25, 'circle-blur': 0.9, 'circle-stroke-color': '#f59e0b', 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 2], 'circle-stroke-opacity': 0.5 },
   })
 }
@@ -613,6 +757,8 @@ export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<strin
   ;['ree-point-glow', 'ree-point-circle', 'ree-cluster-circle', 'ree-cluster-count', 'ree-point-hover'].forEach(id => setVis(id, showPoints))
 
   setVis('ree-overlap-glow', vis['overlaps'] !== false)
+
+  setVis('ree-foreign-glow', vis['foreign'] !== false)
 
   setVis('ree-heat-layer', vis['heatmap'] !== false)
 

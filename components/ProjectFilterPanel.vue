@@ -14,7 +14,7 @@
     
     <div class="flex justify-between items-center mb-3">
       <div class="flex items-center gap-2">
-        <iconify-icon icon="lucide:filter" class="h-4 w-4 text-cyan-400" />
+        <iconify-icon icon="streamline-freehand:paginate-filter-mail" class="h-4 w-4 text-cyan-400" />
         <h2 class="text-xs font-heading font-bold text-[var(--text-primary)] tracking-wider uppercase">
           {{ t('filter.filterProjects') }}
         </h2>
@@ -30,7 +30,7 @@
           class="h-6 px-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20 rounded text-xs gap-1"
           @click="resetFilters"
         >
-          <iconify-icon icon="lucide:x" class="h-3 w-3" />
+          <iconify-icon icon="streamline-freehand:remove-delete-sign-bold" class="h-3 w-3" />
           <span>{{ t('filter.reset') }}</span>
         </UiButton>
         <UiButton
@@ -40,7 +40,7 @@
           @click="closePanel"
           :title="t('filter.close')"
         >
-          <iconify-icon icon="lucide:x" class="h-4 w-4" />
+          <iconify-icon icon="streamline-freehand:remove-delete-sign-bold" class="h-4 w-4" />
         </UiButton>
       </div>
     </div>
@@ -49,7 +49,7 @@
     
     <div class="mb-3">
       <div class="relative">
-        <iconify-icon icon="lucide:search" class="absolute left-2.5 top-2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
+        <iconify-icon icon="streamline-freehand:search-magnifier" class="absolute left-2.5 top-2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
         <input
           v-model="searchQuery"
           type="text"
@@ -62,7 +62,7 @@
           @click="searchQuery = ''"
           class="absolute right-2.5 top-1.5 h-5 w-5 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border-color)] transition-colors"
         >
-          <iconify-icon icon="lucide:x" class="h-3 w-3" />
+          <iconify-icon icon="streamline-freehand:remove-delete-sign-bold" class="h-3 w-3" />
         </button>
       </div>
     </div>

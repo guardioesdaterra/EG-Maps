@@ -929,11 +929,103 @@ def compute_highlights(title, description, funder, amount_max, currency, deadlin
 # DATA MODEL
 # ──────────────────────────────────────────────────────────────
 
+# Single-funder sources: funder is known without parsing.
+SOURCE_FUNDER_DEFAULTS = {
+    "ycjf": "Youth Climate Justice Fund",
+    "cjrfund": "Climate Justice Resilience Fund",
+    "emerging-climate-champions": "Enlight Foundation / Lever For Change",
+    "commonwealthfoundation.com": "Commonwealth Foundation",
+    "unesco": "UNESCO",
+    "ispn.org.br": "ISPN",
+    "casa.org.br": "Fundo Casa Socioambiental",
+    "fundobrasil.org.br": "Fundo Brasil de Direitos Humanos",
+    "capta.org.br": "Capta",
+    "cepf": "Critical Ecosystem Partnership Fund",
+    "env:cepf": "Critical Ecosystem Partnership Fund",
+    "greengrants.org": "Global Greengrants Fund",
+    "weall.org": "Wellbeing Economy Alliance",
+    "changemakers.com": "Ashoka / Changemakers",
+    "e-flux.com": "e-flux",
+    "moleskine": "Moleskine Foundation",
+    "sustainablepractice.org": "Centre for Sustainable Practice in the Arts",
+}
+
+# Well-known funder acronyms — high precision, searched in title first.
+FUNDER_ACRONYMS = (
+    "GEF", "UNDP", "UNEP", "UNESCO", "WWF", "IUCN", "FAO", "UNICEF",
+    "USAID", "GCF", "EU", "WHO", "UNHCR", "WWF",
+)
+
+# "Applications Open for X …" / "Call for …: X …" — strip the call phrase
+# so the funder-name pattern below sees the actual name.
+CALL_PREFIX_RE = re.compile(
+    r'^(?:applications?\s+open\s+for|apply\s+(?:now\s+)?(?:for|:)|'
+    r'open\s+call\s+for|call\s+for\s+[^:]{2,60}:\s*|'
+    r'grants?\s+for|funding\s+(?:opportunity\s+)?for)\s+',
+    re.I,
+)
+
+FUNDER_LEAD_RE = re.compile(
+    r'^(?:the\s+)?([A-ZÀ-Þ][\w&\'’\-., ]{2,48}?)\s+'
+    r'(Foundation|Fund|Fundo|Fundação|Fundación|Trust|Programme|Program|'
+    r'Initiative|Iniciativa|Prize|Awards?|Grants?|Fellowship|Competition|Challenge)\b'
+)
+
+
+def infer_currency(amount_raw: str, text: str = "") -> str:
+    """Derive ISO-ish currency code from an amount fragment + context.
+
+    Deterministic and safe: only returns a code when a symbol or code is
+    literally present. R$ checked before $ (it contains $).
+    """
+    blob = f"{amount_raw or ''} {text or ''}"
+    if re.search(r'R\$', blob):
+        return "BRL"
+    m = re.search(
+        r'\b(USD|EUR|GBP|JPY|INR|KRW|CNY|THB|IDR|MYR|PHP|SGD|CAD|AUD|'
+        r'NZD|CHF|SEK|NOK|DKK|PLN|CZK|BRL|MXN|ARS|CLP|COP|PEN|ZAR|TRY)\b',
+        blob, re.I)
+    if m:
+        return m.group(1).upper()
+    for sym, code in (("$", "USD"), ("€", "EUR"), ("£", "GBP"),
+                      ("¥", "JPY"), ("₹", "INR"), ("₩", "KRW"), ("฿", "THB")):
+        if sym in blob:
+            return code
+    return ""
+
+
+def infer_funder(title: str, description: str = "",
+                 source: str = "") -> str:
+    """Best-effort funder name. Order: explicit source default, known
+    acronym in title, 'X Foundation/Fund…' lead pattern. Returns '' when
+    nothing is certain — an honest empty beats a wrong funder."""
+    if source in SOURCE_FUNDER_DEFAULTS:
+        return SOURCE_FUNDER_DEFAULTS[source]
+    t = (title or "").strip()
+    for acro in FUNDER_ACRONYMS:
+        if re.search(rf'\b{acro}\b', t):
+            return acro
+    t2 = CALL_PREFIX_RE.sub("", t)
+    m = FUNDER_LEAD_RE.match(t2)
+    if m:
+        name = f"{m.group(1).strip()} {m.group(2)}"
+        # Reject over-long captures (program subtitles, not names)
+        if len(name) <= 55:
+            return name
+    return ""
+
+
 def make_grant(title, source_name, url, description="", funder="",
                deadline="", amount_max="", amount_min="", currency="",
                country="", region="", categories=None, language="en",
                status="open", is_standing=False):
     uid = hashlib.md5(f"{source_name}::{url}".encode()).hexdigest()[:12]
+    # v2.2: fill funder + currency when the scraper didn't provide them.
+    # Explicit values always win; inference only fills blanks.
+    if not (funder or "").strip():
+        funder = infer_funder(title, description, source_name)
+    if not (currency or "").strip():
+        currency = infer_currency(amount_max, f"{title} {description}")
     blob = f"{title} {description} {funder}".lower()
 
     base_relevance = score_relevance(blob, is_standing=is_standing)

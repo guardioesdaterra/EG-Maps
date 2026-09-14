@@ -325,6 +325,25 @@ jobs:
           REAL_GRANTS=$(python3 -c "import json; d=json.load(open('${EXPORT_FILE}')); grants=d.get('grants',d) if isinstance(d,dict) else d; non_standing=[g for g in grants if not g.get('is_standing',False)]; real_with_data=[g for g in non_standing if g.get('deadline') or g.get('amount_max') or g.get('description','').strip()]; print(f'Total: {len(grants)}, Non-standing: {len(non_standing)}, With deadline/amount: {len(real_with_data)}')")
           echo "Grants stats: $REAL_GRANTS"
           python3 -c "import json; d=json.load(open('${EXPORT_FILE}')); grants=d.get('grants',d) if isinstance(d,dict) else d; [print(f'  [{g.get(\"priority_score\",0):3d}] {g.get(\"source\",\"\"):25s} | {g.get(\"title\",\"\")[:60]}') for g in sorted(grants, key=lambda x: x.get('priority_score',0), reverse=True)[:5]]"
+          # ── v2.1 catastrophic gate: 0 accepted grants = broken pipeline ──
+          ACCEPTED=$(python3 -c "import json; d=json.load(open('${EXPORT_FILE}')); grants=d.get('grants',d) if isinstance(d,dict) else d; print(len(grants))")
+          {
+            echo "## Grants radar — ${EXPORT_FILE##*/}"
+            echo ""
+            echo "- Accepted grants: **${ACCEPTED}**"
+            echo "- Stats: ${REAL_GRANTS}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$ACCEPTED" -eq 0 ]; then
+            echo "::error::Grants pipeline produced 0 accepted grants — scraper or gates broken. Failing to avoid pushing an empty sync."
+            exit 1
+          fi
+
+      - name: Upload grants export artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: grants-export
+          path: scripts/output/grants_export_*.*
+          retention-days: 14
 
       # ── Sub-step 2: Cultural agents sync ──────────────────────
       - name: Sync cultural agents (Mapa Cultura + Floresta Ativista)

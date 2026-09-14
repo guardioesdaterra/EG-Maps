@@ -73,6 +73,13 @@ function grantRejectReason(g: Grant): string | null {
   if (!isValidGrantUrl(g.url || "")) return "bad-url";
   if ((g.url_status === "broken" || g.url_status === "login_wall") && !g.is_standing)
     return `url-${g.url_status}`;
+  // v2.1: job postings are never grants (fellowships/scholarships exempt).
+  // Mirrors scripts/grants.py:is_likely_job.
+  if (!/(fellowship|scholarship|bolsa|bourse|beca|stipendium|\bgrant\b)/i.test(title) &&
+      /(hiring|now hiring|career opportunit|job opportunit|remote jobs?|vacanc|open position|we are hiring|we're hiring|trabalhe conosco|is hiring an?)(\b| )/i.test(title + " "))
+    return "job-posting";
+  if (/call for papers|call for abstracts|submit your abstract/i.test(title) && !g.is_standing)
+    return "call-for-papers";
   const blob = `${g.title} ${g.description} ${g.funder}`.toLowerCase();
   if (/my account|register or sign in|page not found|the page you are looking for|file not found|sign in to continue|access denied/i.test(blob))
     return "login-wall-or-404";

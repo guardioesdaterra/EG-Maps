@@ -127,7 +127,7 @@
       <div v-if="showCrewOverlay" ref="crewOverlayRef" class="crew-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
         <button ref="crewCloseBtnRef" class="crew-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="crew-popup-content-fixed">
-          <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" :projects="visibleProjects" :crew-locations="crewLocationsData" />
+          <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" :projects="visibleProjects" :crew-locations="crewLocationsData" @select-crew="openCrewLocationOverlay" />
         </div>
       </div>
     </Transition>

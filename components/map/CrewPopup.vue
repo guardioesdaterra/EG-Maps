@@ -4,7 +4,7 @@ import { computed, ref, watch } from 'vue'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { ProjectData } from '@/lib/types'
 import { formatCompact } from '@/lib/utils'
-import { crewLocationKey, crewRegionKey, projectGrantKey } from '@/lib/crew-grants'
+import { crewLocationKey, crewRegionKey, filterCrewLocationsByRegion, parseCrewHistory, projectGrantKey } from '@/lib/crew-grants'
 import { crewGrantMap, regionGrantMap, type StoredCrewGrantMatch } from '@/lib/crew-grants-map'
 
 const props = defineProps<{
@@ -12,6 +12,10 @@ const props = defineProps<{
   isLocation?: boolean
   projects?: ProjectData[]
   crewLocations?: CrewLocation[]
+}>()
+
+const emit = defineEmits<{
+  'select-crew': [crew: CrewLocation]
 }>()
 
 const { t } = useI18n()
@@ -45,7 +49,10 @@ const statusColor = computed(() => isActive.value ? 'var(--success)' : 'var(--wa
 const growth = computed(() => {
   if (!props.crew || props.isLocation) return null
   const c = props.crew as CrewRegionData
-  const h2022 = c.history?.find(h => h.year === 2022)
+  // parseCrewHistory: feature-derived records can carry a stringified history
+  // (vector-tile round-trip) — never call .find on a non-array.
+  const history = parseCrewHistory(c.history)
+  const h2022 = history.find(h => h.year === 2022)
   if (!h2022 || h2022.activeCrews === 0) return null
   return Math.round(((c.activeCrews - h2022.activeCrews) / h2022.activeCrews) * 100)
 })
@@ -76,8 +83,9 @@ const coordsLabel = computed(() => {
 const historyData = computed(() => {
   if (!props.crew || props.isLocation) return []
   const c = props.crew as CrewRegionData
-  if (!c.history?.length) return []
-  return c.history.map(h => ({
+  // Crash-safe: history may be missing or a stringified array when the record
+  // came from map feature properties instead of the static dataset.
+  return parseCrewHistory(c.history).map(h => ({
     year: h.year,
     active: h.activeCrews,
     inactive: h.inactiveCrews,
@@ -153,6 +161,46 @@ function nextGrantsPage() {
   grantsPage.value = Math.min(totalGrantPages.value, safeGrantPage.value + 1)
 }
 
+/* ── Crews in this region (paginated) ─────────────────────────────────── */
+
+const CREWS_PAGE_SIZE = 6
+
+const crewsPage = ref(1)
+watch(() => [props.crew, props.isLocation, props.crewLocations], () => {
+  crewsPage.value = 1
+})
+
+const regionCrews = computed<CrewLocation[]>(() => {
+  if (!props.crew || props.isLocation || !props.crewLocations?.length) return []
+  return filterCrewLocationsByRegion(props.crewLocations, props.crew as CrewRegionData)
+})
+const totalCrewPages = computed(() => Math.max(1, Math.ceil(regionCrews.value.length / CREWS_PAGE_SIZE)))
+const safeCrewPage = computed(() => Math.min(Math.max(1, crewsPage.value), totalCrewPages.value))
+const pagedRegionCrews = computed<CrewLocation[]>(() =>
+  regionCrews.value.slice((safeCrewPage.value - 1) * CREWS_PAGE_SIZE, safeCrewPage.value * CREWS_PAGE_SIZE),
+)
+
+function prevCrewsPage() {
+  crewsPage.value = Math.max(1, safeCrewPage.value - 1)
+}
+function nextCrewsPage() {
+  crewsPage.value = Math.min(totalCrewPages.value, safeCrewPage.value + 1)
+}
+
+function crewPlace(c: CrewLocation): string {
+  return [c.city, c.country].filter(Boolean).join(', ')
+}
+
+function selectCrew(c: CrewLocation) {
+  emit('select-crew', c)
+}
+
+const totalMembersLabel = computed(() => {
+  if (!props.crew || props.isLocation) return ''
+  const n = (props.crew as CrewRegionData).totalMembers
+  return typeof n === 'number' && Number.isFinite(n) ? n.toLocaleString() : '0'
+})
+
 function tx(key: string, fallback: string, params?: Record<string, string>): string {
   const translated = params ? t(key, params) : t(key)
   return translated === key ? fallback : translated
@@ -165,6 +213,9 @@ const ownProjectsTitle = computed(() => !props.isLocation
 const crewProjectBadge = computed(() => tx('crews.crewProjectBadge', 'Crew project'))
 const moreProjectsTitle = computed(() => tx('crews.moreProjects', 'More linked projects'))
 const grantsPageLabel = computed(() => tx('crews.pageOf', `Page ${safeGrantPage.value} of ${totalGrantPages.value}`, { page: String(safeGrantPage.value), pages: String(totalGrantPages.value) }))
+const crewsInRegionTitle = computed(() => tx('crews.crewsInRegion', `Crews in ${regionName.value}`, { region: regionName.value }))
+const crewsInRegionHint = computed(() => tx('crews.crewsInRegionHint', 'All crews of this region — select one for details'))
+const crewsPageLabel = computed(() => tx('crews.pageOf', `Page ${safeCrewPage.value} of ${totalCrewPages.value}`, { page: String(safeCrewPage.value), pages: String(totalCrewPages.value) }))
 
 // Explicit scope labeling: a region popup aggregates the grants of ALL crews
 // in the region, while a location popup shows only that crew's grants.
@@ -254,7 +305,7 @@ const grantsHint = computed(() => {
             </div>
             <div class="cp__stat-body">
               <span class="cp__stat-label">{{ t('crews.totalMembers') }}</span>
-              <span class="cp__stat-value">{{ (crew as CrewRegionData).totalMembers.toLocaleString() }}</span>
+              <span class="cp__stat-value">{{ totalMembersLabel }}</span>
             </div>
           </div>
           <div class="cp__stat">
@@ -306,6 +357,60 @@ const grantsHint = computed(() => {
               </div>
               <span class="cp__chart-label">{{ String(entry.year).slice(2) }}</span>
             </div>
+          </div>
+        </div>
+
+        <!-- Crews in this region — paginated, tap for crew details -->
+        <div v-if="regionCrews.length > 0" class="cp__crews">
+          <h3 class="cp__section-title">
+            <Icon name="lucide:users" size="0.75rem" />
+            <span>{{ crewsInRegionTitle }}</span>
+            <span class="cp__grants-count">{{ regionCrews.length }}</span>
+          </h3>
+          <p class="cp__grants-hint">{{ crewsInRegionHint }}</p>
+          <ul class="cp__grants-list">
+            <li v-for="c in pagedRegionCrews" :key="`${c.name}__${c.lat}__${c.lng}`">
+              <button type="button" class="cp__grant cp__crew" @click="selectCrew(c)">
+                <span
+                  class="cp__crew-dot"
+                  :style="{ background: c.status === 'active' ? 'var(--success)' : 'var(--warning)' }"
+                  aria-hidden="true"
+                />
+                <span class="cp__grant-body">
+                  <span class="cp__grant-title">{{ c.name }}</span>
+                  <span v-if="crewPlace(c)" class="cp__grant-place">
+                    <Icon name="lucide:map-pin" size="0.7rem" />
+                    <span>{{ crewPlace(c) }}</span>
+                  </span>
+                </span>
+                <span class="cp__crew-status" :data-active="c.status === 'active' ? '' : undefined">
+                  {{ c.status === 'active' ? 'Active' : 'Inactive' }}
+                </span>
+              </button>
+            </li>
+          </ul>
+          <div v-if="totalCrewPages > 1" class="cp__pager">
+            <button
+              type="button"
+              class="cp__pager-btn"
+              :disabled="safeCrewPage <= 1"
+              :aria-label="t('grantsPortal.paginationPrev')"
+              :title="t('grantsPortal.paginationPrev')"
+              @click="prevCrewsPage"
+            >
+              <Icon name="lucide:chevron-left" size="0.9rem" />
+            </button>
+            <span class="cp__pager-label">{{ crewsPageLabel }}</span>
+            <button
+              type="button"
+              class="cp__pager-btn"
+              :disabled="safeCrewPage >= totalCrewPages"
+              :aria-label="t('grantsPortal.paginationNext')"
+              :title="t('grantsPortal.paginationNext')"
+              @click="nextCrewsPage"
+            >
+              <Icon name="lucide:chevron-right" size="0.9rem" />
+            </button>
           </div>
         </div>
       </div>
@@ -838,6 +943,52 @@ const grantsHint = computed(() => {
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* ── Crews in region ── */
+.cp__crews {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.cp__crews .cp__grants-list {
+  list-style: none;
+}
+.cp__crew {
+  width: 100%;
+  align-items: center;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  transition: border-color 0.15s;
+}
+.cp__crew:hover {
+  border-color: var(--info);
+}
+.cp__crew-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  align-self: flex-start;
+}
+.cp__crew-status {
+  flex-shrink: 0;
+  align-self: flex-start;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  border-radius: 6px;
+  padding: 0.15rem 0.5rem;
+}
+.cp__crew-status:not([data-active]) {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
 }
 
 /* ── Footer ── */

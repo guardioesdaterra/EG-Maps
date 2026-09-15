@@ -96,7 +96,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        icon="streamline-freehand:user-multiple"
+        icon="streamline-freehand:presentation-audience"
         :value="131"
         :display-value="'131'"
         :label="t('stats.activeCrews')"

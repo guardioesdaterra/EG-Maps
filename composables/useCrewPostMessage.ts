@@ -10,17 +10,39 @@
  *       its initial render, and responds to state-request messages.
  *
  * @message-types
- *   Inbound:  crew-filter-update, crew-request-state
- *   Outbound: crew-map-ready, crew-map-state
+ *   Inbound:  crew-filter-update, crew-view-switch, crew-request-state
+ *   Outbound: crew-map-ready, crew-map-state, crew-resize
  *
  * @connections pages/active-crews/index.vue, composables/useMapBase.ts
  */
 import { ref, onMounted, onBeforeUnmount, watch, type Ref } from 'vue'
-import type { Map as MapLibreMap } from 'maplibre-gl'
+import { useRouter, useRoute } from 'vue-router'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import { useAppRuntime } from '@/composables/useAppRuntime'
 
 /* ── types ──────────────────────────────────────────────────────────── */
+
+/**
+ * Minimal structural view of the MapLibre map API used by this bridge.
+ * Structural (not nominal) typing keeps callers compatible no matter which
+ * copy of the maplibre-gl types their `Map` instance resolves to.
+ */
+export interface CrewPostMessageMap {
+  loaded(): boolean
+  /** MapLibre types this as `boolean | void`; `unknown` keeps us assignable. */
+  isStyleLoaded(): unknown
+  getCanvas(): HTMLCanvasElement
+  getZoom(): number
+  getMaxZoom(): number
+  getLayer(id: string): { type?: string } | undefined
+  setPaintProperty(layerId: string, name: string, value: unknown): void
+  flyTo(options: { center?: [number, number]; zoom?: number; duration?: number; essential?: boolean }): void
+  fitBounds(
+    bounds: [[number, number], [number, number]],
+    options?: { padding?: number; duration?: number; essential?: boolean },
+  ): void
+  jumpTo(options: { center?: [number, number]; zoom?: number }): void
+}
 
 export interface CrewFilterPayload {
   region?: string
@@ -31,8 +53,7 @@ export interface CrewFilterPayload {
 
 export interface CrewPostMessageOptions {
   /** Reactive ref to the MapLibre map instance (null until ready). */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  mapRef: Ref<any>
+  mapRef: Ref<CrewPostMessageMap | null>
   /** Reactive crew region data (the 7 regions with lat/lng/counts). */
   regions: Ref<CrewRegionData[]> | CrewRegionData[]
   /** Reactive crew location data (individual crew points). */
@@ -55,9 +76,12 @@ export interface CrewPostMessageApi {
 /* ── region slug → full-name mapping ────────────────────────────────── */
 
 /** Map incoming slugs (from Squarespace) to the `region` field values used
- *  in crew-data.ts and crews-locations.json. */
+ *  in crew-data.ts and crews-locations.json.
+ *  `__empty__` = known slug with zero crews in the dataset (Antarctica):
+ *  still counts as a filter (dims all markers) and flies to its fixed view. */
 const SLUG_TO_REGION: Record<string, string> = {
   'africa':            'Africa',
+  'antarctica':        '__empty__',       // no crews stationed — fixed view only
   'asia':              '__asia__',        // special: matches East Asia OR South Asia
   'east-asia':         'East Asia',
   'south-asia':        'South Asia',
@@ -73,7 +97,36 @@ function resolveRegionNames(slug: string): Set<string> {
   const full = SLUG_TO_REGION[slug]
   if (!full) return new Set()
   if (full === '__asia__') return new Set(['East Asia', 'South Asia'])
+  if (full === '__empty__') return new Set()
   return new Set([full])
+}
+
+/* ── fixed region camera views ────────────────────────────────────── */
+/**
+ * Deterministic flyTo target per Squarespace region slug.
+ *
+ * Deliberately NOT computed from crew marker positions: the locations list
+ * is fetched async (may be empty when a filter arrives), sparse regions
+ * (Oceania: 0 crews) produce degenerate bboxes, and data-driven bounds
+ * shift framing every time the dataset changes. Fixed views are stable,
+ * work on both 2D and globe, and can never "break" on missing data.
+ */
+const REGION_VIEWS: Record<string, { center: [number, number]; zoom: number }> = {
+  'africa':            { center: [20, 5],    zoom: 3 },
+  'antarctica':        { center: [0, -78],   zoom: 2.3 },
+  'asia':              { center: [100, 30],  zoom: 2.8 },
+  'east-asia':         { center: [120, 35],  zoom: 3.5 },
+  'south-asia':        { center: [78, 22],   zoom: 4 },
+  'australia-oceania': { center: [140, -25], zoom: 3.5 },
+  'oceania':           { center: [140, -25], zoom: 3.5 },
+  'europe':            { center: [10, 50],   zoom: 4 },
+  'north-america':     { center: [-100, 40], zoom: 3 },
+  'south-america':     { center: [-60, -15], zoom: 3.2 },
+}
+
+/** True when the slug is a known Squarespace region (even with zero crews). */
+function isKnownRegion(slug: string): boolean {
+  return slug !== '' && (slug in REGION_VIEWS || slug in SLUG_TO_REGION)
 }
 
 /* ── origin allow-list ──────────────────────────────────────────────── */
@@ -86,19 +139,27 @@ const ALLOWED_ORIGINS = new Set([
   'http://localhost:3001',
 ])
 
-/* ── map layer IDs (must match useMapMarker.ts) ─────────────────────── */
+/* ── map layer IDs (must match useMapMarker.ts addCrewMosaicLayers /
+ *    addCrewLocationLayers: SOURCE='markers' + suffixes _mg/_mm/_ml and
+ *    _pg/_p/_pc/_pl. active-crews is unclustered, so no _cg/_c/_cc/_cn. ── */
 
 const MOSAIC_LAYERS = ['markers_mg', 'markers_mm', 'markers_ml']
-const LOCATION_LAYERS = ['markers_pg', 'markers_p', 'markers_pl']
-const CLUSTER_LAYERS = ['markers_cg', 'markers_c', 'markers_cn']
-const ALL_CREW_LAYERS = [...MOSAIC_LAYERS, ...LOCATION_LAYERS, ...CLUSTER_LAYERS]
+const LOCATION_LAYERS = ['markers_pg', 'markers_p', 'markers_pc', 'markers_pl']
+const ALL_CREW_LAYERS = [...MOSAIC_LAYERS, ...LOCATION_LAYERS]
 
-/* ── default world-view bounds ──────────────────────────────────────── */
+/* ── original paint values (must match useMapMarker.ts) ─────────────── */
+/** Reset paint per layer — mirrors addCrewMosaicLayers/addCrewLocationLayers. */
+const CREW_PAINT_RESET: Record<string, { prop: 'circle-opacity' | 'text-opacity'; value: unknown }> = {
+  markers_mg: { prop: 'circle-opacity', value: ['interpolate', ['linear'], ['zoom'], 2, 0.28, 7, 0.42] },
+  markers_mm: { prop: 'circle-opacity', value: ['interpolate', ['linear'], ['zoom'], 2, 0.98, 7, 1] },
+  markers_ml: { prop: 'text-opacity', value: 1 },
+  markers_pg: { prop: 'circle-opacity', value: ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.30] },
+  markers_p: { prop: 'circle-opacity', value: ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.98] },
+  markers_pc: { prop: 'circle-opacity', value: ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 1] },
+  markers_pl: { prop: 'text-opacity', value: ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 1] },
+}
 
-const DEFAULT_BOUNDS: [[number, number], [number, number]] = [
-  [-170, -60],
-  [180, 85],
-]
+/* ── default world view (fixed center+zoom — viewport-only flyTo) ───── */
 
 const DEFAULT_CENTER: [number, number] = [0, 20]
 const DEFAULT_ZOOM = 2.5
@@ -109,23 +170,31 @@ export function useCrewPostMessage(
   opts: CrewPostMessageOptions,
 ): CrewPostMessageApi {
   const runtime = useAppRuntime()
+  // Hoisted at setup time: calling useRouter()/useRoute() inside the
+  // postMessage event handler throws ("Nuxt instance unavailable") and the
+  // catch-fallback did a full window.location.href navigation (= iframe
+  // reload). Capturing once here keeps 2D↔3D switches to in-SPA router.push
+  // (viewport-only, no reload).
+  let router: ReturnType<typeof useRouter> | null = null
+  let route: ReturnType<typeof useRoute> | null = null
+  try {
+    router = useRouter()
+  } catch { router = null }
+  try {
+    route = useRoute()
+  } catch { route = null }
 
   const activeRegion = ref('')
   const hideAll = ref(false)
 
   /* ── helpers ──────────────────────────────────────────────────────── */
 
-  function regionData(): CrewRegionData[] {
-    return Array.isArray(opts.regions) ? opts.regions : opts.regions.value
-  }
-  function locationData(): CrewLocation[] {
-    return Array.isArray(opts.locations) ? opts.locations : opts.locations.value
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function map(): any {
+  function map(): CrewPostMessageMap | null {
     return opts.mapRef.value
   }
+  // NOTE: opts.regions / opts.locations are kept for API compatibility
+  // (pages still pass them) but the camera no longer depends on crew data —
+  // see REGION_VIEWS above.
 
   /* ── highlight / dim layers ───────────────────────────────────────── */
 
@@ -134,7 +203,10 @@ export function useCrewPostMessage(
     if (!m || !m.isStyleLoaded()) return
 
     const matchSet = resolveRegionNames(regionSlug)
-    const hasFilter = matchSet.size > 0
+    // Known slug = filter, even when it matches zero crews (Antarctica:
+    // every marker dims, camera still flies to its fixed view). Unknown or
+    // empty slug = reset.
+    const hasFilter = isKnownRegion(regionSlug)
 
     // Install smooth transitions for all crew layers
     for (const layerId of ALL_CREW_LAYERS) {
@@ -154,135 +226,45 @@ export function useCrewPostMessage(
 
     for (const layerId of ALL_CREW_LAYERS) {
       if (!m.getLayer(layerId)) continue
-      const layer = m.getLayer(layerId)!
-      const isText = layer.type === 'symbol'
+      const reset = CREW_PAINT_RESET[layerId]
+      if (!reset) continue
 
       if (!hasFilter) {
-        // ── Reset to original paint values ──
-        if (layerId === 'markers_mg') {
-          m.setPaintProperty(layerId, 'circle-opacity', ['interpolate', ['linear'], ['zoom'], 2, 0.32, 6, 0])
-        } else if (layerId === 'markers_mm') {
-          m.setPaintProperty(layerId, 'circle-opacity', ['interpolate', ['linear'], ['zoom'], 2, 0.96, 6, 0])
-        } else if (layerId === 'markers_pg') {
-          m.setPaintProperty(layerId, 'circle-opacity', ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.30])
-        } else if (layerId === 'markers_p') {
-          m.setPaintProperty(layerId, 'circle-opacity', ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.96])
-        } else if (layerId === 'markers_cg') {
-          m.setPaintProperty(layerId, 'circle-opacity', 0.30)
-        } else if (layerId === 'markers_c') {
-          m.setPaintProperty(layerId, 'circle-opacity', 0.94)
-        } else if (layerId === 'markers_ml') {
-          m.setPaintProperty(layerId, 'text-opacity', ['interpolate', ['linear'], ['zoom'], 2, 1, 6, 0])
-        } else if (layerId === 'markers_pl') {
-          m.setPaintProperty(layerId, 'text-opacity', ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 1])
-        } else if (layerId === 'markers_cn') {
-          m.setPaintProperty(layerId, 'text-opacity', 1)
-        }
+        // ── Reset to original paint values (see CREW_PAINT_RESET) ──
+        m.setPaintProperty(layerId, reset.prop, reset.value)
         continue
       }
 
-      // ── Apply region filter ──
-      if (layerId === 'markers_mg') {
-        m.setPaintProperty(layerId, 'circle-opacity', ['*', ['interpolate', ['linear'], ['zoom'], 2, 0.32, 6, 0], matchExpr])
-      } else if (layerId === 'markers_mm') {
-        m.setPaintProperty(layerId, 'circle-opacity', ['*', ['interpolate', ['linear'], ['zoom'], 2, 0.96, 6, 0], matchExpr])
-      } else if (layerId === 'markers_pg') {
-        m.setPaintProperty(layerId, 'circle-opacity', ['*', ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.30], matchExpr])
-      } else if (layerId === 'markers_p') {
-        m.setPaintProperty(layerId, 'circle-opacity', ['*', ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.96], matchExpr])
-      } else if (layerId === 'markers_cg') {
-        m.setPaintProperty(layerId, 'circle-opacity', ['*', 0.30, matchExpr])
-      } else if (layerId === 'markers_c') {
-        m.setPaintProperty(layerId, 'circle-opacity', ['*', 0.94, matchExpr])
-      } else if (layerId === 'markers_ml') {
-        m.setPaintProperty(layerId, 'text-opacity', ['*', ['interpolate', ['linear'], ['zoom'], 2, 1, 6, 0], matchExpr])
-      } else if (layerId === 'markers_pl') {
-        m.setPaintProperty(layerId, 'text-opacity', ['*', ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 1], matchExpr])
-      } else if (layerId === 'markers_cn') {
-        m.setPaintProperty(layerId, 'text-opacity', ['*', 1, matchExpr])
-      }
+      // ── Apply region filter (dim non-matching, keep zoom fading) ──
+      m.setPaintProperty(layerId, reset.prop, ['*', reset.value, matchExpr])
     }
   }
 
   /* ── flyTo ────────────────────────────────────────────────────────── */
 
-  function computeZoomForBounds(
-    m: MapLibreMap,
-    minLng: number, maxLng: number,
-    minLat: number, maxLat: number,
-  ): number {
-    const mapWidth = m.getCanvas().width
-    const mapHeight = m.getCanvas().height
-    const padding = 60
-    const availW = mapWidth - padding * 2
-    const availH = mapHeight - padding * 2
-
-    const lngDelta = maxLng - minLng || 1
-    const latDelta = maxLat - minLat || 1
-
-    const zoomW = Math.log2(360 / (lngDelta * (availW / mapWidth)))
-    const zoomH = Math.log2(180 / (latDelta * (availH / mapHeight)))
-    return Math.min(zoomW, zoomH, 8)
-  }
+  /* ── flyTo (fixed region views — never data-computed) ─────────────── */
 
   function flyToBounds(regionSlug: string) {
     const m = map()
     if (!m) return
 
-    const matchSet = resolveRegionNames(regionSlug)
-    if (matchSet.size === 0) {
+    const view = REGION_VIEWS[regionSlug]
+    if (!view) {
       flyToDefault()
       return
     }
-
-    // Collect coordinates from matching crew locations
-    const coords: [number, number][] = []
-    for (const loc of locationData()) {
-      if (matchSet.has(loc.region)) {
-        coords.push([loc.lng, loc.lat])
-      }
-    }
-
-    // Also include region center points for sparse regions
-    for (const r of regionData()) {
-      if (matchSet.has(r.region)) {
-        coords.push([r.longitude, r.latitude])
-      }
-    }
-
-    if (coords.length === 0) {
-      flyToDefault()
-      return
-    }
-
-    // Compute bounding box
-    let minLng = Infinity, maxLng = -Infinity
-    let minLat = Infinity, maxLat = -Infinity
-    for (const [lng, lat] of coords) {
-      if (lng < minLng) minLng = lng
-      if (lng > maxLng) maxLng = lng
-      if (lat < minLat) minLat = lat
-      if (lat > maxLat) maxLat = lat
-    }
-
-    // Add padding
-    const pad = 5
-    const bounds: [[number, number], [number, number]] = [
-      [minLng - pad, minLat - pad],
-      [maxLng + pad, maxLat + pad],
-    ]
 
     const reducedMotion = runtime.reducedMotion.value
 
     if (reducedMotion) {
-      const targetZoom = computeZoomForBounds(m, minLng - pad, maxLng + pad, minLat - pad, maxLat + pad)
-      m.jumpTo({
-        center: [(minLng + maxLng) / 2, (minLat + maxLat) / 2],
-        zoom: targetZoom,
-      })
+      m.jumpTo({ center: view.center, zoom: view.zoom })
     } else {
-      m.fitBounds(bounds, {
-        padding: 60,
+      // flyTo (not fitBounds): deterministic center+zoom, identical on 2D
+      // and globe, no dependency on async crew data. Viewport animates;
+      // markers/styles are untouched so nothing reloads or breaks.
+      m.flyTo({
+        center: view.center,
+        zoom: view.zoom,
         duration: 1200,
         essential: true,
       })
@@ -298,8 +280,11 @@ export function useCrewPostMessage(
     if (reducedMotion) {
       m.jumpTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })
     } else {
-      m.fitBounds(DEFAULT_BOUNDS, {
-        padding: 60,
+      // flyTo (not fitBounds): viewport-only animation, same path as region
+      // views. Never touches sources/layers, so nothing reloads or breaks.
+      m.flyTo({
+        center: DEFAULT_CENTER,
+        zoom: DEFAULT_ZOOM,
         duration: 1200,
         essential: true,
       })
@@ -309,7 +294,9 @@ export function useCrewPostMessage(
   /* ── apply filters (main entry point) ─────────────────────────────── */
 
   function applyFilters(payload: CrewFilterPayload) {
-    const region = payload.region ?? ''
+    // Normalize: Squarespace always sends the 7 kebab-case slugs, but guard
+    // against case/whitespace drift so "Africa" still hits REGION_VIEWS.
+    const region = (payload.region ?? '').trim().toLowerCase()
     activeRegion.value = region
 
     // Update hideAll if provided
@@ -317,11 +304,15 @@ export function useCrewPostMessage(
       hideAll.value = payload.hideAll === 'true'
     }
 
+    // Viewport-only: paint-expression dim/highlight + fixed-center flyTo.
+    // No source/layer add-remove, no router navigation → no reload.
     applyHighlight(region)
 
     flyToBounds(region)
 
-    // Apply zoom AFTER flyToBounds so explicit zoom isn't overridden
+    // Apply zoom AFTER flyToBounds so explicit zoom isn't overridden.
+    // NOTE: jumpTo would cancel the in-flight flyTo animation; only apply
+    // an explicit zoom when the sender actually provided one.
     if (payload.zoom !== undefined) {
       const m = map()
       if (m) {
@@ -350,6 +341,19 @@ export function useCrewPostMessage(
     const qs = params.toString()
     const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname
     history.replaceState(null, '', newUrl)
+    // Keep the SPA router query in sync with the replaceState above.
+    // view-switch reads the query to carry the filter to the new view; if
+    // the router still held the stale query the region would be lost.
+    if (router && route) {
+      const nextQuery: Record<string, string> = {}
+      params.forEach((v, k) => { nextQuery[k] = v })
+      const current = route.query as Record<string, unknown>
+      const sameKeys = Object.keys(nextQuery).length === Object.keys(current).length
+        && Object.entries(nextQuery).every(([k, v]) => String(current[k] ?? '') === v)
+      if (!sameKeys) {
+        router.replace({ query: nextQuery }).catch(() => {})
+      }
+    }
   }
 
   function getCurrentFilters(): CrewFilterPayload {
@@ -380,25 +384,40 @@ export function useCrewPostMessage(
     if (data.type === 'crew-view-switch') {
       const view = data.payload?.view
       if (view === '2d' || view === '3d') {
-        // Navigate to the other view within the same SPA (no full reload)
+        // Same-SPA route change — no iframe reload. The region filter is
+        // already synced into the URL query by applyFilters(), so preserving
+        // the query carries the filter to the new view, where the fresh
+        // composable instance re-applies it via applyInitialUrlFilter().
+        // No-op when the requested view is already active (avoids needless
+        // re-render of the current view).
         const currentPath = window.location.pathname
-        const isCurrently3d = currentPath.endsWith('/3d')
+        const isCurrently3d = /\/3d\/?$/.test(currentPath)
         const wants3d = view === '3d'
         if (isCurrently3d !== wants3d) {
           const basePath = isCurrently3d ? currentPath.replace(/\/3d\/?$/, '') : currentPath
           const targetPath = wants3d ? `${basePath}/3d` : basePath
-          // Preserve current query params
-          const qs = window.location.search
-          window.location.href = `${targetPath}${qs}`
+          // Read the live URL query (source of truth after replaceState),
+          // not the possibly-stale router query object.
+          const liveParams = new URLSearchParams(window.location.search)
+          const liveQuery: Record<string, string> = {}
+          liveParams.forEach((v, k) => { liveQuery[k] = v })
+          if (router) {
+            router.push({ path: targetPath, query: liveQuery }).catch(() => {})
+          } else {
+            // Outside a routed context (plain embed test page): fall back to
+            // a full navigation, still preserving the query (and region).
+            const qs = window.location.search
+            window.location.href = `${targetPath}${qs}`
+          }
         }
       }
     }
 
     if (data.type === 'crew-request-state') {
       const state = getCurrentFilters()
-      event.source?.postMessage(
+      ;(event.source as Window | null)?.postMessage(
         { type: 'crew-map-state', payload: state },
-        { targetOrigin: event.origin },
+        event.origin,
       )
     }
   }
@@ -423,7 +442,7 @@ export function useCrewPostMessage(
   function applyInitialUrlFilter() {
     if (import.meta.server) return
     const params = new URLSearchParams(window.location.search)
-    const region = params.get('region')
+    const region = (params.get('region') ?? '').trim().toLowerCase()
     const ha = params.get('hideAll')
     const zoomParam = params.get('zoom')
     if (ha === 'true') {
@@ -454,21 +473,58 @@ export function useCrewPostMessage(
     window.removeEventListener('message', handleMessage)
   })
 
-  // Watch for map to become ready, then apply initial filter and send ready signal
-  let stopWatch: (() => void) | null = null
-  stopWatch = watch(
-    () => opts.mapRef.value?.loaded(),
-    (loaded) => {
-      if (!loaded) return
-      // Small delay to ensure layers are painted
-      setTimeout(() => {
-        applyInitialUrlFilter()
-        sendReady()
-      }, 100)
-      stopWatch?.()
+  // Watch for map to become ready, then apply initial filter and send ready signal.
+  // NOTE: MapLibre's loaded() is NOT reactive, so watching it directly never
+  // re-fires. Instead watch the map instance itself and hook the style 'load'
+  // event (plus an already-loaded fast path), so crew-map-ready + the initial
+  // ?region= filter always run exactly once.
+  let readyDone = false
+  function onMapReady() {
+    if (readyDone) return
+    readyDone = true
+    // Small delay to ensure layers are painted
+    setTimeout(() => {
+      applyInitialUrlFilter()
+      sendReady()
+    }, 100)
+  }
+  let loadListenerAttachedTo: unknown = null
+  const stopMapWatch = watch(
+    () => opts.mapRef.value,
+    (m) => {
+      if (!m || readyDone) return
+      const anyMap = m as unknown as {
+        loaded(): boolean
+        once?: (event: string, cb: () => void) => void
+      }
+      try {
+        if (anyMap.loaded()) {
+          onMapReady()
+          return
+        }
+      } catch { /* ignore — fall through to load listener */ }
+      // Attach once per map instance; 'load' fires when style+tiles settle.
+      if (anyMap.once && loadListenerAttachedTo !== m) {
+        loadListenerAttachedTo = m
+        anyMap.once('load', onMapReady)
+        // Safety net: if 'load' already fired or never fires (cached style),
+        // poll briefly rather than leaving the parent waiting forever.
+        let polls = 0
+        const timer = setInterval(() => {
+          polls += 1
+          try {
+            if (anyMap.loaded()) {
+              clearInterval(timer)
+              onMapReady()
+            }
+          } catch { /* ignore */ }
+          if (polls > 50) clearInterval(timer)
+        }, 100)
+      }
     },
     { immediate: true },
   )
+  void stopMapWatch
 
   return {
     activeRegion: activeRegion as Readonly<Ref<string>>,

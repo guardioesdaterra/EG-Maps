@@ -1,8 +1,8 @@
 /**
  * pages/eg-grants/fullscreen.vue
- * @why Fullscreen grant detail view — immersive layout with map, detail panel, comments
+ * @why Fullscreen worldwide grants view — dashboard with detail panel, no dock
  * @component fullscreen
- * @deps vue (ref, reactive, computed, watch, onMounted); ~/lib/project-data (allProjectsData); ~/composables/useI18n (useI18n); ~/composables/useSupabase (useSupabase); ~/composables/useSupabaseAuth (useSupabaseAuth)
+ * @deps vue (ref, computed, watch, onMounted); ~/composables/useI18n (useI18n); ~/composables/useSupabase (useSupabase); ~/composables/useSupabaseAuth (useSupabaseAuth)
  */
 <template>
   <div id="main-content" tabindex="-1" class="fs-grants min-h-screen bg-black text-white">
@@ -18,7 +18,7 @@
     <div v-else-if="!user" class="fixed inset-0 flex items-center justify-center bg-black" style="z-index: 99999">
       <div class="text-center max-w-sm mx-4">
         <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-green-500/10 flex items-center justify-center">
-          <svg class="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <svg class="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         </div>
         <h2 class="text-white text-xl font-bold mb-2">{{ t('grantsPortal.signInRequiredTitle') }}</h2>
         <p class="text-white/50 text-sm mb-6">{{ t('grantsPortal.grantsSignInSection') }}</p>
@@ -86,43 +86,16 @@
         <GrantsDashboard
           :user="user"
           :is-manager="isManager"
-          :pending-count="scrapedPendingCount"
-          :open-count="scrapedOpenCount"
-          :closed-count="scrapedClosedCount"
-          :active-tab="activePortalTab"
-          :show-history="showHistory"
           :search-query="dashboardSearch"
           :is-loading="scrapedLoading"
-          :scraped-loading="scrapedLoading"
-          :internal-grants="grants"
-          :filtered-scraped-grants="filteredScrapedGrants"
-          :filtered-internal-grants="filteredGrants"
-          :user-votes="scrapedUserVotes"
-          :leaderboard="leaderboard"
-          :leaderboard-loading="leaderboardLoading"
-          :removing-grants="removingGrants"
-          :claims="claims"
-          :claims-loading="claimsLoading"
-          @sign-in="signIn"
+          :filtered-scraped-grants="scrapedGrants"
+          @sign-in="() => signIn()"
           @sign-out="handleSignOut"
-          @update:active-tab="activePortalTab = $event"
           @update:search-query="dashboardSearch = $event"
-          @toggle:show-history="showHistory = !showHistory"
-          @vote="handleVoteScraped"
           @view-detail="openScrapedDetail"
-          @leaderboard-detail="openLeaderboardDetail"
-          @review:grant="handleReview"
-          @review:scraped="handleReviewScraped"
+          @open-create-grant="openCreateGrantModal"
         />
       </main>
-
-      <RegistryModal
-        :show="showRegistry"
-        :loading="registryLoading"
-        :grants="registry"
-        @close="closeRegistryModal"
-        @view-detail="openGrantDetail"
-      />
 
       <GrantDetailModal
         :grant="detailGrant"
@@ -136,15 +109,11 @@
         @save="handleSaveEditFromDetail"
       />
 
-      <GrantEditModal
-        :grant="editGrant"
-        :saving="editSaving"
-        :error="editErr"
-        @close="closeEditScraped"
-        @save="handleSaveEditFromModal"
+      <CreateGrantModal
+        :show="showCreateGrantModal"
+        @close="closeCreateGrantModal"
+        @created="onGrantCreated"
       />
-
-      <GrantsFooter :country-count="countryCount" />
     </div>
     </template>
   </div>
@@ -152,132 +121,35 @@
 
 <script setup lang="ts">
 
-import { ref, reactive, computed, watch, onMounted } from 'vue'
-import type { GrantRecord, ScrapedGrant, LeaderboardEntry } from '~/composables/useGrants'
-import type { ClaimRecord, DetailGrantData } from '~/lib/types'
-import { allProjectsData } from '~/lib/project-data'
+import { ref, computed, watch, onMounted } from 'vue'
+import type { GrantRecord, ScrapedGrant } from '~/composables/useGrants'
+import type { DetailGrantData } from '~/lib/types'
 import GrantsDashboard from '~/components/grants/GrantsDashboard.vue'
 import GrantDetailModal from '~/components/grants/GrantDetailModal.vue'
-import GrantEditModal from '~/components/grants/GrantEditModal.vue'
-import RegistryModal from '~/components/grants/RegistryModal.vue'
-import GrantsFooter from '~/components/grants/GrantsFooter.vue'
+import CreateGrantModal from '~/components/grants/CreateGrantModal.vue'
 import { useI18n } from '~/composables/useI18n'
-import { useSupabase } from '~/composables/useSupabase'
 import { useSupabaseAuth } from '~/composables/useSupabaseAuth'
 
 useHead({ title: 'EG Grants · Fullscreen | Earth Guardians' })
 
 const { t } = useI18n()
-const { user, isManager, isManagerReady, signIn, signOut, sessionReady } = useSupabaseAuth()
+const { user, isManager, signIn, signOut, sessionReady } = useSupabaseAuth()
 const confirmSignOut = ref(false)
 
 const accessGranted = computed(() => sessionReady.value && !!user.value && isManager.value)
 
-const { client } = useSupabase()
-const { listGrants, listScrapedGrants, reviewGrant: apiReviewGrant, reviewScrapedGrant: apiReviewScraped, updateScrapedGrant: apiUpdateScrapedGrant, getStats, voteGrant, voteScrapedGrant, deleteVote, getLeaderboard } = useGrants()
+const { listScrapedGrants, updateScrapedGrant: apiUpdateScrapedGrant, voteGrant, voteScrapedGrant, deleteVote } = useGrants()
 
-const grants = ref<GrantRecord[]>([])
-const registry = ref<Array<GrantRecord & { relevant?: boolean }>>([])
-const stats = reactive({ pending: 0, open: 0, closed: 0, hidden: 0, total: 0 })
-const loading = ref(true)
-const projectStats = computed(() => {
-  const countries = new Set(allProjectsData.map(p => p.country_province.split(',').pop()?.trim()).filter(Boolean))
-  const direct = allProjectsData.reduce((s, p) => s + (p.direct_beneficiaries || 0), 0)
-  const indirect = allProjectsData.reduce((s, p) => s + (p.indirect_beneficiaries || 0), 0)
-  return { total: allProjectsData.length, countries: countries.size, beneficiaries: direct + indirect }
-})
-const showHistory = ref(false)
-
-const claims = ref<ClaimRecord[]>([])
-const claimsLoading = ref(false)
 const scrapedGrants = ref<ScrapedGrant[]>([])
 const scrapedLoading = ref(false)
-const scrapedUserVotes = reactive<Record<string, number>>({})
-const removingGrants = ref<string[]>([])
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-function matchSearch(g: { title?: string; funder?: string; country?: string; description?: string; source?: string; categories?: string[] }, q: string): boolean {
-  if (!q) return true
-  const lq = q.toLowerCase()
-  return (g.title?.toLowerCase() || '').includes(lq)
-    || (g.funder?.toLowerCase() || '').includes(lq)
-    || (g.country?.toLowerCase() || '').includes(lq)
-    || (g.description?.toLowerCase() || '').includes(lq)
-    || (g.source?.toLowerCase() || '').includes(lq)
-    || (g.categories?.some(c => c.toLowerCase().includes(lq)) ?? false)
-}
+const showCreateGrantModal = ref(false)
 
-const filteredScrapedGrants = computed(() => {
-  const q = dashboardSearch.value
-  const tab = activePortalTab.value
-  if (tab === 'tabPending') return scrapedGrants.value.filter(g => g.status === 'pending' && matchSearch(g, q))
-  if (tab === 'tabOpen') return scrapedGrants.value.filter(g => g.status === 'open' && matchSearch(g, q))
-  if (tab === 'tabClosed') return scrapedGrants.value.filter(g => g.status === 'closed' && matchSearch(g, q))
-  return scrapedGrants.value.filter(g => matchSearch(g, q))
-})
-
-const leaderboard = ref<LeaderboardEntry[]>([])
-const leaderboardLoading = ref(false)
-
-const editGrant = ref<ScrapedGrant | null>(null)
-const editSaving = ref(false)
-const editSavingDetail = ref(false)
-const editErrDetail = ref('')
-const editForm = reactive({
-  title: '', funder: '', description: '', deadline: '',
-  amount_max: '', amount_min: '', currency: '', country: '', url: '', categories: '',
-})
-
-const activePortalTab = ref('tabOpen')
-const showRegistry = ref(false)
-const registryLoading = ref(false)
 const detailGrant = ref<DetailGrantData | null>(null)
 const detailUserVote = ref(0)
+const editSavingDetail = ref(false)
+const editErrDetail = ref('')
 const dashboardSearch = ref('')
-
-const filteredGrants = computed(() => {
-  const q = dashboardSearch.value
-  return grants.value.filter(g => g.status === 'open' && matchSearch(g, q))
-})
-
-const scrapedPendingCount = computed(() => stats.pending)
-const scrapedOpenCount = computed(() => grants.value.filter(g => g.status === 'open').length)
-const scrapedClosedCount = computed(() => stats.closed)
-const countryCount = computed(() => Math.max(stats.open > 0 ? 47 : 0, projectStats.value.countries) + '+')
-
-async function loadRegistry() {
-  registryLoading.value = true
-  try {
-    const result = await listGrants('open')
-    registry.value = (result.grants ?? []).slice().sort((a, b) => (b.created_at ? new Date(b.created_at).getTime() : 0) - (a.created_at ? new Date(a.created_at).getTime() : 0))
-  } catch (e) {
-    console.error('Failed to load registry:', e)
-  } finally {
-    registryLoading.value = false
-  }
-}
-
-function openRegistryModal() {
-  showRegistry.value = true
-  loadRegistry()
-}
-
-function closeRegistryModal() { showRegistry.value = false }
-
-function openGrantDetail(grant: GrantRecord) {
-  detailGrant.value = grant
-  detailUserVote.value = 0
-}
-
-function openLeaderboardDetail(entry: LeaderboardEntry) {
-  detailGrant.value = entry
-  detailUserVote.value = 0
-}
-
-function closeGrantDetail() {
-  detailGrant.value = null
-  detailUserVote.value = 0
-}
 
 function openScrapedDetail(g: ScrapedGrant | GrantRecord) {
   detailGrant.value = {
@@ -288,30 +160,9 @@ function openScrapedDetail(g: ScrapedGrant | GrantRecord) {
   }
 }
 
-async function loadGrants() {
-  loading.value = true
-  try {
-    const result = await listGrants()
-    grants.value = result.grants ?? []
-  } catch (e) {
-    console.error('Failed to load grants:', e)
-  } finally {
-    loading.value = false
-  }
-}
-
-async function loadStats() {
-  try {
-    const s = await getStats()
-    if (s.total > 0) {
-      Object.assign(stats, s)
-    } else {
-      Object.assign(stats, { pending: 0, open: projectStats.value.total, closed: 0, hidden: 0, total: projectStats.value.total })
-    }
-  } catch (e) {
-    console.error('Failed to load stats:', e)
-    Object.assign(stats, { pending: 0, open: projectStats.value.total, closed: 0, hidden: 0, total: projectStats.value.total })
-  }
+function closeGrantDetail() {
+  detailGrant.value = null
+  detailUserVote.value = 0
 }
 
 async function loadScrapedGrants() {
@@ -326,103 +177,16 @@ async function loadScrapedGrants() {
   }
 }
 
-async function loadLeaderboardData() {
-  leaderboardLoading.value = true
-  try {
-    const result = await getLeaderboard('all', 'open')
-    leaderboard.value = result.grants ?? []
-  } catch (e) {
-    console.error('Failed to load leaderboard:', e)
-  } finally {
-    leaderboardLoading.value = false
-  }
+function openCreateGrantModal() {
+  showCreateGrantModal.value = true
 }
 
-async function handleReview(grantId: string, decision: string) {
-  try {
-    await apiReviewGrant(grantId, decision as 'open' | 'closed')
-    await Promise.all([refreshGrantsSilent(), loadStats()])
-    if (showRegistry.value) await loadRegistry()
-  } catch (e) {
-    console.error('Failed to review grant:', e)
-  }
+function closeCreateGrantModal() {
+  showCreateGrantModal.value = false
 }
 
-async function refreshScrapedGrantsSilent() {
-  try {
-    const result = await listScrapedGrants()
-    scrapedGrants.value = result.grants ?? []
-  } catch (e) {
-    console.error('Failed to refresh scraped grants:', e)
-  }
-}
-
-async function refreshGrantsSilent() {
-  try {
-    const result = await listGrants()
-    grants.value = result.grants ?? []
-  } catch (e) {
-    console.error('Failed to refresh grants:', e)
-  }
-}
-
-async function handleReviewScraped(grantId: string, decision: string, table = 'scraped_grants') {
-  removingGrants.value = [...removingGrants.value, grantId]
-  try {
-    const [apiResult] = await Promise.all([
-      apiReviewScraped(grantId, decision as 'approved' | 'hidden' | 'closed' | 'pending', undefined, table),
-      sleep(700),
-    ])
-    if (apiResult.error) {
-      console.error('Review scraped grant failed:', apiResult.error)
-      removingGrants.value = removingGrants.value.filter(id => id !== grantId)
-      return
-    }
-    scrapedGrants.value = scrapedGrants.value.filter(g => g.id !== grantId)
-    removingGrants.value = removingGrants.value.filter(id => id !== grantId)
-    await Promise.all([refreshScrapedGrantsSilent(), refreshGrantsSilent(), loadStats()])
-  } catch (e) {
-    console.error('Failed to review scraped grant:', e)
-    removingGrants.value = removingGrants.value.filter(id => id !== grantId)
-  }
-}
-
-const editErr = ref('')
-
-function closeEditScraped() {
-  editGrant.value = null
-  editErr.value = ''
-}
-
-async function handleSaveEdit() {
-  if (!editGrant.value) return
-  editSaving.value = true
-  editErr.value = ''
-  try {
-    const updates: Record<string, unknown> = {
-      title: editForm.title, funder: editForm.funder, description: editForm.description,
-      deadline: editForm.deadline, amount_max: editForm.amount_max, amount_min: editForm.amount_min,
-      currency: editForm.currency, country: editForm.country, url: editForm.url,
-      categories: editForm.categories.split(',').map(c => c.trim()).filter(Boolean),
-    }
-    const result = await apiUpdateScrapedGrant(editGrant.value.id, updates)
-    if ('error' in result && result.error) {
-      editErr.value = result.error as string
-      return
-    }
-    closeEditScraped()
-    await refreshScrapedGrantsSilent()
-  } catch (e) {
-    editErr.value = 'An unexpected error occurred. Please try again.'
-    console.error('Failed to save edit:', e)
-  } finally {
-    editSaving.value = false
-  }
-}
-
-function handleSaveEditFromModal(form: Record<string, string>) {
-  Object.assign(editForm, form)
-  handleSaveEdit()
+function onGrantCreated() {
+  loadScrapedGrants()
 }
 
 async function handleSaveEditFromDetail(grantId: string, form: Record<string, string>) {
@@ -441,29 +205,12 @@ async function handleSaveEditFromDetail(grantId: string, form: Record<string, st
       return
     }
     closeGrantDetail()
-    await refreshScrapedGrantsSilent()
+    await loadScrapedGrants()
   } catch (e) {
     editErrDetail.value = 'An unexpected error occurred. Please try again.'
     console.error('Failed to save edit from detail:', e)
   } finally {
     editSavingDetail.value = false
-  }
-}
-
-async function handleVoteScraped(scrapedId: string, stars: number) {
-  if (!user.value) return
-  try {
-    const current = scrapedUserVotes[scrapedId]
-    if (current === stars) {
-      await deleteVote(scrapedId, scrapedId)
-      scrapedUserVotes[scrapedId] = 0
-    } else {
-      await voteScrapedGrant(scrapedId, stars)
-      scrapedUserVotes[scrapedId] = stars
-    }
-    await loadLeaderboardData()
-  } catch (e) {
-    console.error('Failed to vote:', e)
   }
 }
 
@@ -479,7 +226,6 @@ async function handleVoteDetail(stars: number) {
       if (isScraped) { await voteScrapedGrant(id, stars) } else { await voteGrant(id, stars) }
       detailUserVote.value = stars
     }
-    await loadLeaderboardData()
   } catch (e) {
     console.error('Failed to vote on detail:', e)
   }
@@ -489,16 +235,8 @@ function handleSignOut() {
   confirmSignOut.value = true
 }
 
-watch(activePortalTab, (tab) => {
-  if (!accessGranted.value) return
-  if (['tabPending', 'tabOpen', 'tabClosed'].includes(tab)) loadScrapedGrants()
-  if (tab === 'tabLeaderboard') loadLeaderboardData()
-})
-
 watch(accessGranted, (granted) => {
   if (!granted) return
-  loadGrants()
-  loadStats()
   loadScrapedGrants()
 }, { immediate: true })
 
@@ -641,104 +379,6 @@ onMounted(() => {
 
 .fs-main {
   min-height: 0;
-}
-
-.fs-grants .gdash {
-  --gdash-bg: transparent;
-}
-
-.fs-grants .gdash-card.glass,
-.fs-grants .gdash-user.glass,
-.fs-grants .gdash-pagination.glass {
-  background: rgba(255, 255, 255, 0.02) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 8px !important;
-  transition: border-color 0.2s ease, background 0.2s ease !important;
-}
-
-.fs-grants .gdash-card.glass:hover {
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  background: rgba(255, 255, 255, 0.03) !important;
-}
-
-.fs-grants .gdash-tabs button {
-  color: var(--text-secondary) !important;
-  border-bottom: 2px solid transparent !important;
-  font-size: 0.75rem !important;
-  font-weight: 500 !important;
-  padding: 0.5rem 0.75rem !important;
-  transition: color 0.2s, border-color 0.2s !important;
-}
-
-.fs-grants .gdash-tabs button:hover {
-  color: var(--text-primary) !important;
-}
-
-.fs-grants .gdash-tabs button.gdash-tab-active {
-  color: var(--text-primary) !important;
-  border-bottom-color: var(--text-primary) !important;
-}
-
-.fs-grants .gdash-search input {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid var(--glass-border) !important;
-  color: var(--text-primary) !important;
-  border-radius: 6px !important;
-  font-size: 0.8rem !important;
-  padding: 0.5rem 0.75rem !important;
-  outline: none !important;
-  transition: border-color 0.2s !important;
-}
-
-.fs-grants .gdash-search input:focus {
-  border-color: var(--glass-border-hover) !important;
-}
-
-.fs-grants .gdash-search input::placeholder {
-  color: var(--text-tertiary) !important;
-}
-
-.fs-grants .gdash-pagination {
-  padding: 0.75rem !important;
-}
-
-.fs-grants .gdash-pagination button {
-  background: transparent !important;
-  border: 1px solid var(--glass-border) !important;
-  color: var(--text-secondary) !important;
-  border-radius: 4px !important;
-  font-size: 0.75rem !important;
-  padding: 0.3rem 0.6rem !important;
-  transition: all 0.15s ease !important;
-  min-width: 2rem;
-}
-
-.fs-grants .gdash-pagination button:hover {
-  border-color: var(--glass-border-hover) !important;
-  color: var(--text-primary) !important;
-}
-
-.fs-grants .gdash-pagination button.gdash-page-active {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: var(--text-primary) !important;
-  border-color: var(--glass-border-hover) !important;
-}
-
-.fs-grants .gdash-card .gdash-action-btn {
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 4px !important;
-  font-size: 0.65rem !important;
-  padding: 0.25rem 0.5rem !important;
-  transition: all 0.15s ease !important;
-}
-
-.fs-grants .gdash-card .gdash-action-btn:hover {
-  border-color: var(--glass-border-hover) !important;
-}
-
-.fs-grants .gdash-user {
-  border-radius: 8px !important;
 }
 
 .modal-fade-enter-active,

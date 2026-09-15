@@ -1,10 +1,10 @@
 /**
  * components/grants/GrantsDashboard.vue
- * @why Grants management dashboard — App Store-style full-screen category browser
+ * @why Worldwide grants browser — header (search, user) + single responsive
+ *  grid of worldwide scraped grant opportunities
  * @component GrantsDashboard
- * @emits signIn, signOut, 'update:activeTab', 'update:searchQuery', 'toggle:showHistory',
- *   vote, 'view-detail', leaderboardDetail, 'review:grant', 'review:scraped'
- * @deps vue (computed, ref, watch), ~/lib/project-data (allProjectsData)
+ * @emits signIn, signOut, 'update:searchQuery', 'view-detail', 'open-create-grant'
+ * @deps vue (computed), ~/composables/useI18n (useI18n)
  */
 <template>
   <div class="gstore">
@@ -32,6 +32,13 @@
               class="gstore-search-input"
               :aria-label="t('grantsPortal.dashboardSearchPlaceholder')"
             />
+            <button
+              v-if="searchQuery"
+              class="gstore-search-clear"
+              :aria-label="t('grantsPortal.clearSearch')"
+              :title="t('grantsPortal.clearSearch')"
+              @click="$emit('update:searchQuery', '')"
+            >✕</button>
           </div>
           <template v-if="user">
             <div v-if="isManager" class="gstore-create-btn" role="button" tabindex="0" @click="emit('open-create-grant')" @keydown.enter="emit('open-create-grant')" :aria-label="t('grantsPortal.createGrant')">
@@ -54,194 +61,107 @@
       </div>
     </header>
 
-    <nav class="gstore-nav">
-      <button
-        v-for="cat in categories"
-        :key="cat.key"
-        class="gstore-nav-pill"
-        :class="{ active: activeCategory === cat.key }"
-        @click="activeCategory = cat.key"
-      >
-        <span class="gstore-nav-pill-icon">{{ cat.icon }}</span>
-        <span class="gstore-nav-pill-label">{{ cat.label }}</span>
-        <span class="gstore-nav-pill-count">{{ cat.count }}</span>
-      </button>
-    </nav>
-
     <main class="gstore-main">
-      <div v-if="isLoading" class="gstore-loading">
-        <div class="gstore-loading-dot" />
-        <span>{{ t('grantsPortal.loading') }}</span>
+      <div v-if="isLoading" class="gstore-skel-grid" aria-hidden="true">
+        <div v-for="n in 8" :key="n" class="gstore-skel-card">
+          <div class="gstore-skel-line short" />
+          <div class="gstore-skel-line" />
+          <div class="gstore-skel-line" />
+          <div class="gstore-skel-footer" />
+        </div>
       </div>
 
-      <template v-else-if="!user">
-        <section class="gstore-hero">
-          <div class="gstore-hero-chip">Earth Guardians</div>
-          <h1 class="gstore-hero-title">{{ t('grantsPortal.dashboardHeroTitle') }}</h1>
-          <p class="gstore-hero-subtitle">{{ t('grantsPortal.dashboardHeroSubtitle') }}</p>
-          <p class="gstore-hero-hint">{{ t('grantsPortal.dashboardHeroHint') }}</p>
-          <button class="gstore-hero-btn" :aria-label="t('grantsPortal.signInBtn')" @click="$emit('signIn')">{{ t('grantsPortal.signInBtn') }}</button>
-        </section>
-      </template>
-
-      <template v-else>
-        <section
-          v-for="cat in visibleCategories"
-          :key="cat.key"
-          class="gstore-section"
-        >
-          <div class="gstore-section-header">
-            <div class="gstore-section-header-left">
-              <span class="gstore-section-icon">{{ cat.icon }}</span>
-              <h2 class="gstore-section-title">{{ cat.label }}</h2>
-              <span class="gstore-section-count">{{ cat.count }}</span>
-            </div>
-            <span class="gstore-section-count-badge">{{ t('grantsPortal.itemsLabel', { count: cat.count }) }}</span>
-          </div>
-          <div class="gstore-section-scroll">
-            <div
-              v-for="g in cat.items"
-              :key="g.id"
-              class="gstore-card"
-              role="button"
-              tabindex="0"
-              :aria-label="`View details: ${g.title}`"
-              @click="($emit as any)('view-detail', g)"
-              @keydown.enter="($emit as any)('view-detail', g)"
-              @keydown.space.prevent="($emit as any)('view-detail', g)"
-            >
-              <div class="gstore-card-top">
-                <span v-if="g.grant_type" class="gstore-card-type" :class="g.grant_type">
-                  {{ grantTypeEmoji(g.grant_type) }}
-                </span>
-                <div class="gstore-card-badges">
-                  <span v-if="g.priority_score != null && g.priority_score >= 60" class="gstore-card-priority high">{{ g.priority_score }}</span>
-                  <span v-else-if="g.priority_score != null && g.priority_score >= 30" class="gstore-card-priority mid">{{ g.priority_score }}</span>
-                </div>
-              </div>
-              <h3 class="gstore-card-title">{{ g.title }}</h3>
-              <div class="gstore-card-meta">
-                <span v-if="g.funder" class="gstore-card-meta-item">{{ g.funder }}</span>
-                <span v-if="g.country" class="gstore-card-meta-item">{{ g.country }}</span>
-              </div>
-              <div class="gstore-card-footer">
-                <div v-if="g.amount_max" class="gstore-card-amount">{{ g.amount_max }} {{ g.currency }}</div>
-                <div v-else-if="'direct_beneficiaries' in g && g.direct_beneficiaries != null" class="gstore-card-amount">{{ formatCompact(Number(g.direct_beneficiaries)) }} {{ t('grantsPortal.beneficiariesSuffix') }}</div>
-                <div v-else class="gstore-card-amount muted">—</div>
-                <div v-if="g.highlights?.length" class="gstore-card-tags">
-                  <span v-for="hl in g.highlights.slice(0, 2)" :key="hl" class="gstore-card-tag" :class="hl.toLowerCase().replace(/\s+/g, '_')">{{ hl }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </template>
-
-      <section v-if="user && isManager && activeCategory === 'claims'" class="gstore-section">
+      <section v-else class="gstore-section">
         <div class="gstore-section-header">
           <div class="gstore-section-header-left">
-            <span class="gstore-section-icon">⚖️</span>
-            <h2 class="gstore-section-title">{{ t('grantsPortal.claimsManagement') }}</h2>
-            <span class="gstore-section-count">{{ claims.length }}</span>
+            <span class="gstore-section-icon">🌍</span>
+            <h2 class="gstore-section-title">{{ t('grantsPortal.catWorldwide') }}</h2>
+            <span class="gstore-section-count">{{ items.length }}</span>
+          </div>
+          <div class="gstore-section-header-right">
+            <label class="gstore-sort">
+              <span class="gstore-sort-label">{{ t('grantsPortal.sortLabel') }}</span>
+              <select v-model="sortKey" class="gstore-sort-select" :aria-label="t('grantsPortal.sortLabel')">
+                <option value="newest">{{ t('grantsPortal.sortNewest') }}</option>
+                <option value="priority">{{ t('grantsPortal.sortPriority') }}</option>
+                <option value="deadline">{{ t('grantsPortal.sortDeadline') }}</option>
+                <option value="amount">{{ t('grantsPortal.sortAmount') }}</option>
+              </select>
+            </label>
+            <span class="gstore-section-count-badge">{{ t('grantsPortal.itemsLabel', { count: items.length }) }}</span>
           </div>
         </div>
-        <ClaimsTable
-          :claims="claims"
-          :loading="claimsLoading"
-          @review="(c: any) => emit('open-review-claim', c)"
-        />
+        <div v-if="!items.length" class="gstore-empty">
+          <p>{{ searchQuery ? t('grantsPortal.dashboardEmptySearch') : t('grantsPortal.dashboardEmpty') }}</p>
+          <button v-if="searchQuery" class="gstore-empty-btn" @click="$emit('update:searchQuery', '')">
+            {{ t('grantsPortal.clearSearch') }}
+          </button>
+        </div>
+        <div v-else class="gstore-grid">
+          <div
+            v-for="(g, i) in items"
+            :key="g.id"
+            class="gstore-card"
+            :style="{ animationDelay: Math.min(i * 30, 360) + 'ms' }"
+            role="button"
+            tabindex="0"
+            :aria-label="`View details: ${g.title}`"
+            @click="($emit as any)('view-detail', g)"
+            @keydown.enter="($emit as any)('view-detail', g)"
+            @keydown.space.prevent="($emit as any)('view-detail', g)"
+          >
+            <div class="gstore-card-top">
+              <span v-if="g.grant_type" class="gstore-card-type" :class="g.grant_type">
+                {{ grantTypeEmoji(g.grant_type) }}
+              </span>
+              <div class="gstore-card-badges">
+                <span v-if="g.priority_score != null && g.priority_score >= 60" class="gstore-card-priority high">{{ g.priority_score }}</span>
+                <span v-else-if="g.priority_score != null && g.priority_score >= 30" class="gstore-card-priority mid">{{ g.priority_score }}</span>
+              </div>
+            </div>
+            <h3 class="gstore-card-title">{{ g.title }}</h3>
+            <div class="gstore-card-meta">
+              <span v-if="g.funder" class="gstore-card-meta-item">{{ g.funder }}</span>
+              <span v-if="g.country" class="gstore-card-meta-item">{{ g.country }}</span>
+              <span v-if="deadlineInfo(g)" class="gstore-card-meta-item deadline" :class="deadlineInfo(g)!.cls">{{ deadlineInfo(g)!.text }}</span>
+            </div>
+            <div class="gstore-card-footer">
+              <div v-if="g.amount_max" class="gstore-card-amount">{{ g.amount_max }} {{ g.currency }}</div>
+              <div v-else-if="'direct_beneficiaries' in g && g.direct_beneficiaries != null" class="gstore-card-amount">{{ formatCompact(Number(g.direct_beneficiaries)) }} {{ t('grantsPortal.beneficiariesSuffix') }}</div>
+              <div v-else class="gstore-card-amount muted">—</div>
+              <div v-if="g.highlights?.length" class="gstore-card-tags">
+                <span v-for="hl in g.highlights.slice(0, 2)" :key="hl" class="gstore-card-tag" :class="hl.toLowerCase().replace(/\s+/g, '_')">{{ hl }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
-
-    <Teleport to="body">
-      <Transition name="fade">
-        <div v-if="showLoginPopup" class="gstore-overlay" role="dialog" aria-modal="true" @click.self="showLoginPopup = false">
-          <div class="gstore-popup">
-            <h3 class="gstore-popup-title">{{ t('grantsPortal.signInRequiredTitle') }}</h3>
-            <p class="gstore-popup-desc">{{ t('grantsPortal.signInToVote') }}</p>
-            <button class="gstore-hero-btn" :aria-label="t('grantsPortal.signInBtn')" @click="$emit('signIn'); showLoginPopup = false">{{ t('grantsPortal.signInBtn') }}</button>
-            <button class="gstore-popup-cancel" :aria-label="t('grantsPortal.cancel')" @click="showLoginPopup = false">{{ t('grantsPortal.cancel') }}</button>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
-import type { GrantRecord, ScrapedGrant, LeaderboardEntry, EGProjectGrant, Partner, PartnerOpportunity } from '~/composables/useGrants'
-import { useGrants } from '~/composables/useGrants'
-import { allProjectsData } from '~/lib/project-data'
-import ClaimsTable from '~/components/grants/ClaimsTable.vue'
+import { computed, ref } from 'vue'
+import type { GrantRecord, ScrapedGrant } from '~/composables/useGrants'
 import { useI18n } from '~/composables/useI18n'
 
 const props = defineProps<{
   user: { email?: string } | null
   isManager: boolean
-  pendingCount: number
-  openCount: number
-  closedCount: number
-  activeTab: string
-  showHistory: boolean
   searchQuery: string
   isLoading: boolean
-  scrapedLoading: boolean
-  internalGrants: GrantRecord[]
   filteredScrapedGrants: (ScrapedGrant | GrantRecord)[]
-  filteredInternalGrants: GrantRecord[]
-  userVotes: Record<string, number>
-  leaderboard: LeaderboardEntry[]
-  leaderboardLoading: boolean
-  removingGrants: string[]
-  claims: import('~/lib/types').ClaimRecord[]
-  claimsLoading: boolean
 }>()
 
 const emit = defineEmits<{
   signIn: []
   signOut: []
-  'update:activeTab': [tab: string]
   'update:searchQuery': [q: string]
-  'toggle:showHistory': []
-  vote: [id: string, stars: number]
   'view-detail': [grant: ScrapedGrant | GrantRecord]
-  leaderboardDetail: [entry: LeaderboardEntry]
-  'review:grant': [id: string, decision: 'pending' | 'open' | 'closed']
-  'review:scraped': [id: string, decision: 'approved' | 'hidden' | 'closed' | 'pending', table: string]
-  'open-claim': [project: EGProjectGrant]
-  'open-review-claim': [claim: import('~/lib/types').ClaimRecord]
   'open-create-grant': []
 }>()
 
 const { t } = useI18n()
-const { listEGProjects, listPartners, listOpportunities } = useGrants()
-
-const showLoginPopup = ref(false)
-const activeCategory = ref('egprojects')
-const egProjects = ref<EGProjectGrant[]>([])
-const egProjectsLoading = ref(false)
-const partners = ref<Partner[]>([])
-const partnerOpportunities = ref<PartnerOpportunity[]>([])
-
-watch(() => props.user, (u) => {
-  if (u) showLoginPopup.value = false
-})
-
-onMounted(async () => {
-  egProjectsLoading.value = true
-  try {
-    const [egResult, partnersResult, oppsResult] = await Promise.all([
-      listEGProjects('granted'),
-      listPartners({ status: 'active' }),
-      listOpportunities({ status: 'open' }),
-    ])
-    if (egResult.grants) egProjects.value = egResult.grants
-    if (partnersResult.partners) partners.value = partnersResult.partners
-    if (oppsResult.opportunities) partnerOpportunities.value = oppsResult.opportunities
-  } catch { /* fallback to static data */ }
-  egProjectsLoading.value = false
-})
 
 function grantTypeEmoji(type?: string): string {
   const map: Record<string, string> = {
@@ -259,84 +179,73 @@ function formatCompact(val: number): string {
 
 type MixedGrant = ScrapedGrant | GrantRecord | (ScrapedGrant & { direct_beneficiaries?: number })
 
-const scrapedItems = computed<MixedGrant[]>(() => {
-  return props.filteredScrapedGrants as MixedGrant[]
-})
+type SortKey = 'newest' | 'priority' | 'deadline' | 'amount'
+const sortKey = ref<SortKey>('newest')
 
-const projectItems = computed(() => {
-  if (egProjects.value.length > 0) {
-    return egProjects.value.map((p) => ({
-      id: p.id,
-      title: p.title,
-      funder: p.funder || 'Earth Guardians',
-      country: p.country.split(',').pop()?.trim() || p.country,
-      amount_max: p.amount_max || '',
-      currency: p.currency || '',
-      grant_type: (p.grant_type || 'conservation') as string,
-      priority_score: p.priority_score,
-      highlights: p.highlights || ['eg_core'],
-      direct_beneficiaries: p.direct_beneficiaries + p.indirect_beneficiaries,
-      description: `Project in ${p.country}`,
-      categories: ['environment', 'community'],
-      status: p.status,
-    }))
+function grantTimestamp(g: MixedGrant): number {
+  const raw = ('fetched_at' in g && g.fetched_at) || g.created_at
+  const ts = raw ? new Date(raw).getTime() : NaN
+  return Number.isFinite(ts) ? ts : 0
+}
+
+/** Deadline display info for a card, or null when unknown. */
+function deadlineInfo(g: MixedGrant): { text: string; cls: string } | null {
+  const days = 'deadline_days' in g && typeof g.deadline_days === 'number' ? g.deadline_days : null
+  if (days != null) {
+    if (days < 0) return { text: t('grantsPortal.urgencyExpired'), cls: 'expired' }
+    if (days === 0) return { text: t('grantsPortal.closingToday'), cls: 'urgent' }
+    const text = t('grantsPortal.daysRemaining', { count: days })
+    if (days <= 30) return { text, cls: 'urgent' }
+    if (days <= 90) return { text, cls: 'soon' }
+    return { text, cls: '' }
   }
-  return allProjectsData.map((p, i) => ({
-    id: `project-${i}`,
-    title: p.project_title,
-    funder: 'Earth Guardians',
-    country: p.country_province.split(',').pop()?.trim() || p.country_province,
-    amount_max: '',
-    currency: '',
-    grant_type: 'conservation' as const,
-    priority_score: 50,
-    highlights: ['eg_core'] as string[],
-    direct_beneficiaries: p.direct_beneficiaries + p.indirect_beneficiaries,
-    description: `Project in ${p.country_province}`,
-    categories: ['environment', 'community'],
-    status: 'open',
-  }))
-})
-
-const categories = computed(() => {
-  const allCommunity: MixedGrant[] = []
-  const communityIds = new Set<string>()
-
-  const partnerOrgs = partners.value
-  const partnerOpps = partnerOpportunities.value
-  const worldwide = scrapedItems.value.filter(g =>
-    g.status === 'approved-active-open' || g.status === 'approved' || g.status === 'open'
-  )
-  const crew = props.filteredInternalGrants || []
-  const egProjectItems = projectItems.value
-
-  return [
-    { key: 'community', icon: '🌱', label: t('grantsPortal.catCommunity'), count: 0, items: [] as MixedGrant[] },
-    { key: 'crew', icon: '👥', label: t('grantsPortal.catCrew'), count: crew.length, items: crew.slice(0, 20) },
-    { key: 'partners', icon: '🤝', label: t('grantsPortal.catPartners'), count: partnerOrgs.length + partnerOpps.length,     items: [...partnerOrgs.slice(0, 10).map(p => ({ id: p.id, title: p.name, funder: p.partner_type, country: p.country, description: p.mission, status: p.status, highlights: [] as string[], categories: undefined as string[] | undefined, grant_type: undefined as string | undefined, priority_score: undefined as number | undefined, amount_max: undefined as string | undefined, currency: undefined as string | undefined, direct_beneficiaries: undefined as number | undefined })), ...partnerOpps.slice(0, 10).map(o => ({ id: o.id, title: o.title, funder: o.partners?.name || '', country: o.country, amount_max: o.amount_max, currency: o.currency, description: o.description, status: o.status, highlights: o.highlights || [], categories: o.categories, grant_type: o.grant_type, priority_score: o.priority_score, direct_beneficiaries: undefined as number | undefined }))].slice(0, 20) },
-    { key: 'worldwide', icon: '🌍', label: t('grantsPortal.catWorldwide'), count: worldwide.length, items: worldwide.slice(0, 20) },
-    { key: 'egprojects', icon: '🌿', label: t('grantsPortal.catEGProjects'), count: egProjectItems.length, items: egProjectItems.slice(0, 20) },
-    ...(props.isManager ? [{ key: 'claims', icon: '⚖️', label: t('grantsPortal.catClaims'), count: props.claims?.length || 0, items: [] as MixedGrant[] }] : []),
-  ]
-})
-
-const visibleCategories = computed(() => {
-  const q = props.searchQuery?.toLowerCase()
-  let cats = categories.value.filter(c => c.count > 0)
-  if (activeCategory.value && !q) {
-    cats = cats.filter(c => c.key === activeCategory.value)
+  if (g.deadline) {
+    const ts = new Date(g.deadline).getTime()
+    if (Number.isFinite(ts)) {
+      return {
+        text: `${t('grantsPortal.deadlineLabel')} ${new Date(ts).toLocaleDateString()}`,
+        cls: ts < Date.now() ? 'expired' : '',
+      }
+    }
   }
-  if (!q) return cats
-  return cats.map(cat => ({
-    ...cat,
-    items: cat.items.filter(g =>
+  return null
+}
+
+/** Worldwide scraped grants only, filtered by search and ordered by sortKey. */
+const items = computed<MixedGrant[]>(() => {
+  const q = props.searchQuery?.toLowerCase() ?? ''
+  const filtered = (props.filteredScrapedGrants as MixedGrant[]).filter((g) => {
+    if (g.status !== 'approved-active-open' && g.status !== 'approved' && g.status !== 'open') return false
+    if (!q) return true
+    return (
       (g.title || '').toLowerCase().includes(q) ||
       (g.funder || '').toLowerCase().includes(q) ||
       (g.country || '').toLowerCase().includes(q) ||
       (g.description || '').toLowerCase().includes(q) ||
       (g.categories || []).some((c: string) => c.toLowerCase().includes(q))
-    ),
-  })).filter(cat => cat.items.length > 0)
+    )
+  })
+  const sorted = [...filtered]
+  switch (sortKey.value) {
+    case 'priority':
+      sorted.sort((a, b) => (b.priority_score ?? -1) - (a.priority_score ?? -1))
+      break
+    case 'deadline':
+      sorted.sort((a, b) => {
+        const da = 'deadline_days' in a && typeof a.deadline_days === 'number' ? a.deadline_days : Number.POSITIVE_INFINITY
+        const db = 'deadline_days' in b && typeof b.deadline_days === 'number' ? b.deadline_days : Number.POSITIVE_INFINITY
+        return da - db
+      })
+      break
+    case 'amount':
+      sorted.sort((a, b) => (b.amount_usd ?? -1) - (a.amount_usd ?? -1))
+      break
+    case 'newest':
+    default:
+      sorted.sort((a, b) => grantTimestamp(b) - grantTimestamp(a))
+      break
+  }
+  return sorted
 })
 </script>
 
@@ -468,6 +377,30 @@ const visibleCategories = computed(() => {
   color: var(--text-tertiary);
 }
 
+.gstore-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.gstore-search-clear:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+
 .gstore-user-pill {
   display: flex;
   align-items: center;
@@ -578,180 +511,144 @@ const visibleCategories = computed(() => {
   border-color: rgba(255, 255, 255, 0.12);
 }
 
-.gstore-nav {
-  display: flex;
-  gap: 6px;
-  padding: 12px 28px;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  position: sticky;
-  top: 52px;
-  z-index: 99;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-}
-
-.gstore-nav::-webkit-scrollbar {
-  display: none;
-}
-
-.gstore-nav-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: clamp(8px, 1vw, 12px) clamp(12px, 1.5vw, 18px);
-  min-height: 44px;
-  border: 1px solid var(--glass-border);
-  border-radius: 9999px;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: clamp(11px, 1.2vw, 13px);
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.gstore-nav-pill:hover {
-  background: var(--glass-hover);
-  color: var(--text);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.gstore-nav-pill.active {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border-color: rgba(0, 255, 133, 0.25);
-}
-
-.gstore-nav-pill-icon {
-  font-size: 14px;
-  line-height: 1;
-}
-
-.gstore-nav-pill-label {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.gstore-nav-pill-count {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-tertiary);
-  font-variant-numeric: tabular-nums;
-}
-
-.gstore-nav-pill.active .gstore-nav-pill-count {
-  background: rgba(0, 255, 133, 0.15);
-  color: var(--accent);
-}
-
 .gstore-main {
   flex: 1;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 28px 48px;
+  padding: 24px 28px 48px;
   width: 100%;
-  overflow-y: auto;
 }
 
-.gstore-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.gstore-skel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 12px;
-  padding: 80px 0;
+  padding: 24px 0 8px;
+}
+
+.gstore-skel-card {
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 14px;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--glass);
+  overflow: hidden;
+  position: relative;
+}
+
+.gstore-skel-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.05) 50%, transparent 70%);
+  animation: skel-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skel-shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+.gstore-skel-line {
+  height: 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.gstore-skel-line.short {
+  width: 40%;
+  height: 16px;
+}
+
+.gstore-skel-footer {
+  margin-top: auto;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.gstore-empty {
+  text-align: center;
+  padding: 60px 20px;
   color: var(--text-tertiary);
   font-size: 14px;
-  font-weight: 400;
 }
 
-.gstore-loading-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: pulse-dot 1s ease-in-out infinite;
+.gstore-empty p {
+  margin: 0 0 16px;
 }
 
-@keyframes pulse-dot {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.3); }
-}
-
-.gstore-hero {
-  text-align: center;
-  padding: 60px 0 40px;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.gstore-hero-chip {
-  display: inline-block;
-  padding: 4px 12px;
-  border: 1px solid var(--accent-dim);
-  border-radius: 9999px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accent);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
-
-.gstore-hero-title {
-  font-size: 40px;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  margin: 0 0 12px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-}
-
-.gstore-hero-subtitle {
-  font-size: 17px;
-  line-height: 1.6;
-  color: var(--text-secondary);
-  margin: 0 0 32px;
-  font-weight: 400;
-}
-
-.gstore-hero-hint {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  margin: 0 0 20px;
-}
-
-.gstore-hero-btn {
+.gstore-empty-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 11px 24px;
-  background: var(--accent);
-  border: none;
+  padding: 8px 18px;
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
   border-radius: 9999px;
-  color: var(--bg-primary);
-  font-size: 15px;
-  font-weight: 600;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.gstore-hero-btn:hover {
-  transform: scale(1.02);
-  box-shadow: 0 0 24px rgba(0, 255, 133, 0.25);
+.gstore-empty-btn:hover {
+  background: var(--glass-hover);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.gstore-section-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.gstore-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gstore-sort-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.gstore-sort-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 7px 28px 7px 12px;
+  background-color: var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none' stroke='%23888' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.gstore-sort-select:hover,
+.gstore-sort-select:focus {
+  border-color: var(--accent);
+}
+
+.gstore-sort-select option {
+  background: #111;
+  color: #f5f5f5;
 }
 
 .gstore-section {
@@ -807,33 +704,14 @@ const visibleCategories = computed(() => {
   white-space: nowrap;
 }
 
-.gstore-section-scroll {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x mandatory;
+.gstore-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
   padding: 4px 2px 8px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.06) transparent;
-}
-
-.gstore-section-scroll::-webkit-scrollbar {
-  height: 4px;
-}
-
-.gstore-section-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.gstore-section-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 9999px;
 }
 
 .gstore-card {
-  flex: 0 0 240px;
-  scroll-snap-align: start;
   background: var(--glass);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -841,10 +719,22 @@ const visibleCategories = computed(() => {
   border-radius: 12px;
   padding: 14px;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: transform 0.25s, background 0.25s, border-color 0.25s;
   display: flex;
   flex-direction: column;
   min-height: 160px;
+  animation: card-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gstore-card {
+    animation: none;
+  }
 }
 
 .gstore-card:hover {
@@ -922,6 +812,23 @@ const visibleCategories = computed(() => {
   text-overflow: ellipsis;
 }
 
+.gstore-card-meta-item.deadline {
+  font-weight: 600;
+}
+
+.gstore-card-meta-item.deadline.urgent {
+  color: #f87171;
+}
+
+.gstore-card-meta-item.deadline.soon {
+  color: #facc15;
+}
+
+.gstore-card-meta-item.deadline.expired {
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+}
+
 .gstore-card-footer {
   display: flex;
   align-items: center;
@@ -978,74 +885,6 @@ const visibleCategories = computed(() => {
   color: var(--warning);
 }
 
-.gstore-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  padding: 16px;
-}
-
-.gstore-popup {
-  background: var(--bg-secondary);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 32px;
-  max-width: 340px;
-  width: 100%;
-  text-align: center;
-}
-
-.gstore-popup-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0 0 8px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-}
-
-.gstore-popup-desc {
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--text-secondary);
-  margin: 0 0 24px;
-}
-
-.gstore-popup-cancel {
-  display: block;
-  width: 100%;
-  margin-top: 10px;
-  background: none;
-  border: 1px solid var(--glass-border);
-  border-radius: 9999px;
-  color: var(--text-secondary);
-  font-size: 14px;
-  font-weight: 500;
-  font-family: inherit;
-  padding: 10px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.gstore-popup-cancel:hover {
-  background: var(--glass-hover);
-  color: var(--text);
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
 @media (max-width: 768px) {
   .gstore-header-inner {
     padding: 0 16px;
@@ -1053,12 +892,7 @@ const visibleCategories = computed(() => {
   }
 
   .gstore-main {
-    padding: 0 16px 32px;
-  }
-
-  .gstore-nav {
-    padding: 10px 16px;
-    top: 48px;
+    padding: 16px 16px 32px;
   }
 
   .gstore-search {
@@ -1069,12 +903,7 @@ const visibleCategories = computed(() => {
     display: none;
   }
 
-  .gstore-hero-title {
-    font-size: 28px;
-  }
-
   .gstore-card {
-    flex: 0 0 200px;
     min-height: 140px;
     padding: 12px;
   }
@@ -1085,6 +914,16 @@ const visibleCategories = computed(() => {
 
   .gstore-badge {
     display: none;
+  }
+
+  .gstore-grid,
+  .gstore-skel-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .gstore-section-header {
+    flex-wrap: wrap;
+    gap: 10px;
   }
 }
 </style>

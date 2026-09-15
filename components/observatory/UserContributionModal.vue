@@ -196,7 +196,7 @@
             <div class="flex items-start justify-between gap-2">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1.5 mb-1">
-                  <span class="text-[clamp(8px,1.3vw,11px)] font-bold px-1.5 py-0.5 rounded" :style="{ background: typeColor(contrib.update_type), color: '#fff' }">
+                  <span class="text-[clamp(8px,1.3vw,11px)] font-bold px-1.5 py-0.5 rounded" :style="{ background: `color-mix(in srgb, ${typeColor(contrib.update_type)} 62%, black)`, color: '#fff' }">
                     {{ typeLabel(contrib.update_type) }}
                   </span>
                   <span class="text-[clamp(8px,1.3vw,11px)] text-zinc-500">{{ formatDate(contrib.created_at) }}</span>
@@ -239,7 +239,7 @@
     <Transition name="modal-fade">
       <div v-if="previewPhoto" class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/90" @click.self="previewPhoto = null" @keydown.escape="previewPhoto = null">
         <img :src="previewPhoto" class="max-w-[90vw] max-h-[90vh] rounded-lg shadow-2xl" />
-        <button type="button" class="absolute top-4 right-4 text-white/70 hover:text-white text-2xl" @click="previewPhoto = null">×</button>
+        <button type="button" class="absolute top-4 right-4 text-white hover:text-white text-2xl leading-none w-10 h-10 inline-flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm" @click="previewPhoto = null">×</button>
       </div>
     </Transition>
   </Teleport>

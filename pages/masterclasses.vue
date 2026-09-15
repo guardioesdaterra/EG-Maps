@@ -411,11 +411,11 @@ useHead({
   gap: 1.25rem;
   padding: 1.25rem;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(10, 10, 10, 0.08);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
   backdrop-filter: blur(16px) saturate(1.4);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transition: border-color 0.2s;
 }
 :global(.dark) .episode {
@@ -458,8 +458,8 @@ useHead({
   text-transform: uppercase;
   padding: 0.15rem 0.45rem;
   border-radius: 4px;
-  background: var(--primary);
-  color: var(--bg-primary);
+  background: color-mix(in srgb, var(--primary) 62%, black);
+  color: #fff;
 }
 .episode-body { display: flex; flex-direction: column; gap: 0.3rem; }
 .episode-title {
@@ -531,8 +531,8 @@ useHead({
   font-size: 0.7rem;
   font-weight: 700;
   text-decoration: none;
-  background: var(--primary);
-  color: var(--bg-primary);
+  background: color-mix(in srgb, var(--primary) 62%, black);
+  color: #fff;
   transition: opacity 0.15s;
 }
 .episode-cta:hover { opacity: 0.85; }
@@ -554,11 +554,11 @@ useHead({
 .past-card {
   padding: 1rem 1.125rem;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(10, 10, 10, 0.08);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
   backdrop-filter: blur(12px) saturate(1.3);
   -webkit-backdrop-filter: blur(12px) saturate(1.3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transition: border-color 0.2s;
 }
 :global(.dark) .past-card {
@@ -591,11 +591,11 @@ useHead({
 .cta-block {
   padding: clamp(1.5rem, 3vw, 2.5rem);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
+  border: 1px solid rgba(10, 10, 10, 0.08);
   backdrop-filter: blur(20px) saturate(1.5);
   -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   text-align: center;
   color: var(--text-primary);
 }
@@ -630,7 +630,7 @@ useHead({
   font-size: 0.78rem;
   font-weight: 700;
   text-decoration: none;
-  background: var(--primary);
+  background: color-mix(in srgb, var(--primary) 62%, black);
   color: #fff;
   transition: opacity 0.15s;
 }

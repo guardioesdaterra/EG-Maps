@@ -409,7 +409,7 @@ defineExpose({
 }
 
 .filter-search::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .filter-search:focus {
@@ -428,6 +428,16 @@ defineExpose({
 }
 
 .species-filter-panel {
+  /* Always-dark glass: pin readable light-ink tokens regardless of theme */
+  --text-primary: #ededed;
+  --text-secondary: #c7c7c7;
+  --text-muted: #b8b8b8;
+  --bg-secondary: rgba(255, 255, 255, 0.08);
+  --input-bg: rgba(255, 255, 255, 0.06);
+  --input-text: #ffffff;
+  --input-placeholder: rgba(255, 255, 255, 0.6);
+  --border-color: rgba(255, 255, 255, 0.12);
+  color-scheme: dark;
   background: rgba(13, 13, 18, 0.92);
   backdrop-filter: blur(20px) saturate(1.5);
   -webkit-backdrop-filter: blur(20px) saturate(1.5);

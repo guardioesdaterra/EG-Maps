@@ -5,12 +5,14 @@
 @layer base {
   :root {
     /* Light mode (default) */
+    color-scheme: light;
     --bg-primary: #fafafa;
     --bg-secondary: #f5f5f5;
     --bg-tertiary: #ffffff;
     --text-primary: #0a0a0a;
     --text-secondary: #525252;
-    --text-muted: #a3a3a3;
+    /* #5b5b5b ≈ 6.8:1 on white — small/muted text stays legible in light mode */
+    --text-muted: #5b5b5b;
     --border-color: #d4d4d4;
     --shadow-color: rgba(0, 0, 0, 0.1);
     --map-bg: #e8e8e8;
@@ -22,15 +24,17 @@
     /* Tailwind CSS semantic tokens - light */
     --background: #fafafa;
     --foreground: #0a0a0a;
-    --primary: #06b6d4;
+    /* #0e7490 ≈ 5.4:1 on white AND white-on-fill — primary text and
+       primary fills both pass in light mode (was #06b6d4 ≈ 2.4:1) */
+    --primary: #0e7490;
     --primary-foreground: #ffffff;
     --secondary: #f5f5f5;
     --secondary-foreground: #0a0a0a;
     --muted: #f5f5f5;
-    --muted-foreground: #a3a3a3;
+    --muted-foreground: #5b5b5b;
     --accent: #a855f7;
     --accent-foreground: #ffffff;
-    --destructive: #ef4444;
+    --destructive: #dc2626;
     --destructive-foreground: #ffffff;
     --ring: #06b6d4;
     --border: #d4d4d4;
@@ -52,7 +56,7 @@
     --tool-btn-active-border: #000;
     --tool-btn-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
     --tool-btn-muted-border: rgba(0, 0, 0, 0.15);
-    --tool-btn-muted-text: #9ca3af;
+    --tool-btn-muted-text: #5b5b5b;
     --stat-card-bg: rgba(255, 255, 255, 0.5);
     --stat-card-border: rgba(0, 0, 0, 0.08);
     --stat-card-text: #525252;
@@ -62,10 +66,10 @@
     --input-bg: rgba(0, 0, 0, 0.04);
     --input-border: rgba(6, 182, 212, 0.25);
     --input-text: #171717;
-    --input-placeholder: #a3a3a3;
+    --input-placeholder: #5b5b5b;
     --search-result-hover-bg: rgba(6, 182, 212, 0.06);
     --search-result-selected-bg: rgba(6, 182, 212, 0.12);
-    --search-result-text: #0891b2;
+    --search-result-text: #0e7490;
     --search-result-selected-text: #0369a1;
     --panel-bg-gradient: none;
 
@@ -82,17 +86,20 @@
     --z-map-error-overlay: 900;
     --z-navigation: 1000;
 
-    /* Status / semantic colors - light */
-    --success: #27ae60;
+    /* Status / semantic colors - light (darkened so colored text AND
+       white-on-color fills both clear 4.5:1 on light surfaces) */
+    --success: #1e8449;
     --success-bg: rgba(39, 174, 96, 0.1);
-    --warning: #f39c12;
+    --warning: #96600a;
     --warning-bg: rgba(243, 156, 18, 0.1);
-    --info: #5dade2;
+    --info: #2874a6;
     --info-bg: rgba(93, 173, 226, 0.1);
-    --danger: #e74c3c;
+    --danger: #c0392b;
     --danger-bg: rgba(231, 76, 60, 0.1);
     --purple: #8e44ad;
     --purple-bg: rgba(142, 68, 173, 0.1);
+    /* Readable purple text on DARK surfaces (vivid #8e44ad ≈ 3.2:1 there) */
+    --lilac: #8e44ad;
 
     /* Glass panel - light */
     --glass-bg: rgba(255, 255, 255, 0.92);
@@ -121,6 +128,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     --bg-primary: #0a0a0a;
     --bg-secondary: #111111;
     --bg-tertiary: #1a1a1a;
@@ -164,7 +172,7 @@
     --tool-btn-active-border: rgba(6, 182, 212, 0.6);
     --tool-btn-shadow: 0 0 18px rgba(6, 182, 212, 0.16);
     --tool-btn-muted-border: rgba(255, 255, 255, 0.15);
-    --tool-btn-muted-text: #6b7280;
+    --tool-btn-muted-text: #a3a3a3;
     --stat-card-bg: rgba(0, 0, 0, 0.35);
     --stat-card-border: rgba(255, 255, 255, 0.1);
     --stat-card-text: #d4d4d4;
@@ -192,6 +200,9 @@
     --danger-bg: rgba(231, 76, 60, 0.15);
     --purple: #8e44ad;
     --purple-bg: rgba(142, 68, 173, 0.15);
+
+    /* Readable purple text on DARK surfaces (≈5.7:1) */
+    --lilac: #b07cc6;
 
     /* Glass panel - dark */
     --glass-bg: rgba(13, 13, 18, 0.92);
@@ -367,7 +378,7 @@ body.cmd-open { overflow: hidden; }
     backdrop-filter: blur(16px) saturate(1.4);
     -webkit-backdrop-filter: blur(16px) saturate(1.4);
   }
-  :global(.dark) .glass-subtle {
+  .dark .glass-subtle {
     background: rgba(255, 255, 255, 0.03);
     border-color: rgba(255, 255, 255, 0.06);
   }
@@ -387,7 +398,7 @@ body.cmd-open { overflow: hidden; }
     -webkit-backdrop-filter: blur(12px) saturate(1.3);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
-  :global(.dark) .glass-card {
+  .dark .glass-card {
     background: rgba(255, 255, 255, 0.02);
     border-color: rgba(255, 255, 255, 0.05);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -589,7 +600,16 @@ body.cmd-open { overflow: hidden; }
 
   .badge-cyber {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-           bg-cyan-900/30 text-cyan-400 border border-cyan-800/50;
+           border;
+    /* Light mode: deep-teal text on a pale teal tint (≈5.4:1) */
+    color: #0e7490;
+    background: rgba(14, 116, 144, 0.1);
+    border-color: rgba(14, 116, 144, 0.25);
+  }
+  .dark .badge-cyber {
+    color: #22d3ee;
+    background: rgba(34, 211, 238, 0.12);
+    border-color: rgba(34, 211, 238, 0.3);
   }
 
   /* Map popup styles */
@@ -612,7 +632,7 @@ body.cmd-open { overflow: hidden; }
   }
 
   .stat-value {
-    @apply text-3xl font-heading font-bold text-eg-teal;
+    @apply text-3xl font-heading font-bold text-[var(--primary)];
   }
 
   .stat-label {
@@ -623,12 +643,12 @@ body.cmd-open { overflow: hidden; }
   .filter-chip {
     @apply inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium
            border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)]
-           hover:bg-eg-teal hover:text-white hover:border-eg-teal
+           hover:bg-[#0e7490] hover:text-white hover:border-[#0e7490]
            transition-all duration-200 cursor-pointer select-none;
   }
 
   .filter-chip-active {
-    @apply filter-chip bg-eg-teal text-white border-eg-teal;
+    @apply filter-chip bg-[#0e7490] text-white border-[#0e7490];
   }
 
   /* Species filter panel (matching original site) */
@@ -647,7 +667,7 @@ body.cmd-open { overflow: hidden; }
   }
 
 .filter-search::placeholder {
-  color: var(--obs-text-muted);
+  color: var(--text-muted);
 }
 
 .filter-search:focus {
@@ -1968,11 +1988,11 @@ select option {
   --obs-panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --obs-panel-shadow-deep: 0 8px 32px rgba(0, 0, 0, 0.5);
   --obs-panel-inset: 0 0 0 1px rgba(255, 255, 255, 0.03);
-  --obs-text-dim: rgba(255, 255, 255, 0.3);
-  --obs-text-muted: rgba(255, 255, 255, 0.4);
-  --obs-text-label: rgba(255, 255, 255, 0.55);
-  --obs-text-body: rgba(255, 255, 255, 0.7);
-  --obs-text-primary: rgba(255, 255, 255, 0.85);
+    --obs-text-dim: rgba(255, 255, 255, 0.62);
+    --obs-text-muted: rgba(255, 255, 255, 0.7);
+    --obs-text-label: rgba(255, 255, 255, 0.78);
+    --obs-text-body: rgba(255, 255, 255, 0.82);
+    --obs-text-primary: rgba(255, 255, 255, 0.9);
   --obs-red: #e74c3c;
   --obs-red-dark: #c0392b;
   --obs-blue: #3498db;

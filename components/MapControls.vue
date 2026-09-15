@@ -202,7 +202,7 @@
               <div class="flex-1 min-w-0">
                 <h4 class="text-sm font-medium truncate transition-colors text-[var(--search-result-text)] group-hover:text-[var(--search-result-selected-text)]">
                   {{ getResultTitle(result) }}
-                  <span v-if="isCustomResult(result)" class="ml-1.5 inline-flex items-center gap-0.5 text-[10px] px-1 py-0.5 rounded bg-[var(--tool-btn-active-bg)]/30 text-[var(--tool-btn-active-text)]">Import</span>
+                  <span v-if="isCustomResult(result)" class="ml-1.5 inline-flex items-center gap-0.5 text-[10px] px-1 py-0.5 rounded bg-[var(--tool-btn-active-bg)] text-[var(--tool-btn-active-text)]">Import</span>
                 </h4>
                 <div class="flex justify-between items-center">
                   <p class="text-xs text-[var(--text-muted)] flex items-center">

@@ -266,7 +266,7 @@ async function handleSubmit() {
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 8px;
   margin-bottom: 16px;
-  color: #f87171;
+  color: var(--danger);
   font-size: 13px;
 }
 
@@ -301,7 +301,7 @@ async function handleSubmit() {
 }
 
 .create-required {
-  color: #f87171;
+  color: var(--danger);
 }
 
 .create-input,

@@ -240,13 +240,13 @@ function onDismiss() {
   margin: 0 0 6px;
   font-size: clamp(15px, 2.2vw, 20px);
   font-weight: 800;
-  color: var(--text-primary);
+  color: #fff;
   letter-spacing: -0.01em;
 }
 .obs-geo-modal__desc {
   margin: 0 0 18px;
   font-size: clamp(11px, 1.6vw, 14px);
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.72);
   line-height: 1.5;
 }
 
@@ -272,7 +272,7 @@ function onDismiss() {
   box-shadow: 0 4px 16px rgba(231, 76, 60, 0.25);
 }
 .obs-geo-modal__btn--primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #ff5533, #e74c3c);
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
   box-shadow: 0 6px 20px rgba(231, 76, 60, 0.35);
   transform: translateY(-1px);
 }
@@ -282,12 +282,12 @@ function onDismiss() {
 }
 .obs-geo-modal__btn--secondary {
   background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.75);
   border-color: rgba(255, 255, 255, 0.1);
 }
 .obs-geo-modal__btn--secondary:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .obs-geo-modal__divider {
@@ -296,7 +296,7 @@ function onDismiss() {
   gap: clamp(6px, 1.2vw, 12px);
   margin: clamp(10px, 1.5vw, 20px) 0;
   font-size: clamp(9px, 1.4vw, 12px);
-  color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -328,7 +328,7 @@ function onDismiss() {
   border-color: rgba(231, 76, 60, 0.4);
 }
 .obs-geo-modal__city-input::placeholder {
-  color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.6);
 }
 .obs-geo-modal__city-search-btn {
   width: 36px;
@@ -383,7 +383,7 @@ function onDismiss() {
 }
 .obs-geo-modal__suggestion-detail {
   font-size: clamp(10px, 1.5vw, 13px);
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .obs-geo-modal__error {
@@ -406,12 +406,12 @@ function onDismiss() {
 .obs-geo-modal__location-city {
   font-size: clamp(16px, 2.5vw, 22px);
   font-weight: 800;
-  color: var(--text-primary);
+  color: #fff;
   margin-bottom: 2px;
 }
 .obs-geo-modal__location-detail {
   font-size: clamp(10px, 1.5vw, 13px);
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .obs-geo-modal__actions {
@@ -425,7 +425,7 @@ function onDismiss() {
   margin: 14px auto 0;
   background: transparent;
   border: 0;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7);
   font-size: clamp(10px, 1.5vw, 13px);
   cursor: pointer;
   text-decoration: underline;
@@ -434,7 +434,7 @@ function onDismiss() {
   transition: color 0.15s;
 }
 .obs-geo-modal__skip:hover {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 

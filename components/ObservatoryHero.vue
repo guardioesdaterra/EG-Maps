@@ -144,7 +144,7 @@ function formatCount(n: number): string {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.7);
 }
 .vulc-hero__close {
   width: 1.5rem;
@@ -155,7 +155,7 @@ function formatCount(n: number): string {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   font-family: inherit;
   transition: background 0.15s, color 0.15s;
@@ -218,14 +218,14 @@ function formatCount(n: number): string {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .vulc-hero__cite {
   margin: 0 0 0.85rem;
   font-size: 10px;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.72);
   word-break: break-word;
 }
 .vulc-hero__cite a {

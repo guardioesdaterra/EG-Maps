@@ -107,7 +107,7 @@ const shortcutGroups = [
 .obs-shortcuts-panel__close {
   background: transparent;
   border: 0;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.6);
   font-size: clamp(18px, 3vw, 26px);
   cursor: pointer;
   line-height: 1;
@@ -135,7 +135,7 @@ const shortcutGroups = [
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.7);
 }
 .obs-shortcuts-panel__row {
   display: flex;
@@ -164,7 +164,7 @@ const shortcutGroups = [
 }
 .obs-shortcuts-panel__desc {
   font-size: clamp(10px, 1.5vw, 13px);
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .kbd-backdrop { z-index: var(--obs-z-modal-backdrop); }

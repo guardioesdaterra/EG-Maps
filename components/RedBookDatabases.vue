@@ -229,7 +229,8 @@ function datasetKeyId(id: string): string {
 }
 
 .redbook-card-index {
-  color: var(--home-accent-strong, #b9da46);
+  /* Darkened lime: vivid #b9da46 on cream ≈ 1.5:1 — mixed toward ink ≈ 5.9:1 */
+  color: color-mix(in srgb, var(--home-accent-strong, #b9da46) 42%, #10231b);
 }
 
 .redbook-scope {
@@ -255,7 +256,7 @@ function datasetKeyId(id: string): string {
   place-items: center;
   border-radius: 0.95rem;
   background: color-mix(in srgb, var(--home-accent-strong, #b9da46) 18%, transparent);
-  color: var(--home-accent-strong, #b9da46);
+  color: color-mix(in srgb, var(--home-accent-strong, #b9da46) 42%, #10231b);
 }
 
 .redbook-card h3 {

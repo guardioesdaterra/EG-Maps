@@ -152,14 +152,14 @@ function selectNone() {
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.75);
   transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
 }
 
 .obs-phase-filter__chip:hover {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .obs-phase-filter__chip--active {

@@ -60,8 +60,8 @@ const directPct = computed(() => {
     <!-- Stats grid (zero counts render as Unknown, never 0) -->
     <div class="pp__content">
       <div class="pp__stats">
-        <div class="pp__stat" :style="{ borderColor: accentColor + '25' }">
-          <div class="pp__stat-icon" :style="{ background: accentColor + '15', color: accentColor }">
+        <div class="pp__stat" :style="{ borderColor: `color-mix(in srgb, ${accentColor} 25%, transparent)` }">
+          <div class="pp__stat-icon" :style="{ background: `color-mix(in srgb, ${accentColor} 15%, transparent)`, color: accentColor }">
             <Icon name="lucide:users" size="1rem" />
           </div>
           <div class="pp__stat-body">
@@ -88,7 +88,7 @@ const directPct = computed(() => {
       </div>
 
       <!-- Total row -->
-      <div class="pp__total" :style="{ borderColor: accentColor + '30' }">
+      <div class="pp__total" :style="{ borderColor: `color-mix(in srgb, ${accentColor} 30%, transparent)` }">
         <div class="pp__total-left">
           <span class="pp__total-label">{{ t('stats.totalBeneficiaries') }}</span>
           <span
@@ -254,7 +254,7 @@ const directPct = computed(() => {
   color: var(--text-muted);
 }
 .pp__total-value {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }

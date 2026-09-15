@@ -57,6 +57,22 @@ export const VULCAN_MAX_BOUNDS: [[number, number], [number, number]] = [
 export const VULCAN_MIN_ZOOM_2D = 8
 export const VULCAN_MIN_ZOOM_GLOBE = 4
 
+// Module-level perf-timer registry. console.time labels are global: when init
+// runs more than once per page (retry button, HMR, ClientOnly remount) while
+// an earlier attempt's timer never ended, re-timing the same label warns
+// "Timer already exists". The guard makes repeat timings no-ops.
+const activeTimers = new Set<string>()
+function tStart(label: string) {
+  if (activeTimers.has(label)) return
+  activeTimers.add(label)
+  console.time(label)
+}
+function tEnd(label: string) {
+  if (!activeTimers.has(label)) return
+  activeTimers.delete(label)
+  try { console.timeEnd(label) } catch { /* already cleared */ }
+}
+
 export interface MapBaseProps {
   projects?: ProjectData[]
   species?: Species[]
@@ -248,6 +264,9 @@ export function useMapBase(config: MapBaseConfig) {
   useFocusTrap(crewOverlayRef, { active: crewOverlayActive })
 
   let map: maplibregl.Map | null = null
+  // Which tile provider the live map style corresponds to. Guards the
+  // provider watcher + applyProviderStyle against redundant setStyle calls.
+  let lastAppliedProvider: string | null = null
   // Reactive mirror of `map` — `computed(() => map)` never updates because
   // `map` is a plain closure variable. The rare-earth controller and custom
   // layer hooks depend on a reactive ref, so keep them in sync on every
@@ -551,8 +570,13 @@ export function useMapBase(config: MapBaseConfig) {
     return getMapStyle(MAPTILER_API_KEY, qs.tileResolution, baseURL)
   }
 
-  function applyProviderStyle() {
+  function applyProviderStyle(expected?: string) {
     if (!map) return
+    const target = expected ?? tileProvider.effectiveProvider.value
+    // Style already matches the target — setStyle would wipe all data
+    // layers and reload tiles for no reason (reads as a provider flap).
+    if (target === lastAppliedProvider && map.isStyleLoaded()) return
+    lastAppliedProvider = target
     tileProvider.noteStyleStart()
     hasError.value = false
     errorMessage.value = ''
@@ -597,19 +621,27 @@ export function useMapBase(config: MapBaseConfig) {
 
   /* ── map init ─────────────────────────────────────────────────────── */
 
-  function initMap() {
+  function initMap(force = false) {
+    // Error-overlay retries pass force=true: the previous attempt is
+    // discarded (its flags may be stuck, e.g. isInitializing left true by
+    // the load-timeout path), so clear them before re-running.
+    if (force) isInitializing = false
     if (isInitializing) {
       console.warn('[EG Maps] initMap skipped — initialization already in progress')
       return
     }
-    if (map?.loaded()) {
-      console.log('[EG Maps] initMap skipped — map already loaded')
+    // A live map instance means init already ran for this mount. Without
+    // this guard a second call (double onMounted, reactive re-trigger)
+    // tears down the healthy map and builds a duplicate ("duplicated init").
+    // Error-overlay retries pass force=true after the old map was removed.
+    if (map && !force) {
+      console.log('[EG Maps] initMap skipped — map instance already exists')
       return
     }
     if (!mapContainerRef.value) return
 
-    console.time('[perf] initMap total')
-    console.time('[perf] initMap → MapLibre constructor')
+    tStart('[perf] initMap total')
+    tStart('[perf] initMap → MapLibre constructor')
 
     if (!detectWebGLSupport()) {
       noWebglSupport.value = true
@@ -640,7 +672,13 @@ export function useMapBase(config: MapBaseConfig) {
 
       // MapTiler is the default; the provider only resolves to fallback on
       // explicit choice, missing key, or poor network/health signals.
+      // NOTE: SSG bakes NUXT_PUBLIC_MAPTILER_API_KEY at build time — a key
+      // added only to the deploy environment after `nuxt generate` will NOT
+      // reach the client bundle (it stays '' and the local fallback wins).
       tileProvider.evaluateNetworkHints(MAPTILER_API_KEY)
+      if (!MAPTILER_API_KEY && import.meta.dev) {
+        console.warn('[tile-provider] no MapTiler API key — using local fallback style. Set NUXT_PUBLIC_MAPTILER_API_KEY (or MAPTILER_API_KEY) before building.')
+      }
       const mapStyle = currentStyle()
       const isMapTilerStyle = typeof mapStyle === 'string' && mapStyle.includes('maptiler.com')
       tileProvider.noteStyleStart()
@@ -678,9 +716,9 @@ export function useMapBase(config: MapBaseConfig) {
       mapCanvas = map!.getCanvas()
       mapCanvas.addEventListener('webglcontextlost', onWebglContextLost, { passive: false })
 
-      console.timeEnd('[perf] initMap → MapLibre constructor')
-      console.time('[perf] initMap → style.load')
-      console.time('[perf] initMap → map.load (tiles)')
+      tEnd('[perf] initMap → MapLibre constructor')
+      tStart('[perf] initMap → style.load')
+      tStart('[perf] initMap → map.load (tiles)')
 
       created.addControl(
         new maplibregl.AttributionControl({
@@ -693,17 +731,19 @@ export function useMapBase(config: MapBaseConfig) {
       }
 
       let styleLoadFired = false
-      let providerSwitched = false
+      // The watcher skips echoes of the applied style so a single toggle
+      // can't ping-pong maptiler → fallback → maptiler.
+      lastAppliedProvider = tileProvider.effectiveProvider.value
       // Watch for manual header toggles / auto-degradation while this map lives.
       const stopProviderWatch = watch(() => tileProvider.effectiveProvider.value, (next, prev) => {
-        if (!created || !isMounted || next === prev || providerSwitched) return
-        providerSwitched = true
-        try {
-          console.warn(`[tile-provider] switching style ${prev} → ${next}`)
-          applyProviderStyle()
-        } finally {
-          setTimeout(() => { providerSwitched = false }, 500)
-        }
+        if (!created || !isMounted || next === prev) return
+        // Initial style still loading: the constructor style already targets
+        // the current provider — swapping now would restart the load and
+        // read as a provider flap.
+        if (isInitializing && !created.loaded()) return
+        if (next === lastAppliedProvider) return
+        console.warn(`[tile-provider] switching style ${prev} → ${next}`)
+        applyProviderStyle(next)
       })
       // Owned here (not onUnmounted) so re-init doesn't leak watchers.
       ;(created as unknown as { __stopProviderWatch?: () => void }).__stopProviderWatch = stopProviderWatch
@@ -711,7 +751,7 @@ export function useMapBase(config: MapBaseConfig) {
       created.on('style.load', () => {
         if (!styleLoadFired) {
           styleLoadFired = true
-          console.timeEnd('[perf] initMap → style.load')
+          tEnd('[perf] initMap → style.load')
         }
         onStyleLoad?.(map!)
         if (activeDataset.value === 'vulcan-observatory') {
@@ -733,8 +773,8 @@ export function useMapBase(config: MapBaseConfig) {
       created.on('load', () => {
         if (!isMounted) return
         isInitializing = false
-        console.timeEnd('[perf] initMap → map.load (tiles)')
-        console.time('[perf] initMap → rebuildMarkers')
+        tEnd('[perf] initMap → map.load (tiles)')
+        tStart('[perf] initMap → rebuildMarkers')
         if (import.meta.dev) console.warn(`[useMapBase] map.on('load'): dataset=${activeDataset.value}`)
         isLoading.value = false
         if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null }
@@ -747,8 +787,8 @@ export function useMapBase(config: MapBaseConfig) {
           rebuildMarkers()
         }
         initialRebuildDone = true
-        console.timeEnd('[perf] initMap → rebuildMarkers')
-        console.time('[perf] initMap → connections+hexGrid')
+        tEnd('[perf] initMap → rebuildMarkers')
+        tStart('[perf] initMap → connections+hexGrid')
         const qNow = quality.settings.value
         if (activeDataset.value !== 'vulcan-observatory') {
           if (qNow.showConnections) {
@@ -765,8 +805,8 @@ export function useMapBase(config: MapBaseConfig) {
         if (qNow.showHexGrid) {
           hexGrid.setupHexGrid()
         }
-        console.timeEnd('[perf] initMap → connections+hexGrid')
-        console.timeEnd('[perf] initMap total')
+        tEnd('[perf] initMap → connections+hexGrid')
+        tEnd('[perf] initMap total')
         onMapReady?.(map!)
       })
 
@@ -779,11 +819,15 @@ export function useMapBase(config: MapBaseConfig) {
       created.on('error', (err) => {
         console.error(`[${isGlobe ? 'MapView3D' : 'MapView2D'}] MapLibre error:`, err)
         errorCount++
-        tileProvider.noteTileError()
+        // Only pre-load errors count toward auto-degradation. Once the map
+        // is loaded, transient tile failures (a single 404/403 tile, glyph
+        // fetch hiccup) are normal — yanking the whole basemap to the
+        // fallback over them is what produced the maptiler ⇄ fallback flap.
+        if (!created.loaded()) tileProvider.noteTileError()
         // Auto-degradation to the local fallback may have engaged above; the
         // provider watcher swaps the style without a full re-init.
         if (tileProvider.effectiveProvider.value === 'fallback' && isMapTilerStyle) return
-        if (errorCount >= 2 && isMapTilerStyle && tileProvider.preference.value === 'auto') {
+        if (errorCount >= 2 && !created.loaded() && isMapTilerStyle && tileProvider.preference.value === 'auto') {
           tileProvider.forceAutoFallback('tile-errors')
           return
         }
@@ -805,8 +849,10 @@ export function useMapBase(config: MapBaseConfig) {
       loadingTimeout = setTimeout(() => {
         if (isLoading.value) {
           // Tiles/style never became ready — degrade to the local fallback in
-          // auto mode (MapTiler stays the default everywhere else).
-          if (isMapTilerStyle && tileProvider.preference.value === 'auto' && tileProvider.effectiveProvider.value === 'maptiler') {
+          // auto mode (MapTiler stays the default everywhere else). Only when
+          // the map never loaded: a working MapTiler map must not be yanked
+          // because the loading flag got stuck for another reason.
+          if (!created.loaded() && isMapTilerStyle && tileProvider.preference.value === 'auto' && tileProvider.effectiveProvider.value === 'maptiler') {
             console.warn('[tile-provider] style load timeout — switching to fallback')
             tileProvider.forceAutoFallback('slow-style-load')
             return
@@ -816,12 +862,20 @@ export function useMapBase(config: MapBaseConfig) {
             hasError.value = true
             errorMessage.value = `${isGlobe ? 'Globe' : 'Map'} tiles took too long to load. Your MapTiler API key may be invalid, expired, or rate-limited. You can also check your network connection.`
           }
+          // Release the init gate so the error-overlay retry can re-run.
+          isInitializing = false
         }
       }, 30000)
 
       window.addEventListener('resize', onResize)
     } catch (err) {
       isInitializing = false
+      tEnd('[perf] initMap → MapLibre constructor')
+      tEnd('[perf] initMap → style.load')
+      tEnd('[perf] initMap → map.load (tiles)')
+      tEnd('[perf] initMap → rebuildMarkers')
+      tEnd('[perf] initMap → connections+hexGrid')
+      tEnd('[perf] initMap total')
       console.error(`[${isGlobe ? 'MapView3D' : 'MapView2D'}] Failed to initialize map:`, err)
       isLoading.value = false
       hasError.value = true
@@ -832,7 +886,6 @@ export function useMapBase(config: MapBaseConfig) {
 
   onMounted(() => {
     isMounted = true
-    console.time('[perf] useMapBase onMounted → initMap')
     checkViewportSize()
     window.addEventListener('resize', scheduleViewportCheck, { passive: true })
     showFilterPanel.value = false

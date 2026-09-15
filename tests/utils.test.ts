@@ -5,7 +5,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { cn, formatCompact } from '../lib/utils'
-import { getProjectColorByBeneficiaries, getProjectColor } from '../lib/colors'
+import { getProjectColorByBeneficiaries, getProjectColor, resolveMapColor, MAP_COLORS } from '../lib/colors'
 import { isValidCoordinate, getGroupColor, calculateDistance, escapeHtml, buildProjectPopupHTML } from '../lib/map-utils'
 import type { ProjectData } from '../lib/types'
 
@@ -159,5 +159,22 @@ describe('buildProjectPopupHTML', () => {
     expect(html).not.toContain('Indirect Beneficiaries')
     expect(html).not.toContain('project-metrics')
     expect(html).not.toContain('project-divider')
+  })
+})
+
+describe('resolveMapColor', () => {
+  it('maps CSS var tokens to hex for MapLibre paint', () => {
+    expect(resolveMapColor('var(--danger)')).toBe(MAP_COLORS.danger)
+    expect(resolveMapColor('var(--success)')).toBe(MAP_COLORS.success)
+    expect(resolveMapColor('var(--warning)')).toBe(MAP_COLORS.warning)
+    expect(resolveMapColor('var(--info)')).toBe(MAP_COLORS.info)
+    expect(resolveMapColor('var(--purple)')).toBe(MAP_COLORS.purple)
+  })
+
+  it('passes real colors through and falls back on garbage', () => {
+    expect(resolveMapColor('#e74c3c')).toBe('#e74c3c')
+    expect(resolveMapColor('rgba(255,0,0,0.5)')).toBe('rgba(255,0,0,0.5)')
+    expect(resolveMapColor('not-a-color')).toBe(MAP_COLORS.danger)
+    expect(resolveMapColor(undefined)).toBe(MAP_COLORS.danger)
   })
 })

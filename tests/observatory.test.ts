@@ -758,7 +758,9 @@ describe('buildEnterpriseNetworkLines', () => {
       f.properties?.from === 'Rio Tinto' && f.properties?.type === 'foreign_to_claims'
     )
     expect(rioLine).toBeDefined()
-    expect(rioLine!.properties!.color).toBe('var(--danger)')
+    // MapLibre paint consumes this via ['get', 'color'] — must be a real
+    // color, never a var(--*) CSS token (which fails style-spec parsing).
+    expect(rioLine!.properties!.color).toBe('#e74c3c')
   })
 })
 

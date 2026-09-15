@@ -66,69 +66,20 @@
           <p class="section-side">{{ t('campaigns.libraryDesc') }}</p>
         </div>
         <div class="campaign-grid">
-          <article class="campaign-card campaign-card--featured">
+          <article v-for="c in campaigns" :key="c.title" class="campaign-card">
             <div class="card-top">
-              <span class="card-kicker">Biodiversity · live map</span>
-              <Icon name="lucide:leaf" class="h-5 w-5" />
+              <span class="card-kicker">{{ c.kicker }}</span>
+              <Icon :name="c.icon" class="h-5 w-5" />
             </div>
-            <h3>{{ t('campaigns.endangeredSpeciesTitle') }}</h3>
-            <p>{{ t('campaigns.endangeredSpeciesDesc') }}</p>
-            <div class="card-tags"><span>2D map + 3D globe</span><span>Data explorer</span></div>
+            <h3>{{ c.title }}</h3>
+            <p>{{ c.desc }}</p>
+            <ul class="card-stats">
+              <li v-for="s in c.stats" :key="s">{{ s }}</li>
+            </ul>
+            <div class="card-tags"><span>{{ c.tags }}</span></div>
             <div class="card-actions">
-              <NuxtLink class="btn btn--primary" to="/endangered-species">Open 2D map <Icon name="lucide:arrow-right" class="h-3.5 w-3.5" /></NuxtLink>
-              <NuxtLink class="text-link" to="/endangered-species/3d">Open 3D globe <Icon name="lucide:globe-2" class="h-3.5 w-3.5" /></NuxtLink>
-            </div>
-          </article>
-
-          <article class="campaign-card">
-            <div class="card-top">
-              <span class="card-kicker">Climate action · collective day</span>
-              <Icon name="lucide:megaphone" class="h-5 w-5" />
-            </div>
-            <h3>{{ t('campaigns.chooseActionTitle') }}</h3>
-            <p>{{ t('campaigns.chooseActionDesc') }}</p>
-            <div class="card-tags"><span>Toolkit</span><span>Direct action</span></div>
-            <div class="card-actions">
-              <a class="btn btn--secondary" href="https://www.earthguardians.org/can" target="_blank" rel="noopener noreferrer">Learn about CAN <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" /></a>
-            </div>
-          </article>
-
-          <article class="campaign-card">
-            <div class="card-top">
-              <span class="card-kicker">Systems · everyday action</span>
-              <Icon name="lucide:recycle" class="h-5 w-5" />
-            </div>
-            <h3>{{ t('campaigns.sustainableTitle') }}</h3>
-            <p>{{ t('campaigns.sustainableDesc') }}</p>
-            <div class="card-tags"><span>Waste reduction</span><span>Toolkits</span></div>
-            <div class="card-actions">
-              <a class="btn btn--secondary" href="https://www.earthguardians.org/sustainable-solutions-waste-reduction" target="_blank" rel="noopener noreferrer">Explore solutions <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" /></a>
-            </div>
-          </article>
-
-          <article class="campaign-card">
-            <div class="card-top">
-              <span class="card-kicker">People · network</span>
-              <Icon name="lucide:users-round" class="h-5 w-5" />
-            </div>
-            <h3>{{ t('campaigns.crewsTitle') }}</h3>
-            <p>{{ t('campaigns.crewsDesc') }}</p>
-            <div class="card-tags"><span>Global network</span><span>Local projects</span></div>
-            <div class="card-actions">
-              <NuxtLink class="btn btn--secondary" to="/active-crews">Find a crew <Icon name="lucide:arrow-right" class="h-3.5 w-3.5" /></NuxtLink>
-            </div>
-          </article>
-
-          <article class="campaign-card">
-            <div class="card-top">
-              <span class="card-kicker">Resources · funding</span>
-              <Icon name="lucide:hand-heart" class="h-5 w-5" />
-            </div>
-            <h3>{{ t('campaigns.grantsTitle') }}</h3>
-            <p>{{ t('campaigns.grantsDesc') }}</p>
-            <div class="card-tags"><span>Micro-grants</span><span>Project guides</span></div>
-            <div class="card-actions">
-              <NuxtLink class="btn btn--secondary" to="/project-grants">Explore grant projects <Icon name="lucide:arrow-right" class="h-3.5 w-3.5" /></NuxtLink>
+              <a class="btn btn--primary" :href="c.learnUrl" target="_blank" rel="noopener noreferrer">{{ t('campaigns.learnMore') }} <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" /></a>
+              <a class="text-link" :href="c.actionUrl" target="_blank" rel="noopener noreferrer">{{ c.actionLabel }} <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" /></a>
             </div>
           </article>
         </div>
@@ -179,13 +130,72 @@
         </div>
       </section>
 
-      <p class="source-note">Campaign context adapted from Earth Guardians' official <a href="https://www.earthguardians.org/" target="_blank" rel="noopener noreferrer">mission</a>, <a href="https://www.earthguardians.org/eg-resources" target="_blank" rel="noopener noreferrer">resources</a>, <a href="https://www.earthguardians.org/can" target="_blank" rel="noopener noreferrer">CAN</a> and <a href="https://www.earthguardians.org/youth-leadership-training" target="_blank" rel="noopener noreferrer">youth leadership</a> pages.</p>
+      <p class="source-note">Campaign content from Earth Guardians' official <a href="https://www.earthguardians.org/campaigns-2" target="_blank" rel="noopener noreferrer">campaigns</a>, <a href="https://www.earthguardians.org/can" target="_blank" rel="noopener noreferrer">Choose Action Now</a>, <a href="https://www.earthguardians.org/stmp" target="_blank" rel="noopener noreferrer">Stop the Money Pipeline</a>, <a href="https://www.earthguardians.org/civic-engagement" target="_blank" rel="noopener noreferrer">Civic Engagement</a> and <a href="https://www.earthguardians.org/divest-defund" target="_blank" rel="noopener noreferrer">Divest &amp; Defund</a> pages.</p>
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
 const { t } = useI18n()
+
+interface Campaign {
+  icon: string
+  kicker: string
+  title: string
+  desc: string
+  stats: string[]
+  tags: string
+  learnUrl: string
+  actionLabel: string
+  actionUrl: string
+}
+
+const campaigns = computed<Campaign[]>(() => [
+  {
+    icon: 'lucide:megaphone',
+    kicker: t('campaigns.canKicker'),
+    title: t('campaigns.canTitle'),
+    desc: t('campaigns.canDesc'),
+    stats: [t('campaigns.canStat1'), t('campaigns.canStat2'), t('campaigns.canStat3')],
+    tags: t('campaigns.canTags'),
+    learnUrl: 'https://www.earthguardians.org/can',
+    actionLabel: t('campaigns.canActionLabel'),
+    actionUrl: 'https://docs.google.com/document/d/1QgnCMJ-3dH_KHGWu4_VNhtGv49QdgkevWvGXxrCjZco/edit?usp=sharing',
+  },
+  {
+    icon: 'lucide:landmark',
+    kicker: t('campaigns.stmpKicker'),
+    title: t('campaigns.stmpTitle'),
+    desc: t('campaigns.stmpDesc'),
+    stats: [t('campaigns.stmpStat1'), t('campaigns.stmpStat2'), t('campaigns.stmpStat3')],
+    tags: t('campaigns.stmpTags'),
+    learnUrl: 'https://www.earthguardians.org/stmp',
+    actionLabel: t('campaigns.stmpActionLabel'),
+    actionUrl: 'https://www.notmydirtymoney.com/',
+  },
+  {
+    icon: 'lucide:vote',
+    kicker: t('campaigns.civicKicker'),
+    title: t('campaigns.civicTitle'),
+    desc: t('campaigns.civicDesc'),
+    stats: [t('campaigns.civicStat1'), t('campaigns.civicStat2'), t('campaigns.civicStat3')],
+    tags: t('campaigns.civicTags'),
+    learnUrl: 'https://www.earthguardians.org/civic-engagement',
+    actionLabel: t('campaigns.civicActionLabel'),
+    actionUrl: 'https://www.earthguardians.org/register-to-vote',
+  },
+  {
+    icon: 'lucide:hand-coins',
+    kicker: t('campaigns.divestKicker'),
+    title: t('campaigns.divestTitle'),
+    desc: t('campaigns.divestDesc'),
+    stats: [t('campaigns.divestStat1'), t('campaigns.divestStat2'), t('campaigns.divestStat3')],
+    tags: t('campaigns.divestTags'),
+    learnUrl: 'https://www.earthguardians.org/divest-defund',
+    actionLabel: t('campaigns.divestActionLabel'),
+    actionUrl: 'https://www.notmydirtymoney.com/',
+  },
+])
 
 useHead({
   title: 'Campaigns — Earth Guardians',
@@ -451,6 +461,33 @@ useHead({
   color: var(--text-secondary);
   font-size: 0.82rem;
   line-height: 1.55;
+}
+.card-stats {
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0.9rem 0 0;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.card-stats li {
+  position: relative;
+  padding-left: 1.1rem;
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.card-stats li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.42em;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--primary);
 }
 .card-tags {
   display: flex;

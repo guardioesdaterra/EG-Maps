@@ -6,7 +6,7 @@
 > **Source:** ~21,000 LOC across `pages/`, `components/`, `composables/`, `lib/`, `plugins/`, `scripts/`, `tests/`
 > **Locales:** 16 (en, es, fr, pt, ar, hi, ja, zh, nl, de, it, ko, pl, ru, sv, tr)
 
-This document consolidates architecture, module-by-module reference, data flow, conventions, deployed semantics, and known seams. It complements the existing review docs (`CODEBASE-REVIEW.md`, `audit.md`, `PHILOSOPHY-LIMITATIONS.md`, `SUPABASE-ARCHITECTURE.md`) — see those for phase-by-phase history and roadmap.
+This document consolidates architecture, module-by-module reference, data flow, conventions, deployed semantics, and known seams. It complements the topic guides in [`docs/`](docs/) (`ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `CONTRIBUTING.md`, `squarespace-embed.md`, `anm-sync.md`).
 
 ---
 
@@ -455,5 +455,5 @@ node --env-file=.env scripts/sync-grants-to-supabase.ts grants scripts/output/gr
 
 ---
 
-*Last reviewed: 2026-08-25*  
-*Prior docs consulted: AGENTS.md, CODEBASE-REVIEW.md, PHILOSOPHY-LIMITATIONS.md, SUPABASE-ARCHITECTURE.md, audit.md, docs/{ARCHITECTURE,API,DATABASE,CONTRIBUTING}.md*
+*Last reviewed: 2026-09-15*
+*Prior docs consulted: AGENTS.md, README.md, docs/{ARCHITECTURE,API,DATABASE,CONTRIBUTING}.md*

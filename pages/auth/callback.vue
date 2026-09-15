@@ -8,7 +8,7 @@
   <main id="main-content" tabindex="-1" role="main" class="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
     <div class="text-center">
       <div v-if="error">
-        <p class="text-red-400 font-semibold">{{ t('grantsPortal.authErrorTitle') }}</p>
+        <p class="text-[var(--danger)] font-semibold">{{ t('grantsPortal.authErrorTitle') }}</p>
         <p class="text-sm text-[var(--text-muted)] mt-2">{{ error }}</p>
         <NuxtLink :to="backUrl" class="mt-4 inline-block px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg font-semibold">
           {{ t('grantsPortal.authBackToGrants') }}
@@ -37,7 +37,6 @@ const backUrl = ref('/eg-grants')
 const FALLBACK_NEXT = '/eg-grants'
 const SIGN_UP_URL = '/eg-grants?signup=1'
 let fallbackTimer: ReturnType<typeof setTimeout> | null = null
-let settleTimer: ReturnType<typeof setTimeout> | null = null
 let authUnsubscribe: (() => void) | null = null
 let settled = false
 
@@ -65,7 +64,6 @@ function settleRedirect(url: string) {
   if (settled) return
   settled = true
   if (fallbackTimer) clearTimeout(fallbackTimer)
-  if (settleTimer) clearTimeout(settleTimer)
   if (authUnsubscribe) { authUnsubscribe(); authUnsubscribe = null }
   window.history.replaceState({}, '', window.location.pathname)
   navigateTo(url)
@@ -75,7 +73,6 @@ function settleError(message: string) {
   if (settled) return
   settled = true
   if (fallbackTimer) clearTimeout(fallbackTimer)
-  if (settleTimer) clearTimeout(settleTimer)
   if (authUnsubscribe) { authUnsubscribe(); authUnsubscribe = null }
   error.value = message
 }
@@ -125,7 +122,6 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   if (fallbackTimer) clearTimeout(fallbackTimer)
-  if (settleTimer) clearTimeout(settleTimer)
   if (authUnsubscribe) { authUnsubscribe(); authUnsubscribe = null }
 })
 

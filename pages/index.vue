@@ -38,23 +38,23 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <div class="bento-icon" style="background: #8e44ad14; color: #8e44ad">
+              <div class="bento-icon">
                 <Icon name="lucide:hand-heart" />
               </div>
               <h2 class="bento-title">{{ t('home.projectGrantsTitle') }}</h2>
               <p class="bento-desc">{{ t('home.projectGrantsDesc') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong style="color: #8e44ad">{{ projectStats.totalProjects }}</strong>
+                  <strong>{{ projectStats.totalProjects }}</strong>
                   <span>{{ t('home.projectsCount') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong style="color: #8e44ad">{{ formatCompact(projectStats.totalBeneficiaries) }}+</strong>
+                  <strong>{{ formatCompact(projectStats.totalBeneficiaries) }}+</strong>
                   <span>{{ t('home.beneficiariesCount') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/project-grants" class="bento-link bento-link--primary" style="background: #8e44ad; border-color: #8e44ad">
+                <NuxtLink to="/project-grants" class="bento-link bento-link--primary">
                   <Icon name="lucide:map" class="h-3.5 w-3.5" />
                   2D Map
                 </NuxtLink>
@@ -71,24 +71,24 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <div class="bento-icon" style="background: #27ae6014; color: #27ae60">
+              <div class="bento-icon">
                 <Icon name="lucide:bird" />
               </div>
               <h2 class="bento-title">{{ t('home.campaignsTitle') }}</h2>
               <p class="bento-desc">{{ t('home.campaignsDesc') }}</p>
-              <p class="bento-kicker" style="color: #27ae60">{{ t('home.campaignsKicker') }}</p>
+              <p class="bento-kicker">{{ t('home.campaignsKicker') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong style="color: #27ae60">{{ speciesCount || '—' }}</strong>
+                  <strong>{{ speciesCount || '—' }}</strong>
                   <span>{{ t('home.speciesCount') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong style="color: #27ae60">{{ t('home.allValue') }}</strong>
+                  <strong>{{ t('home.allValue') }}</strong>
                   <span>{{ t('home.countries') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/campaigns" class="bento-link bento-link--primary" style="background: #27ae60; border-color: #27ae60">
+                <NuxtLink to="/campaigns" class="bento-link bento-link--primary">
                   <Icon name="lucide:megaphone" class="h-3.5 w-3.5" />
                   {{ t('home.campaignsTitle') }}
                 </NuxtLink>
@@ -105,23 +105,23 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <div class="bento-icon" style="background: #f39c1214; color: #f39c12">
+              <div class="bento-icon">
                 <Icon name="lucide:graduation-cap" />
               </div>
               <h2 class="bento-title">{{ t('home.masterclassesTitle') }}</h2>
               <p class="bento-desc">{{ t('home.masterclassesDesc') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong style="color: #f39c12">{{ t('home.seriesStatusValue') }}</strong>
+                  <strong>{{ t('home.seriesStatusValue') }}</strong>
                   <span>{{ t('home.seriesStatusLabel') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong style="color: #f39c12">{{ t('home.archiveValue') }}</strong>
+                  <strong>{{ t('home.archiveValue') }}</strong>
                   <span>{{ t('home.archiveLabel') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/masterclasses" class="bento-link bento-link--primary" style="background: #f39c12; border-color: #f39c12">
+                <NuxtLink to="/masterclasses" class="bento-link bento-link--primary">
                   <Icon name="lucide:book-open" class="h-3.5 w-3.5" />
                   All Classes
                 </NuxtLink>
@@ -134,23 +134,23 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <div class="bento-icon" style="background: #8b5cf614; color: #8b5cf6">
+              <div class="bento-icon">
                 <Icon name="lucide:heart-handshake" />
               </div>
               <h2 class="bento-title">{{ t('home.startACrewTitle') }}</h2>
               <p class="bento-desc">{{ t('home.startACrewDesc') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong style="color: #8b5cf6">{{ crewOverallStats.totalActiveCrews }}</strong>
+                  <strong>{{ crewOverallStats.totalActiveCrews }}</strong>
                   <span>{{ t('home.crewsCount') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong style="color: #8b5cf6">{{ crewOverallStats.totalCountries }}</strong>
+                  <strong>{{ crewOverallStats.totalCountries }}</strong>
                   <span>{{ t('home.countries') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/active-crews" class="bento-link bento-link--primary" style="background: #8b5cf6; border-color: #8b5cf6">
+                <NuxtLink to="/active-crews" class="bento-link bento-link--primary">
                   <Icon name="lucide:users" class="h-3.5 w-3.5" />
                   Our Crews
                 </NuxtLink>
@@ -172,23 +172,23 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <div class="bento-icon" style="background: #10b98114; color: #10b981">
+              <div class="bento-icon">
                 <Icon name="lucide:briefcase" />
               </div>
               <h2 class="bento-title">{{ t('home.crewProjectsTitle') }}</h2>
               <p class="bento-desc">{{ t('home.crewProjectsDesc') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong style="color: #10b981">{{ t('home.crewProjectsStatValue') }}</strong>
+                  <strong>{{ t('home.crewProjectsStatValue') }}</strong>
                   <span>{{ t('home.crewProjectsStatLabel') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong style="color: #10b981">{{ t('home.crewProjectsPlaceValue') }}</strong>
+                  <strong>{{ t('home.crewProjectsPlaceValue') }}</strong>
                   <span>{{ t('home.crewProjectsPlaceLabel') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/crew-projects" class="bento-link bento-link--primary" style="background: #10b981; border-color: #10b981">
+                <NuxtLink to="/crew-projects" class="bento-link bento-link--primary">
                   <Icon name="lucide:mountain" class="h-3.5 w-3.5" />
                   Crew Projects
                 </NuxtLink>
@@ -201,23 +201,23 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <div class="bento-icon" style="background: #f59e0b14; color: #f59e0b">
+              <div class="bento-icon">
                 <Icon name="lucide:microscope" />
               </div>
               <h2 class="bento-title">{{ t('home.vulcanTitle') }}</h2>
               <p class="bento-desc">{{ t('home.vulcanDesc') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong style="color: #f59e0b">{{ t('home.vulcanFocusValue') }}</strong>
+                  <strong>{{ t('home.vulcanFocusValue') }}</strong>
                   <span>{{ t('home.vulcanFocusLabel') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong style="color: #f59e0b">{{ t('home.vulcanDataValue') }}</strong>
+                  <strong>{{ t('home.vulcanDataValue') }}</strong>
                   <span>{{ t('home.vulcanDataLabel') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/vulcan-observatory" class="bento-link bento-link--primary" style="background: #f59e0b; border-color: #f59e0b">
+                <NuxtLink to="/vulcan-observatory" class="bento-link bento-link--primary">
                   <Icon name="lucide:map" class="h-3.5 w-3.5" />
                   2D Map
                 </NuxtLink>
@@ -250,10 +250,8 @@ import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue'
 import { allProjectsData } from '@/lib/project-data'
 import { crewOverallStats } from '@/lib/crew-data'
 import { formatCompact } from '@/lib/utils'
-import { useDarkMode } from '@/composables/useDarkMode'
 
 const { t } = useI18n()
-const { isDark } = useDarkMode()
 const baseURL = useRuntimeConfig().app.baseURL
 
 useHead({
@@ -341,13 +339,75 @@ const clearGlow = (e: MouseEvent) => {
   padding: clamp(2rem, 5vh, 5rem) clamp(1.5rem, 4vw, 4rem);
   border-right: 1px solid var(--border-color);
 }
-.home-left-inner { max-width: 28rem; width: 100%; }
+.home-left-inner {
+  position: relative;
+  isolation: isolate;
+  max-width: 28rem;
+  width: 100%;
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.38) 55%, rgba(255, 255, 255, 0.6));
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+}
+/* top sheen */
+.home-left-inner::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  z-index: 1;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+  pointer-events: none;
+}
+/* soft accent glows inside the glass */
+.home-left-inner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(320px 180px at 12% -10%, rgba(6, 182, 212, 0.16), transparent 70%),
+    radial-gradient(340px 200px at 95% 110%, rgba(168, 85, 247, 0.14), transparent 70%);
+  pointer-events: none;
+}
+.home-left-inner > * { position: relative; z-index: 1; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .home-left-inner { background: var(--bg-tertiary); }
+  :global(.dark) .home-left-inner { background: #141414; }
+}
+:global(.dark) .home-left-inner {
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04) 55%, rgba(255, 255, 255, 0.07));
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
 .home-logo {
-  width: clamp(3.5rem, 6vw, 5rem);
-  height: clamp(3.5rem, 6vw, 5rem);
+  display: block;
+  width: clamp(5.5rem, 10vw, 7.5rem);
+  height: clamp(5.5rem, 10vw, 7.5rem);
   object-fit: contain;
-  border-radius: 10px;
-  margin-bottom: 1.5rem;
+  border-radius: 18px;
+  margin: 0 auto 1.75rem;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  padding: 0.35rem;
+}
+:global(.dark) .home-logo {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 .home-title {
   font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;
@@ -389,17 +449,28 @@ const clearGlow = (e: MouseEvent) => {
   text-decoration: none;
   padding: 0.55rem 0.7rem;
   min-height: 44px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  transition: background 0.15s, color 0.15s;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 4px 14px rgba(0, 0, 0, 0.06);
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+:global(.dark) .home-orglink {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .home-orglink:hover { background: var(--text-primary); color: var(--bg-primary); }
 .home-orglink--muted { color: var(--text-secondary); }
 .home-orglink--muted:hover { color: var(--bg-primary); }
 .home-divider {
   width: 3rem;
-  height: 1px;
-  background: var(--border-color);
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary), var(--accent, #a855f7), transparent);
+  opacity: 0.7;
   margin: 2rem 0;
 }
 
@@ -445,28 +516,32 @@ const clearGlow = (e: MouseEvent) => {
   width: 100%;
 }
 
-/* ── Card base — glassmorphism ── */
+/* ── Card base — glassmorphism (light glass by default, dark glass in .dark) ── */
 .bento-card {
   --mx: 50%;
   --my: 50%;
+  /* Readable accent ink: 62%-black mix clears 4.5:1 on light glass for
+     every card accent; lightened 72%-white mix in dark mode. */
+  --accent-ink: color-mix(in srgb, var(--accent, var(--primary)) 62%, black);
   position: relative;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(10, 10, 10, 0.08);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
   backdrop-filter: blur(20px) saturate(1.5);
   -webkit-backdrop-filter: blur(20px) saturate(1.5);
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 12px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 :global(.dark) .bento-card {
-  border-color: rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.03);
+  --accent-ink: color-mix(in srgb, var(--accent, var(--primary)) 72%, white);
+  border-color: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 12px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .bento-glow {
@@ -521,6 +596,7 @@ const clearGlow = (e: MouseEvent) => {
   font-size: 0.62rem;
   font-weight: 700;
   margin: 0;
+  color: var(--accent-ink);
 }
 .bento-icon {
   width: 2rem;
@@ -531,8 +607,13 @@ const clearGlow = (e: MouseEvent) => {
   border-radius: 6px;
   margin: 0.1rem 0;
   transition: background 0.2s;
+  background: color-mix(in srgb, var(--accent, var(--primary)) 9%, transparent);
+  color: var(--accent-ink);
 }
 .bento-card:hover .bento-icon {
+  background: rgba(10, 10, 10, 0.06);
+}
+:global(.dark) .bento-card:hover .bento-icon {
   background: rgba(255, 255, 255, 0.08);
 }
 .bento-title {
@@ -561,6 +642,7 @@ const clearGlow = (e: MouseEvent) => {
   font-size: 0.9rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+  color: var(--accent-ink);
 }
 .bento-stat span {
   font-size: 0.55rem;
@@ -588,20 +670,30 @@ const clearGlow = (e: MouseEvent) => {
   font-weight: 700;
   text-decoration: none;
   color: var(--text-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(10, 10, 10, 0.1);
+  background: rgba(255, 255, 255, 0.6);
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .bento-link:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--text-primary);
   border-color: var(--accent, var(--primary));
 }
+:global(.dark) .bento-link {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+}
+:global(.dark) .bento-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
 .bento-link--primary {
   color: #fff;
+  /* Darkened accent fill: white text clears 4.5:1 for every card accent */
+  background: color-mix(in srgb, var(--accent, var(--primary)) 62%, black);
+  border-color: transparent;
 }
 .bento-link--primary:hover {
-  opacity: 0.85;
+  filter: brightness(1.07);
   color: #fff;
 }
 
@@ -704,8 +796,9 @@ const clearGlow = (e: MouseEvent) => {
     font-size: clamp(2rem, 12vw, 3rem);
   }
   .home-logo {
-    width: 3rem;
-    height: 3rem;
+    width: 5rem;
+    height: 5rem;
+    margin: 0 auto 1.25rem;
   }
 }
 

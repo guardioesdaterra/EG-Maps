@@ -27,14 +27,19 @@
 
 import { computed, onMounted, watch, nextTick } from 'vue'
 import { useI18n } from '@/composables/useI18n'
+import { useDarkMode } from '@/composables/useDarkMode'
 import { useRoute } from 'vue-router'
 
 const { t } = useI18n()
+const { isDark } = useDarkMode()
 const skipLabel = computed(() => t('a11y.skipToContent'))
 
 const veilOpacity = computed(() => {
   const p = route.path
-  return (p === '/campaigns' || p === '/masterclasses') ? 0.35 : 1
+  const base = (p === '/campaigns' || p === '/masterclasses') ? 0.35 : 1
+  // The veil shader is intrinsically dark — in light mode let the light
+  // page background wash through so the whole palette visibly inverts.
+  return isDark.value ? base : base * 0.3
 })
 
 const config = useRuntimeConfig()
@@ -94,6 +99,9 @@ watch(
 )
 
 useHead({
+  meta: [
+    { name: 'theme-color', content: () => (isDark.value ? '#0a0a0a' : '#fafafa') },
+  ],
   script: plausibleDomain
     ? [
         {

@@ -257,7 +257,7 @@ const statsSummary = computed(() => {
 .obs-topbar__sub {
   font-size: 10px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.75);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -294,9 +294,9 @@ const statsSummary = computed(() => {
 .obs-stat:hover { background: rgba(255, 255, 255, 0.09); border-color: rgba(255, 255, 255, 0.16); }
 .obs-stat__dot { width: 0.45rem; height: 0.45rem; border-radius: 50%; flex-shrink: 0; }
 .obs-stat__count { font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
-.obs-stat__label { color: rgba(255, 255, 255, 0.55); font-weight: 500; }
+.obs-stat__label { color: rgba(255, 255, 255, 0.7); font-weight: 500; }
 .obs-stat__sep { width: 1px; height: 1rem; background: rgba(255, 255, 255, 0.12); flex-shrink: 0; }
-.obs-stat__total { font-size: 12px; color: rgba(255, 255, 255, 0.55); white-space: nowrap; flex-shrink: 0; }
+.obs-stat__total { font-size: 12px; color: rgba(255, 255, 255, 0.7); white-space: nowrap; flex-shrink: 0; }
 .obs-stat__total strong { color: #fff; font-weight: 800; font-variant-numeric: tabular-nums; }
 .obs-stat__total-label { margin-left: 0.25rem; }
 
@@ -328,7 +328,7 @@ const statsSummary = computed(() => {
   border-radius: 7px;
   font-size: 11px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.78);
   text-decoration: none;
   transition: background 0.15s, color 0.15s;
 }
@@ -347,7 +347,7 @@ const statsSummary = computed(() => {
   background: transparent;
   border: 1px solid transparent;
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.75);
   cursor: pointer;
   text-decoration: none;
   transition: background 0.15s, color 0.15s, border-color 0.15s;

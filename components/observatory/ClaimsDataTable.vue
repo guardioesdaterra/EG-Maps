@@ -274,7 +274,7 @@ watch(() => props.visible, (v) => {
 .obs-datatable__td {
   padding: clamp(4px, 0.8vw, 8px) clamp(6px, 1.2vw, 12px);
   font-size: clamp(10px, 1.5vw, 13px);
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.78);
   white-space: nowrap;
 }
 .obs-datatable__td--name {

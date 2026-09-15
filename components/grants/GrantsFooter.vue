@@ -131,13 +131,13 @@ const { t } = useI18n()
 .footer-stat-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.72);
   margin-top: 0.5rem;
 }
 .footer-copy {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.7);
   text-align: center;
   margin-top: 3rem;
   line-height: 1.8;
@@ -148,7 +148,7 @@ const { t } = useI18n()
   margin-top: 0.5rem;
 }
 .footer-copy-dim {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.65);
   font-size: 0.6rem;
   letter-spacing: 0.15em;
 }

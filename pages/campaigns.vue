@@ -241,7 +241,8 @@ useHead({
 }
 .btn--secondary:hover { background: var(--text-primary); color: var(--bg-primary); }
 .btn--light {
-  background: var(--primary);
+  /* Darkened primary fill so white text clears 4.5:1 in both themes */
+  background: color-mix(in srgb, var(--primary) 62%, black);
   color: #fff;
 }
 .btn--light:hover { opacity: 0.85; }
@@ -345,11 +346,11 @@ useHead({
   flex: 1;
   padding: 1.25rem;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(10, 10, 10, 0.08);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
   backdrop-filter: blur(16px) saturate(1.4);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 :global(.dark) .flow-step {
   border-color: rgba(255, 255, 255, 0.06);
@@ -365,9 +366,9 @@ useHead({
   border-radius: 6px;
   margin-bottom: 0.75rem;
 }
-.flow-icon--discover { background: #27ae60; color: #fff; }
-.flow-icon--organize { background: #8e44ad; color: #fff; }
-.flow-icon--act { background: #06b6d4; color: #fff; }
+.flow-icon--discover { background: color-mix(in srgb, #27ae60 62%, black); color: #fff; }
+.flow-icon--organize { background: color-mix(in srgb, #8e44ad 62%, black); color: #fff; }
+.flow-icon--act { background: color-mix(in srgb, #06b6d4 62%, black); color: #fff; }
 .flow-title {
   font-size: 0.95rem;
   font-weight: 800;
@@ -407,11 +408,11 @@ useHead({
   flex-direction: column;
   padding: clamp(1rem, 2.5vw, 1.5rem);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(10, 10, 10, 0.08);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
   backdrop-filter: blur(16px) saturate(1.4);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 :global(.dark) .campaign-card {
@@ -561,11 +562,11 @@ useHead({
   gap: 2rem;
   padding: clamp(1.5rem, 3.5vw, 2.5rem);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
+  border: 1px solid rgba(10, 10, 10, 0.08);
   backdrop-filter: blur(20px) saturate(1.5);
   -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   color: var(--text-primary);
 }
 :global(.dark) .cta-block {

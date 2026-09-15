@@ -855,7 +855,7 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   font-family: inherit;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
@@ -888,7 +888,7 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   background: transparent;
   border: 0;
   border-bottom: 2px solid transparent;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.68);
   cursor: pointer;
   font-family: inherit;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
@@ -1043,7 +1043,7 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
 .vulc-search__icon {
   width: 0.85rem;
   height: 0.85rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.6);
   flex-shrink: 0;
 }
 .vulc-search__input {
@@ -1058,7 +1058,7 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   min-width: 0;
 }
 .vulc-search__input::placeholder {
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.6);
 }
 .vulc-search__clear {
   width: 1rem;
@@ -1296,7 +1296,7 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   justify-content: center;
   gap: 0.5rem;
   padding: 2rem 1rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.72);
   font-size: 12px;
   text-align: center;
 }
@@ -1364,11 +1364,11 @@ watch([filteredFeatures], () => resetPage(), { flush: 'post' })
   margin: 0 0 0.3rem;
   font-size: 10px;
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.72);
 }
 .vulc-card__meta {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.72);
   display: flex;
   flex-wrap: wrap;
   gap: 0.15rem;

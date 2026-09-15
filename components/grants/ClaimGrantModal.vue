@@ -168,14 +168,14 @@ async function handleSubmit() {
 
 .claim-modal-subtitle {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.75);
   margin: 0;
 }
 
 .claim-close-btn {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 16px;
   cursor: pointer;
   padding: 4px 8px;
@@ -225,7 +225,7 @@ async function handleSubmit() {
   padding: 2px 8px;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .claim-project-status.granted {
@@ -243,7 +243,7 @@ async function handleSubmit() {
 
 .claim-project-meta {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.75);
   margin-bottom: 8px;
 }
 
@@ -254,7 +254,7 @@ async function handleSubmit() {
 
 .claim-project-desc {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.75);
   line-height: 1.5;
   margin: 0;
   display: -webkit-box;
@@ -316,12 +316,12 @@ async function handleSubmit() {
 }
 
 .claim-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .claim-char-count {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.6);
   text-align: right;
 }
 
@@ -330,7 +330,7 @@ async function handleSubmit() {
   align-items: flex-start;
   gap: 6px;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.75);
   line-height: 1.5;
   margin-top: 8px;
   padding: 10px;

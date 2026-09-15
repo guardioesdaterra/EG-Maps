@@ -25,7 +25,7 @@
             <div class="claim-intel__head">
               <span
                 class="claim-intel__score"
-                :style="{ background: scoreColor(context.suspicionScore) }"
+                :style="{ background: `color-mix(in srgb, ${scoreColor(context.suspicionScore)} 62%, black)` }"
               >{{ context.suspicionScore.toFixed(1) }}</span>
               <div class="claim-intel__title">
                 <strong>{{ t('observatory.claimIntel.holderTitle') }}</strong>
@@ -43,7 +43,7 @@
             </div>
             <ul class="claim-intel__overlaps">
               <li v-for="o in overlaps.slice(0, 5)" :key="o.name" class="claim-intel__overlap">
-                <span class="claim-intel__kind" :style="{ background: kindColor(o.kind) }">{{ kindLabel(o.kind) }}</span>
+                <span class="claim-intel__kind" :style="{ background: `color-mix(in srgb, ${kindColor(o.kind)} 62%, black)` }">{{ kindLabel(o.kind) }}</span>
                 <span class="claim-intel__name">{{ o.name }}</span>
                 <span v-if="o.distance_km" class="claim-intel__dist">{{ o.distance_km }}km</span>
               </li>
@@ -233,9 +233,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--obs-red);
+  color: var(--danger);
 }
-.claim-intel--territory .claim-intel__title strong { color: var(--obs-amber); }
+.claim-intel--territory .claim-intel__title strong { color: var(--warning); }
 .claim-intel__title span {
   color: var(--text-muted);
   font-family: ui-monospace, monospace;
@@ -253,7 +253,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
   padding: 2px 6px;
   border-radius: 3px;
   background: rgba(142, 68, 173, 0.15);
-  color: var(--purple);
+  color: var(--lilac);
   letter-spacing: 0.03em;
 }
 .claim-intel__overlaps {

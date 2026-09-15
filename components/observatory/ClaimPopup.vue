@@ -10,19 +10,19 @@
   <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;min-width:250px;position:relative">
     <div
 class="absolute top-2 left-2 w-2.5 h-2.5 border-t-2 border-l-2 pointer-events-none z-[1]"
-      :style="{ borderColor: cat.color + '60' }" />
+      :style="{ borderColor: `color-mix(in srgb, ${cat.color} 60%, transparent)` }" />
     <div
 class="absolute top-2 right-2 w-2.5 h-2.5 border-t-2 border-r-2 pointer-events-none z-[1]"
-      :style="{ borderColor: cat.color + '60' }" />
+      :style="{ borderColor: `color-mix(in srgb, ${cat.color} 60%, transparent)` }" />
 
     <div class="px-3.5 pt-3.5 pb-2.5 relative">
       <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
         <span
 class="inline-flex items-center gap-1 text-[clamp(8px,1.3vw,11px)] font-bold px-2 py-0.5 rounded text-white uppercase tracking-wider"
-          :style="{ background: cat.color }">{{ cat.label }}</span>
+          :style="{ background: `color-mix(in srgb, ${cat.color} 62%, black)` }">{{ cat.label }}</span>
         <span
 class="inline-flex items-center gap-0.5 text-[clamp(8px,1.3vw,11px)] font-bold px-2 py-0.5 rounded text-white"
-          :style="{ background: dangerColor }">{{ dangerScore.toFixed(1) }} Danger</span>
+          :style="{ background: `color-mix(in srgb, ${dangerColor} 62%, black)` }">{{ dangerScore.toFixed(1) }} Danger</span>
         <span v-if="props.net" class="text-[clamp(7px,1.2vw,10px)] px-1.5 py-0.5 rounded font-semibold bg-blue-900/30 text-blue-400 tracking-wide">
           {{ props.net }}
         </span>
@@ -31,34 +31,34 @@ class="inline-flex items-center gap-0.5 text-[clamp(8px,1.3vw,11px)] font-bold p
         <span v-if="susFlag" class="text-[clamp(7px,1.2vw,10px)] px-1.5 py-0.5 rounded font-bold bg-purple-900/20 text-purple-400">SUS</span>
       </div>
       <h3 class="m-0 text-[clamp(13px,1.9vw,16px)] font-bold text-zinc-100 leading-snug tracking-wide break-words">{{ props.n || 'Unknown' }}</h3>
-      <div class="text-[clamp(10px,1.5vw,13px)] text-zinc-500 mt-0.5 italic">{{ props.s || '—' }}</div>
+      <div class="text-[clamp(10px,1.5vw,13px)] text-zinc-400 mt-0.5 italic">{{ props.s || '—' }}</div>
     </div>
 
-    <div class="h-px mx-3" :style="{ background: `linear-gradient(90deg, transparent, ${cat.color}30, transparent)` }" />
+    <div class="h-px mx-3" :style="{ background: `linear-gradient(90deg, transparent, color-mix(in srgb, ${cat.color} 30%, transparent), transparent)` }" />
 
     <div class="px-3.5 py-2.5">
       <div class="grid grid-cols-2 gap-x-3.5 gap-y-1.25">
         <div>
-          <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-600 uppercase tracking-widest font-semibold">Process</div>
+          <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-400 uppercase tracking-widest font-semibold">Process</div>
           <div class="text-[clamp(10.5px,1.6vw,13.5px)] text-zinc-300 font-medium break-words">{{ props.p || '—' }}</div>
         </div>
         <div>
-          <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-600 uppercase tracking-widest font-semibold">Phase</div>
+          <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-400 uppercase tracking-widest font-semibold">Phase</div>
           <div class="text-[clamp(10.5px,1.6vw,13.5px)] text-zinc-300 font-medium">{{ props.f || '—' }}</div>
         </div>
         <div>
-          <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-600 uppercase tracking-widest font-semibold">UF</div>
+          <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-400 uppercase tracking-widest font-semibold">UF</div>
           <div class="text-[clamp(10.5px,1.6vw,13.5px)] text-zinc-300 font-medium">{{ props.u || '—' }}</div>
         </div>
         <div>
-          <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-600 uppercase tracking-widest font-semibold">Area</div>
+          <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-400 uppercase tracking-widest font-semibold">Area</div>
           <div class="text-[clamp(10.5px,1.6vw,13.5px)] text-zinc-300 font-medium">{{ formattedArea }}</div>
         </div>
       </div>
 
       <div class="mt-1.5 pt-1.5 border-t border-zinc-800/50">
         <div class="flex items-center gap-1.5">
-          <span class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-600 uppercase tracking-widest font-semibold">Danger Level</span>
+          <span class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-400 uppercase tracking-widest font-semibold">Danger Level</span>
           <div class="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
             <div class="h-full rounded-full" :style="{ width: `${Math.min(100, dangerScore * 10)}%`, background: dangerColor, boxShadow: `0 0 4px ${dangerColor}` }" />
           </div>
@@ -67,22 +67,22 @@ class="inline-flex items-center gap-0.5 text-[clamp(8px,1.3vw,11px)] font-bold p
       </div>
 
       <div v-if="lastEvent" class="mt-1.5 pt-1.5 border-t border-zinc-800/50">
-        <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-600 uppercase tracking-widest font-semibold mb-0.5">Last event</div>
+        <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-400 uppercase tracking-widest font-semibold mb-0.5">Last event</div>
         <div class="flex items-center gap-1.5 flex-wrap">
           <span class="text-[clamp(9.5px,1.45vw,12.5px)] text-zinc-300 leading-snug flex-1 break-words">{{ lastEvent }}</span>
-          <span class="text-[clamp(7.5px,1.25vw,10.5px)] px-1.5 py-0.5 rounded font-bold" :style="{ background: ageColor + '22', color: ageColor }">{{ ageLabel }}</span>
+          <span class="text-[clamp(7.5px,1.25vw,10.5px)] px-1.5 py-0.5 rounded font-bold" :style="{ background: `color-mix(in srgb, ${ageColor} 16%, transparent)`, color: ageColor }">{{ ageLabel }}</span>
         </div>
       </div>
 
       <div v-if="overlaps.length" class="mt-1.5 pt-1.5 border-t border-zinc-800/50">
-        <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-600 uppercase tracking-widest font-semibold mb-0.5">Overlaps</div>
+        <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-400 uppercase tracking-widest font-semibold mb-0.5">Overlaps</div>
         <div class="flex items-center flex-wrap gap-0">
           <span
 v-for="(o, i) in displayedOverlaps" :key="i"
             class="inline-flex items-center gap-0.5 text-[clamp(8px,1.3vw,11px)] px-1 py-0.5 rounded bg-red-900/18 text-red-400 font-semibold mr-0.5 mb-0.5">
             ⚠ {{ o.name }}<span v-if="o.distance_km" class="opacity-70 font-normal"> · {{ o.distance_km }}km</span>
           </span>
-          <span v-if="overlaps.length > 3" class="text-[clamp(8px,1.3vw,11px)] text-zinc-500 ml-1">+{{ overlaps.length - 3 }} more</span>
+          <span v-if="overlaps.length > 3" class="text-[clamp(8px,1.3vw,11px)] text-zinc-400 ml-1">+{{ overlaps.length - 3 }} more</span>
         </div>
       </div>
     </div>

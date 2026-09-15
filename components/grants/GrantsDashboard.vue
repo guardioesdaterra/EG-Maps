@@ -271,10 +271,13 @@ const items = computed<MixedGrant[]>(() => {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.92);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--glass-border);
+}
+:global(.dark) .gstore-header {
+  background: rgba(0, 0, 0, 0.92);
 }
 
 .gstore-header-inner {
@@ -696,10 +699,10 @@ const items = computed<MixedGrant[]>(() => {
 .gstore-section-count-badge {
   font-size: clamp(11px, 1.2vw, 13px);
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--text-tertiary);
   padding: clamp(2px, 0.3vw, 4px) clamp(8px, 1vw, 12px);
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -776,13 +779,13 @@ const items = computed<MixedGrant[]>(() => {
 }
 
 .gstore-card-priority.high {
-  background: rgba(0, 255, 133, 0.15);
-  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 62%, black);
+  color: #fff;
 }
 
 .gstore-card-priority.mid {
-  background: rgba(250, 204, 21, 0.15);
-  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 62%, black);
+  color: #fff;
 }
 
 .gstore-card-title {
@@ -817,11 +820,11 @@ const items = computed<MixedGrant[]>(() => {
 }
 
 .gstore-card-meta-item.deadline.urgent {
-  color: #f87171;
+  color: var(--danger);
 }
 
 .gstore-card-meta-item.deadline.soon {
-  color: #facc15;
+  color: var(--warning);
 }
 
 .gstore-card-meta-item.deadline.expired {

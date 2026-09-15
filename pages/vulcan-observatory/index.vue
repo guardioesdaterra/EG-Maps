@@ -71,7 +71,7 @@
               }"
             />
           </div>
-          <span class="text-xs text-zinc-600 font-mono">{{ loadProgress }}%</span>
+          <span class="text-xs text-zinc-400 font-mono">{{ loadProgress }}%</span>
         </template>
       </div>
     </Transition>
@@ -1064,7 +1064,7 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.72);
   margin: 0 0 0.3rem;
 }
 .vulc-leftpanel__divider {
@@ -1111,7 +1111,7 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
   background: transparent;
   border: 0;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.72);
   cursor: pointer;
   font-family: inherit;
   transition: color 0.15s, background 0.15s;
@@ -1154,7 +1154,7 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
   border-color: rgba(231, 76, 60, 0.5);
   box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.12);
 }
-.vulc-searchbox__icon { width: 0.85rem; height: 0.85rem; color: rgba(255, 255, 255, 0.4); flex-shrink: 0; }
+.vulc-searchbox__icon { width: 0.85rem; height: 0.85rem; color: rgba(255, 255, 255, 0.6); flex-shrink: 0; }
 .vulc-searchbox__input {
   flex: 1;
   background: transparent;
@@ -1166,7 +1166,7 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
   padding: 0;
   min-width: 0;
 }
-.vulc-searchbox__input::placeholder { color: rgba(255, 255, 255, 0.35); }
+.vulc-searchbox__input::placeholder { color: rgba(255, 255, 255, 0.6); }
 .vulc-searchbox__clear {
   width: 1rem;
   height: 1rem;
@@ -1235,7 +1235,7 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.75);
 }
-.vulc-protmatch__empty { font-size: 10px; color: rgba(255, 255, 255, 0.4); padding: 0.2rem 0; }
+.vulc-protmatch__empty { font-size: 10px; color: rgba(255, 255, 255, 0.72); padding: 0.2rem 0; }
 
 /* ── Layer status readout ─────────────────────────────────────── */
 .vulc-status { display: flex; flex-direction: column; gap: 0.2rem; }
@@ -1258,7 +1258,7 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
 .vulc-status__dot.is-empty { background: var(--obs-red, #e74c3c); }
 .vulc-status__sync {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.7);
   font-family: ui-monospace, monospace;
 }
 .vulc-status__error {

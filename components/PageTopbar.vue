@@ -40,7 +40,7 @@ const baseURL = useRuntimeConfig().app.baseURL
 <style scoped>
 .pt {
   border-bottom: 1px solid var(--border-color);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(16px) saturate(1.4);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
 }

@@ -437,12 +437,14 @@ useHead({
 .cta-desc {
   font-size: 0.85rem;
   line-height: 1.55;
-  color: var(--text-secondary);
+  /* Inverted block (bg is --text-primary): explicit per-theme ink */
+  color: #d4d4d4;
   margin: 0 0 1.25rem;
   max-width: 36rem;
   margin-left: auto;
   margin-right: auto;
 }
+:global(.dark) .cta-desc { color: #333333; }
 .cta-btn {
   display: inline-flex;
   align-items: center;

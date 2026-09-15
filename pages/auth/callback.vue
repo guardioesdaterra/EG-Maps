@@ -37,6 +37,8 @@ const backUrl = ref('/eg-grants')
 const FALLBACK_NEXT = '/eg-grants'
 const SIGN_UP_URL = '/eg-grants?signup=1'
 let fallbackTimer: ReturnType<typeof setTimeout> | null = null
+let settleTimer: ReturnType<typeof setTimeout> | null = null
+let authUnsubscribe: (() => void) | null = null
 let settled = false
 
 /** Only allow internal return paths — prevents open-redirect abuse. */
@@ -63,8 +65,8 @@ function settleRedirect(url: string) {
   if (settled) return
   settled = true
   if (fallbackTimer) clearTimeout(fallbackTimer)
-  // Strip one-time OAuth params (code, tokens) so they are not leaked via
-  // referrer/history — the destination (next) is carried via navigateTo.
+  if (settleTimer) clearTimeout(settleTimer)
+  if (authUnsubscribe) { authUnsubscribe(); authUnsubscribe = null }
   window.history.replaceState({}, '', window.location.pathname)
   navigateTo(url)
 }
@@ -73,6 +75,8 @@ function settleError(message: string) {
   if (settled) return
   settled = true
   if (fallbackTimer) clearTimeout(fallbackTimer)
+  if (settleTimer) clearTimeout(settleTimer)
+  if (authUnsubscribe) { authUnsubscribe(); authUnsubscribe = null }
   error.value = message
 }
 
@@ -82,8 +86,31 @@ onMounted(async () => {
   const next = safeNext(params.get('next')) || FALLBACK_NEXT
   backUrl.value = next
 
-  // Safety net: if Supabase auto-detection is still in flight, re-check the
-  // session instead of flashing an error for a login that succeeded.
+  const oauthError = params.get('error_description') || params.get('error')
+  if (oauthError) {
+    settleError(oauthError)
+    return
+  }
+
+  // Check for an existing session first (user may already be signed in).
+  const { data: { session: existing } } = await client.auth.getSession()
+  if (existing) {
+    await checkMembershipAndRedirect(next)
+    return
+  }
+
+  // Listen for the auth state change — Supabase exchanges the PKCE code in
+  // the background and fires SIGNED_IN when ready.
+  const { data: { subscription } } = client.auth.onAuthStateChange(
+    async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        await checkMembershipAndRedirect(next)
+      }
+    }
+  )
+  authUnsubscribe = () => subscription.unsubscribe()
+
+  // Safety fallback: if after 12s we still have no session, show an error.
   fallbackTimer = setTimeout(async () => {
     if (settled) return
     try {
@@ -93,38 +120,14 @@ onMounted(async () => {
     } catch {
       settleError(t('grantsPortal.authTakingTooLong'))
     }
-  }, 15000)
-
-  const oauthError = params.get('error_description') || params.get('error')
-  if (oauthError) {
-    settleError(oauthError)
-    return
-  }
-
-  try {
-    // A session may already exist (Supabase auto-detected the code in the
-    // URL, or the user was already signed in) — that is an OK return, not
-    // an error. Only exchange when there is no session yet.
-    let { data: { session } } = await client.auth.getSession()
-    const code = params.get('code')
-    if (!session && code) {
-      const { error: exchangeError } = await client.auth.exchangeCodeForSession(code)
-      if (exchangeError) throw exchangeError
-      ;({ data: { session } } = await client.auth.getSession())
-    }
-
-    if (!session) {
-      settleError(code ? t('grantsPortal.authFailedRetry') : t('grantsPortal.authNoCode'))
-      return
-    }
-
-    await checkMembershipAndRedirect(next)
-  } catch (e) {
-    settleError(e instanceof Error && e.message ? e.message : t('grantsPortal.authFailedRetry'))
-  }
+  }, 12000)
 })
 
-onBeforeUnmount(() => { if (fallbackTimer) clearTimeout(fallbackTimer) })
+onBeforeUnmount(() => {
+  if (fallbackTimer) clearTimeout(fallbackTimer)
+  if (settleTimer) clearTimeout(settleTimer)
+  if (authUnsubscribe) { authUnsubscribe(); authUnsubscribe = null }
+})
 
 async function checkMembershipAndRedirect(next: string) {
   const { data: { user } } = await client.auth.getUser()

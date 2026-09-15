@@ -132,7 +132,7 @@ function formatDate(iso: string): string {
 
 .claims-count {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.72);
   background: rgba(255, 255, 255, 0.06);
   padding: 2px 8px;
   border-radius: 9999px;
@@ -151,7 +151,7 @@ function formatDate(iso: string): string {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 9999px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.75);
   font-size: 12px;
   font-weight: 500;
   font-family: inherit;
@@ -188,7 +188,7 @@ function formatDate(iso: string): string {
   justify-content: center;
   gap: 10px;
   padding: 40px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.72);
   font-size: 13px;
 }
 
@@ -208,7 +208,7 @@ function formatDate(iso: string): string {
 .claims-empty {
   text-align: center;
   padding: 40px 20px;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .claims-empty-icon {
@@ -279,7 +279,7 @@ function formatDate(iso: string): string {
 
 .claims-row-email {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .claims-row-meta {
@@ -291,7 +291,7 @@ function formatDate(iso: string): string {
 
 .claims-row-date {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.62);
 }
 
 .claims-row-status {
@@ -301,7 +301,7 @@ function formatDate(iso: string): string {
   padding: 2px 8px;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .claims-row-status.pending {
@@ -321,7 +321,7 @@ function formatDate(iso: string): string {
 
 .claims-row-note {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.75);
   line-height: 1.5;
   margin: 10px 0 0;
   padding: 8px 10px;
@@ -370,7 +370,7 @@ function formatDate(iso: string): string {
 }
 
 .claims-review-label {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .claims-review-text {

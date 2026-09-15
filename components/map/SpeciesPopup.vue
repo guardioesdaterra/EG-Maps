@@ -20,6 +20,11 @@ const color = computed(() => {
   return GROUP_COLORS[props.species.taxonomicGroup] ?? 'var(--danger)'
 })
 
+// Readable text ink for the group color: vivid purple (≈3.2:1 on dark)
+// is swapped for a lightened lilac; all other tokens pass in both themes
+// now that light semantic colors are darkened.
+const ink = computed(() => (color.value === 'var(--purple)' ? 'var(--lilac)' : color.value))
+
 const content = computed(() => {
   if (!props.species) return null
   return props.species.content?.[locale.value] ?? props.species.content?.en ?? null
@@ -68,9 +73,9 @@ const endangermentLevel = computed(() => {
 })
 
 const endangermentStyles: Record<string, { bg: string; color: string; border: string; icon: string }> = {
-  critical: { bg: '#e74c3c18', color: '#e74c3c', border: '#e74c3c30', icon: 'lucide:alert-triangle' },
-  endangered: { bg: '#f39c1218', color: '#f39c12', border: '#f39c1230', icon: 'lucide:alert-circle' },
-  vulnerable: { bg: '#f39c1218', color: '#f39c12', border: '#f39c1230', icon: 'lucide:shield-alert' },
+  critical: { bg: 'color-mix(in srgb, var(--danger) 10%, transparent)', color: 'var(--danger)', border: 'color-mix(in srgb, var(--danger) 30%, transparent)', icon: 'lucide:alert-triangle' },
+  endangered: { bg: 'color-mix(in srgb, var(--warning) 10%, transparent)', color: 'var(--warning)', border: 'color-mix(in srgb, var(--warning) 30%, transparent)', icon: 'lucide:alert-circle' },
+  vulnerable: { bg: 'color-mix(in srgb, var(--warning) 10%, transparent)', color: 'var(--warning)', border: 'color-mix(in srgb, var(--warning) 30%, transparent)', icon: 'lucide:shield-alert' },
   near: { bg: 'var(--stat-card-bg)', color: 'var(--text-muted)', border: 'var(--stat-card-border)', icon: 'lucide:info' },
   default: { bg: 'var(--stat-card-bg)', color: 'var(--text-muted)', border: 'var(--stat-card-border)', icon: 'lucide:info' },
 }
@@ -92,7 +97,7 @@ const coords = computed(() => {
       <!-- Left column: image -->
       <div class="sp__media">
         <figure v-if="imageSrc" class="sp__figure">
-          <div v-if="imageLoading && !imageError" class="sp__shimmer" :style="{ '--shimmer-color': color + '20' }" />
+          <div v-if="imageLoading && !imageError" class="sp__shimmer" :style="{ '--shimmer-color': `color-mix(in srgb, ${color} 20%, transparent)` }" />
           <img
             v-show="!imageError"
             :src="imageSrc"
@@ -103,7 +108,7 @@ const coords = computed(() => {
             @error="handleImageError"
             @load="handleImageLoad"
           />
-          <div v-if="imageError" class="sp__fallback" :style="{ borderColor: color + '30' }">
+          <div v-if="imageError" class="sp__fallback" :style="{ borderColor: `color-mix(in srgb, ${color} 30%, transparent)` }">
             <div class="sp__fallback-icon" :style="{ backgroundImage: `url(${fallbackPlaceholder})` }" />
             <span class="sp__fallback-label">{{ t('general.imageNotAvailable') }}</span>
           </div>
@@ -146,13 +151,13 @@ const coords = computed(() => {
       <div class="sp__body">
         <header class="sp__head">
           <div class="sp__group-row">
-            <span class="sp__group" :style="{ borderColor: color, color }">
+            <span class="sp__group" :style="{ borderColor: `color-mix(in srgb, ${ink} 45%, transparent)`, color: ink }">
               {{ t(`taxonomy.${species.taxonomicGroup}`) }}
             </span>
             <span
               v-if="species.category"
               class="sp__cat"
-              :style="{ background: color }"
+              :style="{ background: `color-mix(in srgb, ${color} 62%, black)` }"
             >
               {{ species.category }}
             </span>
@@ -184,7 +189,7 @@ const coords = computed(() => {
                 v-for="threat in species.threatTypes"
                 :key="threat"
                 class="sp__threat"
-                :style="{ borderColor: color + '40', color, background: color + '0d' }"
+                :style="{ borderColor: `color-mix(in srgb, ${ink} 40%, transparent)`, color: ink, background: `color-mix(in srgb, ${ink} 8%, transparent)` }"
               >
                 {{ threat }}
               </span>
@@ -199,7 +204,7 @@ const coords = computed(() => {
             target="_blank"
             rel="noopener noreferrer"
             class="sp__link"
-            :style="{ '--link-clr': color }"
+            :style="{ '--link-clr': ink }"
           >
             <Icon name="lucide:external-link" size="0.8rem" />
             <span>{{ t('species.iucnProfile') }}</span>

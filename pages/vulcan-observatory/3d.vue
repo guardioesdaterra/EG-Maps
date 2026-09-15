@@ -62,7 +62,7 @@
               }"
             />
           </div>
-          <span class="text-xs text-zinc-600 font-mono">{{ loadProgress }}%</span>
+          <span class="text-xs text-zinc-400 font-mono">{{ loadProgress }}%</span>
         </template>
       </div>
     </Transition>

@@ -197,14 +197,14 @@ async function handleSubmit() {
 
 .review-modal-subtitle {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.75);
   margin: 0;
 }
 
 .review-close-btn {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 16px;
   cursor: pointer;
   padding: 4px 8px;
@@ -248,7 +248,7 @@ async function handleSubmit() {
 
 .review-detail-label {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.72);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -379,14 +379,14 @@ async function handleSubmit() {
   margin-left: auto;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 12px;
   cursor: pointer;
   text-decoration: underline;
 }
 
 .review-change-btn:hover {
-  color: rgba(255, 255, 255, 0.7);
+  color: #fff;
 }
 
 .review-textarea {
@@ -407,12 +407,12 @@ async function handleSubmit() {
 }
 
 .review-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .review-char-count {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.6);
   text-align: right;
 }
 

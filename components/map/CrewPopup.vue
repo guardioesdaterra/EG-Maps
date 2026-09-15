@@ -911,12 +911,14 @@ const grantsHint = computed(() => {
   flex-shrink: 0;
   font-size: 0.75rem;
   font-weight: 800;
-  color: var(--success);
+  /* Deepened in light mode: vivid success on a 12% tint ≈ 4.2:1 */
+  color: color-mix(in srgb, var(--success) 68%, black);
   font-variant-numeric: tabular-nums;
   background: color-mix(in srgb, var(--success) 12%, transparent);
   border-radius: 6px;
   padding: 0.15rem 0.5rem;
 }
+:global(.dark) .cp__grant-benef { color: var(--success); }
 .cp__grant-benef--unknown {
   font-weight: 600;
   color: var(--text-muted);
@@ -962,13 +964,15 @@ const grantsHint = computed(() => {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--warning);
+  /* Deepened in light mode: warning on a 14% tint ≈ 4.5:1 */
+  color: color-mix(in srgb, var(--warning) 68%, black);
   background: color-mix(in srgb, var(--warning) 14%, transparent);
   border: 1px solid color-mix(in srgb, var(--warning) 45%, transparent);
   border-radius: 6px;
   padding: 0.1rem 0.5rem;
   margin-bottom: 0.15rem;
 }
+:global(.dark) .cp__grant-badge { color: var(--warning); }
 .cp__pager {
   display: flex;
   align-items: center;

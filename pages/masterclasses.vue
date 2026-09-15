@@ -144,6 +144,116 @@
         </div>
       </section>
 
+      <!-- Past Masterclasses (2025 season) -->
+      <section class="section" aria-labelledby="series-2025-title">
+        <div class="section-head">
+          <h2 id="series-2025-title" class="section-title">{{ t('masterclasses.series2025Title') }}</h2>
+          <p class="section-desc">{{ t('masterclasses.series2025Desc') }}</p>
+        </div>
+
+        <div class="episodes">
+          <!-- GM5 -->
+          <article class="episode">
+            <div class="episode-meta">
+              <span class="episode-num">GM5</span>
+              <span class="episode-date">{{ t('masterclasses.gm5Date') }}</span>
+            </div>
+            <div class="episode-body">
+              <h3 class="episode-title">{{ t('masterclasses.gm5Title') }}</h3>
+              <p class="episode-speaker">{{ t('masterclasses.gm5Speaker') }}</p>
+              <p class="episode-desc">
+                {{ t('masterclasses.gm5Desc') }}
+              </p>
+              <div class="episode-resources">
+                <span class="episode-resource-label">{{ t('resources.title') }}:</span>
+                <a href="https://drive.google.com/file/d/1hZo5M9_TxbTxvmZEul6_TkqN_dV6tXd0/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.flyer') }}</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- GM4 -->
+          <article class="episode">
+            <div class="episode-meta">
+              <span class="episode-num">GM4</span>
+              <span class="episode-date">{{ t('masterclasses.gm4Date') }}</span>
+            </div>
+            <div class="episode-body">
+              <h3 class="episode-title">{{ t('masterclasses.gm4Title') }}</h3>
+              <p class="episode-speaker">{{ t('masterclasses.gm4Speaker') }}</p>
+              <p class="episode-desc">
+                {{ t('masterclasses.gm4Desc') }}
+              </p>
+              <div class="episode-resources">
+                <span class="episode-resource-label">{{ t('resources.title') }}:</span>
+                <a href="https://drive.google.com/file/d/1kb7M6wyl4fAHGsVmILcTUfv-3ol7M6fB/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.recording') }}</a>
+                <a href="https://docs.google.com/presentation/d/1H2RZNkjnCscrpT_8tFG2Z_xoKJleRB6Q/edit?usp=drive_link&ouid=102755849788761311340&rtpof=true&sd=true" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.slideDeck') }}</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- GM3 -->
+          <article class="episode">
+            <div class="episode-meta">
+              <span class="episode-num">GM3</span>
+              <span class="episode-date">{{ t('masterclasses.gm3Date') }}</span>
+            </div>
+            <div class="episode-body">
+              <h3 class="episode-title">{{ t('masterclasses.gm3Title') }}</h3>
+              <p class="episode-speaker">{{ t('masterclasses.gm3Speaker') }}</p>
+              <p class="episode-desc">
+                {{ t('masterclasses.gm3Desc') }}
+              </p>
+              <div class="episode-resources">
+                <span class="episode-resource-label">{{ t('resources.title') }}:</span>
+                <a href="https://drive.google.com/file/d/1aMyZGBDgb8fuoARmyVNMxAsyv5jYlPKH/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.recording') }}</a>
+                <a href="https://docs.google.com/presentation/d/11A9ZS6zzHzBVZgMOoj-IWa0hK9-Cjnoi7CJkTPAe3RU/edit?usp=drive_link" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.slideDeck') }}</a>
+                <a href="https://drive.google.com/file/d/1D6oOxhkvb-MiBJw23nj1f-_-5AHaz0gI/view?usp=sharing" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.flyer') }}</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- GM2 -->
+          <article class="episode">
+            <div class="episode-meta">
+              <span class="episode-num">GM2</span>
+              <span class="episode-date">{{ t('masterclasses.gm2Date') }}</span>
+            </div>
+            <div class="episode-body">
+              <h3 class="episode-title">{{ t('masterclasses.gm2Title') }}</h3>
+              <p class="episode-speaker">{{ t('masterclasses.gm2Speaker') }}</p>
+              <p class="episode-desc">
+                {{ t('masterclasses.gm2Desc') }}
+              </p>
+              <div class="episode-resources">
+                <span class="episode-resource-label">{{ t('resources.title') }}:</span>
+                <a href="https://drive.google.com/file/d/1m3_kl90KH8wV4waCu_x32lPGzVD6UQi-/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.recording') }}</a>
+                <a href="https://drive.google.com/file/d/1BIg7cwownt219oJwp_ZTBP-TOKcdIVft/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.slideDeck') }}</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- GM1 -->
+          <article class="episode">
+            <div class="episode-meta">
+              <span class="episode-num">GM1</span>
+              <span class="episode-date">{{ t('masterclasses.gm1Date') }}</span>
+            </div>
+            <div class="episode-body">
+              <h3 class="episode-title">{{ t('masterclasses.gm1Title') }}</h3>
+              <p class="episode-speaker">{{ t('masterclasses.gm1Speaker') }}</p>
+              <p class="episode-desc">
+                {{ t('masterclasses.gm1Desc') }}
+              </p>
+              <div class="episode-resources">
+                <span class="episode-resource-label">{{ t('resources.title') }}:</span>
+                <a href="https://drive.google.com/file/d/1JDYMbj-SOOrTx8dhKmKF11kK3Fv9eSmn/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.recording') }}</a>
+                <a href="https://drive.google.com/file/d/14N6XkAsopftFGkBbGYuAqQKP-ik9ySHq/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="episode-link">{{ t('masterclasses.slideDeck') }}</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <!-- Past Masterclasses (2023–2024) -->
       <section class="section" aria-labelledby="past-title">
         <div class="section-head">

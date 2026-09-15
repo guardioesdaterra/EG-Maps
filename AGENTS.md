@@ -11,8 +11,10 @@
 EG-Maps is an interactive data visualization platform built with **Nuxt 3**, **Vue 3**, and **MapLibre GL** that displays:
 - **Project Grants** — Earth Guardians' global grant initiatives with beneficiary statistics
 - **Endangered Species** — Critically endangered species and their habitats worldwide
+- **Active Crews** — ~131 registered Earth Guardians crews around the planet
+- **Vulcan Observatory** — Mining-threat monitoring (rare-earth claims, overlaps, danger scores, water defense)
 
-The platform renders data on both **2D maps** and **3D globes**, with features like marker clustering, connection lines, particle animations, and hex grids.
+The platform renders data on both **2D maps** (MapLibre GL) and **3D globes**, with features like marker clustering, connection lines, particle animations, and hex grids. A Supabase backend adds auth, a grants discovery portal (`/eg-grants`), crew registration, community pins, and live observatory channels.
 
 ---
 
@@ -24,8 +26,11 @@ The platform renders data on both **2D maps** and **3D globes**, with features l
 | Language | TypeScript (strict mode) |
 | UI Library | Vue 3 (Composition API) |
 | Styling | Tailwind CSS v3 |
-| Map Engine | MapLibre GL |
+| Map Engine | MapLibre GL (+ Three.js hero globe) |
 | Tile Provider | MapTiler (satellite imagery) |
+| Backend | Supabase (Postgres + Auth + Edge Functions) |
+| State | Pinia (`stores/ui.ts`, `stores/map.ts`) |
+| i18n | @nuxtjs/i18n — 16 locales (en, es, fr, pt, ar, hi, ja, zh, nl, de, it, ko, pl, ru, sv, tr) |
 | Icons | Iconify (Lucide icon set) |
 | Testing | Vitest + Playwright |
 | Linting | ESLint (@nuxt/eslint) |
@@ -45,17 +50,21 @@ The platform renders data on both **2D maps** and **3D globes**, with features l
 
 ```
 EG-Maps/
-├── components/           # Vue components (9 main + 5 UI primitives)
-│   ├── ui/              # Reusable UI primitives
-│   ├── GlobalStats.vue  # Statistics panel
-│   ├── GlobeView.vue    # 3D globe visualization (1523 lines)
-│   ├── UnifiedMap.vue  # 2D map visualization (1688 lines)
+├── components/           # Vue components (83 SFCs)
+│   ├── ui/              # Reusable UI primitives (Button, Input, Sheet, Tooltip, Skeleton…)
+│   ├── map/             # Species/Crew/Project popups + panels
+│   ├── grants/          # Grants dashboard + modals
+│   ├── observatory/     # Observatory panels, tabs, modals
+│   ├── MapView2D.vue    # 2D map visualization
+│   ├── MapView3D.vue    # 3D globe visualization
+│   ├── GlobeView.vue    # Legacy 3D globe view
 │   ├── MapControls.vue  # Search, filters, fullscreen controls
 │   ├── ProjectFilterPanel.vue
 │   ├── SpeciesFilterPanel.vue
 │   ├── RedBookDatabases.vue
 │   └── Icon.vue, LoadingSpinner.vue
-├── composables/          # Vue composables (shared logic)
+├── composables/          # Vue composables (50+ shared-logic units)
+│   ├── useMapBase.ts     # Map orchestrator (~1000 LOC)
 │   ├── useDarkMode.ts    # Dark mode toggle
 │   ├── useI18n.ts        # Internationalization
 │   ├── useMediaQuery.ts  # Responsive utilities
@@ -66,30 +75,38 @@ EG-Maps/
 │   ├── useMapMarkers.ts
 │   ├── useMapPopup.ts
 │   ├── useSpeciesData.ts
-│   └── useSpeciesIcons.ts
-├── lib/                  # Utility modules
+│   └── useSpeciesIcons.ts (+ grants, observatory, rare-earth, supabase, toast…)
+├── lib/                  # Utility modules (28 pure modules + parsers/)
 │   ├── types.ts          # TypeScript interfaces
 │   ├── constants.ts      # Route paths, dataset keys
 │   ├── colors.ts         # Color utilities
 │   ├── utils.ts          # Helper functions (cn, formatCompact, etc.)
 │   ├── project-data.ts   # Project grants data
+│   ├── crew-data.ts      # Static crew registry (~131 crews)
 │   ├── map-utils.ts      # Map-specific utilities
 │   ├── map-effects.ts    # Visual effects
 │   └── image-utils.ts    # Image handling
-├── pages/                # Route pages
+├── pages/                # Route pages (12 prerendered routes)
 │   ├── index.vue         # Landing/home page
 │   ├── globe.vue         # Redirects to /project-grants/3d
 │   ├── info.vue          # Info & feedback page
-│   ├── project-grants/   # Project grants routes
-│   └── endangered-species/ # Species routes
-├── locales/              # i18n translation files
-│   ├── en.json, es.json, fr.json, pt.json
-├── public/data/          # Static species data (JSON)
+│   ├── campaigns.vue, crew-projects.vue, masterclasses.vue
+│   ├── project-grants/{index,3d}.vue
+│   ├── endangered-species/{index,3d}.vue
+│   ├── active-crews/{index,3d}.vue
+│   ├── vulcan-observatory/{index,3d}.vue
+│   ├── eg-grants/{index,fullscreen}.vue
+│   ├── iframe/{index,squarespace}.vue
+│   └── auth/callback.vue # OAuth landing
+├── locales/              # i18n translation files (16 locales)
+│   ├── en.json, es.json, fr.json, pt.json, ar.json, hi.json…
+├── public/data/          # Static species data (JSON, ~134 MB)
+├── supabase/migrations/  # SQL migrations
 ├── assets/css/           # Global styles (main.css)
 ├── layouts/              # Nuxt layouts
 ├── plugins/              # Nuxt plugins (client-only)
-├── scripts/              # Utility scripts
-├── tests/                # Playwright E2E tests
+├── scripts/              # Dataset builders + sync pipelines
+├── tests/                # Vitest unit + Playwright E2E (17 files)
 └── nuxt.config.ts        # Nuxt configuration
 ```
 
@@ -130,9 +147,7 @@ const label = t('nav.home') // Returns translated string
 ## Important Technical Notes
 
 ### Map Components (Critical)
-- `UnifiedMap.vue` (1688 lines) and `GlobeView.vue` (1523 lines) are **heavily duplicated**
-- ~40% of code is identical between them (markers, connections, hex grid, popups)
-- A `useMapLibre` composable should eventually extract shared MapLibre lifecycle
+- `MapView2D.vue` and `GlobeView.vue`/`MapView3D.vue` share map lifecycle logic — prefer extracting to `useMapBase`/`useMapLibre` composables over duplicating marker/connection/hex-grid/popup code
 
 ### High-Performance Marker Rendering for Large Datasets
 For datasets with 500+ points (e.g., 4000+ endangered species), the app uses MapLibre's native GeoJSON clustering:
@@ -218,7 +233,7 @@ pnpm test:watch     # Watch mode
 
 | Priority | Issue | Location |
 |----------|-------|----------|
-| Critical | `UnifiedMap.vue` and `GlobeView.vue` duplication (~40% shared code) | Both map components |
+| Critical | `MapView2D.vue`/`MapView3D.vue` and `GlobeView.vue` share ~40% map lifecycle code — extract to `useMapBase`/`useMapLibre` instead of duplicating | Map components |
 | **Fixed** | `rebuildMarkers()`/`updateMarkerData()` passed `speciesIndexData.value` (unfiltered) instead of `visibleSpecies.value` (filtered) — region/ecosystem/threat/text search filters had zero effect on markers | useMapBase.ts:338,356 |
 | **Fixed** | Hash-based change detection included `fetched_at` (changes every run) — all records appeared "new", 0 updates, N inserts | sync-grants-to-supabase.ts:230 |
 | **Fixed** | `existingColumns()` made N+1 queries (one per column) — now single query with fallback | sync-grants-to-supabase.ts:130 |
@@ -278,9 +293,10 @@ pnpm test:watch     # Watch mode
 
 ---
 
-*Last updated: 2026-05-23*
+*Last updated: 2026-09-15*
 
 ## Companion docs
 
+- [`README.md`](./README.md) — Modern project hub: features, routes, setup, scripts, deployment.
 - [`DOCUMENTATION.md`](./DOCUMENTATION.md) — Full architecture, modules-by-module index, conventions, deployment, ops runbook.
-- [`BUGS-AND-FIXES.md`](./BUGS-AND-FIXES.md) — Deep bug + improvement audit (35+ findings, severities, fixes). Read before touching `useMapBase`, `useThreeGlobe`, `useSupabase`, or any page-level modal.
+- [`docs/`](./docs/) — Topic guides: `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `CONTRIBUTING.md`, `squarespace-embed.md`, `anm-sync.md`.

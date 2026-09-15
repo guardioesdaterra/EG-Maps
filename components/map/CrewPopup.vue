@@ -16,6 +16,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'select-crew': [crew: CrewLocation]
+  'fly-to-project': [lat: number, lng: number]
 }>()
 
 const { t } = useI18n()
@@ -195,6 +196,14 @@ function selectCrew(c: CrewLocation) {
   emit('select-crew', c)
 }
 
+function flyToProject(m: CrewPopupGrant) {
+  const lat = m.project.latitude
+  const lng = m.project.longitude
+  if (typeof lat === 'number' && typeof lng === 'number' && Number.isFinite(lat) && Number.isFinite(lng)) {
+    emit('fly-to-project', lat, lng)
+  }
+}
+
 const totalMembersLabel = computed(() => {
   if (!props.crew || props.isLocation) return ''
   const n = (props.crew as CrewRegionData).totalMembers
@@ -208,9 +217,10 @@ function tx(key: string, fallback: string, params?: Record<string, string>): str
 
 const ownProjectsTitle = computed(() => !props.isLocation
   ? tx('crews.ownProjectsRegionTitle', 'On-site crew projects')
-  : tx('crews.ownProjectsTitle', "This crew's projects"))
+  : tx('crews.ownProjectsTitle', 'Near Crew Project'))
 
 const crewProjectBadge = computed(() => tx('crews.crewProjectBadge', 'Crew project'))
+const flyToLabel = computed(() => tx('crews.flyToProject', 'Fly to'))
 const moreProjectsTitle = computed(() => tx('crews.moreProjects', 'More linked projects'))
 const grantsPageLabel = computed(() => tx('crews.pageOf', `Page ${safeGrantPage.value} of ${totalGrantPages.value}`, { page: String(safeGrantPage.value), pages: String(totalGrantPages.value) }))
 const crewsInRegionTitle = computed(() => tx('crews.crewsInRegion', `Crews in ${regionName.value}`, { region: regionName.value }))
@@ -460,9 +470,21 @@ const grantsHint = computed(() => {
                 <span>{{ m.project.country_province }}</span>
               </span>
             </div>
-            <span class="cp__grant-benef" :class="{ 'cp__grant-benef--unknown': !hasBeneficiaries(m.project) }">
-              {{ hasBeneficiaries(m.project) ? grantBeneficiaries(m.project) : unknownBeneficiaries }}
-            </span>
+            <div class="cp__grant-side">
+              <span class="cp__grant-benef" :class="{ 'cp__grant-benef--unknown': !hasBeneficiaries(m.project) }">
+                {{ hasBeneficiaries(m.project) ? grantBeneficiaries(m.project) : unknownBeneficiaries }}
+              </span>
+              <button
+                type="button"
+                class="cp__fly-btn"
+                :aria-label="`${flyToLabel}: ${m.project.project_title}`"
+                :title="flyToLabel"
+                @click="flyToProject(m)"
+              >
+                <Icon name="lucide:navigation" size="0.75rem" />
+                <span>{{ flyToLabel }}</span>
+              </button>
+            </div>
           </li>
         </ul>
       </div>
@@ -485,9 +507,21 @@ const grantsHint = computed(() => {
                 <span>{{ m.project.country_province }}</span>
               </span>
             </div>
-            <span class="cp__grant-benef" :class="{ 'cp__grant-benef--unknown': !hasBeneficiaries(m.project) }">
-              {{ hasBeneficiaries(m.project) ? grantBeneficiaries(m.project) : unknownBeneficiaries }}
-            </span>
+            <div class="cp__grant-side">
+              <span class="cp__grant-benef" :class="{ 'cp__grant-benef--unknown': !hasBeneficiaries(m.project) }">
+                {{ hasBeneficiaries(m.project) ? grantBeneficiaries(m.project) : unknownBeneficiaries }}
+              </span>
+              <button
+                type="button"
+                class="cp__fly-btn"
+                :aria-label="`${flyToLabel}: ${m.project.project_title}`"
+                :title="flyToLabel"
+                @click="flyToProject(m)"
+              >
+                <Icon name="lucide:navigation" size="0.75rem" />
+                <span>{{ flyToLabel }}</span>
+              </button>
+            </div>
           </li>
         </ul>
         <div v-if="totalGrantPages > 1" class="cp__pager">
@@ -888,6 +922,32 @@ const grantsHint = computed(() => {
   color: var(--text-muted);
   background: var(--stat-card-bg);
   border: 1px solid var(--stat-card-border);
+}
+.cp__grant-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+.cp__fly-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--info);
+  background: transparent;
+  border: 1px solid var(--stat-card-border);
+  border-radius: 7px;
+  padding: 0.25rem 0.55rem;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cp__fly-btn:hover {
+  border-color: var(--info);
+  background: color-mix(in srgb, var(--info) 10%, transparent);
 }
 .cp__grant--own {
   border-color: color-mix(in srgb, var(--warning) 45%, transparent);

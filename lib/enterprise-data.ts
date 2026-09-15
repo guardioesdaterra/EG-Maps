@@ -8,6 +8,7 @@
  * @connections components/RedeCorporativa.vue, composables/useDataDownload.ts, composables/useEnterpriseMarkers.ts, composables/useObservatoryControls.ts, composables/useRareEarthController.ts
  */
 import { normalizeName } from '@/lib/observatory-analysis'
+import { resolveMapColor } from '@/lib/colors'
 
 export interface EnterpriseHQ {
   name: string
@@ -64,7 +65,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: ['Vale Base Metals', 'Vale Canada', 'Vale Indonesia'],
     shareholders: ['BNDES (6.3%)', 'Mitsui (5.1%)', 'BlackRock (4.8%)'],
     holdings: ['Salobo', 'S11D', 'Carajás', 'Sudbury'],
-    color: 'var(--danger)',
+    color: '#e74c3c',
   },
   {
     name: 'Rio Tinto',
@@ -80,7 +81,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: ['Rio Tinto Aluminium', 'Rio Tinto Copper', 'Rio Tinto Diamonds', 'Rio Tinto Energy & Minerals'],
     shareholders: ['BlackRock (8.3%)', 'Vanguard (5.1%)', 'HSBC (4.2%)'],
     holdings: ['Oyu Tolgoi', 'Pilbara', 'Bingham Canyon', 'Argyle', 'Simandou'],
-    color: 'var(--danger)',
+    color: '#e74c3c',
   },
   {
     name: 'CBMM',
@@ -96,7 +97,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: ['CBMM International', 'CBMM Europe', 'CBMM Asia'],
     shareholders: ['Moreira Salles family', 'Mamori (Japanese consortium)'],
     holdings: ['Araxá Niobium Mine', 'Catalão'],
-    color: 'var(--info)',
+    color: '#5dade2',
   },
   {
     name: 'Serra Verde Mining',
@@ -112,7 +113,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: ['Serra Verde Mineração Ltda'],
     shareholders: ['Denham Capital', 'Vision Ridge Partners'],
     holdings: ['Serra Verde REE Project'],
-    color: 'var(--success)',
+    color: '#27ae60',
   },
   {
     name: 'Viridis Mining & Minerals',
@@ -128,7 +129,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: ['Viridis Brasil Mineração Ltda'],
     shareholders: ['Sophrosyne Capital (12.4%)', 'Board & Management (8.7%)'],
     holdings: ['Colossus Project (MG)', 'Pocinhos Project'],
-    color: 'var(--purple)',
+    color: '#8e44ad',
   },
   {
     name: 'Meteoric Resources',
@@ -144,7 +145,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: ['Meteoric Brasil Mineração Ltda'],
     shareholders: ['Dr. Andrew Tunks (11.2%)', 'Hengtai Mining (9.8%)', 'US EXIM Bank (LOI US$250M)'],
     holdings: ['Caldeira REE Project', 'Poços de Caldas'],
-    color: 'var(--info)',
+    color: '#5dade2',
   },
   {
     name: 'Foxfire Metals',
@@ -160,7 +161,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: ['Foxfire Metals Pty Ltd', 'Foxfire Brasil Ltda'],
     shareholders: ['Board & Management', 'Private Australian investors'],
     holdings: ['Apui Region (AM)', 'Lithium Valley (MG)', 'Poços de Caldas REE'],
-    color: 'var(--warning)',
+    color: '#f39c12',
   },
   {
     name: 'Axel REE',
@@ -176,7 +177,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: ['Axel REE Brasil Ltda'],
     shareholders: ['Foxfire Metals (majority owner)', 'Patrick Volpe (Director)'],
     holdings: ['Caladão REE-Gallium Project'],
-    color: 'var(--danger)',
+    color: '#e74c3c',
   },
   {
     name: 'Aclara Resources',
@@ -192,7 +193,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: ['Aclara Resources Mineração Ltda (Brazil)', 'Aclara Technologies Inc (USA)', 'Aclara Metals (JV with CAP)'],
     shareholders: ['Hochschild Group (57.7%)', 'CAP S.A. (strategic investor)'],
     holdings: ['Penco Module (Chile)', 'Carina Module (Brazil — MG/GO)'],
-    color: 'var(--info)',
+    color: '#5dade2',
   },
   {
     name: 'Alpha Minerals',
@@ -208,7 +209,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: ['Alpha Mining Pty Ltd'],
     shareholders: ['Private Australian'],
     holdings: ['Brazil REE tenements'],
-    color: 'var(--purple)',
+    color: '#8e44ad',
   },
   {
     name: 'GR8 Energetic',
@@ -224,7 +225,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: [],
     shareholders: ['Private Brazilian'],
     holdings: ['MG REE claims'],
-    color: 'var(--danger)',
+    color: '#e74c3c',
   },
   {
     name: 'Nazca Gold Mining',
@@ -240,7 +241,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: [],
     shareholders: ['Private'],
     holdings: ['Brazil exploration tenements'],
-    color: 'var(--warning)',
+    color: '#f39c12',
   },
   {
     name: 'Ponticor Brasil',
@@ -256,7 +257,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: [],
     shareholders: ['Private Brazilian'],
     holdings: ['MG mineral rights'],
-    color: 'var(--text-muted)',
+    color: '#a3a3a3',
   },
   {
     name: 'Mars GMN / Gol',
@@ -272,7 +273,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: [],
     shareholders: ['Private Brazilian'],
     holdings: ['Strategic mineral claims'],
-    color: 'var(--danger)',
+    color: '#e74c3c',
   },
   {
     name: 'Talisman / Spar',
@@ -288,7 +289,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: ['Talisman Brasil'],
     shareholders: ['Canadian institutional investors'],
     holdings: ['Brazil REE projects'],
-    color: 'var(--success)',
+    color: '#27ae60',
   },
   {
     name: 'Palmares / Magbras',
@@ -304,7 +305,7 @@ export const ENTERPRISES: EnterpriseHQ[] = [
     subsidiaries: [],
     shareholders: ['Private Brazilian'],
     holdings: ['REE processing facilities', 'JV with Meteoric Resources'],
-    color: 'var(--info)',
+    color: '#5dade2',
   },
 ]
 
@@ -330,15 +331,15 @@ export const CORPORATE_CONNECTIONS: CorporateConnection[] = [
 ]
 
 export const MINING_PHASES: { key: string; label: string; color: string }[] = [
-  { key: 'REQUERIMENTO', label: 'Requerimento', color: 'var(--warning)' },
-  { key: 'DISPONIBILIDADE', label: 'Disponibilidade', color: 'var(--warning)' },
-  { key: 'CONCESSÃO', label: 'Concessão', color: 'var(--info)' },
-  { key: 'APROVEITAMENTO', label: 'Aproveitamento', color: 'var(--success)' },
-  { key: 'LICENCIAMENTO', label: 'Licenciamento', color: 'var(--success)' },
+  { key: 'REQUERIMENTO', label: 'Requerimento', color: '#f39c12' },
+  { key: 'DISPONIBILIDADE', label: 'Disponibilidade', color: '#f39c12' },
+  { key: 'CONCESSÃO', label: 'Concessão', color: '#5dade2' },
+  { key: 'APROVEITAMENTO', label: 'Aproveitamento', color: '#27ae60' },
+  { key: 'LICENCIAMENTO', label: 'Licenciamento', color: '#27ae60' },
 ]
 
 export function getPhaseColor(phase: string): string {
-  return MINING_PHASES.find(p => p.key === phase)?.color ?? 'var(--text-muted)'
+  return MINING_PHASES.find(p => p.key === phase)?.color ?? '#a3a3a3'
 }
 
 export function getEnterpriseByName(name: string): EnterpriseHQ | undefined {
@@ -495,11 +496,11 @@ export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): 
   const features: GeoJSON.Feature[] = []
 
   const connectionTypeStyles: Record<string, { color: string; width: number; dash: number[]; opacity: number }> = {
-    subsidiary:     { color: 'var(--danger)', width: 2.5, dash: [],       opacity: 0.7 },
-    shareholding:   { color: 'var(--warning)', width: 1.8, dash: [6, 3],  opacity: 0.6 },
-    joint_venture:  { color: 'var(--success)', width: 1.5, dash: [4, 4],  opacity: 0.55 },
-    board_overlap:  { color: 'var(--purple)', width: 1.0, dash: [2, 4],  opacity: 0.4 },
-    partnership:    { color: 'var(--info)', width: 1.2, dash: [8, 4],  opacity: 0.5 },
+    subsidiary:     { color: '#e74c3c', width: 2.5, dash: [],       opacity: 0.7 },
+    shareholding:   { color: '#f39c12', width: 1.8, dash: [6, 3],  opacity: 0.6 },
+    joint_venture:  { color: '#27ae60', width: 1.5, dash: [4, 4],  opacity: 0.55 },
+    board_overlap:  { color: '#8e44ad', width: 1.0, dash: [2, 4],  opacity: 0.4 },
+    partnership:    { color: '#5dade2', width: 1.2, dash: [8, 4],  opacity: 0.5 },
   }
 
   for (const ent of ENTERPRISES) {
@@ -508,7 +509,7 @@ export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): 
 
     const totalArea = claims.reduce((s, c) => s + c.area, 0)
     const connectionType = ent.country !== 'Brazil' ? 'foreign_to_claims' : 'domestic_claims'
-    const color = ent.country !== 'Brazil' ? 'var(--danger)' : 'var(--success)'
+    const color = ent.country !== 'Brazil' ? '#e74c3c' : '#27ae60'
 
     for (const claim of claims) {
       features.push({
@@ -520,7 +521,8 @@ export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): 
           label: `${ent.name} → ${claim.name} (${claim.area.toFixed(0)} ha)`,
           enterprise: ent.name,
           country: ent.country,
-          color,
+          // MapLibre paint only accepts real colors — never CSS var tokens.
+          color: resolveMapColor(color),
           connectionType: 'enterprise_to_claim',
         },
         geometry: { type: 'LineString', coordinates: [[ent.lng, ent.lat], [claim.lng, claim.lat]] },
@@ -543,7 +545,8 @@ export function buildEnterpriseNetworkLines(points: GeoJSON.FeatureCollection): 
           label: conn.label,
           connectionType: 'corporate',
           corporateType: conn.type,
-          color: style.color,
+          // MapLibre paint only accepts real colors — never CSS var tokens.
+          color: resolveMapColor(style.color),
           lineWidth: style.width,
           lineDash: style.dash,
           lineOpacity: style.opacity,
@@ -580,7 +583,8 @@ export function buildEnterpriseHQGeoJSON(speculatorIndex?: Array<{ normalizedNam
           city: e.city,
           description: e.description,
           sector: e.sector,
-          color: e.color,
+          // MapLibre paint only accepts real colors — never CSS var tokens.
+          color: resolveMapColor(e.color),
           type: 'enterprise_hq',
           hasCentroid: !!centroid,
         },

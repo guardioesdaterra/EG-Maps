@@ -31,6 +31,31 @@ function hexForCssVar(cssVar: string): string {
   return MAP_COLORS.purple
 }
 
+/**
+ * MapLibre style expressions cannot parse `var(--*)` CSS tokens — a feature
+ * property like `color: 'var(--danger)'` consumed via `['get', 'color']`
+ * throws "Could not parse color" on every evaluate. Resolve any CSS-var
+ * token to its hex equivalent at the data boundary so paint always gets a
+ * real color. Pass-through for hex/rgb values; unknown → fallback.
+ */
+const CSS_VAR_TO_HEX: Record<string, string> = {
+  'var(--info)': MAP_COLORS.info,
+  'var(--success)': MAP_COLORS.success,
+  'var(--warning)': MAP_COLORS.warning,
+  'var(--danger)': MAP_COLORS.danger,
+  'var(--purple)': MAP_COLORS.purple,
+}
+
+export function resolveMapColor(value: unknown, fallback = MAP_COLORS.danger): string {
+  const v = String(value ?? '').trim()
+  if (!v) return fallback
+  const mapped = CSS_VAR_TO_HEX[v]
+  if (mapped) return mapped
+  if (/^#[0-9a-fA-F]{3,8}$/.test(v)) return v
+  if (/^rgba?\(/.test(v) || /^hsla?\(/.test(v)) return v
+  return fallback
+}
+
 export const getProjectColorByBeneficiaries = (
   directBeneficiaries: number,
   indirectBeneficiaries: number

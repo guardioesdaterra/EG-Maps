@@ -90,7 +90,7 @@
             :aria-label="fullscreen ? t('mapControls.exitFullscreen') : t('mapControls.enterFullscreen')"
           >
             <iconify-icon v-if="fullscreen" icon="streamline-freehand:ui-page-scroll" class="h-4 w-4 xs:h-5 xs:w-5" />
-            <iconify-icon v-else icon="streamline-freehand:fullscreen" class="h-4 w-4 xs:h-5 xs:w-5" />
+            <iconify-icon v-else icon="streamline-freehand:resize-expand-arrow" class="h-4 w-4 xs:h-5 xs:w-5" />
           </UiButton>
         </template>
         <p>{{ fullscreen ? t('mapControls.exitFullscreen') : t('mapControls.enterFullscreen') }}</p>

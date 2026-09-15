@@ -6,12 +6,14 @@
  *  (reused by the generator + sync tests) and the stable key builders shared
  *  with the generated map.
  * @functions normalizeCrewText, haversineKm, findGrantsForCrewLocation, findGrantsForRegion,
- *  crewLocationKey, crewRegionKey, projectGrantKey
- * @deps @/lib/crew-data (CrewRegionData, CrewLocation); @/lib/types (ProjectData)
+ *  crewLocationKey, crewRegionKey, projectGrantKey, parseCrewHistory, resolveCrewRegion,
+ *  isCrewLocationInRegion, filterCrewLocationsByRegion
+ * @deps @/lib/crew-data (CrewRegionData, CrewLocation, CrewRegionHistory); @/lib/types (ProjectData)
  * @connections components/map/CrewPopup.vue, components/MapView2D.vue, components/MapView3D.vue,
+ *  composables/useMapMarker.ts,
  *  scripts/generate-crew-grants.ts, tests/crew-grants.test.ts
  */
-import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
+import type { CrewRegionData, CrewRegionHistory, CrewLocation } from '@/lib/crew-data'
 import type { ProjectData } from '@/lib/types'
 
 export type CrewGrantMatchReason = 'crew-name' | 'city' | 'country' | 'nearby'
@@ -415,4 +417,84 @@ export function findGrantsForRegion(
   }
 
   return sortMatches([...seen.values()])
+}
+
+/* ── region-popup support (crash-safe + crews list) ───────────────────── */
+
+/**
+ * Coerce a crew-region `history` value into a safe array.
+ * MapLibre vector-tile round-trips only support primitive feature properties,
+ * so a `history` array stored on a feature can come back stringified (JSON)
+ * or be dropped entirely — feeding it straight into `.map()`/`.find()`
+ * crashed regional detail popups (South America, Europe, …).
+ */
+export function parseCrewHistory(value: unknown): CrewRegionHistory[] {
+  if (Array.isArray(value)) {
+    return value.filter(
+      (h): h is CrewRegionHistory =>
+        !!h && typeof h === 'object' && typeof (h as { year?: unknown }).year === 'number',
+    )
+  }
+  if (typeof value === 'string' && value.trim().startsWith('[')) {
+    try {
+      return parseCrewHistory(JSON.parse(value))
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
+function toFiniteNumber(value: unknown, fallback = 0): number {
+  const n = typeof value === 'string' && value.trim() !== '' ? Number(value) : value
+  return typeof n === 'number' && Number.isFinite(n) ? n : fallback
+}
+
+/**
+ * Resolve the full `CrewRegionData` for a clicked map feature.
+ * Prefers the authoritative lookup (whose `history` array never crossed the
+ * tile round-trip); falls back to coercing the feature's primitive props so
+ * the details popup can never crash on a malformed/missing `history`.
+ */
+export function resolveCrewRegion(
+  props: Record<string, unknown>,
+  lookup: CrewRegionData[] | Map<string, CrewRegionData>,
+): CrewRegionData {
+  const id = String(props.id ?? '')
+  const found = Array.isArray(lookup) ? lookup.find(r => r.id === id) : lookup.get(id)
+  if (found) return found
+  return {
+    id,
+    region: String(props.region ?? id),
+    latitude: toFiniteNumber(props._origLat ?? props.latitude),
+    longitude: toFiniteNumber(props._origLng ?? props.longitude),
+    activeCrews: toFiniteNumber(props.activeCrews),
+    inactiveCrews: toFiniteNumber(props.inactiveCrews),
+    totalMembers: toFiniteNumber(props.totalMembers),
+    countries: toFiniteNumber(props.countries),
+    history: parseCrewHistory(props.history),
+  }
+}
+
+/** Same region-membership rule as findGrantsForRegion's location union. */
+export function isCrewLocationInRegion(loc: CrewLocation, region: CrewRegionData): boolean {
+  const regionName = normalizeCrewText(region.region || region.id)
+  const locRegion = normalizeCrewText(loc.region)
+  if (!regionName || !locRegion) return false
+  return locRegion === regionName || locRegion.includes(regionName) || regionName.includes(locRegion)
+}
+
+/** All crew locations of a region — active first, then alphabetical. */
+export function filterCrewLocationsByRegion(
+  locations: CrewLocation[],
+  region: CrewRegionData,
+): CrewLocation[] {
+  return locations
+    .filter(l => isCrewLocationInRegion(l, region))
+    .sort((a, b) => {
+      const sa = a.status === 'active' ? 0 : 1
+      const sb = b.status === 'active' ? 0 : 1
+      if (sa !== sb) return sa - sb
+      return (a.name || '').localeCompare(b.name || '')
+    })
 }

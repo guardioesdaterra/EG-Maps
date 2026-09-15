@@ -14,7 +14,7 @@ export const ICON_MAP: Record<string, string> = {
   'lucide:earth':         'gis:earth',
   'lucide:satellite':     'gis:satellite',
   'lucide:route':         'gis:route',
-  'lucide:hexagon':       'gis:hexagon',
+  'lucide:hexagon':       'gis:polygon',
   'lucide:network':       'gis:network-o',
   'lucide:circle':        'gis:circle',
   'lucide:flag':          'gis:flag',
@@ -54,7 +54,7 @@ export const ICON_MAP: Record<string, string> = {
   'lucide:share-2':         'streamline-freehand:share-circles',
   'lucide:external-link':   'streamline-freehand:share-forward',
   'lucide:ban':             'streamline-freehand:remove-delete-sign-bold',
-  'lucide:maximize-2':      'streamline-freehand:fullscreen',
+  'lucide:maximize-2':      'streamline-freehand:resize-expand-arrow',
   'lucide:minimize-2':      'streamline-freehand:ui-page-scroll',
 
   // Content / files
@@ -74,7 +74,7 @@ export const ICON_MAP: Record<string, string> = {
 
   // Users / people
   'lucide:users':           'streamline-freehand:human-resources-businessman',
-  'lucide:users-round':     'streamline-freehand:user-multiple',
+  'lucide:users-round':     'streamline-freehand:presentation-audience',
   'lucide:graduation-cap':  'streamline-freehand:learning-programming-book',
 
   // Business / finance

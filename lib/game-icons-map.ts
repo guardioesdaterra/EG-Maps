@@ -101,7 +101,7 @@ export const KEYWORD_ICON_MAP: Record<string, string> = {
   leech: 'leeching-worm', snail: 'snail', slug: 'snail', clam: 'opening-shell',
   oyster: 'oyster', mussel: 'opening-shell', scallop: 'opening-shell',
   crab: 'crab', lobster: 'crab', shrimp: 'shrimp', krill: 'shrimp',
-  barnacle: 'shell', coral: 'coral', anemone: 'tentacles', starfish: 'starfish',
+  barnacle: 'ceiling-barnacle', coral: 'coral', anemone: 'floating-tentacles', starfish: 'sea-star',
   sponge: 'coral', centipede: 'worm-mouth', millipede: 'worm-mouth',
 
   plant: 'plant-seed', tree: 'pine-tree', flower: 'flower-star',
@@ -140,11 +140,11 @@ export const KEYWORD_ICON_MAP: Record<string, string> = {
   riparian: 'oak-leaf', coastal: 'coral', pelagic: 'whale-tail',
   benthic: 'flatfish',
 
-  threat: 'warning-triangle', endangered: 'extinction', extinct: 'extinction',
-  poaching: 'hunting-horn', habitat: 'tree-house', deforestation: 'burning-tree',
-  pollution: 'waste', climate: 'lightning-tree', invasive: 'alien-bug',
+  threat: 'death-skull', endangered: 'animal-skull', extinct: 'animal-skull',
+  poaching: 'hunting-horn',   habitat: 'treehouse', deforestation: 'burning-tree',
+  pollution: 'nuclear-waste', climate: 'lightning-tree', invasive: 'alien-bug',
   overfishing: 'fishing-net', bycatch: 'fishing-net', hunting: 'hunting-horn',
-  trafficking: 'shackle',
+  trafficking: 'breaking-chain',
 }
 
 function normalize(text: string): string {

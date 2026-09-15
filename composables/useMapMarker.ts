@@ -16,6 +16,7 @@ import { SPECIES_COORD_TOLERANCE } from '@/lib/constants'
 import { CULTURAL_FAMILY_STYLES, getCulturalFamily } from '@/lib/cultural-marker-taxonomy'
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
+import { resolveCrewRegion } from '@/lib/crew-grants'
 import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 
@@ -83,9 +84,11 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   let projectMap: Map<string, ProjectData> | null = null
   let speciesMap: Map<string, SpeciesIndexItem> | null = null
   let fullSpeciesMap: Map<string, Species> | null = null
+  let crewRegionMap: Map<string, CrewRegionData> | null = null
   let lastProjectsRef: ProjectData[] | null = null
   let lastSpeciesIdxRef: SpeciesIndexItem[] | null = null
   let lastSpeciesRef: Species[] | null = null
+  let lastCrewsRef: CrewRegionData[] | null = null
 
   const handlers: Array<{ id: string; evt: keyof MapLayerEventType; fn: (e: MapLayerMouseEvent) => void }> = []
 
@@ -99,9 +102,11 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     projectMap = null
     speciesMap = null
     fullSpeciesMap = null
+    crewRegionMap = null
     lastProjectsRef = null
     lastSpeciesIdxRef = null
     lastSpeciesRef = null
+    lastCrewsRef = null
     map = null
   }
 
@@ -171,6 +176,18 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       fullSpeciesMap = null
       lastSpeciesIdxRef = null
       lastSpeciesRef = null
+    }
+    if (ds === 'active-crews') {
+      // Authoritative region records: feature properties cross a vector-tile
+      // round-trip that mangles non-primitive values (the `history` array came
+      // back stringified/dropped and crashed regional detail popups on
+      // `.map()`/`.find()`). Click dispatch resolves regions through this map.
+      if (crewRegionMap && lastCrewsRef === a.crews) return
+      crewRegionMap = new Map(a.crews.map(c => [c.id, c]))
+      lastCrewsRef = a.crews
+    } else {
+      crewRegionMap = null
+      lastCrewsRef = null
     }
   }
 
@@ -573,7 +590,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   function dispatchCrew(p: Record<string, unknown>, coords: [number, number], a: RebuildArgs) {
     switch (p._type) {
       case 'crewLocation': return dispatchCrewLocation(p, coords, a)
-      case 'crewRegion':   return dispatchCrewRegion(p, coords)
+      case 'crewRegion':   return dispatchCrewRegion(p, coords, a)
     }
   }
 
@@ -609,16 +626,13 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     cb(loc)
   }
 
-  function dispatchCrewRegion(p: Record<string, unknown>, coords: [number, number]) {
+  function dispatchCrewRegion(p: Record<string, unknown>, coords: [number, number], a: RebuildArgs) {
     const origLat = (p._origLat as number) ?? coords[1]
     const origLng = (p._origLng as number) ?? coords[0]
-    const crew: CrewRegionData = {
-      id: p.id as string, region: p.region as string,
-      latitude: origLat, longitude: origLng,
-      activeCrews: p.activeCrews as number, inactiveCrews: p.inactiveCrews as number,
-      totalMembers: p.totalMembers as number, countries: p.countries as number,
-      history: p.history as CrewRegionData['history'],
-    }
+    // Never trust the feature's own props for complex fields — resolve the
+    // full record (real `history` array) via the lookup map, with a coerced
+    // crash-safe fallback when the region isn't in the map.
+    const crew = resolveCrewRegion({ ...p, _origLat: origLat, _origLng: origLng }, crewRegionMap ?? a.crews ?? [])
     const cb = callbacks.openCrewPreview ?? callbacks.openCrewOverlay
     cb(crew)
   }
@@ -802,7 +816,11 @@ function buildCrewRegionMarkers(regions: CrewRegionData[]): GeoJSON.Feature[] {
           color, size: bubbleRadius * 2, label: '',
           _regionLabel: isPrimary ? `${r.region} · ${r.activeCrews}` : '',
           region: r.region, activeCrews: r.activeCrews, inactiveCrews: r.inactiveCrews,
-          totalMembers: r.totalMembers, countries: r.countries, history: r.history,
+          totalMembers: r.totalMembers, countries: r.countries,
+          // NOTE: `history` (array) is deliberately NOT stored here — only
+          // primitive props survive the vector-tile round-trip, and a mangled
+          // history crashed regional detail popups. dispatchCrewRegion resolves
+          // the full record via crewRegionMap instead.
         },
       })
     }

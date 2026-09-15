@@ -236,6 +236,8 @@
     "projectsOfCrewHint": "Liées à cette équipe par lieu, nom ou proximité",
     "projectsOfRegion": "Subventions de projets de {region}",
     "projectsOfRegionHint": "Liées aux équipes de toute la région",
+    "crewsInRegion": "Équipes en {region}",
+    "crewsInRegionHint": "Toutes les équipes de cette région — sélectionnez-en une pour les détails",
     "ownProjectsTitle": "Projets de cette équipe",
     "ownProjectsRegionTitle": "Projets des équipes sur site",
     "crewProjectBadge": "Projet de l'équipe",

@@ -236,6 +236,8 @@
     "projectsOfCrewHint": "Linked to this crew by place, name or proximity",
     "projectsOfRegion": "Project grants of {region}",
     "projectsOfRegionHint": "Linked to crews across the whole region",
+    "crewsInRegion": "Crews in {region}",
+    "crewsInRegionHint": "All crews of this region — select one for details",
     "ownProjectsTitle": "This crew's projects",
     "ownProjectsRegionTitle": "On-site crew projects",
     "crewProjectBadge": "Crew project",

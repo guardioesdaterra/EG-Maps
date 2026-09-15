@@ -7,9 +7,9 @@
       <section class="home-left">
         <div class="home-left-inner">
           <img :src="`${baseURL}eg-logo.png`" alt="Earth Guardians" class="home-logo" />
-          <h1 class="home-title">EG–Maps<span class="home-title-dot">.</span></h1>
-          <p class="home-subtitle">{{ t('home.subtitle') }}</p>
-          <p class="home-submore">{{ t('home.subtitleMore') }}</p>
+          <h1 class="home-title"><span class="glass-line">EG–Maps<span class="home-title-dot">.</span></span></h1>
+          <p class="home-subtitle"><span class="glass-line">{{ t('home.subtitle') }}</span></p>
+          <p class="home-submore"><span class="glass-line">{{ t('home.subtitleMore') }}</span></p>
           <div class="home-orgline">
             <a href="https://www.earthguardians.org" target="_blank" rel="noopener noreferrer" class="home-orglink">
               <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" />
@@ -38,23 +38,23 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <div class="bento-icon">
+              <div class="bento-icon" style="background: #8e44ad14; color: #8e44ad">
                 <Icon name="lucide:hand-heart" />
               </div>
               <h2 class="bento-title">{{ t('home.projectGrantsTitle') }}</h2>
               <p class="bento-desc">{{ t('home.projectGrantsDesc') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong>{{ projectStats.totalProjects }}</strong>
+                  <strong style="color: #8e44ad">{{ projectStats.totalProjects }}</strong>
                   <span>{{ t('home.projectsCount') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong>{{ formatCompact(projectStats.totalBeneficiaries) }}+</strong>
+                  <strong style="color: #8e44ad">{{ formatCompact(projectStats.totalBeneficiaries) }}+</strong>
                   <span>{{ t('home.beneficiariesCount') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/project-grants" class="bento-link bento-link--primary">
+                <NuxtLink to="/project-grants" class="bento-link bento-link--primary" style="background: #8e44ad; border-color: #8e44ad">
                   <Icon name="lucide:map" class="h-3.5 w-3.5" />
                   2D Map
                 </NuxtLink>
@@ -71,24 +71,24 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <div class="bento-icon">
+              <div class="bento-icon" style="background: #27ae6014; color: #27ae60">
                 <Icon name="lucide:bird" />
               </div>
               <h2 class="bento-title">{{ t('home.campaignsTitle') }}</h2>
               <p class="bento-desc">{{ t('home.campaignsDesc') }}</p>
-              <p class="bento-kicker">{{ t('home.campaignsKicker') }}</p>
+              <p class="bento-kicker" style="color: #27ae60">{{ t('home.campaignsKicker') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong>{{ speciesCount || '—' }}</strong>
+                  <strong style="color: #27ae60">{{ speciesCount || '—' }}</strong>
                   <span>{{ t('home.speciesCount') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong>{{ t('home.allValue') }}</strong>
+                  <strong style="color: #27ae60">{{ t('home.allValue') }}</strong>
                   <span>{{ t('home.countries') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/campaigns" class="bento-link bento-link--primary">
+                <NuxtLink to="/campaigns" class="bento-link bento-link--primary" style="background: #27ae60; border-color: #27ae60">
                   <Icon name="lucide:megaphone" class="h-3.5 w-3.5" />
                   {{ t('home.campaignsTitle') }}
                 </NuxtLink>
@@ -105,23 +105,23 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <div class="bento-icon">
+              <div class="bento-icon" style="background: #f39c1214; color: #f39c12">
                 <Icon name="lucide:graduation-cap" />
               </div>
               <h2 class="bento-title">{{ t('home.masterclassesTitle') }}</h2>
               <p class="bento-desc">{{ t('home.masterclassesDesc') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong>{{ t('home.seriesStatusValue') }}</strong>
+                  <strong style="color: #f39c12">{{ t('home.seriesStatusValue') }}</strong>
                   <span>{{ t('home.seriesStatusLabel') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong>{{ t('home.archiveValue') }}</strong>
+                  <strong style="color: #f39c12">{{ t('home.archiveValue') }}</strong>
                   <span>{{ t('home.archiveLabel') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/masterclasses" class="bento-link bento-link--primary">
+                <NuxtLink to="/masterclasses" class="bento-link bento-link--primary" style="background: #f39c12; border-color: #f39c12">
                   <Icon name="lucide:book-open" class="h-3.5 w-3.5" />
                   All Classes
                 </NuxtLink>
@@ -134,23 +134,23 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <div class="bento-icon">
+              <div class="bento-icon" style="background: #8b5cf614; color: #8b5cf6">
                 <Icon name="lucide:heart-handshake" />
               </div>
               <h2 class="bento-title">{{ t('home.startACrewTitle') }}</h2>
               <p class="bento-desc">{{ t('home.startACrewDesc') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong>{{ crewOverallStats.totalActiveCrews }}</strong>
+                  <strong style="color: #8b5cf6">{{ crewOverallStats.totalActiveCrews }}</strong>
                   <span>{{ t('home.crewsCount') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong>{{ crewOverallStats.totalCountries }}</strong>
+                  <strong style="color: #8b5cf6">{{ crewOverallStats.totalCountries }}</strong>
                   <span>{{ t('home.countries') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/active-crews" class="bento-link bento-link--primary">
+                <NuxtLink to="/active-crews" class="bento-link bento-link--primary" style="background: #8b5cf6; border-color: #8b5cf6">
                   <Icon name="lucide:users" class="h-3.5 w-3.5" />
                   Our Crews
                 </NuxtLink>
@@ -172,23 +172,23 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <div class="bento-icon">
+              <div class="bento-icon" style="background: #10b98114; color: #10b981">
                 <Icon name="lucide:briefcase" />
               </div>
               <h2 class="bento-title">{{ t('home.crewProjectsTitle') }}</h2>
               <p class="bento-desc">{{ t('home.crewProjectsDesc') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong>{{ t('home.crewProjectsStatValue') }}</strong>
+                  <strong style="color: #10b981">{{ t('home.crewProjectsStatValue') }}</strong>
                   <span>{{ t('home.crewProjectsStatLabel') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong>{{ t('home.crewProjectsPlaceValue') }}</strong>
+                  <strong style="color: #10b981">{{ t('home.crewProjectsPlaceValue') }}</strong>
                   <span>{{ t('home.crewProjectsPlaceLabel') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/crew-projects" class="bento-link bento-link--primary">
+                <NuxtLink to="/crew-projects" class="bento-link bento-link--primary" style="background: #10b981; border-color: #10b981">
                   <Icon name="lucide:mountain" class="h-3.5 w-3.5" />
                   Crew Projects
                 </NuxtLink>
@@ -201,23 +201,23 @@
             <div class="bento-glow" />
             <div class="bento-accent" />
             <div class="bento-body">
-              <div class="bento-icon">
+              <div class="bento-icon" style="background: #f59e0b14; color: #f59e0b">
                 <Icon name="lucide:microscope" />
               </div>
               <h2 class="bento-title">{{ t('home.vulcanTitle') }}</h2>
               <p class="bento-desc">{{ t('home.vulcanDesc') }}</p>
               <div class="bento-stats">
                 <div class="bento-stat">
-                  <strong>{{ t('home.vulcanFocusValue') }}</strong>
+                  <strong style="color: #f59e0b">{{ t('home.vulcanFocusValue') }}</strong>
                   <span>{{ t('home.vulcanFocusLabel') }}</span>
                 </div>
                 <div class="bento-stat">
-                  <strong>{{ t('home.vulcanDataValue') }}</strong>
+                  <strong style="color: #f59e0b">{{ t('home.vulcanDataValue') }}</strong>
                   <span>{{ t('home.vulcanDataLabel') }}</span>
                 </div>
               </div>
               <div class="bento-links">
-                <NuxtLink to="/vulcan-observatory" class="bento-link bento-link--primary">
+                <NuxtLink to="/vulcan-observatory" class="bento-link bento-link--primary" style="background: #f59e0b; border-color: #f59e0b">
                   <Icon name="lucide:map" class="h-3.5 w-3.5" />
                   2D Map
                 </NuxtLink>
@@ -357,6 +357,27 @@ const clearGlow = (e: MouseEvent) => {
   margin: 0;
 }
 .home-title-dot { color: var(--primary); }
+/* Per-line glass chips: each wrapped line gets its own frosted background
+   sized to the text (box-decoration-break clones the chip per fragment). */
+.glass-line {
+  display: inline;
+  padding: 0.08em 0.28em;
+  border-radius: 0.35em;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(14px) saturate(1.5);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+:global(.dark) .glass-line {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+/* Breathing room so cloned line chips don't touch when text wraps */
+.home-subtitle, .home-submore { line-height: 1.9; }
 .home-subtitle {
   margin: 1rem 0 0;
   font-size: clamp(0.9rem, 1.3vw, 1.1rem);

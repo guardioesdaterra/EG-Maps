@@ -20,7 +20,7 @@
         <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-green-500/10 flex items-center justify-center">
           <svg class="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         </div>
-        <h2 class="text-white text-xl font-bold mb-2">Sign In Required</h2>
+        <h2 class="text-white text-xl font-bold mb-2">{{ t('grantsPortal.signInRequiredTitle') }}</h2>
         <p class="text-white/50 text-sm mb-6">{{ t('grantsPortal.grantsSignInSection') }}</p>
         <button class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="signIn">
           {{ t('grantsPortal.signInBtn') }}
@@ -33,10 +33,10 @@
         <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center">
           <svg class="w-8 h-8 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18.36 6.64a9 9 0 11-12.73 0M12 9v.01M12 13v.01"/></svg>
         </div>
-        <h2 class="text-white text-xl font-bold mb-2">Access Restricted</h2>
-        <p class="text-white/50 text-sm mb-6">EG Grants is only available to Earth Guardians staff accounts.</p>
+        <h2 class="text-white text-xl font-bold mb-2">{{ t('grantsPortal.accessRestrictedTitle') }}</h2>
+        <p class="text-white/50 text-sm mb-6">{{ t('grantsPortal.accessRestrictedDesc') }}</p>
         <button class="px-6 py-3 text-sm font-bold bg-white/10 text-white/70 hover:bg-white/15 rounded-lg transition-colors" @click="signOut">
-          Sign Out
+          {{ t('grantsPortal.signOut') }}
         </button>
       </div>
     </div>
@@ -139,7 +139,7 @@
                 <div class="impact-card-meta">
                   <span class="impact-card-loc">{{ p.country_province.split(',').pop()?.trim() || p.country_province }}</span>
                   <span class="impact-card-dot">·</span>
-                  <span class="impact-card-type">Project Grant</span>
+                  <span class="impact-card-type">{{ t('grantsPortal.projectGrantType') }}</span>
                 </div>
               </div>
             </article>
@@ -181,7 +181,7 @@
           <p class="projects-subtitle">{{ t('grantsPortal.dashboardSubtitle') }}</p>
           <NuxtLink to="/eg-grants/fullscreen#no-dock" class="fs-toggle-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-3.5 h-3.5"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
-            <span>Full Screen</span>
+            <span>{{ t('grantsPortal.fullscreenOpen') }}</span>
           </NuxtLink>
         </div>
 

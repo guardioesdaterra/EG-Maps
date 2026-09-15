@@ -14,14 +14,14 @@
           <div class="claim-modal-body">
             <div v-if="project" class="claim-project-card">
               <div class="claim-project-header">
-                <span class="claim-project-badge">Project Grant</span>
+                <span class="claim-project-badge">{{ t('grantsPortal.projectGrantType') }}</span>
                 <span v-if="project.status" class="claim-project-status" :class="project.status">{{ project.status }}</span>
               </div>
               <h4 class="claim-project-title">{{ project.title }}</h4>
               <div class="claim-project-meta">
                 <span v-if="project.country">{{ project.country }}</span>
                 <span v-if="project.direct_beneficiaries" class="claim-meta-sep">·</span>
-                <span v-if="project.direct_beneficiaries">{{ formatCompact(project.direct_beneficiaries + project.indirect_beneficiaries) }} beneficiaries</span>
+                <span v-if="project.direct_beneficiaries">{{ formatCompact(project.direct_beneficiaries + project.indirect_beneficiaries) }} {{ t('grantsPortal.beneficiariesSuffix') }}</span>
               </div>
               <p v-if="project.description" class="claim-project-desc">{{ project.description }}</p>
             </div>

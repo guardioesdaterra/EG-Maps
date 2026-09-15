@@ -54,11 +54,18 @@ export function useSupabaseAuth() {
     { immediate: true },
   )
 
-  async function signIn() {
+  async function signIn(returnTo?: string) {
     const config = useRuntimeConfig()
     const baseURL = config.app.baseURL || '/'
     const callbackPath = baseURL === '/' ? '/auth/callback' : `${baseURL}auth/callback`
-    const redirectTo = window.location.origin + callbackPath
+    // Carry the originating page (incl. query such as ?ref= or ?signup=) so
+    // the OAuth callback can send the user straight back to EG-Grants.
+    let next = returnTo
+    if (!next && typeof window !== 'undefined') {
+      const current = window.location.pathname + window.location.search
+      next = current.startsWith('/eg-grants') ? current : '/eg-grants'
+    }
+    const redirectTo = window.location.origin + callbackPath + (next ? `?next=${encodeURIComponent(next)}` : '')
 
     await client.auth.signInWithOAuth({
       provider: 'google',

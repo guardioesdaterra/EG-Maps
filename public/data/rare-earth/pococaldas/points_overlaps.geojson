@@ -25,11 +25,6 @@
         "dsprocesso": "003.260/1936",
         "overlaps": [
           {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
-          {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
             "distance_km": 0
@@ -67,11 +62,6 @@
         "dsprocesso": "007.580/1941",
         "overlaps": [
           {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
-          {
             "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
             "kind": "buffer_zone",
             "distance_km": 1.8
@@ -103,11 +93,6 @@
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "322.004/1942",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
@@ -146,11 +131,6 @@
         "dsprocesso": "322.006/1942",
         "overlaps": [
           {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
-          {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
             "distance_km": 0.3
@@ -187,11 +167,6 @@
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "003.258/1936",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 1.1
-          },
           {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
@@ -267,11 +242,6 @@
         "dsprocesso": "003.220/1942",
         "overlaps": [
           {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
-          {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
             "distance_km": 1.4
@@ -307,13 +277,7 @@
         "category": "heavy_mineral_associated",
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "002.082/1940",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -378,11 +342,6 @@
         "dsprocesso": "164.431/1935",
         "overlaps": [
           {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 1.9
-          },
-          {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
             "distance_km": 0
@@ -419,11 +378,6 @@
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "322.003/1942",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
@@ -462,11 +416,6 @@
         "dsprocesso": "002.656/1935",
         "overlaps": [
           {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 1.8
-          },
-          {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
             "distance_km": 0
@@ -504,11 +453,6 @@
         "dsprocesso": "164.432/1935",
         "overlaps": [
           {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
-          {
             "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
             "kind": "buffer_zone",
             "distance_km": 0
@@ -540,11 +484,6 @@
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "003.254/1936",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 1.5
-          },
           {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
@@ -582,11 +521,6 @@
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "322.002/1942",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
@@ -660,13 +594,7 @@
         "category": "heavy_mineral_associated",
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "164.401/1935",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -693,11 +621,6 @@
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "322.005/1942",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
@@ -736,11 +659,6 @@
         "dsprocesso": "016.443/1935",
         "overlaps": [
           {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
-          {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
             "distance_km": 0
@@ -778,11 +696,6 @@
         "dsprocesso": "322.015/1942",
         "overlaps": [
           {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0.1
-          },
-          {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
             "distance_km": 0
@@ -818,13 +731,7 @@
         "category": "heavy_mineral_associated",
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "164.402/1935",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -850,13 +757,7 @@
         "category": "heavy_mineral_associated",
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "164.433/1935",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -883,11 +784,6 @@
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "322.001/1942",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
@@ -924,13 +820,7 @@
         "category": "heavy_mineral_associated",
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "003.240/1936",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -957,11 +847,6 @@
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "003.241/1936",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
@@ -1000,11 +885,6 @@
         "dsprocesso": "322.007/1942",
         "overlaps": [
           {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0.1
-          },
-          {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
             "distance_km": 0
@@ -1042,11 +922,6 @@
         "dsprocesso": "370.502/1942",
         "overlaps": [
           {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 1.9
-          },
-          {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
             "distance_km": 0
@@ -1081,7 +956,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Minério de Titânio (heavy mineral, REE assoc.)",
-        "dsprocesso": "830.728/1983"
+        "dsprocesso": "830.728/1983",
+        "overlaps": []
       }
     },
     {
@@ -1105,7 +981,8 @@
         "uf": "MG",
         "category": "phosphate_associated",
         "category_label": "Apatita (REE-bearing phosphate)",
-        "dsprocesso": "820.992/1971"
+        "dsprocesso": "820.992/1971",
+        "overlaps": []
       }
     },
     {
@@ -1240,7 +1117,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Titânio (heavy mineral sand)",
-        "dsprocesso": "831.774/1984"
+        "dsprocesso": "831.774/1984",
+        "overlaps": []
       }
     },
     {
@@ -1264,7 +1142,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Ilmenita (heavy mineral sand, REE assoc.)",
-        "dsprocesso": "830.724/1983"
+        "dsprocesso": "830.724/1983",
+        "overlaps": []
       }
     },
     {
@@ -1290,11 +1169,6 @@
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "058.201/1944",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
@@ -1330,7 +1204,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Minério de Titânio (heavy mineral, REE assoc.)",
-        "dsprocesso": "830.727/1983"
+        "dsprocesso": "830.727/1983",
+        "overlaps": []
       }
     },
     {
@@ -1354,7 +1229,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Minério de Titânio (heavy mineral, REE assoc.)",
-        "dsprocesso": "830.735/1983"
+        "dsprocesso": "830.735/1983",
+        "overlaps": []
       }
     },
     {
@@ -1379,13 +1255,7 @@
         "category": "carbonatite_associated",
         "category_label": "Tinguaito (alkaline complex)",
         "dsprocesso": "831.866/1999",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -1410,7 +1280,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Minério de Titânio (heavy mineral, REE assoc.)",
-        "dsprocesso": "830.299/1983"
+        "dsprocesso": "830.299/1983",
+        "overlaps": []
       }
     },
     {
@@ -1434,7 +1305,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Minério de Titânio (heavy mineral, REE assoc.)",
-        "dsprocesso": "830.730/1983"
+        "dsprocesso": "830.730/1983",
+        "overlaps": []
       }
     },
     {
@@ -1458,7 +1330,8 @@
         "uf": "MG",
         "category": "carbonatite_associated",
         "category_label": "Fonólito (alkaline complex)",
-        "dsprocesso": "830.482/1988"
+        "dsprocesso": "830.482/1988",
+        "overlaps": []
       }
     },
     {
@@ -1482,7 +1355,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Minério de Titânio (heavy mineral, REE assoc.)",
-        "dsprocesso": "830.733/1983"
+        "dsprocesso": "830.733/1983",
+        "overlaps": []
       }
     },
     {
@@ -1507,13 +1381,7 @@
         "category": "carbonatite_associated",
         "category_label": "Fonólito (alkaline complex)",
         "dsprocesso": "830.615/1985",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -1538,7 +1406,8 @@
         "uf": "MG",
         "category": "carbonatite_associated",
         "category_label": "Tinguaito (alkaline complex)",
-        "dsprocesso": "832.212/1997"
+        "dsprocesso": "832.212/1997",
+        "overlaps": []
       }
     },
     {
@@ -1562,7 +1431,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Ilmenita (heavy mineral sand, REE assoc.)",
-        "dsprocesso": "830.725/1983"
+        "dsprocesso": "830.725/1983",
+        "overlaps": []
       }
     },
     {
@@ -1586,7 +1456,8 @@
         "uf": "MG",
         "category": "carbonatite_associated",
         "category_label": "Tinguaito (alkaline complex)",
-        "dsprocesso": "830.228/2006"
+        "dsprocesso": "830.228/2006",
+        "overlaps": []
       }
     },
     {
@@ -1610,7 +1481,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Minério de Titânio (heavy mineral, REE assoc.)",
-        "dsprocesso": "830.734/1983"
+        "dsprocesso": "830.734/1983",
+        "overlaps": []
       }
     },
     {
@@ -1668,11 +1540,6 @@
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.444/2018",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
@@ -1745,7 +1612,8 @@
         "uf": "MG",
         "category": "phosphate_associated",
         "category_label": "Apatita (REE-bearing phosphate)",
-        "dsprocesso": "830.652/2020"
+        "dsprocesso": "830.652/2020",
+        "overlaps": []
       }
     },
     {
@@ -1769,7 +1637,8 @@
         "uf": "MG",
         "category": "carbonatite_associated",
         "category_label": "Minério de Nióbio (carbonatite assoc.)",
-        "dsprocesso": "832.935/2021"
+        "dsprocesso": "832.935/2021",
+        "overlaps": []
       }
     },
     {
@@ -1793,7 +1662,8 @@
         "uf": "MG",
         "category": "carbonatite_associated",
         "category_label": "Tinguaito (alkaline complex)",
-        "dsprocesso": "831.856/1993"
+        "dsprocesso": "831.856/1993",
+        "overlaps": []
       }
     },
     {
@@ -1819,11 +1689,6 @@
         "category_label": "Zircônio (heavy mineral, REE assoc.)",
         "dsprocesso": "003.257/1936",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
             "kind": "buffer_zone",
@@ -1860,11 +1725,6 @@
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
             "distance_km": 0
-          },
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -1891,7 +1751,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.020/2022"
+        "dsprocesso": "833.020/2022",
+        "overlaps": []
       }
     },
     {
@@ -1915,7 +1776,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.021/2022"
+        "dsprocesso": "833.021/2022",
+        "overlaps": []
       }
     },
     {
@@ -1944,11 +1806,6 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 0
-          },
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
             "distance_km": 0
           }
         ],
@@ -1982,11 +1839,6 @@
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
             "distance_km": 0
-          },
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2018,11 +1870,6 @@
           {
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
-            "distance_km": 0
-          },
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
             "distance_km": 0
           }
         ],
@@ -2082,7 +1929,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.019/2022"
+        "dsprocesso": "833.019/2022",
+        "overlaps": []
       }
     },
     {
@@ -2106,7 +1954,8 @@
         "uf": "SP",
         "category": "carbonatite_associated",
         "category_label": "Fonólito (alkaline complex)",
-        "dsprocesso": "820.407/2022"
+        "dsprocesso": "820.407/2022",
+        "overlaps": []
       }
     },
     {
@@ -2131,13 +1980,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.609/2022",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2162,7 +2005,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.014/2022"
+        "dsprocesso": "833.014/2022",
+        "overlaps": []
       }
     },
     {
@@ -2187,13 +2031,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "833.013/2022",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2219,13 +2057,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.609/2022",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2250,7 +2082,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.893/2023"
+        "dsprocesso": "830.893/2023",
+        "overlaps": []
       }
     },
     {
@@ -2275,13 +2108,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.886/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2307,13 +2134,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.888/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2339,13 +2160,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.611/2022",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 1.5
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2376,11 +2191,6 @@
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
             "distance_km": 0
-          },
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2407,7 +2217,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.612/2022"
+        "dsprocesso": "820.612/2022",
+        "overlaps": []
       }
     },
     {
@@ -2469,13 +2280,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.885/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2501,13 +2306,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.880/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2533,13 +2332,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.881/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2565,13 +2358,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.884/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2597,13 +2384,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.610/2022",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 1.8
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2634,11 +2415,6 @@
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
             "distance_km": 0
-          },
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -2666,13 +2442,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.891/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2698,13 +2468,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.882/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2772,13 +2536,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.890/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2804,13 +2562,7 @@
         "category": "carbonatite_associated",
         "category_label": "Fonólito (alkaline complex)",
         "dsprocesso": "830.927/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2835,7 +2587,8 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.089/2023"
+        "dsprocesso": "831.089/2023",
+        "overlaps": []
       }
     },
     {
@@ -2860,13 +2613,7 @@
         "category": "heavy_mineral_associated",
         "category_label": "Ilmenita (heavy mineral sand, REE assoc.)",
         "dsprocesso": "832.150/2022",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -2891,7 +2638,8 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.088/2023"
+        "dsprocesso": "831.088/2023",
+        "overlaps": []
       }
     },
     {
@@ -2915,7 +2663,8 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.090/2023"
+        "dsprocesso": "831.090/2023",
+        "overlaps": []
       }
     },
     {
@@ -2939,7 +2688,8 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.091/2023"
+        "dsprocesso": "831.091/2023",
+        "overlaps": []
       }
     },
     {
@@ -2963,7 +2713,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.015/2022"
+        "dsprocesso": "833.015/2022",
+        "overlaps": []
       }
     },
     {
@@ -2988,13 +2739,7 @@
         "category": "heavy_mineral_associated",
         "category_label": "Ilmenita (heavy mineral sand, REE assoc.)",
         "dsprocesso": "832.149/2022",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -3020,13 +2765,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.883/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -3051,7 +2790,8 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.087/2023"
+        "dsprocesso": "831.087/2023",
+        "overlaps": []
       }
     },
     {
@@ -3076,13 +2816,7 @@
         "category": "carbonatite_associated",
         "category_label": "Fonólito (alkaline complex)",
         "dsprocesso": "830.928/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -3107,7 +2841,8 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.084/2023"
+        "dsprocesso": "831.084/2023",
+        "overlaps": []
       }
     },
     {
@@ -3131,7 +2866,8 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "831.086/2023"
+        "dsprocesso": "831.086/2023",
+        "overlaps": []
       }
     },
     {
@@ -3193,13 +2929,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.378/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -3224,7 +2954,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.499/2023"
+        "dsprocesso": "820.499/2023",
+        "overlaps": []
       }
     },
     {
@@ -3249,13 +2980,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.379/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -3281,13 +3006,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.504/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -3313,13 +3032,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.661/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -3382,13 +3095,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.662/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -3413,7 +3120,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Minério de Titânio (heavy mineral, REE assoc.)",
-        "dsprocesso": "832.882/2023"
+        "dsprocesso": "832.882/2023",
+        "overlaps": []
       }
     },
     {
@@ -3506,7 +3214,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.287/2023"
+        "dsprocesso": "820.287/2023",
+        "overlaps": []
       }
     },
     {
@@ -3536,11 +3245,6 @@
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
             "distance_km": 1.7
-          },
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -3569,11 +3273,6 @@
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.429/2023",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
             "kind": "buffer_zone",
@@ -3604,7 +3303,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "832.359/2023"
+        "dsprocesso": "832.359/2023",
+        "overlaps": []
       }
     },
     {
@@ -3747,11 +3447,6 @@
         "dsprocesso": "832.360/2023",
         "overlaps": [
           {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
-          {
             "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
             "kind": "buffer_zone",
             "distance_km": 1.1
@@ -3782,13 +3477,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.428/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -3813,7 +3502,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "832.427/2023"
+        "dsprocesso": "832.427/2023",
+        "overlaps": []
       }
     },
     {
@@ -3838,13 +3528,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.286/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -3869,7 +3553,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "832.179/2023"
+        "dsprocesso": "832.179/2023",
+        "overlaps": []
       }
     },
     {
@@ -3894,13 +3579,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.663/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -3926,13 +3605,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.350/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0.6
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -3990,13 +3663,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "833.228/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4021,7 +3688,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.503/2023"
+        "dsprocesso": "820.503/2023",
+        "overlaps": []
       }
     },
     {
@@ -4046,13 +3714,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.538/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4077,7 +3739,8 @@
         "uf": "SP",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "820.319/2023"
+        "dsprocesso": "820.319/2023",
+        "overlaps": []
       }
     },
     {
@@ -4102,13 +3765,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.364/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4165,7 +3822,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "832.375/2023"
+        "dsprocesso": "832.375/2023",
+        "overlaps": []
       }
     },
     {
@@ -4189,7 +3847,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.390/2023"
+        "dsprocesso": "833.390/2023",
+        "overlaps": []
       }
     },
     {
@@ -4213,7 +3872,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Minério de Titânio (heavy mineral, REE assoc.)",
-        "dsprocesso": "833.095/2023"
+        "dsprocesso": "833.095/2023",
+        "overlaps": []
       }
     },
     {
@@ -4238,13 +3898,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.538/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4269,7 +3923,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Ilmenita (heavy mineral sand, REE assoc.)",
-        "dsprocesso": "831.617/2023"
+        "dsprocesso": "831.617/2023",
+        "overlaps": []
       }
     },
     {
@@ -4294,13 +3949,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.380/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4331,11 +3980,6 @@
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
             "distance_km": 0
-          },
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -4362,7 +4006,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "832.648/2023"
+        "dsprocesso": "832.648/2023",
+        "overlaps": []
       }
     },
     {
@@ -4386,7 +4031,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.895/2023"
+        "dsprocesso": "830.895/2023",
+        "overlaps": []
       }
     },
     {
@@ -4411,13 +4057,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.889/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4443,13 +4083,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.887/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4474,7 +4108,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.892/2023"
+        "dsprocesso": "830.892/2023",
+        "overlaps": []
       }
     },
     {
@@ -4499,13 +4134,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.759/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4530,7 +4159,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.036/2024"
+        "dsprocesso": "820.036/2024",
+        "overlaps": []
       }
     },
     {
@@ -4554,7 +4184,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.040/2024"
+        "dsprocesso": "820.040/2024",
+        "overlaps": []
       }
     },
     {
@@ -4579,13 +4210,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.931/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4611,13 +4236,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "833.250/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4642,7 +4261,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.493/2023"
+        "dsprocesso": "833.493/2023",
+        "overlaps": []
       }
     },
     {
@@ -4666,7 +4286,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.230/2023"
+        "dsprocesso": "833.230/2023",
+        "overlaps": []
       }
     },
     {
@@ -4691,13 +4312,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "833.096/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4722,7 +4337,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.492/2023"
+        "dsprocesso": "833.492/2023",
+        "overlaps": []
       }
     },
     {
@@ -4746,7 +4362,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.495/2023"
+        "dsprocesso": "833.495/2023",
+        "overlaps": []
       }
     },
     {
@@ -4770,7 +4387,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.497/2023"
+        "dsprocesso": "833.497/2023",
+        "overlaps": []
       }
     },
     {
@@ -4859,13 +4477,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.018/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4890,7 +4502,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.488/2023"
+        "dsprocesso": "833.488/2023",
+        "overlaps": []
       }
     },
     {
@@ -4915,13 +4528,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.931/2023",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -4946,7 +4553,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.041/2024"
+        "dsprocesso": "830.041/2024",
+        "overlaps": []
       }
     },
     {
@@ -4970,7 +4578,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.491/2023"
+        "dsprocesso": "833.491/2023",
+        "overlaps": []
       }
     },
     {
@@ -4994,7 +4603,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.131/2024"
+        "dsprocesso": "830.131/2024",
+        "overlaps": []
       }
     },
     {
@@ -5018,7 +4628,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.039/2024"
+        "dsprocesso": "820.039/2024",
+        "overlaps": []
       }
     },
     {
@@ -5042,7 +4653,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.485/2023"
+        "dsprocesso": "833.485/2023",
+        "overlaps": []
       }
     },
     {
@@ -5067,13 +4679,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.278/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -5098,7 +4704,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.042/2024"
+        "dsprocesso": "830.042/2024",
+        "overlaps": []
       }
     },
     {
@@ -5122,7 +4729,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.780/2024"
+        "dsprocesso": "830.780/2024",
+        "overlaps": []
       }
     },
     {
@@ -5148,11 +4756,6 @@
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.850/2024",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
             "kind": "buffer_zone",
@@ -5184,13 +4787,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.001/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 1.2
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -5221,11 +4818,6 @@
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
             "distance_km": 0
-          },
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5252,7 +4844,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.561/2024"
+        "dsprocesso": "830.561/2024",
+        "overlaps": []
       }
     },
     {
@@ -5276,7 +4869,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.359/2024"
+        "dsprocesso": "830.359/2024",
+        "overlaps": []
       }
     },
     {
@@ -5300,7 +4894,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.231/2023"
+        "dsprocesso": "833.231/2023",
+        "overlaps": []
       }
     },
     {
@@ -5325,13 +4920,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.048/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -5362,11 +4951,6 @@
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
             "distance_km": 0
-          },
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5393,7 +4977,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.134/2024"
+        "dsprocesso": "830.134/2024",
+        "overlaps": []
       }
     },
     {
@@ -5417,7 +5002,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.364/2024"
+        "dsprocesso": "830.364/2024",
+        "overlaps": []
       }
     },
     {
@@ -5441,7 +5027,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.232/2023"
+        "dsprocesso": "833.232/2023",
+        "overlaps": []
       }
     },
     {
@@ -5465,7 +5052,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.277/2024"
+        "dsprocesso": "830.277/2024",
+        "overlaps": []
       }
     },
     {
@@ -5522,13 +5110,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.221/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -5553,7 +5135,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.133/2024"
+        "dsprocesso": "830.133/2024",
+        "overlaps": []
       }
     },
     {
@@ -5577,7 +5160,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.038/2024"
+        "dsprocesso": "820.038/2024",
+        "overlaps": []
       }
     },
     {
@@ -5601,7 +5185,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.280/2023"
+        "dsprocesso": "833.280/2023",
+        "overlaps": []
       }
     },
     {
@@ -5626,13 +5211,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.037/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -5657,7 +5236,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.149/2024"
+        "dsprocesso": "830.149/2024",
+        "overlaps": []
       }
     },
     {
@@ -5681,7 +5261,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.356/2024"
+        "dsprocesso": "830.356/2024",
+        "overlaps": []
       }
     },
     {
@@ -5705,7 +5286,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.366/2024"
+        "dsprocesso": "830.366/2024",
+        "overlaps": []
       }
     },
     {
@@ -5729,7 +5311,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.040/2024"
+        "dsprocesso": "830.040/2024",
+        "overlaps": []
       }
     },
     {
@@ -5759,11 +5342,6 @@
             "name": "Quilombo da Favela (Chapéu Preto)",
             "kind": "quilombo",
             "distance_km": 0
-          },
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
           }
         ],
         "has_overlap": true
@@ -5790,7 +5368,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.496/2023"
+        "dsprocesso": "833.496/2023",
+        "overlaps": []
       }
     },
     {
@@ -5814,7 +5393,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.777/2024"
+        "dsprocesso": "830.777/2024",
+        "overlaps": []
       }
     },
     {
@@ -5838,7 +5418,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.357/2024"
+        "dsprocesso": "830.357/2024",
+        "overlaps": []
       }
     },
     {
@@ -5862,7 +5443,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.778/2024"
+        "dsprocesso": "830.778/2024",
+        "overlaps": []
       }
     },
     {
@@ -5886,7 +5468,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.002/2024"
+        "dsprocesso": "820.002/2024",
+        "overlaps": []
       }
     },
     {
@@ -5910,7 +5493,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.543/2023"
+        "dsprocesso": "833.543/2023",
+        "overlaps": []
       }
     },
     {
@@ -5934,7 +5518,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Minério de Titânio (heavy mineral, REE assoc.)",
-        "dsprocesso": "833.639/2023"
+        "dsprocesso": "833.639/2023",
+        "overlaps": []
       }
     },
     {
@@ -5960,11 +5545,6 @@
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.301/2024",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
             "kind": "buffer_zone",
@@ -5995,7 +5575,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.373/2024"
+        "dsprocesso": "830.373/2024",
+        "overlaps": []
       }
     },
     {
@@ -6019,7 +5600,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.490/2023"
+        "dsprocesso": "833.490/2023",
+        "overlaps": []
       }
     },
     {
@@ -6043,7 +5625,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.365/2024"
+        "dsprocesso": "830.365/2024",
+        "overlaps": []
       }
     },
     {
@@ -6067,7 +5650,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.358/2024"
+        "dsprocesso": "830.358/2024",
+        "overlaps": []
       }
     },
     {
@@ -6091,7 +5675,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.164/2024"
+        "dsprocesso": "830.164/2024",
+        "overlaps": []
       }
     },
     {
@@ -6115,7 +5700,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.130/2024"
+        "dsprocesso": "830.130/2024",
+        "overlaps": []
       }
     },
     {
@@ -6139,7 +5725,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.044/2024"
+        "dsprocesso": "830.044/2024",
+        "overlaps": []
       }
     },
     {
@@ -6163,7 +5750,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.148/2024"
+        "dsprocesso": "830.148/2024",
+        "overlaps": []
       }
     },
     {
@@ -6187,7 +5775,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.166/2024"
+        "dsprocesso": "830.166/2024",
+        "overlaps": []
       }
     },
     {
@@ -6211,7 +5800,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.562/2024"
+        "dsprocesso": "830.562/2024",
+        "overlaps": []
       }
     },
     {
@@ -6235,7 +5825,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.136/2024"
+        "dsprocesso": "830.136/2024",
+        "overlaps": []
       }
     },
     {
@@ -6259,7 +5850,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.355/2024"
+        "dsprocesso": "830.355/2024",
+        "overlaps": []
       }
     },
     {
@@ -6283,7 +5875,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.041/2024"
+        "dsprocesso": "820.041/2024",
+        "overlaps": []
       }
     },
     {
@@ -6307,7 +5900,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.023/2024"
+        "dsprocesso": "831.023/2024",
+        "overlaps": []
       }
     },
     {
@@ -6331,7 +5925,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.022/2024"
+        "dsprocesso": "831.022/2024",
+        "overlaps": []
       }
     },
     {
@@ -6357,11 +5952,6 @@
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "831.028/2024",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
             "kind": "buffer_zone",
@@ -6392,7 +5982,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.024/2024"
+        "dsprocesso": "831.024/2024",
+        "overlaps": []
       }
     },
     {
@@ -6416,7 +6007,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.025/2024"
+        "dsprocesso": "831.025/2024",
+        "overlaps": []
       }
     },
     {
@@ -6440,7 +6032,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.040/2024"
+        "dsprocesso": "831.040/2024",
+        "overlaps": []
       }
     },
     {
@@ -6464,7 +6057,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.020/2024"
+        "dsprocesso": "831.020/2024",
+        "overlaps": []
       }
     },
     {
@@ -6488,7 +6082,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.487/2023"
+        "dsprocesso": "833.487/2023",
+        "overlaps": []
       }
     },
     {
@@ -6512,7 +6107,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.489/2023"
+        "dsprocesso": "833.489/2023",
+        "overlaps": []
       }
     },
     {
@@ -6536,7 +6132,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.076/2024"
+        "dsprocesso": "831.076/2024",
+        "overlaps": []
       }
     },
     {
@@ -6560,7 +6157,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.021/2024"
+        "dsprocesso": "831.021/2024",
+        "overlaps": []
       }
     },
     {
@@ -6585,13 +6183,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "831.144/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -6616,7 +6208,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.281/2023"
+        "dsprocesso": "833.281/2023",
+        "overlaps": []
       }
     },
     {
@@ -6640,7 +6233,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.258/2024"
+        "dsprocesso": "831.258/2024",
+        "overlaps": []
       }
     },
     {
@@ -6666,11 +6260,6 @@
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "831.230/2024",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
             "kind": "buffer_zone",
@@ -6701,7 +6290,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.253/2024"
+        "dsprocesso": "831.253/2024",
+        "overlaps": []
       }
     },
     {
@@ -6725,7 +6315,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.290/2024"
+        "dsprocesso": "831.290/2024",
+        "overlaps": []
       }
     },
     {
@@ -6749,7 +6340,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.233/2024"
+        "dsprocesso": "831.233/2024",
+        "overlaps": []
       }
     },
     {
@@ -6773,7 +6365,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.291/2024"
+        "dsprocesso": "831.291/2024",
+        "overlaps": []
       }
     },
     {
@@ -6797,7 +6390,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.259/2024"
+        "dsprocesso": "831.259/2024",
+        "overlaps": []
       }
     },
     {
@@ -6821,7 +6415,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.289/2024"
+        "dsprocesso": "831.289/2024",
+        "overlaps": []
       }
     },
     {
@@ -6845,7 +6440,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.292/2024"
+        "dsprocesso": "831.292/2024",
+        "overlaps": []
       }
     },
     {
@@ -6869,7 +6465,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.238/2024"
+        "dsprocesso": "831.238/2024",
+        "overlaps": []
       }
     },
     {
@@ -6893,7 +6490,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.293/2024"
+        "dsprocesso": "831.293/2024",
+        "overlaps": []
       }
     },
     {
@@ -6918,13 +6516,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "831.231/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -6949,7 +6541,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.260/2024"
+        "dsprocesso": "831.260/2024",
+        "overlaps": []
       }
     },
     {
@@ -6973,7 +6566,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.137/2024"
+        "dsprocesso": "830.137/2024",
+        "overlaps": []
       }
     },
     {
@@ -6997,7 +6591,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "833.504/2023"
+        "dsprocesso": "833.504/2023",
+        "overlaps": []
       }
     },
     {
@@ -7021,7 +6616,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.135/2024"
+        "dsprocesso": "830.135/2024",
+        "overlaps": []
       }
     },
     {
@@ -7077,7 +6673,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.372/2024"
+        "dsprocesso": "831.372/2024",
+        "overlaps": []
       }
     },
     {
@@ -7101,7 +6698,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.393/2024"
+        "dsprocesso": "831.393/2024",
+        "overlaps": []
       }
     },
     {
@@ -7125,7 +6723,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.370/2024"
+        "dsprocesso": "831.370/2024",
+        "overlaps": []
       }
     },
     {
@@ -7150,13 +6749,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.340/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0.4
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -7183,11 +6776,6 @@
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "831.696/2024",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
             "kind": "buffer_zone",
@@ -7219,13 +6807,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.339/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 1.0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -7251,13 +6833,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.344/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -7283,13 +6859,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.341/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 1.0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -7314,7 +6884,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "832.496/2024"
+        "dsprocesso": "832.496/2024",
+        "overlaps": []
       }
     },
     {
@@ -7339,13 +6910,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.342/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -7371,13 +6936,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.346/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -7404,11 +6963,6 @@
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.491/2024",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "APA Santuário Ecológico da Pedra Branca",
             "kind": "conservation_unit",
@@ -7445,13 +6999,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "832.343/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -7478,11 +7026,6 @@
         "category_label": "Minério de Urânio (REE co-occurrence)",
         "dsprocesso": "180.266/1977",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
             "kind": "buffer_zone",
@@ -7514,13 +7057,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.940/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -7547,11 +7084,6 @@
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "831.026/2024",
         "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          },
           {
             "name": "Zona de Amortecimento — APA Pedra Branca (indicativa, 3 km)",
             "kind": "buffer_zone",
@@ -7583,13 +7115,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "820.222/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -7614,7 +7140,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.737/2025"
+        "dsprocesso": "830.737/2025",
+        "overlaps": []
       }
     },
     {
@@ -7638,7 +7165,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.732/2025"
+        "dsprocesso": "830.732/2025",
+        "overlaps": []
       }
     },
     {
@@ -7662,7 +7190,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.730/2025"
+        "dsprocesso": "830.730/2025",
+        "overlaps": []
       }
     },
     {
@@ -7687,13 +7216,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.912/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -7719,13 +7242,7 @@
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
         "dsprocesso": "830.026/2024",
-        "overlaps": [
-          {
-            "name": "Área de Proteção Ambiental da Serra da Mantiqueira",
-            "kind": "conservation",
-            "distance_km": 0
-          }
-        ],
+        "overlaps": [],
         "has_overlap": true
       }
     },
@@ -7750,7 +7267,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Ilmenita (heavy mineral sand, REE assoc.)",
-        "dsprocesso": "830.726/1983"
+        "dsprocesso": "830.726/1983",
+        "overlaps": []
       }
     },
     {
@@ -7774,7 +7292,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.165/2024"
+        "dsprocesso": "830.165/2024",
+        "overlaps": []
       }
     },
     {
@@ -7798,7 +7317,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Ilmenita (heavy mineral sand, REE assoc.)",
-        "dsprocesso": "830.723/1983"
+        "dsprocesso": "830.723/1983",
+        "overlaps": []
       }
     },
     {
@@ -7822,7 +7342,8 @@
         "uf": "MG",
         "category": "pegmatite_associated",
         "category_label": "Minério de Lítio (pegmatite, REE assoc.)",
-        "dsprocesso": "830.041/2026"
+        "dsprocesso": "830.041/2026",
+        "overlaps": []
       }
     },
     {
@@ -7846,7 +7367,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.162/2024"
+        "dsprocesso": "830.162/2024",
+        "overlaps": []
       }
     },
     {
@@ -7870,7 +7392,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.162/2024"
+        "dsprocesso": "830.162/2024",
+        "overlaps": []
       }
     },
     {
@@ -7894,7 +7417,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "831.411/2025"
+        "dsprocesso": "831.411/2025",
+        "overlaps": []
       }
     },
     {
@@ -7918,7 +7442,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Ilmenita (heavy mineral sand, REE assoc.)",
-        "dsprocesso": "830.272/2026"
+        "dsprocesso": "830.272/2026",
+        "overlaps": []
       }
     },
     {
@@ -7942,7 +7467,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.137/2026"
+        "dsprocesso": "820.137/2026",
+        "overlaps": []
       }
     },
     {
@@ -7966,7 +7492,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.132/2026"
+        "dsprocesso": "820.132/2026",
+        "overlaps": []
       }
     },
     {
@@ -7990,7 +7517,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.442/2026"
+        "dsprocesso": "830.442/2026",
+        "overlaps": []
       }
     },
     {
@@ -8014,7 +7542,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.426/2026"
+        "dsprocesso": "830.426/2026",
+        "overlaps": []
       }
     },
     {
@@ -8038,7 +7567,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.428/2026"
+        "dsprocesso": "830.428/2026",
+        "overlaps": []
       }
     },
     {
@@ -8062,7 +7592,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.427/2026"
+        "dsprocesso": "830.427/2026",
+        "overlaps": []
       }
     },
     {
@@ -8086,7 +7617,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.546/2026"
+        "dsprocesso": "830.546/2026",
+        "overlaps": []
       }
     },
     {
@@ -8110,7 +7642,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.495/2026"
+        "dsprocesso": "830.495/2026",
+        "overlaps": []
       }
     },
     {
@@ -8134,7 +7667,8 @@
         "uf": "MG",
         "category": "heavy_mineral_associated",
         "category_label": "Ilmenita (heavy mineral sand, REE assoc.)",
-        "dsprocesso": "831.380/2024"
+        "dsprocesso": "831.380/2024",
+        "overlaps": []
       }
     },
     {
@@ -8158,7 +7692,8 @@
         "uf": "SP",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "820.164/2026"
+        "dsprocesso": "820.164/2026",
+        "overlaps": []
       }
     },
     {
@@ -8182,7 +7717,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.545/2026"
+        "dsprocesso": "830.545/2026",
+        "overlaps": []
       }
     },
     {
@@ -8206,7 +7742,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.657/2026"
+        "dsprocesso": "830.657/2026",
+        "overlaps": []
       }
     },
     {
@@ -8230,7 +7767,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.656/2026"
+        "dsprocesso": "830.656/2026",
+        "overlaps": []
       }
     },
     {
@@ -8254,7 +7792,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.658/2026"
+        "dsprocesso": "830.658/2026",
+        "overlaps": []
       }
     },
     {
@@ -8278,7 +7817,8 @@
         "uf": "MG",
         "category": "direct_ree",
         "category_label": "Terras Raras (REE)",
-        "dsprocesso": "830.660/2026"
+        "dsprocesso": "830.660/2026",
+        "overlaps": []
       }
     }
   ]

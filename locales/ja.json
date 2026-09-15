@@ -232,7 +232,7 @@
     "countries": "国",
     "region": "地域",
     "growthSince2022": "2022年以降の成長",
-    "projectsOfCrew": "このクルーのプロジェクト助成金",
+    "projectsOfCrew": "このクルーに関連するプロジェクト助成金",
     "projectsOfCrewHint": "場所・名前・近接性でこのクルーにリンクされています",
     "projectsOfRegion": "{region}のプロジェクト助成金",
     "projectsOfRegionHint": "地域全体のクルーにリンクされています",

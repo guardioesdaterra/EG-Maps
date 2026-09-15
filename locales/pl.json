@@ -232,7 +232,7 @@
     "countries": "Kraje",
     "region": "Region",
     "growthSince2022": "Wzrost od 2022",
-    "projectsOfCrew": "Granty projektowe tej drużyny",
+    "projectsOfCrew": "Granty projektowe powiązane z tą drużyną",
     "projectsOfCrewHint": "Powiązane z tą drużyną według miejsca, nazwy lub bliskości",
     "projectsOfRegion": "Granty projektowe regionu {region}",
     "projectsOfRegionHint": "Powiązane z drużynami z całego regionu",

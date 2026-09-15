@@ -232,7 +232,7 @@
     "countries": "Países",
     "region": "Región",
     "growthSince2022": "Crecimiento desde 2022",
-    "projectsOfCrew": "Subvenciones de proyectos de este equipo",
+    "projectsOfCrew": "Subvenciones de proyectos relacionadas con este equipo",
     "projectsOfCrewHint": "Vinculadas a este equipo por lugar, nombre o proximidad",
     "projectsOfRegion": "Subvenciones de proyectos de {region}",
     "projectsOfRegionHint": "Vinculadas a equipos de toda la región",

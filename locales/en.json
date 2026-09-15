@@ -232,7 +232,7 @@
     "countries": "Countries",
     "region": "Region",
     "growthSince2022": "Growth since 2022",
-    "projectsOfCrew": "Project grants of this crew",
+    "projectsOfCrew": "Project grants related to this crew",
     "projectsOfCrewHint": "Linked to this crew by place, name or proximity",
     "projectsOfRegion": "Project grants of {region}",
     "projectsOfRegionHint": "Linked to crews across the whole region",

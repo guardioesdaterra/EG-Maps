@@ -22,7 +22,7 @@
         </div>
         <h2 class="text-white text-xl font-bold mb-2">{{ t('grantsPortal.signInRequiredTitle') }}</h2>
         <p class="text-white/50 text-sm mb-6">{{ t('grantsPortal.grantsSignInSection') }}</p>
-        <button class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="signIn">
+        <button class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => signIn()">
           {{ t('grantsPortal.signInShort') }}
         </button>
       </div>

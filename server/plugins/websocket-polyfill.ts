@@ -11,7 +11,7 @@
 import WebSocket from 'ws'
 
 if (typeof globalThis.WebSocket === 'undefined') {
-  globalThis.WebSocket = WebSocket as unknown as typeof WebSocket
+  globalThis.WebSocket = WebSocket as unknown as typeof globalThis.WebSocket
 }
 
 export default defineNitroPlugin(() => {

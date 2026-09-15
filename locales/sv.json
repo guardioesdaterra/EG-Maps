@@ -232,7 +232,7 @@
     "countries": "Länder",
     "region": "Region",
     "growthSince2022": "Tillväxt sedan 2022",
-    "projectsOfCrew": "Projektbidrag från denna crew",
+    "projectsOfCrew": "Projektbidrag relaterade till denna crew",
     "projectsOfCrewHint": "Kopplade till denna crew via plats, namn eller närhet",
     "projectsOfRegion": "Projektbidrag från {region}",
     "projectsOfRegionHint": "Kopplade till crews i hela regionen",

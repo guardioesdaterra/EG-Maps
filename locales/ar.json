@@ -232,7 +232,7 @@
     "countries": "الدول",
     "region": "المنطقة",
     "growthSince2022": "النمو منذ 2022",
-    "projectsOfCrew": "منح المشاريع لهذا الفريق",
+    "projectsOfCrew": "منح المشاريع المرتبطة بهذا الفريق",
     "projectsOfCrewHint": "مرتبط بهذا الفريق بالمكان أو الاسم أو القرب",
     "projectsOfRegion": "منح المشاريع في {region}",
     "projectsOfRegionHint": "مرتبط بالفرق في المنطقة بأكملها",

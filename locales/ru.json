@@ -232,7 +232,7 @@
     "countries": "Страны",
     "region": "Регион",
     "growthSince2022": "Рост с 2022 года",
-    "projectsOfCrew": "Проектные гранты этой команды",
+    "projectsOfCrew": "Проектные гранты, связанные с этой командой",
     "projectsOfCrewHint": "Связаны с этой командой по месту, названию или близости",
     "projectsOfRegion": "Проектные гранты региона {region}",
     "projectsOfRegionHint": "Связаны с командами всего региона",

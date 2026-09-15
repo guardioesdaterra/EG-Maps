@@ -51,6 +51,7 @@ uniform float uNoise;
 uniform float uScan;
 uniform float uScanFreq;
 uniform float uWarp;
+uniform float uLight;
 #define iTime uTime
 #define iResolution uResolution
 
@@ -103,6 +104,9 @@ void main(){
     float scanline_val=sin(gl_FragCoord.y*uScanFreq)*0.5+0.5;
     col.rgb*=1.-(scanline_val*scanline_val)*uScan;
     col.rgb+=(rand(gl_FragCoord.xy+uTime)-0.5)*uNoise;
+    // Light theme: invert the dark shader into a soft white veil that keeps
+    // a whisper of the hue variation instead of a gray wash.
+    col.rgb=mix(col.rgb,vec3(1.0)-col.rgb*0.12,uLight);
     gl_FragColor=vec4(clamp(col.rgb,0.0,1.0),1.0);
 }
 `;
@@ -150,12 +154,15 @@ const resize = () => {
 
 const renderOnce = () => {
   if (!program || !renderer || !mesh) return;
+  const light = isDark.value ? 0 : 1;
   program.uniforms.uTime.value = ((performance.now() - start) / 1000) * props.speed;
   program.uniforms.uHueShift.value = hueByTheme(props.hueShift, 120);
   program.uniforms.uNoise.value = hueByTheme(props.noiseIntensity, 0.06);
-  program.uniforms.uScan.value = props.scanlineIntensity;
+  // Scanlines would carve harsh black bands into a white veil — fade them out in light mode.
+  program.uniforms.uScan.value = props.scanlineIntensity * (light ? 0.12 : 1);
   program.uniforms.uScanFreq.value = props.scanlineFrequency;
   program.uniforms.uWarp.value = props.warpAmount;
+  program.uniforms.uLight.value = light;
   renderer.render({ scene: mesh });
 };
 
@@ -222,7 +229,8 @@ onMounted(() => {
       uNoise: { value: props.noiseIntensity },
       uScan: { value: props.scanlineIntensity },
       uScanFreq: { value: props.scanlineFrequency },
-      uWarp: { value: props.warpAmount }
+      uWarp: { value: props.warpAmount },
+      uLight: { value: 0 }
     }
   });
 
@@ -256,11 +264,13 @@ watch(
   ],
   () => {
     if (program) {
+      const light = isDark.value ? 0 : 1;
       program.uniforms.uHueShift.value = hueByTheme(props.hueShift, 120);
       program.uniforms.uNoise.value = hueByTheme(props.noiseIntensity, 0.06);
-      program.uniforms.uScan.value = props.scanlineIntensity;
+      program.uniforms.uScan.value = props.scanlineIntensity * (light ? 0.12 : 1);
       program.uniforms.uScanFreq.value = props.scanlineFrequency;
       program.uniforms.uWarp.value = props.warpAmount;
+      program.uniforms.uLight.value = light;
       // Repaint immediately when the loop is paused (reduced-motion / hidden tab).
       if (!frame) renderOnce();
     }
@@ -269,8 +279,12 @@ watch(
 
 watch(isDark, () => {
   if (program) {
+    const light = isDark.value ? 0 : 1;
     program.uniforms.uHueShift.value = hueByTheme(props.hueShift, 120);
     program.uniforms.uNoise.value = hueByTheme(props.noiseIntensity, 0.06);
+    program.uniforms.uScan.value = props.scanlineIntensity * (light ? 0.12 : 1);
+    program.uniforms.uLight.value = light;
+    if (!frame) renderOnce();
   }
 });
 </script>

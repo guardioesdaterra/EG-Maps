@@ -36,10 +36,9 @@ const skipLabel = computed(() => t('a11y.skipToContent'))
 
 const veilOpacity = computed(() => {
   const p = route.path
-  const base = (p === '/campaigns' || p === '/masterclasses') ? 0.35 : 1
-  // The veil shader is intrinsically dark — in light mode let the light
-  // page background wash through so the whole palette visibly inverts.
-  return isDark.value ? base : base * 0.3
+  // The veil shader itself inverts (dark art / white veil), so opacity only
+  // varies by route — the backdrop is theme-correct at full strength.
+  return (p === '/campaigns' || p === '/masterclasses') ? 0.35 : 1
 })
 
 const config = useRuntimeConfig()

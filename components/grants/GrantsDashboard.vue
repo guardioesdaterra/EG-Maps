@@ -17,10 +17,10 @@
               <path d="M10 20c2-6 6-10 6-10s4 4 6 10" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
               <path d="M7 16c3-4 9-4 9-4s6 0 9 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
             </svg>
-            <span class="gstore-logo-text">Grants</span>
+            <span class="gstore-logo-text">{{ t('grantsPortal.dashboardLogoText') }}</span>
           </div>
           <div class="gstore-header-divider" />
-          <span class="gstore-badge">Dashboard</span>
+          <span class="gstore-badge">{{ t('grantsPortal.dashboardBadge') }}</span>
         </div>
         <div class="gstore-header-right">
           <div class="gstore-search">
@@ -28,26 +28,26 @@
             <input
               :value="searchQuery"
               @input="$emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
-              placeholder="Search grants, funders, countries…"
+              :placeholder="t('grantsPortal.dashboardSearchPlaceholder')"
               class="gstore-search-input"
-              aria-label="Search grants"
+              :aria-label="t('grantsPortal.dashboardSearchPlaceholder')"
             />
           </div>
           <template v-if="user">
-            <div v-if="isManager" class="gstore-create-btn" role="button" tabindex="0" @click="emit('open-create-grant')" @keydown.enter="emit('open-create-grant')" aria-label="Create new grant">
+            <div v-if="isManager" class="gstore-create-btn" role="button" tabindex="0" @click="emit('open-create-grant')" @keydown.enter="emit('open-create-grant')" :aria-label="t('grantsPortal.createGrant')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span>Create Grant</span>
+              <span>{{ t('grantsPortal.createGrant') }}</span>
             </div>
             <div class="gstore-user-pill" role="group" aria-label="User menu">
               <span class="gstore-user-avatar" :class="isManager ? 'manager' : ''">{{ isManager ? 'M' : 'C' }}</span>
               <span class="gstore-user-email">{{ user.email }}</span>
-              <button class="gstore-signout-btn" @click="$emit('signOut')" aria-label="Sign out">✕</button>
+              <button class="gstore-signout-btn" @click="$emit('signOut')" :aria-label="t('grantsPortal.signOut')">✕</button>
             </div>
           </template>
           <template v-else>
-            <button class="gstore-google-btn" aria-label="Sign in with Google" @click="$emit('signIn')">
+            <button class="gstore-google-btn" :aria-label="t('grantsPortal.signInBtn')" @click="$emit('signIn')">
               <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-              Sign In
+              {{ t('grantsPortal.signInShort') }}
             </button>
           </template>
         </div>
@@ -71,16 +71,16 @@
     <main class="gstore-main">
       <div v-if="isLoading" class="gstore-loading">
         <div class="gstore-loading-dot" />
-        <span>Loading grants…</span>
+        <span>{{ t('grantsPortal.loading') }}</span>
       </div>
 
       <template v-else-if="!user">
         <section class="gstore-hero">
           <div class="gstore-hero-chip">Earth Guardians</div>
-          <h1 class="gstore-hero-title">Grants &amp; Opportunities</h1>
-          <p class="gstore-hero-subtitle">Discover funding for climate action, conservation, and community projects worldwide.</p>
-          <p class="gstore-hero-hint">Sign in to vote, track, and manage grants.</p>
-          <button class="gstore-hero-btn" aria-label="Sign in with Google" @click="$emit('signIn')">Sign in with Google</button>
+          <h1 class="gstore-hero-title">{{ t('grantsPortal.dashboardHeroTitle') }}</h1>
+          <p class="gstore-hero-subtitle">{{ t('grantsPortal.dashboardHeroSubtitle') }}</p>
+          <p class="gstore-hero-hint">{{ t('grantsPortal.dashboardHeroHint') }}</p>
+          <button class="gstore-hero-btn" :aria-label="t('grantsPortal.signInBtn')" @click="$emit('signIn')">{{ t('grantsPortal.signInBtn') }}</button>
         </section>
       </template>
 
@@ -96,7 +96,7 @@
               <h2 class="gstore-section-title">{{ cat.label }}</h2>
               <span class="gstore-section-count">{{ cat.count }}</span>
             </div>
-            <span class="gstore-section-count-badge">{{ cat.count }} items</span>
+            <span class="gstore-section-count-badge">{{ t('grantsPortal.itemsLabel', { count: cat.count }) }}</span>
           </div>
           <div class="gstore-section-scroll">
             <div
@@ -126,7 +126,7 @@
               </div>
               <div class="gstore-card-footer">
                 <div v-if="g.amount_max" class="gstore-card-amount">{{ g.amount_max }} {{ g.currency }}</div>
-                <div v-else-if="'direct_beneficiaries' in g && g.direct_beneficiaries != null" class="gstore-card-amount">{{ formatCompact(Number(g.direct_beneficiaries)) }} beneficiaries</div>
+                <div v-else-if="'direct_beneficiaries' in g && g.direct_beneficiaries != null" class="gstore-card-amount">{{ formatCompact(Number(g.direct_beneficiaries)) }} {{ t('grantsPortal.beneficiariesSuffix') }}</div>
                 <div v-else class="gstore-card-amount muted">—</div>
                 <div v-if="g.highlights?.length" class="gstore-card-tags">
                   <span v-for="hl in g.highlights.slice(0, 2)" :key="hl" class="gstore-card-tag" :class="hl.toLowerCase().replace(/\s+/g, '_')">{{ hl }}</span>
@@ -157,10 +157,10 @@
       <Transition name="fade">
         <div v-if="showLoginPopup" class="gstore-overlay" role="dialog" aria-modal="true" @click.self="showLoginPopup = false">
           <div class="gstore-popup">
-            <h3 class="gstore-popup-title">Sign In Required</h3>
-            <p class="gstore-popup-desc">Sign in to vote on grants and track your favorites.</p>
-            <button class="gstore-hero-btn" aria-label="Sign in with Google" @click="$emit('signIn'); showLoginPopup = false">Sign in with Google</button>
-            <button class="gstore-popup-cancel" aria-label="Cancel sign in" @click="showLoginPopup = false">Cancel</button>
+            <h3 class="gstore-popup-title">{{ t('grantsPortal.signInRequiredTitle') }}</h3>
+            <p class="gstore-popup-desc">{{ t('grantsPortal.signInToVote') }}</p>
+            <button class="gstore-hero-btn" :aria-label="t('grantsPortal.signInBtn')" @click="$emit('signIn'); showLoginPopup = false">{{ t('grantsPortal.signInBtn') }}</button>
+            <button class="gstore-popup-cancel" :aria-label="t('grantsPortal.cancel')" @click="showLoginPopup = false">{{ t('grantsPortal.cancel') }}</button>
           </div>
         </div>
       </Transition>
@@ -311,12 +311,12 @@ const categories = computed(() => {
   const egProjectItems = projectItems.value
 
   return [
-    { key: 'community', icon: '🌱', label: 'Community Opportunities', count: 0, items: [] as MixedGrant[] },
-    { key: 'crew', icon: '👥', label: 'Crew Projects', count: crew.length, items: crew.slice(0, 20) },
-    { key: 'partners', icon: '🤝', label: 'Partner Grants', count: partnerOrgs.length + partnerOpps.length,     items: [...partnerOrgs.slice(0, 10).map(p => ({ id: p.id, title: p.name, funder: p.partner_type, country: p.country, description: p.mission, status: p.status, highlights: [] as string[], categories: undefined as string[] | undefined, grant_type: undefined as string | undefined, priority_score: undefined as number | undefined, amount_max: undefined as string | undefined, currency: undefined as string | undefined, direct_beneficiaries: undefined as number | undefined })), ...partnerOpps.slice(0, 10).map(o => ({ id: o.id, title: o.title, funder: o.partners?.name || '', country: o.country, amount_max: o.amount_max, currency: o.currency, description: o.description, status: o.status, highlights: o.highlights || [], categories: o.categories, grant_type: o.grant_type, priority_score: o.priority_score, direct_beneficiaries: undefined as number | undefined }))].slice(0, 20) },
-    { key: 'worldwide', icon: '🌍', label: 'Worldwide Grants', count: worldwide.length, items: worldwide.slice(0, 20) },
-    { key: 'egprojects', icon: '🌿', label: 'EG Project Grants', count: egProjectItems.length, items: egProjectItems.slice(0, 20) },
-    ...(props.isManager ? [{ key: 'claims', icon: '⚖️', label: 'Claims Review', count: props.claims?.length || 0, items: [] as MixedGrant[] }] : []),
+    { key: 'community', icon: '🌱', label: t('grantsPortal.catCommunity'), count: 0, items: [] as MixedGrant[] },
+    { key: 'crew', icon: '👥', label: t('grantsPortal.catCrew'), count: crew.length, items: crew.slice(0, 20) },
+    { key: 'partners', icon: '🤝', label: t('grantsPortal.catPartners'), count: partnerOrgs.length + partnerOpps.length,     items: [...partnerOrgs.slice(0, 10).map(p => ({ id: p.id, title: p.name, funder: p.partner_type, country: p.country, description: p.mission, status: p.status, highlights: [] as string[], categories: undefined as string[] | undefined, grant_type: undefined as string | undefined, priority_score: undefined as number | undefined, amount_max: undefined as string | undefined, currency: undefined as string | undefined, direct_beneficiaries: undefined as number | undefined })), ...partnerOpps.slice(0, 10).map(o => ({ id: o.id, title: o.title, funder: o.partners?.name || '', country: o.country, amount_max: o.amount_max, currency: o.currency, description: o.description, status: o.status, highlights: o.highlights || [], categories: o.categories, grant_type: o.grant_type, priority_score: o.priority_score, direct_beneficiaries: undefined as number | undefined }))].slice(0, 20) },
+    { key: 'worldwide', icon: '🌍', label: t('grantsPortal.catWorldwide'), count: worldwide.length, items: worldwide.slice(0, 20) },
+    { key: 'egprojects', icon: '🌿', label: t('grantsPortal.catEGProjects'), count: egProjectItems.length, items: egProjectItems.slice(0, 20) },
+    ...(props.isManager ? [{ key: 'claims', icon: '⚖️', label: t('grantsPortal.catClaims'), count: props.claims?.length || 0, items: [] as MixedGrant[] }] : []),
   ]
 })
 

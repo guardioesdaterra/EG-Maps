@@ -2,7 +2,7 @@
  * pages/auth/callback.vue
  * @why OAuth callback handler — processes Supabase auth redirect, sets session, redirects to origin
  * @component callback
- * @deps vue (ref, onMounted, onBeforeUnmount); ~/composables/useSupabase (useSupabase); ~/composables/useSupabaseAuth (useSupabaseAuth); ~/composables/useI18n (useI18n); ~/lib/supabase (isSupabaseConfigured); ~/lib/auth-redirect (mergeOAuthParams, safeNext, snapshotOAuthLanding, withTimeout)
+ * @deps vue (ref, onMounted, onBeforeUnmount); ~/composables/useSupabase (useSupabase); ~/composables/useSupabaseAuth (useSupabaseAuth); ~/composables/useI18n (useI18n); ~/lib/supabase (isSupabaseConfigured); ~/lib/auth-redirect (mergeOAuthParams, safeNext, snapshotOAuthLanding, summarizeAuthStorage, withTimeout)
  */
 <template>
   <main id="main-content" tabindex="-1" role="main" class="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
@@ -34,7 +34,7 @@ import { useSupabase } from '~/composables/useSupabase'
 import { useSupabaseAuth } from '~/composables/useSupabaseAuth'
 import { useI18n } from '~/composables/useI18n'
 import { isSupabaseConfigured } from '~/lib/supabase'
-import { mergeOAuthParams, safeNext, snapshotOAuthLanding, withTimeout } from '~/lib/auth-redirect'
+import { mergeOAuthParams, safeNext, snapshotOAuthLanding, summarizeAuthStorage, withTimeout } from '~/lib/auth-redirect'
 
 useHead({ title: 'Auth Callback | Earth Guardians' })
 
@@ -94,19 +94,14 @@ function readOAuthParams(): URLSearchParams {
 }
 
 function readVerifierToken(): { verifier: string; token: string } {
-  let verifier: 'present' | 'missing' | 'unreadable' = 'missing'
-  let token: 'present' | 'absent' | 'unreadable' = 'absent'
+  let keys: string[] | null = null
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i) || ''
-      if (k.endsWith('-code-verifier')) verifier = 'present'
-      else if (k.includes('auth-token')) token = 'present'
-    }
+    keys = []
+    for (let i = 0; i < localStorage.length; i++) keys.push(localStorage.key(i) || '')
   } catch {
-    verifier = 'unreadable'
-    token = 'unreadable'
+    keys = null
   }
-  return { verifier, token }
+  return summarizeAuthStorage(keys)
 }
 
 /**

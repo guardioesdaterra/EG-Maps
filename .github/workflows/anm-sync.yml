@@ -32,7 +32,7 @@ jobs:
           --report scripts/output/anm-sync-report.json
 
       - name: Upload sync report
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: anm-sync-report
           path: scripts/output/anm-sync-report.json

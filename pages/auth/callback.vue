@@ -77,19 +77,51 @@ function settleError(message: string) {
 
 type Membership = 'manager' | 'member' | 'guest'
 
+// Per-step budgets so logs reveal WHICH check hung (getUser vs
+// is-manager vs crew-sync). The outer checkMembershipAndRedirect budget
+// stays fail-open so OAuth success never strands users here.
+const GET_USER_TIMEOUT_MS = 5000
+const FUNCTION_TIMEOUT_MS = 6000
+
+async function timed<T>(label: string, promise: Promise<T>, ms: number): Promise<T> {
+  const start = performance.now()
+  try {
+    const result = await withTimeout(promise, ms, label)
+    console.log('[auth/callback]', { label: `${label}-ok`, elapsedMs: Math.round(performance.now() - start) })
+    return result
+  } catch (e) {
+    console.warn('[auth/callback]', {
+      label: `${label}-timeout`,
+      elapsedMs: Math.round(performance.now() - start),
+      error: e instanceof Error ? e.message : String(e),
+    })
+    throw e
+  }
+}
+
 async function resolveMembership(): Promise<Membership> {
-  const { data: { user } } = await client.auth.getUser()
+  const { data: { user } } = await timed('getUser', client.auth.getUser(), GET_USER_TIMEOUT_MS)
   if (!user?.email) return 'guest'
 
   try {
-    const { data, error: mgrErr } = await client.functions.invoke('is-manager', { method: 'GET' })
+    const { data, error: mgrErr } = await timed(
+      'is-manager',
+      client.functions.invoke('is-manager', { method: 'GET' }),
+      FUNCTION_TIMEOUT_MS,
+    )
     if (!mgrErr && data?.isManager === true) return 'manager'
-  } catch { /* fall through to crew check */ }
+    if (mgrErr) console.warn('[auth/callback] is-manager returned error', mgrErr)
+  } catch { /* fall through to crew check — already logged by timed() */ }
 
   try {
-    const { data, error: fnError } = await client.functions.invoke('crew-sync?action=check')
+    const { data, error: fnError } = await timed(
+      'crew-sync-check',
+      client.functions.invoke('crew-sync?action=check'),
+      FUNCTION_TIMEOUT_MS,
+    )
     if (!fnError && data?.authorized) return 'member'
-  } catch { /* treated as guest below */ }
+    if (fnError) console.warn('[auth/callback] crew-sync check returned error', fnError)
+  } catch { /* treated as guest below — already logged by timed() */ }
   return 'guest'
 }
 

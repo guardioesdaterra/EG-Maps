@@ -629,6 +629,12 @@ jobs:
     outputs:
       size: ${{ steps.size.outputs.size }}
     steps:
+      - name: 📥 Checkout master
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          path: _src_main
+
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
@@ -638,12 +644,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm # ✅ incremental
-
-      - name: 📥 Checkout master
-        uses: actions/checkout@v6
-        with:
-          ref: master
-          path: _src_main
+          # Checkout above lands in _src_main, so the root has no
+          # lockfile — point the pnpm store cache at the real one.
+          # (setup-node@v6 fails on a missing lockfile; v4 only warned.)
+          cache-dependency-path: _src_main/pnpm-lock.yaml
 
       - name: 📦 Install dependencies (main)
         run: pnpm install --frozen-lockfile --prefer-offline
@@ -750,6 +754,12 @@ jobs:
     outputs:
       size: ${{ steps.size.outputs.size }}
     steps:
+      - name: 📥 Checkout develop
+        uses: actions/checkout@v6
+        with:
+          ref: develop
+          path: _src_develop
+
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
@@ -759,12 +769,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm # ✅ incremental
-
-      - name: 📥 Checkout develop
-        uses: actions/checkout@v6
-        with:
-          ref: develop
-          path: _src_develop
+          # Checkout above lands in _src_develop, so the root has no
+          # lockfile — point the pnpm store cache at the real one.
+          # (setup-node@v6 fails on a missing lockfile; v4 only warned.)
+          cache-dependency-path: _src_develop/pnpm-lock.yaml
 
       - name: 📦 Install dependencies (develop)
         run: pnpm install --frozen-lockfile --prefer-offline

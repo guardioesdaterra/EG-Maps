@@ -97,7 +97,7 @@
     </header>
 
     
-    <nav v-if="showDock && !hideAll" class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] xs:bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
+    <nav v-if="showDock && !hideAll && !isEgGrantsRoute" class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] xs:bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
       <div :class="dockShellClass">
         <div class="flex items-center gap-1">
           <GooeyNav :items="navItems" />
@@ -245,6 +245,7 @@ const noControl = computed(() => route.query['no-control'] === 'true')
 const hideAll = computed(() => route.query.hideAll === 'true')
 const controlsForced = computed(() => route.query.controls === 'true')
 const isVulcanRoute = computed(() => route.path.startsWith('/vulcan-observatory'))
+const isEgGrantsRoute = computed(() => route.path.startsWith('/eg-grants'))
 const showUnifiedHeader = computed(() => (isMapRoute.value || route.path === '/info') && !noControl.value && !hideAll.value && !controlsForced.value && !isVulcanRoute.value)
 const showViewToggle = computed(() => isMapRoute.value && !noControl.value && !hideAll.value && !controlsForced.value)
 

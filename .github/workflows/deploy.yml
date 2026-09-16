@@ -71,10 +71,10 @@ jobs:
       sync-scripts: ${{ steps.filter.outputs.sync-scripts }}
       docs-only: ${{ steps.filter.outputs.docs-only }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - id: filter
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         with:
           filters: |
             app:
@@ -127,14 +127,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm # ✅ incremental: pnpm store keyed on pnpm-lock.yaml hash
@@ -160,14 +160,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm # ✅ incremental
@@ -193,14 +193,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm # ✅ incremental
@@ -230,9 +230,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           # No requirements.txt in repo → pip cache handled explicitly below.
@@ -267,14 +267,14 @@ jobs:
       expired: ${{ steps.capture.outputs.expired }}
       closed: ${{ steps.capture.outputs.closed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: 🐍 Restore pip cache (incremental)
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           # Rebuild only when the scraper sources change.
@@ -304,7 +304,7 @@ jobs:
 
       - name: 📤 Upload grants export artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: grants-export
           path: scripts/output/grants_export_*.*
@@ -320,14 +320,14 @@ jobs:
       export-file: ${{ steps.capture.outputs.export-file }}
       total: ${{ steps.capture.outputs.total }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: 🐍 Restore pip cache (incremental)
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-${{ hashFiles('scripts/sync-cultural-agents.py') }}
@@ -369,7 +369,7 @@ jobs:
 
       - name: 📤 Upload cultural agents data (for build jobs)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: cultural-agents-data
           path: public/data/cultural-agents/
@@ -378,7 +378,7 @@ jobs:
 
       - name: 📤 Upload cultural agents export
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: cultural-agents-export
           path: scripts/output/cultural_agents_export_*.*
@@ -394,14 +394,14 @@ jobs:
     # skip only when BOTH scrapes failed.
     if: always() && (needs.sync-grants.result == 'success' || needs.sync-culture.result == 'success')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm # ✅ incremental
@@ -410,14 +410,14 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: 📥 Download grants export
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: grants-export
           path: scripts/output/
         continue-on-error: true
 
       - name: 📥 Download cultural agents export
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: cultural-agents-export
           path: scripts/output/
@@ -473,15 +473,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: 🗃️ Restore species icon mapping (incremental)
         id: cache-icons
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: public/data/species/species-icon-mapping.json
           # Rebuild ONLY when the builder script or the species index changes.
@@ -509,15 +509,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: 🗃️ Restore overlap indicators (incremental)
         id: cache-overlaps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: public/data/rare-earth/points_with_overlaps.geojson
           # Rebuild ONLY when the analyzer or its geo inputs change.
@@ -549,14 +549,14 @@ jobs:
     timeout-minutes: 20
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm # ✅ incremental
@@ -566,7 +566,7 @@ jobs:
 
       - name: 🗃️ Restore Playwright browsers (incremental)
         id: cache-pw
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           # Rebuild only when the Playwright version changes.
@@ -595,7 +595,7 @@ jobs:
 
       - name: 📤 Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-report
           path: playwright-report/
@@ -634,13 +634,13 @@ jobs:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm # ✅ incremental
 
       - name: 📥 Checkout master
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: master
           path: _src_main
@@ -650,14 +650,14 @@ jobs:
         working-directory: _src_main
 
       - name: 📥 Download cultural agents data
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: cultural-agents-data
           path: _src_main/public/data/cultural-agents/
         continue-on-error: true
 
       - name: 🗃️ Restore Nuxt caches (incremental)
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             _src_main/.nuxt
@@ -669,7 +669,7 @@ jobs:
 
       - name: 🗃️ Restore species icon mapping (incremental)
         id: cache-icons
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _src_main/public/data/species/species-icon-mapping.json
           # NOTE: hashes resolve against the _src_main checkout (same scripts),
@@ -683,7 +683,7 @@ jobs:
 
       - name: 🗃️ Restore overlap indicators (incremental)
         id: cache-overlaps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _src_main/public/data/rare-earth/points_with_overlaps.geojson
           key: overlaps-${{ hashFiles('_src_main/scripts/compute-overlaps.mjs', '_src_main/public/data/rare-earth/points.geojson', '_src_main/public/data/rare-earth/polygons.geojson', '_src_main/public/data/rare-earth/protected-areas.geojson') }}
@@ -720,7 +720,7 @@ jobs:
           echo "Main output size: $SIZE"
 
       - name: 📤 Upload main site artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: site-main
           path: _src_main/.output/public
@@ -755,13 +755,13 @@ jobs:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm # ✅ incremental
 
       - name: 📥 Checkout develop
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: develop
           path: _src_develop
@@ -771,14 +771,14 @@ jobs:
         working-directory: _src_develop
 
       - name: 📥 Download cultural agents data (develop)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: cultural-agents-data
           path: _src_develop/public/data/cultural-agents/
         continue-on-error: true
 
       - name: 🗃️ Restore Nuxt caches (incremental)
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             _src_develop/.nuxt
@@ -790,7 +790,7 @@ jobs:
 
       - name: 🗃️ Restore species icon mapping (incremental)
         id: cache-icons
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _src_develop/public/data/species/species-icon-mapping.json
           key: species-icons-${{ hashFiles('_src_develop/scripts/build-species-icon-mapping.mjs', '_src_develop/public/data/species/index.json') }}
@@ -802,7 +802,7 @@ jobs:
 
       - name: 🗃️ Restore overlap indicators (incremental)
         id: cache-overlaps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _src_develop/public/data/rare-earth/points_with_overlaps.geojson
           key: overlaps-${{ hashFiles('_src_develop/scripts/compute-overlaps.mjs', '_src_develop/public/data/rare-earth/points.geojson', '_src_develop/public/data/rare-earth/polygons.geojson', '_src_develop/public/data/rare-earth/protected-areas.geojson') }}
@@ -842,7 +842,7 @@ jobs:
           echo "Develop output size: $SIZE"
 
       - name: 📤 Upload develop site artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: site-develop
           path: _src_develop/.output/public
@@ -873,13 +873,13 @@ jobs:
       contents: read
     steps:
       - name: 📥 Download main site
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: site-main
           path: /tmp/site
 
       - name: 📥 Download test site
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: site-develop
           path: /tmp/site/test
@@ -916,7 +916,7 @@ jobs:
           echo "TEST_FILES=$TEST_FILES" >> "$GITHUB_ENV"
           echo "TOTAL_SIZE=$TOTAL_SIZE" >> "$GITHUB_ENV"
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: /tmp/site
 
@@ -946,7 +946,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
       - name: 📝 Summary
         if: always()

@@ -69,6 +69,30 @@ const landingSnapshot = (() => {
   }
 })()
 
+// Cross-load trail (counts only, no values): distinguishes "the provider never
+// sent a code on ANY landing" from "an earlier landing HAD a code" (refresh /
+// Back-button / history restore after the code was consumed). Without this,
+// a bare-URL reload looks identical to a provider failure.
+function recordLanding(sawCode: boolean) {
+  try {
+    const n = Number(sessionStorage.getItem('eg-auth-cb-loads') || '0') + 1
+    sessionStorage.setItem('eg-auth-cb-loads', String(n))
+    if (sawCode) sessionStorage.setItem('eg-auth-cb-saw-code', '1')
+  } catch { /* private mode / blocked storage — ignore */ }
+}
+
+function readTrail(): string {
+  try {
+    const loads = sessionStorage.getItem('eg-auth-cb-loads') ?? '?'
+    const saw = sessionStorage.getItem('eg-auth-cb-saw-code') ? 1 : 0
+    return `loads=${loads} sawCode=${saw}`
+  } catch {
+    return 'loads=? sawCode=?'
+  }
+}
+
+recordLanding(!!landingSnapshot?.code)
+
 const { t } = useI18n()
 const { client } = useSupabase()
 const { signIn: startSignIn } = useSupabaseAuth()
@@ -115,7 +139,7 @@ function diagnoseLanding(): string {
   const queryKeys = landingSnapshot?.queryKeys ?? []
   const hashKeys = landingSnapshot?.hashKeys ?? []
   const { verifier, token } = readVerifierToken()
-  const diag = `query=[${queryKeys.join(',')}] hash=[${hashKeys.join(',')}] verifier=${verifier} token=${token}`
+  const diag = `query=[${queryKeys.join(',')}] hash=[${hashKeys.join(',')}] verifier=${verifier} token=${token} ${readTrail()}`
   console.log('[auth/callback] landing diagnostics', { diag })
   return diag
 }

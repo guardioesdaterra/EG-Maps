@@ -2,11 +2,14 @@
  * composables/useSupabaseAuth.ts
  * @why Supabase authentication wrapper — sign in, sign up, sign out, session management
  * @functions useSupabaseAuth
- * @deps vue (ref, watch); ./useSupabase (useSupabase); ~/lib/auth-redirect (stripBasePath)
+ * @deps vue (ref, watch); ./useSupabase (useSupabase); ~/lib/auth-redirect (stripBasePath, withTimeout)
  */
 import { ref, watch } from 'vue'
 import { useSupabase } from './useSupabase'
-import { stripBasePath } from '~/lib/auth-redirect'
+import { stripBasePath, withTimeout } from '~/lib/auth-redirect'
+
+/** Upper bound for the manager role check — fail closed to non-manager. */
+const VERIFY_MANAGER_TIMEOUT_MS = 8000
 
 export function useSupabaseAuth() {
   const { client, user, sessionReady } = useSupabase()
@@ -25,9 +28,13 @@ export function useSupabaseAuth() {
     }
 
     try {
-      const { data, error } = await client.functions.invoke('is-manager', {
-        method: 'GET',
-      })
+      const { data, error } = await withTimeout(
+        client.functions.invoke('is-manager', {
+          method: 'GET',
+        }),
+        VERIFY_MANAGER_TIMEOUT_MS,
+        'is-manager',
+      )
       if (error) {
         console.error('is-manager edge function error:', error)
         isManager.value = false

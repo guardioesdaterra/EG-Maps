@@ -5,7 +5,7 @@
  * @deps vitest (describe, it, expect); ../lib/auth-redirect (safeNext, stripBasePath, withTimeout)
  */
 import { describe, it, expect } from 'vitest'
-import { buildAuthCallbackUrl, callbackPathForBase, mergeOAuthParams, safeNext, snapshotOAuthLanding, stripBasePath, withTimeout } from '../lib/auth-redirect'
+import { buildAuthCallbackUrl, callbackPathForBase, mergeOAuthParams, safeNext, snapshotOAuthLanding, stripBasePath, summarizeAuthStorage, withTimeout } from '../lib/auth-redirect'
 
 describe('safeNext', () => {
   it('accepts internal paths with queries', () => {
@@ -90,8 +90,7 @@ describe('mergeOAuthParams', () => {
   })
 })
 
-describe('snapshotOAuthLanding', () => {
-  it('captures code/next/error plus key names for diagnostics', () => {
+describe('snapshotOAuthLanding', () => {  it('captures code/next/error plus key names for diagnostics', () => {
     const s = snapshotOAuthLanding('?code=abc&next=%2Feg-grants', '')
     expect(s.code).toBe('abc')
     expect(s.next).toBe('/eg-grants')
@@ -105,5 +104,24 @@ describe('snapshotOAuthLanding', () => {
     expect(s.code).toBeNull()
     expect(s.oauthError).toBe('denied')
     expect(s.hashKeys).toEqual(['error', 'error_description'])
+  })
+})
+
+describe('summarizeAuthStorage', () => {
+  it('does not mistake the verifier key for a session token', () => {
+    expect(summarizeAuthStorage(['sb-ref-auth-token-code-verifier']))
+      .toEqual({ verifier: 'present', token: 'absent' })
+  })
+
+  it('reports a real session token key', () => {
+    expect(summarizeAuthStorage(['sb-ref-auth-token']))
+      .toEqual({ verifier: 'missing', token: 'present' })
+    expect(summarizeAuthStorage(['sb-ref-auth-token', 'sb-ref-auth-token-code-verifier']))
+      .toEqual({ verifier: 'present', token: 'present' })
+  })
+
+  it('handles empty and unreadable storage', () => {
+    expect(summarizeAuthStorage([])).toEqual({ verifier: 'missing', token: 'absent' })
+    expect(summarizeAuthStorage(null)).toEqual({ verifier: 'unreadable', token: 'unreadable' })
   })
 })

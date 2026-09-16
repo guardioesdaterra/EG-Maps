@@ -49,6 +49,30 @@ export function buildAuthCallbackUrl(origin: string, baseURL: string, next: stri
   return cleanOrigin + path + (next ? `?next=${encodeURIComponent(next)}` : '')
 }
 
+export interface StorageSummary {
+  verifier: 'present' | 'missing' | 'unreadable'
+  token: 'present' | 'absent' | 'unreadable'
+}
+
+/**
+ * Summarize Supabase auth storage from key NAMES only (never values).
+ * The PKCE verifier key (`sb-<ref>-auth-token-code-verifier`) CONTAINS
+ * `auth-token`, so it must be excluded from the session-token check —
+ * otherwise a verifier alone falsely reports `token=present`.
+ */
+export function summarizeAuthStorage(keys: string[] | null): StorageSummary {
+  if (!keys) return { verifier: 'unreadable', token: 'unreadable' }
+  let verifier = false
+  let token = false
+  for (const k of keys) {
+    if (k.endsWith('-code-verifier')) verifier = true
+    else if (k.includes('auth-token')) token = true
+  }
+  return {
+    verifier: verifier ? 'present' : 'missing',
+    token: token ? 'present' : 'absent',
+  }
+}
 function paramsFromString(raw: string): URLSearchParams {
   const stripped = raw.startsWith('?') || raw.startsWith('#') ? raw.slice(1) : raw
   try {

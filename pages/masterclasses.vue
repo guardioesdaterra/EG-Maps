@@ -411,22 +411,26 @@ useHead({
   gap: 1.25rem;
   padding: 1.25rem;
   border-radius: 12px;
-  border: 1px solid rgba(10, 10, 10, 0.08);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition: border-color 0.2s;
 }
 :global(.dark) .episode {
   border-color: rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.03);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 .episode:hover { border-color: var(--primary); }
 .episode--more {
   border-style: dashed;
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 0, 0, 0.15);
 }
 :global(.dark) .episode--more {
   border-color: rgba(255, 255, 255, 0.1);
@@ -554,17 +558,21 @@ useHead({
 .past-card {
   padding: 1rem 1.125rem;
   border-radius: 12px;
-  border: 1px solid rgba(10, 10, 10, 0.08);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
-  backdrop-filter: blur(12px) saturate(1.3);
-  -webkit-backdrop-filter: blur(12px) saturate(1.3);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition: border-color 0.2s;
 }
 :global(.dark) .past-card {
   border-color: rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.03);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 .past-card:hover { border-color: var(--primary); }
 .past-year {
@@ -591,18 +599,22 @@ useHead({
 .cta-block {
   padding: clamp(1.5rem, 3vw, 2.5rem);
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
-  border: 1px solid rgba(10, 10, 10, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px) saturate(1.5);
   -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   text-align: center;
   color: var(--text-primary);
 }
 :global(.dark) .cta-block {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 .cta-title {
   font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;

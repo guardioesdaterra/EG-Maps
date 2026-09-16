@@ -178,4 +178,81 @@ for text, opts in dl2:
         assert got == opts[0], f"DEADLINE ISO {text!r} -> {got!r}"
 for src in ("cepf_calls", "darwin", "gates_gc"):
     assert src in G.ALL_SOURCES, src
+
+# 10. v2.4 temporal gate — dead calls never ship
+assert G.is_expired("2000-01-15"), "PAST ISO NOT EXPIRED"
+assert G.is_expired("15 January 2000"), "PAST LONG NOT EXPIRED"
+assert not G.is_expired("2099-12-31"), "FUTURE ISO FLAGGED"
+assert not G.is_expired(""), "EMPTY FLAGGED"
+assert not G.is_expired("rolling"), "ROLLING FLAGGED"
+assert not G.is_expired("total garbage xyz"), "GARBAGE FLAGGED"
+# grace window: yesterday's deadline still ships with grace_days=1
+from datetime import date as _d, timedelta as _td
+
+_yesterday = (_d.today() - _td(days=1)).isoformat()
+assert G.is_expired(_yesterday), "YESTERDAY NOT EXPIRED"
+assert not G.is_expired(_yesterday, grace_days=1), "GRACE IGNORED"
+
+# reason helper: closed status wins, past deadline forces exclusion,
+# unknown/dateless/pending are kept, standing refs exempt from date rule
+assert G.temporal_exclude_reason({"status": "closed", "deadline": "2099-01-01"}) == "closed"
+assert G.temporal_exclude_reason({"status": "CLOSED", "deadline": ""}) == "closed"
+assert G.temporal_exclude_reason({"status": "open", "deadline": "2000-01-15"}) == "deadline-passed"
+assert G.temporal_exclude_reason({"status": "unknown", "deadline": "2000-01-15"}) == "deadline-passed"
+assert G.temporal_exclude_reason({"status": "open", "deadline": "2099-01-01"}) is None
+assert G.temporal_exclude_reason({"status": "unknown", "deadline": ""}) is None
+assert G.temporal_exclude_reason({"status": "pending", "deadline": ""}) is None, "LEGACY PENDING DROPPED"
+assert G.temporal_exclude_reason({"status": "open", "deadline": ""}) is None
+assert (
+    G.temporal_exclude_reason({"status": "closed", "deadline": "", "is_standing": True}) == "closed"
+), "CLOSED STANDING MUST STAY EXCLUDED"
+assert (
+    G.temporal_exclude_reason({"status": "open", "deadline": "2000-01-15", "is_standing": True}) is None
+), "STANDING REF DATE-EXEMPT"
+
+# end-to-end: a scraped grant with a past deadline is born expired
+_past = G.make_grant(
+    "Some Past Environmental Grant Program",
+    "test-source",
+    "https://example.org/grants/past-call",
+    "Open call for proposals. Grants up to $10,000. Environmental action.",
+    deadline="2000-01-15",
+    amount_max="$10,000",
+)
+assert _past["urgency"] == "expired", (_past["urgency"], _past["deadline_days"])
+assert "EXPIRED" in _past["highlights"], _past["highlights"]
+assert G.temporal_exclude_reason(_past) == "deadline-passed"
+
+# 11. export analyzer (stdlib-only, CI summary + gates)
+import analyze_grants_export as AZ  # noqa: E402
+
+_fake = [
+    {"title": "Open Future Grant", "source": "s1", "status": "open", "urgency": "soon",
+     "deadline": "2099-05-01", "amount_max": "$5,000", "priority_score": 50},
+    {"title": "Rolling Grant No Date", "source": "s1", "status": "unknown", "urgency": "unknown",
+     "deadline": "", "amount_max": "$1,000", "priority_score": 20},
+    {"title": "Legacy Pending Grant", "source": "s2", "status": "pending", "urgency": "unknown",
+     "deadline": "", "amount_max": "", "priority_score": 10},
+    {"title": "Closed Grant", "source": "s2", "status": "closed", "urgency": "unknown",
+     "deadline": "2099-06-01", "amount_max": "", "priority_score": 5},
+    {"title": "Past Deadline Grant", "source": "s1", "status": "open", "urgency": "expired",
+     "deadline": "2000-01-15", "amount_max": "", "priority_score": 5},
+]
+stats = AZ.analyze(_fake, {"excluded_closed": 3, "excluded_expired": 7}, today="2026-09-16")
+assert stats["total"] == 5, stats
+assert stats["live"] == 3, stats
+assert stats["open"] == 2, stats
+assert stats["expired"] == 1, stats
+assert stats["closed"] == 1, stats
+assert stats["status_counts"] == {"open": 2, "unknown": 1, "pending": 1, "closed": 1}, stats["status_counts"]
+fails = AZ.gate_failures(stats)
+assert len(fails) == 2, fails  # expired + closed leaks
+assert AZ.gate_failures(AZ.analyze([], today="2026-09-16")), "EMPTY MUST FAIL"
+_clean = AZ.analyze(_fake[:3], today="2026-09-16")
+assert _clean["live"] == 3 and AZ.gate_failures(_clean) == [], _clean
+md = AZ.render_markdown("grants_export_test.json", stats)
+for needle in ("Accepted grants: **5**", "live/shippable: **3**", "Top 5 live",
+               "Top sources", "Expired in export (1)", "Closed in export (1)",
+               "temporal gate dropped: closed=**3**"):
+    assert needle in md, needle
 print("ALL GRANTS GATE TESTS PASSED")

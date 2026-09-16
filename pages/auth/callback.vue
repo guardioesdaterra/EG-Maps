@@ -64,6 +64,39 @@ function readOAuthParams(): URLSearchParams {
   return q
 }
 
+/**
+ * Privacy-safe landing diagnostics (param NAMES only, never values): tells us
+ * whether the provider sent no code at all, sent implicit tokens instead of a
+ * PKCE code, or sent a code whose verifier/session then went missing.
+ */
+function diagnoseLanding(): string {
+  const queryKeys: string[] = []
+  const hashKeys: string[] = []
+  try {
+    new URLSearchParams(window.location.search).forEach((_, k) => queryKeys.push(k))
+  } catch { /* ignore */ }
+  try {
+    if (window.location.hash) {
+      new URLSearchParams(window.location.hash.replace(/^#/, '')).forEach((_, k) => hashKeys.push(k))
+    }
+  } catch { /* ignore */ }
+  let verifier: 'present' | 'missing' | 'unreadable' = 'missing'
+  let token: 'present' | 'absent' | 'unreadable' = 'absent'
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i) || ''
+      if (k.endsWith('-code-verifier')) verifier = 'present'
+      else if (k.includes('auth-token')) token = 'present'
+    }
+  } catch {
+    verifier = 'unreadable'
+    token = 'unreadable'
+  }
+  const diag = `query=[${queryKeys.join(',')}] hash=[${hashKeys.join(',')}] verifier=${verifier} token=${token}`
+  console.log('[auth/callback] landing diagnostics', { diag })
+  return diag
+}
+
 function settleRedirect(url: string) {
   if (settled) return
   settled = true
@@ -202,6 +235,7 @@ onMounted(async () => {
   // No session yet but a code is present — the auto-detect may have missed it
   // (e.g. client initialized before the URL was parsed). Retry explicitly once.
   const code = params.get('code')
+  const diag = diagnoseLanding()
   console.log('[auth/callback] callback landed', { hasCode: !!code, next })
   if (code) {
     try {
@@ -219,12 +253,12 @@ onMounted(async () => {
             ? String((exchangeError as { message: unknown }).message)
             : 'code exchange returned no session')
       console.warn('[auth/callback] explicit code exchange failed', { detail })
-      settleError(t('grantsPortal.authFailedRetry'), detail)
+      settleError(t('grantsPortal.authFailedRetry'), `${detail} | ${diag}`)
       return
     } catch (e) {
       const detail = e instanceof Error ? e.message : String(e)
       console.warn('[auth/callback] explicit code exchange threw', { detail })
-      settleError(t('grantsPortal.authFailedRetry'), detail)
+      settleError(t('grantsPortal.authFailedRetry'), `${detail} | ${diag}`)
       return
     }
   } else {
@@ -232,8 +266,8 @@ onMounted(async () => {
       const { data: { session } } = await client.auth.getSession()
       if (!session) {
         // No ?code= at all: stale bookmark, page refresh after the code was
-        // consumed, or the provider redirected without one.
-        settleError(t('grantsPortal.authNoCode'), 'no ?code= param in callback URL')
+        // consumed, or the provider redirected without one. `diag` pinpoints it.
+        settleError(t('grantsPortal.authNoCode'), diag)
         return
       }
       await checkMembershipAndRedirect(next)

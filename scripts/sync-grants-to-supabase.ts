@@ -88,6 +88,21 @@ function grantRejectReason(g: Grant): string | null {
   if (!hasTerms && !hasBoth && !g.is_standing) return "no-grant-terms";
   if (typeof g.relevance === "number" && g.relevance < 5 && !g.is_standing && !hasBoth)
     return "low-relevance";
+  // v2.4 temporal gate (defense in depth — grants.py already excludes these,
+  // but stale/hand-made exports must never be INSERTED): closed calls and
+  // deadlines already gone as of right now are skipped. Rolling/dateless
+  // grants (unknown) and legacy "pending" values are KEPT — absence of a
+  // date is not evidence of closure. Standing entries are curated refs.
+  if (!g.is_standing) {
+    const temporal = String(g.grant_status ?? g.status ?? "").toLowerCase().trim();
+    if (temporal === "closed") return "closed";
+    if ((g.urgency || "").toLowerCase() === "expired") return "deadline-passed";
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(g.deadline || "");
+    if (m) {
+      const today = new Date().toISOString().slice(0, 10);
+      if (`${m[1]}-${m[2]}-${m[3]}` < today) return "deadline-passed";
+    }
+  }
   return null;
 }
 
@@ -268,9 +283,11 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
 
   // ── Quality gate: skip junk BEFORE building records ──
   const quarantined: { title: string; reason: string }[] = [];
+  const reasonCounts = new Map<string, number>();
   const grants = grantsRaw.filter((g) => {
     const reason = grantRejectReason(g);
     if (reason) {
+      reasonCounts.set(reason, (reasonCounts.get(reason) ?? 0) + 1);
       if (quarantined.length < 50)
         quarantined.push({ title: (g.title || "(untitled)").slice(0, 80), reason });
       return false;
@@ -278,6 +295,8 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
     return true;
   });
   console.warn(`Quality gate: ${grantsRaw.length - grants.length} quarantined, ${grants.length} accepted`);
+  if (reasonCounts.size > 0)
+    console.warn(`  Reasons: ${[...reasonCounts.entries()].map(([r, n]) => `${r}=${n}`).join(", ")}`);
   for (const q of quarantined.slice(0, 20))
     console.warn(`  ⛔ [${q.reason}] ${q.title}`);
 

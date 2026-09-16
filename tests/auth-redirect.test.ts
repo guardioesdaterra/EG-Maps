@@ -5,7 +5,7 @@
  * @deps vitest (describe, it, expect); ../lib/auth-redirect (safeNext, stripBasePath, withTimeout)
  */
 import { describe, it, expect } from 'vitest'
-import { safeNext, stripBasePath, withTimeout } from '../lib/auth-redirect'
+import { buildAuthCallbackUrl, callbackPathForBase, mergeOAuthParams, safeNext, snapshotOAuthLanding, stripBasePath, withTimeout } from '../lib/auth-redirect'
 
 describe('safeNext', () => {
   it('accepts internal paths with queries', () => {
@@ -56,5 +56,54 @@ describe('withTimeout', () => {
   it('rejects slow promises after the timeout', async () => {
     const slow = new Promise((resolve) => setTimeout(() => resolve('late'), 200))
     await expect(withTimeout(slow, 20, 'membership check')).rejects.toThrow('membership check timed out')
+  })
+})
+
+describe('callbackPathForBase', () => {
+  it('always ends with a trailing slash to avoid directory-301 query loss', () => {
+    expect(callbackPathForBase('/')).toBe('/auth/callback/')
+    expect(callbackPathForBase('/EG-Maps/')).toBe('/EG-Maps/auth/callback/')
+    expect(callbackPathForBase('/EG-Maps')).toBe('/EG-Maps/auth/callback/')
+    expect(callbackPathForBase('/EG-Maps/test/')).toBe('/EG-Maps/test/auth/callback/')
+  })
+})
+
+describe('buildAuthCallbackUrl', () => {
+  it('builds the canonical redirectTo with encoded next', () => {
+    expect(buildAuthCallbackUrl('https://guardioesdaterra.github.io', '/EG-Maps/', '/eg-grants'))
+      .toBe('https://guardioesdaterra.github.io/EG-Maps/auth/callback/?next=%2Feg-grants')
+    expect(buildAuthCallbackUrl('https://example.com/', '/', null))
+      .toBe('https://example.com/auth/callback/')
+  })
+})
+
+describe('mergeOAuthParams', () => {
+  it('merges query and hash, query wins on collision', () => {
+    const p = mergeOAuthParams('?code=abc&next=%2Feg-grants', '#access_token=tok&code=other')
+    expect(p.get('code')).toBe('abc')
+    expect(p.get('next')).toBe('/eg-grants')
+    expect(p.get('access_token')).toBe('tok')
+  })
+
+  it('handles empty inputs', () => {
+    expect(mergeOAuthParams('', '').toString()).toBe('')
+  })
+})
+
+describe('snapshotOAuthLanding', () => {
+  it('captures code/next/error plus key names for diagnostics', () => {
+    const s = snapshotOAuthLanding('?code=abc&next=%2Feg-grants', '')
+    expect(s.code).toBe('abc')
+    expect(s.next).toBe('/eg-grants')
+    expect(s.oauthError).toBeNull()
+    expect(s.queryKeys).toEqual(['code', 'next'])
+    expect(s.hashKeys).toEqual([])
+  })
+
+  it('captures hash params and provider errors', () => {
+    const s = snapshotOAuthLanding('', '#error=access_denied&error_description=denied')
+    expect(s.code).toBeNull()
+    expect(s.oauthError).toBe('denied')
+    expect(s.hashKeys).toEqual(['error', 'error_description'])
   })
 })

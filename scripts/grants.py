@@ -710,6 +710,80 @@ def compute_deadline_urgency(deadline_str):
     return None, "unknown"
 
 
+# ── v2.4 temporal helpers: dead calls must never ship ──────────────
+# A grant is excludable when its page says CLOSED or its deadline already
+# passed as of right now. Rolling / no-deadline grants (unknown) are KEPT:
+# absence of a date is not evidence of closure.
+def parse_deadline_day(deadline_str):
+    """Parse a deadline string to a `datetime.date`. Returns None when the
+    string carries no parseable calendar date (rolling / unknown / garbage).
+
+    No dateutil dependency here on purpose — stdlib only, so the gate
+    works in the stdlib-only CI test sandbox too.
+    """
+    if not deadline_str or deadline_str in ("None", ""):
+        return None
+    from datetime import date as _date
+    s = str(deadline_str).strip()
+    # Fast path: ISO prefix ("2026-09-18" or "2026-09-18T…").
+    m = re.match(r"^(\d{4})-(\d{2})-(\d{2})", s)
+    if m:
+        try:
+            return _date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        except ValueError:
+            return None
+    # Legacy raw shapes ("19 June 2026", "31/08/26", …) — same shapes as
+    # compute_deadline_urgency, plus 2-digit-year slash forms.
+    dayfirst = bool(re.match(r"^\d{1,2}/\d{1,2}/", s))
+    for fmt in [
+        "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d",
+        "%d/%m/%y", "%m/%d/%y",
+        "%B %d, %Y", "%d %B %Y", "%B %Y",
+        "%b %d, %Y", "%d %b %Y", "%d-%b-%y", "%d-%b-%Y",
+    ]:
+        try:
+            token = s.split("T")[0].split(" at ")[0].strip()
+            if dayfirst and fmt in ("%m/%d/%Y", "%m/%d/%y"):
+                continue
+            if not dayfirst and fmt in ("%d/%m/%Y", "%d/%m/%y"):
+                continue
+            return datetime.strptime(token, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def is_expired(deadline_str, grace_days: int = 0) -> bool:
+    """True when the deadline is a real calendar date strictly before today
+    (minus an optional grace window). Unparseable / empty deadlines are
+    NEVER expired — unknown stays shippable."""
+    day = parse_deadline_day(deadline_str)
+    if day is None:
+        return False
+    from datetime import date as _date, timedelta as _td
+    today = datetime.now(timezone.utc).date()
+    return day < (today - _td(days=max(0, grace_days)))
+
+
+def temporal_exclude_reason(g: dict, grace_days: int = 0) -> str | None:
+    """Why this grant must not ship, or None when it is temporally alive.
+
+    Order matters: an explicit CLOSED page signal wins over the date, and
+    a past deadline forces exclusion even when the scraper left status
+    at "open"/"unknown" (stale badge, the common leak). Standing entries
+    are curated references — exempt from the date rule (they are already
+    excluded from output by default via `include_standing=False`).
+    Legacy "pending" values predate the open/closed/unknown vocabulary
+    and are treated as unknown (kept).
+    """
+    status = str(g.get("status") or "").strip().lower()
+    if status == "closed":
+        return "closed"
+    if not g.get("is_standing", False) and is_expired(g.get("deadline", ""), grace_days):
+        return "deadline-passed"
+    return None
+
+
 EG_CORE_KEYWORDS = [
     "artivism","artivismo","art activism","arte ativismo","cultural activism",
     "socioambiental","socio-environmental","environmental justice","justiça climática",
@@ -3880,10 +3954,13 @@ def filter_by_keywords(grants, keywords):
     if not kws: return grants
     return [g for g in grants if any(kw in f"{g['title']} {g['description']} {g['funder']}".lower() for kw in kws)]
 
-def save_json(grants, path):
-    with open(path,"w",encoding="utf-8") as f:
-        json.dump({"generated":datetime.now(timezone.utc).isoformat(),
-                   "total":len(grants),"grants":grants}, f, ensure_ascii=False, indent=2)
+def save_json(grants, path, meta=None):
+    payload = {"generated": datetime.now(timezone.utc).isoformat(),
+               "total": len(grants), "grants": grants}
+    if meta:
+        payload["meta"] = meta
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
 
 def save_csv(grants, path):
     if not grants: return
@@ -3953,7 +4030,8 @@ async def run_radar(sources_filter, country_filter, keywords,
                    category_filter, highlight_filter, urgent_only, min_amount,
                    refresh, min_relevance, output_prefix, include_standing=False,
                    min_signals=MIN_SIGNALS_DEFAULT, verify_urls=True,
-                   require_terms=True):
+                   require_terms=True, exclude_closed=True, exclude_expired=True,
+                   expired_grace_days=0):
     if refresh:
         for f in CACHE_DIR.glob("*.json"): f.unlink()
         console.print("[yellow]Cache cleared.[/]")
@@ -4072,18 +4150,58 @@ async def run_radar(sources_filter, country_filter, keywords,
                 or has_grant_signals(g.get("title", ""), g.get("description", ""),
                                      g.get("deadline", ""), g.get("amount_max", "")) >= min_signals]
     console.print(f"[green]✓ Signal gate (≥{min_signals}):[/] {len(filtered)} kept ({pre - len(filtered)} dropped)")
+    # 4. Temporal gate (v2.4): never ship dead calls. Drops grants whose
+    # page says CLOSED and grants whose deadline already passed as of right
+    # now — these used to leak into Supabase (e.g. rows with deadline_days
+    # of -175). Rolling / dateless grants are KEPT (unknown ≠ closed).
+    # Disable explicitly with --include-closed / --include-expired.
+    excluded_closed, excluded_expired = 0, 0
+    if exclude_closed or exclude_expired:
+        alive = []
+        for g in filtered:
+            reason = temporal_exclude_reason(g, grace_days=expired_grace_days)
+            if reason == "closed" and exclude_closed:
+                excluded_closed += 1
+                continue
+            if reason == "deadline-passed" and exclude_expired:
+                excluded_expired += 1
+                continue
+            alive.append(g)
+        filtered = alive
+        console.print(f"[green]✓ Temporal gate:[/] {len(filtered)} alive "
+                      f"({excluded_closed} closed + {excluded_expired} deadline-passed dropped)")
     filtered.sort(key=lambda x: x.get("priority_score", x["relevance"]), reverse=True)
     # ── Quality report (feeds CI summary + Supabase quality_score) ──
     n_dl = sum(1 for g in filtered if g.get("deadline"))
     n_amt = sum(1 for g in filtered if g.get("amount_max"))
     n_both = sum(1 for g in filtered if g.get("deadline") and g.get("amount_max"))
+    status_counts: dict = {}
+    urgency_counts: dict = {}
+    for g in filtered:
+        status_counts[g.get("status") or "unknown"] = status_counts.get(g.get("status") or "unknown", 0) + 1
+        urgency_counts[g.get("urgency") or "unknown"] = urgency_counts.get(g.get("urgency") or "unknown", 0) + 1
     console.print(f"[green]✓ Final:[/] {len(filtered)} relevant grants "
                   f"({n_dl} w/ deadline, {n_amt} w/ amount, {n_both} w/ both)\n")
+    run_meta = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "total": len(filtered),
+        "with_deadline": n_dl,
+        "with_amount": n_amt,
+        "with_both": n_both,
+        "status_counts": status_counts,
+        "urgency_counts": urgency_counts,
+        "excluded_closed": excluded_closed,
+        "excluded_expired": excluded_expired,
+        "exclude_closed": exclude_closed,
+        "exclude_expired": exclude_expired,
+        "expired_grace_days": expired_grace_days,
+        "sources_scraped": len(active),
+    }
 
     ts     = datetime.now().strftime("%Y%m%d_%H%M")
     prefix = f"{output_prefix}_{ts}" if output_prefix else f"grants_radar_{ts}"
 
-    save_json(filtered,     OUTPUT_DIR / f"{prefix}.json")
+    save_json(filtered,     OUTPUT_DIR / f"{prefix}.json", meta=run_meta)
     save_csv(filtered,      OUTPUT_DIR / f"{prefix}.csv")
     save_markdown(filtered, OUTPUT_DIR / f"{prefix}.md",
                   title=f"Grants Radar v2 — {country_filter or 'Worldwide'}")
@@ -4130,9 +4248,16 @@ async def run_radar(sources_filter, country_filter, keywords,
               help="Show available grant types and highlights")
 @click.option("--include-standing", is_flag=True,
               help="Include reference/standing entries (omitted by default)")
+@click.option("--include-closed", is_flag=True,
+              help="Keep grants whose page says CLOSED (dropped by default)")
+@click.option("--include-expired", is_flag=True,
+              help="Keep grants whose deadline already passed (dropped by default)")
+@click.option("--expired-grace-days", default=0, type=int,
+              help="Grace window in days: deadlines this recent still ship (default 0)")
 def main(country, sources, keywords, category, highlight, urgent, min_amount,
          refresh, min_score, min_signals, verify_urls, require_terms,
-         output, list_sources, list_types, include_standing):
+         output, list_sources, list_types, include_standing,
+         include_closed, include_expired, expired_grace_days):
     """
     \b
     GRANTS RADAR v2 — Earth Guardians South America
@@ -4160,7 +4285,9 @@ def main(country, sources, keywords, category, highlight, urgent, min_amount,
         filename=LOG_DIR/f"radar_{datetime.now().strftime('%Y%m%d')}.log",
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     asyncio.run(run_radar(sources, country, keywords, category, highlight, urgent, min_amount, refresh, min_score, output, include_standing,
-                          min_signals=min_signals, verify_urls=verify_urls, require_terms=require_terms))
+                          min_signals=min_signals, verify_urls=verify_urls, require_terms=require_terms,
+                          exclude_closed=not include_closed, exclude_expired=not include_expired,
+                          expired_grace_days=expired_grace_days))
 
 if __name__ == "__main__":
     main()

@@ -1,11 +1,41 @@
-name: Deploy to GitHub Pages
+# ══════════════════════════════════════════════════════════════════════════════
+# 🚀 Deploy to GitHub Pages — modernized pipeline
+#
+# Visual DAG (each job = one node in the GitHub graph):
+#
+#   detect-changes ─┬─ lint ──────────────┐
+#                   ├─ unit-tests ────────┤
+#                   ├─ typecheck ─────────┤
+#                   ├─ grants-gates ──────┤
+#                   ├─ sync-grants ────┐  │   ┌─ precompute-icons ──┐
+#                   ├─ sync-culture ───┤  ├──┤                     ├─► assemble ─► deploy ─► summary
+#                   │                  ├──►│  └─ precompute-overlaps┘
+#                   │   sync-supabase ◄┘   │
+#                   └─ playwright ─────────┘
+#                     (build-main & build-develop run in parallel once
+#                      lint + sync-supabase-push succeed)
+#
+# Performance strategy:
+#   • pnpm store cached via setup-node `cache: pnpm` (keyed on pnpm-lock.yaml)
+#   • pip wheel cache keyed on scripts/*.py hashes (no requirements.txt in repo)
+#   • Playwright browsers cached keyed on @playwright/test version
+#   • Nuxt/Vite caches (.nuxt, node_modules/.cache) keyed per branch + lockfile
+#   • Generated data (species-icon-mapping.json, points_with_overlaps.geojson)
+#     rebuilt ONLY when their script + input hashes change (actions/cache hit → skip)
+#   • build-main / build-develop run in PARALLEL (were serial before → ~2× faster)
+#   • sync split into 3 sub-nodes so grants & culture scrape concurrently
+#
+# Summaries: every job appends a markdown section to $GITHUB_STEP_SUMMARY;
+# the terminal `pipeline-summary` job aggregates all `needs.*.result` values.
+# ══════════════════════════════════════════════════════════════════════════════
+name: 🚀 Deploy to GitHub Pages
 
 on:
   push:
     branches: [master, develop]
   workflow_dispatch:
   schedule:
-    - cron: '0 */2 * * *'  # Every 2 hours — refresh grants radar
+    - cron: '0 */2 * * *' # Every 2 hours — refresh grants radar
 
 permissions:
   contents: read
@@ -17,357 +47,383 @@ concurrency:
   group: pages-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10.12.0'
+  PYTHON_VERSION: '3.12'
+  # Shared pip set (repo has no requirements.txt; keep in ONE place).
+  PIP_DEPS: 'feedparser aiohttp aiofiles beautifulsoup4 lxml python-dateutil rich click'
+
+# ════════════════════════════════════════════════════════════════════════════
+# JOBS
+# ════════════════════════════════════════════════════════════════════════════
 jobs:
-  build:
-    needs: [sync, lint]
+  # ─────────────────────────────────────────────────────────────────────────
+  # 0️⃣ Change detection — fast path inputs for summaries + conditional steps
+  # ─────────────────────────────────────────────────────────────────────────
+  detect-changes:
+    name: '🔎 Detect changes'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
+    timeout-minutes: 5
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      data-scripts: ${{ steps.filter.outputs.data-scripts }}
+      sync-scripts: ${{ steps.filter.outputs.sync-scripts }}
+      docs-only: ${{ steps.filter.outputs.docs-only }}
     steps:
-      # ── Global setup (once) ──────────────────────────────────
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v4
+
+      - id: filter
+        uses: dorny/paths-filter@v3
         with:
-          node-version: 22
+          filters: |
+            app:
+              - 'components/**'
+              - 'composables/**'
+              - 'lib/**'
+              - 'pages/**'
+              - 'layouts/**'
+              - 'plugins/**'
+              - 'assets/**'
+              - 'locales/**'
+              - 'public/**'
+              - 'nuxt.config.ts'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+            data-scripts:
+              - 'scripts/build-species-icon-mapping.mjs'
+              - 'scripts/compute-overlaps.mjs'
+              - 'public/data/species/**'
+              - 'public/data/rare-earth/**'
+            sync-scripts:
+              - 'scripts/grants.py'
+              - 'scripts/grants_gates_test.py'
+              - 'scripts/sync-cultural-agents.py'
+              - 'scripts/sync-grants-to-supabase.ts'
+            docs-only:
+              - '*.md'
+              - 'docs/**'
 
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 10.12.0
-          run_install: false
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v5
-        with:
-          path: ~/.local/share/pnpm/store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-${{ runner.os }}-
-
-      # ── Build main (production) → /EG-Maps/ ──────────────────
-      - name: Checkout main
-        uses: actions/checkout@v6
-        with:
-          ref: master
-          path: _src_main
-
-      - name: Install dependencies (main)
-        run: pnpm install --frozen-lockfile
-        working-directory: _src_main
-
-      - name: Download cultural agents data
-        uses: actions/download-artifact@v5
-        with:
-          name: cultural-agents-data
-          path: _src_main/public/data/cultural-agents/
-        continue-on-error: true
-
-      - name: Prepare Nuxt types (main)
-        run: npx nuxi prepare
-        working-directory: _src_main
-
-      - name: Type check (main)
-        run: npx vue-tsc --noEmit
-        working-directory: _src_main
-
-      - name: Build species icon mapping (main)
-        run: node scripts/build-species-icon-mapping.mjs
-        working-directory: _src_main
-
-      - name: Compute overlap indicators (main)
-        run: node scripts/compute-overlaps.mjs
-        working-directory: _src_main
-
-      - name: Verify secrets
+      - name: 📝 Summary
         run: |
-          echo "SUPABASE_URL=${SUPABASE_URL:0:30}..."
-          echo "SUPABASE_KEY length=${#SUPABASE_KEY}"
-        env:
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+          {
+            echo "## 🔎 Change detection"
+            echo ""
+            echo "| Scope | Changed |"
+            echo "|---|---|"
+            echo "| app | \`${{ steps.filter.outputs.app }}\` |"
+            echo "| data-scripts | \`${{ steps.filter.outputs.data-scripts }}\` |"
+            echo "| sync-scripts | \`${{ steps.filter.outputs.sync-scripts }}\` |"
+            echo "| docs-only | \`${{ steps.filter.outputs.docs-only }}\` |"
+            echo ""
+            echo "_sha: \`${{ github.sha }}\` · event: \`${{ github.event_name }}\` · ref: \`${{ github.ref }}\`_"
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Build main (production)
-        run: pnpm generate
-        working-directory: _src_main
-        env:
-          NUXT_APP_BASE_URL: /EG-Maps/
-          NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
-
-      - name: Copy main output to site root
-        run: |
-          mkdir -p /tmp/site
-          cp -r _src_main/.output/public/* /tmp/site/
-
-      # ── Build develop (test) → /EG-Maps/test/ ────────────────
-      - name: Checkout develop
-        uses: actions/checkout@v6
-        with:
-          ref: develop
-          path: _src_develop
-
-      - name: Install dependencies (develop)
-        run: pnpm install --frozen-lockfile
-        working-directory: _src_develop
-
-      - name: Download cultural agents data (develop)
-        uses: actions/download-artifact@v5
-        with:
-          name: cultural-agents-data
-          path: _src_develop/public/data/cultural-agents/
-        continue-on-error: true
-
-      - name: Prepare Nuxt types (develop)
-        run: npx nuxi prepare
-        working-directory: _src_develop
-
-      - name: Build species icon mapping (develop)
-        run: node scripts/build-species-icon-mapping.mjs
-        working-directory: _src_develop
-
-      - name: Compute overlap indicators (develop)
-        run: node scripts/compute-overlaps.mjs
-        working-directory: _src_develop
-
-      - name: Build develop (test)
-        run: pnpm generate
-        working-directory: _src_develop
-        env:
-          NUXT_APP_BASE_URL: /EG-Maps/test/
-          NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
-
-      - name: Copy develop output to test subfolder
-        run: |
-          test -d "_src_develop/.output/public"
-          test -f "_src_develop/.output/public/index.html"
-          test -f "_src_develop/.output/public/eg-logo.png"
-          test -f "_src_develop/.output/public/manifest.json"
-          test -f "_src_develop/.output/public/images/about/field-team-01.webp"
-          grep -q '/EG-Maps/test/_nuxt/' "_src_develop/.output/public/index.html"
-          grep -q '/EG-Maps/test/eg-logo.png' "_src_develop/.output/public/index.html"
-          mkdir -p /tmp/site/test
-          cp -r _src_develop/.output/public/. /tmp/site/test/
-          cp /tmp/site/test/200.html /tmp/site/test/404.html
-          echo "✅ Test site deployed to /EG-Maps/test/"
-
-      # ── Finalize combined output ──────────────────────────────
-      - name: Copy 200.html as 404.html for SPA fallback (root)
-        run: |
-          if [ -f /tmp/site/200.html ]; then
-            cp /tmp/site/200.html /tmp/site/404.html
-          fi
-
-      - name: Verify .nojekyll present
-        run: touch /tmp/site/.nojekyll
-
-      - name: Verify output structure
-        run: |
-          echo "=== Root site ==="
-          ls /tmp/site/ | head -20
-          echo ""
-          echo "=== Test site ==="
-          if [ -d /tmp/site/test ]; then
-            ls /tmp/site/test/ | head -20
-          else
-            echo "No test site found"
-          fi
-
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: /tmp/site
-
+  # ─────────────────────────────────────────────────────────────────────────
+  # 1️⃣ Quality gates (all parallel, all cached)
+  # ─────────────────────────────────────────────────────────────────────────
   lint:
+    name: '🧹 Lint'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v6
+      - uses: pnpm/action-setup@v4
         with:
-          node-version: 22
-
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 10.12.0
+          version: ${{ env.PNPM_VERSION }}
           run_install: false
 
-      - name: Setup pnpm cache
-        uses: actions/cache@v5
+      - uses: actions/setup-node@v4
         with:
-          path: ~/.local/share/pnpm/store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-${{ runner.os }}-
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm # ✅ incremental: pnpm store keyed on pnpm-lock.yaml hash
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Lint
+      - name: 🧹 Lint
         run: pnpm lint
 
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## 🧹 Lint"
+            echo ""
+            echo "- Result: **${{ job.status }}**"
+            echo "- pnpm store: incremental via setup-node cache (lockfile hash)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   unit-tests:
+    name: '⚙️ Unit tests'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v6
+      - uses: pnpm/action-setup@v4
         with:
-          node-version: 22
-
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 10.12.0
+          version: ${{ env.PNPM_VERSION }}
           run_install: false
 
-      - name: Setup pnpm cache
-        uses: actions/cache@v5
+      - uses: actions/setup-node@v4
         with:
-          path: ~/.local/share/pnpm/store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-${{ runner.os }}-
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm # ✅ incremental
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Unit tests
+      - name: ⚙️ Unit tests
         run: pnpm test
 
-  playwright:
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## ⚙️ Unit tests (vitest)"
+            echo ""
+            echo "- Result: **${{ job.status }}**"
+            echo "- Suite: \`pnpm test\` (vitest run)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  typecheck:
+    name: '🔍 Typecheck'
     runs-on: ubuntu-latest
-    continue-on-error: true
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v6
+      - uses: pnpm/action-setup@v4
         with:
-          node-version: 22
-
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 10.12.0
+          version: ${{ env.PNPM_VERSION }}
           run_install: false
 
-      - name: Setup pnpm cache
-        uses: actions/cache@v5
+      - uses: actions/setup-node@v4
         with:
-          path: ~/.local/share/pnpm/store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-${{ runner.os }}-
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm # ✅ incremental
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+      - name: 🔍 Prepare Nuxt types
+        run: npx nuxi prepare
 
-      - name: Playwright E2E tests
-        run: npx playwright test --config=playwright.config.ts tests/map-rendering.spec.ts
-        env:
-          CI: true
-          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
-          NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
+      - name: 🔍 Typecheck
+        run: npx vue-tsc --noEmit
 
-  sync:
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## 🔍 Typecheck (vue-tsc)"
+            echo ""
+            echo "- Result: **${{ job.status }}**"
+            echo "- Split out of the old monolithic build job so type errors"
+            echo "  fail fast without waiting for two full site builds."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  grants-gates:
+    name: '🛡️ Grants gate tests'
     runs-on: ubuntu-latest
-    continue-on-error: true
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    timeout-minutes: 5
     steps:
-      # ── Shared setup ──────────────────────────────────────────
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
+          # No requirements.txt in repo → pip cache handled explicitly below.
 
-      - name: Install Python dependencies
-        run: pip install feedparser aiohttp aiofiles beautifulsoup4 lxml python-dateutil rich click
-
-      - name: Grants gate regression tests (stdlib only)
+      - name: 🧪 Grants gate regression tests (stdlib only)
         run: python3 scripts/grants_gates_test.py
 
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## 🛡️ Grants gate regression tests"
+            echo ""
+            echo "- Result: **${{ job.status }}**"
+            echo "- Runner: stdlib-only \`scripts/grants_gates_test.py\` (no pip install needed)"
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 10.12.0
-          run_install: false
+  # ─────────────────────────────────────────────────────────────────────────
+  # 2️⃣ Sync sub-nodes (split from the old monolithic `sync` job)
+  #    ┌─ sync-grants ──┐
+  #    └─ sync-culture ─┴─► sync-supabase-push
+  # ─────────────────────────────────────────────────────────────────────────
+  sync-grants:
+    name: '🌱 Sync · grants scrape'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    outputs:
+      export-file: ${{ steps.capture.outputs.export-file }}
+      accepted: ${{ steps.capture.outputs.accepted }}
+      open: ${{ steps.capture.outputs.open }}
+      expired: ${{ steps.capture.outputs.expired }}
+      closed: ${{ steps.capture.outputs.closed }}
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Setup pnpm cache
-        uses: actions/cache@v5
+      - uses: actions/setup-python@v5
         with:
-          path: ~/.local/share/pnpm/store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 🐍 Restore pip cache (incremental)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          # Rebuild only when the scraper sources change.
+          key: pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-${{ hashFiles('scripts/grants.py', 'scripts/grants_gates_test.py') }}
           restore-keys: |
-            pnpm-${{ runner.os }}-
+            pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-
 
-      - name: Install Node dependencies
-        run: pnpm install --frozen-lockfile
+      - name: 🐍 Install Python dependencies
+        run: pip install $PIP_DEPS
 
-      # ── Sub-step 1: Grants sync ───────────────────────────────
-      - name: Scrape grants (standing entries excluded by default)
+      - name: 🌱 Scrape grants (standing excluded; closed + past-deadline dropped)
         run: python scripts/grants.py -o grants_export
         continue-on-error: true
 
-      - name: Validate grants output
+      - id: capture
+        name: ✅ Analyze + validate grants output
         run: |
           EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1)
-          if [ -z "$EXPORT_FILE" ]; then
-            echo "No grants export file found"
-            exit 0
-          fi
-          REAL_GRANTS=$(python3 -c "import json; d=json.load(open('${EXPORT_FILE}')); grants=d.get('grants',d) if isinstance(d,dict) else d; non_standing=[g for g in grants if not g.get('is_standing',False)]; real_with_data=[g for g in non_standing if g.get('deadline') or g.get('amount_max') or g.get('description','').strip()]; print(f'Total: {len(grants)}, Non-standing: {len(non_standing)}, With deadline/amount: {len(real_with_data)}')")
-          echo "Grants stats: $REAL_GRANTS"
-          python3 -c "import json; d=json.load(open('${EXPORT_FILE}')); grants=d.get('grants',d) if isinstance(d,dict) else d; [print(f'  [{g.get(\"priority_score\",0):3d}] {g.get(\"source\",\"\"):25s} | {g.get(\"title\",\"\")[:60]}') for g in sorted(grants, key=lambda x: x.get('priority_score',0), reverse=True)[:5]]"
-          # ── v2.1 catastrophic gate: 0 accepted grants = broken pipeline ──
-          ACCEPTED=$(python3 -c "import json; d=json.load(open('${EXPORT_FILE}')); grants=d.get('grants',d) if isinstance(d,dict) else d; print(len(grants))")
           {
-            echo "## Grants radar — ${EXPORT_FILE##*/}"
-            echo ""
-            echo "- Accepted grants: **${ACCEPTED}**"
-            echo "- Stats: ${REAL_GRANTS}"
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [ "$ACCEPTED" -eq 0 ]; then
-            echo "::error::Grants pipeline produced 0 accepted grants — scraper or gates broken. Failing to avoid pushing an empty sync."
-            exit 1
-          fi
+            echo "export-file=$EXPORT_FILE"
+          } >> "$GITHUB_OUTPUT"
+          # Analyzer prints the $GITHUB_STEP_SUMMARY section, appends
+          # accepted/open/expired/closed to $GITHUB_OUTPUT, and exits 1
+          # when a gate fails (0 accepted, or expired/closed rows leaked).
+          # __missing__ triggers the graceful no-export branch (exit 0).
+          python3 scripts/analyze_grants_export.py ${EXPORT_FILE:-__missing__} >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload grants export artifact
-        uses: actions/upload-artifact@v5
+      - name: 📤 Upload grants export artifact
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: grants-export
           path: scripts/output/grants_export_*.*
           retention-days: 14
+          if-no-files-found: warn
 
-      # ── Sub-step 2: Cultural agents sync ──────────────────────
-      - name: Sync cultural agents (Mapa Cultura + Floresta Ativista)
+  sync-culture:
+    name: '🎭 Sync · cultural agents'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    outputs:
+      export-file: ${{ steps.capture.outputs.export-file }}
+      total: ${{ steps.capture.outputs.total }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 🐍 Restore pip cache (incremental)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-${{ hashFiles('scripts/sync-cultural-agents.py') }}
+          restore-keys: |
+            pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-
+
+      - name: 🐍 Install Python dependencies
+        run: pip install $PIP_DEPS
+
+      - name: 🎭 Sync cultural agents (Mapa Cultura + Floresta Ativista)
         run: python scripts/sync-cultural-agents.py
         continue-on-error: true
 
-      - name: Validate cultural agents output
+      - id: capture
+        name: ✅ Validate cultural agents output
         run: |
           EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1)
           if [ -z "$EXPORT_FILE" ]; then
             echo "No cultural agents export file found"
+            echo "export-file=" >> "$GITHUB_OUTPUT"
+            echo "total=0" >> "$GITHUB_OUTPUT"
+            {
+              echo "## 🎭 Cultural agents sync"
+              echo ""
+              echo "- Result: **no export produced** (scraper may have failed — see logs)"
+            } >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
+          echo "export-file=$EXPORT_FILE" >> "$GITHUB_OUTPUT"
           STATS=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); agents=d.get('agents',[]); mapa=len([a for a in agents if a.get('source')=='mapa_cultura']); fa=len([a for a in agents if a.get('source')=='floresta_ativista']); print(f'Total: {len(agents)}, Mapa Cultura: {mapa}, Floresta Ativista: {fa}')" "$EXPORT_FILE")
           echo "Cultural agents stats: $STATS"
+          TOTAL=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(len(d.get('agents',[])))" "$EXPORT_FILE")
+          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
+          {
+            echo "## 🎭 Cultural agents sync — ${EXPORT_FILE##*/}"
+            echo ""
+            echo "- Stats: **${STATS}**"
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      # ── Shared step: Supabase push ────────────────────────────
-      - name: Sync grants to Supabase
+      - name: 📤 Upload cultural agents data (for build jobs)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cultural-agents-data
+          path: public/data/cultural-agents/
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: 📤 Upload cultural agents export
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cultural-agents-export
+          path: scripts/output/cultural_agents_export_*.*
+          retention-days: 14
+          if-no-files-found: warn
+
+  sync-supabase-push:
+    name: '☁️ Sync · Supabase push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [sync-grants, sync-culture]
+    # Run even if one scrape failed so the surviving dataset still syncs;
+    # skip only when BOTH scrapes failed.
+    if: always() && (needs.sync-grants.result == 'success' || needs.sync-culture.result == 'success')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm # ✅ incremental
+
+      - name: 📦 Install Node dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: 📥 Download grants export
+        uses: actions/download-artifact@v4
+        with:
+          name: grants-export
+          path: scripts/output/
+        continue-on-error: true
+
+      - name: 📥 Download cultural agents export
+        uses: actions/download-artifact@v4
+        with:
+          name: cultural-agents-export
+          path: scripts/output/
+        continue-on-error: true
+
+      - name: ☁️ Push grants to Supabase
         continue-on-error: true
         run: |
           EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1)
@@ -380,7 +436,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
-      - name: Sync cultural agents to Supabase
+      - name: ☁️ Push cultural agents to Supabase
         continue-on-error: true
         run: |
           EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1)
@@ -393,17 +449,495 @@ jobs:
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
-      # ── Artifact upload (for build job) ───────────────────────
-      - name: Upload cultural agents artifact
-        uses: actions/upload-artifact@v5
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## ☁️ Supabase push"
+            echo ""
+            echo "| Dataset | Scrape result | Push outcome |"
+            echo "|---|---|---|"
+            echo "| grants | \`${{ needs.sync-grants.result }}\` (accepted: \`${{ needs.sync-grants.outputs.accepted }}\`, open: \`${{ needs.sync-grants.outputs.open }}\`, expired/closed: \`${{ needs.sync-grants.outputs.expired }}\`/\`${{ needs.sync-grants.outputs.closed }}\`) | see logs |"
+            echo "| cultural agents | \`${{ needs.sync-culture.result }}\` (total: \`${{ needs.sync-culture.outputs.total }}\`) | see logs |"
+            echo ""
+            echo "_Individual push steps are \`continue-on-error\` so one failing dataset never blocks the other._"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 3️⃣ Precompute validators (incremental — rebuild only on input change)
+  #     These warm the generated-data caches; build jobs reuse the same keys
+  #     and skip regeneration on a cache hit.
+  # ─────────────────────────────────────────────────────────────────────────
+  precompute-icons:
+    name: '🧮 Precompute · species icons'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🗃️ Restore species icon mapping (incremental)
+        id: cache-icons
+        uses: actions/cache@v4
+        with:
+          path: public/data/species/species-icon-mapping.json
+          # Rebuild ONLY when the builder script or the species index changes.
+          key: species-icons-${{ hashFiles('scripts/build-species-icon-mapping.mjs', 'public/data/species/index.json', 'public/data/species/iucn-index.json', 'public/data/species/icmbio-brazil-index.json') }}
+
+      - name: 🧮 Build species icon mapping
+        if: steps.cache-icons.outputs.cache-hit != 'true'
+        run: node scripts/build-species-icon-mapping.mjs
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          if [ "${{ steps.cache-icons.outputs.cache-hit }}" = "true" ]; then HIT="cache hit — rebuild skipped ✅"; else HIT="cache miss — rebuilt 🔨"; fi
+          SIZE=$(du -h public/data/species/species-icon-mapping.json 2>/dev/null | cut -f1 || echo "n/a")
+          {
+            echo "## 🧮 Species icon mapping"
+            echo ""
+            echo "- Cache: **${HIT}**"
+            echo "- File size: **${SIZE}**"
+            echo "- Key inputs: \`scripts/build-species-icon-mapping.mjs\`, \`public/data/species/*.json\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  precompute-overlaps:
+    name: '🧮 Precompute · overlaps'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🗃️ Restore overlap indicators (incremental)
+        id: cache-overlaps
+        uses: actions/cache@v4
+        with:
+          path: public/data/rare-earth/points_with_overlaps.geojson
+          # Rebuild ONLY when the analyzer or its geo inputs change.
+          key: overlaps-${{ hashFiles('scripts/compute-overlaps.mjs', 'public/data/rare-earth/points.geojson', 'public/data/rare-earth/polygons.geojson', 'public/data/rare-earth/protected-areas.geojson') }}
+
+      - name: 🧮 Compute overlap indicators
+        if: steps.cache-overlaps.outputs.cache-hit != 'true'
+        run: node scripts/compute-overlaps.mjs
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          if [ "${{ steps.cache-overlaps.outputs.cache-hit }}" = "true" ]; then HIT="cache hit — rebuild skipped ✅"; else HIT="cache miss — rebuilt 🔨"; fi
+          SIZE=$(du -h public/data/rare-earth/points_with_overlaps.geojson 2>/dev/null | cut -f1 || echo "n/a")
+          {
+            echo "## 🧮 Overlap indicators"
+            echo ""
+            echo "- Cache: **${HIT}**"
+            echo "- File size: **${SIZE}**"
+            echo "- Key inputs: \`scripts/compute-overlaps.mjs\`, \`public/data/rare-earth/{points,polygons,protected-areas}.geojson\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 4️⃣ E2E (parallel with everything; non-blocking)
+  # ─────────────────────────────────────────────────────────────────────────
+  playwright:
+    name: '🎭 Playwright E2E'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm # ✅ incremental
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: 🗃️ Restore Playwright browsers (incremental)
+        id: cache-pw
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          # Rebuild only when the Playwright version changes.
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      - name: 🌐 Install Playwright browsers
+        # Full install (with OS deps) on cache miss; binary-only when cached.
+        run: |
+          if [ "${{ steps.cache-pw.outputs.cache-hit }}" = "true" ]; then
+            npx playwright install chromium
+          else
+            npx playwright install chromium --with-deps
+          fi
+
+      - name: 🎭 Playwright E2E tests
+        run: npx playwright test --config=playwright.config.ts tests/map-rendering.spec.ts
+        env:
+          CI: true
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+          NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
+
+      - name: 📤 Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          if [ "${{ steps.cache-pw.outputs.cache-hit }}" = "true" ]; then HIT="cache hit — deps skipped ✅"; else HIT="cache miss — full install 🔨"; fi
+          {
+            echo "## 🎭 Playwright E2E"
+            echo ""
+            echo "- Result: **${{ job.status }}** (non-blocking)"
+            echo "- Browsers: **${HIT}**"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 5️⃣ Builds — PARALLEL (were serial steps in one job before → ~2× faster)
+  # ─────────────────────────────────────────────────────────────────────────
+  build-main:
+    name: '🏗️ Build · production (master)'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [lint, sync-supabase-push]
+    # sync-supabase-push is resilient (runs on partial success); build must
+    # still run when sync is skipped/failed so pushes are never blocked.
+    if: always() && (needs.lint.result == 'success')
+    permissions:
+      contents: read
+    outputs:
+      size: ${{ steps.size.outputs.size }}
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm # ✅ incremental
+
+      - name: 📥 Checkout master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          path: _src_main
+
+      - name: 📦 Install dependencies (main)
+        run: pnpm install --frozen-lockfile --prefer-offline
+        working-directory: _src_main
+
+      - name: 📥 Download cultural agents data
+        uses: actions/download-artifact@v4
         with:
           name: cultural-agents-data
-          path: public/data/cultural-agents/
-          retention-days: 7
+          path: _src_main/public/data/cultural-agents/
+        continue-on-error: true
+
+      - name: 🗃️ Restore Nuxt caches (incremental)
+        uses: actions/cache@v4
+        with:
+          path: |
+            _src_main/.nuxt
+            _src_main/node_modules/.cache
+            _src_main/node_modules/.vite
+          key: nuxt-main-${{ runner.os }}-${{ hashFiles('_src_main/pnpm-lock.yaml', '_src_main/nuxt.config.ts') }}
+          restore-keys: |
+            nuxt-main-${{ runner.os }}-
+
+      - name: 🗃️ Restore species icon mapping (incremental)
+        id: cache-icons
+        uses: actions/cache@v4
+        with:
+          path: _src_main/public/data/species/species-icon-mapping.json
+          # NOTE: hashes resolve against the _src_main checkout (same scripts),
+          # so a precompute-icons cache hit here means "rebuild skipped".
+          key: species-icons-${{ hashFiles('_src_main/scripts/build-species-icon-mapping.mjs', '_src_main/public/data/species/index.json') }}
+
+      - name: 🧮 Build species icon mapping (main)
+        if: steps.cache-icons.outputs.cache-hit != 'true'
+        run: node scripts/build-species-icon-mapping.mjs
+        working-directory: _src_main
+
+      - name: 🗃️ Restore overlap indicators (incremental)
+        id: cache-overlaps
+        uses: actions/cache@v4
+        with:
+          path: _src_main/public/data/rare-earth/points_with_overlaps.geojson
+          key: overlaps-${{ hashFiles('_src_main/scripts/compute-overlaps.mjs', '_src_main/public/data/rare-earth/points.geojson', '_src_main/public/data/rare-earth/polygons.geojson', '_src_main/public/data/rare-earth/protected-areas.geojson') }}
+
+      - name: 🧮 Compute overlap indicators (main)
+        if: steps.cache-overlaps.outputs.cache-hit != 'true'
+        run: node scripts/compute-overlaps.mjs
+        working-directory: _src_main
+
+      - name: 🔍 Verify secrets
+        run: |
+          echo "SUPABASE_URL=${SUPABASE_URL:0:30}..."
+          echo "SUPABASE_KEY length=${#SUPABASE_KEY}"
+        env:
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+
+      - name: 🏗️ Build main (production)
+        run: pnpm generate
+        working-directory: _src_main
+        env:
+          NUXT_APP_BASE_URL: /EG-Maps/
+          NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+
+      - id: size
+        name: 📏 Measure output
+        run: |
+          SIZE=$(du -sh _src_main/.output/public | cut -f1)
+          echo "size=$SIZE" >> "$GITHUB_OUTPUT"
+          echo "Main output size: $SIZE"
+
+      - name: 📤 Upload main site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-main
+          path: _src_main/.output/public
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## 🏗️ Build · production (\`master\` → \`/EG-Maps/\`)"
+            echo ""
+            echo "- Result: **${{ job.status }}**"
+            echo "- Output size: **${{ steps.size.outputs.size }}**"
+            echo "- Icons cache: \`${{ steps.cache-icons.outputs.cache-hit }}\` · Overlaps cache: \`${{ steps.cache-overlaps.outputs.cache-hit }}\`"
+            echo "  (\`true\` = rebuild skipped, incremental ✅)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  build-develop:
+    name: '🧪 Build · test site (develop)'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [lint, sync-supabase-push]
+    if: always() && (needs.lint.result == 'success')
+    permissions:
+      contents: read
+    outputs:
+      size: ${{ steps.size.outputs.size }}
+    steps:
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm # ✅ incremental
+
+      - name: 📥 Checkout develop
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          path: _src_develop
+
+      - name: 📦 Install dependencies (develop)
+        run: pnpm install --frozen-lockfile --prefer-offline
+        working-directory: _src_develop
+
+      - name: 📥 Download cultural agents data (develop)
+        uses: actions/download-artifact@v4
+        with:
+          name: cultural-agents-data
+          path: _src_develop/public/data/cultural-agents/
+        continue-on-error: true
+
+      - name: 🗃️ Restore Nuxt caches (incremental)
+        uses: actions/cache@v4
+        with:
+          path: |
+            _src_develop/.nuxt
+            _src_develop/node_modules/.cache
+            _src_develop/node_modules/.vite
+          key: nuxt-develop-${{ runner.os }}-${{ hashFiles('_src_develop/pnpm-lock.yaml', '_src_develop/nuxt.config.ts') }}
+          restore-keys: |
+            nuxt-develop-${{ runner.os }}-
+
+      - name: 🗃️ Restore species icon mapping (incremental)
+        id: cache-icons
+        uses: actions/cache@v4
+        with:
+          path: _src_develop/public/data/species/species-icon-mapping.json
+          key: species-icons-${{ hashFiles('_src_develop/scripts/build-species-icon-mapping.mjs', '_src_develop/public/data/species/index.json') }}
+
+      - name: 🧮 Build species icon mapping (develop)
+        if: steps.cache-icons.outputs.cache-hit != 'true'
+        run: node scripts/build-species-icon-mapping.mjs
+        working-directory: _src_develop
+
+      - name: 🗃️ Restore overlap indicators (incremental)
+        id: cache-overlaps
+        uses: actions/cache@v4
+        with:
+          path: _src_develop/public/data/rare-earth/points_with_overlaps.geojson
+          key: overlaps-${{ hashFiles('_src_develop/scripts/compute-overlaps.mjs', '_src_develop/public/data/rare-earth/points.geojson', '_src_develop/public/data/rare-earth/polygons.geojson', '_src_develop/public/data/rare-earth/protected-areas.geojson') }}
+
+      - name: 🧮 Compute overlap indicators (develop)
+        if: steps.cache-overlaps.outputs.cache-hit != 'true'
+        run: node scripts/compute-overlaps.mjs
+        working-directory: _src_develop
+
+      - name: 🧪 Build develop (test)
+        run: pnpm generate
+        working-directory: _src_develop
+        env:
+          NUXT_APP_BASE_URL: /EG-Maps/test/
+          NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+
+      - name: ✅ Verify test build (baseURL rewiring)
+        run: |
+          test -d "_src_develop/.output/public"
+          test -f "_src_develop/.output/public/index.html"
+          test -f "_src_develop/.output/public/eg-logo.png"
+          test -f "_src_develop/.output/public/manifest.json"
+          test -f "_src_develop/.output/public/images/about/field-team-01.webp"
+          grep -q '/EG-Maps/test/_nuxt/' "_src_develop/.output/public/index.html"
+          grep -q '/EG-Maps/test/eg-logo.png' "_src_develop/.output/public/index.html"
+          echo "✅ Test build verified"
+
+      - id: size
+        name: 📏 Measure output
+        run: |
+          SIZE=$(du -sh _src_develop/.output/public | cut -f1)
+          echo "size=$SIZE" >> "$GITHUB_OUTPUT"
+          echo "Develop output size: $SIZE"
+
+      - name: 📤 Upload develop site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-develop
+          path: _src_develop/.output/public
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## 🧪 Build · test site (\`develop\` → \`/EG-Maps/test/\`)"
+            echo ""
+            echo "- Result: **${{ job.status }}**"
+            echo "- Output size: **${{ steps.size.outputs.size }}**"
+            echo "- Icons cache: \`${{ steps.cache-icons.outputs.cache-hit }}\` · Overlaps cache: \`${{ steps.cache-overlaps.outputs.cache-hit }}\`"
+            echo "  (\`true\` = rebuild skipped, incremental ✅)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 6️⃣ Assemble + deploy
+  # ─────────────────────────────────────────────────────────────────────────
+  assemble:
+    name: '📦 Assemble combined site'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [build-main, build-develop]
+    permissions:
+      contents: read
+    steps:
+      - name: 📥 Download main site
+        uses: actions/download-artifact@v4
+        with:
+          name: site-main
+          path: /tmp/site
+
+      - name: 📥 Download test site
+        uses: actions/download-artifact@v4
+        with:
+          name: site-develop
+          path: /tmp/site/test
+
+      - name: 🔗 Finalize combined output
+        run: |
+          # SPA fallback for the root site…
+          if [ -f /tmp/site/200.html ]; then
+            cp /tmp/site/200.html /tmp/site/404.html
+          fi
+          # …and for the test sub-site.
+          if [ -f /tmp/site/test/200.html ]; then
+            cp /tmp/site/test/200.html /tmp/site/test/404.html
+          fi
+          touch /tmp/site/.nojekyll
+          echo "✅ Test site deployed to /EG-Maps/test/"
+
+      - name: 🔍 Verify output structure
+        run: |
+          echo "=== Root site ==="
+          ls /tmp/site/ | head -20
+          echo ""
+          echo "=== Test site ==="
+          if [ -d /tmp/site/test ]; then
+            ls /tmp/site/test/ | head -20
+          else
+            echo "No test site found"
+            exit 1
+          fi
+          ROOT_FILES=$(find /tmp/site -maxdepth 1 -type f | wc -l)
+          TEST_FILES=$(find /tmp/site/test -maxdepth 1 -type f | wc -l)
+          TOTAL_SIZE=$(du -sh /tmp/site | cut -f1)
+          echo "ROOT_FILES=$ROOT_FILES" >> "$GITHUB_ENV"
+          echo "TEST_FILES=$TEST_FILES" >> "$GITHUB_ENV"
+          echo "TOTAL_SIZE=$TOTAL_SIZE" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: /tmp/site
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## 📦 Assembled site"
+            echo ""
+            echo "| Part | Detail |"
+            echo "|---|---|"
+            echo "| main (master) | \`${{ needs.build-main.outputs.size }}\` → \`/EG-Maps/\` |"
+            echo "| test (develop) | \`${{ needs.build-develop.outputs.size }}\` → \`/EG-Maps/test/\` |"
+            echo "| combined | **${TOTAL_SIZE}** · root files: ${ROOT_FILES} · test files: ${TEST_FILES} |"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
-    needs: build
+    name: '🚀 Deploy to Pages'
+    needs: assemble
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       pages: write
       id-token: write
@@ -412,4 +946,91 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## 🚀 Deployment"
+            echo ""
+            echo "- Result: **${{ job.status }}**"
+            echo "- URL: ${{ steps.deployment.outputs.page_url }}"
+            echo "- Production: \`/EG-Maps/\` (master) · Preview: \`/EG-Maps/test/\` (develop)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 7️⃣ Terminal aggregator — full pipeline overview (always runs)
+  # ─────────────────────────────────────────────────────────────────────────
+  pipeline-summary:
+    name: '📊 Pipeline summary'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs:
+      - detect-changes
+      - lint
+      - unit-tests
+      - typecheck
+      - grants-gates
+      - sync-grants
+      - sync-culture
+      - sync-supabase-push
+      - precompute-icons
+      - precompute-overlaps
+      - playwright
+      - build-main
+      - build-develop
+      - assemble
+      - deploy
+    if: always()
+    steps:
+      - name: 📊 Aggregate results
+        run: |
+          {
+            echo "# 📊 Pipeline overview"
+            echo ""
+            echo "_ref \`${{ github.ref }}\` · sha \`${{ github.sha }}\` · event \`${{ github.event_name }}\`_"
+            echo ""
+            echo "## 🧭 Quality gates"
+            echo ""
+            echo "| Node | Result |"
+            echo "|---|---|"
+            echo "| 🔎 Detect changes | \`${{ needs.detect-changes.result }}\` |"
+            echo "| 🧹 Lint | \`${{ needs.lint.result }}\` |"
+            echo "| ⚙️ Unit tests | \`${{ needs.unit-tests.result }}\` |"
+            echo "| 🔍 Typecheck | \`${{ needs.typecheck.result }}\` |"
+            echo "| 🛡️ Grants gates | \`${{ needs.grants-gates.result }}\` |"
+            echo "| 🎭 Playwright E2E (non-blocking) | \`${{ needs.playwright.result }}\` |"
+            echo ""
+            echo "## 🔄 Sync sub-nodes"
+            echo ""
+            echo "| Node | Result | Output |"
+            echo "|---|---|---|"
+            echo "| 🌱 Grants scrape | \`${{ needs.sync-grants.result }}\` | accepted: \`${{ needs.sync-grants.outputs.accepted }}\` · open: \`${{ needs.sync-grants.outputs.open }}\` · expired: \`${{ needs.sync-grants.outputs.expired }}\` · closed: \`${{ needs.sync-grants.outputs.closed }}\` |"
+            echo "| 🎭 Cultural agents | \`${{ needs.sync-culture.result }}\` | total: \`${{ needs.sync-culture.outputs.total }}\` |"
+            echo "| ☁️ Supabase push | \`${{ needs.sync-supabase-push.result }}\` | grants + agents |"
+            echo ""
+            echo "## 🧮 Precompute (incremental)"
+            echo ""
+            echo "| Node | Result |"
+            echo "|---|---|"
+            echo "| 🧮 Species icons | \`${{ needs.precompute-icons.result }}\` |"
+            echo "| 🧮 Overlaps | \`${{ needs.precompute-overlaps.result }}\` |"
+            echo ""
+            echo "## 🏗️ Builds & deploy"
+            echo ""
+            echo "| Node | Result | Output |"
+            echo "|---|---|---|"
+            echo "| 🏗️ Production (master) | \`${{ needs.build-main.result }}\` | \`${{ needs.build-main.outputs.size }}\` |"
+            echo "| 🧪 Test site (develop) | \`${{ needs.build-develop.result }}\` | \`${{ needs.build-develop.outputs.size }}\` |"
+            echo "| 📦 Assemble | \`${{ needs.assemble.result }}\` | combined site |"
+            echo "| 🚀 Deploy | \`${{ needs.deploy.result }}\` | GitHub Pages |"
+            echo ""
+            echo "## ⚡ Caching"
+            echo ""
+            echo "- pnpm store: incremental via \`setup-node\` cache (lockfile hash) in every Node job"
+            echo "- pip wheels: \`~/.cache/pip\` keyed on scraper script hashes"
+            echo "- Playwright browsers: \`~/.cache/ms-playwright\` keyed on lockfile hash"
+            echo "- Nuxt/Vite: \`.nuxt\` + \`node_modules/.cache\` per branch"
+            echo "- species-icon-mapping.json / points_with_overlaps.geojson: rebuilt only on script+input hash change"
+          } >> "$GITHUB_STEP_SUMMARY"

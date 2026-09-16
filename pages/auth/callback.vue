@@ -2,7 +2,7 @@
  * pages/auth/callback.vue
  * @why OAuth callback handler — processes Supabase auth redirect, sets session, redirects to origin
  * @component callback
- * @deps vue (ref, onMounted, onBeforeUnmount); ~/composables/useSupabase (useSupabase); ~/composables/useSupabaseAuth (useSupabaseAuth); ~/composables/useI18n (useI18n); ~/lib/supabase (isSupabaseConfigured); ~/lib/auth-redirect (safeNext, withTimeout)
+ * @deps vue (ref, onMounted, onBeforeUnmount); ~/composables/useSupabase (useSupabase); ~/composables/useSupabaseAuth (useSupabaseAuth); ~/composables/useI18n (useI18n); ~/lib/supabase (isSupabaseConfigured); ~/lib/auth-redirect (mergeOAuthParams, safeNext, snapshotOAuthLanding, withTimeout)
  */
 <template>
   <main id="main-content" tabindex="-1" role="main" class="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
@@ -34,9 +34,40 @@ import { useSupabase } from '~/composables/useSupabase'
 import { useSupabaseAuth } from '~/composables/useSupabaseAuth'
 import { useI18n } from '~/composables/useI18n'
 import { isSupabaseConfigured } from '~/lib/supabase'
-import { safeNext, withTimeout } from '~/lib/auth-redirect'
+import { mergeOAuthParams, safeNext, snapshotOAuthLanding, withTimeout } from '~/lib/auth-redirect'
 
 useHead({ title: 'Auth Callback | Earth Guardians' })
+
+// Snapshot the landing URL SYNCHRONOUSLY, before the Supabase client
+// (detectSessionInUrl) can consume `?code` and clean the address bar. The
+// client is created by useSupabase() below, whose gotrue `initialize()`
+// exchanges the code async and strips it via history.replaceState — any
+// later read of window.location.search would see `query=[]` and misreport
+// "No authorization code received" even though the provider sent one.
+const landingSnapshot = (() => {
+  if (typeof window === 'undefined') return null
+  try {
+    const route = useRoute()
+    const rq = route.query as Record<string, unknown>
+    let search = window.location.search
+    const hash = window.location.hash
+    // Fallback: vue-router parsed the initial URL before auto-detect cleaned
+    // it (e.g. GitHub Pages directory 301 `/auth/callback` → `/auth/callback/`
+    // or gotrue's replaceState ran before setup finished).
+    if (!search && (rq.code || rq.next || rq.error)) {
+      const fallback = new URLSearchParams()
+      for (const k of ['code', 'next', 'error', 'error_description']) {
+        const v = rq[k]
+        if (typeof v === 'string' && v) fallback.set(k, v)
+      }
+      const extra = fallback.toString()
+      if (extra) search = (search ? `${search}&` : '?') + extra
+    }
+    return { ...snapshotOAuthLanding(search, hash), href: window.location.href }
+  } catch {
+    return null
+  }
+})()
 
 const { t } = useI18n()
 const { client } = useSupabase()
@@ -56,30 +87,13 @@ let settled = false
 
 /** Read OAuth params from query string + hash fragment (implicit flow). */
 function readOAuthParams(): URLSearchParams {
-  const q = new URLSearchParams(window.location.search)
-  if (window.location.hash) {
-    const h = new URLSearchParams(window.location.hash.replace(/^#/, ''))
-    h.forEach((v, k) => { if (!q.has(k)) q.set(k, v) })
-  }
-  return q
+  return mergeOAuthParams(
+    typeof window === 'undefined' ? '' : window.location.search,
+    typeof window === 'undefined' ? '' : window.location.hash,
+  )
 }
 
-/**
- * Privacy-safe landing diagnostics (param NAMES only, never values): tells us
- * whether the provider sent no code at all, sent implicit tokens instead of a
- * PKCE code, or sent a code whose verifier/session then went missing.
- */
-function diagnoseLanding(): string {
-  const queryKeys: string[] = []
-  const hashKeys: string[] = []
-  try {
-    new URLSearchParams(window.location.search).forEach((_, k) => queryKeys.push(k))
-  } catch { /* ignore */ }
-  try {
-    if (window.location.hash) {
-      new URLSearchParams(window.location.hash.replace(/^#/, '')).forEach((_, k) => hashKeys.push(k))
-    }
-  } catch { /* ignore */ }
+function readVerifierToken(): { verifier: string; token: string } {
   let verifier: 'present' | 'missing' | 'unreadable' = 'missing'
   let token: 'present' | 'absent' | 'unreadable' = 'absent'
   try {
@@ -92,6 +106,20 @@ function diagnoseLanding(): string {
     verifier = 'unreadable'
     token = 'unreadable'
   }
+  return { verifier, token }
+}
+
+/**
+ * Privacy-safe landing diagnostics (param NAMES only, never values): tells us
+ * whether the provider sent no code at all, sent implicit tokens instead of a
+ * PKCE code, or sent a code whose verifier/session then went missing. Uses the
+ * setup-time snapshot for query/hash keys so auto-detect URL cleaning can't
+ * rewrite history to `query=[]`.
+ */
+function diagnoseLanding(): string {
+  const queryKeys = landingSnapshot?.queryKeys ?? []
+  const hashKeys = landingSnapshot?.hashKeys ?? []
+  const { verifier, token } = readVerifierToken()
   const diag = `query=[${queryKeys.join(',')}] hash=[${hashKeys.join(',')}] verifier=${verifier} token=${token}`
   console.log('[auth/callback] landing diagnostics', { diag })
   return diag
@@ -119,6 +147,11 @@ async function retrySignIn() {
   error.value = ''
   errorDetail.value = ''
   settled = false
+  // Drop the consumed `?code` (single-use) before restarting so a retry
+  // never re-sends a dead code alongside the fresh PKCE verifier.
+  try {
+    window.history.replaceState({}, '', window.location.pathname)
+  } catch { /* ignore */ }
   console.log('[auth/callback] retrying sign-in', { next: backUrl.value })
   try {
     await startSignIn(backUrl.value)
@@ -196,8 +229,13 @@ async function checkMembershipAndRedirect(next: string) {
 
 onMounted(async () => {
   if (!import.meta.client) return
-  const params = readOAuthParams()
-  const next = safeNext(params.get('next')) || FALLBACK_NEXT
+  // Use the setup-time snapshot: detectSessionInUrl may already have
+  // consumed `?code` and cleaned the address bar before onMounted runs.
+  // Fall back to a live read only when no snapshot exists (e.g. SSR).
+  const live = readOAuthParams()
+  const code = landingSnapshot?.code ?? live.get('code')
+  const rawNext = landingSnapshot?.next ?? live.get('next')
+  const next = safeNext(rawNext) || FALLBACK_NEXT
   backUrl.value = next
 
   if (!isSupabaseConfigured()) {
@@ -205,7 +243,7 @@ onMounted(async () => {
     return
   }
 
-  const oauthError = params.get('error_description') || params.get('error')
+  const oauthError = landingSnapshot?.oauthError ?? (live.get('error_description') || live.get('error'))
   if (oauthError) {
     settleError(oauthError)
     return
@@ -222,28 +260,43 @@ onMounted(async () => {
   )
   authUnsubscribe = () => subscription.unsubscribe()
 
+  const diag = diagnoseLanding()
+  console.log('[auth/callback] callback landed', { hasCode: !!code, next, diag })
+
   // getSession() awaits the client's internal URL-code exchange, so when it
-  // resolves the PKCE exchange (if any) has already settled.
+  // resolves the PKCE auto-exchange (if any) has already settled.
   try {
-    const { data: { session } } = await client.auth.getSession()
+    const { data: { session } } = await withTimeout(client.auth.getSession(), 10000, 'getSession')
     if (session) {
       await checkMembershipAndRedirect(next)
       return
     }
   } catch { /* fall through to the explicit exchange attempt below */ }
 
-  // No session yet but a code is present — the auto-detect may have missed it
-  // (e.g. client initialized before the URL was parsed). Retry explicitly once.
-  const code = params.get('code')
-  const diag = diagnoseLanding()
-  console.log('[auth/callback] callback landed', { hasCode: !!code, next })
+  // No session yet but a code was present at landing — the auto-detect may
+  // have missed it (e.g. verifier written after init, directory-301 query
+  // loss, hash-fragment code). Retry explicitly once with the SNAPSHOT code.
   if (code) {
     try {
-      const { data, error: exchangeError } = await client.auth.exchangeCodeForSession(code)
+      const { data, error: exchangeError } = await withTimeout(
+        client.auth.exchangeCodeForSession(code),
+        15000,
+        'exchangeCodeForSession',
+      )
       if (!exchangeError && data.session) {
         await checkMembershipAndRedirect(next)
         return
       }
+      // The auto-exchange may have won the race concurrently: re-read the
+      // session before reporting failure (avoids "code already used" false
+      // negatives when SIGNED_IN just hasn't propagated yet).
+      try {
+        const { data: { session } } = await client.auth.getSession()
+        if (session) {
+          await checkMembershipAndRedirect(next)
+          return
+        }
+      } catch { /* fall through to error below */ }
       // A code WAS received but the exchange failed (expired/reused code, or
       // the PKCE verifier is gone because the flow started in another
       // tab/browser). Report the real cause — not "no code".
@@ -256,6 +309,14 @@ onMounted(async () => {
       settleError(t('grantsPortal.authFailedRetry'), `${detail} | ${diag}`)
       return
     } catch (e) {
+      // Timeout/throw above — one last session check before giving up.
+      try {
+        const { data: { session } } = await client.auth.getSession()
+        if (session) {
+          await checkMembershipAndRedirect(next)
+          return
+        }
+      } catch { /* fall through */ }
       const detail = e instanceof Error ? e.message : String(e)
       console.warn('[auth/callback] explicit code exchange threw', { detail })
       settleError(t('grantsPortal.authFailedRetry'), `${detail} | ${diag}`)
@@ -265,8 +326,9 @@ onMounted(async () => {
     try {
       const { data: { session } } = await client.auth.getSession()
       if (!session) {
-        // No ?code= at all: stale bookmark, page refresh after the code was
-        // consumed, or the provider redirected without one. `diag` pinpoints it.
+        // No ?code= at landing (snapshot): stale bookmark, page refresh
+        // after the code was consumed, or the provider redirected without
+        // one. `diag` (snapshot keys) pinpoints it.
         settleError(t('grantsPortal.authNoCode'), diag)
         return
       }

@@ -1501,6 +1501,7 @@
     "sortPriority": "Top priority",
     "sortDeadline": "Closing soon",
     "sortAmount": "Largest amount",
+    "sortMostCommented": "Most commented",
     "filterDeadlineLabel": "Closing",
     "filterDeadlineAll": "All open",
     "filterDeadline7": "Within 7 days",

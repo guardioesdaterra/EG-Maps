@@ -72,6 +72,7 @@
             :search-query="dashboardSearch"
             :is-loading="scrapedLoading"
             :filtered-scraped-grants="scrapedGrants"
+            :comment-counts="commentCounts"
             @sign-in="() => signIn()"
             @sign-out="handleSignOut"
             @update:search-query="dashboardSearch = $event"
@@ -150,10 +151,11 @@ const confirmSignOut = ref(false)
 
 const accessGranted = computed(() => sessionReady.value && !!user.value && isManager.value)
 
-const { listScrapedGrants, updateScrapedGrant: apiUpdateScrapedGrant, voteGrant, voteScrapedGrant, deleteVote } = useGrants()
+const { listScrapedGrants, updateScrapedGrant: apiUpdateScrapedGrant, voteGrant, voteScrapedGrant, deleteVote, getCommentCounts } = useGrants()
 
 const scrapedGrants = ref<ScrapedGrant[]>([])
 const scrapedLoading = ref(false)
+const commentCounts = ref<Record<string, number>>({})
 
 const showCreateGrantModal = ref(false)
 
@@ -176,13 +178,16 @@ function openScrapedDetail(g: ScrapedGrant | GrantRecord) {
 function closeGrantDetail() {
   detailGrant.value = null
   detailUserVote.value = 0
+  // Comments may have been added/removed in the modal — refresh counts (cheap single query)
+  getCommentCounts().then((r) => { commentCounts.value = r.counts ?? {} }).catch(() => {})
 }
 
 async function loadScrapedGrants() {
   scrapedLoading.value = true
   try {
-    const result = await listScrapedGrants()
+    const [result, counts] = await Promise.all([listScrapedGrants(), getCommentCounts()])
     scrapedGrants.value = result.grants ?? []
+    commentCounts.value = counts.counts ?? {}
   } catch (e) {
     console.error('Failed to load scraped grants:', e)
   } finally {

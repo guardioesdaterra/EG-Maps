@@ -787,8 +787,10 @@ def temporal_exclude_reason(g: dict, grace_days: int = 0) -> str | None:
     at "open"/"unknown" (stale badge, the common leak). Standing entries
     are curated references — exempt from the date rule (they are already
     excluded from output by default via `include_standing=False`).
-    Legacy "pending" values predate the open/closed/unknown vocabulary
-    and are treated as unknown (kept).
+    NOTE (2026-09): "pending" is not scraper vocabulary — it belongs to the
+    manager manual-insert review workflow (separate review_status column).
+    A stray "pending" reaching here is treated as unknown (kept); the sync
+    layer normalizes it to status=open downstream.
     """
     status = str(g.get("status") or "").strip().lower()
     if status == "closed":

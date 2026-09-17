@@ -91,8 +91,9 @@ function grantRejectReason(g: Grant): string | null {
   // v2.4 temporal gate (defense in depth — grants.py already excludes these,
   // but stale/hand-made exports must never be INSERTED): closed calls and
   // deadlines already gone as of right now are skipped. Rolling/dateless
-  // grants (unknown) and legacy "pending" values are KEPT — absence of a
-  // date is not evidence of closure. Standing entries are curated refs.
+  // grants (unknown, including legacy "pending" values) PASS the gate —
+  // absence of a date is not evidence of closure — and the record builder
+  // below normalizes them to status=open. Standing entries are curated refs.
   if (!g.is_standing) {
     const temporal = String(g.grant_status ?? g.status ?? "").toLowerCase().trim();
     if (temporal === "closed") return "closed";
@@ -322,15 +323,21 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
     if (cols.has("language"))          r.language = g.language || "en";
     if (cols.has("relevance"))         r.relevance = typeof g.relevance === "number" ? Math.max(0, Math.min(100, g.relevance)) : 0;
     if (cols.has("status")) {
-      // Live DB check: status IN (pending, open, closed, hidden).
-      // "pending" = fresh scrape awaiting manager review — preserve it.
+      // Temporal state for SCRAPED grants: open/closed only.
+      // "pending" is NOT a scraped-grant state — it belongs exclusively to
+      // the manager manual-insert review workflow (review_status pending/
+      // approved on the grants table, a separate column from open/closed).
+      // Legacy "pending"/"unknown" scraper values mean "rolling/dateless but
+      // live" → normalize to open (absence of a date is not evidence of
+      // closure, same rule as the v2.4 temporal gate in grants.py).
       const s = (g.status || "").toLowerCase();
-      r.status = ["open", "closed", "hidden", "pending"].includes(s) ? s : "pending";
+      r.status = s === "closed" ? "closed" : "open";
     }
     if (cols.has("grant_status")) {
-      // Temporal alias: open/closed/unknown only (pending/hidden → unknown)
+      // Temporal mirror of status: open/closed only (no unknown — unknown
+      // source values are live rolling calls, i.e. open).
       const s = String(g.grant_status ?? g.status ?? "").toLowerCase();
-      r.grant_status = s === "open" || s === "closed" ? s : "unknown";
+      r.grant_status = s === "closed" ? "closed" : "open";
     }
     if (cols.has("fetched_at"))        r.fetched_at = g.fetched_at || new Date().toISOString();
     if (cols.has("grant_type"))        r.grant_type = g.grant_type || "general";

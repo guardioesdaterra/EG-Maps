@@ -27,9 +27,19 @@ Indexes: PK on `id`; B-tree on `(latitude, longitude)`, `source`, `type`
 
 ---
 
-### `scraped_grants` (~5,400 rows)
+### `scraped_grants` (fresh uplod after 2026-09-17 reset — repopulated by CI scrape)
 
 Auto-scraped grant opportunities from 60+ sources (see `scripts/grants.py`).
+Client fetches from Supabase, never from repo fixtures.
+
+**Status model (2026-09-17):** `status` is temporal only — `open`/`closed`
+(+`hidden` manager quarantine). `pending` NEVER appears here; it belongs
+exclusively to the manager manual-insert review workflow (`grants.review_status`
+pending/approved — see `scripts/add-grants-review-status.sql`). The sync layer
+(`scripts/sync-grants-to-supabase.ts`) normalizes unknown/dateless scrapes to
+`open`. 2026-09-17: table hard-wiped (5,124 pre-v2.4 legacy rows incl. 119
+pending / 74 closed / 64 expired-but-open) and left for the 2-hour CI cron to
+repopulate fresh.
 
 | Column | Type | Nullable | Default |
 |--------|------|----------|---------|
@@ -49,7 +59,7 @@ Auto-scraped grant opportunities from 60+ sources (see `scripts/grants.py`).
 | `categories` | `text[]` | YES | `{}` |
 | `language` | `text` | NO | `'en'` |
 | `relevance` | `integer` | NO | `0` |
-| `status` | `text` | NO | `'pending'` |
+| `status` | `text` | NO | `'open'` — temporal open/closed (+hidden); NEVER pending |
 | `fetched_at` | `timestamp with tz` | NO | `now()` |
 | `created_at` | `timestamp with tz` | NO | `now()` |
 | `updated_at` | `timestamp with tz` | YES | `now()` (auto via trigger) |
@@ -88,9 +98,12 @@ Indexes: PK on `id`; B-tree on `source`, `status`, `country`, `relevance`,
 
 ---
 
-### `grants` (2 rows)
+### `grants` (0 rows live)
 
-Approved/created grants (promoted from `scraped_grants` or user-submitted).
+Manager-created grants (manual inserts via edge `create`) and promotions from
+`scraped_grants`. Review workflow lives in `review_status` (pending/approved),
+separate from temporal `status` (open/closed) — see
+`scripts/add-grants-review-status.sql` (edge-function half lives in sibling repo).
 
 | Column | Type | Nullable | Default |
 |--------|------|----------|---------|
@@ -102,7 +115,8 @@ Approved/created grants (promoted from `scraped_grants` or user-submitted).
 | `longitude` | `numeric` | NO | |
 | `category` | `text` | NO | `'environment'` |
 | `submitted_by` | `uuid` | NO | |
-| `status` | `text` | NO | `'pending'` |
+| `status` | `text` | NO | `'pending'` — temporal open/closed after review; new inserts start pending |
+| `review_status` | `text` | NO | `'pending'` — review workflow pending/approved (migration `scripts/add-grants-review-status.sql`) |
 | `reviewed_by` | `uuid` | YES | |
 | `reviewed_at` | `timestamp with tz` | YES | |
 | `rejection_reason` | `text` | YES | |

@@ -15,6 +15,12 @@
 #                     (build-main & build-develop run in parallel once
 #                      lint + sync-supabase-push succeed)
 #
+#   sync-develop runs ONLY on direct pushes to master: if develop does not
+#   contain master, it fast-forwards (or merges) develop to master so a
+#   hotfix pushed straight to master is never lost on the test site.
+#   It pushes to develop with the default GITHUB_TOKEN, which re-triggers
+#   this workflow with ref=develop — the job self-skips there (no loop).
+#
 # Performance strategy:
 #   • pnpm store cached via setup-node `cache: pnpm` (keyed on pnpm-lock.yaml)
 #   • pip wheel cache keyed on scripts/*.py hashes (no requirements.txt in repo)
@@ -117,6 +123,70 @@ jobs:
             echo "| docs-only | \`${{ steps.filter.outputs.docs-only }}\` |"
             echo ""
             echo "_sha: \`${{ github.sha }}\` · event: \`${{ github.event_name }}\` · ref: \`${{ github.ref }}\`_"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 0️⃣➕ Branch sync — backport direct master pushes into develop
+  # ─────────────────────────────────────────────────────────────────────────
+  sync-develop:
+    name: '🔄 Sync · master → develop backport'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Only direct pushes to master. The backport push to develop re-triggers
+    # this workflow with ref=develop, where this job self-skips (no loop).
+    # Scheduled runs / PRs / workflow_dispatch never sync branches.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    permissions:
+      contents: write # override repo-default read: needs to push to develop
+    steps:
+      - name: 📥 Checkout (full history + both branches)
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 🔄 Fast-forward or merge develop to master
+        run: |
+          git fetch origin master develop
+          MASTER_SHA=$(git rev-parse origin/master)
+          DEVELOP_SHA=$(git rev-parse origin/develop)
+          echo "master:  $MASTER_SHA"
+          echo "develop: $DEVELOP_SHA"
+
+          # Case 1: develop already contains master → nothing to do.
+          if git merge-base --is-ancestor "$MASTER_SHA" "$DEVELOP_SHA"; then
+            echo "✅ develop already contains master ($MASTER_SHA) — nothing to sync."
+            echo "SYNC_OUTCOME=already-in-sync" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Case 2: master contains develop → clean fast-forward push.
+          if git merge-base --is-ancestor "$DEVELOP_SHA" "$MASTER_SHA"; then
+            git push origin "origin/master:develop"
+            echo "⏩ Fast-forwarded develop → $MASTER_SHA"
+            echo "SYNC_OUTCOME=fast-forwarded" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          # Case 3: branches diverged → merge master into develop.
+          git checkout develop
+          git merge --no-edit --no-ff origin/master -m "chore(sync): backport master into develop [skip ci → retrigger]"
+          git push origin develop
+          echo "🔀 Merged master ($MASTER_SHA) into develop"
+          echo "SYNC_OUTCOME=merged" >> "$GITHUB_ENV"
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## 🔄 Master → develop backport"
+            echo ""
+            echo "- Result: **${{ job.status }}**"
+            echo "- Outcome: **${SYNC_OUTCOME:-unknown}**"
+            echo "  (\`already-in-sync\` = develop had master · \`fast-forwarded\` = clean FF · \`merged\` = diverged, merge commit pushed)"
+            echo "- Loop guard: this job only runs on \`refs/heads/master\`; its own push to develop re-triggers the pipeline with \`ref=develop\` and self-skips."
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ─────────────────────────────────────────────────────────────────────────
@@ -1003,6 +1073,7 @@ jobs:
     timeout-minutes: 5
     needs:
       - detect-changes
+      - sync-develop
       - lint
       - unit-tests
       - typecheck
@@ -1031,6 +1102,7 @@ jobs:
             echo "| Node | Result |"
             echo "|---|---|"
             echo "| 🔎 Detect changes | \`${{ needs.detect-changes.result }}\` |"
+            echo "| 🔄 Master → develop backport (master pushes only) | \`${{ needs.sync-develop.result }}\` |"
             echo "| 🧹 Lint | \`${{ needs.lint.result }}\` |"
             echo "| ⚙️ Unit tests | \`${{ needs.unit-tests.result }}\` |"
             echo "| 🔍 Typecheck | \`${{ needs.typecheck.result }}\` |"

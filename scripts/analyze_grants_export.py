@@ -21,15 +21,62 @@ Usage:
 
 import json
 import os
+import re
 import sys
-from datetime import date
+from datetime import date, datetime
+
+
+def parse_deadline_day(deadline):
+    """Parse a deadline string to a `datetime.date` (stdlib only).
+
+    Mirrors ``parse_deadline_day`` in scripts/grants.py so the CI analyzer and
+    the scraper temporal gate agree on every supported shape (ISO prefix plus
+    legacy raw shapes like "19 June 2026" or "31/08/26"). Returns None when the
+    string carries no parseable calendar date (rolling / unknown / garbage).
+    """
+    if not deadline or deadline in ("None", ""):
+        return None
+    s = str(deadline).strip()
+    m = re.match(r"^(\d{4})-(\d{2})-(\d{2})", s)
+    if m:
+        try:
+            return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        except ValueError:
+            return None
+    dayfirst = bool(re.match(r"^\d{1,2}/\d{1,2}/", s))
+    for fmt in [
+        "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d",
+        "%d/%m/%y", "%m/%d/%y",
+        "%B %d, %Y", "%d %B %Y", "%B %Y",
+        "%b %d, %Y", "%d %b %Y", "%d-%b-%y", "%d-%b-%Y",
+    ]:
+        try:
+            token = s.split("T")[0].split(" at ")[0].strip()
+            if dayfirst and fmt in ("%m/%d/%Y", "%m/%d/%y"):
+                continue
+            if not dayfirst and fmt in ("%d/%m/%Y", "%d/%m/%y"):
+                continue
+            return datetime.strptime(token, fmt).date()
+        except ValueError:
+            continue
+    return None
 
 
 def is_past_deadline(deadline, today=None) -> bool:
-    """ISO-prefix date compare (lexicographic == chronological)."""
+    """True when the deadline is a real calendar date strictly before today.
+
+    Date-based (calendar days): a deadline *today* is still live, matching
+    ``is_expired()`` in scripts/grants.py (``day < today``).
+    """
     today = today or date.today().isoformat()
-    m = (deadline or "")
-    return bool(m) and len(m) >= 10 and m[:10] < today and m[:4].isdigit()
+    day = parse_deadline_day(deadline)
+    if day is None:
+        return False
+    try:
+        today_d = date.fromisoformat(today[:10])
+    except ValueError:
+        return False
+    return day < today_d
 
 
 def analyze(grants, meta=None, today=None):

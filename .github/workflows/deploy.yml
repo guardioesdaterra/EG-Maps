@@ -292,7 +292,11 @@ jobs:
       - id: capture
         name: ✅ Analyze + validate grants output
         run: |
-          EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1)
+          # NOTE: `|| true` — the default GH Actions shell runs with
+          # `-e -o pipefail`, so a bare `ls` with no glob match (exit 2)
+          # would kill this step before the analyzer's graceful
+          # `__missing__` branch (exit 0) is reached.
+          EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1 || true)
           {
             echo "export-file=$EXPORT_FILE"
           } >> "$GITHUB_OUTPUT"
@@ -344,7 +348,8 @@ jobs:
       - id: capture
         name: ✅ Validate cultural agents output
         run: |
-          EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1)
+          # NOTE: `|| true` — see sync-grants capture (pipefail + empty glob).
+          EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1 || true)
           if [ -z "$EXPORT_FILE" ]; then
             echo "No cultural agents export file found"
             echo "export-file=" >> "$GITHUB_OUTPUT"
@@ -426,12 +431,20 @@ jobs:
       - name: ☁️ Push grants to Supabase
         continue-on-error: true
         run: |
-          EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1)
-          if [ -n "$EXPORT_FILE" ]; then
-            npx tsx scripts/sync-grants-to-supabase.ts grants "$EXPORT_FILE"
-          else
+          # NOTE: `|| true` — see sync-grants capture (pipefail + empty glob).
+          EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1 || true)
+          if [ -z "$EXPORT_FILE" ]; then
             echo "No grants export file found, skipping sync"
+            exit 0
           fi
+          # Temporal-gate defense in depth: the analyzer already failed the
+          # sync-grants job on expired/closed leaks — never push that export
+          # to Supabase (sync script double-guards, but skip early + loudly).
+          if [ "${{ needs.sync-grants.outputs.expired }}" != "0" ] || [ "${{ needs.sync-grants.outputs.closed }}" != "0" ]; then
+            echo "::warning::Grants temporal gate leaked (expired=${{ needs.sync-grants.outputs.expired }}, closed=${{ needs.sync-grants.outputs.closed }}) — skipping Supabase push for this export"
+            exit 0
+          fi
+          npx tsx scripts/sync-grants-to-supabase.ts grants "$EXPORT_FILE"
         env:
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -439,7 +452,8 @@ jobs:
       - name: ☁️ Push cultural agents to Supabase
         continue-on-error: true
         run: |
-          EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1)
+          # NOTE: `|| true` — see sync-grants capture (pipefail + empty glob).
+          EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1 || true)
           if [ -z "$EXPORT_FILE" ]; then
             echo "No cultural agents export file found, skipping sync"
             exit 0
@@ -877,6 +891,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [build-main, build-develop]
+    # Resilient: run whenever AT LEAST ONE branch build succeeded. The old
+    # default (`success()` on both) meant a single failed/skipped build —
+    # e.g. downstream of a grants-gate failure — silently skipped assemble
+    # AND deploy with no site shipped at all.
+    if: always() && (needs.build-main.result == 'success' || needs.build-develop.result == 'success')
     permissions:
       contents: read
     steps:
@@ -885,12 +904,14 @@ jobs:
         with:
           name: site-main
           path: /tmp/site
+        continue-on-error: true
 
       - name: 📥 Download test site
         uses: actions/download-artifact@v7
         with:
           name: site-develop
           path: /tmp/site/test
+        continue-on-error: true
 
       - name: 🔗 Finalize combined output
         run: |
@@ -911,10 +932,16 @@ jobs:
           ls /tmp/site/ | head -20
           echo ""
           echo "=== Test site ==="
-          if [ -d /tmp/site/test ]; then
+          if [ -d /tmp/site/test ] && [ -f /tmp/site/test/index.html ]; then
             ls /tmp/site/test/ | head -20
           else
-            echo "No test site found"
+            # Non-fatal: the production site still ships; the missing
+            # preview is reported loudly instead of failing the deploy.
+            echo "::warning::No test site found (develop build failed/skipped) — deploying production site only"
+            rm -rf /tmp/site/test
+          fi
+          if [ ! -f /tmp/site/index.html ]; then
+            echo "::error::No main site found — nothing to deploy"
             exit 1
           fi
           ROOT_FILES=$(find /tmp/site -maxdepth 1 -type f | wc -l)

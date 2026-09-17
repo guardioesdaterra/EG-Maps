@@ -72,12 +72,19 @@ MAX_DESCRIPTION_LEN = 600
 REGION_MAP = {
     "BR": "LATAM", "AR": "LATAM", "CO": "LATAM", "MX": "LATAM", "PE": "LATAM",
     "CL": "LATAM", "EC": "LATAM", "VE": "LATAM", "BO": "LATAM", "PY": "LATAM",
-    "UY": "LATAM", "LATAM": "LATAM",
+    "UY": "LATAM", "LATAM": "LATAM", "CR": "LATAM", "PA": "LATAM",
+    "GT": "LATAM", "CU": "LATAM", "DO": "LATAM", "HT": "LATAM", "JM": "LATAM",
     "EU": "EUROPE", "FR": "EUROPE", "ES": "EUROPE", "DE": "EUROPE", "IT": "EUROPE",
     "PT": "EUROPE", "UK": "EUROPE", "GB": "EUROPE", "NORDIC": "EUROPE",
+    "IE": "EUROPE", "NL": "EUROPE", "BE": "EUROPE", "CH": "EUROPE",
+    "AT": "EUROPE", "PL": "EUROPE", "SE": "EUROPE", "NO": "EUROPE",
+    "DK": "EUROPE", "FI": "EUROPE",
+    "US": "NORTH_AMERICA", "CA": "NORTH_AMERICA", "NORTH_AMERICA": "NORTH_AMERICA",
     "AFRICA": "AFRICA", "ASIA": "ASIA", "JP": "ASIA", "CN": "ASIA", "KR": "ASIA",
     "IN": "ASIA", "TH": "ASIA", "VN": "ASIA", "ID": "ASIA", "PH": "ASIA",
     "TW": "ASIA", "MY": "ASIA", "SG": "ASIA", "SEA": "ASIA",
+    "UG": "AFRICA", "KE": "AFRICA", "NG": "AFRICA", "GH": "AFRICA",
+    "ZA": "AFRICA", "TZ": "AFRICA", "SN": "AFRICA", "RW": "AFRICA",
     "AU": "OCEANIA", "NZ": "OCEANIA", "PACIFIC": "OCEANIA",
     "GLOBAL": "GLOBAL",
 }
@@ -685,7 +692,14 @@ def parse_amount_value(amount_max, currency):
 
 
 def compute_deadline_urgency(deadline_str):
-    """Return days until deadline and urgency label."""
+    """Return days until deadline and urgency label.
+
+    Date-based (calendar days, UTC): a deadline *today* is urgent (delta 0),
+    not expired. This must agree with is_expired(), which uses ``day < today`` —
+    previously this used datetime arithmetic, so a same-day deadline produced
+    urgency="expired" while the temporal gate considered it alive, leaking an
+    "expired" row into the export that the CI analyzer then (correctly) failed.
+    """
     if not deadline_str or deadline_str in ("None", ""):
         return None, "unknown"
     for fmt in [
@@ -696,8 +710,8 @@ def compute_deadline_urgency(deadline_str):
     ]:
         try:
             dt = datetime.strptime(deadline_str.split("T")[0].split(" ")[0], fmt)
-            today = datetime.now(timezone.utc).replace(tzinfo=None)
-            delta = (dt - today).days
+            today = datetime.now(timezone.utc).date()
+            delta = (dt.date() - today).days
             if delta < 0:
                 return delta, "expired"
             if delta <= 30:
@@ -1125,6 +1139,17 @@ def make_grant(title, source_name, url, description="", funder="",
         funder = infer_funder(title, description, source_name)
     if not (currency or "").strip():
         currency = infer_currency(amount_max, f"{title} {description}")
+    # v2.5 scope refinement: generic aggregators pass country="GLOBAL",
+    # which buried clearly-scoped calls ("… (Uganda)", "entities based in
+    # Canada"). Re-scope from eligibility phrasing — curated standing
+    # entries and explicitly-scoped calls are never touched.
+    if not is_standing and (not (country or "").strip()
+                            or (country or "").strip().upper() == "GLOBAL"):
+        scoped = infer_scope_country(title, description, language)
+        if scoped and scoped != "GLOBAL":
+            country = scoped
+    if not (country or "").strip():
+        country = "GLOBAL"
     blob = f"{title} {description} {funder}".lower()
 
     base_relevance = score_relevance(blob, is_standing=is_standing)
@@ -1751,6 +1776,15 @@ def extract_deadline(text):
             return parse_date(raw_m, dayfirst=("/" in raw_m))
     return ""
 
+def _hint_hit(text_lower: str, hint: str) -> bool:
+    """Word-boundary hint match. Plain ``in`` matching caused false
+    positives like 'lima' ⊂ 'climate' → Peru, so hints must stand alone."""
+    h = (hint or "").strip().lower()
+    if not h:
+        return False
+    return re.search(r'(?<![\w])' + re.escape(h) + r'(?![\w])', text_lower) is not None
+
+
 def infer_country(text, lang):
     """Infer country/region from content text and language. Uses keyword matching with city/country hints."""
     text_lower = text.lower()
@@ -1772,6 +1806,7 @@ def infer_country(text, lang):
         "BG": ["bulgaria","bulgária","sofia"],
         "GR": ["greece","elláda","athens","athína"],
         "IE": ["ireland","éire","dublin","baile átha cliath"],
+        "GB": ["united kingdom","great britain","britain","england","scotland","wales","london","manchester","birmingham"],
         # ── Nordic ──
         "SE": ["sweden","sverige","stockholm","göteborg"],
         "NO": ["norway","norge","noreg","oslo","bergen"],
@@ -1779,6 +1814,8 @@ def infer_country(text, lang):
         "FI": ["finland","suomi","helsinki","turku"],
         "IS": ["iceland","ísland","reykjavik"],
         # ── Americas ──
+        "US": ["united states","usa","u.s.a","washington d.c","new york","california","texas","florida"],
+        "CA": ["canada","canadian","toronto","vancouver","montreal","ottawa","british columbia"],
         "BR": ["brasil","brazil","são paulo","sao paulo","rio de janeiro","brasília","brasilia","belo horizonte","salvador","fortaleza","curitiba","manaus","belém","recife","porto alegre","goiânia","guarulhos","campinas","são luís","natal"," João Pessoa","aracaju","campo grande","florianópolis","vitória","londrina","maringá","foz do iguacu"],
         "AR": ["argentina","buenos aires","córdoba","cordoba","rosario","mendoza"],
         "MX": ["méxico","méjico","ciudad de méxico","guadalajara","monterrey","puebla","tijuana"],
@@ -1891,10 +1928,10 @@ def infer_country(text, lang):
     }
     # Language-based defaults
     if lang == "pt": return "BR"
-    if lang == "fr": return "FR" if "france" in text_lower else "EU"
+    if lang == "fr": return "FR" if _hint_hit(text_lower, "france") else "EU"
     if lang == "es":
         for country, hints in regions.items():
-            if any(h in text_lower for h in hints):
+            if any(_hint_hit(text_lower, h) for h in hints):
                 return country
         return "LATAM"
     if lang == "zh": return "CN" if "中国" in text_lower else "ASIA"
@@ -1914,15 +1951,278 @@ def infer_country(text, lang):
     for country, hints in regions.items():
         if country in ("EU","LATAM","AFRICA","ASIA","OCEANIA"):
             continue  # Skip regions for now, check specific countries first
-        if any(h in text_lower for h in hints):
+        if any(_hint_hit(text_lower, h) for h in hints):
             return country
     # Fall back to regions
     for country, hints in regions.items():
         if country not in ("EU","LATAM","AFRICA","ASIA","OCEANIA"):
             continue
-        if any(h in text_lower for h in hints):
+        if any(_hint_hit(text_lower, h) for h in hints):
             return country
     return "GLOBAL"
+
+
+# ──────────────────────────────────────────────────────────────
+# SCOPE DETECTION v2.5 — who can actually apply?
+# ──────────────────────────────────────────────────────────────
+# Generic aggregators hardcode country="GLOBAL", which buried clearly
+# scoped calls like "… Grant Program (Uganda)" or "for entities based
+# in Canada". infer_scope_country() re-scopes those with HIGH-PRECISION
+# signals only: title parentheticals, based-in/registered-in captures,
+# and eligibility/priority sentences. A passing mention with no
+# eligibility trigger never re-scopes ("working in Africa, Asia…"
+# stays GLOBAL). Curated standing entries are exempt (see make_grant).
+#
+# Returns an ISO-ish country code, a region bucket (AFRICA/ASIA/EU/
+# EUROPE/LATAM/NORTH_AMERICA/OCEANIA), or "GLOBAL".
+
+COUNTRY_ALIASES = {
+    # ── Explicitly worldwide (keeps GLOBAL when eligibility says so) ──
+    "worldwide": "GLOBAL", "global": "GLOBAL", "international": "GLOBAL",
+    "around the world": "GLOBAL", "across the globe": "GLOBAL",
+    # ── Region buckets ──
+    "africa": "AFRICA", "african": "AFRICA", "sub-saharan africa": "AFRICA",
+    "asia": "ASIA", "asian": "ASIA", "southeast asia": "ASIA",
+    "south-east asia": "ASIA", "south asia": "ASIA", "east asia": "ASIA",
+    "europe": "EUROPE", "european": "EUROPE", "european union": "EU",
+    "latin america": "LATAM", "latinoamerica": "LATAM", "latinoamérica": "LATAM",
+    "amérique latine": "LATAM", "south america": "LATAM",
+    "central america": "LATAM", "caribbean": "LATAM",
+    "north america": "NORTH_AMERICA",
+    "oceania": "OCEANIA", "pacific": "OCEANIA", "pacific islands": "OCEANIA",
+    # ── North America ──
+    "united states": "US", "united states of america": "US", "usa": "US",
+    "u.s.a": "US", "u.s.": "US",
+    "canada": "CA", "canadian": "CA", "british columbia": "CA",
+    "district of columbia": "US", "washington d.c.": "US",
+    "mexico": "MX", "méxico": "MX", "mexican": "MX",
+    "guatemala": "GT", "honduras": "HN", "el salvador": "SV", "salvadoran": "SV",
+    "nicaragua": "NI", "costa rica": "CR", "panama": "PA", "panamá": "PA",
+    "cuba": "CU", "cuban": "CU",
+    "dominican republic": "DO", "haiti": "HT", "haitian": "HT",
+    "jamaica": "JM", "jamaican": "JM", "puerto rico": "PR",
+    "trinidad and tobago": "TT",
+    # ── South America ──
+    "brazil": "BR", "brasil": "BR", "brazilian": "BR", "brasileiro": "BR",
+    "argentina": "AR", "argentinian": "AR", "argentine": "AR",
+    "colombia": "CO", "colombian": "CO",
+    "peru": "PE", "perú": "PE", "peruvian": "PE",
+    "chile": "CL", "chilean": "CL",
+    "ecuador": "EC", "ecuadorian": "EC", "ecuadorean": "EC",
+    "venezuela": "VE", "venezuelan": "VE",
+    "bolivia": "BO", "bolivian": "BO",
+    "paraguay": "PY", "paraguayan": "PY",
+    "uruguay": "UY", "uruguayan": "UY",
+    "guyana": "GY", "suriname": "SR",
+    # ── Europe ──
+    "united kingdom": "GB", "great britain": "GB", "britain": "GB",
+    "england": "GB", "scotland": "GB", "wales": "GB", "british": "GB",
+    "ireland": "IE", "irish": "IE",
+    "france": "FR", "french": "FR",
+    "spain": "ES", "españa": "ES", "spanish": "ES",
+    "germany": "DE", "deutschland": "DE", "german": "DE",
+    "italy": "IT", "italia": "IT", "italian": "IT",
+    "portugal": "PT", "portuguese": "PT",
+    "netherlands": "NL", "holland": "NL", "dutch": "NL",
+    "belgium": "BE", "belgian": "BE",
+    "switzerland": "CH", "swiss": "CH",
+    "austria": "AT", "austrian": "AT",
+    "poland": "PL", "polish": "PL",
+    "sweden": "SE", "swedish": "SE",
+    "norway": "NO", "norwegian": "NO",
+    "denmark": "DK", "danish": "DK",
+    "finland": "FI", "finnish": "FI",
+    "iceland": "IS", "icelandic": "IS",
+    "greece": "GR", "greek": "GR",
+    "ukraine": "UA", "ukrainian": "UA",
+    "romania": "RO", "romanian": "RO",
+    "hungary": "HU", "hungarian": "HU",
+    "czech republic": "CZ", "czechia": "CZ", "czech": "CZ",
+    # ── Africa ──
+    "south africa": "ZA", "south african": "ZA",
+    "nigeria": "NG", "nigerian": "NG",
+    "kenya": "KE", "kenyan": "KE",
+    "ghana": "GH", "ghanaian": "GH",
+    "uganda": "UG", "ugandan": "UG",
+    "tanzania": "TZ", "tanzanian": "TZ",
+    "ethiopia": "ET", "ethiopian": "ET",
+    "senegal": "SN", "senegalese": "SN",
+    "rwanda": "RW", "rwandan": "RW",
+    "mozambique": "MZ", "mozambican": "MZ",
+    "angola": "AO", "angolan": "AO",
+    "cameroon": "CM", "cameroun": "CM", "cameroonian": "CM",
+    "madagascar": "MG", "malagasy": "MG",
+    "zimbabwe": "ZW", "zimbabwean": "ZW",
+    "zambia": "ZM", "zambian": "ZM",
+    "malawi": "MW", "malawian": "MW",
+    "mali": "ML", "malian": "ML",
+    "burkina faso": "BF", "burkinabe": "BF",
+    "niger": "NE",
+    "chad": "TD", "chadian": "TD",
+    "sierra leone": "SL", "liberia": "LR", "liberian": "LR",
+    "guinea": "GN", "guinean": "GN", "guinea-conakry": "GN",
+    "guinea-bissau": "GW", "equatorial guinea": "GQ",
+    "côte d'ivoire": "CI", "cote d'ivoire": "CI", "ivory coast": "CI",
+    "ivoirian": "CI", "ivoirien": "CI",
+    "togo": "TG", "togolese": "TG",
+    "benin": "BJ", "beninese": "BJ",
+    "gabon": "GA", "gabonese": "GA",
+    "democratic republic of congo": "CD", "drc": "CD",
+    "republic of congo": "CG", "congo-brazzaville": "CG",
+    "botswana": "BW", "namibia": "NA", "namibian": "NA",
+    "morocco": "MA", "moroccan": "MA", "maroc": "MA",
+    "tunisia": "TN", "tunisian": "TN",
+    "algeria": "DZ", "algerian": "DZ",
+    "egypt": "EG", "egyptian": "EG",
+    "mauritius": "MU", "mauritian": "MU",
+    "cape verde": "CV", "cabo verde": "CV",
+    # ── Middle East (UN Western Asia; dashboard maps to Asia) ──
+    "turkey": "TR", "türkiye": "TR", "turkish": "TR",
+    "israel": "IL", "israeli": "IL",
+    "united arab emirates": "AE", "uae": "AE", "emirati": "AE",
+    "saudi arabia": "SA", "saudi": "SA",
+    "qatar": "QA", "qatari": "QA",
+    "jordan": "JO", "jordanian": "JO",
+    "lebanon": "LB", "lebanese": "LB",
+    # ── Asia ──
+    "japan": "JP", "japanese": "JP",
+    "china": "CN", "chinese": "CN",
+    "south korea": "KR", "korea": "KR", "korean": "KR",
+    "india": "IN", "indian": "IN",
+    "thailand": "TH", "thai": "TH",
+    "vietnam": "VN", "vietnamese": "VN",
+    "indonesia": "ID", "indonesian": "ID",
+    "philippines": "PH", "filipino": "PH", "philippine": "PH",
+    "taiwan": "TW", "taiwanese": "TW",
+    "malaysia": "MY", "malaysian": "MY",
+    "singapore": "SG", "singaporean": "SG",
+    "pakistan": "PK", "pakistani": "PK",
+    "bangladesh": "BD", "bangladeshi": "BD",
+    "nepal": "NP", "nepalese": "NP", "nepali": "NP",
+    "sri lanka": "LK", "sri lankan": "LK",
+    "myanmar": "MM", "burma": "MM", "burmese": "MM",
+    "cambodia": "KH", "cambodian": "KH",
+    "laos": "LA", "laotian": "LA",
+    "mongolia": "MN", "mongolian": "MN",
+    "kazakhstan": "KZ", "kazakh": "KZ",
+    "uzbekistan": "UZ", "uzbek": "UZ",
+    # ── Oceania ──
+    "australia": "AU", "australian": "AU",
+    "new zealand": "NZ", "aotearoa": "NZ",
+    "fiji": "FJ", "fijian": "FJ",
+    "papua new guinea": "PG", "samoa": "WS", "samoan": "WS",
+}
+
+# Longest-alias-first so "south africa" beats "africa",
+# "sri lanka" beats "lanka", "costa rica" beats "rica".
+_ALIASES_SORTED = sorted(COUNTRY_ALIASES.items(), key=lambda kv: -len(kv[0]))
+
+# Eligibility / residency / priority triggers (EN + PT + ES + FR).
+# A country name only re-scopes a grant when it shares a sentence with
+# one of these — passing mentions never re-scope.
+_SCOPE_TRIGGER_RE = re.compile(
+    r'(eligib|éligib|eleg[ií]v|open to|applications?(?: are)? (?:open|invited)|'
+    r'calling for|must be|should be|based in|registered in|incorporated in|'
+    r'located in|headquarter|residen|living in|domiciled|citizens?|nationals?|'
+    r'priority|preference|preferred|giving priority|focus(?:es|ed|ing)? on|'
+    r'target(?:s|ed|ing)?|exclusively|only (?:open|available|eligible)|'
+    r'restricted to|limited to|'
+    # PT: com sede em, sediadas em, registrada no, abertas a/para, prioridade, destinadas a
+    r'com sede em|sediad|registrad|domiciliad|eleg[ií]ve|'
+    r'abert[oa]s?(?: a| para)|prioridade|priorit[áa]ri|destinad[oa]s?(?: a| para)|foco em|'
+    # ES: con sede en, radicadas en, abiertas, prioridad, destinadas a
+    r'con sede en|radicad|abiert[oa]s?|prioridad|prioritari|destinad[oa]s?|enfoque en|'
+    # FR: siège à/en, établi(e) en, ouvert aux, priorité, destiné aux
+    r'si[eè]ge [aàe]|ouvert(?:s|es)? aux|priorit[ée]|destin[ée]e?s? aux?)',
+    re.I,
+)
+
+# Strong standalone captures (checked over the whole blob, not per sentence).
+_BASED_IN_RE = re.compile(
+    r'\b(?:based|registered|incorporated|located|headquartered|situated|'
+    r'operating|working|living|residing)\s+(?:in|within)\s+'
+    r"([A-Za-zÀ-Þ][\w .'\-–—]{1,48})",
+    re.I,
+)
+_HYPHEN_BASED_RE = re.compile(
+    r'\bfor\s+([A-Za-zÀ-Þ][\w.\-]*?)[-\s]based\b', re.I,
+)
+_CITIZEN_OF_RE = re.compile(
+    r'\b(?:citizens?|residents?|nationals?)\s+of\s+'
+    r"([A-Za-zÀ-Þ][\w .'\-–—]{1,48})",
+    re.I,
+)
+_TITLE_PAREN_RE = re.compile(r'\(\s*([^()]{2,60}?)\s*\)')
+
+
+def _normalize_scope_text(s: str) -> str:
+    return ((s or "").lower().replace("’", "'").replace("‘", "'")
+            .replace("´", "'").replace("\xa0", " ").strip())
+
+
+def _lookup_country_alias(fragment: str) -> str:
+    """Longest-match alias lookup. Returns code/bucket or ''."""
+    frag = _normalize_scope_text(fragment)
+    if not frag:
+        return ""
+    if frag in COUNTRY_ALIASES:
+        return COUNTRY_ALIASES[frag]
+    for alias, code in _ALIASES_SORTED:
+        if len(alias) < 3:
+            continue
+        if re.search(r'(?<![\w])' + re.escape(alias) + r'(?![\w])', frag):
+            return code
+    return ""
+
+
+def infer_scope_country(title: str, description: str = "",
+                        language: str = "en", default: str = "GLOBAL") -> str:
+    """Re-scope a GLOBAL grant to the country/region that can actually apply.
+
+    Signal order (highest precision first):
+      1. Title parenthetical — "… Grant Program (Uganda)" → UG.
+      2. "for X-based …" hyphen form — "for Uganda-based NGOs" → UG.
+      3. based-in / citizen-of captures — "entities based in Canada" → CA.
+      4. Eligibility/priority sentences — "open to NGOs in Kenya …",
+         "priority to groups in the Pacific …", "sediadas no Brasil" → BR.
+      5. Fallback to infer_country() (legacy keyword scan).
+    """
+    title = title or ""
+    description = description or ""
+    blob = f"{title} {description}"
+    # 1. Title parentheticals (trailing first — the scope slot).
+    parens = _TITLE_PAREN_RE.findall(title)
+    for par in reversed(parens):
+        code = _lookup_country_alias(par)
+        if code:
+            return code
+    # 2. "for X-based" hyphen form.
+    m = _HYPHEN_BASED_RE.search(blob)
+    if m:
+        code = _lookup_country_alias(m.group(1))
+        if code and code != "GLOBAL":
+            return code
+    # 3. based-in / citizen-of captures.
+    for rx in (_BASED_IN_RE, _CITIZEN_OF_RE):
+        m = rx.search(blob)
+        if m:
+            code = _lookup_country_alias(m.group(1))
+            if code and code != "GLOBAL":
+                return code
+    # 4. Trigger sentences: country must share a sentence with an
+    #    eligibility / residency / priority trigger.
+    for sent in re.split(r'[.!?;\n]+|\s\|\s', blob):
+        if not _SCOPE_TRIGGER_RE.search(sent):
+            continue
+        code = _lookup_country_alias(sent)
+        if code:
+            return code
+    # 5. Legacy fallback.
+    try:
+        fb = infer_country(blob, language or "en")
+    except (ValueError, AttributeError, TypeError):
+        fb = ""
+    return fb or default
 
 
 # ══════════════════════════════════════════════════════════════

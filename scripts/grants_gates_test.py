@@ -225,7 +225,6 @@ assert G.temporal_exclude_reason(_past) == "deadline-passed"
 
 # 11. export analyzer (stdlib-only, CI summary + gates)
 import analyze_grants_export as AZ  # noqa: E402
-
 _fake = [
     {"title": "Open Future Grant", "source": "s1", "status": "open", "urgency": "soon",
      "deadline": "2099-05-01", "amount_max": "$5,000", "priority_score": 50},
@@ -255,4 +254,81 @@ for needle in ("Accepted grants: **5**", "live/shippable: **3**", "Top 5 live",
                "Top sources", "Expired in export (1)", "Closed in export (1)",
                "temporal gate dropped: closed=**3**"):
     assert needle in md, needle
+
+# 12. same-day deadline regression (CI incident 2026-09-17: "Expired in
+# export (2)"). compute_deadline_urgency used datetime arithmetic, so a
+# deadline TODAY produced urgency="expired" while is_expired() (date-based)
+# considered it alive -> scraper shipped it, analyzer failed it.
+_today_iso = _d.today().isoformat()
+_days, _urg = G.compute_deadline_urgency(_today_iso)
+assert _urg != "expired", f"SAME-DAY FLAGGED EXPIRED: {_today_iso} -> {_urg}"
+assert _days == 0, (_today_iso, _days)
+assert not G.is_expired(_today_iso), "TODAY FLAGGED EXPIRED"
+assert G.temporal_exclude_reason({"status": "open", "deadline": _today_iso}) is None
+# scraper urgency and analyzer gate must agree on a same-day grant
+_same = G.make_grant(
+    "Same Day Environmental Grant Program",
+    "test-source",
+    "https://example.org/grants/same-day",
+    "Open call for proposals. Grants up to $10,000. Environmental action.",
+    deadline=_today_iso,
+    amount_max="$10,000",
+)
+assert _same["urgency"] != "expired", (_same["urgency"], _same["deadline_days"])
+assert G.temporal_exclude_reason(_same) is None
+_stats_same = AZ.analyze([_same], today=_today_iso)
+assert _stats_same["expired"] == 0, _stats_same
+assert AZ.gate_failures(_stats_same) == [], _stats_same
+# analyzer parses legacy shapes exactly like the scraper gate
+assert AZ.is_past_deadline("2000-01-15", today="2026-09-16")
+assert AZ.is_past_deadline("15 January 2000", today="2026-09-16")
+assert AZ.is_past_deadline("31/08/26", today="2026-09-16")
+assert not AZ.is_past_deadline("2026-09-16", today="2026-09-16"), "TODAY ANALYZER-EXPIRED"
+assert not AZ.is_past_deadline("", today="2026-09-16")
+assert not AZ.is_past_deadline("rolling", today="2026-09-16")
+assert not AZ.is_past_deadline("total garbage xyz", today="2026-09-16")
+
+# 13. v2.5 scope detection — GLOBAL must not swallow clearly-scoped calls
+def _scoped(title, desc, **kw):
+    g = G.make_grant(title, "test-scope", "https://example.org/x" + str(abs(hash(title + desc)) % 99999),
+                     desc, deadline="2099-01-01", amount_max="$1,000", **kw)
+    return g["country"]
+
+# title parentheticals
+assert _scoped("Apply for Climate Change Partnerships Grant Program (Australia)",
+               "Eligible organizations can apply for up to $50,000.") == "AU"
+assert _scoped("Open Call for Indigenous Climate Action Grant (Canada)",
+               "Supports Indigenous-led projects in Toronto.") == "CA"
+assert _scoped("Call for Strategic Partnerships (Uganda)",
+               "Eligible organizations in Uganda may submit.") == "UG"
+assert _scoped("Wiki Loves Earth 2026 (Côte d’Ivoire)", "Photography contest.") == "CI"
+assert _scoped("Agriculture Funding (50 new opportunities!)",
+               "Explore 80+ funding opportunities worldwide.") == "GLOBAL"
+# eligibility / residency phrasing
+assert _scoped("Some call", "For entities based in Canada only. Open call. $5,000.") == "CA"
+assert _scoped("Some call", "Must be registered in Brazil. Edital aberto.") == "BR"
+assert _scoped("Some call", "Organisations must be headquartered within South Africa.") == "ZA"
+assert _scoped("Some call", "For Australia-based not-for-profits in the Noosa Shire.") == "AU"
+assert _scoped("Some call", "Open to NGOs in Kenya and Tanzania working on conservation.") in ("KE", "TZ")
+assert _scoped("Some call", "supports eligible organisations in British Columbia") == "CA"
+assert _scoped("Some call", "Destinado a organizações sediadas no Brasil. Edital aberto.") == "BR"
+assert _scoped("Some call", "Ouvert aux associations établies en France.") == "FR"
+# passing mentions never re-scope; worldwide stays worldwide
+assert _scoped("Global Greengrants Fund",
+               "Small grants worldwide. Priority to underrepresented groups.") == "GLOBAL"
+assert _scoped("The Pollination Project",
+               "Seed funding to changemakers worldwide.") == "GLOBAL"
+assert _scoped("X", "Open call, funding climate art worldwide.") == "GLOBAL"
+assert G.infer_country("funding climate art worldwide", "en") == "GLOBAL", "LIMA-CLIMATE"
+assert G.infer_country("open call for NGOs in Peru, Lima region", "en") == "PE"
+# standing entries + explicit scopes are exempt
+_s = G.make_grant("Youth Climate Justice Fund", "ycjf", "https://example.org/ycjf",
+                  "Funds youth-led groups in Latin America, Africa, Asia.",
+                  country="GLOBAL", is_standing=True,
+                  deadline="2099-01-01", amount_max="$20,000")
+assert _s["country"] == "GLOBAL", _s["country"]
+_e = G.make_grant("Edital ISPN", "ispn", "https://example.org/ispn",
+                  "Open to NGOs in Kenya.", country="BR",
+                  deadline="2099-01-01", amount_max="$1,000")
+assert _e["country"] == "BR", _e["country"]
 print("ALL GRANTS GATE TESTS PASSED")

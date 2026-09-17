@@ -91,10 +91,30 @@
             <span class="gstore-section-count-badge">{{ t('grantsPortal.itemsLabel', { count: items.length }) }}</span>
           </div>
         </div>
+        <div class="gstore-filters" role="group" :aria-label="t('grantsPortal.sortLabel')">
+          <label class="gstore-sort">
+            <span class="gstore-sort-label">{{ t('grantsPortal.filterDeadlineLabel') }}</span>
+            <select v-model="deadlineFilter" class="gstore-sort-select" :aria-label="t('grantsPortal.filterDeadlineLabel')">
+              <option value="all">{{ t('grantsPortal.filterDeadlineAll') }}</option>
+              <option value="7">{{ t('grantsPortal.filterDeadline7') }}</option>
+              <option value="30">{{ t('grantsPortal.filterDeadline30') }}</option>
+              <option value="90">{{ t('grantsPortal.filterDeadline90') }}</option>
+            </select>
+          </label>
+          <label class="gstore-sort">
+            <span class="gstore-sort-label">{{ t('grantsPortal.filterRegionLabel') }}</span>
+            <select v-model="regionFilter" class="gstore-sort-select" :aria-label="t('grantsPortal.filterRegionLabel')">
+              <option value="all">{{ t('grantsPortal.filterRegionAll') }} ({{ liveCount }})</option>
+              <option v-for="c in continentsWithCounts" :key="c.key" :value="c.key">
+                {{ t(c.labelKey) }} ({{ c.count }})
+              </option>
+            </select>
+          </label>
+        </div>
         <div v-if="!items.length" class="gstore-empty">
-          <p>{{ searchQuery ? t('grantsPortal.dashboardEmptySearch') : t('grantsPortal.dashboardEmpty') }}</p>
-          <button v-if="searchQuery" class="gstore-empty-btn" @click="$emit('update:searchQuery', '')">
-            {{ t('grantsPortal.clearSearch') }}
+          <p>{{ emptyMessage }}</p>
+          <button v-if="hasActiveFilters" class="gstore-empty-btn" @click="clearFilters">
+            {{ t('grantsPortal.clearFilters') }}
           </button>
         </div>
         <div v-else class="gstore-grid">
@@ -144,6 +164,7 @@
 import { computed, ref } from 'vue'
 import type { GrantRecord, ScrapedGrant } from '~/composables/useGrants'
 import { useI18n } from '~/composables/useI18n'
+import { GRANT_CONTINENTS, grantContinentOf, type GrantContinentKey } from '~/lib/grants-regions'
 
 const props = defineProps<{
   user: { email?: string } | null
@@ -182,15 +203,59 @@ type MixedGrant = ScrapedGrant | GrantRecord | (ScrapedGrant & { direct_benefici
 type SortKey = 'newest' | 'priority' | 'deadline' | 'amount'
 const sortKey = ref<SortKey>('newest')
 
+type DeadlineFilter = 'all' | '7' | '30' | '90'
+type RegionFilter = 'all' | GrantContinentKey
+const deadlineFilter = ref<DeadlineFilter>('all')
+const regionFilter = ref<RegionFilter>('all')
+
 function grantTimestamp(g: MixedGrant): number {
   const raw = ('fetched_at' in g && g.fetched_at) || g.created_at
   const ts = raw ? new Date(raw).getTime() : NaN
   return Number.isFinite(ts) ? ts : 0
 }
 
+/**
+ * Calendar-day countdown to the deadline (UTC, matches the scraper's
+ * compute_deadline_urgency). Prefers the server-computed deadline_days and
+ * falls back to parsing the deadline string client-side. Null = unknown.
+ */
+function effectiveDeadlineDays(g: MixedGrant): number | null {
+  if ('deadline_days' in g && typeof g.deadline_days === 'number' && Number.isFinite(g.deadline_days)) {
+    return g.deadline_days
+  }
+  const raw = typeof g.deadline === 'string' ? g.deadline.trim() : ''
+  if (!raw) return null
+  const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  let dayMs: number | null = null
+  if (iso) {
+    dayMs = Date.UTC(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]))
+    if (!Number.isFinite(dayMs)) return null
+  } else {
+    const ts = Date.parse(raw)
+    if (!Number.isFinite(ts)) return null
+    const d = new Date(ts)
+    dayMs = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+  }
+  const now = new Date()
+  const todayMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  return Math.round((dayMs - todayMs) / 86400000)
+}
+
+/** A grant is expired when closed or past its deadline — never shippable. */
+function isExpiredGrant(g: MixedGrant): boolean {
+  if ((g.status || '').toLowerCase() === 'closed') return true
+  const days = effectiveDeadlineDays(g)
+  if (days != null) return days < 0
+  return g.urgency === 'expired'
+}
+
+function isOpenStatus(g: MixedGrant): boolean {
+  return g.status === 'approved-active-open' || g.status === 'approved' || g.status === 'open'
+}
+
 /** Deadline display info for a card, or null when unknown. */
 function deadlineInfo(g: MixedGrant): { text: string; cls: string } | null {
-  const days = 'deadline_days' in g && typeof g.deadline_days === 'number' ? g.deadline_days : null
+  const days = effectiveDeadlineDays(g)
   if (days != null) {
     if (days < 0) return { text: t('grantsPortal.urgencyExpired'), cls: 'expired' }
     if (days === 0) return { text: t('grantsPortal.closingToday'), cls: 'urgent' }
@@ -211,20 +276,86 @@ function deadlineInfo(g: MixedGrant): { text: string; cls: string } | null {
   return null
 }
 
-/** Worldwide scraped grants only, filtered by search and ordered by sortKey. */
-const items = computed<MixedGrant[]>(() => {
+/**
+ * Live grants: open status AND not expired/closed. Every dashboard filter
+ * builds on this — a closed or deadline-passed grant is never listed.
+ */
+const liveGrants = computed<MixedGrant[]>(() =>
+  (props.filteredScrapedGrants as MixedGrant[]).filter(
+    (g) => isOpenStatus(g) && !isExpiredGrant(g),
+  ),
+)
+
+const liveCount = computed(() => liveGrants.value.length)
+
+function matchesSearch(g: MixedGrant, q: string): boolean {
+  if (!q) return true
+  return (
+    (g.title || '').toLowerCase().includes(q) ||
+    (g.funder || '').toLowerCase().includes(q) ||
+    (g.country || '').toLowerCase().includes(q) ||
+    (g.description || '').toLowerCase().includes(q) ||
+    (g.categories || []).some((c: string) => c.toLowerCase().includes(q))
+  )
+}
+
+/** Live + search (everything except the deadline/region filters). */
+const searchableGrants = computed<MixedGrant[]>(() => {
   const q = props.searchQuery?.toLowerCase() ?? ''
-  const filtered = (props.filteredScrapedGrants as MixedGrant[]).filter((g) => {
-    if (g.status !== 'approved-active-open' && g.status !== 'approved' && g.status !== 'open') return false
-    if (!q) return true
-    return (
-      (g.title || '').toLowerCase().includes(q) ||
-      (g.funder || '').toLowerCase().includes(q) ||
-      (g.country || '').toLowerCase().includes(q) ||
-      (g.description || '').toLowerCase().includes(q) ||
-      (g.categories || []).some((c: string) => c.toLowerCase().includes(q))
+  return liveGrants.value.filter((g) => matchesSearch(g, q))
+})
+
+/** Per-continent counts for the region dropdown (respects search). */
+const continentsWithCounts = computed(() => {
+  const counts = new Map<GrantContinentKey, number>()
+  for (const g of searchableGrants.value) {
+    const key = grantContinentOf(g.country, 'region' in g ? (g.region as string) : null)
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+  return GRANT_CONTINENTS.map((c) => ({ ...c, count: counts.get(c.key) ?? 0 })).filter(
+    (c) => c.count > 0,
+  )
+})
+
+const hasActiveFilters = computed(
+  () =>
+    !!props.searchQuery ||
+    deadlineFilter.value !== 'all' ||
+    regionFilter.value !== 'all',
+)
+
+const emptyMessage = computed(() =>
+  hasActiveFilters.value
+    ? t('grantsPortal.noMatchingGrants')
+    : t('grantsPortal.dashboardEmpty'),
+)
+
+function clearFilters() {
+  emit('update:searchQuery', '')
+  deadlineFilter.value = 'all'
+  regionFilter.value = 'all'
+}
+
+/** Worldwide scraped grants, filtered by search + deadline + region, ordered by sortKey. */
+const items = computed<MixedGrant[]>(() => {
+  let filtered = searchableGrants.value
+  // Closing-soon window: from today (0) up to N days out. Unknown deadlines
+  // can't prove closeness, so they're excluded here — and expired grants
+  // never reach this point (see liveGrants).
+  if (deadlineFilter.value !== 'all') {
+    const maxDays = Number(deadlineFilter.value)
+    filtered = filtered.filter((g) => {
+      const days = effectiveDeadlineDays(g)
+      return days != null && days >= 0 && days <= maxDays
+    })
+  }
+  if (regionFilter.value !== 'all') {
+    filtered = filtered.filter(
+      (g) =>
+        grantContinentOf(g.country, 'region' in g ? (g.region as string) : null) ===
+        regionFilter.value,
     )
-  })
+  }
   const sorted = [...filtered]
   switch (sortKey.value) {
     case 'priority':
@@ -232,8 +363,8 @@ const items = computed<MixedGrant[]>(() => {
       break
     case 'deadline':
       sorted.sort((a, b) => {
-        const da = 'deadline_days' in a && typeof a.deadline_days === 'number' ? a.deadline_days : Number.POSITIVE_INFINITY
-        const db = 'deadline_days' in b && typeof b.deadline_days === 'number' ? b.deadline_days : Number.POSITIVE_INFINITY
+        const da = effectiveDeadlineDays(a) ?? Number.POSITIVE_INFINITY
+        const db = effectiveDeadlineDays(b) ?? Number.POSITIVE_INFINITY
         return da - db
       })
       break
@@ -709,6 +840,15 @@ const items = computed<MixedGrant[]>(() => {
   background: var(--surface);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.gstore-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-bottom: 14px;
+  padding: 0 2px;
 }
 
 .gstore-grid {

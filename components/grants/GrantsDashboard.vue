@@ -86,6 +86,7 @@
                 <option value="priority">{{ t('grantsPortal.sortPriority') }}</option>
                 <option value="deadline">{{ t('grantsPortal.sortDeadline') }}</option>
                 <option value="amount">{{ t('grantsPortal.sortAmount') }}</option>
+                <option value="commented">{{ t('grantsPortal.sortMostCommented') }}</option>
               </select>
             </label>
             <span class="gstore-section-count-badge">{{ t('grantsPortal.itemsLabel', { count: items.length }) }}</span>
@@ -143,6 +144,7 @@
             <div class="gstore-card-meta">
               <span v-if="g.funder" class="gstore-card-meta-item">{{ g.funder }}</span>
               <span v-if="g.country" class="gstore-card-meta-item">{{ g.country }}</span>
+              <span v-if="commentCountOf(g) > 0" class="gstore-card-meta-item comments" :title="t('grantsPortal.comments')">💬 {{ commentCountOf(g) }}</span>
               <span v-if="deadlineInfo(g)" class="gstore-card-meta-item deadline" :class="deadlineInfo(g)!.cls">{{ deadlineInfo(g)!.text }}</span>
             </div>
             <div class="gstore-card-footer">
@@ -166,13 +168,17 @@ import type { GrantRecord, ScrapedGrant } from '~/composables/useGrants'
 import { useI18n } from '~/composables/useI18n'
 import { GRANT_CONTINENTS, grantContinentOf, type GrantContinentKey } from '~/lib/grants-regions'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   user: { email?: string } | null
   isManager: boolean
   searchQuery: string
   isLoading: boolean
   filteredScrapedGrants: (ScrapedGrant | GrantRecord)[]
-}>()
+  /** grant-id → comment count map (grants without comments are absent = 0) */
+  commentCounts?: Record<string, number>
+}>(), {
+  commentCounts: () => ({}),
+})
 
 const emit = defineEmits<{
   signIn: []
@@ -200,7 +206,7 @@ function formatCompact(val: number): string {
 
 type MixedGrant = ScrapedGrant | GrantRecord | (ScrapedGrant & { direct_beneficiaries?: number })
 
-type SortKey = 'newest' | 'priority' | 'deadline' | 'amount'
+type SortKey = 'newest' | 'priority' | 'deadline' | 'amount' | 'commented'
 const sortKey = ref<SortKey>('newest')
 
 type DeadlineFilter = 'all' | '7' | '30' | '90'
@@ -212,6 +218,10 @@ function grantTimestamp(g: MixedGrant): number {
   const raw = ('fetched_at' in g && g.fetched_at) || g.created_at
   const ts = raw ? new Date(raw).getTime() : NaN
   return Number.isFinite(ts) ? ts : 0
+}
+
+function commentCountOf(g: MixedGrant): number {
+  return props.commentCounts[g.id] ?? 0
 }
 
 /**
@@ -370,6 +380,12 @@ const items = computed<MixedGrant[]>(() => {
       break
     case 'amount':
       sorted.sort((a, b) => (b.amount_usd ?? -1) - (a.amount_usd ?? -1))
+      break
+    case 'commented':
+      sorted.sort((a, b) => {
+        const diff = commentCountOf(b) - commentCountOf(a)
+        return diff !== 0 ? diff : grantTimestamp(b) - grantTimestamp(a)
+      })
       break
     case 'newest':
     default:

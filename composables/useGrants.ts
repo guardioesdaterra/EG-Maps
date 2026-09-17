@@ -45,6 +45,12 @@ export interface GrantRecord {
   longitude: number
   category: string
   status: string
+  /**
+   * Manual-insert review workflow (pending/approved) — a separate column
+   * from the temporal status (open/closed). Only manager-created grants
+   * ever carry pending; scraped grants are always open/closed.
+   */
+  review_status?: string
   submitted_by: string
   reviewed?: boolean
   reviewed_by: string | null
@@ -425,6 +431,38 @@ export function useGrants() {
     }
   }
 
+  /**
+   * Fetch per-grant comment counts in a single lightweight query.
+   * The list endpoints return no comment data and there is no batch
+   * edge-function route, so we read `grant_id` from `grant_comments`
+   * directly (anon-readable) and aggregate client-side. Returns a
+   * grant-id → count map (grants without comments are absent = 0).
+   */
+  async function getCommentCounts() {
+    try {
+      const { client } = useSupabase()
+      const counts: Record<string, number> = {}
+      const pageSize = 1000
+      let from = 0
+      for (;;) {
+        const { data, error } = await client
+          .from('grant_comments')
+          .select('grant_id')
+          .range(from, from + pageSize - 1)
+        if (error) throw error
+        const rows = (data ?? []) as { grant_id: string }[]
+        for (const row of rows) {
+          if (row.grant_id) counts[row.grant_id] = (counts[row.grant_id] ?? 0) + 1
+        }
+        if (rows.length < pageSize) break
+        from += pageSize
+      }
+      return { counts }
+    } catch (e: unknown) {
+      return { error: (e as Error).message, counts: {} as Record<string, number> }
+    }
+  }
+
   async function addComment(grantId: string, content: string, authorName?: string) {
     try {
       const data = await invoke('grants?action=comment', {
@@ -635,6 +673,7 @@ export function useGrants() {
     deleteVote,
     getLeaderboard,
     getComments,
+    getCommentCounts,
     addComment,
     deleteComment,
     listEGProjects,

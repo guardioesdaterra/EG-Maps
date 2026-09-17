@@ -1,5 +1,10 @@
 supabase/
 *.sql.tmp
+# Scraper exports are CI artifacts pushed straight to Supabase —
+# the client fetches from there, never from the repo. Keep cultural
+# agent exports (consumed by sync-agents) but ignore grants radar.
+scripts/output/grants_radar_*
+scripts/output/grants_export_*
 # Nuxt
 .nuxt/
 .output/

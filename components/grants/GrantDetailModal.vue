@@ -106,7 +106,7 @@
                 </div>
                 <div class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
                   <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.descStatus') }}</h3>
-                  <span class="mt-2 inline-block px-3 py-1 rounded-full text-xs font-medium capitalize" :class="statusClass(grant.status)">{{ t(`grantsPortal.${grant.status === 'pending' ? 'open' : grant.status}`) }}</span>
+                  <span class="mt-2 inline-block px-3 py-1 rounded-full text-xs font-medium capitalize" :class="statusClass(grant.status)">{{ t(`grantsPortal.${grant.status || 'open'}`) }}</span>
                 </div>
                 <div v-if="grant.location_name || (grant.latitude != null)" class="rounded-xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
                   <h3 class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/40">{{ t('grantsPortal.descLocation') }}</h3>

@@ -551,6 +551,7 @@ const SUBTYPE_LABELS: Record<string, string> = {
 }
 
 const TOGGLE_LAYER_KEYS = [
+  'cultural',
   'protected_ti',
   'protected_quilombo',
   'overlaps',
@@ -559,6 +560,7 @@ const TOGGLE_LAYER_KEYS = [
   'heatmap',
 ] as const
 const LAYER_LABELS: Record<string, string> = {
+  cultural: 'observatory.layers.cultural',
   protected_ti: 'observatory.layers.indigenousLands',
   protected_quilombo: 'observatory.layers.quilombolaTerritories',
   overlaps: 'observatory.layers.overlaps',
@@ -567,6 +569,7 @@ const LAYER_LABELS: Record<string, string> = {
   heatmap: 'observatory.layers.heatmap',
 }
 const LAYER_COLORS: Record<string, string> = {
+  cultural: '#a855f7',
   protected_ti: '#c0392b',
   protected_quilombo: '#f39c12',
   overlaps: '#ff00ff',

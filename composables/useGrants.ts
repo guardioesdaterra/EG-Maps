@@ -28,7 +28,10 @@ export interface GrantInput {
   longitude: number | null
   category: string
   funder?: string
+  /** Client-side alias — the edge maps it to grant_link (no url column). */
   url?: string
+  grant_link?: string
+  source_link?: string
   amount_max?: string
   amount_min?: string
   currency?: string
@@ -46,26 +49,24 @@ export interface GrantRecord {
   category: string
   status: string
   /**
-   * Manual-insert review workflow (pending/approved) — a separate column
-   * from the temporal status (open/closed). Only manager-created grants
-   * ever carry pending; scraped grants are always open/closed.
+   * Origin flag — true for manager manual inserts (auto-approved, no review
+   * queue). Replaces the removed review_status/reviewed/rejection_reason
+   * workflow. Visibility is driven by temporal status (open/closed/hidden).
    */
-  review_status?: string
+  manual_inserted?: boolean
+  source_link?: string
+  grant_link?: string
+  /** Legacy alias — the merged table has no url column; use grant_link. */
+  url?: string
   submitted_by: string
-  reviewed?: boolean
-  reviewed_by: string | null
-  reviewed_at: string | null
-  rejection_reason: string | null
   created_at: string
   funder?: string
-  url?: string
   amount_max?: string
   amount_min?: string
   currency?: string
   country?: string
   grant_type?: string
   priority_score?: number
-  hidden?: boolean
   source_id?: string
   source?: string
   highlights?: string[]
@@ -81,7 +82,12 @@ export interface ScrapedGrant {
   title: string
   funder: string
   source: string
-  url: string
+  /** Aggregator page the record was scraped from (v2.6). */
+  source_link?: string
+  /** Funder/official call URL mined from the post ("" when none, v2.6). */
+  grant_link?: string
+  /** Legacy alias — the merged table has no url column; use grant_link. */
+  url?: string
   description: string
   deadline: string
   amount_max: string
@@ -92,15 +98,16 @@ export interface ScrapedGrant {
   categories: string[]
   language: string
   relevance?: number
+  /** Single temporal column: open/closed/expired/hidden. */
   status: string
-  reviewed?: boolean
+  /** Origin flag — true for manager manual inserts (auto-approved). */
+  manual_inserted?: boolean
   fetched_at: string
   created_at: string
   grant_type?: string
   grant_types?: string[]
   highlights?: string[]
   urgency?: string
-  deadline_days?: number | null
   amount_usd?: number | null
   priority_score?: number
 }
@@ -261,7 +268,8 @@ export interface LeaderboardEntry {
   location_name?: string
   country?: string
   funder?: string
-  url?: string
+  grant_link?: string
+  source_link?: string
   source?: string
   deadline?: string
   amount_max?: string
@@ -295,7 +303,9 @@ export function useGrants() {
 
   async function listScrapedGrants(status?: string) {
     try {
-      const params = new URLSearchParams({ action: 'list', source_table: 'scraped_grants' })
+      // Single merged table — source_table=grants lists everything.
+      // (The edge keeps a scraped_grants→grants alias for old clients.)
+      const params = new URLSearchParams({ action: 'list', source_table: 'grants' })
       if (status) params.set('status', status)
       const data = await invoke(`grants?${params}`)
       return data as { grants: ScrapedGrant[]; total: number }
@@ -320,7 +330,7 @@ export function useGrants() {
     try {
       const data = await invoke('grants?action=manage', {
         method: 'POST',
-        body: { grant_id: grantId, action: 'edit', table: 'scraped_grants', updates },
+        body: { grant_id: grantId, action: 'edit', table: 'grants', updates },
       })
       return data as { grant: ScrapedGrant }
     } catch (e: unknown) {
@@ -328,13 +338,14 @@ export function useGrants() {
     }
   }
 
-  async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'closed' | 'pending', notes?: string, table = 'scraped_grants'): Promise<ReviewScrapedResult> {
+  async function reviewScrapedGrant(grantId: string, decision: 'approved' | 'rejected' | 'hidden' | 'closed' | 'expired' | 'pending', notes?: string, table = 'grants'): Promise<ReviewScrapedResult> {
     try {
       const actionMap: Record<string, string> = {
         approved: 'approve',
         rejected: 'reject',
         hidden: 'hide',
         closed: 'close',
+        expired: 'expire',
         pending: 'show',
       }
       const action = actionMap[decision] || 'reject'
@@ -363,16 +374,17 @@ export function useGrants() {
   async function getStats() {
     try {
       const data = await invoke('grants?action=list&status=stats')
-      const s = data as { pending: number; open: number; closed: number; hidden: number; total: number }
+      const s = data as { open: number; closed: number; expired: number; hidden: number; manual: number; total: number }
       return {
-        pending: s.pending ?? 0,
         open: s.open ?? 0,
         closed: s.closed ?? 0,
+        expired: s.expired ?? 0,
         hidden: s.hidden ?? 0,
+        manual: s.manual ?? 0,
         total: s.total ?? 0,
       }
     } catch {
-      return { pending: 0, open: 0, closed: 0, hidden: 0, total: 0 }
+      return { open: 0, closed: 0, expired: 0, hidden: 0, manual: 0, total: 0 }
     }
   }
 

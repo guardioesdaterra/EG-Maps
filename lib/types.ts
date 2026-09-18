@@ -149,7 +149,10 @@ export interface CreateGrantInput {
   longitude: number | null
   category: string
   funder?: string
+  /** Client alias — edge maps it to grant_link (no url column). */
   url?: string
+  grant_link?: string
+  source_link?: string
   amount_max?: string
   amount_min?: string
   currency?: string

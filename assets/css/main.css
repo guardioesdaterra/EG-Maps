@@ -2187,3 +2187,51 @@ select option {
     padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
   }
 }
+
+/* ─────────────────────────────────────────────
+   Host-embed offset (eg-grants + descendants)
+   When useHostEmbed() detects the page runs inside a third-party host
+   (iframe / ?embed=1 / host postMessage), it sets
+   <html data-eg-embedded="true" style="--eg-embed-offset: Npx">.
+   These rules shift every fixed/sticky descendant below the host header —
+   including Teleported modal overlays that escape the page root, so no
+   per-component edits are needed. Inert when not embedded.
+   ───────────────────────────────────────────── */
+html[data-eg-embedded="true"] {
+  /* Page roots add their own padding-top via .is-embedded below;
+     the var lives on <html> so Teleported overlays can read it too. */
+}
+
+/* Fixed modal overlays (all Teleported to <body>): start below host header */
+html[data-eg-embedded="true"] .gdm-overlay,
+html[data-eg-embedded="true"] .create-overlay,
+html[data-eg-embedded="true"] .claim-overlay,
+html[data-eg-embedded="true"] .review-overlay,
+html[data-eg-embedded="true"] .registry-modal-overlay,
+html[data-eg-embedded="true"] .grant-edit-overlay {
+  top: var(--eg-embed-offset, 64px);
+}
+
+/* Modal panels: keep the bottom reachable now the top is pushed down */
+html[data-eg-embedded="true"] .gdm-panel {
+  max-height: calc(min(92dvh, 56rem) - var(--eg-embed-offset, 64px));
+}
+html[data-eg-embedded="true"] .create-modal {
+  max-height: calc(90vh - var(--eg-embed-offset, 64px));
+}
+
+/* Sticky in-flow headers: stick below the host header, not under it */
+html[data-eg-embedded="true"] .gstore-header,
+html[data-eg-embedded="true"] .fs-header {
+  top: var(--eg-embed-offset, 64px);
+}
+
+/* Floating auth pill: drop below the host header */
+html[data-eg-embedded="true"] .top-right-auth {
+  top: calc(1rem + var(--eg-embed-offset, 64px));
+}
+
+/* Fullscreen transient gates (loading / sign-in / restricted): same shift */
+html[data-eg-embedded="true"] .eg-gate {
+  top: var(--eg-embed-offset, 64px);
+}

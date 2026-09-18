@@ -15,6 +15,9 @@
           <button class="px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg font-semibold" @click="retrySignIn">
             {{ t('grantsPortal.signInBtn') }}
           </button>
+          <button class="px-4 py-2 rounded-lg font-semibold border border-white/20 text-[var(--text-secondary)]" @click="retryWithNewAccount">
+            {{ t('grantsPortal.useAnotherAccount') }}
+          </button>
           <NuxtLink :to="backUrl" class="px-4 py-2 rounded-lg font-semibold border border-white/20 text-[var(--text-secondary)]">
             {{ t('grantsPortal.authBackToGrants') }}
           </NuxtLink>
@@ -95,7 +98,7 @@ recordLanding(!!landingSnapshot?.code)
 
 const { t } = useI18n()
 const { client } = useSupabase()
-const { signIn: startSignIn } = useSupabaseAuth()
+const { signIn: startSignIn, switchAccount: startSwitchAccount } = useSupabaseAuth()
 const error = ref('')
 const errorDetail = ref('')
 const backUrl = ref('/eg-grants')
@@ -161,6 +164,24 @@ function settleError(message: string, detail = '') {
   console.warn('[auth/callback] settled with error', { message, detail })
 }
 
+/** Restart the OAuth round-trip with Google's account chooser (forget browser session). */
+async function retryWithNewAccount() {
+  error.value = ''
+  errorDetail.value = ''
+  settled = false
+  try {
+    window.history.replaceState({}, '', window.location.pathname)
+  } catch { /* ignore */ }
+  console.log('[auth/callback] retrying sign-in with account chooser', { next: backUrl.value })
+  try {
+    await startSwitchAccount(backUrl.value)
+  } catch (e) {
+    settleError(
+      t('grantsPortal.authFailedRetry'),
+      e instanceof Error ? e.message : String(e),
+    )
+  }
+}
 /** Restart the OAuth round-trip (fresh PKCE verifier) after a failed attempt. */
 async function retrySignIn() {
   error.value = ''

@@ -25,6 +25,11 @@
         <button class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => signIn()">
           {{ t('grantsPortal.signInShort') }}
         </button>
+        <div>
+          <button class="mt-3 text-xs font-semibold text-white/40 hover:text-white/70 underline underline-offset-4 transition-colors" @click="() => signInWithNewAccount()">
+            {{ t('grantsPortal.useAnotherAccount') }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -35,9 +40,14 @@
         </div>
         <h2 class="text-white text-xl font-bold mb-2">{{ t('grantsPortal.accessRestrictedTitle') }}</h2>
         <p class="text-white/50 text-sm mb-6">{{ t('grantsPortal.accessRestrictedDesc') }}</p>
-        <button class="px-6 py-3 text-sm font-bold bg-white/10 text-white/70 hover:bg-white/15 rounded-lg transition-colors" @click="signOut">
-          {{ t('grantsPortal.signOut') }}
-        </button>
+        <div class="flex flex-col items-center gap-2">
+          <button class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="switchAccount">
+            {{ t('grantsPortal.switchAccountBtn') }}
+          </button>
+          <button class="px-6 py-3 text-sm font-bold bg-white/10 text-white/70 hover:bg-white/15 rounded-lg transition-colors" @click="signOut">
+            {{ t('grantsPortal.signOut') }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -137,7 +147,7 @@ useHead({ title: 'EG Grants · Fullscreen | Earth Guardians' })
 const { isEmbedded } = useHostEmbed()
 
 const { t } = useI18n()
-const { user, isManager, signIn, signOut, sessionReady } = useSupabaseAuth()
+const { user, isManager, signIn, signInWithNewAccount, switchAccount, signOut, sessionReady } = useSupabaseAuth()
 const confirmSignOut = ref(false)
 
 const accessGranted = computed(() => sessionReady.value && !!user.value && isManager.value)

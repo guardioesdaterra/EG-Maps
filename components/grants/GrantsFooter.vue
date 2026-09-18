@@ -33,7 +33,9 @@
       <div class="mt-6 flex items-center justify-center gap-6 text-[10px] text-white/25">
         <span>PO Box 1561 Laurel, MD 20725</span>
         <span>Tax ID/EIN: 84-1397083</span>
-        <a href="https://www.earthguardians.org/privacy-policy" target="_blank" rel="noopener noreferrer" class="hover:text-white/50 transition-colors underline underline-offset-2">Privacy Policy</a>
+        <NuxtLink to="/privacy" class="hover:text-white/50 transition-colors underline underline-offset-2">{{ t('nav.privacy') }}</NuxtLink>
+        <NuxtLink to="/terms" class="hover:text-white/50 transition-colors underline underline-offset-2">{{ t('nav.terms') }}</NuxtLink>
+        <a href="https://www.earthguardians.org/privacy-policy" target="_blank" rel="noopener noreferrer" class="hover:text-white/50 transition-colors underline underline-offset-2">earthguardians.org</a>
       </div>
     </div>
   </section>

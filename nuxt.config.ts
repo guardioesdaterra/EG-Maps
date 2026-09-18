@@ -107,7 +107,7 @@ export default defineNuxtConfig({
     preset: 'static',
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/globe', '/info', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d', '/vulcan-observatory', '/vulcan-observatory/3d', '/eg-grants', '/eg-grants/fullscreen', '/auth/callback', '/iframe', '/iframe/squarespace', '/campaigns', '/crew-projects', '/masterclasses'],
+      routes: ['/', '/globe', '/info', '/privacy', '/terms', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d', '/vulcan-observatory', '/vulcan-observatory/3d', '/eg-grants', '/eg-grants/fullscreen', '/auth/callback', '/iframe', '/iframe/squarespace', '/campaigns', '/crew-projects', '/masterclasses'],
       // /manifest.json is a static asset, not a page. The prerender crawler
       // follows <link rel="manifest" href="…"> and tries to fetch it as a
       // route; with a non-root baseURL it follows the prefixed form, so we

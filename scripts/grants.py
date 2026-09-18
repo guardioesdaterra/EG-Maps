@@ -374,7 +374,7 @@ def has_grant_signals(title: str, description: str, deadline: str, amount_max: s
         signals += 2
     return signals
 
-def score_relevance(text: str, is_standing: bool = False) -> int:
+def score_relevance(text: str) -> int:
     """Score relevance 0-100 based on keyword hits. Higher = more grant-like."""
     text = text.lower()
     # ── Core keywords (strong grant signals) — 8 points each ──
@@ -393,10 +393,6 @@ def score_relevance(text: str, is_standing: bool = False) -> int:
     # ── v2.1: jobs are never grants (except fellowships, exempt above) ──
     if is_likely_job(text, ""):
         hits = max(0, hits - 30)
-    # Moderate penalty for standing entries — they're valid reference grants, not just SEO
-    if is_standing:
-        hits = min(hits, 40)
-        hits = int(hits * 0.5)
     return min(100, hits)
 
 
@@ -426,10 +422,13 @@ def normalize_url(url: str) -> str:
 
 
 def is_valid_grant_url(url: str) -> bool:
-    """Reject empty, non-http, too-short, or homepage-only URLs.
+    """Reject empty, non-http, or too-short URLs.
 
-    Homepage-only links (https://example.org/ with no path) carry no
-    grant detail — they were a major false-positive source.
+    Homepage-only links (https://example.org/ with no path) are ACCEPTED
+    since v2.7 — several real funders run the call from their root domain,
+    and the old rejection was silently dropping valid grants. Depth is
+    still rewarded downstream (extract_grant_link scores deep call pages
+    higher), but a bare homepage is no longer a validity failure.
     """
     if not url or not isinstance(url, str):
         return False
@@ -442,12 +441,135 @@ def is_valid_grant_url(url: str) -> bool:
         parts = urlparse(u)
         if not parts.netloc or "." not in parts.netloc:
             return False
-        # Reject bare homepages (no path beyond "/")
-        if parts.path in ("", "/") and not parts.query:
-            return False
     except (ValueError, AttributeError):
         return False
     return True
+
+
+# ──────────────────────────────────────────────────────────────
+# GRANT-LINK EXTRACTION (v2.6)
+# Aggregator posts (TerraViva, fundsforNGOs, Opportunity Desk, RSS
+# feeds…) link OUT to the real funder call page, but the scraper used
+# to store only the aggregator permalink. Every record now carries
+# both: `source_link` (aggregator page we scraped) and `grant_link`
+# (best-guess funder/official call URL found inside the post HTML).
+# `url` stays the primary action URL = grant_link when valid, else
+# source_link (back-compat for UI / Supabase / dedupe).
+# ──────────────────────────────────────────────────────────────
+
+# Link domains that are never a grant call page.
+SKIP_LINK_DOMAINS = frozenset({
+    "facebook.com", "twitter.com", "x.com", "linkedin.com",
+    "instagram.com", "youtube.com", "youtu.be", "pinterest.com",
+    "whatsapp.com", "wa.me", "t.me", "telegram.me",
+    "gravatar.com", "wordpress.com", "wordpress.org",
+    "google.com", "googletagmanager.com", "google-analytics.com",
+    "addtoany.com", "sharethis.com", "feedburner.com",
+    "paypal.com", "patreon.com", "buymeacoffee.com",
+    "wikipedia.org",
+})
+
+# Anchor-text signals: the link really points at the call.
+GRANT_ANCHOR_HINTS = (
+    "apply", "application", "guidelines", "guidance", "official",
+    "call page", "call for", "request for proposal", "letter of inquiry",
+    "concept note", "how to apply", "eligibility", "submit",
+    "more information", "learn more about the grant",
+    "grant details", "funding opportunity", "program page",
+    "candidatura", "inscreva-se", "candidatez", "postuler",
+    "appel à", "convocatoria", "bando", "edital",
+)
+
+# URL-path signals: the href looks like a call page.
+GRANT_PATH_HINTS = (
+    "/grant", "/fund", "/apply", "/call", "/edital", "/chamada",
+    "/oportun", "/opportunit", "/fellowship", "/scholarship",
+    "/award", "/proposal", "/loi", "/concept", "/guideline",
+    "/financ", "/subven", "/beca", "/bourse", "/prize",
+)
+
+
+def _link_domain(href: str) -> str:
+    try:
+        host = urlparse(href).netloc.lower()
+    except (ValueError, AttributeError):
+        return ""
+    if host.startswith("www."):
+        host = host[4:]
+    return host
+
+
+def extract_grant_link(html_raw: str, source_url: str = "",
+                       funder_hint: str = "") -> str:
+    """Pick the best outbound funder/call URL from a post's raw HTML.
+
+    Returns "" when nothing qualifies. Never returns the aggregator's
+    own permalink, social/share links, images, or anchors. Funder
+    homepages ARE valid candidates since v2.7 (scored like any other
+    link — deep call pages still outscore them via path hints).
+    """
+    if not html_raw or "<a" not in html_raw.lower():
+        return ""
+    try:
+        soup = BeautifulSoup(html_raw, "lxml")
+        anchors = soup.find_all("a", href=True) if soup else []
+    except Exception:
+        return ""
+    src_dom = _link_domain(source_url or "")
+    funder_tokens = [t for t in re.split(r"[^a-z0-9]+", (funder_hint or "").lower())
+                     if len(t) >= 4]
+
+    candidates: list[tuple[int, str]] = []
+    try:
+        anchor_list = list(anchors)
+    except Exception:
+        return ""
+    for a in anchor_list:
+        href = (a.get("href") or "").strip()
+        if not href or href.startswith(("#", "mailto:", "tel:", "javascript:")):
+            continue
+        href = urljoin(source_url or "https://example.org/", href)
+        if not is_valid_grant_url(href):
+            continue
+        dom = _link_domain(href)
+        if not dom or dom in SKIP_LINK_DOMAINS:
+            continue
+        if src_dom and dom == src_dom:
+            continue  # aggregator self-link, not the funder call
+        # Skip obvious non-call assets.
+        low_href = href.lower()
+        if re.search(r"\.(png|jpe?g|gif|svg|webp|css|js|ico|pdf)(\?|$)", low_href):
+            # PDFs *can* be guidelines, but bare asset links without any
+            # grant anchor text are noise — require an anchor hint.
+            anchor = (a.get_text(" ", strip=True) or "").lower()
+            if not any(h in anchor for h in GRANT_ANCHOR_HINTS):
+                continue
+        anchor = (a.get_text(" ", strip=True) or "").lower()
+        path = urlparse(href).path.lower()
+        score = 0
+        if any(h in anchor for h in GRANT_ANCHOR_HINTS):
+            score += 3
+        if any(h in path for h in GRANT_PATH_HINTS):
+            score += 2
+        if funder_tokens and any(t in dom.replace("-", "") or t in dom
+                                 for t in funder_tokens):
+            score += 2
+        if "cepf" in dom or "cepf" in path or "cepf" in anchor:
+            score += 1  # recurring funder seen bare in aggregator posts
+        if href.startswith("https://"):
+            score += 1
+        if score > 0:
+            candidates.append((score, href))
+    if not candidates:
+        return ""
+    # Highest score wins; tie-break: longest path (deepest call page),
+    # first seen wins remaining ties (stable).
+    best_href, best_key = "", (-1, -1)
+    for score, href in candidates:
+        key = (score, len(urlparse(href).path))
+        if key > best_key:
+            best_key, best_href = key, href
+    return best_href
 
 
 def is_valid_grant_candidate(title: str, description: str = "",
@@ -528,14 +650,61 @@ def is_scrape_hit(title: str, text: str, threshold: int = 8) -> bool:
 async def verify_grant_urls(session, grants, max_check: int = 400):
     """HEAD/GET each grant URL; flag broken + login-wall pages.
 
+    v2.6: grants carry `grant_link` (funder call page) + `source_link`
+    (aggregator page). The primary `url` (= grant_link when present) is
+    checked first; when it is dead but the source_link is alive, `url`
+    falls back to source_link so the record stays actionable.
     Mutates grants in place: sets `url_status` (ok/broken/login_wall/timeout/
     unchecked), `url_status_code`, `url_checked_at`. Returns (kept, dropped).
     """
     checked_at = datetime.now(timezone.utc).isoformat()
     kept, dropped = [], []
+
+    async def _probe(url: str):
+        """Return (verdict, code) where verdict is ok/login_wall/broken/timeout."""
+        try:
+            timeout = aiohttp.ClientTimeout(total=15)
+            async with session.head(url, headers=HEADERS, timeout=timeout,
+                                    allow_redirects=True) as r:
+                code = r.status
+                ctype = r.headers.get("Content-Type", "")
+                if code < 400:
+                    return "ok", code
+        except asyncio.TimeoutError:
+            pass
+        except (aiohttp.ClientError, OSError):
+            pass
+        # HEAD failed or non-2xx: fall back to GET (also catches login walls).
+        try:
+            timeout = aiohttp.ClientTimeout(total=15)
+            async with session.get(url, headers=HEADERS, timeout=timeout,
+                                   allow_redirects=True) as r:
+                code = r.status
+                ctype = r.headers.get("Content-Type", "")
+                if code < 400 and "text/html" in ctype:
+                    snippet = (await r.text())[:2000].lower()
+                    if LOGIN_WALL_RE.search(snippet):
+                        return "login_wall", code
+                if code >= 400:
+                    return "broken", code
+                if code == 405:
+                    return "unchecked", code
+                return "ok", code
+        except asyncio.TimeoutError:
+            return "timeout", None
+        except (aiohttp.ClientError, OSError):
+            return "broken", None
+
     for g in grants:
+        grant_link = (g.get("grant_link") or "").strip()
+        source_link = (g.get("source_link") or g.get("url") or "").strip()
+        # Ordered candidates: funder call page first, aggregator fallback.
+        candidates = []
+        for cand in (grant_link, source_link):
+            if cand and is_valid_grant_url(cand) and cand not in candidates:
+                candidates.append(cand)
         url = g.get("url", "")
-        if not is_valid_grant_url(url):
+        if not candidates:
             g.update(url_status="broken", url_status_code=None,
                      url_checked_at=checked_at)
             dropped.append(g)
@@ -544,60 +713,34 @@ async def verify_grant_urls(session, grants, max_check: int = 400):
             g.setdefault("url_status", "unchecked")
             kept.append(g)
             continue
-        try:
-            timeout = aiohttp.ClientTimeout(total=15)
-            async with session.head(url, headers=HEADERS, timeout=timeout,
-                                    allow_redirects=True) as r:
-                code = r.status
-                ctype = r.headers.get("Content-Type", "")
-        except (asyncio.TimeoutError, aiohttp.ClientError, OSError):
-            try:
-                timeout = aiohttp.ClientTimeout(total=15)
-                async with session.get(url, headers=HEADERS, timeout=timeout,
-                                       allow_redirects=True) as r:
-                    code = r.status
-                    ctype = r.headers.get("Content-Type", "")
-                    if code < 400 and "text/html" in ctype:
-                        snippet = (await r.text())[:2000].lower()
-                        if LOGIN_WALL_RE.search(snippet):
-                            g.update(url_status="login_wall",
-                                     url_status_code=code,
-                                     url_checked_at=checked_at)
-                            dropped.append(g)
-                            continue
-                    else:
-                        snippet = ""
-                if code >= 400:
-                    g.update(url_status="broken", url_status_code=code,
-                             url_checked_at=checked_at)
-                    dropped.append(g)
-                    continue
-                g.update(url_status="ok", url_status_code=code,
-                         url_checked_at=checked_at)
-                kept.append(g)
-                continue
-            except asyncio.TimeoutError:
-                g.update(url_status="timeout", url_status_code=None,
-                         url_checked_at=checked_at)
-                dropped.append(g)
-                continue
-            except (aiohttp.ClientError, OSError):
-                g.update(url_status="broken", url_status_code=None,
-                         url_checked_at=checked_at)
-                dropped.append(g)
-                continue
-        if code >= 400:
-            g.update(url_status="broken", url_status_code=code,
-                     url_checked_at=checked_at)
+        winner, verdict, code = "", "", None
+        for cand in candidates:
+            verdict, code = await _probe(cand)
+            if verdict in ("ok", "unchecked"):
+                winner = cand
+                break
+        if not winner:
+            # v2.6: a dead grant_link must not linger as the primary URL.
+            if grant_link and grant_link == url:
+                g["grant_link"] = ""
+            # Preserve the old quirk: a login-walled primary reads as
+            # login_wall, anything else dead reads broken/timeout.
+            g.update(url_status="login_wall" if verdict == "login_wall" else verdict,
+                     url_status_code=code, url_checked_at=checked_at)
             dropped.append(g)
-        elif code == 405:  # HEAD not allowed — don't punish, leave unchecked
+            continue
+        g["url"] = winner
+        # Keep the pair consistent: winner is one of the two links.
+        if winner == grant_link and not source_link:
+            g["source_link"] = source_link
+        if code == 405:  # HEAD not allowed — don't punish, leave unchecked
             g.update(url_status="unchecked", url_status_code=code,
                      url_checked_at=checked_at)
             kept.append(g)
-        else:
-            g.update(url_status="ok", url_status_code=code,
-                     url_checked_at=checked_at)
-            kept.append(g)
+            continue
+        g.update(url_status="ok", url_status_code=code,
+                 url_checked_at=checked_at)
+        kept.append(g)
     return kept, dropped
 
 
@@ -784,18 +927,17 @@ def temporal_exclude_reason(g: dict, grace_days: int = 0) -> str | None:
 
     Order matters: an explicit CLOSED page signal wins over the date, and
     a past deadline forces exclusion even when the scraper left status
-    at "open"/"unknown" (stale badge, the common leak). Standing entries
-    are curated references — exempt from the date rule (they are already
-    excluded from output by default via `include_standing=False`).
-    NOTE (2026-09): "pending" is not scraper vocabulary — it belongs to the
-    manager manual-insert review workflow (separate review_status column).
-    A stray "pending" reaching here is treated as unknown (kept); the sync
-    layer normalizes it to status=open downstream.
+    at "open"/"unknown" (stale badge, the common leak).
+    NOTE (2026-09): "pending" is not scraper vocabulary — manager manual
+    inserts are auto-approved and flagged with manual_inserted=true instead
+    of going through any review queue. A stray "pending" reaching here is
+    treated as unknown (kept); the sync layer stores it as status=open
+    downstream.
     """
     status = str(g.get("status") or "").strip().lower()
     if status == "closed":
         return "closed"
-    if not g.get("is_standing", False) and is_expired(g.get("deadline", ""), grace_days):
+    if is_expired(g.get("deadline", ""), grace_days):
         return "deadline-passed"
     return None
 
@@ -1133,7 +1275,25 @@ def infer_funder(title: str, description: str = "",
 def make_grant(title, source_name, url, description="", funder="",
                deadline="", amount_max="", amount_min="", currency="",
                country="", region="", categories=None, language="en",
-               status="open", is_standing=False):
+               status="open",
+               grant_link="", source_link="", raw_html=""):
+    # v2.6 dual-link model: `source_link` = aggregator page we scraped,
+    # `grant_link` = outbound funder/official call URL found inside the
+    # post. `url` stays the primary action URL (grant_link when valid,
+    # else source_link) for dedupe/hash/quality + legacy export readers.
+    # The merged Supabase grants table has NO url column — sync writes the
+    # pair only. Callers with raw post HTML pass raw_html= and the link is
+    # auto-extracted; an explicit grant_link= always wins.
+    source_link = (source_link or url or "").strip()
+    auto_link = ""
+    if not grant_link and raw_html:
+        auto_link = extract_grant_link(raw_html, source_url=source_link,
+                                       funder_hint=funder or title)
+    grant_link = (grant_link or auto_link or "").strip()
+    if grant_link and not is_valid_grant_url(grant_link):
+        grant_link = ""
+    primary_url = grant_link or source_link
+    url = primary_url  # primary action URL, used below for uid/hash/quality
     uid = hashlib.md5(f"{source_name}::{url}".encode()).hexdigest()[:12]
     # v2.2: fill funder + currency when the scraper didn't provide them.
     # Explicit values always win; inference only fills blanks.
@@ -1143,10 +1303,10 @@ def make_grant(title, source_name, url, description="", funder="",
         currency = infer_currency(amount_max, f"{title} {description}")
     # v2.5 scope refinement: generic aggregators pass country="GLOBAL",
     # which buried clearly-scoped calls ("… (Uganda)", "entities based in
-    # Canada"). Re-scope from eligibility phrasing — curated standing
-    # entries and explicitly-scoped calls are never touched.
-    if not is_standing and (not (country or "").strip()
-                            or (country or "").strip().upper() == "GLOBAL"):
+    # Canada"). Re-scope from eligibility phrasing — explicitly-scoped
+    # calls are never touched.
+    if (not (country or "").strip()
+            or (country or "").strip().upper() == "GLOBAL"):
         scoped = infer_scope_country(title, description, language)
         if scoped and scoped != "GLOBAL":
             country = scoped
@@ -1154,7 +1314,7 @@ def make_grant(title, source_name, url, description="", funder="",
         country = "GLOBAL"
     blob = f"{title} {description} {funder}".lower()
 
-    base_relevance = score_relevance(blob, is_standing=is_standing)
+    base_relevance = score_relevance(blob)
     # Heavy penalty for likely non-grant posts (news, results, etc.)
     if is_likely_non_grant(title, description):
         base_relevance = min(base_relevance, 10)
@@ -1181,9 +1341,6 @@ def make_grant(title, source_name, url, description="", funder="",
         priority += 5
     if status == "closed":
         priority -= 20
-    # Penalize standing entries in priority (less aggressive — they're valid reference grants)
-    if is_standing:
-        priority = int(priority * 0.6)
 
     days, urgency = compute_deadline_urgency(deadline)
 
@@ -1204,6 +1361,8 @@ def make_grant(title, source_name, url, description="", funder="",
         "source":          source_name,
         "source_id":       uid,              # alias for Supabase compat
         "url":             url,
+        "source_link":     source_link,      # aggregator page scraped
+        "grant_link":      grant_link,       # funder/official call page ("")
         "url_status":      "unchecked",      # filled by verify_grant_urls()
         "url_status_code": None,
         "url_checked_at":  "",
@@ -1227,9 +1386,8 @@ def make_grant(title, source_name, url, description="", funder="",
         "relevance":       base_relevance,
         "priority_score":  max(0, priority),  # clamp to non-negative
         "fetched_at":      datetime.now(timezone.utc).isoformat(),
-        "status":          status,         # open/closed/unknown (grant's temporal state)
-        "grant_status":    status,         # alias for Supabase column
-        "is_standing":     is_standing,    # true for hardcoded reference entries
+        "status":          status,         # single temporal column: open/closed/unknown(rolling)
+        "manual_inserted": False,          # origin flag — scraper rows are never manual (managers set true on insert, auto-approved)
     }
 def _cpath(key): return CACHE_DIR / f"{hashlib.md5(key.encode()).hexdigest()}.json"
 
@@ -1320,6 +1478,24 @@ async def fetch_json(session, url, method="GET", json_body=None, use_cache=True)
 
 def clean_html(html):
     return re.sub(r'\s+', ' ', BeautifulSoup(html or "", "lxml").get_text(" ")).strip()
+
+
+def feed_raw_html(entry) -> str:
+    """Best-effort raw HTML from a feedparser entry for grant-link mining.
+
+    Prefers full <content:encoded> bodies, falls back to summary /
+    description (both often carry the outbound funder <a href> links).
+    """
+    try:
+        content = entry.get("content") if hasattr(entry, "get") else None
+        if content and isinstance(content, list) and content[0].get("value"):
+            return content[0]["value"]
+    except (AttributeError, KeyError, IndexError, TypeError):
+        pass
+    try:
+        return entry.get("summary", "") or entry.get("description", "") or ""
+    except AttributeError:
+        return getattr(entry, "summary", "") or ""
 
 def parse_date(s, dayfirst=False):
     if not s: return ""
@@ -2219,11 +2395,26 @@ def infer_scope_country(title: str, description: str = "",
         code = _lookup_country_alias(sent)
         if code:
             return code
-    # 5. Legacy fallback.
+    # 5. Legacy fallback — but a blob naming 2+ distinct world regions
+    # ("…youth-led groups in Latin America, Africa, Asia") is worldwide,
+    # not whatever region matched first. Single-region/country fallbacks
+    # still re-scope.
     try:
         fb = infer_country(blob, language or "en")
     except (ValueError, AttributeError, TypeError):
         fb = ""
+    _REGION_BUCKETS = frozenset(
+        {"AFRICA", "ASIA", "EUROPE", "EU", "LATAM", "NORTH_AMERICA", "OCEANIA"})
+    if fb in _REGION_BUCKETS:
+        low = blob.lower()
+        seen: set = set()
+        for alias, code in COUNTRY_ALIASES.items():
+            if code not in _REGION_BUCKETS:
+                continue
+            if _hint_hit(low, alias):
+                seen.add("EUROPE" if code == "EU" else code)
+            if len(seen) >= 2:
+                return default
     return fb or default
 
 
@@ -2596,7 +2787,7 @@ async def fetch_eu_tenders(session):
             "published on the Funding & Tenders Portal throughout the year."
         ),
         funder="European Commission",
-        country="EU", language="en", currency="EUR", status="unknown", is_standing=True,
+        country="EU", language="en", currency="EUR", status="unknown",
         categories=["EU","Horizon","LIFE","Creative Europe","Erasmus","environment","culture"],
     ))
     console.print(f"  [cyan]eu-funding[/] → {len(grants)}")
@@ -2618,7 +2809,7 @@ async def fetch_eea_grants(session):
             "engagement, human rights, and cultural cooperation."
         ),
         funder="EEA and Norway Grants",
-        country="EU", language="en", currency="EUR", status="unknown", is_standing=True,
+        country="EU", language="en", currency="EUR", status="unknown",
         categories=["environment","climate","civil society","culture","human rights"],
     ))
     console.print(f"  [cyan]eeagrants.org[/] → {len(grants)}")
@@ -2641,7 +2832,7 @@ async def fetch_gulbenkian(session):
             "organizations in Portugal and internationally."
         ),
         funder="Calouste Gulbenkian Foundation",
-        country="EU", language="en", currency="EUR", status="unknown", is_standing=True,
+        country="EU", language="en", currency="EUR", status="unknown",
         categories=["arts","environment","science","culture","climate","ocean"],
     ))
     console.print(f"  [cyan]gulbenkian[/] → {len(grants)}")
@@ -2663,7 +2854,7 @@ async def fetch_doen(session):
         ),
         funder="Doen Foundation",
         country="EU", language="en",
-        currency="EUR", status="unknown", is_standing=True,
+        currency="EUR", status="unknown",
         categories=["culture","green economy","arts","social cohesion"],
     ))
     console.print(f"  [cyan]doen.nl[/] → {len(grants)}")
@@ -2685,7 +2876,7 @@ async def fetch_porticus(session):
             "Asia, and the Middle East. Multi-year core and programme grants."
         ),
         funder="Porticus Foundation",
-        country="GLOBAL", language="en", status="unknown", is_standing=True,
+        country="GLOBAL", language="en", status="unknown",
         categories=["education","environment","climate justice","youth","global"],
     ))
     console.print(f"  [cyan]porticus.com[/] → {len(grants)}")
@@ -2758,10 +2949,12 @@ async def fetch_unesco(session):
         for e in feed.entries[:20]:
             title = e.get("title","")
             link  = e.get("link", "https://www.unesco.org")
-            desc  = clean_html(e.get("summary",""))
+            raw = feed_raw_html(e)
+            desc  = clean_html(raw)
             grants.append(make_grant(title=title, source_name=f"{SOURCE}:rss", url=link,
                 description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL",
-                funder="UNESCO", deadline=extract_deadline(desc)))
+                funder="UNESCO", deadline=extract_deadline(desc),
+                raw_html=raw))
     console.print(f"  [cyan]unesco.org[/] → {len(grants)}")
     return grants
 
@@ -2807,7 +3000,7 @@ async def fetch_ycjf(session):
         ),
         funder="Youth Climate Justice Fund",
         amount_max="40000", currency="USD",
-        country="GLOBAL", language="en", is_standing=True,
+        country="GLOBAL", language="en",
         categories=["youth","climate justice","socio-environmental","grassroots","global south"],
     ))
     console.print(f"  [cyan]ycjf.org[/] → {len(grants)}")
@@ -2829,7 +3022,7 @@ async def fetch_cjrfund(session):
             "knowledge, and youth leadership in climate action."
         ),
         funder="Climate Justice Resilience Fund",
-        country="GLOBAL", language="en", status="unknown", is_standing=True,
+        country="GLOBAL", language="en", status="unknown",
         categories=["climate justice","women","indigenous","community","resilience"],
     ))
     console.print(f"  [cyan]cjrfund.org[/] → {len(grants)}")
@@ -2857,7 +3050,7 @@ async def fetch_moleskine_pioneers(session):
         ),
         funder="Moleskine Foundation",
         amount_max="5000", currency="EUR",
-        country="GLOBAL", language="en", status="unknown", is_standing=True,
+        country="GLOBAL", language="en", status="unknown",
         deadline=extract_deadline(text_extra),
         categories=["arts","creativity","social change","youth","global"],
     ))
@@ -2881,14 +3074,16 @@ async def fetch_fundsforngos(session):
         if not data or not isinstance(data, list): continue
         for p in data:
             title   = clean_html(p.get("title",{}).get("rendered",""))
-            content = clean_html(p.get("content",{}).get("rendered",""))
+            raw_html = p.get("content",{}).get("rendered","") or ""
+            content = clean_html(raw_html)
             url     = p.get("link","")
             if not is_scrape_hit(title, content):
                 continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=content[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(content),
-                amount_max=extract_amount(content)))
+                amount_max=extract_amount(content),
+                raw_html=raw_html))
     # v2.2: main RSS feed — full content with "Deadline: 18-Sep-26" lines
     # and <category> tags (missed by the search API above).
     rss = await fetch(session, "https://www2.fundsforngos.org/feed/")
@@ -2897,14 +3092,16 @@ async def fetch_fundsforngos(session):
         for e in feed.entries[:50]:
             title = e.get("title","")
             link  = e.get("link","")
-            desc  = clean_html(e.get("summary",""))
+            raw = feed_raw_html(e)
+            desc  = clean_html(raw)
             tags  = [t.get("term","") for t in e.get("tags",[])]
             if not is_scrape_hit(title, f"{desc} {' '.join(tags)}"):
                 continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc), amount_max=extract_amount(desc),
-                categories=[t for t in tags if t][:5]))
+                categories=[t for t in tags if t][:5],
+                raw_html=raw))
     # Also scrape their listing page
     html = await fetch(session, "https://www2.fundsforngos.org/listing/")
     if html:
@@ -2941,7 +3138,8 @@ async def fetch_terraviva(session):
             continue
         for p in data:
             title   = clean_html(p.get("title", {}).get("rendered", ""))
-            content = clean_html(p.get("content", {}).get("rendered", ""))
+            raw_html = p.get("content", {}).get("rendered", "") or ""
+            content = clean_html(raw_html)
             url     = p.get("link", "")
             if not is_scrape_hit(title, content):
                 continue
@@ -2951,7 +3149,8 @@ async def fetch_terraviva(session):
                 country="GLOBAL", language="en",
                 deadline=extract_deadline(content),
                 amount_max=extract_amount(content),
-                categories=["environment", "developing world"]))
+                categories=["environment", "developing world"],
+                raw_html=raw_html))
     console.print(f"  [cyan]terravivagrants.org[/] → {len(grants)}")
     return grants
 
@@ -3001,6 +3200,7 @@ async def fetch_afac(session):
             funder="Arab Fund for Arts and Culture (AFAC)",
             country="MENA", language="en", status=status,
             deadline=dl or extract_deadline(body),
+            raw_html=detail or "",
             amount_max=extract_amount(body),
             categories=["mena", "art", "culture"]))
     console.print(f"  [cyan]arabculturefund.org[/] → {len(grants)}")
@@ -3020,14 +3220,16 @@ async def fetch_ofa(session):
     for e in feed.entries[:40]:
         title = e.get("title", "")
         link = e.get("link", "")
-        desc = clean_html(e.get("summary", ""))
+        raw = feed_raw_html(e)
+        desc = clean_html(raw)
         tags = [t.get("term", "") for t in e.get("tags", [])]
         if not is_scrape_hit(title, f"{desc} {' '.join(tags)}"):
             continue
         grants.append(make_grant(title=title, source_name=SOURCE, url=link,
             description=desc[:MAX_DESCRIPTION_LEN], country="AFRICA", language="en",
             deadline=extract_deadline(desc), amount_max=extract_amount(desc),
-            categories=[t for t in tags if t][:5]))
+            categories=[t for t in tags if t][:5],
+            raw_html=raw))
     console.print(f"  [cyan]opportunitiesforafricans.com[/] → {len(grants)}")
     return grants
 
@@ -3259,13 +3461,15 @@ async def fetch_opportunity_desk(session):
         for e in feed.entries[:60]:
             title = e.get("title","")
             link  = e.get("link","")
-            desc  = clean_html(e.get("summary",""))
+            raw = feed_raw_html(e)
+            desc  = clean_html(raw)
             if not is_scrape_hit(title, desc):
                 continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc),
-                amount_max=extract_amount(desc)))
+                amount_max=extract_amount(desc),
+                raw_html=raw))
     console.print(f"  [cyan]opportunitydesk.org[/] → {len(grants)}")
     return grants
 
@@ -3280,7 +3484,8 @@ async def fetch_opportunities_for_youth(session):
         for e in feed.entries[:60]:
             title = e.get("title","")
             link  = e.get("link","")
-            desc  = clean_html(e.get("summary",""))
+            raw = feed_raw_html(e)
+            desc  = clean_html(raw)
             tags  = [t.get("term","") for t in e.get("tags",[])]
             if not is_scrape_hit(title, f"{desc} {' '.join(tags)}"):
                 continue
@@ -3294,7 +3499,8 @@ async def fetch_opportunities_for_youth(session):
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:MAX_DESCRIPTION_LEN], country=country, language="en",
                 deadline=extract_deadline(desc), amount_max=extract_amount(desc),
-                categories=tags[:5]))
+                categories=tags[:5],
+                raw_html=raw))
     console.print(f"  [cyan]opportunitiesforyouth.org[/] → {len(grants)}")
     return grants
 
@@ -3313,7 +3519,7 @@ async def fetch_eflux(session):
             "calls for exhibitions, residencies, grants, fellowships, and commissions."
         ),
         funder="e-flux",
-        country="GLOBAL", language="en", status="unknown", is_standing=True,
+        country="GLOBAL", language="en", status="unknown",
         categories=["art","culture","open call","residency","activism"],
     ))
     console.print(f"  [cyan]e-flux.com[/] → {len(grants)}")
@@ -3345,7 +3551,8 @@ async def fetch_sustainable_practice(session):
             grants.append(make_grant(title=title, source_name=SOURCE, url=url,
                 description=text, country="GLOBAL", language="en",
                 deadline=extract_deadline(text), amount_max=extract_amount(text),
-                categories=["art","environment","sustainability","open call"]))
+                categories=["art","environment","sustainability","open call"],
+                raw_html=detail_html or ""))
     console.print(f"  [cyan]sustainablepractice.org[/] → {len(grants)}")
     return grants
 
@@ -3360,13 +3567,15 @@ async def fetch_impactfunding_substack(session):
         for e in feed.entries[:15]:
             title = e.get("title","")
             link  = e.get("link","")
-            desc  = clean_html(e.get("summary",""))
+            raw = feed_raw_html(e)
+            desc  = clean_html(raw)
             if not is_scrape_hit(title, desc):
                 continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc),
-                categories=["aggregator","social enterprise","environment","global"]))
+                categories=["aggregator","social enterprise","environment","global"],
+                raw_html=raw))
     console.print(f"  [cyan]impactfunding substack[/] → {len(grants)}")
     return grants
 
@@ -3381,13 +3590,15 @@ async def fetch_global_south_opportunities(session):
         for e in feed.entries[:40]:
             title = e.get("title","")
             link  = e.get("link","")
-            desc  = clean_html(e.get("summary",""))
+            raw = feed_raw_html(e)
+            desc  = clean_html(raw)
             if not is_scrape_hit(title, desc):
                 continue
             grants.append(make_grant(title=title, source_name=SOURCE, url=link,
                 description=desc[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
                 deadline=extract_deadline(desc), amount_max=extract_amount(desc),
-                categories=["global south","development","environment"]))
+                categories=["global south","development","environment"],
+                raw_html=raw))
     console.print(f"  [cyan]globalsouthopportunities.com[/] → {len(grants)}")
     return grants
 
@@ -3410,7 +3621,7 @@ async def fetch_latam(session):
             "flexible para protección, seguridad y acción urgente."
         ),
         funder="Fondo Acción Urgente",
-        country="LATAM", language="es", status="unknown", is_standing=True,
+        country="LATAM", language="es", status="unknown",
         categories=["feminist","human rights","environmental defenders","Latin America"],
     ))
     grants.append(make_grant(
@@ -3424,7 +3635,7 @@ async def fetch_latam(session):
             "Suriname, and Guyana."
         ),
         funder="Amazon Conservation Team",
-        country="LATAM", language="en", status="unknown", is_standing=True,
+        country="LATAM", language="en", status="unknown",
         categories=["Amazon","indigenous","conservation","rainforest","Latin America"],
     ))
     console.print(f"  [cyan]LATAM sources[/] → {len(grants)}")
@@ -3482,7 +3693,7 @@ async def fetch_africa(session):
         ),
         funder="Tony Elumelu Foundation (TEF)",
         amount_max="5000", currency="USD",
-        country="AFRICA", language="en", status="unknown", is_standing=True,
+        country="AFRICA", language="en", status="unknown",
         categories=["entrepreneurship","startup","seed funding","africa","youth"],
     ))
 
@@ -3498,7 +3709,7 @@ async def fetch_africa(session):
             "resource management, and climate resilience across sub-Saharan Africa."
         ),
         funder="African Wildlife Foundation (AWF)",
-        country="AFRICA", language="en", status="unknown", is_standing=True,
+        country="AFRICA", language="en", status="unknown",
         categories=["wildlife","conservation","community","biodiversity","africa"],
     ))
 
@@ -3653,7 +3864,8 @@ async def fetch_rss(session):
             for e in feed.entries[:40]:
                 title = e.get("title","")
                 link  = e.get("link", url)
-                desc  = clean_html(e.get("summary") or e.get("description",""))
+                raw = feed_raw_html(e)
+                desc  = clean_html(raw)
                 # v2.1: org-news feeds only pass with explicit grant
                 # vocabulary (or deadline+amount). The old relevance>=3
                 # gate let 600+ news rows into prod with zero deadlines.
@@ -3668,7 +3880,8 @@ async def fetch_rss(session):
                 result.append(make_grant(title=title, source_name=f"rss:{name}",
                     url=link, description=desc[:MAX_DESCRIPTION_LEN], country=country,
                     language=lang, deadline=extract_deadline(desc),
-                    amount_max=extract_amount(desc)))
+                    amount_max=extract_amount(desc),
+                    raw_html=raw))
         except Exception as ex:
             logging.debug(f"RSS {url}: {ex}")
         return result
@@ -3697,7 +3910,7 @@ async def fetch_global_greengrants(session):
             "and environmental health. Rolling applications with priority to underrepresented groups."
         ),
         funder="Global Greengrants Fund",
-        country="GLOBAL", language="en", currency="USD", status="unknown", is_standing=True,
+        country="GLOBAL", language="en", currency="USD", status="unknown",
         categories=["grassroots","environment","indigenous","climate justice","small grants"],
     ))
     console.print(f"  [cyan]greengrants.org[/] → {len(grants)}")
@@ -3718,7 +3931,7 @@ async def fetch_wellbeing_economy(session):
             "and capacity-building resources for post-growth, wellbeing-centered economic projects."
         ),
         funder="Wellbeing Economy Alliance",
-        country="GLOBAL", language="en", status="unknown", is_standing=True,
+        country="GLOBAL", language="en", status="unknown",
         categories=["wellbeing economy","community","environment","advocacy","post-growth"],
     ))
     console.print(f"  [cyan]weall.org[/] → {len(grants)}")
@@ -3767,7 +3980,7 @@ async def fetch_emerging_climate_champions(session):
         ),
         funder="Enlight Foundation / Lever For Change / Patchwork Collective",
         amount_max="1000000", currency="USD",
-        country="GLOBAL", language="en", status="unknown", is_standing=True,
+        country="GLOBAL", language="en", status="unknown",
         categories=["youth","climate","social change","large grant","global south"],
     ))
     console.print(f"  [cyan]emerging climate champions[/] → {len(grants)}")
@@ -3792,7 +4005,7 @@ async def fetch_francophone(session):
             "Asie et Outre-mer. Subventions et financements pour projets à impact."
         ),
         funder="Agence Française de Développement (AFD)",
-        country="FR", language="fr", currency="EUR", status="unknown", is_standing=True,
+        country="FR", language="fr", currency="EUR", status="unknown",
         categories=["development","climate","biodiversity","Africa","French"],
     ))
     grants.append(make_grant(
@@ -3805,7 +4018,7 @@ async def fetch_francophone(session):
             "projets réguliers pour associations et organisations à but non lucratif en France."
         ),
         funder="Fondation de France",
-        country="FR", language="fr", currency="EUR", status="unknown", is_standing=True,
+        country="FR", language="fr", currency="EUR", status="unknown",
         categories=["environment","solidarity","culture","education","French"],
     ))
     console.print(f"  [cyan]Francophone sources[/] → {len(grants)}")
@@ -3829,7 +4042,7 @@ async def fetch_hispanophone(session):
             "países socios de América Latina, África y Asia."
         ),
         funder="Cooperación Española / MAEC-AECID",
-        country="ES", language="es", currency="EUR", status="unknown", is_standing=True,
+        country="ES", language="es", currency="EUR", status="unknown",
         categories=["development","culture","education","cooperation","Spanish"],
     ))
     grants.append(make_grant(
@@ -3842,7 +4055,7 @@ async def fetch_hispanophone(session):
             "cultura, ciencia y tecnología."
         ),
         funder="Fundación Carolina",
-        country="ES", language="es", currency="EUR", status="unknown", is_standing=True,
+        country="ES", language="es", currency="EUR", status="unknown",
         categories=["scholarships","environment","culture","science","Latin America"],
     ))
     console.print(f"  [cyan]Hispanophone sources[/] → {len(grants)}")
@@ -3946,7 +4159,7 @@ async def fetch_asia(session):
         ),
         funder="Keidanren Nature Conservation Fund / Nippon Keidanren",
         amount_max="20000000", currency="JPY",
-        country="ASIA", language="en", status="unknown", is_standing=True,
+        country="ASIA", language="en", status="unknown",
         categories=["biodiversity","conservation","nature","asia","oceania"],
     ))
 
@@ -3962,7 +4175,7 @@ async def fetch_asia(session):
         ),
         funder="HCLFoundation",
         amount_max="50000000", currency="INR",
-        country="IN", language="en", status="unknown", is_standing=True,
+        country="IN", language="en", status="unknown",
         categories=["water","biodiversity","environment","climate","community"],
     ))
 
@@ -3977,7 +4190,7 @@ async def fetch_asia(session):
             "US-Japan exchange, Middle East peace, and Pacific Islands development."
         ),
         funder="Sasakawa Peace Foundation",
-        country="ASIA", language="en", status="unknown", is_standing=True,
+        country="ASIA", language="en", status="unknown",
         categories=["peace","security","maritime","women","exchange","development"],
     ))
 
@@ -4003,7 +4216,7 @@ async def fetch_pollination_project(session):
             "early-stage, community-led initiatives with strong social impact potential."
         ),
         funder="The Pollination Project",
-        country="GLOBAL", language="en", currency="USD", status="unknown", is_standing=True,
+        country="GLOBAL", language="en", currency="USD", status="unknown",
         categories=["grassroots","environment","social justice","small grants","seed funding"],
     ))
     console.print(f"  [cyan]pollinationproject.org[/] → {len(grants)}")
@@ -4024,7 +4237,7 @@ async def fetch_globalgiving(session):
             "where donations are matched by corporate and foundation partners."
         ),
         funder="GlobalGiving Foundation",
-        country="GLOBAL", language="en", currency="USD", status="unknown", is_standing=True,
+        country="GLOBAL", language="en", currency="USD", status="unknown",
         categories=["crowdfunding","capacity building","environment","community","disaster relief"],
     ))
     console.print(f"  [cyan]globalgiving.org[/] → {len(grants)}")
@@ -4267,7 +4480,7 @@ def save_json(grants, path, meta=None):
 def save_csv(grants, path):
     if not grants: return
     fields = ["id","title","grant_type","grant_types","highlights","priority_score","quality_score",
-              "content_hash","funder","source","url","url_status","url_status_code","description",
+              "content_hash","funder","source","url","source_link","grant_link","url_status","url_status_code","description",
               "deadline","urgency","deadline_days","amount_max","amount_min","currency","amount_usd",
               "country","region","categories","language","relevance","status","fetched_at"]
     with open(path,"w",newline="",encoding="utf-8") as f:
@@ -4328,9 +4541,9 @@ def print_table(grants):
 #  ORCHESTRATOR
 # ══════════════════════════════════════════════════════════════
 
-async def run_radar(sources_filter, country_filter, keywords,
-                   category_filter, highlight_filter, urgent_only, min_amount,
-                   refresh, min_relevance, output_prefix, include_standing=False,
+async def run_radar(sources_filter, country_filter, keywords, category_filter,
+                   highlight_filter, urgent_only, min_amount,
+                   refresh, min_relevance, output_prefix,
                    min_signals=MIN_SIGNALS_DEFAULT, verify_urls=True,
                    require_terms=True, exclude_closed=True, exclude_expired=True,
                    expired_grace_days=0):
@@ -4385,9 +4598,6 @@ async def run_radar(sources_filter, country_filter, keywords,
     console.print(f"[green]✓ URL/shape gate:[/] {len(all_grants)} kept ({pre - len(all_grants)} dropped)")
 
     unique    = deduplicate(all_grants)
-    # By default, exclude standing/reference entries from output
-    if not include_standing:
-        unique = [g for g in unique if not g.get("is_standing", False)]
 
     # 2. Verify URLs live (HEAD → GET fallback; flags broken/login walls)
     url_dropped = []
@@ -4406,7 +4616,7 @@ async def run_radar(sources_filter, country_filter, keywords,
             blob = f"{g.get('title','')} {g.get('description','')} {g.get('funder','')}"
             has_terms = bool(GRANT_TERMS_RE.search(blob))
             has_both = bool(g.get("deadline")) and bool(g.get("amount_max"))
-            if has_terms or has_both or g.get("is_standing"):
+            if has_terms or has_both:
                 gated.append(g)
         unique = gated
         console.print(f"[green]✓ Grant-terms gate:[/] {len(unique)} kept ({pre - len(unique)} dropped)")
@@ -4445,11 +4655,10 @@ async def run_radar(sources_filter, country_filter, keywords,
     filtered = [g for g in filtered
                 if g["relevance"] >= min_relevance or _complete(g)]
     # Signal gate: has_grant_signals() must clear the bar (deadline/amount/
-    # grant-terms/currency evidence). Standing entries are exempt (hand-written).
+    # grant-terms/currency evidence).
     pre = len(filtered)
     filtered = [g for g in filtered
-                if g.get("is_standing")
-                or has_grant_signals(g.get("title", ""), g.get("description", ""),
+                if has_grant_signals(g.get("title", ""), g.get("description", ""),
                                      g.get("deadline", ""), g.get("amount_max", "")) >= min_signals]
     console.print(f"[green]✓ Signal gate (≥{min_signals}):[/] {len(filtered)} kept ({pre - len(filtered)} dropped)")
     # 4. Temporal gate (v2.4): never ship dead calls. Drops grants whose
@@ -4548,8 +4757,6 @@ async def run_radar(sources_filter, country_filter, keywords,
 @click.option("--list-sources", is_flag=True)
 @click.option("--list-types", is_flag=True,
               help="Show available grant types and highlights")
-@click.option("--include-standing", is_flag=True,
-              help="Include reference/standing entries (omitted by default)")
 @click.option("--include-closed", is_flag=True,
               help="Keep grants whose page says CLOSED (dropped by default)")
 @click.option("--include-expired", is_flag=True,
@@ -4558,7 +4765,7 @@ async def run_radar(sources_filter, country_filter, keywords,
               help="Grace window in days: deadlines this recent still ship (default 0)")
 def main(country, sources, keywords, category, highlight, urgent, min_amount,
          refresh, min_score, min_signals, verify_urls, require_terms,
-         output, list_sources, list_types, include_standing,
+         output, list_sources, list_types,
          include_closed, include_expired, expired_grace_days):
     """
     \b
@@ -4586,7 +4793,7 @@ def main(country, sources, keywords, category, highlight, urgent, min_amount,
     logging.basicConfig(
         filename=LOG_DIR/f"radar_{datetime.now().strftime('%Y%m%d')}.log",
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    asyncio.run(run_radar(sources, country, keywords, category, highlight, urgent, min_amount, refresh, min_score, output, include_standing,
+    asyncio.run(run_radar(sources, country, keywords, category, highlight, urgent, min_amount, refresh, min_score, output,
                           min_signals=min_signals, verify_urls=verify_urls, require_terms=require_terms,
                           exclude_closed=not include_closed, exclude_expired=not include_expired,
                           expired_grace_days=expired_grace_days))

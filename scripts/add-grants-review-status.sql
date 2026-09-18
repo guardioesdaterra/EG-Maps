@@ -3,6 +3,11 @@
 --   SQL editor (service role). The sandbox CLI cannot hold a direct DB
 --   session, so this file is the canonical one-shot script.
 --
+-- SUPERSEDED by scripts/grants-manual-inserted-links.sql (v2.7): the
+-- review_status/reviewed/rejection_reason workflow is removed entirely —
+-- manual inserts are auto-approved via manual_inserted=true. Kept for
+-- history only; do NOT run this file on current databases.
+--
 -- NEW MODEL — two independent axes, two separate columns:
 --   1. Temporal state  → status:        open / closed  (+ hidden quarantine)
 --   2. Review workflow → review_status: pending / approved (grants table only)

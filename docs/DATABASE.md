@@ -27,124 +27,77 @@ Indexes: PK on `id`; B-tree on `(latitude, longitude)`, `source`, `type`
 
 ---
 
-### `scraped_grants` (fresh uplod after 2026-09-17 reset — repopulated by CI scrape)
+### `grants` (merged — ex-`scraped_grants`, repopulated by CI scrape)
 
-Auto-scraped grant opportunities from 60+ sources (see `scripts/grants.py`).
-Client fetches from Supabase, never from repo fixtures.
-
-**Status model (2026-09-17):** `status` is temporal only — `open`/`closed`
-(+`hidden` manager quarantine). `pending` NEVER appears here; it belongs
-exclusively to the manager manual-insert review workflow (`grants.review_status`
-pending/approved — see `scripts/add-grants-review-status.sql`). The sync layer
-(`scripts/sync-grants-to-supabase.ts`) normalizes unknown/dateless scrapes to
-`open`. 2026-09-17: table hard-wiped (5,124 pre-v2.4 legacy rows incl. 119
-pending / 74 closed / 64 expired-but-open) and left for the 2-hour CI cron to
-repopulate fresh.
+Single grants table: the old manager-only `grants` table was deleted and
+`scraped_grants` renamed to `grants`. One temporal column — `status`
+(`open`/`closed`/`expired`/`hidden`) — one text `deadline`, and the v2.6
+dual-link pair (`grant_link` = funder page, `source_link` = aggregator page;
+**no `url` column** — action URL is `grant_link || source_link`). No review
+queue: manual inserts are auto-approved via `manual_inserted=true`. Removed
+columns: `url`, `is_standing`, `grant_status`, `deadline_days`,
+`deadline_date`, `reviewed/*`, `review_notes`, `review_status`,
+`rejection_reason`, `hidden`, `viewed`. Client fetches from Supabase, never
+from repo fixtures. Edge logic lives in `supabase/functions/grants/index.ts`.
 
 | Column | Type | Nullable | Default |
 |--------|------|----------|---------|
 | `id` | `uuid` | NO | `gen_random_uuid()` |
-| `source_id` | `text` | NO | |
-| `title` | `text` | NO | |
+| `source_id` | `text` | YES | scraper uid (`md5(source::url)[:12]`) — natural key with `source` |
+| `title` | `text` | YES | |
 | `funder` | `text` | NO | `''` |
-| `source` | `text` | NO | |
-| `url` | `text` | NO | |
+| `source` | `text` | YES | scraper key (`fundsforngos`, `ycjf`, `manager`, `crew`…) |
 | `description` | `text` | NO | `''` |
-| `deadline` | `text` | NO | `''` |
-| `amount_max` | `text` | NO | `''` |
+| `deadline` | `text` | NO | `''` — single deadline column (ISO date or `''` when rolling) |
+| `amount_max` | `text` | NO | `''` (raw fragment) |
 | `amount_min` | `text` | NO | `''` |
 | `currency` | `text` | NO | `''` |
-| `country` | `text` | NO | `''` |
+| `country` | `text` | NO | `''` (`GLOBAL` when worldwide) |
 | `region` | `text` | NO | `''` |
 | `categories` | `text[]` | YES | `{}` |
 | `language` | `text` | NO | `'en'` |
 | `relevance` | `integer` | NO | `0` |
-| `status` | `text` | NO | `'open'` — temporal open/closed (+hidden); NEVER pending |
+| `status` | `text` | NO | `'open'` — the ONLY state column: open/closed/expired/hidden |
 | `fetched_at` | `timestamp with tz` | NO | `now()` |
 | `created_at` | `timestamp with tz` | NO | `now()` |
 | `updated_at` | `timestamp with tz` | YES | `now()` (auto via trigger) |
-| `amount_usd` | `numeric` | YES | |
-| `deadline_days` | `integer` | YES | |
-| `reviewed` | `boolean` | YES | `false` |
-| `grant_type` | `text` | YES | `'general'` |
-| `grant_types` | `text[]` | YES | `{}` (v2) |
-| `grant_status` | `text` | YES | `'unknown'` — temporal alias `open/closed/unknown` (v2) |
+| `amount_usd` | `numeric` | YES | parsed approx. USD |
+| `location_name` | `text` | NO | `''` (manager/crew rows) |
+| `latitude` / `longitude` | `numeric` | YES | manager/crew rows |
+| `category` | `text` | NO | `'environment'` (manager/crew rows) |
+| `grant_type` | `text` | NO | `'general'` |
+| `grant_types` | `text[]` | YES | `{}` |
 | `highlights` | `text[]` | YES | `{}` |
-| `urgency` | `text` | YES | |
-| `priority_score` | `integer` | YES | `0` |
-| `content_hash` | `text` | YES | dedupe hash (v2) |
-| `quality_score` | `integer` | NO | `0` — composite 0-100 (v2) |
-| `url_status` | `text` | NO | `'unchecked'` — `ok/broken/login_wall/timeout/blocked/unchecked` (v2) |
-| `url_status_code` | `integer` | YES | (v2) |
-| `url_checked_at` | `timestamp with tz` | YES | (v2) |
-| `last_seen_at` | `timestamp with tz` | NO | `now()` (v2) |
-| `deadline_date` | `date` | YES | real date for sorting (v2) |
-| `review_notes` | `text` | NO | `''` — quarantine/cleanup trail (v2) |
-| `reviewed_at` | `timestamp with tz` | YES | (v2) |
-| `is_standing` | `boolean` | NO | `false` — hand-written reference entry (v2) |
-| `viewed` | `boolean` | YES | DEPRECATED — use `reviewed` + `status` |
-| `location_name` | `text` | YES | DEPRECATED — scraper never fills geo |
-| `latitude` / `longitude` | `numeric` | YES | DEPRECATED — scraper never fills geo |
-| `category` | `text` | YES | DEPRECATED — use `grant_type` + `grant_types` |
+| `urgency` | `text` | YES | urgent/soon/distant/unknown/expired |
+| `priority_score` | `integer` | NO | `0` |
+| `content_hash` | `text` | YES | dedupe hash |
+| `quality_score` | `integer` | NO | `0` — composite 0-100 |
+| `url_status` | `text` | NO | `'unchecked'` — ok/broken/login_wall/timeout/blocked/unchecked |
+| `url_status_code` | `integer` | YES | |
+| `url_checked_at` | `timestamp with tz` | YES | |
+| `last_seen_at` | `timestamp with tz` | NO | `now()` |
+| `source_link` | `text` | NO | `''` — aggregator page scraped |
+| `grant_link` | `text` | NO | `''` — funder/official call URL (homepage-valid since v2.7) |
+| `manual_inserted` | `boolean` | NO | `false` — true = manager manual insert (auto-approved) |
 
 Schema history: `supabase/migrations/20260914000000_scraped_grants_v2.sql`
-adds the v2 columns + checks + indexes, backfills them, cleans amount-parser
-garbage, and auto-quarantines (reversible, `status='hidden'` + `review_notes`)
-confirmed non-grants (Mongabay news, job postings, calls for papers).
+(v2 columns), `supabase/migrations/20260918000000_scraped_grants_links.sql`
+(dual-link pair), `scripts/grants-manual-inserted-links.sql`
+(`manual_inserted` + review-apparatus removal), then the manual merge
+(delete old `grants`, rename `scraped_grants`→`grants`, drop
+`url`/`is_standing`/`grant_status`/`deadline_days`/`deadline_date`).
 
-Indexes: PK on `id`; B-tree on `source`, `status`, `country`, `relevance`,
-`deadline`, `fetched_at`, plus v2 `(status, priority_score)`, `deadline_date`,
-`quality_score`, `content_hash`, `url_status`, `last_seen_at`.
-
----
-
-### `grants` (0 rows live)
-
-Manager-created grants (manual inserts via edge `create`) and promotions from
-`scraped_grants`. Review workflow lives in `review_status` (pending/approved),
-separate from temporal `status` (open/closed) — see
-`scripts/add-grants-review-status.sql` (edge-function half lives in sibling repo).
-
-| Column | Type | Nullable | Default |
-|--------|------|----------|---------|
-| `id` | `uuid` | NO | `gen_random_uuid()` |
-| `title` | `text` | NO | |
-| `description` | `text` | NO | |
-| `location_name` | `text` | NO | |
-| `latitude` | `numeric` | NO | |
-| `longitude` | `numeric` | NO | |
-| `category` | `text` | NO | `'environment'` |
-| `submitted_by` | `uuid` | NO | |
-| `status` | `text` | NO | `'pending'` — temporal open/closed after review; new inserts start pending |
-| `review_status` | `text` | NO | `'pending'` — review workflow pending/approved (migration `scripts/add-grants-review-status.sql`) |
-| `reviewed_by` | `uuid` | YES | |
-| `reviewed_at` | `timestamp with tz` | YES | |
-| `rejection_reason` | `text` | YES | |
-| `created_at` | `timestamp with tz` | NO | `now()` |
-| `updated_at` | `timestamp with tz` | NO | `now()` |
-| `source` | `text` | YES | |
-| `funder` | `text` | YES | `''` |
-| `url` | `text` | YES | `''` |
-| `amount_max` | `text` | YES | `''` |
-| `amount_min` | `text` | YES | `''` |
-| `currency` | `text` | YES | `''` |
-| `country` | `text` | YES | `''` |
-| `grant_type` | `text` | YES | `'general'` |
-| `priority_score` | `integer` | YES | `0` |
-| `hidden` | `boolean` | YES | `false` |
-| `source_id` | `text` | YES | |
-| `reviewed` | `boolean` | YES | |
-| `deadline` | `text` | YES | `''` |
-| `categories` | `text[]` | YES | `{}` |
-| `amount_usd` | `numeric` | YES | |
-| `highlights` | `text[]` | YES | `{}` |
-| `urgency` | `text` | YES | |
-| `deadline_days` | `integer` | YES | |
-| `region` | `text` | YES | `''` |
-
-Trigger: `grants_updated_at` → `update_updated_at()` on UPDATE
+Indexes: PK on `id`; UNIQUE on `(source_id, source)` (sync natural key);
+B-tree on `source`, `status`, `country`, `relevance`, `deadline`,
+`fetched_at`, `(status, priority_score)`, `quality_score`, `content_hash`,
+`url_status`, `last_seen_at`, `manual_inserted`, `grant_link`.
 
 ---
+
+*The old manager-only `grants` table and its `review_status` workflow were
+deleted in the merge — one `grants` table now (see above), edge logic in
+`supabase/functions/grants/index.ts`. `submitted_by` survives on
+crew/manager rows. `scripts/add-grants-review-status.sql` is history only.*
 
 ### `eg_intern_crew_members` (9 rows)
 
@@ -204,8 +157,7 @@ Crew membership records (active after cleanup).
 | Table | Public Read | Auth Read | Auth Insert | Auth Update | Manager Full |
 |-------|-------------|-----------|-------------|-------------|--------------|
 | `vulcan_observatory` | Yes | Yes | - | - | Yes |
-| `scraped_grants` | Limited | Yes | Anon (scraper) | - | Yes |
-| `grants` | Limited | Own | Own (pending) | Own (pending) | Yes |
+| `grants` | Limited | Yes | Anon (scraper sync) | - | Yes |
 | `community_pins` | Yes | Own | Own | Own | Yes |
 | `eg_intern_crew_members` | - | Own | - | Own | Yes |
 | `grant_comments` | Yes | Own | Own | Own | Yes |

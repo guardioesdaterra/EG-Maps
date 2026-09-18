@@ -323,7 +323,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     window.addEventListener('keydown', handleKeydown)
     window.addEventListener('keydown', handleKeydownPage)
 
-    // Cultural agents (~1MB, sidebar browser only) start as soon as the
+    // Cultural agents (~1MB, map overlay + sidebar browser) start as soon as the
     // claim points are interactive — first paint is never blocked, but agents
     // no longer wait on requestIdleCallback, which could stall for many
     // seconds behind map rendering (the "agents never load" report).

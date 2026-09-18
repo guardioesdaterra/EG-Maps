@@ -183,9 +183,9 @@ export function useObservatoryControls(): ObservatoryControls {
   layerVis.value['foreign'] = true
   layerVis.value['enterprise_hq'] = false
   layerVis.value['heatmap'] = false
-  // Cultural agents/points never render on the map (sidebar browser only),
-  // so the map layer stays off and offers no toggle.
-  layerVis.value['cultural'] = false
+  // Cultural agents overlay (Mapa Cultura + Floresta Ativista + curated
+  // spaces) renders on the map via useCulturalLayers — on by default.
+  layerVis.value['cultural'] = true
   layerVis.value['sites'] = false
   layerVis.value['polygons'] = true
   layerVis.value['water'] = true
@@ -196,6 +196,7 @@ export function useObservatoryControls(): ObservatoryControls {
     { key: 'polygons', labelKey: 'observatory.layers.polygons', color: '#e74c3c' },
     { key: 'foreign', labelKey: 'observatory.layers.foreignHeld', color: '#e74c3c' },
     { key: 'water', labelKey: 'observatory.layers.hydrography', color: '#3498db' },
+    { key: 'cultural', labelKey: 'observatory.layers.cultural', color: '#a855f7' },
     { key: 'sites', labelKey: 'observatory.layers.conflictZones', color: '#c0392b' },
     { key: 'network', labelKey: 'observatory.layers.corpNetwork', color: '#5dade2' },
     { key: 'heatmap', labelKey: 'observatory.layers.heatmap', color: '#f39c12' },

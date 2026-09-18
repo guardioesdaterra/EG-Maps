@@ -1,8 +1,8 @@
 /**
  * composables/useCulturalLayers.ts
  * @why Cultural agent map layers — GeoJSON sources and paint properties for cultural point data
- * @functions getPopupContent, setupCulturalLayers, cleanupCulturalLayers, setCulturalLayersVisibility, setCulturalFilter, clearCulturalFilter, getActiveCulturalFilter, getMunicipalitiesFromData, getTypesFromData, getSubtypesFromData, getStatusesFromData, getFeatureCountByType, getFeatureCountByMunicipality
- * @consts CULTURAL_SOURCE, CULTURAL_LAYER_IDS, SUBTYPE_COLORS, TYPE_COLORS, LEGEND_ITEMS
+ * @functions getPopupContent, setupCulturalLayers, cleanupCulturalLayers, setCulturalLayersVisibility, setCulturalFilter, clearCulturalFilter, getActiveCulturalFilter, getMunicipalitiesFromData, getTypesFromData, getSubtypesFromData, getStatusesFromData, getFeatureCountByType, getFeatureCountByMunicipality, ensureCulturalPinImages, buildCulturalPinImage
+ * @consts CULTURAL_SOURCE, CULTURAL_LAYER_IDS, CULTURAL_PIN_IMAGE_IDS, CULTURAL_PIN_SIZES, SUBTYPE_COLORS, TYPE_COLORS, LEGEND_ITEMS
  * @types CulturalTypeFilter
  * @deps @/lib/map-utils (escapeHtml)
  * @connections composables/useMapBase.ts, composables/useRareEarthController.ts, composables/useRareEarthLayers.ts
@@ -29,11 +29,40 @@ export const CULTURAL_LAYER_IDS = [
   'ree-cultural-glow',
   'ree-cultural-point',
   'ree-cultural-hover',
+  'ree-cultural-pin',
   'ree-cultural-label-major',
   'ree-cultural-label-minor',
   'ree-cultural-cluster',
   'ree-cultural-cluster-count',
 ] as const
+
+/**
+ * Classical teardrop pin icons per cultural family, generated at runtime on
+ * an offscreen canvas (no static asset, works on any baseURL deploy).
+ * Agents get the biggest default scale — they are the featured overlay.
+ */
+export const CULTURAL_PIN_IMAGE_IDS = {
+  agents: 'cultural-pin-agents',
+  spaces: 'cultural-pin-spaces',
+  indigenous: 'cultural-pin-indigenous',
+} as const
+
+/** Base icon-size per family (multiplied by a zoom factor in the layer). */
+export const CULTURAL_PIN_SIZES: Record<CulturalFamily, number> = {
+  agents: 0.9,
+  spaces: 0.72,
+  indigenous: 1.05,
+}
+
+/** Shared glow predicate (at-risk statuses + indigenous priority). Legacy form — plain string keys. */
+const CULTURAL_GLOW_CONDITIONS = [
+  'any',
+  ['==', 'status', 'critical'],
+  ['==', 'status', 'threatened'],
+  ['==', 'status', 'at_risk'],
+  // Indigenous & original peoples always glow (protection priority).
+  ['==', '_family', 'indigenous'],
+] as unknown as maplibregl.FilterSpecification
 
 /** Legacy id kept so existing `ree-cultural-label` references keep working. */
 export const CULTURAL_LABEL_LAYER_IDS = ['ree-cultural-label-major', 'ree-cultural-label-minor'] as const
@@ -228,6 +257,149 @@ export function buildFilterExpression(filter: CulturalTypeFilter): FilterExpr {
   return ['all', ...conditions]
 }
 
+/**
+ * Draw one classical teardrop map pin (circle head + tail + white core) for
+ * a family color. Returns raw RGBA pixels for `map.addImage`, or undefined
+ * when canvas is unavailable (SSR / old browsers) — callers then skip the
+ * pin layer and the circle points below still render.
+ */
+export function buildCulturalPinImage(color: string): { width: number; height: number; data: Uint8Array } | undefined {
+  try {
+    if (typeof document === 'undefined') return undefined
+    const S = 96
+    const canvas = document.createElement('canvas')
+    canvas.width = S
+    canvas.height = S
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return undefined
+    const cx = S / 2
+    const headY = 36
+    const headR = 22
+    const tipY = 88
+    ctx.clearRect(0, 0, S, S)
+    ctx.shadowColor = 'rgba(0,0,0,0.45)'
+    ctx.shadowBlur = 8
+    ctx.shadowOffsetY = 3
+    // Tail (drawn first so the head overlaps its base).
+    ctx.fillStyle = color
+    ctx.beginPath()
+    ctx.moveTo(cx - 18, headY + 12)
+    ctx.lineTo(cx, tipY)
+    ctx.lineTo(cx + 18, headY + 12)
+    ctx.closePath()
+    ctx.fill()
+    // Head.
+    ctx.beginPath()
+    ctx.arc(cx, headY, headR, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.shadowColor = 'transparent'
+    ctx.shadowBlur = 0
+    ctx.shadowOffsetY = 0
+    // White classical rim: head ring + tail edges.
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 5
+    ctx.lineJoin = 'round'
+    ctx.beginPath()
+    ctx.arc(cx, headY, headR, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.lineWidth = 4
+    ctx.beginPath()
+    ctx.moveTo(cx - 17, headY + 14)
+    ctx.lineTo(cx, tipY - 2)
+    ctx.moveTo(cx + 17, headY + 14)
+    ctx.lineTo(cx, tipY - 2)
+    ctx.stroke()
+    // White core so the pin reads at any zoom.
+    ctx.fillStyle = '#ffffff'
+    ctx.beginPath()
+    ctx.arc(cx, headY, 8, 0, Math.PI * 2)
+    ctx.fill()
+    const img = ctx.getImageData(0, 0, S, S)
+    return { width: S, height: S, data: new Uint8Array(img.data) }
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Register the three family pin images on the map (idempotent). Returns
+ * true when the `ree-cultural-pin` symbol layer can reference them.
+ */
+export function ensureCulturalPinImages(map: MapLibreMap): boolean {
+  try {
+    const colors: Record<CulturalFamily, string> = {
+      agents: '#a855f7',
+      spaces: '#f59e0b',
+      indigenous: '#ef4444',
+    }
+    for (const family of Object.keys(colors) as CulturalFamily[]) {
+      const id = CULTURAL_PIN_IMAGE_IDS[family]
+      let has = false
+      try { has = map.hasImage(id) } catch { has = false }
+      if (has) continue
+      const px = buildCulturalPinImage(colors[family])
+      if (!px) return false
+      map.addImage(id, px, { pixelRatio: 2 })
+    }
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Add the classical pin symbol layer (idempotent, best-effort). Returns true
+ * when the layer exists afterwards.
+ */
+function addCulturalPinLayer(map: MapLibreMap): boolean {
+  try {
+    if (map.getLayer('ree-cultural-pin')) return true
+    if (!ensureCulturalPinImages(map)) return false
+    map.addLayer({
+      id: 'ree-cultural-pin',
+      type: 'symbol',
+      source: CULTURAL_SOURCE,
+      filter: ['!has', 'point_count'],
+      layout: {
+        'icon-image': [
+          'match', ['get', '_family'],
+          'indigenous', CULTURAL_PIN_IMAGE_IDS.indigenous,
+          'spaces', CULTURAL_PIN_IMAGE_IDS.spaces,
+          CULTURAL_PIN_IMAGE_IDS.agents,
+        ],
+        'icon-size': [
+          '*',
+          ['match', ['get', '_family'],
+            'indigenous', CULTURAL_PIN_SIZES.indigenous,
+            'spaces', CULTURAL_PIN_SIZES.spaces,
+            CULTURAL_PIN_SIZES.agents],
+          ['interpolate', ['linear'], ['zoom'], 8, 0.6, 12, 1, 16, 1.2],
+        ],
+        'icon-anchor': 'bottom',
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+        'icon-padding': 0,
+        'symbol-sort-key': [
+          'match', ['get', '_family'],
+          'indigenous', 2,
+          'spaces', 1,
+          0,
+        ],
+      },
+      paint: {
+        'icon-opacity': 0.96,
+      },
+    })
+    // A late-added pin (self-heal path) must respect the active user filter.
+    if (activeFilter.types?.length || activeFilter.municipalities?.length || activeFilter.subtypes?.length || activeFilter.statuses?.length || activeFilter.indigenousOnly) {
+      map.setFilter('ree-cultural-pin', ['all', ['!has', 'point_count'], buildFilterExpression(activeFilter)] as maplibregl.FilterSpecification)
+    }
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function setupCulturalLayers(
   map: MapLibreMap,
   culturalData: GeoJSON.FeatureCollection,
@@ -327,15 +499,7 @@ export function setupCulturalLayers(
     id: 'ree-cultural-glow',
     type: 'circle',
     source: CULTURAL_SOURCE,
-    filter: ['all', ['!has', 'point_count'],
-      ['any',
-        ['==', 'status', 'critical'],
-        ['==', 'status', 'threatened'],
-        ['==', 'status', 'at_risk'],
-        // Indigenous & original peoples always glow (protection priority).
-        ['==', '_family', 'indigenous'],
-      ],
-    ] as unknown as maplibregl.FilterSpecification,
+    filter: ['all', ['!has', 'point_count'], CULTURAL_GLOW_CONDITIONS] as unknown as maplibregl.FilterSpecification,
     paint: {
       'circle-color': [
         'case',
@@ -401,6 +565,14 @@ export function setupCulturalLayers(
     },
   })
 
+  // ── Classical pin markers (NEW marker type) ──────────────────────────
+  // One big teardrop pin per unclustered feature, color-coded by family
+  // (agents violet = biggest default scale, spaces amber, indigenous red).
+  // Rendered ON TOP of the dot layers with overlap allowed so cultural
+  // agents stay visible even in dense areas; the dots underneath act as a
+  // halo/base. Skipped gracefully when canvas images are unavailable.
+  addCulturalPinLayer(map)
+
   map.addLayer({
     id: 'ree-cultural-label-major',
     type: 'symbol',
@@ -451,8 +623,10 @@ export function setupCulturalLayers(
     },
   })
 
-  // Interaction handlers: click on points + clusters only (glow/hover/label
-  // layers are pointer-transparent visuals). Hover uses a single tracked id
+  // Interaction handlers: click/hover on the point dots AND the classical
+  // pins (both represent the same unclustered features). Clusters are NOT
+  // in this loop — they expand on click via onClusterClick below instead of
+  // opening a junk "Unknown" popup. Hover uses a single tracked id
   // with a rAF gate so fast mouse moves can't queue unbounded setFeatureState
   // calls across 2000+ points.
   let hoveredId: string | number | null = null
@@ -495,7 +669,11 @@ export function setupCulturalLayers(
     clearHover()
   }
 
-  for (const layerId of ['ree-cultural-point', 'ree-cultural-cluster']) {
+  // Popups open from the point dots + the pin symbols (same features);
+  // clusters expand instead (see onClusterClick). Guard with getLayer so a
+  // skipped pin layer (no canvas images) never throws on registration.
+  for (const layerId of ['ree-cultural-point', 'ree-cultural-pin']) {
+    if (!map.getLayer(layerId)) continue
     map.on('click', layerId, onCulturalClick)
     map.on('mouseenter', layerId, onCulturalEnter)
     map.on('mouseleave', layerId, onCulturalLeave)
@@ -537,6 +715,9 @@ export function updateCulturalData(map: MapLibreMap, culturalData: GeoJSON.Featu
     const src = map.getSource(CULTURAL_SOURCE) as maplibregl.GeoJSONSource | undefined
     if (!src || typeof src.setData !== 'function') return false
     src.setData(enrichCulturalCollection(culturalData) ?? culturalData)
+    // Self-heal: sources that predate the pin layer (HMR / cached style)
+    // get the classical pins without a full teardown.
+    addCulturalPinLayer(map)
     return true
   } catch {
     return false
@@ -548,6 +729,9 @@ export function cleanupCulturalLayers(map: MapLibreMap) {
     try { if (map.getLayer(id)) map.removeLayer(id) } catch { /* layer may not exist */ }
   }
   try { if (map.getSource(CULTURAL_SOURCE)) map.removeSource(CULTURAL_SOURCE) } catch { /* source may not exist */ }
+  for (const id of Object.values(CULTURAL_PIN_IMAGE_IDS)) {
+    try { if (map.hasImage(id)) map.removeImage(id) } catch { /* image may not exist */ }
+  }
 }
 
 export function setCulturalLayersVisibility(map: MapLibreMap, visible: boolean) {
@@ -561,8 +745,15 @@ export function setCulturalFilter(map: MapLibreMap, filter: CulturalTypeFilter) 
   activeFilter = filter
   const expression = buildFilterExpression(filter) as maplibregl.FilterSpecification
 
-  if (map.getLayer('ree-cultural-point')) {
-    map.setFilter('ree-cultural-point', ['all', ['!has', 'point_count'], expression] as maplibregl.FilterSpecification)
+  // Dots, pins and hover ring share the same unclustered guard + user filter
+  // so filtered-out agents lose their pin AND their hover affordance.
+  for (const layerId of ['ree-cultural-point', 'ree-cultural-pin', 'ree-cultural-hover']) {
+    if (map.getLayer(layerId)) {
+      map.setFilter(layerId, ['all', ['!has', 'point_count'], expression] as maplibregl.FilterSpecification)
+    }
+  }
+  if (map.getLayer('ree-cultural-glow')) {
+    map.setFilter('ree-cultural-glow', ['all', ['!has', 'point_count'], CULTURAL_GLOW_CONDITIONS, expression] as unknown as maplibregl.FilterSpecification)
   }
   for (const layerId of CULTURAL_LABEL_LAYER_IDS) {
     if (!map.getLayer(layerId)) continue
@@ -579,8 +770,13 @@ export function setCulturalFilter(map: MapLibreMap, filter: CulturalTypeFilter) 
 
 export function clearCulturalFilter(map: MapLibreMap) {
   activeFilter = {}
-  if (map.getLayer('ree-cultural-point')) {
-    map.setFilter('ree-cultural-point', ['!has', 'point_count'])
+  for (const layerId of ['ree-cultural-point', 'ree-cultural-pin', 'ree-cultural-hover']) {
+    if (map.getLayer(layerId)) {
+      map.setFilter(layerId, ['!has', 'point_count'])
+    }
+  }
+  if (map.getLayer('ree-cultural-glow')) {
+    map.setFilter('ree-cultural-glow', ['all', ['!has', 'point_count'], CULTURAL_GLOW_CONDITIONS] as unknown as maplibregl.FilterSpecification)
   }
   if (map.getLayer('ree-cultural-label-major')) {
     map.setFilter('ree-cultural-label-major', ['all', ['!has', 'point_count'], ['has', 'name'], ['==', '_major', true]] as unknown as maplibregl.FilterSpecification)

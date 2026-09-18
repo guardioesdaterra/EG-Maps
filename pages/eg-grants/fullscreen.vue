@@ -47,7 +47,7 @@
         <h2 class="text-white text-xl font-bold mb-2">{{ t('grantsPortal.accessRestrictedTitle') }}</h2>
         <p class="text-white/50 text-sm mb-6">{{ t('grantsPortal.accessRestrictedDesc') }}</p>
         <div class="flex flex-col items-center gap-2">
-          <button class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="switchAccount">
+          <button class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => switchAccount()">
             {{ t('grantsPortal.switchAccountBtn') }}
           </button>
           <button class="px-6 py-3 text-sm font-bold bg-white/10 text-white/70 hover:bg-white/15 rounded-lg transition-colors" @click="signOut">

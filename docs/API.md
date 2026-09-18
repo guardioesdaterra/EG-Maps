@@ -113,20 +113,28 @@ Rate limit: 10 pins per user per day.
 
 ### `is-manager`
 
-**Endpoint:** `POST /functions/v1/is-manager`
+**Endpoint:** `GET /functions/v1/is-manager` (also accepts POST)
 
-Checks if the authenticated user has a `@earthguardians.org` email.
+Checks if the authenticated user has a `@earthguardians.org` email (case-insensitive).
+Source: `supabase/functions/is-manager/index.ts` — redeploy after any rule change:
 
-**Response:**
+```bash
+supabase functions deploy is-manager --project-ref lfyvociptzyhjtrxwhhf
+```
+
+**Response (manager):**
 
 ```json
 {
   "isManager": true,
-  "email": "user@earthguardians.org",
-  "aud": "authenticated",
-  "role": "authenticated"
+  "email": "user@earthguardians.org"
 }
 ```
+
+**Response (non-manager):** `isManager: false` with a machine-readable `reason`
+(`invalid_token` | `no_email` | `not_eg_domain` | `misconfigured` |
+`method_not_allowed`). The client logs `reason` on negative answers and treats
+transport errors as "unknown" (never as "guest") — see `useSupabaseAuth`.
 
 ---
 

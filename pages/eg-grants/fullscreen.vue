@@ -44,10 +44,13 @@
         <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center">
           <svg class="w-8 h-8 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18.36 6.64a9 9 0 11-12.73 0M12 9v.01M12 13v.01"/></svg>
         </div>
-        <h2 class="text-white text-xl font-bold mb-2">{{ t('grantsPortal.accessRestrictedTitle') }}</h2>
-        <p class="text-white/50 text-sm mb-6">{{ t('grantsPortal.accessRestrictedDesc') }}</p>
+        <h2 class="text-white text-xl font-bold mb-2">{{ managerCheckError ? t('grantsPortal.checkFailedTitle') : t('grantsPortal.accessRestrictedTitle') }}</h2>
+        <p class="text-white/50 text-sm mb-6">{{ managerCheckError ? t('grantsPortal.checkFailedDesc') : t('grantsPortal.accessRestrictedDesc') }}</p>
         <div class="flex flex-col items-center gap-2">
-          <button class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => switchAccount()">
+          <button v-if="managerCheckError" class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => retryManagerCheck()">
+            {{ t('grantsPortal.retryBtn') }}
+          </button>
+          <button v-else class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => switchAccount()">
             {{ t('grantsPortal.switchAccountBtn') }}
           </button>
           <button class="px-6 py-3 text-sm font-bold bg-white/10 text-white/70 hover:bg-white/15 rounded-lg transition-colors" @click="signOut">
@@ -153,7 +156,7 @@ useHead({ title: 'EG Grants · Fullscreen | Earth Guardians' })
 const { isEmbedded } = useHostEmbed()
 
 const { t } = useI18n()
-const { user, isManager, signIn, signInWithNewAccount, switchAccount, signOut, sessionReady } = useSupabaseAuth()
+const { user, isManager, managerCheckError, retryManagerCheck, signIn, signInWithNewAccount, switchAccount, signOut, sessionReady } = useSupabaseAuth()
 const confirmSignOut = ref(false)
 
 const accessGranted = computed(() => sessionReady.value && !!user.value && isManager.value)

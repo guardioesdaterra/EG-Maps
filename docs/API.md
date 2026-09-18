@@ -58,30 +58,25 @@ Standalone crew registration. No authentication required. Same payload as `crew-
 
 **Endpoint:** `POST /functions/v1/grants`
 
-Central grants API. Actions: `list`, `create`, `approve`, `close`, `hide`, `show`, `delete`, `comment`, `vote`, `decisions`, `batch-sync`, `stats`.
+Central grants API over the single merged `grants` table. Actions: `list`, `create`, `submit`, `manage` (approve/close/hide/show/reject/edit/merge/expire), `vote`, `comment`, `leaderboard`, `stats`. No review queue — manual inserts are auto-approved (`manual_inserted=true`); temporal state lives only in `status` (open/closed/expired/hidden); action URL is `grant_link` → `source_link` (no `url` column).
 
 | Action | Auth | Description |
 |--------|------|-------------|
-| `list` | None | List grants with filters |
-| `create` | JWT (manager) | Create a new grant |
-| `approve` | JWT (manager) | Approve/promote scraped grant to grants table |
-| `close` | JWT (manager) | Close a grant |
-| `hide` | JWT (manager) | Soft-delete grant |
-| `show` | JWT (manager) | Un-hide grant |
-| `delete` | JWT (manager) | Hard-delete grant |
+| `list` | Manager (list), Anyone (leaderboard/vote/comment paths) | List grants with filters |
+| `create` | JWT (manager) | Create a new grant (auto-approved) |
+| `submit` | JWT | Crew-submitted grant (auto-approved) |
+| `manage` | JWT (manager) | approve/close/hide/show/reject/edit/merge/expire |
 | `comment` | JWT | Add comment to grant |
 | `vote` | JWT | Vote on grant |
-| `decisions` | JWT (manager) | List decisions |
-| `batch-sync` | Key | Bulk upsert grants |
-| `stats` | None | Grant statistics |
+| `leaderboard` | JWT | Ranked grants with vote aggregates |
+| `stats` | JWT (manager) | Grant statistics (open/closed/expired/hidden/manual) |
 
-**Approve payload:**
+**Manage payload:**
 
 ```json
 {
   "grant_id": "uuid",
   "action": "approve",
-  "sourceTable": "scraped_grants",
   "notes": "Looks good"
 }
 ```

@@ -194,7 +194,7 @@ assert G.is_expired(_yesterday), "YESTERDAY NOT EXPIRED"
 assert not G.is_expired(_yesterday, grace_days=1), "GRACE IGNORED"
 
 # reason helper: closed status wins, past deadline forces exclusion,
-# unknown/dateless/pending are kept, standing refs exempt from date rule
+# unknown/dateless/pending are kept; no exemptions — every row obeys the date rule
 assert G.temporal_exclude_reason({"status": "closed", "deadline": "2099-01-01"}) == "closed"
 assert G.temporal_exclude_reason({"status": "CLOSED", "deadline": ""}) == "closed"
 assert G.temporal_exclude_reason({"status": "open", "deadline": "2000-01-15"}) == "deadline-passed"
@@ -204,11 +204,11 @@ assert G.temporal_exclude_reason({"status": "unknown", "deadline": ""}) is None
 assert G.temporal_exclude_reason({"status": "pending", "deadline": ""}) is None, "LEGACY PENDING DROPPED"
 assert G.temporal_exclude_reason({"status": "open", "deadline": ""}) is None
 assert (
-    G.temporal_exclude_reason({"status": "closed", "deadline": "", "is_standing": True}) == "closed"
-), "CLOSED STANDING MUST STAY EXCLUDED"
+    G.temporal_exclude_reason({"status": "closed", "deadline": ""}) == "closed"
+), "CLOSED MUST STAY EXCLUDED"
 assert (
-    G.temporal_exclude_reason({"status": "open", "deadline": "2000-01-15", "is_standing": True}) is None
-), "STANDING REF DATE-EXEMPT"
+    G.temporal_exclude_reason({"status": "open", "deadline": "2000-01-15"}) == "deadline-passed"
+), "NO DATE EXEMPTIONS"
 
 # end-to-end: a scraped grant with a past deadline is born expired
 _past = G.make_grant(
@@ -321,14 +321,105 @@ assert _scoped("The Pollination Project",
 assert _scoped("X", "Open call, funding climate art worldwide.") == "GLOBAL"
 assert G.infer_country("funding climate art worldwide", "en") == "GLOBAL", "LIMA-CLIMATE"
 assert G.infer_country("open call for NGOs in Peru, Lima region", "en") == "PE"
-# standing entries + explicit scopes are exempt
+# explicit scopes are never re-scoped
 _s = G.make_grant("Youth Climate Justice Fund", "ycjf", "https://example.org/ycjf",
                   "Funds youth-led groups in Latin America, Africa, Asia.",
-                  country="GLOBAL", is_standing=True,
+                  country="GLOBAL",
                   deadline="2099-01-01", amount_max="$20,000")
 assert _s["country"] == "GLOBAL", _s["country"]
+# multi-region fallback never re-scopes (worldwide stays worldwide)
+assert G.infer_scope_country("Some Fund", "Groups in Latin America, Africa, Asia.") == "GLOBAL"
+assert G.infer_scope_country("Some Fund", "For entities based in Canada only. Open call.") == "CA"
 _e = G.make_grant("Edital ISPN", "ispn", "https://example.org/ispn",
                   "Open to NGOs in Kenya.", country="BR",
                   deadline="2099-01-01", amount_max="$1,000")
 assert _e["country"] == "BR", _e["country"]
+# 14. v2.6 dual-link model — aggregator page vs funder call page
+# extract_grant_link needs real bs4; the stub above returns None, so these
+# assertions only run when bs4 is importable.
+try:
+    from bs4 import BeautifulSoup as _BS  # noqa: E402
+    _HAS_BS = _BS is not None and getattr(_BS, "__name__", "") != "<lambda>"
+except Exception:
+    _HAS_BS = False
+if _HAS_BS:
+    _WALLACEA_HTML = (
+        '<p>Critical Ecosystem Partnership Fund (CEPF) invites Letters of Inquiry '
+        'for grants supporting biodiversity conservation in the Wallacea Hotspot.</p>'
+        '<p><a href="https://cepf.net/grants/open-calls">Grants for Wallacea '
+        "Biodiversity Hotspot</a> — small grants up to US$50,000, deadline "
+        "26 September 2026.</p>"
+        '<p>Share: <a href="https://facebook.com/sharer/x">Facebook</a> '
+        '<a href="https://twitter.com/intent/x">Twitter</a></p>'
+    )
+    _got = G.extract_grant_link(
+        _WALLACEA_HTML,
+        source_url="https://www.terravivagrants.org/wallacea-biodiversity-hotspot-large-grants/",
+        funder_hint="Critical Ecosystem Partnership Fund",
+    )
+    assert _got == "https://cepf.net/grants/open-calls", f"WALLACEA LINK -> {_got!r}"
+    # aggregator self-links / social / empty never qualify
+    assert G.extract_grant_link(
+        '<a href="https://www.terravivagrants.org/other-post">Related post</a>',
+        source_url="https://www.terravivagrants.org/x") == ""
+    assert G.extract_grant_link("") == ""
+    assert G.extract_grant_link("<p>no links here</p>") == ""
+    # make_grant wires the pair: url = funder page, both columns stored
+    _g2 = G.make_grant(
+        "Wallacea Biodiversity Hotspot Large Grants",
+        "terravivagrants.org",
+        "https://www.terravivagrants.org/wallacea-biodiversity-hotspot-large-grants/",
+        "CEPF invites Letters of Inquiry. Grants US$50,000 to US$150,000. Deadline 27 September 2026.",
+        deadline="2026-09-27", amount_max="US$150,000",
+        raw_html=_WALLACEA_HTML,
+    )
+    assert _g2["grant_link"] == "https://cepf.net/grants/open-calls", _g2["grant_link"]
+    assert _g2["source_link"] == "https://www.terravivagrants.org/wallacea-biodiversity-hotspot-large-grants/", _g2["source_link"]
+    assert _g2["url"] == "https://cepf.net/grants/open-calls", _g2["url"]
+    # no outbound link: legacy single-link shape preserved
+    _g3 = G.make_grant("Some Open Environmental Grant Call", "test-source",
+                       "https://example.org/agg/post-1",
+                       "Open call for proposals. Grants up to $10,000.",
+                       deadline="2099-01-01", amount_max="$10,000")
+    assert _g3["grant_link"] == "", _g3["grant_link"]
+    assert _g3["source_link"] == "https://example.org/agg/post-1", _g3["source_link"]
+    assert _g3["url"] == "https://example.org/agg/post-1", _g3["url"]
+    # explicit grant_link= wins over auto-extraction
+    _g4 = G.make_grant("Some Open Environmental Grant Call", "test-source",
+                       "https://example.org/agg/post-2",
+                       "Open call for proposals. Grants up to $10,000.",
+                       deadline="2099-01-01", amount_max="$10,000",
+                       grant_link="https://funder.org/apply",
+                       raw_html=_WALLACEA_HTML)
+    assert _g4["url"] == "https://funder.org/apply", _g4["url"]
+    assert _g4["grant_link"] == "https://funder.org/apply", _g4["grant_link"]
+    # feed helper prefers content bodies, falls back to summary
+    class _E(dict):
+        pass
+    _e = _E({"summary": "<p>hi</p>", "content": [{"value": "<p>full</p>"}]})
+    assert G.feed_raw_html(_e) == "<p>full</p>"
+    assert G.feed_raw_html({"summary": "<p>s</p>"}) == "<p>s</p>"
+else:
+    print("SKIP v2.6 link tests (no bs4)")
+# 15. v2.7 — homepage-only URLs are valid grant links; manual_inserted flag
+assert G.is_valid_grant_url("https://funder.org/") is True
+assert G.is_valid_grant_url("https://funder.org") is True
+assert G.is_valid_grant_url("https://funder.org/?call=2026") is True
+assert G.is_valid_grant_url("https://funder.org/apply") is True
+assert G.is_valid_grant_url("") is False
+assert G.is_valid_grant_url("not-a-url") is False
+assert G.is_valid_grant_url("https://no-tld") is False
+assert G.is_valid_grant_url("https://example.org/has space/x") is False
+_g5 = G.make_grant("Funder Root-Domain Open Call", "test-source",
+                   "https://funder.org/",
+                   "Open call for proposals. Grants up to $10,000.",
+                   deadline="2099-01-01", amount_max="$10,000")
+assert _g5["url"] == "https://funder.org/", _g5["url"]
+assert _g5["source_link"] == "https://funder.org/", _g5["source_link"]
+assert _g5["manual_inserted"] is False, _g5["manual_inserted"]
+assert G.is_valid_grant_candidate(
+    "Funder Root-Domain Open Call for Proposals",
+    "Open call for proposals. Grants up to $10,000. Deadline 2099-01-01.",
+    url="https://funder.org/",
+    deadline="2099-01-01", amount_max="$10,000") is True
 print("ALL GRANTS GATE TESTS PASSED")

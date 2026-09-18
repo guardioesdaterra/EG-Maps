@@ -16,9 +16,29 @@ export function useSupabaseAuth() {
 
   const isManager = ref(false)
   const isManagerReady = ref(false)
+  // Non-empty when the check itself failed (transport error/timeout) as
+  // opposed to an explicit "not a manager" answer — lets the UI offer a
+  // retry instead of mislabeling a manager as unauthorized.
+  const managerCheckError = ref('')
+
+  async function invokeIsManager(): Promise<{ isManager: boolean; reason?: string }> {
+    const { data, error } = await withTimeout(
+      client.functions.invoke('is-manager', {
+        method: 'GET',
+      }),
+      VERIFY_MANAGER_TIMEOUT_MS,
+      'is-manager',
+    )
+    if (error) throw error
+    if (data?.reason && data?.isManager !== true) {
+      console.warn('is-manager answered non-manager', { reason: data.reason })
+    }
+    return { isManager: data?.isManager === true, reason: data?.reason }
+  }
 
   async function verifyManager() {
     isManagerReady.value = false
+    managerCheckError.value = ''
     const email = user.value?.email
 
     if (!email) {
@@ -27,26 +47,28 @@ export function useSupabaseAuth() {
       return
     }
 
-    try {
-      const { data, error } = await withTimeout(
-        client.functions.invoke('is-manager', {
-          method: 'GET',
-        }),
-        VERIFY_MANAGER_TIMEOUT_MS,
-        'is-manager',
-      )
-      if (error) {
-        console.error('is-manager edge function error:', error)
-        isManager.value = false
-      } else {
-        isManager.value = data?.isManager === true
+    // One retry on transport failure only (cold start / blip). An explicit
+    // `isManager: false` answer is final — never retried.
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      try {
+        const { isManager: ok } = await invokeIsManager()
+        isManager.value = ok
+        isManagerReady.value = true
+        return
+      } catch (e) {
+        const detail = e instanceof Error ? e.message : String(e)
+        console.error(`is-manager invoke failed (attempt ${attempt}/2):`, detail)
+        if (attempt === 2) {
+          isManager.value = false
+          managerCheckError.value = detail
+          isManagerReady.value = true
+        }
       }
-    } catch (e) {
-      console.error('is-manager invoke failed:', e)
-      isManager.value = false
-    } finally {
-      isManagerReady.value = true
     }
+  }
+
+  async function retryManagerCheck() {
+    await verifyManager()
   }
 
   watch(
@@ -56,6 +78,7 @@ export function useSupabaseAuth() {
         verifyManager()
       } else {
         isManager.value = false
+        managerCheckError.value = ''
         isManagerReady.value = true
       }
     },
@@ -113,6 +136,7 @@ export function useSupabaseAuth() {
 
   async function signOut() {
     isManagerReady.value = false
+    managerCheckError.value = ''
     try {
       await client.auth.signOut()
     } finally {
@@ -120,5 +144,5 @@ export function useSupabaseAuth() {
     }
   }
 
-  return { user, isManager, isManagerReady, signIn, signInWithNewAccount, switchAccount, signOut, sessionReady }
+  return { user, isManager, isManagerReady, managerCheckError, retryManagerCheck, signIn, signInWithNewAccount, switchAccount, signOut, sessionReady }
 }

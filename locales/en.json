@@ -1530,7 +1530,10 @@
     "clearSearch": "Clear search",
     "closingToday": "Closing today",
     "signInAgreesPrefix": "By signing in, you agree to our",
-    "signInAgreesAnd": "and"
+    "signInAgreesAnd": "and",
+    "checkFailedTitle": "Could not verify access",
+    "checkFailedDesc": "The access check failed before it could confirm your account. Please retry — this is usually temporary.",
+    "retryBtn": "Retry verification"
   },
   "iframe": {
     "title": "Embed EG-Maps",

@@ -203,7 +203,7 @@ async function retrySignIn() {
   }
 }
 
-type Membership = 'manager' | 'member' | 'guest'
+type Membership = 'manager' | 'member' | 'guest' | 'unknown'
 
 // Per-step budgets so logs reveal WHICH check hung (getUser vs
 // is-manager vs crew-sync). The outer checkMembershipAndRedirect budget
@@ -229,27 +229,37 @@ async function timed<T>(label: string, promise: Promise<T>, ms: number): Promise
 
 async function resolveMembership(): Promise<Membership> {
   const { data: { user } } = await timed('getUser', client.auth.getUser(), GET_USER_TIMEOUT_MS)
-  if (!user?.email) return 'guest'
+  if (!user?.email) return 'unknown'
 
+  // Track whether each check ran to completion: two errored checks mean
+  // "unknown" (fail open to `next`), while explicit negative answers mean
+  // "guest". Collapsing both into "guest" used to bounce managers to the
+  // signup page on transient edge-function failures.
+  let managerAnswered = false
   try {
     const { data, error: mgrErr } = await timed(
       'is-manager',
       client.functions.invoke('is-manager', { method: 'GET' }),
       FUNCTION_TIMEOUT_MS,
     )
+    managerAnswered = !mgrErr
     if (!mgrErr && data?.isManager === true) return 'manager'
     if (mgrErr) console.warn('[auth/callback] is-manager returned error', mgrErr)
-  } catch { /* fall through to crew check — already logged by timed() */ }
+    else if (data?.reason) console.warn('[auth/callback] is-manager answered non-manager', { reason: data.reason })
+  } catch { /* already logged by timed(); fall through to crew check */ }
 
+  let crewAnswered = false
   try {
     const { data, error: fnError } = await timed(
       'crew-sync-check',
       client.functions.invoke('crew-sync?action=check'),
       FUNCTION_TIMEOUT_MS,
     )
+    crewAnswered = !fnError
     if (!fnError && data?.authorized) return 'member'
     if (fnError) console.warn('[auth/callback] crew-sync check returned error', fnError)
-  } catch { /* treated as guest below — already logged by timed() */ }
+  } catch { /* treated below — already logged by timed() */ }
+  if (!managerAnswered && !crewAnswered) return 'unknown'
   return 'guest'
 }
 
@@ -259,7 +269,8 @@ async function checkMembershipAndRedirect(next: string) {
   try {
     const membership = await withTimeout(resolveMembership(), MEMBERSHIP_TIMEOUT_MS, 'membership check')
     // Only divert to signup when a check positively reports "not authorized".
-    // Timeouts/errors fail open to `next` — the portal gates access itself.
+    // Errors/timeouts ('unknown') fail open to `next` — the portal gates
+    // access itself via useSupabaseAuth (fail-closed).
     if (membership === 'guest' && next === FALLBACK_NEXT) url = SIGN_UP_URL
   } catch (e) {
     console.warn('[auth/callback] membership check timed out, continuing to grants portal', e)

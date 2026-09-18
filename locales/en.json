@@ -1472,6 +1472,8 @@
     "grantsSignInSection": "Sign in to access grants",
     "signInRequiredTitle": "Sign In Required",
     "signInShort": "Sign In",
+    "useAnotherAccount": "Use a different Google account",
+    "switchAccountBtn": "Switch Google account",
     "accessRestrictedTitle": "Access Restricted",
     "accessRestrictedDesc": "EG Grants is only available to Earth Guardians staff accounts.",
     "authSigningIn": "Signing you in...",

@@ -63,7 +63,7 @@
             <button
               type="button"
               class="fs-toggle-btn"
-              :aria-pressed="(!showBackground).toString()"
+              :aria-pressed="!showBackground"
               :aria-label="showBackground ? t('grantsPortal.disableBackground') : t('grantsPortal.enableBackground')"
               @click="showBackground = !showBackground"
             >

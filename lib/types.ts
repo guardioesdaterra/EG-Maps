@@ -173,12 +173,13 @@ export interface DetailGrantData {
   source_type?: string
   source_id?: string
   url?: string
+  grant_link?: string
+  source_link?: string
+  manual_inserted?: boolean
   funder?: string
   source?: string
   country?: string
   submitted_by?: string | null
-  reviewed_by?: string | null
-  reviewed_at?: string | null
   amount_max?: string
   currency?: string
   deadline?: string

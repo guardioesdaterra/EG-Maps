@@ -222,7 +222,7 @@ pages/endangered-species/index.vue
   - `grants` — List/create/approve/vote/comment/decisions/stats
   - `register-pin` — Cultural-agent batch sync + community pin submission
   - `is-manager` — Manager role check
-- **Set into Supabase:** scraped grant opportunities (60+ sources, ~1,464 rows hits `scraped_grants`), vulcan cultural agents (~1,973 in `vulcan_observatory`), user-submitted pins (`community_pins`).
+- **Set into Supabase:** grant opportunities (60+ sources, single merged `grants` table), vulcan cultural agents (~1,973 in `vulcan_observatory`), user-submitted pins (`community_pins`).
 
 ### UI state
 - **Pinia stores:**

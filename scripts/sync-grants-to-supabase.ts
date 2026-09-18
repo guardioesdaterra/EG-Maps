@@ -16,6 +16,8 @@ interface Grant {
   funder: string;
   source: string;
   url: string;
+  source_link?: string;
+  grant_link?: string;
   description: string;
   deadline: string;
   amount_max: string;
@@ -28,13 +30,16 @@ interface Grant {
   relevance: number;
   fetched_at: string;
   status: string;
-  grant_status?: string;
-  is_standing?: boolean;
+  // Origin flag — manager manual inserts arrive with manual_inserted=true
+  // (auto-approved). Scraper exports always carry false.
+  manual_inserted?: boolean;
+  // NOTE: no url column — the merged grants table stores the v2.6 dual-link
+  // pair only. `url` below is the export's primary action URL
+  // (grant_link || source_link), used for gating + fallbacks.
   grant_type?: string;
   grant_types?: string[];
   highlights?: string[];
   urgency?: string;
-  deadline_days?: number | null;
   amount_usd?: number | null;
   priority_score?: number;
   // v2 quality / URL-health fields (emitted by grants.py, read by migration)
@@ -47,7 +52,7 @@ interface Grant {
 
 // ── v2 quality gate ──────────────────────────────────────────────
 // Mirrors scripts/grants.py:is_valid_grant_candidate. Records that fail
-// are SKIPPED (counted + reported) instead of polluting scraped_grants.
+// are SKIPPED (counted + reported) instead of polluting grants.
 const NAV_TITLES = new Set([
   "overview", "our work", "about us", "about", "contact", "home", "news",
   "blog", "stories", "read more", "learn more", "see all", "view all",
@@ -55,13 +60,15 @@ const NAV_TITLES = new Set([
 ]);
 
 function isValidGrantUrl(url: string): boolean {
+  // v2.7: homepage-only URLs are ACCEPTED (mirrors grants.py) — funders
+  // sometimes run the call from their root domain. Depth is still
+  // rewarded in ranking, but a bare homepage is not a validity failure.
   if (!url || typeof url !== "string") return false;
   const u = url.trim();
   if (!/^https?:\/\//i.test(u) || u.length < 15 || u.includes(" ")) return false;
   try {
     const p = new URL(u);
     if (!p.hostname.includes(".")) return false;
-    if ((p.pathname === "" || p.pathname === "/") && !p.search) return false;
     return true;
   } catch { return false; }
 }
@@ -71,31 +78,30 @@ function grantRejectReason(g: Grant): string | null {
   if (title.length < 15) return "title-too-short";
   if (NAV_TITLES.has(title.toLowerCase())) return "nav-heading";
   if (!isValidGrantUrl(g.url || "")) return "bad-url";
-  if ((g.url_status === "broken" || g.url_status === "login_wall") && !g.is_standing)
+  if (g.url_status === "broken" || g.url_status === "login_wall")
     return `url-${g.url_status}`;
   // v2.1: job postings are never grants (fellowships/scholarships exempt).
   // Mirrors scripts/grants.py:is_likely_job.
   if (!/(fellowship|scholarship|bolsa|bourse|beca|stipendium|\bgrant\b)/i.test(title) &&
       /(hiring|now hiring|career opportunit|job opportunit|remote jobs?|vacanc|open position|we are hiring|we're hiring|trabalhe conosco|is hiring an?)(\b| )/i.test(title + " "))
     return "job-posting";
-  if (/call for papers|call for abstracts|submit your abstract/i.test(title) && !g.is_standing)
+  if (/call for papers|call for abstracts|submit your abstract/i.test(title))
     return "call-for-papers";
   const blob = `${g.title} ${g.description} ${g.funder}`.toLowerCase();
   if (/my account|register or sign in|page not found|the page you are looking for|file not found|sign in to continue|access denied/i.test(blob))
     return "login-wall-or-404";
   const hasTerms = /(edital|chamada|open call|call for|request for proposals|\brfp\b|grant|fellowship|bolsa|subvenç|convocat|appel à projets?|bando|prize|award|scholarship|microgrant|seed fund|inscreva-se|candidatura|apply (now|here|today|by))/i.test(blob);
   const hasBoth = Boolean(g.deadline) && Boolean(g.amount_max);
-  if (!hasTerms && !hasBoth && !g.is_standing) return "no-grant-terms";
-  if (typeof g.relevance === "number" && g.relevance < 5 && !g.is_standing && !hasBoth)
+  if (!hasTerms && !hasBoth) return "no-grant-terms";
+  if (typeof g.relevance === "number" && g.relevance < 5 && !hasBoth)
     return "low-relevance";
   // v2.4 temporal gate (defense in depth — grants.py already excludes these,
   // but stale/hand-made exports must never be INSERTED): closed calls and
   // deadlines already gone as of right now are skipped. Rolling/dateless
-  // grants (unknown, including legacy "pending" values) PASS the gate —
-  // absence of a date is not evidence of closure — and the record builder
-  // below normalizes them to status=open. Standing entries are curated refs.
-  if (!g.is_standing) {
-    const temporal = String(g.grant_status ?? g.status ?? "").toLowerCase().trim();
+  // grants PASS the gate — absence of a date is not evidence of closure —
+  // and the record builder below stores them as status=open.
+  {
+    const temporal = String(g.status ?? "").toLowerCase().trim();
     if (temporal === "closed") return "closed";
     if ((g.urgency || "").toLowerCase() === "expired") return "deadline-passed";
     const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(g.deadline || "");
@@ -270,17 +276,28 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
   console.warn(`Loaded ${grantsRaw.length} grants from ${filePath}`);
 
   const allWanted = new Set([
-    "id", "title", "funder", "source", "source_id", "url", "description",
+    // Merged grants table (ex-scraped_grants): single temporal `status`
+    // (open/closed/expired/hidden), single text `deadline`, dual-link pair
+    // (grant_link/source_link, no url column), manual_inserted origin flag.
+    // Dropped columns are NOT listed: url, is_standing, grant_status,
+    // deadline_days, deadline_date, reviewed/review_notes/viewed.
+    "id", "title", "funder", "source", "source_id", "source_link", "grant_link", "description",
     "deadline", "amount_max", "amount_min", "currency", "country", "region",
-    "categories", "language", "relevance", "status", "grant_status",
+    "categories", "language", "relevance", "status",
     "fetched_at", "grant_type", "grant_types", "highlights", "urgency",
-    "deadline_days", "amount_usd", "priority_score", "is_standing",
-    // v2 columns (see supabase/migrations/20260914000000_scraped_grants_v2.sql)
+    "amount_usd", "priority_score", "manual_inserted",
     "content_hash", "quality_score", "url_status", "url_status_code",
-    "url_checked_at", "last_seen_at", "updated_at", "deadline_date",
-    "review_notes", "reviewed_at",
+    "url_checked_at", "last_seen_at", "updated_at",
   ]);
-  const cols = await existingColumns(supabase, "scraped_grants", allWanted);
+  const cols = await existingColumns(supabase, "grants", allWanted);
+
+  // Fail-loud helper: silently-dropped columns hid the missing
+  // source_link/grant_link columns for months. Never again.
+  {
+    const missing = [...allWanted].filter((c) => c !== "id" && !cols.has(c));
+    if (missing.length > 0)
+      console.warn(`  ⚠️ columns missing in DB (values skipped — run scripts/grants-manual-inserted-links.sql): ${missing.join(", ")}`);
+  }
 
   // ── Quality gate: skip junk BEFORE building records ──
   const quarantined: { title: string; reason: string }[] = [];
@@ -311,43 +328,39 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
     if (cols.has("funder"))            r.funder = g.funder || "";
     if (cols.has("source"))            r.source = g.source || "";
     if (cols.has("source_id"))         r.source_id = g.id || "";
-    if (cols.has("url"))               r.url = g.url || "";
+    // v2.6 dual-link model (grants.py emits both; legacy exports carry
+    // neither — fall back to the export's primary url so columns are
+    // never empty). There is no url column on the merged table.
+    if (cols.has("source_link"))       r.source_link = g.source_link || g.url || "";
+    if (cols.has("grant_link"))        r.grant_link = g.grant_link || "";
     if (cols.has("description"))       r.description = (g.description || "").slice(0, 5000);
     if (cols.has("deadline"))          r.deadline = g.deadline || "";
     if (cols.has("amount_max"))        r.amount_max = String(g.amount_max ?? "");
     if (cols.has("amount_min"))        r.amount_min = String(g.amount_min ?? "");
     if (cols.has("currency"))          r.currency = g.currency || "";
     if (cols.has("country"))           r.country = g.country || "GLOBAL";
-    if (cols.has("region"))            r.region = g.region || null;
+    if (cols.has("region"))            r.region = g.region || "";
     if (cols.has("categories"))        r.categories = Array.isArray(g.categories) ? g.categories.filter(Boolean) : [];
     if (cols.has("language"))          r.language = g.language || "en";
     if (cols.has("relevance"))         r.relevance = typeof g.relevance === "number" ? Math.max(0, Math.min(100, g.relevance)) : 0;
     if (cols.has("status")) {
-      // Temporal state for SCRAPED grants: open/closed only.
-      // "pending" is NOT a scraped-grant state — it belongs exclusively to
-      // the manager manual-insert review workflow (review_status pending/
-      // approved on the grants table, a separate column from open/closed).
-      // Legacy "pending"/"unknown" scraper values mean "rolling/dateless but
-      // live" → normalize to open (absence of a date is not evidence of
-      // closure, same rule as the v2.4 temporal gate in grants.py).
+      // Single temporal column: open/closed/expired (+hidden quarantine).
+      // Rolling/dateless rows that pass the gate land as open. Expired rows
+      // are dropped by the gate above, but hand-made exports carrying
+      // status=expired are stored as-is (managers can expire via edit).
       const s = (g.status || "").toLowerCase();
-      r.status = s === "closed" ? "closed" : "open";
-    }
-    if (cols.has("grant_status")) {
-      // Temporal mirror of status: open/closed only (no unknown — unknown
-      // source values are live rolling calls, i.e. open).
-      const s = String(g.grant_status ?? g.status ?? "").toLowerCase();
-      r.grant_status = s === "closed" ? "closed" : "open";
+      r.status = s === "closed" ? "closed" : s === "expired" ? "expired" : "open";
     }
     if (cols.has("fetched_at"))        r.fetched_at = g.fetched_at || new Date().toISOString();
     if (cols.has("grant_type"))        r.grant_type = g.grant_type || "general";
     if (cols.has("grant_types"))       r.grant_types = Array.isArray(g.grant_types) ? g.grant_types : [];
     if (cols.has("highlights"))        r.highlights = Array.isArray(g.highlights) ? g.highlights : [];
     if (cols.has("urgency"))           r.urgency = g.urgency || "unknown";
-    if (cols.has("deadline_days"))     r.deadline_days = g.deadline_days ?? null;
     if (cols.has("amount_usd"))        r.amount_usd = g.amount_usd ?? null;
     if (cols.has("priority_score"))    r.priority_score = typeof g.priority_score === "number" ? g.priority_score : 0;
-    if (cols.has("is_standing"))       r.is_standing = Boolean(g.is_standing);
+    // Origin flag: scraper exports carry false; manager manual inserts
+    // arrive with manual_inserted=true and are auto-approved.
+    if (cols.has("manual_inserted"))   r.manual_inserted = Boolean(g.manual_inserted);
     // ── v2 quality / URL-health columns ──
     if (cols.has("content_hash"))      r.content_hash = g.content_hash || null;
     if (cols.has("quality_score"))     r.quality_score = typeof g.quality_score === "number" ? Math.max(0, Math.min(100, g.quality_score)) : 0;
@@ -355,31 +368,29 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
     if (cols.has("url_status_code"))   r.url_status_code = typeof g.url_status_code === "number" ? g.url_status_code : null;
     if (cols.has("url_checked_at"))    r.url_checked_at = g.url_checked_at || null;
     if (cols.has("last_seen_at"))      r.last_seen_at = nowIso;
-    if (cols.has("deadline_date")) {
-      const m = /^(\d{4}-\d{2}-\d{2})/.exec(g.deadline || "");
-      r.deadline_date = m ? m[1] : null;
-    }
     records.push(r);
   }
 
   // Fields used for change detection — excludes fetched_at/last_seen_at
-  // (change every run) and is_standing (static after filtering)
-  const hashFields = ["title", "funder", "source", "url", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories", "language", "relevance", "status", "grant_status", "grant_type", "grant_types", "highlights", "urgency", "deadline_days", "amount_usd", "priority_score", "quality_score", "url_status"];
-  const selectCols = "id, " + hashFields.join(", ") + ", is_standing, source_id";
+  // (change every run) and manual_inserted (static origin flag)
+  const hashFields = ["title", "funder", "source", "source_link", "grant_link", "description", "deadline", "amount_max", "amount_min", "currency", "country", "region", "categories", "language", "relevance", "status", "grant_type", "grant_types", "highlights", "urgency", "amount_usd", "priority_score", "quality_score", "url_status"];
+  const selectCols = "id, " + hashFields.join(", ") + ", source_id";
 
-  // Natural-key matching on UNIQUE idx_scraped_source (source_id, source).
+  // Natural-key matching on UNIQUE (source_id, source) — legacy rows carry
+  // pre-UUID ids, so id-based matching misses them. Matching on the UNIQUE
+  // index heals legacy rows in place (ids stable).
   const keyOf = (r: Record<string, unknown>) => `${r.source ?? ""}::${r.source_id ?? ""}`;
   const fetchExisting = async (batch: Record<string, unknown>[]) => {
     const sources = [...new Set(batch.map((r) => String(r.source ?? "")))];
     const sids = [...new Set(batch.map((r) => String(r.source_id ?? "")))];
-    const { data } = await supabase.from("scraped_grants").select(selectCols)
+    const { data } = await supabase.from("grants").select(selectCols)
       .in("source", sources).in("source_id", sids) as unknown as { data: Record<string, unknown>[] | null };
     return (data ?? []).filter((e) =>
       batch.some((r) => keyOf(r) === keyOf(e)));
   };
 
   const { inserted, updated, skipped, errors } = await batchUpsert(
-    supabase, "scraped_grants", records,
+    supabase, "grants", records,
     hashFields,
     selectCols,
     keyOf,

@@ -107,7 +107,8 @@ def analyze(grants, meta=None, today=None):
         "expired": len(expired_rows),
         "closed": len(closed_rows),
         "with_both": sum(1 for g in grants or [] if g.get("deadline") and g.get("amount_max")),
-        "non_standing": sum(1 for g in grants or [] if not g.get("is_standing", False)),
+        "with_grant_link": sum(1 for g in grants or [] if g.get("grant_link")),
+        "manual": sum(1 for g in grants or [] if g.get("manual_inserted", False)),
         "status_counts": status_counts,
         "urgency_counts": urgency_counts,
         "src_counts": src_counts,
@@ -157,7 +158,11 @@ def render_markdown(filename, stats) -> str:
         )
     lines.append(
         f"- With deadline+amount: **{stats['with_both']}** · "
-        f"non-standing: **{stats['non_standing']}**"
+        f"manual: **{stats['manual']}**"
+    )
+    lines.append(
+        f"- With funder grant_link: **{stats.get('with_grant_link', 0)}** "
+        f"of {stats['total']}"
     )
     meta = stats.get("meta") or {}
     if meta:

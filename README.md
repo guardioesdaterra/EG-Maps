@@ -329,7 +329,8 @@ EG-Maps/
 ├── locales/                     # 16 languages (see i18n table below)
 ├── i18n/i18n.config.ts          # vue-i18n bundle config
 ├── public/data/                 # 134 MB static datasets (species regions, rare-earth, crews…)
-├── supabase/migrations/         # SQL migrations (scraped_grants v2…)
+├── supabase/migrations/         # SQL migrations (grants table…)
+├── supabase/functions/           # Edge functions (grants, crew-sync, … — downloaded via `npx supabase functions download`)
 ├── scripts/                     # Dataset builders, sync + scrape pipelines
 ├── tests/                       # Vitest unit + Playwright E2E (17 files)
 ├── docs/                        # Topic guides (architecture, API, DB, contributing…)

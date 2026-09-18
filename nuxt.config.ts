@@ -61,6 +61,11 @@ export default defineNuxtConfig({
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover' },
         { name: 'description', content: 'Interactive maps for endangered species and project grants data visualization' },
+        // Google Search Console URL-prefix ownership verification for
+        // https://guardioesdaterra.github.io/EG-Maps/ — must stay in place
+        // permanently; Google re-checks periodically and drops verification
+        // after a grace period if the tag is removed.
+        { name: 'google-site-verification', content: 'nczdgqSJuJZkiAa-Bf5u-pumBA8M0YVJ0llDjoCzQSU' },
         { name: 'theme-color', content: '#0a0a0a' },
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Earth Guardians' },

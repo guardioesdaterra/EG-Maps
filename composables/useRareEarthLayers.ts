@@ -15,7 +15,7 @@ import { openRareEarthPopup, openStackedObservatoryPopup, type StackedHit } from
 import { citiesToGeoJSON } from '@/lib/brazilian-cities'
 import { RARE_EARTH_GEO_BOUNDARIES, RARE_EARTH_CONFLICT_SITES } from '@/lib/rare-earth-geo-data'
 import { WATER_SOURCE, cleanupWaterLayers, setupWaterLayers } from '@/composables/useWaterLayers'
-import { cleanupCulturalLayers } from '@/composables/useCulturalLayers'
+import { cleanupCulturalLayers, setCulturalLayersVisibility, setupCulturalLayers, updateCulturalData } from '@/composables/useCulturalLayers'
 
 const activePopups = new WeakMap<MapLibreMap, maplibregl.Popup>()
 
@@ -73,6 +73,7 @@ export interface RareEarthLayerOptions {
   points: GeoJSON.FeatureCollection
   polys?: GeoJSON.FeatureCollection | null
   protected?: GeoJSON.FeatureCollection | null
+  cultural?: GeoJSON.FeatureCollection | null
   networkFeatures?: GeoJSON.FeatureCollection | null
   onClaimClick?: (_props: Record<string, unknown>, _lngLat: [number, number]) => void
   popup?: {
@@ -399,7 +400,7 @@ export interface ObservatorySyncInput {
   polys?: GeoJSON.FeatureCollection | null
   protected?: GeoJSON.FeatureCollection | null
   water?: GeoJSON.FeatureCollection | null
-  /** Accepted but never rendered — cultural agents live in the sidebar browser only. */
+  /** Cultural agents overlay (Mapa Cultura + Floresta Ativista + curated spaces). */
   cultural?: GeoJSON.FeatureCollection | null
   networkFeatures?: GeoJSON.FeatureCollection | null
   visibility?: Record<string, boolean>
@@ -427,17 +428,15 @@ function setSourceData(map: MapLibreMap, sourceId: string, data: GeoJSON.Feature
  */
 export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncInput): boolean {
   if (!map || !map.isStyleLoaded()) return false
-  // NOTE: `cultural` is deliberately ignored here — cultural agents/points
-  // never render on the map (sidebar browser only). Any stale cultural
-  // source left by a previous version is torn down below.
-  const { points, polys, protected: protectedAreas, water, networkFeatures, visibility, popup, onClaimClick } = input
+  const { points, polys, protected: protectedAreas, water, cultural, networkFeatures, visibility, popup, onClaimClick } = input
   // Proceed when ANY layer has data. Gating everything on filtered points
   // alone left the map permanently blank whenever the point set was momentarily
   // empty (initial empty FC, strict filters) while polygons/protected/water
   // were already available.
   const hasAnyData = Boolean(
     points?.features?.length || polys?.features?.length
-    || protectedAreas?.features?.length || water?.features?.length,
+    || protectedAreas?.features?.length || water?.features?.length
+    || cultural?.features?.length,
   )
   if (!hasAnyData && !map.getSource(REE_SOURCE_POINTS)) return false
 
@@ -448,6 +447,7 @@ export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncIn
       points: points ?? { type: 'FeatureCollection', features: [] },
       polys: polys ?? null,
       protected: protectedAreas ?? null,
+      cultural: cultural ?? null,
       networkFeatures: networkFeatures ?? null,
       popup,
       onClaimClick,
@@ -465,6 +465,7 @@ export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncIn
         points: points ?? { type: 'FeatureCollection', features: [] },
         polys: polys ?? null,
         protected: protectedAreas,
+        cultural: cultural ?? null,
         networkFeatures: networkFeatures ?? null,
         popup,
         onClaimClick,
@@ -487,9 +488,16 @@ export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncIn
       // own popup so overlapping water + claim clicks show tabs, not races.
       setupWaterLayers(map, water, { attachClickHandlers: false })
     }
-    // No cultural rendering: tear down any stale cultural source/layers
-    // (e.g. surviving a hot reload from a version that rendered them).
-    cleanupCulturalLayers(map)
+    if (cultural?.features?.length) {
+      // Cultural agents arrive late (sidebar fetch after first paint) — set
+      // data in place when the source exists, otherwise create the clustered
+      // agent layers (with their own popups) without touching claim layers.
+      if (!updateCulturalData(map, cultural)) {
+        setupCulturalLayers(map, cultural)
+      }
+    } else if (cultural && cultural.features?.length === 0 && map.getSource('ree-cultural')) {
+      updateCulturalData(map, cultural)
+    }
   }
   // Water needs ensuring on the bootstrap path too (the bootstrap above only
   // wires points/polys/protected/network). Setup fns no-op when their source
@@ -497,8 +505,9 @@ export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncIn
   if (!map.getSource(REE_SOURCE_POINTS)) {
     if (water?.features?.length) setupWaterLayers(map, water, { attachClickHandlers: false })
   }
-  // Belt and braces: cultural must never exist on the observatory map.
-  cleanupCulturalLayers(map)
+  if (cultural?.features?.length && !map.getSource('ree-cultural')) {
+    setupCulturalLayers(map, cultural)
+  }
 
   syncRareEarthLayerVisibility(map, visibility || {})
   return true
@@ -556,6 +565,11 @@ export function setupRareEarthLayers(
   if (protectedAreas) {
     addProtectedAreasLayer(map, protectedAreas)
     addProtectedAreaHandlers(map, cleanups)
+  }
+
+  if (options.cultural?.features?.length) {
+    const cleanupCultural = setupCulturalLayers(map, options.cultural)
+    cleanups.push(cleanupCultural)
   }
 
   // One map-level click owns ALL popups: overlapping markers, boundaries,
@@ -863,11 +877,8 @@ export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<strin
 
   setVis('ree-cities-label', vis['cities'] !== false)
 
-  // No cultural map layers exist (sidebar browser only) — hide any stale
-  // ids if a previous style still holds them.
-  ;['ree-cultural-glow', 'ree-cultural-point', 'ree-cultural-hover', 'ree-cultural-label-major', 'ree-cultural-label-minor', 'ree-cultural-cluster', 'ree-cultural-cluster-count', 'ree-cultural-label'].forEach(
-    id => setVis(id, false)
-  )
+  // Cultural agents overlay — visible by default, toggle via `cultural` key.
+  setCulturalLayersVisibility(map, vis['cultural'] !== false)
 
 }
 

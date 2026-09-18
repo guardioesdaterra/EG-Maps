@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://guardioesdaterra.github.io/EG-Maps/sitemap.xml

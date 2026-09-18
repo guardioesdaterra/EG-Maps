@@ -3,6 +3,8 @@
  * @why Nuxt 3 framework configuration — build, modules, runtime config, deployment
  * @defaults defineNuxtConfig
  */
+import { PRERENDER_ROUTES } from './lib/site-routes'
+
 const baseURL = process.env.NUXT_APP_BASE_URL || '/'
 
 export default defineNuxtConfig({
@@ -112,7 +114,9 @@ export default defineNuxtConfig({
     preset: 'static',
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/globe', '/info', '/privacy', '/terms', '/project-grants', '/project-grants/3d', '/endangered-species', '/endangered-species/3d', '/active-crews', '/active-crews/3d', '/vulcan-observatory', '/vulcan-observatory/3d', '/eg-grants', '/eg-grants/fullscreen', '/auth/callback', '/iframe', '/iframe/squarespace', '/campaigns', '/crew-projects', '/masterclasses'],
+      // Canonical route list lives in lib/site-routes (shared with the
+      // auto-generated sitemap.xml route below so the two never drift).
+      routes: [...PRERENDER_ROUTES, '/sitemap.xml'],
       // /manifest.json is a static asset, not a page. The prerender crawler
       // follows <link rel="manifest" href="…"> and tries to fetch it as a
       // route; with a non-root baseURL it follows the prefixed form, so we

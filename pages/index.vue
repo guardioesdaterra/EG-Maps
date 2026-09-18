@@ -240,6 +240,8 @@
         <NuxtLink to="/info">{{ t('nav.info') }}</NuxtLink>
         <NuxtLink to="/campaigns">{{ t('home.campaignsTitle') }}</NuxtLink>
         <NuxtLink to="/masterclasses">{{ t('home.masterclassesTitle') }}</NuxtLink>
+        <NuxtLink to="/privacy">{{ t('nav.privacy') }}</NuxtLink>
+        <NuxtLink to="/terms">{{ t('nav.terms') }}</NuxtLink>
       </nav>
     </footer>
   </main>

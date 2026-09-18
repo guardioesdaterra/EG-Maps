@@ -11,7 +11,9 @@
     "joinEarthGuardians": "Join Earth Guardians",
     "switchToLight": "Switch to Light Mode",
     "switchToDark": "Switch to Dark Mode",
-    "language": "Language"
+    "language": "Language",
+    "privacy": "Privacy",
+    "terms": "Terms"
   },
   "home": {
     "title": "Earth Guardians",
@@ -1526,7 +1528,9 @@
     "noMatchingGrants": "No grants match the current filters.",
     "clearFilters": "Clear filters",
     "clearSearch": "Clear search",
-    "closingToday": "Closing today"
+    "closingToday": "Closing today",
+    "signInAgreesPrefix": "By signing in, you agree to our",
+    "signInAgreesAnd": "and"
   },
   "iframe": {
     "title": "Embed EG-Maps",

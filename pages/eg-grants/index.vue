@@ -25,6 +25,12 @@
         <button class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => signIn()">
           {{ t('grantsPortal.signInBtn') }}
         </button>
+        <p class="mt-4 text-[11px] leading-relaxed text-white/35">
+          {{ t('grantsPortal.signInAgreesPrefix') }}
+          <NuxtLink to="/privacy" class="underline underline-offset-2 hover:text-white/60">{{ t('nav.privacy') }}</NuxtLink>
+          {{ t('grantsPortal.signInAgreesAnd') }}
+          <NuxtLink to="/terms" class="underline underline-offset-2 hover:text-white/60">{{ t('nav.terms') }}</NuxtLink>.
+        </p>
         <div>
           <button class="mt-3 text-xs font-semibold text-white/40 hover:text-white/70 underline underline-offset-4 transition-colors" @click="() => signInWithNewAccount()">
             {{ t('grantsPortal.useAnotherAccount') }}

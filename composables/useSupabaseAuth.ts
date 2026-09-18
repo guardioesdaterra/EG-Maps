@@ -85,7 +85,7 @@ export function useSupabaseAuth() {
     { immediate: true },
   )
 
-  async function signIn(returnTo?: string, opts?: { forceAccountSelect?: boolean }) {
+  async function signIn(returnTo?: string) {
     const config = useRuntimeConfig()
     const baseURL = config.app.baseURL || '/'
     // Canonical trailing-slash callback path: the prerendered page is
@@ -106,32 +106,29 @@ export function useSupabaseAuth() {
 
     await client.auth.signInWithOAuth({
       provider: 'google',
-      // `prompt=select_account` forces Google's account chooser instead of
-      // silently reusing the last browser session (auto-relogin). Used by the
-      // "use a different account" button so a wrong/stale Google session can
-      // be swapped without opening an incognito window.
-      options: opts?.forceAccountSelect
-        ? { redirectTo, queryParams: { prompt: 'select_account' } }
-        : { redirectTo },
+      // ALWAYS force Google's account chooser (`prompt=select_account`).
+      // Without it, Google silently reuses the single existing browser
+      // session: if that session is an unauthorized account, users get an
+      // instant 403 with no chooser and no chance to pick the right account.
+      options: { redirectTo, queryParams: { prompt: 'select_account' } },
     })
   }
 
-  /** Sign in while forcing Google's account chooser (forget browser session). */
+  /** Sign in (account chooser is always forced — see signIn). */
   async function signInWithNewAccount(returnTo?: string) {
-    return signIn(returnTo, { forceAccountSelect: true })
+    return signIn(returnTo)
   }
 
   /**
-   * Forget the current session and restart login with Google's account
-   * chooser. Supabase sign-out alone does NOT clear the Google browser
-   * session, so without `prompt=select_account` the next sign-in would
-   * auto-relogin to the same Google account.
+   * Forget the current session and restart login. Supabase sign-out alone
+   * does NOT clear the Google browser session; the forced account chooser
+   * in signIn() is what prevents auto-relogin to the same Google account.
    */
   async function switchAccount(returnTo?: string) {
     try {
       await client.auth.signOut()
     } catch { /* already signed out — continue to chooser */ }
-    return signIn(returnTo, { forceAccountSelect: true })
+    return signIn(returnTo)
   }
 
   async function signOut() {

@@ -392,7 +392,7 @@ function addCulturalPinLayer(map: MapLibreMap): boolean {
     })
     // A late-added pin (self-heal path) must respect the active user filter.
     if (activeFilter.types?.length || activeFilter.municipalities?.length || activeFilter.subtypes?.length || activeFilter.statuses?.length || activeFilter.indigenousOnly) {
-      map.setFilter('ree-cultural-pin', ['all', ['!has', 'point_count'], buildFilterExpression(activeFilter)] as maplibregl.FilterSpecification)
+      map.setFilter('ree-cultural-pin', ['all', ['!has', 'point_count'], buildFilterExpression(activeFilter)] as unknown as maplibregl.FilterSpecification)
     }
     return true
   } catch {

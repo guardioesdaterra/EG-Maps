@@ -1,11 +1,5 @@
 scripts/__pycache__/
-# supabase/ was fully untracked for security (service-role keys in history),
-# but the is-manager matcher below contains no secrets (env-only) and is the
-# authoritative manager check — keep its source auditable and redeployable.
-supabase/*
-!supabase/functions/
-supabase/functions/*
-!supabase/functions/is-manager/
+supabase/
 *.sql.tmp
 # Scraper exports are CI artifacts pushed straight to Supabase —
 # the client fetches from there, never from the repo. Keep cultural

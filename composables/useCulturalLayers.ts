@@ -367,13 +367,23 @@ function addCulturalPinLayer(map: MapLibreMap): boolean {
           'spaces', CULTURAL_PIN_IMAGE_IDS.spaces,
           CULTURAL_PIN_IMAGE_IDS.agents,
         ],
+        // NOTE: `zoom` may only feed a TOP-LEVEL `step`/`interpolate`
+        // (style-spec validation drops the layer otherwise). The family
+        // base size is therefore resolved per stop, not multiplied outside.
         'icon-size': [
-          '*',
-          ['match', ['get', '_family'],
+          'interpolate', ['linear'], ['zoom'],
+          8, ['*', ['match', ['get', '_family'],
+            'indigenous', CULTURAL_PIN_SIZES.indigenous,
+            'spaces', CULTURAL_PIN_SIZES.spaces,
+            CULTURAL_PIN_SIZES.agents], 0.6],
+          12, ['match', ['get', '_family'],
             'indigenous', CULTURAL_PIN_SIZES.indigenous,
             'spaces', CULTURAL_PIN_SIZES.spaces,
             CULTURAL_PIN_SIZES.agents],
-          ['interpolate', ['linear'], ['zoom'], 8, 0.6, 12, 1, 16, 1.2],
+          16, ['*', ['match', ['get', '_family'],
+            'indigenous', CULTURAL_PIN_SIZES.indigenous,
+            'spaces', CULTURAL_PIN_SIZES.spaces,
+            CULTURAL_PIN_SIZES.agents], 1.2],
         ],
         'icon-anchor': 'bottom',
         'icon-allow-overlap': true,
@@ -405,7 +415,15 @@ export function setupCulturalLayers(
   culturalData: GeoJSON.FeatureCollection,
 ): () => void {
   if (!culturalData?.features?.length) return () => {}
-  if (!map.isStyleLoaded()) return () => {}
+  // NOTE: no `isStyleLoaded()` gate here on purpose. `isStyleLoaded()`
+  // returns false whenever sources were just mutated in the same tick
+  // (`_sourcesDirty` — e.g. the `setData`/`addSource` calls that run right
+  // before us in `syncObservatoryLayers`), so gating on it silently drops
+  // this late-arriving layer forever while `sync` reports success and never
+  // retries. Load-gating with retry lives at the entry points
+  // (`useRareEarthController.setupLayers`, `syncObservatoryLayers`):
+  // by the time we run, a usable style exists and these synchronous
+  // `addSource`/`addLayer` calls simply take effect on the next render.
   if (map.getSource(CULTURAL_SOURCE)) {
     // Source survived a re-entry (HMR / re-setup) — refresh data in place
     // instead of tearing everything down (no flicker, keeps cluster state).
@@ -508,11 +526,14 @@ export function setupCulturalLayers(
         '#e67e22',
       ],
       // Indigenous glow is wider so the biggest markers read at low zoom.
+      // NOTE: `zoom` must feed a TOP-LEVEL `interpolate` — a `case` on top
+      // fails style-spec validation and the layer is dropped (same rule as
+      // the pin `icon-size` above), so zoom stays outermost here.
       'circle-radius': [
-        'case',
-        ['==', ['get', '_family'], 'indigenous'],
-        ['interpolate', ['linear'], ['zoom'], 8, 14, 12, 20, 16, 28],
-        ['interpolate', ['linear'], ['zoom'], 8, 8, 12, 14, 16, 20],
+        'interpolate', ['linear'], ['zoom'],
+        8, ['case', ['==', ['get', '_family'], 'indigenous'], 14, 8],
+        12, ['case', ['==', ['get', '_family'], 'indigenous'], 20, 14],
+        16, ['case', ['==', ['get', '_family'], 'indigenous'], 28, 20],
       ],
       'circle-opacity': 0.14,
       'circle-blur': 0.85,

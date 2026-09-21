@@ -527,7 +527,12 @@ export function setupRareEarthLayers(
   const { points, polys, protected: protectedAreas } = options
   const cleanups: Array<() => void> = []
   if (!points) return () => {}
-  if (!map.isStyleLoaded()) return () => {}
+  // NOTE: no `isStyleLoaded()` gate here on purpose — see the same note in
+  // `setupCulturalLayers`. `isStyleLoaded()` is false whenever sources were
+  // just mutated in the same tick, and this bootstrap also runs mid-`sync`
+  // (late protected-area arrival) right after `setData` calls. Load-gating
+  // with retry lives at the entry points (`useRareEarthController`
+  // `setupLayers`, `syncObservatoryLayers`, style.load handlers).
 
   cleanupRareEarthLayers(map)
 

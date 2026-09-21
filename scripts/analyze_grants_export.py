@@ -174,13 +174,23 @@ def render_markdown(filename, stats) -> str:
         "",
         "### 🏆 Top 5 live by priority",
         "",
-        "| Score | Deadline | Source | Title |",
-        "|---|---|---|---|",
+        "| Score | Scope | Deadline | Source | Title |",
+        "|---|---|---|---|---|",
     ]
-    ranked = sorted(stats["live_rows"], key=lambda x: x.get("priority_score", 0), reverse=True)[:5]
+    # v2.10 absolute scope tier: EVERY global grant outranks EVERY
+    # local-only grant, then by priority_score.
+    ranked = sorted(
+        stats["live_rows"],
+        key=lambda x: (
+            1 if str(x.get("country") or "GLOBAL").strip().upper() == "GLOBAL" else 0,
+            x.get("priority_score", 0) or 0,
+        ),
+        reverse=True,
+    )[:5]
     for g in ranked:
         dl = g.get("deadline") or "—"
-        lines.append(f"| {g.get('priority_score', 0)} | {dl} | {g.get('source', '')} | {g.get('title', '')[:60]} |")
+        scope = str(g.get("country") or "GLOBAL").strip().upper()
+        lines.append(f"| {g.get('priority_score', 0)} | {scope} | {dl} | {g.get('source', '')} | {g.get('title', '')[:60]} |")
     if not ranked:
         lines.append("| — | — | — | _no live grants_ |")
     lines += ["", "### 📚 Top sources", ""]

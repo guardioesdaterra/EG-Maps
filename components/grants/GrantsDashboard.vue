@@ -82,8 +82,8 @@
             <label class="gstore-sort">
               <span class="gstore-sort-label">{{ t('grantsPortal.sortLabel') }}</span>
               <select v-model="sortKey" class="gstore-sort-select" :aria-label="t('grantsPortal.sortLabel')">
-                <option value="newest">{{ t('grantsPortal.sortNewest') }}</option>
                 <option value="priority">{{ t('grantsPortal.sortPriority') }}</option>
+                <option value="newest">{{ t('grantsPortal.sortNewest') }}</option>
                 <option value="deadline">{{ t('grantsPortal.sortDeadline') }}</option>
                 <option value="amount">{{ t('grantsPortal.sortAmount') }}</option>
                 <option value="commented">{{ t('grantsPortal.sortMostCommented') }}</option>
@@ -207,7 +207,10 @@ function formatCompact(val: number): string {
 type MixedGrant = ScrapedGrant | GrantRecord | (ScrapedGrant & { direct_beneficiaries?: number })
 
 type SortKey = 'newest' | 'priority' | 'deadline' | 'amount' | 'commented'
-const sortKey = ref<SortKey>('newest')
+/** v2.9: default to smart ranking (mission fit + evidence + urgency),
+ * not recency — a freshly scraped dateless reference must not outrank
+ * an open dated call. */
+const sortKey = ref<SortKey>('priority')
 
 type DeadlineFilter = 'all' | '7' | '30' | '90'
 type RegionFilter = 'all' | GrantContinentKey
@@ -249,6 +252,12 @@ function effectiveDeadlineDays(g: MixedGrant): number | null {
   const now = new Date()
   const todayMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
   return Math.round((dayMs - todayMs) / 86400000)
+}
+
+/** Worldwide calls serve the whole community — they win priority ties over single-country calls. */
+function isGlobalScope(g: MixedGrant): boolean {
+  const c = (g.country || '').trim().toUpperCase()
+  return c === '' || c === 'GLOBAL'
 }
 
 /** A grant is expired when closed or past its deadline — never shippable. */
@@ -369,7 +378,20 @@ const items = computed<MixedGrant[]>(() => {
   const sorted = [...filtered]
   switch (sortKey.value) {
     case 'priority':
-      sorted.sort((a, b) => (b.priority_score ?? -1) - (a.priority_score ?? -1))
+      // v2.10 absolute scope tier: EVERY worldwide (GLOBAL) call ranks above
+      // EVERY single-country call, then by priority → deadline → amount → newer.
+      sorted.sort((a, b) => {
+        const tier = Number(isGlobalScope(b)) - Number(isGlobalScope(a))
+        if (tier !== 0) return tier
+        const pri = (b.priority_score ?? -1) - (a.priority_score ?? -1)
+        if (pri !== 0) return pri
+        const da = effectiveDeadlineDays(a) ?? Number.POSITIVE_INFINITY
+        const db = effectiveDeadlineDays(b) ?? Number.POSITIVE_INFINITY
+        if (da !== db) return da - db
+        const amt = (b.amount_usd ?? -1) - (a.amount_usd ?? -1)
+        if (amt !== 0) return amt
+        return grantTimestamp(b) - grantTimestamp(a)
+      })
       break
     case 'deadline':
       sorted.sort((a, b) => {

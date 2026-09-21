@@ -27,7 +27,11 @@ export function setupWaterLayers(
   options?: { attachClickHandlers?: boolean },
 ): () => void {
   if (!waterData?.features?.length) return () => {}
-  if (!map.isStyleLoaded()) return () => {}
+  // NOTE: no `isStyleLoaded()` gate here on purpose — see the same note in
+  // `setupCulturalLayers`. This runs mid-`syncObservatoryLayers` right after
+  // `setData` calls that mark the style dirty until the next render; gating
+  // on `isStyleLoaded()` would silently drop the water layer forever.
+  // Load-gating with retry lives in `useRareEarthController.setupLayers`.
   if (map.getSource(WATER_SOURCE)) return () => {}
 
   const cleanups: Array<() => void> = []

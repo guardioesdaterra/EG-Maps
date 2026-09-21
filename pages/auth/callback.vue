@@ -41,12 +41,33 @@ import { mergeOAuthParams, safeNext, snapshotOAuthLanding, summarizeAuthStorage,
 
 useHead({ title: 'Auth Callback | Earth Guardians' })
 
-// Snapshot the landing URL SYNCHRONOUSLY, before the Supabase client
-// (detectSessionInUrl) can consume `?code` and clean the address bar. The
-// client is created by useSupabase() below, whose gotrue `initialize()`
-// exchanges the code async and strips it via history.replaceState — any
-// later read of window.location.search would see `query=[]` and misreport
-// "No authorization code received" even though the provider sent one.
+// Capture the navigation entry FIRST, synchronously: its `name` is the URL
+// the document actually loaded with, unaffected by any later
+// history.replaceState (gotrue cleanup, settleRedirect, SPA-redirect shims).
+// `type` distinguishes a fresh provider landing (navigate) from a refresh or
+// Back-button restore (reload / back_forward) after the code was consumed.
+const navigationEntry = (() => {
+  if (typeof window === 'undefined' || typeof performance === 'undefined') return null
+  try {
+    const e = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+    if (!e) return null
+    let navHasCode = false
+    try {
+      navHasCode = new URL(e.name, window.location.origin).searchParams.has('code')
+    } catch { /* malformed — leave false */ }
+    return { name: e.name ?? null, type: e.type ?? null, hasCode: navHasCode }
+  } catch (err) {
+    console.warn('[auth/callback] navigation-entry read failed', err)
+    return null
+  }
+})()
+
+// Snapshot the landing URL SYNCHRONOUSLY, before anything can rewrite it via
+// history.replaceState. NOTE on codes: Google's `code=4/0A…` goes to
+// Supabase's /auth/v1/callback (visible only in DevTools Network with
+// "Preserve log" as its Location header). The `?code=` THIS page expects is
+// a different, Supabase-issued PKCE code — that is the one diagnosed here.
+let snapshotError: string | null = null
 const landingSnapshot = (() => {
   if (typeof window === 'undefined') return null
   try {
@@ -54,9 +75,9 @@ const landingSnapshot = (() => {
     const rq = route.query as Record<string, unknown>
     let search = window.location.search
     const hash = window.location.hash
-    // Fallback: vue-router parsed the initial URL before auto-detect cleaned
-    // it (e.g. GitHub Pages directory 301 `/auth/callback` → `/auth/callback/`
-    // or gotrue's replaceState ran before setup finished).
+    // Fallback: vue-router parsed the initial URL before something cleaned
+    // it (e.g. GitHub Pages directory 301 `/auth/callback` →
+    // `/auth/callback/` dropping the query).
     if (!search && (rq.code || rq.next || rq.error)) {
       const fallback = new URLSearchParams()
       for (const k of ['code', 'next', 'error', 'error_description']) {
@@ -67,15 +88,28 @@ const landingSnapshot = (() => {
       if (extra) search = (search ? `${search}&` : '?') + extra
     }
     return { ...snapshotOAuthLanding(search, hash), href: window.location.href }
-  } catch {
+  } catch (err) {
+    // NEVER swallow: a null snapshot must not print as `query=[]` ("the URL
+    // had no params") when it really means "the snapshot crashed".
+    snapshotError = err instanceof Error ? err.message : String(err)
+    console.warn('[auth/callback] landing snapshot failed', { error: snapshotError })
     return null
   }
 })()
+if (snapshotError || !landingSnapshot) {
+  console.warn('[auth/callback] snapshot status', {
+    ok: !!landingSnapshot,
+    error: snapshotError,
+    navName: navigationEntry?.name ?? null,
+    navType: navigationEntry?.type ?? null,
+  })
+}
 
 // Cross-load trail (counts only, no values): distinguishes "the provider never
 // sent a code on ANY landing" from "an earlier landing HAD a code" (refresh /
-// Back-button / history restore after the code was consumed). Without this,
-// a bare-URL reload looks identical to a provider failure.
+// Back-button / history restore after the code was consumed). Read together
+// with navType in the diag — loads>1 with navType=reload is a refresh, not a
+// provider failure.
 function recordLanding(sawCode: boolean) {
   try {
     const n = Number(sessionStorage.getItem('eg-auth-cb-loads') || '0') + 1
@@ -132,18 +166,25 @@ function readVerifierToken(): { verifier: string; token: string } {
 }
 
 /**
- * Privacy-safe landing diagnostics (param NAMES only, never values): tells us
- * whether the provider sent no code at all, sent implicit tokens instead of a
- * PKCE code, or sent a code whose verifier/session then went missing. Uses the
- * setup-time snapshot for query/hash keys so auto-detect URL cleaning can't
- * rewrite history to `query=[]`.
+ * Privacy-safe landing diagnostics (param NAMES only, never values). Read
+ * storage FRESH on every call — a mount-time verifier/token string goes stale
+ * (the verifier is removed only after a successful exchange, so "present at
+ * mount" merely means the exchange hadn't finished yet, not that it failed).
+ * A null snapshot prints as `snapshot=failed(...)`, never as `query=[]`.
  */
 function diagnoseLanding(): string {
-  const queryKeys = landingSnapshot?.queryKeys ?? []
-  const hashKeys = landingSnapshot?.hashKeys ?? []
   const { verifier, token } = readVerifierToken()
-  const diag = `query=[${queryKeys.join(',')}] hash=[${hashKeys.join(',')}] verifier=${verifier} token=${token} ${readTrail()}`
-  console.log('[auth/callback] landing diagnostics', { diag })
+  const snapshotPart = landingSnapshot
+    ? `query=[${landingSnapshot.queryKeys.join(',')}] hash=[${landingSnapshot.hashKeys.join(',')}]`
+    : `snapshot=failed(${snapshotError ?? 'null'})`
+  const navPart = navigationEntry
+    ? ` navType=${navigationEntry.type} navHasCode=${navigationEntry.hasCode ? 1 : 0}`
+    : ' navType=? navHasCode=?'
+  const diag = `${snapshotPart} verifier=${verifier} token=${token}${navPart} ${readTrail()}`
+  console.log('[auth/callback] landing diagnostics', {
+    diag,
+    navName: navigationEntry?.name ?? null,
+  })
   return diag
 }
 
@@ -280,9 +321,12 @@ async function checkMembershipAndRedirect(next: string) {
 
 onMounted(async () => {
   if (!import.meta.client) return
-  // Use the setup-time snapshot: detectSessionInUrl may already have
-  // consumed `?code` and cleaned the address bar before onMounted runs.
+  // Use the setup-time snapshot: something may have rewritten the address bar
+  // (directory 301, SPA-redirect shim, retry replaceState) before onMounted.
   // Fall back to a live read only when no snapshot exists (e.g. SSR).
+  // The client runs with detectSessionInUrl:false, so NOTHING auto-consumes
+  // ?code — this page's explicit exchangeCodeForSession below is the single
+  // owner of the single-use PKCE code.
   const live = readOAuthParams()
   const code = landingSnapshot?.code ?? live.get('code')
   const rawNext = landingSnapshot?.next ?? live.get('next')
@@ -296,12 +340,14 @@ onMounted(async () => {
 
   const oauthError = landingSnapshot?.oauthError ?? (live.get('error_description') || live.get('error'))
   if (oauthError) {
-    settleError(oauthError)
+    // Supabase redirecting with ?error= means its own exchange with Google
+    // failed — surface its message verbatim (outcome 3 of the Location test).
+    settleError(oauthError, diagnoseLanding())
     return
   }
 
-  // Subscribe BEFORE reading the session so we never miss the auth event the
-  // PKCE code exchange emits (auto-detect runs async on client init).
+  // Subscribe BEFORE the explicit exchange so we never miss the SIGNED_IN
+  // event it emits.
   const { data: { subscription } } = client.auth.onAuthStateChange(
     async (event, session) => {
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
@@ -311,11 +357,10 @@ onMounted(async () => {
   )
   authUnsubscribe = () => subscription.unsubscribe()
 
-  const diag = diagnoseLanding()
-  console.log('[auth/callback] callback landed', { hasCode: !!code, next, diag })
+  console.log('[auth/callback] callback landed', { hasCode: !!code, next, diag: diagnoseLanding() })
 
-  // getSession() awaits the client's internal URL-code exchange, so when it
-  // resolves the PKCE auto-exchange (if any) has already settled.
+  // A pre-existing session (e.g. second OAuth round-trip in the same tab)
+  // lets us skip the exchange entirely.
   try {
     const { data: { session } } = await withTimeout(client.auth.getSession(), 10000, 'getSession')
     if (session) {
@@ -324,9 +369,9 @@ onMounted(async () => {
     }
   } catch { /* fall through to the explicit exchange attempt below */ }
 
-  // No session yet but a code was present at landing — the auto-detect may
-  // have missed it (e.g. verifier written after init, directory-301 query
-  // loss, hash-fragment code). Retry explicitly once with the SNAPSHOT code.
+  // No session yet but a code was present at landing — exchange it explicitly
+  // (single owner; no auto-detect race). The SNAPSHOT code is used, never a
+  // live re-read that a URL cleanup may already have stripped.
   if (code) {
     try {
       const { data, error: exchangeError } = await withTimeout(
@@ -338,9 +383,8 @@ onMounted(async () => {
         await checkMembershipAndRedirect(next)
         return
       }
-      // The auto-exchange may have won the race concurrently: re-read the
-      // session before reporting failure (avoids "code already used" false
-      // negatives when SIGNED_IN just hasn't propagated yet).
+      // Re-read the session before reporting failure (avoids false negatives
+      // when SIGNED_IN just hasn't propagated yet).
       try {
         const { data: { session } } = await client.auth.getSession()
         if (session) {
@@ -350,14 +394,15 @@ onMounted(async () => {
       } catch { /* fall through to error below */ }
       // A code WAS received but the exchange failed (expired/reused code, or
       // the PKCE verifier is gone because the flow started in another
-      // tab/browser). Report the real cause — not "no code".
+      // tab/browser). Report the real cause — not "no code". Diag is
+      // recomputed HERE so verifier/token reflect failure time, not mount.
       const detail = exchangeError instanceof Error
         ? exchangeError.message
         : (typeof exchangeError === 'object' && exchangeError !== null && 'message' in exchangeError
             ? String((exchangeError as { message: unknown }).message)
             : 'code exchange returned no session')
       console.warn('[auth/callback] explicit code exchange failed', { detail })
-      settleError(t('grantsPortal.authFailedRetry'), `${detail} | ${diag}`)
+      settleError(t('grantsPortal.authFailedRetry'), `${detail} | ${diagnoseLanding()}`)
       return
     } catch (e) {
       // Timeout/throw above — one last session check before giving up.
@@ -370,17 +415,18 @@ onMounted(async () => {
       } catch { /* fall through */ }
       const detail = e instanceof Error ? e.message : String(e)
       console.warn('[auth/callback] explicit code exchange threw', { detail })
-      settleError(t('grantsPortal.authFailedRetry'), `${detail} | ${diag}`)
+      settleError(t('grantsPortal.authFailedRetry'), `${detail} | ${diagnoseLanding()}`)
       return
     }
   } else {
     try {
       const { data: { session } } = await client.auth.getSession()
       if (!session) {
-        // No ?code= at landing (snapshot): stale bookmark, page refresh
-        // after the code was consumed, or the provider redirected without
-        // one. `diag` (snapshot keys) pinpoints it.
-        settleError(t('grantsPortal.authNoCode'), diag)
+        // No ?code= at landing. Distinguish via the FRESH diag: a null
+        // snapshot, navType=reload/back_forward (refresh after consumption),
+        // or navHasCode=1 (code arrived but something stripped it before the
+        // snapshot) each point at a different cause.
+        settleError(t('grantsPortal.authNoCode'), diagnoseLanding())
         return
       }
       await checkMembershipAndRedirect(next)

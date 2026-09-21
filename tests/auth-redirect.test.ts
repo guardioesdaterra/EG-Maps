@@ -5,7 +5,7 @@
  * @deps vitest (describe, it, expect); ../lib/auth-redirect (safeNext, stripBasePath, withTimeout)
  */
 import { describe, it, expect } from 'vitest'
-import { buildAuthCallbackUrl, callbackPathForBase, mergeOAuthParams, safeNext, snapshotOAuthLanding, stripBasePath, summarizeAuthStorage, withTimeout } from '../lib/auth-redirect'
+import { buildAuthCallbackUrl, callbackPathForBase, mergeOAuthParams, safeNext, snapshotNavigationEntry, snapshotOAuthLanding, stripBasePath, summarizeAuthStorage, withTimeout } from '../lib/auth-redirect'
 
 describe('safeNext', () => {
   it('accepts internal paths with queries', () => {
@@ -104,6 +104,19 @@ describe('snapshotOAuthLanding', () => {  it('captures code/next/error plus key 
     expect(s.code).toBeNull()
     expect(s.oauthError).toBe('denied')
     expect(s.hashKeys).toEqual(['error', 'error_description'])
+  })
+})
+
+describe('snapshotNavigationEntry', () => {
+  it('reports name, type, and whether the loaded URL carried ?code=', () => {
+    expect(snapshotNavigationEntry({ name: 'https://x.test/EG-Maps/auth/callback/?next=%2Feg-grants&code=abc', type: 'navigate' }))
+      .toEqual({ name: 'https://x.test/EG-Maps/auth/callback/?next=%2Feg-grants&code=abc', type: 'navigate', hasCode: true })
+    expect(snapshotNavigationEntry({ name: 'https://x.test/EG-Maps/auth/callback/', type: 'reload' }).hasCode).toBe(false)
+  })
+
+  it('handles missing and malformed entries without throwing', () => {
+    expect(snapshotNavigationEntry(null)).toEqual({ name: null, type: null, hasCode: false })
+    expect(snapshotNavigationEntry({})).toEqual({ name: null, type: null, hasCode: false })
   })
 })
 

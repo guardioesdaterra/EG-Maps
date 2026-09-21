@@ -482,7 +482,7 @@ async function markDead(
     if (!row || row.status !== "open") { skipped++; continue; }
     const { error: upErr } = await supabase
       .from("grants")
-      .update({ status: "closed", updated_at: nowIso })
+      .update({ status: "closed", updated_at: nowIso } as never)
       .eq("id", row.id);
     if (upErr) {
       errors.push(`${source}::${sid}: ${upErr.message}`);
@@ -553,7 +553,7 @@ async function closeExpired(
     const chunk = toExpire.slice(i, i + 200);
     const { error } = await supabase
       .from("grants")
-      .update({ status: "expired", updated_at: nowIso })
+      .update({ status: "expired", updated_at: nowIso } as never)
       .in("id", chunk);
     if (error) {
       errors.push(`chunk@${i}: ${error.message}`);

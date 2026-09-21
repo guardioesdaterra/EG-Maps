@@ -123,6 +123,42 @@ export function snapshotOAuthLanding(search: string, hash: string): OAuthLanding
   }
 }
 
+export interface OAuthNavigation {
+  /** Full URL the document actually loaded with (unaffected by replaceState). */
+  name: string | null
+  /** navigate | reload | back_forward | prerender */
+  type: string | null
+  /** Whether the loaded URL itself carried a Supabase ?code= (PKCE) param. */
+  hasCode: boolean
+}
+
+/**
+ * Read the PerformanceNavigationTiming entry synchronously. Its `name` is the
+ * URL the document loaded with — immune to later history.replaceState calls
+ * (gotrue cleanup, settleRedirect, SPA-redirect shims) — so it bypasses the
+ * snapshot race entirely. Pure/testable via the injected entry.
+ */
+export function snapshotNavigationEntry(
+  entry?: { name?: unknown; type?: unknown } | null,
+): OAuthNavigation {
+  try {
+    const e = entry ?? (typeof performance !== 'undefined'
+      ? performance.getEntriesByType('navigation')[0] as { name?: unknown; type?: unknown } | undefined
+      : undefined) ?? null
+    const name = typeof e?.name === 'string' ? e.name : null
+    const type = typeof e?.type === 'string' ? e.type : null
+    let hasCode = false
+    if (name) {
+      try {
+        hasCode = new URL(name, 'http://localhost').searchParams.has('code')
+      } catch { /* malformed — leave false */ }
+    }
+    return { name, type, hasCode }
+  } catch {
+    return { name: null, type: null, hasCode: false }
+  }
+}
+
 /** Race a promise against a timeout so slow auth checks fail open (redirect anyway). */
 export function withTimeout<T>(promise: Promise<T>, ms: number, label = 'operation'): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | null = null

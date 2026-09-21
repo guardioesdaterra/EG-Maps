@@ -29,7 +29,12 @@ export function getSupabaseClient(): SupabaseClient {
   client = createClient(url, key, {
     auth: {
       flowType: 'pkce',
-      detectSessionInUrl: true,
+      // Single-owner code exchange: pages/auth/callback.vue performs the ONE
+      // explicit exchangeCodeForSession(snapshotCode). Leaving auto-detect on
+      // lets gotrue's initialize() race the page for the single-use PKCE code
+      // (loser reports "code already used") and strips ?code via
+      // history.replaceState before diagnostics can read it.
+      detectSessionInUrl: false,
     },
   })
   return client

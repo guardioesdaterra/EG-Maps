@@ -123,3 +123,21 @@ jobs:
             echo ""
             echo "_Read-only run: curate findings into \`scripts/grants.py\` fetchers manually._"
           } >> "$GITHUB_STEP_SUMMARY"
+          # Embed the full exec output (all URLs, grants, data) in the summary
+          # so reviewers never need to download the artifact.
+          REPORT="${{ steps.scout.outputs.report-file }}"
+          if [ -n "$REPORT" ] && [ -f "$REPORT" ]; then
+            {
+              echo ""
+              echo "---"
+              echo ""
+              echo "## 📄 Full research report (\`${REPORT##*/}\`)"
+              echo ""
+              cat "$REPORT"
+            } >> "$GITHUB_STEP_SUMMARY"
+            LINES=$(wc -l < "$REPORT")
+            URLS=$(grep -Eo 'https?://[^ )<>"]+' "$REPORT" | sort -u | wc -l)
+            echo "Summary embedded: $LINES lines, $URLS unique URLs from $REPORT"
+          else
+            echo "No report file to embed (scout step produced no output)"
+          fi

@@ -1518,7 +1518,8 @@ def make_grant(title, source_name, url, description="", funder="",
                deadline="", amount_max="", amount_min="", currency="",
                country="", region="", categories=None, language="en",
                status="open",
-               grant_link="", source_link="", raw_html=""):
+               grant_link="", source_link="", raw_html="",
+               scope_tags=None):
     # v2.6 dual-link model: `source_link` = aggregator page we scraped,
     # `grant_link` = outbound funder/official call URL found inside the
     # post. `url` stays the primary action URL (grant_link when valid,
@@ -1547,9 +1548,27 @@ def make_grant(title, source_name, url, description="", funder="",
     # which buried clearly-scoped calls ("… (Uganda)", "entities based in
     # Canada"). Re-scope from eligibility phrasing — explicitly-scoped
     # calls are never touched.
+    # v2.11 scope-smart order: title parenthetical → funder knowledge →
+    # text inference → aggregator geo-tags. A worldwide tag locks GLOBAL
+    # against stray text mentions (parenthetical + funder still apply).
     if (not (country or "").strip()
             or (country or "").strip().upper() == "GLOBAL"):
-        scoped = infer_scope_country(title, description, language)
+        tag_names = [t for t in (scope_tags or []) if (t or "").strip()]
+        worldwide_tagged = any(
+            _normalize_scope_text(t) in _WORLDWIDE_TAGS for t in tag_names)
+        scoped = ""
+        if worldwide_tagged:
+            for par in reversed(_TITLE_PAREN_RE.findall(title or "")):
+                code = _lookup_country_alias(par)
+                if code and code != "GLOBAL":
+                    scoped = code
+                    break
+        if not scoped:
+            scoped = _funder_scope_override(funder, f"{title} {description}")
+        if not scoped and not worldwide_tagged:
+            scoped = infer_scope_country(title, description, language)
+            if (not scoped or scoped == "GLOBAL") and tag_names:
+                scoped = _scope_from_tags(tag_names) or "GLOBAL"
         if scoped and scoped != "GLOBAL":
             country = scoped
     if not (country or "").strip():
@@ -2558,7 +2577,7 @@ def infer_country(text, lang):
 # stays GLOBAL). Curated standing entries are exempt (see make_grant).
 #
 # Returns an ISO-ish country code, a region bucket (AFRICA/ASIA/EU/
-# EUROPE/LATAM/NORTH_AMERICA/OCEANIA), or "GLOBAL".
+# EUROPE/LATAM/MENA/MEDITERRANEAN/NORTH_AMERICA/OCEANIA), or "GLOBAL".
 
 COUNTRY_ALIASES = {
     # ── Explicitly worldwide (keeps GLOBAL when eligibility says so) ──
@@ -2574,6 +2593,11 @@ COUNTRY_ALIASES = {
     "central america": "LATAM", "caribbean": "LATAM",
     "north america": "NORTH_AMERICA",
     "oceania": "OCEANIA", "pacific": "OCEANIA", "pacific islands": "OCEANIA",
+    # ── Multi-country basins (v2.11: narrower than GLOBAL, wider than
+    # any single ISO — e.g. DIMFE's Mediterranean-basin call) ──
+    "mediterranean basin": "MEDITERRANEAN", "mediterranean sea": "MEDITERRANEAN",
+    "mediterranean": "MEDITERRANEAN", "med basin": "MEDITERRANEAN",
+    "bassin méditerranéen": "MEDITERRANEAN", "cuenca mediterránea": "MEDITERRANEAN",
     # ── North America ──
     "united states": "US", "united states of america": "US", "usa": "US",
     "u.s.a": "US", "u.s.": "US",
@@ -2759,6 +2783,73 @@ def _lookup_country_alias(fragment: str) -> str:
     return ""
 
 
+# Named multi-country basins — an unambiguous scope declaration anywhere
+# in the blob ("… Projects in the Mediterranean Basin"), no eligibility
+# trigger required. Checked before the trigger-sentence scan.
+_BASIN_SCOPES = (
+    ("mediterranean basin", "MEDITERRANEAN"),
+    ("mediterranean sea", "MEDITERRANEAN"),
+    ("bassin méditerranéen", "MEDITERRANEAN"),
+    ("cuenca mediterránea", "MEDITERRANEAN"),
+)
+
+# Aggregator geo-tags that assert worldwide coverage. A post carrying one
+# is never narrowed by stray text mentions — only a title parenthetical
+# ("… (Uganda)") or funder knowledge may still narrow it.
+_WORLDWIDE_TAGS = frozenset({"worldwide", "global", "around the world"})
+
+# Buckets an aggregator tag may resolve to directly (controlled
+# vocabulary — safe where the same word in free text would not be,
+# e.g. PT "eu" = "I" must never mean Europe).
+_TAG_BUCKETS = frozenset({
+    "GLOBAL", "AFRICA", "ASIA", "EU", "EUROPE", "LATAM", "MENA",
+    "NORTH_AMERICA", "OCEANIA", "MEDITERRANEAN",
+})
+
+
+def _scope_from_tags(tags) -> str:
+    """Resolve aggregator geo-tags (TerraViva wp:term names…) to a scope.
+
+    Returns a single bucket/code when the tags agree, else "" (ambiguous
+    tags like MENA + Russia/Eastern Europe, or no geo tags, resolve
+    nothing — text inference owns those).
+    """
+    seen: set = set()
+    for t in tags or []:
+        frag = _normalize_scope_text(t)
+        if not frag:
+            continue
+        if frag.upper() in _TAG_BUCKETS:
+            seen.add(frag.upper())
+            continue
+        code = _lookup_country_alias(frag)
+        if code and code != "GLOBAL":
+            seen.add(code)
+    if len(seen) == 1:
+        return next(iter(seen))
+    return ""
+
+
+# Funder-level scope knowledge (v2.11): aggregator text is sometimes wrong
+# about geography ("from any country" on an EU-only call). Entries are
+# (funder substring, required title+desc keywords, scope) and beat
+# text/tag inference — but never an explicit country or a title
+# parenthetical.
+FUNDER_SCOPE_OVERRIDES = (
+    # Velux Stiftung 2026 forestry call: European institutions (UE).
+    ("velux stiftung", ("forest", "forestry"), "EU"),
+)
+
+
+def _funder_scope_override(funder: str, blob: str) -> str:
+    f = (funder or "").lower()
+    b = (blob or "").lower()
+    for funder_sub, keywords, scope in FUNDER_SCOPE_OVERRIDES:
+        if funder_sub in f and (not keywords or any(k in b for k in keywords)):
+            return scope
+    return ""
+
+
 def infer_scope_country(title: str, description: str = "",
                         language: str = "en", default: str = "GLOBAL") -> str:
     """Re-scope a GLOBAL grant to the country/region that can actually apply.
@@ -2779,6 +2870,11 @@ def infer_scope_country(title: str, description: str = "",
     for par in reversed(parens):
         code = _lookup_country_alias(par)
         if code:
+            return code
+    # 1b. Named basin phrases — multi-country scope declarations.
+    norm_blob = _normalize_scope_text(blob)
+    for phrase, code in _BASIN_SCOPES:
+        if _hint_hit(norm_blob, phrase):
             return code
     # 2. "for X-based" hyphen form.
     m = _HYPHEN_BASED_RE.search(blob)
@@ -2810,7 +2906,8 @@ def infer_scope_country(title: str, description: str = "",
     except (ValueError, AttributeError, TypeError):
         fb = ""
     _REGION_BUCKETS = frozenset(
-        {"AFRICA", "ASIA", "EUROPE", "EU", "LATAM", "NORTH_AMERICA", "OCEANIA"})
+        {"AFRICA", "ASIA", "EUROPE", "EU", "LATAM", "NORTH_AMERICA", "OCEANIA",
+         "MENA", "MEDITERRANEAN"})
     if fb in _REGION_BUCKETS:
         low = blob.lower()
         seen: set = set()
@@ -3549,6 +3646,20 @@ async def fetch_terraviva(session):
             url     = p.get("link", "")
             if not is_scrape_hit(title, content):
                 continue
+            # v2.11: WP _embed carries tag names ("worldwide", "MENA",
+            # "Russia/Eastern Europe") — aggregator geo-classification the
+            # scope parser consults (and the worldwide tag locks GLOBAL).
+            scope_tags = []
+            try:
+                for group in (p.get("_embedded", {}).get("wp:term", []) or []):
+                    if not isinstance(group, list):
+                        continue
+                    for t in group:
+                        name = (t or {}).get("name", "") if isinstance(t, dict) else ""
+                        if name and name not in scope_tags:
+                            scope_tags.append(name)
+            except (AttributeError, TypeError):
+                scope_tags = []
             grants.append(make_grant(
                 title=title, source_name=SOURCE, url=url,
                 description=content[:MAX_DESCRIPTION_LEN],
@@ -3556,7 +3667,7 @@ async def fetch_terraviva(session):
                 deadline=extract_deadline(content),
                 amount_max=extract_amount(content),
                 categories=["environment", "developing world"],
-                raw_html=raw_html))
+                raw_html=raw_html, scope_tags=scope_tags))
     console.print(f"  [cyan]terravivagrants.org[/] → {len(grants)}")
     return grants
 

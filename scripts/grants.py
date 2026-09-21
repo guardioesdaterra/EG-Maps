@@ -663,6 +663,7 @@ def compute_quality_score(relevance: int, signals: int, has_deadline: bool,
 # dateless reference rows rank alongside dated open calls. The new
 # composite is normalized to 0-100 with explicit weights:
 #   mission fit 35 | evidence 25 | urgency 15 | openness 10 | trust 10 | completeness 5
+#   + reach 8 (GLOBAL-scope calls only — see compute_priority_score)
 # NOTE: keyword lists (ARTIVISM_KW …) are defined further below, so the
 # dimension table is resolved lazily at call time (module import order).
 def _mission_dimensions():
@@ -716,10 +717,23 @@ TRUSTED_FUNDER_SOURCES = frozenset({
 })
 
 
+def is_global_scope(country) -> bool:
+    """True when a grant serves the worldwide community (v2.10 tier rule)."""
+    return (str(country or "GLOBAL")).strip().upper() == "GLOBAL"
+
+
+def scope_rank_key(g: dict):
+    """Absolute scope tier first, then score (v2.10): EVERY global grant
+    outranks EVERY local-only grant; ties break by priority_score."""
+    return (1 if is_global_scope(g.get("country")) else 0,
+            g.get("priority_score", g.get("relevance", 0)) or 0)
+
+
 def compute_priority_score(relevance: int, signals: int, highlights: list,
                            usd_val: float, urgency: str, status: str,
                            has_deadline: bool, has_amount: bool,
-                           has_grant_link: bool, source: str) -> int:
+                           has_grant_link: bool, source: str,
+                           country: str = "GLOBAL") -> int:
     """Normalized 0-100 ranking score (v2.9). See weight table above."""
     mission = min(max(int(relevance or 0), 0), 60) / 60 * 35
     dims = count_mission_dimensions(" ".join(highlights or []))
@@ -740,7 +754,12 @@ def compute_priority_score(relevance: int, signals: int, highlights: list,
     else:
         trust = 7  # aggregator scrapers with dedicated parsers
     complete = 5 if (has_deadline and has_amount) else 0
-    total = mission + evidence + urg + openness + trust + complete
+    # v2.10 reach: Earth Guardians is a worldwide community — a GLOBAL call
+    # is actionable by every reader, while a single-country call (e.g. Sri
+    # Lanka only) serves a fraction of them. All else equal, GLOBAL
+    # outranks local-only so worldwide calls surface first.
+    reach = 8 if (country or "GLOBAL").strip().upper() == "GLOBAL" else 0
+    total = mission + evidence + urg + openness + trust + complete + reach
     if status == "closed":
         total -= 20
     return max(0, min(100, int(round(total))))
@@ -1552,6 +1571,8 @@ def make_grant(title, source_name, url, description="", funder="",
 
     # Priority score v2.9: normalized 0-100 composite (mission 35 |
     # evidence 25 | urgency 15 | openness 10 | trust 10 | completeness 5).
+    # v2.10: +8 reach bonus for GLOBAL scope (passed below) so worldwide
+    # calls outrank otherwise-identical single-country calls.
     days, urgency = compute_deadline_urgency(deadline)
 
     content_hash = hashlib.md5(
@@ -1562,6 +1583,7 @@ def make_grant(title, source_name, url, description="", funder="",
     priority = compute_priority_score(
         base_relevance, grant_signals, highlights, usd_val, urgency,
         status, has_dl, has_amt, bool(grant_link), source_name,
+        country,
     )
     quality_score = compute_quality_score(
         base_relevance, grant_signals,
@@ -5246,7 +5268,7 @@ def deduplicate(grants):
                 t = t[:-len(suffix)]
         return t[:80]
 
-    for g in sorted(grants, key=lambda x: x.get("priority_score", x["relevance"]), reverse=True):
+    for g in sorted(grants, key=scope_rank_key, reverse=True):
         uk = normalize_url(g["url"])
         tk = normalize_title(g["title"])
         hk = g.get("content_hash", "")
@@ -5336,7 +5358,7 @@ def save_markdown(grants, path, title="Grants Radar"):
     type_emojis = {"artivism":"🎨","climate_justice":"🌍","conservation":"🌿","human_rights":"⚖️",
                    "indigenous_rights":"🏹","youth":"🌟","general":"📋"}
     for gt in sorted(by_type, key=lambda t: len(by_type[t]), reverse=True):
-        items = sorted(by_type[gt], key=lambda x: x.get("priority_score", x["relevance"]), reverse=True)
+        items = sorted(by_type[gt], key=scope_rank_key, reverse=True)
         emoji = type_emojis.get(gt, "📌")
         lines += [f"## {emoji} {gt.replace('_',' ').title()} ({len(items)})",""]
         for g in items:
@@ -5533,7 +5555,7 @@ async def run_radar(sources_filter, country_filter, keywords, category_filter,
         filtered = alive
         console.print(f"[green]✓ Temporal gate:[/] {len(filtered)} alive "
                       f"({excluded_closed} closed + {excluded_expired} deadline-passed dropped)")
-    filtered.sort(key=lambda x: x.get("priority_score", x["relevance"]), reverse=True)
+    filtered.sort(key=scope_rank_key, reverse=True)
     # ── Quality report (feeds CI summary + Supabase quality_score) ──
     n_dl = sum(1 for g in filtered if g.get("deadline"))
     n_amt = sum(1 for g in filtered if g.get("amount_max"))

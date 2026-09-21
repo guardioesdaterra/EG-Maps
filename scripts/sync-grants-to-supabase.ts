@@ -357,7 +357,11 @@ async function syncGrants(supabase: SupabaseClient<SupabaseDB>, filePath: string
     if (cols.has("highlights"))        r.highlights = Array.isArray(g.highlights) ? g.highlights : [];
     if (cols.has("urgency"))           r.urgency = g.urgency || "unknown";
     if (cols.has("amount_usd"))        r.amount_usd = g.amount_usd ?? null;
-    if (cols.has("priority_score"))    r.priority_score = typeof g.priority_score === "number" ? g.priority_score : 0;
+    // Clamp to the v2.9 0-100 scale — legacy rows predate normalization
+    // (e.g. priority_score=122) and would otherwise rank above everything.
+    // The clamp changes the stored value, so healing flows through the
+    // normal hash-based update path below.
+    if (cols.has("priority_score"))    r.priority_score = typeof g.priority_score === "number" ? Math.max(0, Math.min(100, Math.round(g.priority_score))) : 0;
     // Origin flag: scraper exports carry false; manager manual inserts
     // arrive with manual_inserted=true and are auto-approved.
     if (cols.has("manual_inserted"))   r.manual_inserted = Boolean(g.manual_inserted);

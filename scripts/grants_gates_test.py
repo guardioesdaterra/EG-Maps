@@ -454,4 +454,55 @@ _dl, _closed = G.analyze_detail_text(
 assert _dl is None and _closed, (_dl, _closed)
 _dl, _closed = G.analyze_detail_text(" rolling fund with no fixed deadline, apply anytime ")
 assert _dl is None and not _closed, (_dl, _closed)
+# 19. v2.10 — reach: GLOBAL outranks otherwise-identical local-only calls
+_g_txt = "Open call for proposals worldwide. Grants up to $10,000 for environmental action."
+_g_global = G.make_grant("Worldwide Environmental Action Grant", "test-source",
+                         "https://example.org/grants/global-action",
+                         _g_txt, deadline="2099-06-01", amount_max="$10,000",
+                         country="GLOBAL")
+_g_local = G.make_grant("Worldwide Environmental Action Grant", "test-source",
+                        "https://example.org/grants/global-action",
+                        _g_txt, deadline="2099-06-01", amount_max="$10,000",
+                        country="LK")
+assert _g_global["country"] == "GLOBAL" and _g_local["country"] == "LK", \
+    (_g_global["country"], _g_local["country"])
+assert _g_global["priority_score"] > _g_local["priority_score"], \
+    f"GLOBAL={_g_global['priority_score']} LK={_g_local['priority_score']}"
+assert _g_global["priority_score"] - _g_local["priority_score"] == 8, \
+    (_g_global["priority_score"], _g_local["priority_score"])
+assert 0 <= _g_global["priority_score"] <= 100
+assert 0 <= _g_local["priority_score"] <= 100
+# unit-level: reach bonus applies exactly to GLOBAL (case-insensitive)
+_kw = {"relevance": 50, "signals": 5, "highlights": [], "usd_val": 10000,
+       "urgency": "soon", "status": "open", "has_deadline": True,
+       "has_amount": True, "has_grant_link": False, "source": "test-source"}
+assert G.compute_priority_score(**_kw, country="GLOBAL") == \
+    G.compute_priority_score(**_kw, country="global")
+assert G.compute_priority_score(**_kw, country="GLOBAL") > \
+    G.compute_priority_score(**_kw, country="LK")
+# 20. v2.10 — absolute scope tier: EVERY global outranks EVERY local
+assert G.is_global_scope("GLOBAL") and G.is_global_scope(" global ")
+assert G.is_global_scope("") and G.is_global_scope(None)  # missing scope falls back to global
+assert not G.is_global_scope("LK") and not G.is_global_scope("LATAM")
+_tier = [
+    {"title": "Local Strong", "country": "LK", "priority_score": 100,
+     "status": "open", "urgency": "urgent", "deadline": "2099-01-01",
+     "amount_max": "$1,000", "source": "s1"},
+    {"title": "Global Weak", "country": "GLOBAL", "priority_score": 10,
+     "status": "open", "urgency": "unknown", "deadline": "",
+     "amount_max": "", "source": "s1"},
+    {"title": "Global Mid", "country": "GLOBAL", "priority_score": 50,
+     "status": "open", "urgency": "soon", "deadline": "2099-05-01",
+     "amount_max": "$5,000", "source": "s1"},
+]
+_ordered = sorted(_tier, key=G.scope_rank_key, reverse=True)
+assert [g["title"] for g in _ordered] == ["Global Mid", "Global Weak", "Local Strong"], \
+    [g["title"] for g in _ordered]
+# analyzer Top-5 obeys the same tier (local 100 must not lead)
+_stats20 = AZ.analyze(_tier, today="2026-09-16")
+_md20 = AZ.render_markdown("tier_test.json", _stats20)
+_top_lines = [l for l in _md20.splitlines()
+              if l.startswith("| ") and "Score" not in l and "---" not in l]
+assert _top_lines and "| LK |" not in _top_lines[0], _top_lines[0]
+assert _top_lines[0].split("|")[2].strip() == "GLOBAL", _top_lines[0]
 print("ALL GRANTS GATE TESTS PASSED")

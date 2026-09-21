@@ -184,7 +184,7 @@ useHead({
 
 const { t, locale, localeNames } = useI18n()
 
-const { user, isManager, isManagerReady, managerCheckError, retryManagerCheck, signIn, signInWithNewAccount, switchAccount, signOut, sessionReady } = useSupabaseAuth()
+const { user, isManager, isManagerReady, managerCheckError, retryManagerCheck, signIn, signInWithNewAccount, switchAccount, signOut, sessionReady, autoSignInIfRequested } = useSupabaseAuth()
 const confirmSignOut = ref(false)
 
 const accessGranted = computed(() => sessionReady.value && !!user.value && isManager.value)
@@ -313,6 +313,9 @@ watch(accessGranted, (granted) => {
 }, { immediate: true })
 
 onMounted(() => {
+  // Framed sign-in breakout (?eg-signin=): restart OAuth top-level where the
+  // PKCE verifier shares a storage partition with the callback exchange.
+  autoSignInIfRequested()
   setTimeout(() => {
     if (!import.meta.client) return
     try {

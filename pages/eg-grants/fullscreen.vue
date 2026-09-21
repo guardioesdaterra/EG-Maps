@@ -156,7 +156,7 @@ useHead({ title: 'EG Grants · Fullscreen | Earth Guardians' })
 const { isEmbedded } = useHostEmbed()
 
 const { t } = useI18n()
-const { user, isManager, managerCheckError, retryManagerCheck, signIn, signInWithNewAccount, switchAccount, signOut, sessionReady } = useSupabaseAuth()
+const { user, isManager, managerCheckError, retryManagerCheck, signIn, signInWithNewAccount, switchAccount, signOut, sessionReady, autoSignInIfRequested } = useSupabaseAuth()
 const confirmSignOut = ref(false)
 
 const accessGranted = computed(() => sessionReady.value && !!user.value && isManager.value)
@@ -269,6 +269,8 @@ watch(accessGranted, (granted) => {
 
 onMounted(() => {
   if (import.meta.server) return
+  // Framed sign-in breakout (?eg-signin=): restart OAuth top-level (see index.vue).
+  autoSignInIfRequested()
   if (typeof window !== 'undefined' && !window.location.hash.includes('no-dock')) {
     history.replaceState(null, '', '#no-dock')
     window.dispatchEvent(new HashChangeEvent('hashchange'))

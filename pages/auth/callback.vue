@@ -328,8 +328,22 @@ onMounted(async () => {
   // ?code — this page's explicit exchangeCodeForSession below is the single
   // owner of the single-use PKCE code.
   const live = readOAuthParams()
-  const code = landingSnapshot?.code ?? live.get('code')
-  const rawNext = landingSnapshot?.next ?? live.get('next')
+  // Last-resort recovery: the navigation entry's `name` is the URL the
+  // document actually loaded with, immune to any query stripping that happens
+  // before setup (host directory-301s, SPA shims, client cleanups). Observed
+  // in production: navHasCode=1 while window.location.search was already
+  // empty at setup — without this fallback the real code is unreachable and
+  // the page misreports "No authorization code received".
+  let navParams: URLSearchParams | null = null
+  try {
+    if (navigationEntry?.name) navParams = new URL(navigationEntry.name, window.location.origin).searchParams
+  } catch { navParams = null }
+  const code = landingSnapshot?.code ?? live.get('code') ?? navParams?.get('code') ?? null
+  const rawNext = landingSnapshot?.next ?? live.get('next') ?? navParams?.get('next') ?? null
+  const recoveredFromNavEntry = !landingSnapshot?.code && !live.get('code') && !!code
+  if (recoveredFromNavEntry) {
+    console.log('[auth/callback] code recovered from navigation entry (query was stripped pre-setup)')
+  }
   const next = safeNext(rawNext) || FALLBACK_NEXT
   backUrl.value = next
 
@@ -338,7 +352,10 @@ onMounted(async () => {
     return
   }
 
-  const oauthError = landingSnapshot?.oauthError ?? (live.get('error_description') || live.get('error'))
+  // NOTE: `??` cannot be mixed with `||` without explicit parens
+  // (SyntaxError) — the whole `||` fallback chain is one operand of `??`.
+  const oauthError = landingSnapshot?.oauthError
+    ?? ((live.get('error_description') || live.get('error')) || (navParams?.get('error_description') || navParams?.get('error')) || null)
   if (oauthError) {
     // Supabase redirecting with ?error= means its own exchange with Google
     // failed — surface its message verbatim (outcome 3 of the Location test).
@@ -357,7 +374,7 @@ onMounted(async () => {
   )
   authUnsubscribe = () => subscription.unsubscribe()
 
-  console.log('[auth/callback] callback landed', { hasCode: !!code, next, diag: diagnoseLanding() })
+  console.log('[auth/callback] callback landed', { hasCode: !!code, next, recoveredFromNavEntry, diag: diagnoseLanding() })
 
   // A pre-existing session (e.g. second OAuth round-trip in the same tab)
   // lets us skip the exchange entirely.

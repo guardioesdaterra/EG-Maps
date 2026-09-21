@@ -505,4 +505,43 @@ _top_lines = [l for l in _md20.splitlines()
               if l.startswith("| ") and "Score" not in l and "---" not in l]
 assert _top_lines and "| LK |" not in _top_lines[0], _top_lines[0]
 assert _top_lines[0].split("|")[2].strip() == "GLOBAL", _top_lines[0]
+# 21. v2.11 — scope-smart: basins, funder overrides, tag geography
+assert G.infer_scope_country(
+    "Donors' Initiative — Freshwater Projects in the Mediterranean Basin",
+    "The call is open to NGOs in the region.") == "MEDITERRANEAN"
+_d = G.make_grant("DIMFE — Freshwater Projects in the Mediterranean Basin",
+                 "terravivagrants.org", "https://example.org/dimfe",
+                 "Open to NGOs, scientific institutions and local authorities in the region. Grants up to $10,000.",
+                 deadline="2099-06-01", amount_max="$10,000",
+                 scope_tags=["MENA", "Russia/Eastern Europe", "water"])
+assert _d["country"] == "MEDITERRANEAN", _d["country"]
+# funder knowledge beats worldwide tag + "any country" text (Velux UE case)
+_v = G.make_grant("Velux Stiftung — Sustainable Forest Management",
+                 "terravivagrants.org", "https://example.org/velux",
+                 "Eligible applicants from any country. Grants up to $10,000.",
+                 deadline="2099-06-01", amount_max="$10,000",
+                 funder="Velux Stiftung", scope_tags=["worldwide", "forests"])
+assert _v["country"] == "EU" and _v["region"] == "EUROPE", (_v["country"], _v["region"])
+# worldwide tag locks GLOBAL against stray country mentions…
+_w = G.make_grant("Some Open Grant", "terravivagrants.org", "https://example.org/w",
+                 "Open to NGOs in Kenya and worldwide. Grants up to $10,000.",
+                 deadline="2099-06-01", amount_max="$10,000", scope_tags=["worldwide"])
+assert _w["country"] == "GLOBAL", _w["country"]
+# …but a title parenthetical still narrows
+_u = G.make_grant("Climate Grant Program (Uganda)", "terravivagrants.org", "https://example.org/u",
+                 "Open call worldwide. Grants up to $10,000.",
+                 deadline="2099-06-01", amount_max="$10,000", scope_tags=["worldwide"])
+assert _u["country"] == "UG", _u["country"]
+# vague text + geo tag resolves from the tag…
+_m = G.make_grant("Some Open Grant", "terravivagrants.org", "https://example.org/m",
+                 "Open call for proposals. Grants up to $10,000.",
+                 deadline="2099-06-01", amount_max="$10,000", scope_tags=["MENA"])
+assert _m["country"] == "MENA", _m["country"]
+# …while ambiguous multi-region tags resolve nothing
+_a = G.make_grant("Some Open Grant", "terravivagrants.org", "https://example.org/a",
+                 "Open call for proposals. Grants up to $10,000.",
+                 deadline="2099-06-01", amount_max="$10,000",
+                 scope_tags=["MENA", "European Union"])
+assert _a["country"] == "GLOBAL", _a["country"]
+assert G._scope_from_tags(["MENA", "European Union"]) == ""
 print("ALL GRANTS GATE TESTS PASSED")

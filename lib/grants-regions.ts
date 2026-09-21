@@ -76,6 +76,9 @@ export function grantContinentOf(
     if (OCEANIA.has(code)) return 'oceania'
     if (code === 'MENA') return 'mena'
     if (code === 'GLOBAL') return 'global'
+    // Cross-regional basins (e.g. MEDITERRANEAN spans europe + mena) have
+    // no single continent — they filter under global, never dropped.
+    if (code === 'MEDITERRANEAN') return 'global'
     // Unknown code — fall through to the region bucket before giving up.
   }
   const bucket = (region || '').trim().toUpperCase()

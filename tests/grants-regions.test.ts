@@ -49,6 +49,11 @@ describe('grantContinentOf', () => {
     expect(grantContinentOf(undefined, undefined)).toBe('global')
   })
 
+  it('maps cross-regional basins to global', () => {
+    expect(grantContinentOf('MEDITERRANEAN')).toBe('global')
+    expect(grantContinentOf('mediterranean')).toBe('global')
+  })
+
   it('exposes all filter continents', () => {
     const keys = GRANT_CONTINENTS.map((c) => c.key)
     expect(keys).toEqual([

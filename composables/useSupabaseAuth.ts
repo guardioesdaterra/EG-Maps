@@ -3,10 +3,11 @@
  * @why Supabase authentication wrapper — sign in, sign up, sign out, session management.
  *  OAuth always runs TOP-LEVEL: Google refuses to render its login page in a
  *  frame (X-Frame-Options: DENY), and the PKCE verifier must share a storage
- *  partition with the callback exchange, so framed callers break out via
- *  ?eg-signin= and the top-level page restarts the flow (autoSignInIfRequested).
+ *  partition with the callback exchange. Framed callers open an auth TAB
+ *  (?eg-signin= + ?eg-postback=1); the tab relays its fresh session back into
+ *  the opener iframe via postMessage so the user stays on the embedding host.
  * @functions useSupabaseAuth
- * @deps vue (ref, watch); ./useSupabase (useSupabase); ~/lib/auth-redirect (buildAuthCallbackUrl, safeNext, stripBasePath, takeAutoSignInFlag, withAutoSignInFlag, withTimeout)
+ * @deps vue (ref, watch); ./useSupabase (useSupabase); ~/lib/auth-redirect (buildAuthCallbackUrl, safeNext, stripBasePath, takeAutoPostbackFlag, takeAutoSignInFlag, withAutoPostbackFlag, withAutoSignInFlag, withTimeout)
  */
 import { ref, watch } from 'vue'
 import { useSupabase } from './useSupabase'
@@ -14,9 +15,12 @@ import {
   buildAuthCallbackUrl,
   safeNext,
   stripBasePath,
+  takeAutoPostbackFlag,
   takeAutoSignInFlag,
+  withAutoPostbackFlag,
   withAutoSignInFlag,
   withTimeout,
+  type AuthSessionRelay,
   type AutoSignInMode,
 } from '~/lib/auth-redirect'
 
@@ -71,15 +75,22 @@ function navigateTopLevel(url: string): void {
 }
 
 /**
- * Framed sign-in entry: navigate the top document to the current (or
- * `returnTo`) page carrying ?eg-signin=<mode> so the top-level page restarts
- * OAuth there. Returns true when the breakout was issued.
+ * Framed sign-in entry: open the grants page as a top-level auth TAB carrying
+ * ?eg-signin=<mode>&eg-postback=1. The tab runs OAuth (Google renders,
+ * PKCE storage is unpartitioned) and relays its session back into this
+ * iframe via postMessage. Deliberately NO `noopener` — the tab needs
+ * `window.opener` for the relay. Returns true when handoff was issued.
+ * Falls back to full top navigation when popups are blocked.
  */
-function breakOutToTopLevel(returnTo: string | undefined, mode: AutoSignInMode): boolean {
+function openAuthTopLevel(returnTo: string | undefined, mode: AutoSignInMode): boolean {
   if (typeof window === 'undefined' || !isFramed()) return false
   const target = (returnTo && safeNext(returnTo)) || currentAppPath()
-  const topUrl = withAutoSignInFlag(absoluteAppUrl(target), mode)
+  const withFlag = withAutoSignInFlag(absoluteAppUrl(target), mode)
+  const topUrl = withFlag && withAutoPostbackFlag(withFlag)
   if (!topUrl) return false
+  try {
+    if (window.open(topUrl, '_blank')) return true
+  } catch { /* popup blocked — fall through to top navigation */ }
   navigateTopLevel(topUrl)
   return true
 }
@@ -89,6 +100,11 @@ export function useSupabaseAuth() {
 
   const isManager = ref(false)
   const isManagerReady = ref(false)
+  // Auth-tab relay state: true while this top-level load is a ?eg-postback=1
+  // tab (shows the "signed in, closing" UI instead of the portal); done flips
+  // once the session was relayed into the opener iframe.
+  const isPostbackTab = ref(false)
+  const postbackDone = ref(false)
   // Non-empty when the check itself failed (transport error/timeout) as
   // opposed to an explicit "not a manager" answer — lets the UI offer a
   // retry instead of mislabeling a manager as unauthorized.
@@ -198,44 +214,111 @@ export function useSupabaseAuth() {
   }
 
   /**
-   * One-shot consumer for ?eg-signin= (placed by a framed sign-in breakout).
-   * Honored TOP-LEVEL ONLY (prevents breakout loops): strips the flag, then
-   * once the session state is known starts OAuth so the PKCE verifier lands
-   * in top-level storage. Call once from grants pages onMounted.
+   * One-shot consumer for ?eg-signin= (placed by a framed sign-in handoff).
+   * Honored TOP-LEVEL ONLY (prevents loops): strips the flags, then once the
+   * session state is known either relays the session back into the opener
+   * iframe (?eg-postback=1) or starts OAuth so the PKCE verifier lands in
+   * top-level storage. Call once from grants pages onMounted.
    */
   function autoSignInIfRequested(): void {
     if (typeof window === 'undefined' || !import.meta.client) return
     if (isFramed()) return
-    const { cleanHref, mode } = takeAutoSignInFlag(window.location.href)
+    const first = takeAutoSignInFlag(window.location.href)
+    const second = takeAutoPostbackFlag(first.cleanHref)
+    const mode = first.mode
     if (!mode) return
+    // Postback is only meaningful with an opener to relay to (a manually
+    // opened flag URL, or the blocked-popup top-nav fallback, has none) —
+    // without one, run the ordinary top-level flow instead.
+    const postback = second.postback && !!window.opener
     try {
-      const clean = new URL(cleanHref)
+      const clean = new URL(second.cleanHref)
       window.history.replaceState({}, '', clean.pathname + clean.search + clean.hash)
     } catch { /* keep the original URL — still proceed with the sign-in */ }
+    isPostbackTab.value = postback
     const stop = watch([sessionReady, user], ([ready, u]) => {
       if (!ready) return
-      stop()
-      const run = mode === 'switch'
-        ? (async () => {
+      if (postback && u) {
+        stop()
+        void relaySessionToOpener()
+        return
+      }
+      // (Re)start OAuth, preserving the flags so the landing page relays.
+      // In postback mode the watcher dies with this page load; the flagged
+      // `next` brings the relay branch back to life after the round-trip.
+      const flaggedNext = postback ? flaggedReturnTo(mode) : undefined
+      if (mode === 'switch') {
+        stop()
+        void (async () => {
           try {
             await client.auth.signOut()
           } catch { /* continue to chooser */ }
-          await startOAuth()
-        })()
-        : (!u ? startOAuth() : Promise.resolve())
-      run.catch((e) => {
-        console.error('[auth] auto sign-in failed:', e instanceof Error ? e.message : String(e))
-      })
+          await startOAuth(flaggedNext)
+        })().catch((e) => {
+          console.error('[auth] auto sign-in failed:', e instanceof Error ? e.message : String(e))
+        })
+        return
+      }
+      if (!u) {
+        stop()
+        startOAuth(flaggedNext).catch((e) => {
+          console.error('[auth] auto sign-in failed:', e instanceof Error ? e.message : String(e))
+        })
+      } else {
+        stop()
+      }
     }, { immediate: true })
+  }
+
+  /**
+   * Post the fresh top-level session into the opener (host iframe, same
+   * origin) and try to close this auth tab. targetOrigin pins delivery to
+   * the same origin — a cross-origin opener silently receives nothing.
+   */
+  async function relaySessionToOpener(): Promise<void> {
+    try {
+      const { data: { session } } = await client.auth.getSession()
+      const opener = window.opener as Window | null
+      if (opener && session?.access_token && session?.refresh_token) {
+        const msg: AuthSessionRelay = {
+          source: 'eg-auth',
+          type: 'auth:session',
+          payload: { access_token: session.access_token, refresh_token: session.refresh_token },
+        }
+        opener.postMessage(msg, window.location.origin)
+      }
+    } catch (e) {
+      console.error('[auth] session relay failed:', e instanceof Error ? e.message : String(e))
+    } finally {
+      postbackDone.value = true
+      try {
+        window.close()
+      } catch { /* script-closable only — user closes the tab manually */ }
+    }
+  }
+
+  /** Current clean page path re-flagged, so an OAuth round-trip started from
+   *  a postback tab returns to a URL that still relays. */
+  function flaggedReturnTo(mode: AutoSignInMode): string {
+    const path = currentAppPath()
+    const withFlag = withAutoSignInFlag(absoluteAppUrl(path), mode)
+    const full = withFlag && withAutoPostbackFlag(withFlag)
+    if (full) {
+      try {
+        const u = new URL(full)
+        return u.pathname + u.search + u.hash
+      } catch { /* fall through to unflagged default */ }
+    }
+    return '/eg-grants'
   }
 
   async function signIn(returnTo?: string) {
     // Framed (e.g. earthguardians.org embed): do NOT start OAuth here — the
     // PKCE verifier would land in the iframe's partitioned storage while the
     // callback exchanges top-level, and Google would refuse the framed login
-    // page anyway. Break out; the top-level page consumes ?eg-signin= via
-    // autoSignInIfRequested() and starts OAuth there instead.
-    if (breakOutToTopLevel(returnTo, 'login')) return
+    // page anyway. Hand off to an auth tab; it relays the session back into
+    // this iframe via postMessage (autoSignInIfRequested + useSupabase).
+    if (openAuthTopLevel(returnTo, 'login')) return
     return startOAuth(returnTo)
   }
 
@@ -254,10 +337,10 @@ export function useSupabaseAuth() {
       await client.auth.signOut()
     } catch { /* already signed out — continue to chooser */ }
     // Framed: the sign-out above only cleared the iframe partition — the
-    // top-level session (old account) survives, so break out with mode
-    // 'switch' to force a top-level sign-out + chooser instead of 'login'
-    // (which would no-op on the existing top-level user).
-    if (breakOutToTopLevel(returnTo, 'switch')) return
+    // auth tab's top-level session (old account) survives, so hand off with
+    // mode 'switch' to force a top-level sign-out + chooser there instead of
+    // 'login' (which would no-op on the existing top-level user).
+    if (openAuthTopLevel(returnTo, 'switch')) return
     return startOAuth(returnTo)
   }
 
@@ -271,5 +354,5 @@ export function useSupabaseAuth() {
     }
   }
 
-  return { user, isManager, isManagerReady, managerCheckError, retryManagerCheck, signIn, signInWithNewAccount, switchAccount, signOut, sessionReady, autoSignInIfRequested }
+  return { user, isManager, isManagerReady, managerCheckError, retryManagerCheck, signIn, signInWithNewAccount, switchAccount, signOut, sessionReady, autoSignInIfRequested, isPostbackTab, postbackDone }
 }

@@ -6,7 +6,7 @@
  * @deps vitest (describe, it, expect); ../lib/auth-redirect (safeNext, stripBasePath, withTimeout, withAutoSignInFlag, takeAutoSignInFlag)
  */
 import { describe, it, expect } from 'vitest'
-import { buildAuthCallbackUrl, callbackPathForBase, mergeOAuthParams, safeNext, snapshotNavigationEntry, snapshotOAuthLanding, stripBasePath, summarizeAuthStorage, takeAutoSignInFlag, withAutoSignInFlag, withTimeout } from '../lib/auth-redirect'
+import { buildAuthCallbackUrl, callbackPathForBase, mergeOAuthParams, safeNext, snapshotNavigationEntry, snapshotOAuthLanding, stripBasePath, summarizeAuthStorage, takeAutoPostbackFlag, takeAutoSignInFlag, withAutoPostbackFlag, withAutoSignInFlag, withTimeout } from '../lib/auth-redirect'
 
 describe('safeNext', () => {
   it('accepts internal paths with queries', () => {
@@ -189,5 +189,21 @@ describe('takeAutoSignInFlag', () => {
     const { cleanHref, mode } = takeAutoSignInFlag('%%%')
     expect(mode).toBeNull()
     expect(cleanHref).toBe('%%%')
+  })
+})
+
+describe('postback flag', () => {
+  it('sets and reads the flag alongside the sign-in flag', () => {
+    const flagged = withAutoPostbackFlag(withAutoSignInFlag('https://a.test/EG-Maps/eg-grants', 'login')!)
+    expect(flagged).toBe('https://a.test/EG-Maps/eg-grants?eg-signin=login&eg-postback=1')
+    const { cleanHref, postback } = takeAutoPostbackFlag(flagged!)
+    expect(postback).toBe(true)
+    expect(cleanHref).toBe('https://a.test/EG-Maps/eg-grants?eg-signin=login')
+  })
+
+  it('reports false when absent and never throws', () => {
+    expect(takeAutoPostbackFlag('https://a.test/eg-grants').postback).toBe(false)
+    expect(takeAutoPostbackFlag('%%%')).toEqual({ cleanHref: '%%%', postback: false })
+    expect(withAutoPostbackFlag('%%%')).toBeNull()
   })
 })

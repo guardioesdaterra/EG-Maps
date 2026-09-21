@@ -440,6 +440,65 @@ function findLatest(pattern: string): string | null {
   } catch { return null; }
 }
 
+async function markDead(
+  supabase: SupabaseClient<SupabaseDB>,
+  filePath: string,
+  opts: { dryRun: boolean },
+): Promise<void> {
+  // Reconcile funder-page-closed rows: the scraper drops them from the
+  // export (temporal gate) and records a dead_*.json sidecar carrying the
+  // export id (= DB source_id natural key). Flip matching open DB rows to
+  // closed so stale calls stop showing live "remaining days". Rows with no
+  // DB match, or already non-open, are skipped (never inserted).
+  const raw = readFileSync(filePath, "utf-8");
+  const parsed = JSON.parse(raw);
+  const dead: { source?: string; source_id?: string }[] = parsed.dead || parsed;
+  if (!Array.isArray(dead) || dead.length === 0) {
+    console.warn("mark-dead: sidecar empty, nothing to do.");
+    return;
+  }
+  console.warn(`mark-dead: loaded ${dead.length} entries from ${filePath}`);
+
+  let flipped = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+  const nowIso = new Date().toISOString();
+  for (const entry of dead) {
+    const source = String(entry.source || "");
+    const sid = String(entry.source_id || "");
+    if (!source || !sid) { skipped++; continue; }
+    if (opts.dryRun) { skipped++; continue; }
+    const { data, error } = await supabase
+      .from("grants")
+      .select("id, status")
+      .eq("source", source)
+      .eq("source_id", sid)
+      .maybeSingle();
+    if (error) {
+      errors.push(`${source}::${sid}: ${error.message}`);
+      continue;
+    }
+    const row = data as unknown as { id: string; status: string } | null;
+    if (!row || row.status !== "open") { skipped++; continue; }
+    const { error: upErr } = await supabase
+      .from("grants")
+      .update({ status: "closed", updated_at: nowIso })
+      .eq("id", row.id);
+    if (upErr) {
+      errors.push(`${source}::${sid}: ${upErr.message}`);
+    } else {
+      flipped++;
+    }
+  }
+  if (opts.dryRun) {
+    console.warn(`mark-dead dry-run: ${dead.length} entries (no writes performed)`);
+    return;
+  }
+  console.warn(`mark-dead: flipped=${flipped} skipped=${skipped} errors=${errors.length}`);
+  for (const e of errors.slice(0, 10)) console.warn(`  • ${e}`);
+  if (errors.length > 0) process.exit(2);
+}
+
 async function closeExpired(
   supabase: SupabaseClient<SupabaseDB>,
   opts: { dryRun: boolean },
@@ -517,8 +576,8 @@ async function main() {
 
   if (!supabaseUrl) { console.error("ERROR: SUPABASE_URL required"); process.exit(1); }
   if (!serviceRoleKey) { console.error("ERROR: SUPABASE_SERVICE_ROLE_KEY required"); process.exit(1); }
-  if (!mode || (mode !== "grants" && mode !== "agents" && mode !== "close-expired")) {
-    console.error("Usage: sync-grants-to-supabase.ts <grants|agents|close-expired> [file] [--dry-run]");
+  if (!mode || (mode !== "grants" && mode !== "agents" && mode !== "close-expired" && mode !== "mark-dead")) {
+    console.error("Usage: sync-grants-to-supabase.ts <grants|agents|close-expired|mark-dead> [file] [--dry-run]");
     process.exit(1);
   }
 
@@ -527,6 +586,10 @@ async function main() {
   try {
     if (mode === "close-expired") {
       await closeExpired(supabase, { dryRun });
+    } else if (mode === "mark-dead") {
+      const path = filePath || findLatest("dead_");
+      if (!path) { console.error("No dead-grants sidecar file found"); process.exit(1); }
+      await markDead(supabase, path, { dryRun });
     } else if (mode === "grants") {
       const path = filePath || findLatest("grants_export_");
       if (!path) { console.error("No grants export file found"); process.exit(1); }

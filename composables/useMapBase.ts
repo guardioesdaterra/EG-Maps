@@ -275,6 +275,10 @@ export function useMapBase(config: MapBaseConfig) {
   function setMapInstance(next: maplibregl.Map | null) {
     map = next
     mapRef.value = next
+    // Dev-only handle for headless probes / debugging (never in prod).
+    if (import.meta.dev) {
+      try { (window as unknown as { __egMap?: unknown }).__egMap = next } catch { /* ignore */ }
+    }
     // Flush any fly-to target that arrived before the map existed.
     if (next && pendingFlyToTarget) {
       const target = pendingFlyToTarget
@@ -583,6 +587,24 @@ export function useMapBase(config: MapBaseConfig) {
     isLoading.value = true
     try {
       map.setStyle(currentStyle() as maplibregl.StyleSpecification | string)
+      // Recovery MUST NOT wait on 'load': MapLibre fires 'load' only once
+      // per map instance (`_loaded` is never reset), so after a setStyle it
+      // never fires again and the loading overlay would cover the rendered
+      // map forever. 'idle' fires reliably once the swapped style settles —
+      // clear the flag and re-attach the style-wiped data layers there.
+      // (The style.load handler below re-attaches layers too; this is the
+      // guaranteed backstop that also un-sticks the overlay.)
+      const switchTimer = setTimeout(() => {
+        // Backstop: never leave the overlay stuck if 'idle' is delayed
+        // (e.g. a hung glyph/tile fetch on a poor link).
+        if (isMounted) isLoading.value = false
+      }, 20000)
+      map.once('idle', () => {
+        clearTimeout(switchTimer)
+        if (!isMounted) return
+        isLoading.value = false
+        resyncLayersAfterStyle()
+      })
     } catch (err) {
       console.error('[EG Maps] failed to switch tile provider style', err)
       isLoading.value = false

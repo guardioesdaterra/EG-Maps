@@ -6,12 +6,15 @@
 ║  License: AGPL-3.0 — stay free, stay open                       ║
 ╚══════════════════════════════════════════════════════════════════╝
 
-Crawls 30+ sources with NO US government dependencies:
+Crawls 50 sources with NO US government dependencies:
   — Brazilian civil society platforms (capta, prosas, casa, ISPN)
-  — EU programme APIs (Creative Europe, LIFE, EEA Grants)
+  — EU programme APIs (Creative Europe, LIFE/CINEA, EEA Grants)
   — UNESCO, Commonwealth Foundation, Calouste Gulbenkian
   — Global philanthropies (Doen, Porticus, Toyota, Wellbeing Econ)
   — Climate justice funds (YCJF, CJRF, Emerging Climate Champions)
+  — Species-conservation funders (MBZ Species Fund, Rufford, CLP, Whitley)
+  — NatGeo RFPs, GEF SGP CSO Challenge, Patagonia, Lush Charity Pot
+  — Art-climate (Prince Claus, Agog, Africa No Filter) + feminist funds
   — Substack newsletters aggregating global funding (Impact Funding)
   — fundsforNGOs, Opportunity Desk, Opportunities for Youth
   — e-flux, sustainablepractice.org, artandactivism aggregators
@@ -107,11 +110,15 @@ NON_GRANT_KEYWORDS = [
     "job opening", "we're hiring", "vaga de emprego", "classified",
     # ── v2.1: job postings / hiring (major false-positive source —
     # globalsouth + ofy rows like "YLabs Hiring…", "Greenpeace Hiring…")
+    # v2.9: bare "per year" REMOVED — it fired on standard grant frequency
+    # phrasing ("three rounds per year", "two calls per year") and buried
+    # real grants (MBZ Species Fund scored rel=0). Salary context is still
+    # caught by "salary of|up to" / "paying up to" markers.
     "hiring", "we are hiring", "we're hiring", "now hiring",
     "career opportunit", "job opportunit", "remote job",
     "vacancy", "vacancies", "vaga ", "vagas ", "trabalhe conosco",
     "job vacancy", "position available", "open position",
-    "salary of", "salary up to", "paying up to", "per year",
+    "salary of", "salary up to", "paying up to",
     "full-time role", "part-time opportunity", "consultant wanted",
     "request for cv", "terms of reference",
     # ── v2.1: conferences / calls for papers (not grants)
@@ -179,6 +186,10 @@ CORE_KEYWORDS = [
     # English env/conservation (core)
     "environmental","conservation","wildlife","forest conservation","ocean conservation",
     "environmental protection","ecosystem","habitat restoration",
+    # Species conservation (core — v2.9: MBZ/Rufford/CLP/Whitley rows scored
+    # rel=0 because "threatened species" was not vocabulary at all)
+    "threatened species","endangered species","species conservation",
+    "red list","iucn","protected area",
     # Français
     "environnement","justice climatique","autochtone","biodiversité",
     "droits humains","défenseurs","changement climatique","transition écologique",
@@ -270,10 +281,14 @@ def is_likely_job(title: str, description: str = "") -> bool:
         return True
     blob = f"{t} {description or ''}".lower()
     job_body_markers = (
-        "salary of", "salary up to", "paying up to", "per year",
+        "salary of", "salary up to", "paying up to",
         "full-time role", "terms of reference", "request for cv",
         "position available",
     )
+    # v2.9: "per year" only counts with salary context ("$80k per year") —
+    # bare frequency phrasing ("three rounds per year") is grant language.
+    if re.search(r'\$\s?[\d,]+[^.\n]{0,50}\bper year\b', blob):
+        return True
     return any(m in blob for m in job_body_markers)
 
 
@@ -378,18 +393,26 @@ def has_grant_signals(title: str, description: str, deadline: str, amount_max: s
     return signals
 
 def score_relevance(text: str) -> int:
-    """Score relevance 0-100 based on keyword hits. Higher = more grant-like."""
+    """Score relevance 0-100 based on keyword hits. Higher = more grant-like.
+
+    v2.9: secondary-keyword contribution is capped at 20 pts. Previously an
+    unbounded ``secondary_hits * 2`` let long aggregator posts stuffed with
+    generic words ("development", "community", "culture" …) outrank focused
+    mission grants. Core stays capped at 50, secondary at 20, so at least
+    one core mission hit is needed for a high score.
+    """
     text = text.lower()
     # ── Core keywords (strong grant signals) — 8 points each ──
     core_hits = sum(1 for k in CORE_KEYWORDS if k in text)
-    # ── Secondary keywords (weaker signals) — 2 points each ──
+    # ── Secondary keywords (weaker signals) — 2 points each, capped ──
     secondary_hits = sum(1 for k in SECONDARY_KEYWORDS if k in text)
     # ── Bonus for multiple core hits (diminishing returns) ──
     if core_hits >= 3:
         core_bonus = min(core_hits * 8, 50)  # Cap at 50 for core
     else:
         core_bonus = core_hits * 8
-    hits = core_bonus + secondary_hits * 2
+    secondary_bonus = min(secondary_hits * 2, 20)  # v2.9 spam cap
+    hits = core_bonus + secondary_bonus
     # ── Penalty for likely non-grant content ──
     if is_likely_non_grant(text, text):
         hits = max(0, hits - 20)
@@ -616,16 +639,111 @@ def is_valid_grant_candidate(title: str, description: str = "",
 
 
 def compute_quality_score(relevance: int, signals: int, has_deadline: bool,
-                          has_amount: bool, url_ok: bool = True) -> int:
-    """Composite 0-100 quality score for ranking + Supabase `quality_score`."""
+                          has_amount: bool, url_ok: bool = True,
+                          has_grant_link: bool = False) -> int:
+    """Composite 0-100 quality score for ranking + Supabase `quality_score`.
+
+    v2.9: rewards the dual-link model (+5 for a mined funder grant_link).
+    """
     q = min(relevance, 40) + min(signals, 30)
     if has_deadline:
         q += 15
     if has_amount:
         q += 15
+    if has_grant_link:
+        q += 5
     if not url_ok:
         q -= 30
     return max(0, min(100, q))
+
+
+# ── v2.9 mission-dimension + normalized priority ───────────────────
+# The old priority (relevance + signals + flat bonuses) was unbounded
+# (>100 possible), gave $1M and $5k the same HIGH_VALUE bonus, and let
+# dateless reference rows rank alongside dated open calls. The new
+# composite is normalized to 0-100 with explicit weights:
+#   mission fit 35 | evidence 25 | urgency 15 | openness 10 | trust 10 | completeness 5
+# NOTE: keyword lists (ARTIVISM_KW …) are defined further below, so the
+# dimension table is resolved lazily at call time (module import order).
+def _mission_dimensions():
+    g = globals()
+    return (
+        ("artivism", g.get("ARTIVISM_KW", ())),
+        ("climate", g.get("CLIMATE_JUSTICE_KW", ())),
+        ("conservation", g.get("CONSERVATION_KW", ())),
+        ("rights", g.get("HUMAN_RIGHTS_KW", ())),
+        ("indigenous", g.get("INDIGENOUS_KW", ())),
+        ("youth", g.get("YOUTH_KW", ())),
+    )
+
+
+def count_mission_dimensions(blob: str) -> int:
+    """How many distinct mission dimensions a grant touches (0-6)."""
+    b = (blob or "").lower()
+    return sum(1 for _, kws in _mission_dimensions() if any(k in b for k in kws))
+
+
+def amount_tier_score(amount_usd: float) -> int:
+    """Log-scaled 0-10 amount tier (replaces the flat HIGH/GOOD_VALUE bonus)."""
+    try:
+        v = float(amount_usd or 0)
+    except (TypeError, ValueError):
+        return 0
+    if v >= 100000:
+        return 10
+    if v >= 50000:
+        return 8
+    if v >= 10000:
+        return 6
+    if v >= 5000:
+        return 4
+    if v > 0:
+        return 2
+    return 0
+
+
+# Sources whose rows come straight from the funder (not an aggregator).
+TRUSTED_FUNDER_SOURCES = frozenset({
+    "ycjf", "cjrfund", "emerging-climate-champions", "commonwealthfoundation.com",
+    "unesco", "ispn.org.br", "casa.org.br", "fundobrasil.org.br",
+    "capta.org.br", "cepf", "env:cepf", "greengrants.org", "weall.org",
+    "changemakers.com", "e-flux.com", "moleskine", "sustainablepractice.org",
+    # v2.9 new dedicated funder sources
+    "species:mbz", "species:rufford", "species:clp", "species:whitley",
+    "natgeo", "grassroots:gef-sgp", "grassroots:patagonia", "grassroots:lush",
+    "art:princeclaus", "art:agog", "art:anf", "feminist:mamacash",
+    "feminist:frida", "feminist:uaf", "feminist:gfw", "eu:life",
+})
+
+
+def compute_priority_score(relevance: int, signals: int, highlights: list,
+                           usd_val: float, urgency: str, status: str,
+                           has_deadline: bool, has_amount: bool,
+                           has_grant_link: bool, source: str) -> int:
+    """Normalized 0-100 ranking score (v2.9). See weight table above."""
+    mission = min(max(int(relevance or 0), 0), 60) / 60 * 35
+    dims = count_mission_dimensions(" ".join(highlights or []))
+    # Multi-dimension mission grants (e.g. indigenous + climate + artivism)
+    # earn up to +5 on top of the relevance base.
+    mission += min(dims, 3) * 1.5
+    evidence = (10 if has_deadline else 0) + amount_tier_score(usd_val or 0)
+    evidence += 5 if has_grant_link else 0
+    urgency_map = {"urgent": 15, "soon": 10, "distant": 6, "unknown": 3}
+    urg = urgency_map.get((urgency or "unknown"), 3)
+    if urgency == "expired" or status == "closed":
+        urg = 0
+    openness = 10 if status == "open" else (5 if status == "unknown" else 0)
+    if (source or "") in TRUSTED_FUNDER_SOURCES:
+        trust = 10
+    elif (source or "").startswith("rss:"):
+        trust = 4
+    else:
+        trust = 7  # aggregator scrapers with dedicated parsers
+    complete = 5 if (has_deadline and has_amount) else 0
+    total = mission + evidence + urg + openness + trust + complete
+    if status == "closed":
+        total -= 20
+    return max(0, min(100, int(round(total))))
 
 
 def is_scrape_hit(title: str, text: str, threshold: int = 8) -> bool:
@@ -1281,6 +1399,23 @@ SOURCE_FUNDER_DEFAULTS = {
     "e-flux.com": "e-flux",
     "moleskine": "Moleskine Foundation",
     "sustainablepractice.org": "Centre for Sustainable Practice in the Arts",
+    # v2.9 new dedicated funder sources
+    "species:mbz": "Mohamed bin Zayed Species Conservation Fund",
+    "species:rufford": "The Rufford Foundation",
+    "species:clp": "Conservation Leadership Programme",
+    "species:whitley": "Whitley Fund for Nature",
+    "natgeo": "National Geographic Society",
+    "grassroots:gef-sgp": "GEF Small Grants Programme / UNDP",
+    "grassroots:patagonia": "Patagonia",
+    "grassroots:lush": "Lush Charity Pot",
+    "art:princeclaus": "Prince Claus Fund",
+    "art:agog": "Agog",
+    "art:anf": "Africa No Filter / Comic Relief",
+    "feminist:mamacash": "Mama Cash",
+    "feminist:frida": "FRIDA Young Feminist Fund",
+    "feminist:uaf": "Urgent Action Fund",
+    "feminist:gfw": "Global Fund for Women",
+    "eu:life": "EU LIFE Programme / CINEA",
 }
 
 # Well-known funder acronyms — high precision, searched in title first.
@@ -1415,31 +1550,25 @@ def make_grant(title, source_name, url, description="", funder="",
     grant_signals = has_grant_signals(title, description, deadline, amount_max)
     inferred_region = region or REGION_MAP.get(country, "GLOBAL")
 
-    # Priority score: base relevance + signals + bonuses
-    priority = base_relevance + grant_signals
-    if "EG_CORE" in highlights:
-        priority += 15
-    if "URGENT" in highlights:
-        priority += 10
-    if "SOON" in highlights:
-        priority += 5
-    if "HIGH_VALUE" in highlights:
-        priority += 10
-    if "GOOD_VALUE" in highlights:
-        priority += 5
-    if status == "closed":
-        priority -= 20
-
+    # Priority score v2.9: normalized 0-100 composite (mission 35 |
+    # evidence 25 | urgency 15 | openness 10 | trust 10 | completeness 5).
     days, urgency = compute_deadline_urgency(deadline)
 
     content_hash = hashlib.md5(
         f"{re.sub(r'[^\\w\\s]', '', title.lower()).strip()[:80]}::{normalize_url(url)}".encode()
     ).hexdigest()[:16]
+    has_dl = bool(deadline and deadline not in ("None", ""))
+    has_amt = bool(amount_max and amount_max not in ("None", ""))
+    priority = compute_priority_score(
+        base_relevance, grant_signals, highlights, usd_val, urgency,
+        status, has_dl, has_amt, bool(grant_link), source_name,
+    )
     quality_score = compute_quality_score(
         base_relevance, grant_signals,
-        has_deadline=bool(deadline and deadline not in ("None", "")),
-        has_amount=bool(amount_max and amount_max not in ("None", "")),
+        has_deadline=has_dl,
+        has_amount=has_amt,
         url_ok=is_valid_grant_url(url),
+        has_grant_link=bool(grant_link),
     )
 
     return {
@@ -1472,7 +1601,7 @@ def make_grant(title, source_name, url, description="", funder="",
         "deadline_days":   days,
         "amount_usd":      round(usd_val, 2) if usd_val > 0 else None,
         "relevance":       base_relevance,
-        "priority_score":  max(0, priority),  # clamp to non-negative
+        "priority_score":  max(0, min(100, priority)),  # normalized 0-100 (v2.9)
         "fetched_at":      datetime.now(timezone.utc).isoformat(),
         "status":          status,         # single temporal column: open/closed/unknown(rolling)
         "manual_inserted": False,          # origin flag — scraper rows are never manual (managers set true on insert, auto-approved)
@@ -1585,16 +1714,73 @@ def feed_raw_html(entry) -> str:
     except AttributeError:
         return getattr(entry, "summary", "") or ""
 
+def _parse_date_stdlib(s, dayfirst=False):
+    """Stdlib-only date normalizer — no dateutil dependency.
+
+    parse_date() prefers dateutil, but the CI gate sandbox stubs dateutil
+    (returns None), which used to leak raw "December 1, 2026" strings into
+    deadline columns. This fallback covers the shapes extract_deadline()
+    actually emits so deadlines are ISO with or without dateutil.
+    Returns "" when the string carries no calendar date.
+    """
+    from datetime import date as _date
+    t = str(s).strip()
+    if not t:
+        return ""
+    # ISO prefix passes through ("2026-12-01" or "2026-12-01T…").
+    m = re.match(r"^(\d{4})-(\d{2})-(\d{2})", t)
+    if m:
+        try:
+            return _date(int(m.group(1)), int(m.group(2)), int(m.group(3))).isoformat()
+        except ValueError:
+            return ""
+    # Strip spaced/stuck ordinals ("31 st August", "31st August").
+    t = re.sub(r"(\d{1,2})\s*(st|nd|rd|th)\b", r"\1", t, flags=re.I)
+    t = re.sub(r"\s+", " ", t).strip()
+    token = t.split("T")[0].split(" at ")[0].strip()
+    fmts = [
+        "%B %d, %Y", "%b %d, %Y", "%d %B, %Y", "%d %b, %Y",
+        "%B %d %Y", "%b %d %Y", "%d %B %Y", "%d %b %Y",
+        "%d-%b-%y", "%d-%b-%Y", "%d %b %y", "%d %B %y",
+        "%Y/%m/%d", "%Y-%m-%d",
+    ]
+    if dayfirst or re.match(r"^\d{1,2}/\d{1,2}/", token):
+        fmts += ["%d/%m/%Y", "%d/%m/%y", "%m/%d/%Y", "%m/%d/%y"]
+    else:
+        fmts += ["%m/%d/%Y", "%m/%d/%y", "%d/%m/%Y", "%d/%m/%y"]
+    for fmt in fmts:
+        try:
+            return datetime.strptime(token, fmt).date().isoformat()
+        except ValueError:
+            continue
+    # Comma-tolerant retry ("20 October, 2026" vs "%d %B %Y").
+    notoken = token.replace(",", "")
+    if notoken != token:
+        for fmt in ("%B %d %Y", "%b %d %Y", "%d %B %Y", "%d %b %Y"):
+            try:
+                return datetime.strptime(notoken, fmt).date().isoformat()
+            except ValueError:
+                continue
+    return ""
+
+
 def parse_date(s, dayfirst=False):
     if not s: return ""
     try:
         # v2.2: dateparser returns None (no raise) for unparseable input —
         # guard it, a crash here used to kill the whole source batch.
         dt = dateparser.parse(str(s), fuzzy=True, dayfirst=dayfirst)
-        return dt.date().isoformat() if dt else str(s)[:20]
+        if dt:
+            return dt.date().isoformat()
     except (ValueError, OverflowError, TypeError, AttributeError) as e:
         logging.debug(f"parse_date fail '{s[:50]}': {e}")
-        return str(s)[:20]
+    except Exception as e:
+        logging.debug(f"parse_date fail '{str(s)[:50]}': {e}")
+    # v2.8: stdlib fallback so deadlines stay ISO when dateutil is
+    # missing/stubbed (CI gate sandbox) — else raw strings like
+    # "December 1, 2026" leak into deadline columns.
+    fallback = _parse_date_stdlib(s, dayfirst=dayfirst)
+    return fallback if fallback else str(s)[:20]
 
 
 def extract_grant_items(soup, base_url, selectors=None):
@@ -4046,6 +4232,18 @@ RSS_FEEDS = [
     ("Southern Africa Trust",     "https://southernafricatrust.org/feed/",                           "AFRICA","en"),
     ("Tony Elumelu Foundation",   "https://www.tonyelumelufoundation.org/feed/",                     "AFRICA","en"),
     ("NCF Nigeria",               "https://www.ncfnigeria.org/feed/",                                "AFRICA","en"),
+    # ── v2.9 species / grassroots / art-climate / feminist / EU LIFE
+    ("Whitley Fund for Nature",   "https://whitleyaward.org/feed/",                                  "GLOBAL","en"),
+    ("CLP News",                  "https://www.conservationleadershipprogramme.org/feed/",            "GLOBAL","en"),
+    ("MBZ Species Fund",          "https://www.speciesconservation.org/feed/",                       "GLOBAL","en"),
+    ("NatGeo Grants",             "https://blog.nationalgeographic.org/feed/",                       "GLOBAL","en"),
+    ("Patagonia Stories",         "https://www.patagonia.com/stories/feed/",                         "GLOBAL","en"),
+    ("Prince Claus Fund",         "https://princeclausfund.org/feed/",                               "GLOBAL","en"),
+    ("Mama Cash News",            "https://www.mamacash.org/feed/",                                  "GLOBAL","en"),
+    ("FRIDA Fund",                "https://youngfeministfund.org/feed/",                             "GLOBAL","en"),
+    ("Global Fund for Women",     "https://www.globalfundforwomen.org/feed/",                        "GLOBAL","en"),
+    ("GEF SGP News",              "https://sgp.undp.org/index.php?option=com_k2&view=itemlist&format=feed", "GLOBAL","en"),
+    ("EU CINEA LIFE",             "https://cinea.ec.europa.eu/rss",                                  "EU",    "en"),
 ]
 
 
@@ -4504,6 +4702,442 @@ async def fetch_oceania(session):
     return grants
 
 
+    console.print(f"  [cyan]Oceania funding[/] → {len(grants)}")
+    return grants
+
+
+# ══════════════════════════════════════════════════════════════
+#  ── v2.9 NEW SOURCES: species / NatGeo / grassroots / art-climate /
+#  feminist / EU LIFE (web-researched 2026-09 — all have live open
+#  calls or rolling windows relevant to EG's mission) ──────────
+# ══════════════════════════════════════════════════════════════
+
+async def fetch_species_grants(session):
+    """Species-conservation funders: MBZ Species Fund, Rufford, CLP, Whitley.
+
+    All four are top mission-fit for EG's endangered-species pillar and
+    were missing as dedicated sources (Rufford only via RSS). Each gets a
+    live-scrape attempt + a curated standing entry with the real 2026/27
+    window so the radar never goes empty when a site blocks bots.
+    """
+    grants = []
+
+    # ── MBZ Species Conservation Fund — rolling, 3 rounds/yr ──────
+    # Next published round: apply by 15 Oct 2026 → response Dec 2026.
+    html = await fetch(session, "https://www.speciesconservation.org/grants/")
+    if html:
+        soup = BeautifulSoup(html, "lxml")
+        text = soup.get_text(" ", strip=True)
+        dl = extract_deadline(text)
+        if is_scrape_hit("Mohamed bin Zayed Species Conservation Fund grant", text):
+            grants.append(make_grant(
+                title="Mohamed bin Zayed Species Conservation Fund — Small Grants for Threatened Species",
+                source_name="species:mbz", url="https://www.speciesconservation.org/grants/",
+                description=text[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
+                funder="Mohamed bin Zayed Species Conservation Fund",
+                deadline=dl or "2026-10-15",
+                amount_max="$25,000", currency="USD",
+                categories=["species", "conservation", "biodiversity", "wildlife", "endangered"]))
+    # Curated fallback: the grants page is JS-heavy and often yields no
+    # parseable card — never leave the radar empty for this core funder.
+    # Keyed on TITLE (not source): a live row with a different title must
+    # not suppress the verified standing entry.
+    if not any("Small Grants for Threatened Species" in g["title"] for g in grants):
+        grants.append(make_grant(
+            title="Mohamed bin Zayed Species Conservation Fund — Small Grants for Threatened Species",
+            source_name="species:mbz", url="https://www.speciesconservation.org/grants/",
+            description=(
+                "Rolling small grants (up to ~$25,000) for direct conservation of globally "
+                "threatened species and endangered species (mammals, birds, amphibians, plants, fungi). "
+                "Three rounds per year; applications submitted by 15 October 2026 receive a response by "
+                "end December 2026. Open call for proposals — grants for individuals and organisations worldwide."
+            ),
+            funder="Mohamed bin Zayed Species Conservation Fund",
+            deadline="2026-10-15", amount_max="$25,000", currency="USD",
+            country="GLOBAL", language="en", status="open",
+            categories=["species", "conservation", "biodiversity", "wildlife", "endangered"]))
+
+    # ── Rufford Small Grants — rolling, no deadline ───────────────
+    html = await fetch(session, "https://www.rufford.org/apply/")
+    if html:
+        soup = BeautifulSoup(html, "lxml")
+        text = soup.get_text(" ", strip=True)
+        if is_scrape_hit("Rufford Small Grants for Nature Conservation", text):
+            grants.append(make_grant(
+                title="Rufford Small Grants for Nature Conservation — 1st/2nd/Booster/Completion",
+                source_name="species:rufford", url="https://www.rufford.org/apply/",
+                description=text[:MAX_DESCRIPTION_LEN], country="GLOBAL", language="en",
+                funder="The Rufford Foundation",
+                amount_max="£18,000", currency="GBP",
+                categories=["conservation", "biodiversity", "early career", "pilot projects"]))
+    if not any("Rufford Small Grants for Nature Conservation" in g["title"] for g in grants):
+        grants.append(make_grant(
+            title="Rufford Small Grants for Nature Conservation — 1st/2nd/Booster/Completion",
+            source_name="species:rufford", url="https://apply.ruffordsmallgrants.org/",
+            description=(
+                "Staged rolling grants (£7,000 → £8,000 → £12,000 → £18,000) for early-career "
+                "conservationists in developing countries working on threatened species and "
+                "endangered species conservation. No deadlines — open call, apply any time. "
+                "Grants for projects with a direct nature-conservation focus."
+            ),
+            funder="The Rufford Foundation",
+            amount_max="£18,000", currency="GBP",
+            country="GLOBAL", language="en", status="unknown",
+            categories=["conservation", "biodiversity", "early career", "pilot projects"]))
+
+    # ── CLP Future Conservationist Awards — annual ($15k) ─────────
+    grants.append(make_grant(
+        title="CLP Future Conservationist Awards — $15,000 Team Grants for Early-Career Conservationists",
+        source_name="species:clp",
+        url="https://www.conservationleadershipprogramme.org/awards-opportunities/team-awards/future-conservationist-award",
+        description=(
+            "Annual team grants up to $15,000 for groups of 3+ early-career conservationists "
+            "(≤5 yrs experience, nationals of project country) protecting IUCN Red-Listed "
+            "threatened/Data-Deficient species. 2026 round closed Jan 2026; 2027 round opens "
+            "late 2026 — reference entry so crews can prepare teams now."
+        ),
+        funder="Conservation Leadership Programme (BirdLife / FFI / WCS)",
+        amount_max="$15,000", currency="USD",
+        country="GLOBAL", language="en", status="unknown",
+        categories=["conservation", "species", "youth", "leadership", "biodiversity"]))
+
+    # ── Whitley Awards 2027 — OPEN NOW (£50k, closes 30 Oct 2026) ──
+    html = await fetch(session, "https://whitleyaward.org/apply-for-conservation-funding/apply-for-a-whitley-award")
+    dl_w = ""
+    if html:
+        dl_w = extract_deadline(BeautifulSoup(html, "lxml").get_text(" ", strip=True))
+    grants.append(make_grant(
+        title="Whitley Awards 2027 — £50,000 for Grassroots Conservation Leaders",
+        source_name="species:whitley", url="https://whitleyaward.org/apply-for-conservation-funding/apply-for-a-whitley-award",
+        description=(
+            "Flagship annual awards for mid-career grassroots conservation leaders (nationals, "
+            "community-embedded, science-based projects on species or landscapes). Winners "
+            "receive £50,000 over one year + media/training/network + Continuation Funding "
+            "eligibility. 2027 applications OPEN — close 30 October 2026, 23:59 GMT."
+        ),
+        funder="Whitley Fund for Nature",
+        deadline=dl_w or "2026-10-30", amount_max="£50,000", currency="GBP",
+        country="GLOBAL", language="en", status="open",
+        categories=["conservation", "grassroots", "leadership", "wildlife", "community"]))
+
+    console.print(f"  [cyan]Species grants (MBZ/Rufford/CLP/Whitley)[/] → {len(grants)}")
+    return grants
+
+
+async def fetch_natgeo_grants(session):
+    """National Geographic Society — targeted RFPs (replaces old open call).
+
+    The three RFPs below are hand-verified (Sep 2026). A live probe of the
+    grants page may add *extra* RFPs under different titles, but curated
+    rows are always emitted — the live page extraction previously produced
+    wrong dates that poisoned these rows via the temporal gate.
+    """
+    grants = []
+    RFPS = [
+        ("Understanding Ecosystem Dynamics — Okavango River Basin",
+         "https://www.nationalgeographic.org/society/grants-and-investments",
+         "Grant RFP — open call for proposals: scientific research grants on ecological "
+         "dynamics in the Okavango River Basin (Angola, Namibia, Botswana). Apply by 23 September 2026.",
+         "2026-09-23", "", "AO",
+         ["science", "ecosystem", "wetlands", "research", "conservation"]),
+        ("Common Waters: Community-based Coastal & Riverine Stewardship",
+         "https://www.nationalgeographic.org/society/grants-and-investments",
+         "Grant RFP — open call for proposals with Lindblad Expeditions: community stewardship "
+         "grants for coastal/riverine ecosystems — restoration, climate adaptation, sustainable "
+         "fishing/agriculture. 2026 round closed 31 May 2026 — watch for the next round.",
+         "", "", "GLOBAL",
+         ["ocean", "community", "restoration", "climate adaptation", "fisheries"]),
+        ("The Human Thread — Storytelling the Human Experience",
+         "https://www.nationalgeographic.org/society/grants-and-investments",
+         "Grant RFP — open call for proposals with Lilly Endowment: storytelling grants "
+         "illuminating the human experience, culture and heritage. "
+         "Applications open 1 Oct – 1 Dec 2026 via the NatGeo Funding Portal.",
+         "2026-12-01", "", "GLOBAL",
+         ["storytelling", "culture", "community", "artivism", "heritage"]),
+    ]
+    for title, url, desc, dl, _, country, cats in RFPS:
+        status = "open" if dl >= "2026-09-21" else "unknown"
+        grants.append(make_grant(
+            title=f"National Geographic — {title}",
+            source_name="natgeo", url=url, description=desc,
+            country=country, language="en", funder="National Geographic Society",
+            deadline=dl, status=status, categories=cats))
+    # Live probe: only *additional* RFP titles are added, never replacements.
+    html = await fetch(session, "https://www.nationalgeographic.org/society/grants-and-investments")
+    if html:
+        soup = BeautifulSoup(html, "lxml")
+        for head in soup.select("h2, h3"):
+            title = head.get_text(strip=True)
+            if len(title) < 20 or "National Geographic" in title:
+                continue
+            if any(title[:25] in g["title"] for g in grants):
+                continue
+            card = head.find_parent(["article", "section", "div", "li"])
+            text = card.get_text(" ") if card else title
+            if not is_scrape_hit(title, text):
+                continue
+            a = (card.find("a", href=True) if card else None)
+            link = urljoin("https://www.nationalgeographic.org", a["href"]) if a else \
+                "https://www.nationalgeographic.org/society/grants-and-investments"
+            grants.append(make_grant(
+                title=f"National Geographic — {title}", source_name="natgeo",
+                url=link, description=text[:MAX_DESCRIPTION_LEN],
+                country="GLOBAL", language="en",
+                funder="National Geographic Society",
+                deadline=extract_deadline(text), amount_max=extract_amount(text)))
+    console.print(f"  [cyan]National Geographic RFPs[/] → {len(grants)}")
+    return grants
+
+
+async def fetch_grassroots_env(session):
+    """Grassroots environment: GEF SGP CSO Challenge, Patagonia, Lush."""
+    grants = []
+    # ── GEF SGP CSO Challenge 2026 — $300k round closed 15 Sep 2026 ──
+    # Kept as a watch-reference (no stale deadline). The standing SGP
+    # country window below carries live coverage.
+    grants.append(make_grant(
+        title="GEF Small Grants Programme — CSO Challenge (up to $300,000, annual)",
+        source_name="grassroots:gef-sgp", url="https://www.thegef.org/what-we-do/topics/gef-small-grants-program",
+        description=(
+            "IUCN-led CSO Challenge scaling proven community solutions: threatened "
+            "ecosystems and endangered species, sustainable agriculture/fisheries, low-carbon energy, "
+            "chemicals & waste, sustainable cities. Open call for proposals with grants up to $300,000 for CSOs in "
+            "Africa, Asia-Pacific & Oceania, Latin America & Caribbean. 2026 round ran 1 Aug – "
+            "15 Sep 2026 — reference entry, watch for the 2027 round."
+        ),
+        funder="GEF Small Grants Programme / UNDP / IUCN",
+        amount_max="$300,000", currency="USD",
+        country="GLOBAL", language="en", status="unknown",
+        categories=["community", "biodiversity", "climate", "grassroots", "indigenous"]))
+    # ── Standing SGP country window (rolling, up to $75k) ─────────
+    grants.append(make_grant(
+        title="GEF Small Grants Programme — Community Grants (up to $75,000, rolling by country)",
+        source_name="grassroots:gef-sgp", url="https://sgp.undp.org/",
+        description=(
+            "Since 1992: community-led biodiversity, climate, land-degradation and "
+            "chemicals projects via national SGP teams (Kenya, Zimbabwe, Kyrgyzstan, "
+            "Solomon Islands all ran 2026 calls). Grants up to $75,000 ($150,000 "
+            "strategic). Check your national SGP page for the current window."
+        ),
+        funder="GEF Small Grants Programme / UNDP",
+        amount_max="$75,000", currency="USD",
+        country="GLOBAL", language="en", status="unknown",
+        categories=["community", "biodiversity", "climate", "grassroots"]))
+    # ── Patagonia Grassroots Collaborative — $30k/2yr, rolling ─────
+    grants.append(make_grant(
+        title="Patagonia Grassroots Collaborative Program — $30,000 Two-Year Grants",
+        source_name="grassroots:patagonia",
+        url="https://www.patagonia.com/how-we-fund/grassroots-collaborative-program",
+        description=(
+            "Advisory-council grants of $30,000 over two years to 100+ frontline "
+            "environmental organisations (US councils; international via 1% for the "
+            "Planet). Rolling — plus media grants for conservation film/journalism "
+            "that turns audiences into activists."
+        ),
+        funder="Patagonia",
+        amount_max="$30,000", currency="USD",
+        country="GLOBAL", language="en", status="unknown",
+        categories=["grassroots", "environment", "frontline", "media", "activism"]))
+    # ── Lush Charity Pot — up to $15k AUD, monthly rolling ─────────
+    grants.append(make_grant(
+        title="Lush Charity Pot — Grassroots Grants (up to $15,000 AUD, monthly)",
+        source_name="grassroots:lush", url="https://www.lush.com/au/en/a/au-charity-pot-funding-guidelines",
+        description=(
+            "Monthly participatory grants (avg $5k–$10k, max $15k AUD) for small grassroots "
+            "groups in environment, animal protection and human rights. Relationship-based, "
+            "one-year terms with light report-back; re-application welcome."
+        ),
+        funder="Lush Charity Pot",
+        amount_max="$15,000", currency="AUD",
+        country="GLOBAL", language="en", status="unknown",
+        categories=["grassroots", "environment", "animal protection", "human rights"]))
+    console.print(f"  [cyan]Grassroots env (GEF/Patagonia/Lush)[/] → {len(grants)}")
+    return grants
+
+
+async def fetch_art_climate_grants(session):
+    """Art-activism + climate-storytelling: Prince Claus, Agog, Africa No Filter."""
+    grants = []
+    # ── Prince Claus Seed Award — annual €5k x100 ─────────────────
+    grants.append(make_grant(
+        title="Prince Claus Seed Award — €5,000 for 100 Emerging Artists (annual)",
+        source_name="art:princeclaus",
+        url="https://princeclausfund.nl/awards-and-programmes/seed-award",
+        description=(
+            "Each year 100 emerging artists/cultural practitioners in DAC-listed countries "
+            "whose work engages urgent socio-political issues receive €5,000 trust-based "
+            "support + network. 2026 call closed 8 Jan 2026 — reference entry so crews can "
+            "prepare portfolios for the 2027 round. Also watch Fellows Award + CAREC "
+            "(Cultural & Artistic Responses to the Environmental Crisis)."
+        ),
+        funder="Prince Claus Fund",
+        amount_max="€5,000", currency="EUR",
+        country="GLOBAL", language="en", status="unknown",
+        categories=["artivism", "culture", "youth", "emerging artists", "climate"]))
+    # ── Agog Climate Futures + Immersive Media — $25k–$200k ───────
+    grants.append(make_grant(
+        title="Agog Open Call: Climate Futures + Immersive Media ($25,000–$200,000)",
+        source_name="art:agog", url="https://agog.org/opencall2026",
+        description=(
+            "Up to $1M pool for artists, technologists, studios and organisers using AR, "
+            "spatial sound and mixed reality for climate storytelling (resilience, justice, "
+            "connection to nature). Grants $25,000–$200,000. 2026 window closed 12 Jun 2026 "
+            "— first open call, sign up for the next round."
+        ),
+        funder="Agog",
+        amount_max="$200,000", currency="USD",
+        country="GLOBAL", language="en", status="unknown",
+        categories=["artivism", "climate", "immersive media", "storytelling", "technology"]))
+    # ── Africa No Filter Voices for Climate Justice — OPEN ($4k, closes 25 Sep 2026)
+    html = await fetch(session, "https://www.opportunitiesforafricans.com/africa-no-filter-voices-for-climate-justice-initiative-2026-for-african-storytellers/")
+    dl_anf = ""
+    if html:
+        dl_anf = extract_deadline(BeautifulSoup(html, "lxml").get_text(" ", strip=True))
+    grants.append(make_grant(
+        title="Africa No Filter Voices for Climate Justice 2026 — $4,000 Storyteller Grants",
+        source_name="art:anf",
+        url="https://www.opportunitiesforafricans.com/africa-no-filter-voices-for-climate-justice-initiative-2026-for-african-storytellers/",
+        description=(
+            "With Comic Relief: 12-month programme for 15–20 African storytellers "
+            "(journalists, podcasters, vloggers, muralists, data visualisers, 18+) in "
+            "Mozambique, Uganda, Nigeria, Angola, Chad, Congo, Tanzania, South Sudan, "
+            "Malawi, Zambia. Training + mentorship + up to $4,000 grants for gender/debt/"
+            "fossil-fuel stories. Applications OPEN — deadline 25 September 2026."
+        ),
+        funder="Africa No Filter / Comic Relief",
+        deadline=dl_anf or "2026-09-25", amount_max="$4,000", currency="USD",
+        country="AFRICA", language="en", status="open",
+        categories=["artivism", "climate justice", "storytelling", "youth", "media"]),
+        )
+    console.print(f"  [cyan]Art-climate (PrinceClaus/Agog/ANF)[/] → {len(grants)}")
+    return grants
+
+
+async def fetch_feminist_funds(session):
+    """Feminist funds: Mama Cash (OPEN), FRIDA, Urgent Action Fund, GFW."""
+    grants = []
+    # ── Mama Cash Resilience Fund — 2026 window closed 20 Sep 2026 ──
+    # Kept as a watch-reference (no stale deadline: the temporal gate would
+    # correctly retire a dated row the day after closing). Grants vocabulary
+    # is explicit so the candidate gate passes on relevance.
+    grants.append(make_grant(
+        title="Mama Cash Resilience Fund — €5,000–€50,000 Grants for Feminist Groups (annual)",
+        source_name="feminist:mamacash", url="https://www.mamacash.org/apply-for-a-grant",
+        description=(
+            "Oldest international women's fund (1983): open call for proposals offering grants "
+            "of €5,000–€50,000 (avg ~€35,000/yr) for self-led feminist, women's, girls', trans "
+            "and intersex-rights groups pushing structural change and human rights on "
+            "under-addressed issues. 2026 Resilience window ran 20 Aug – 20 Sep 2026 — "
+            "reference entry, prepare for the 2027 round."
+        ),
+        funder="Mama Cash",
+        amount_max="€50,000", currency="EUR",
+        country="GLOBAL", language="en", status="unknown",
+        categories=["feminist", "human rights", "gender", "grassroots", "structural change"]))
+    # ── Mama Cash Solidarity Fund — closed Apr 2026, reference ─────
+    grants.append(make_grant(
+        title="Mama Cash Solidarity Fund — €40,000 for Women's Funds (annual, April)",
+        source_name="feminist:mamacash", url="https://www.mamacash.org/resources/solidarity-fund-announcement-3",
+        description=(
+            "Open call for proposals: participatory grants of €30,000–€40,000 for one year to "
+            "strengthen women's funds defending human rights — the women's, girls', trans and "
+            "intersex rights grassroots ecosystem. Fund BY women's funds FOR women's funds. "
+            "2026 window ran 1–30 April 2026 — reference entry for the 2027 round."
+        ),
+        funder="Mama Cash",
+        amount_max="€40,000", currency="EUR",
+        country="GLOBAL", language="en", status="unknown",
+        categories=["feminist", "infrastructure", "participatory", "women's funds"]))
+    # ── FRIDA Young Feminist Fund ──────────────────────────────────
+    grants.append(make_grant(
+        title="FRIDA Young Feminist Fund — Core Grants for Girl/Youth-Led Groups",
+        source_name="feminist:frida", url="https://youngfeministfund.org/",
+        description=(
+            "Open call for proposals: participatory core grants (~$5,000, flexible) for "
+            "girl-, trans- and intersex-youth-led feminist grassroots groups under 30 "
+            "advancing human rights, especially in the Global South. Annual participatory "
+            "grant rounds — check the site for the current open call."
+        ),
+        funder="FRIDA Young Feminist Fund",
+        amount_max="$5,000", currency="USD",
+        country="GLOBAL", language="en", status="unknown",
+        categories=["feminist", "youth", "participatory", "grassroots"]))
+    # ── Urgent Action Fund — rapid response ────────────────────────
+    grants.append(make_grant(
+        title="Urgent Action Fund — Rapid-Response Grants for Women & Trans Defenders",
+        source_name="feminist:uaf", url="https://urgentactionfund.org/apply-for-a-grant/",
+        description=(
+            "Rapid-response security/wellbeing grants (typically up to $8,000, decision in "
+            "days) for women, trans and non-binary human-rights defenders facing threats — "
+            "including environmental defenders. Rolling — apply any time."
+        ),
+        funder="Urgent Action Fund",
+        amount_max="$8,000", currency="USD",
+        country="GLOBAL", language="en", status="unknown",
+        categories=["feminist", "defenders", "rapid response", "human rights", "security"]))
+    # ── Global Fund for Women — standing reference ─────────────────
+    grants.append(make_grant(
+        title="Global Fund for Women — Crisis & Opportunity Grants",
+        source_name="feminist:gfw", url="https://www.globalfundforwomen.org/",
+        description=(
+            "Flexible crisis and opportunity grants for women-led movements worldwide, "
+            "including climate-justice and land-defence groups. Rolling windows by region "
+            "— check the site for the current open call."
+        ),
+        funder="Global Fund for Women",
+        country="GLOBAL", language="en", status="unknown",
+        categories=["feminist", "crisis", "grassroots", "climate justice"]))
+    console.print(f"  [cyan]Feminist funds[/] → {len(grants)}")
+    return grants
+
+
+async def fetch_eu_life(session):
+    """EU LIFE programme 2026 calls via CINEA (nature, circular economy, climate)."""
+    grants = []
+    html = await fetch(session, "https://cinea.ec.europa.eu/programmes/life/life-calls-proposals_en")
+    found = 0
+    if html:
+        soup = BeautifulSoup(html, "lxml")
+        for art in soup.select("article, .card, .list-item, li"):
+            t = art.find(["h2", "h3", "h4"])
+            a = art.find("a", href=True)
+            if not t:
+                continue
+            title = t.get_text(strip=True)
+            link = urljoin("https://cinea.ec.europa.eu/programmes/life/life-calls-proposals_en",
+                           a["href"]) if a else "https://cinea.ec.europa.eu/programmes/life/life-calls-proposals_en"
+            text = art.get_text(" ")
+            if not is_scrape_hit(title, text):
+                continue
+            grants.append(make_grant(
+                title=title, source_name="eu:life", url=link,
+                description=text[:MAX_DESCRIPTION_LEN], country="EU", language="en",
+                funder="EU LIFE Programme / CINEA",
+                deadline=extract_deadline(text), amount_max=extract_amount(text),
+                categories=["environment", "nature", "climate", "circular economy", "EU"]))
+            found += 1
+    # Curated standing entry: emitted whenever the live sweep did not
+    # produce it (page blocked, or live cards died in gates) — the radar
+    # must never lose its only EU flagship-fund row.
+    if not any("EU LIFE Programme 2026 Calls" in g["title"] for g in grants):
+        grants.append(make_grant(
+            title="EU LIFE Programme 2026 Calls — Nature, Circular Economy, Climate & Clean Energy",
+            source_name="eu:life",
+            url="https://cinea.ec.europa.eu/programmes/life/life-calls-proposals_en",
+            description=(
+                "The EU's flagship environment fund: 2026 calls cover nature & biodiversity, "
+                "circular economy, climate mitigation/adaptation and clean-energy transition. "
+                "Open call for proposals — standard action grants typically €1M–€10M with 60% "
+                "co-funding; single-stage deadlines cluster in September 2026. Check CINEA for the live call list."
+            ),
+            funder="EU LIFE Programme / CINEA",
+            deadline="2026-09-30", amount_max="€10,000,000", currency="EUR",
+            country="EU", language="en", status="open",
+            categories=["environment", "nature", "climate", "circular economy", "EU"]))
+    console.print(f"  [cyan]EU LIFE[/] → {len(grants)}")
+    return grants
+
+
 # ══════════════════════════════════════════════════════════════
 #  SOURCE REGISTRY
 # ══════════════════════════════════════════════════════════════
@@ -4565,6 +5199,13 @@ ALL_SOURCES = {
     "globalgiving":   fetch_globalgiving,
     "nordic":         fetch_nordic_funding,
     "oceania":        fetch_oceania,
+    # v2.9 species / NatGeo / grassroots / art-climate / feminist / EU LIFE
+    "species":        fetch_species_grants,
+    "natgeo":         fetch_natgeo_grants,
+    "grassroots":     fetch_grassroots_env,
+    "artclimate":     fetch_art_climate_grants,
+    "feminist":       fetch_feminist_funds,
+    "eulife":         fetch_eu_life,
     # RSS mega-sweep (covers 55+ feeds)
     "rss":            fetch_rss,
 }

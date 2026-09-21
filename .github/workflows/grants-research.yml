@@ -1,0 +1,125 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# 🔭 Grants research scout — daily at 06:30 UTC
+#
+# Uses `opencode run` (non-interactive) with the DEFAULT model (no --model
+# flag, so it follows the repo/user opencode config) to research NEW grant
+# sources and newly-opened grants worldwide for the Grants Radar
+# (scripts/grants.py → ALL_SOURCES registry).
+#
+# NOTE on flags: the user-facing request said `opencode -p`, but in current
+# opencode (≥1.18) `run -p/--password` is the basic-auth password flag, NOT
+# print mode. `opencode run "<message>"` is already non-interactive (unless
+# -i/--interactive is passed), so no extra flag is needed for CI.
+#
+# Requirements:
+#   • None — opencode's default model is free, so no provider API key is
+#     needed. (If the default model ever changes to one requiring a key,
+#     add e.g. ANTHROPIC_API_KEY as a repo secret and wire it into the
+#     scout step's env.)
+#   • Read-only by design: the agent must NOT edit code; it only produces a
+#     dated markdown report, uploaded as an artifact + echoed to the summary.
+#     A human then curates findings into scripts/grants.py fetchers.
+# ══════════════════════════════════════════════════════════════════════════════
+name: 🔭 Grants research scout
+
+on:
+  schedule:
+    - cron: '30 6 * * *' # Daily at 06:30 UTC (after the 00:00 expiry sweep)
+  workflow_dispatch:
+    inputs:
+      focus:
+        description: 'Regional focus (worldwide default)'
+        required: false
+        default: 'worldwide'
+      extra_instructions:
+        description: 'Extra instructions appended to the research prompt'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: grants-research
+  cancel-in-progress: false
+
+env:
+  REPORT_DIR: 'grants-research'
+
+jobs:
+  research:
+    name: '🔭 Research new grant sources'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: 🔭 Install opencode
+        run: |
+          curl -fsSL https://opencode.ai/install | bash
+          echo "$HOME/.opencode/bin" >> "$GITHUB_PATH"
+
+      - name: 🔍 Verify opencode
+        run: |
+          opencode --version
+          opencode models 2>/dev/null | head -20 || true
+
+      - name: 🔭 Research new sources + open grants (default model)
+        id: scout
+        run: |
+          mkdir -p "$REPORT_DIR"
+          TODAY=$(date -u +%F)
+          REPORT_FILE="$REPORT_DIR/$TODAY.md"
+          echo "report-file=$REPORT_FILE" >> "$GITHUB_OUTPUT"
+
+          FOCUS="${{ inputs.focus || 'worldwide' }}"
+          EXTRA="${{ inputs.extra_instructions || '' }}"
+
+          # NOTE: `opencode run "<message>"` is non-interactive; no --model
+          # flag → opencode default model (see header note about `-p`).
+          # pipefail is on in GH runners, so an opencode failure fails the step.
+          opencode run "You are a grants researcher for the Earth Guardians Grants Radar (EG-Maps).
+
+          CONTEXT
+          - This repo aggregates open socio-environmental art-activism grants in scripts/grants.py (see the ALL_SOURCES registry and fetch_* functions for what is ALREADY covered — never propose a source that duplicates an existing key).
+          - Mission focus: youth climate justice, art-activism, indigenous / quilombola / traditional-community rights, endangered-species conservation, feminist funds, grassroots environment, community media.
+          - Regional focus for this run: $FOCUS. $EXTRA
+
+          TASK (read-only — do NOT edit, commit, or create code files)
+          1. Read scripts/grants.py ALL_SOURCES keys so you know current coverage.
+          2. Web-research NEW grant sources worldwide that are NOT yet covered, prioritizing funders with live open calls or rolling windows relevant to the mission above.
+          3. Find specific currently-open grants (deadline in the future, or rolling with 2026 activity): title, funder, deadline, amount, eligibility, URL.
+          4. Verify EVERY URL by fetching it (WebFetch). Never guess or invent URLs — drop anything unverifiable.
+
+          OUTPUT — print a markdown report to stdout with exactly these sections:
+          ## Summary (counts: new sources, open grants, per region)
+          ## New source candidates (table: name | URL | region | why relevant | open-call evidence | suggested ALL_SOURCES key + fetcher notes)
+          ## Open grants found (table: title | funder | deadline | amount | eligibility | URL)
+          ## Coverage gaps (regions/themes with poor radar coverage + where to look next)
+          ## Already-covered duplicates skipped (so the next run knows)" --title "grants-research-$TODAY" | tee "$REPORT_FILE"
+
+          echo "---"
+          echo "Report written to $REPORT_FILE ($(wc -l < "$REPORT_FILE") lines)"
+
+      - name: 📤 Upload research report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: grants-research-report
+          path: ${{ steps.scout.outputs.report-file }}
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## 🔭 Grants research scout"
+            echo ""
+            echo "- Result: **${{ job.status }}**"
+            echo "- Focus: \`${{ inputs.focus || 'worldwide' }}\`"
+            echo "- Report: \`${{ steps.scout.outputs.report-file }}\` (see artifacts, 30-day retention)"
+            echo "- Model: opencode default (no \`--model\` flag)"
+            echo ""
+            echo "_Read-only run: curate findings into \`scripts/grants.py\` fetchers manually._"
+          } >> "$GITHUB_STEP_SUMMARY"

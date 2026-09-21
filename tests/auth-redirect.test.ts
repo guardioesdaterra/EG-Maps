@@ -1,11 +1,12 @@
 /**
  * tests/auth-redirect.test.ts
  * @why Unit tests for the OAuth callback helpers — return-path validation,
- *  base-path stripping for subpath deploys, and bounded async waits
- * @deps vitest (describe, it, expect); ../lib/auth-redirect (safeNext, stripBasePath, withTimeout)
+ *  base-path stripping for subpath deploys, bounded async waits, and the
+ *  iframe auto-sign-in flag (pure parts of the embedded-auth breakout flow)
+ * @deps vitest (describe, it, expect); ../lib/auth-redirect (safeNext, stripBasePath, withTimeout, withAutoSignInFlag, takeAutoSignInFlag)
  */
 import { describe, it, expect } from 'vitest'
-import { buildAuthCallbackUrl, callbackPathForBase, mergeOAuthParams, safeNext, snapshotNavigationEntry, snapshotOAuthLanding, stripBasePath, summarizeAuthStorage, withTimeout } from '../lib/auth-redirect'
+import { buildAuthCallbackUrl, callbackPathForBase, mergeOAuthParams, safeNext, snapshotNavigationEntry, snapshotOAuthLanding, stripBasePath, summarizeAuthStorage, takeAutoSignInFlag, withAutoSignInFlag, withTimeout } from '../lib/auth-redirect'
 
 describe('safeNext', () => {
   it('accepts internal paths with queries', () => {
@@ -136,5 +137,57 @@ describe('summarizeAuthStorage', () => {
   it('handles empty and unreadable storage', () => {
     expect(summarizeAuthStorage([])).toEqual({ verifier: 'missing', token: 'absent' })
     expect(summarizeAuthStorage(null)).toEqual({ verifier: 'unreadable', token: 'unreadable' })
+  })
+})
+
+describe('withAutoSignInFlag', () => {
+  it('appends login flag preserving path and query', () => {
+    expect(withAutoSignInFlag('https://guardioesdaterra.github.io/EG-Maps/eg-grants?x=1', 'login'))
+      .toBe('https://guardioesdaterra.github.io/EG-Maps/eg-grants?x=1&eg-signin=login')
+  })
+
+  it('overwrites an existing flag', () => {
+    expect(withAutoSignInFlag('https://a.test/eg-grants?eg-signin=login', 'switch'))
+      .toBe('https://a.test/eg-grants?eg-signin=switch')
+  })
+
+  it('returns null for malformed URLs', () => {
+    expect(withAutoSignInFlag('not a url at all %%%', 'login')).toBeNull()
+  })
+})
+
+describe('takeAutoSignInFlag', () => {
+  it('strips the flag and reports login mode', () => {
+    const { cleanHref, mode } = takeAutoSignInFlag('https://a.test/eg-grants?eg-signin=login&x=1')
+    expect(mode).toBe('login')
+    expect(cleanHref).toBe('https://a.test/eg-grants?x=1')
+  })
+
+  it('accepts legacy truthy values as login', () => {
+    expect(takeAutoSignInFlag('https://a.test/eg-grants?eg-signin=1').mode).toBe('login')
+  })
+
+  it('reports switch mode', () => {
+    const { cleanHref, mode } = takeAutoSignInFlag('https://a.test/eg-grants?eg-signin=switch')
+    expect(mode).toBe('switch')
+    expect(cleanHref).toBe('https://a.test/eg-grants')
+  })
+
+  it('returns null mode when flag absent', () => {
+    const { cleanHref, mode } = takeAutoSignInFlag('https://a.test/eg-grants?x=1')
+    expect(mode).toBeNull()
+    expect(cleanHref).toBe('https://a.test/eg-grants?x=1')
+  })
+
+  it('ignores unknown flag values but still strips them', () => {
+    const { cleanHref, mode } = takeAutoSignInFlag('https://a.test/eg-grants?eg-signin=yes-please')
+    expect(mode).toBeNull()
+    expect(cleanHref).toBe('https://a.test/eg-grants')
+  })
+
+  it('never throws on malformed input', () => {
+    const { cleanHref, mode } = takeAutoSignInFlag('%%%')
+    expect(mode).toBeNull()
+    expect(cleanHref).toBe('%%%')
   })
 })

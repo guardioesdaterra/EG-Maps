@@ -193,4 +193,72 @@ The launcher JS does not need changes; pass `data-path="/squarespace/species"` e
 
 ---
 
+## 9. Embedding sign-in pages (`/eg-grants`, `/eg-grants/fullscreen`)
+
+Auth pages have one hard constraint map embeds don't: **Google refuses to render
+its login page inside any iframe** (`X-Frame-Options: DENY` + `frame-ancestors
+'none'`). A sign-in click that navigates *inside* the iframe dies before the
+account chooser paints — DevTools reports a frame refusal that is easily
+misread as CORS. (It is not CORS: the iframe origin is still github.io, so the
+`Origin` header — and therefore Supabase CORS behavior — is identical framed or
+direct. And `signInWithOAuth` performs no fetch at all.)
+
+The flow in `composables/useSupabaseAuth.ts` therefore always runs OAuth
+**top-level**:
+
+1. Framed sign-in / switch-account click → the iframe does NOT touch Supabase.
+   It navigates the **top** document to the same grants page plus
+   `?eg-signin=login` (or `?eg-signin=switch`), via `window.top.location.href`
+   with a `_blank` popup fallback for sandboxed iframes.
+2. The top-level page consumes the flag on mount (`autoSignInIfRequested`,
+   wired into `pages/eg-grants/index.vue` + `fullscreen.vue`), strips it from
+   the URL, waits for session state, then starts the PKCE flow there — so the
+   verifier and the `/auth/callback/` exchange share one storage partition
+   (cross-site iframe storage is partitioned and invisible top-level).
+3. Google → Supabase → callback → back to `/eg-grants`, all top-level.
+
+### Host requirements (Squarespace code block)
+
+```html
+<iframe
+  src="https://guardioesdaterra.github.io/EG-Maps/eg-grants/"
+  style="width: 100%; height: 900px; border: none;"
+  loading="lazy"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"
+  title="Earth Guardians Grants"
+></iframe>
+```
+
+- Do NOT add a `sandbox` attribute. If the host insists on one, it MUST contain
+  `allow-scripts allow-same-origin allow-top-navigation allow-popups` —
+  without `allow-top-navigation` the breakout throws and users get a popup tab
+  instead; without `allow-same-origin` Supabase session storage breaks.
+- Optional: append `?embed=1&embed-offset=<px>` so `useHostEmbed` shifts fixed
+  gates/modals below the host header, and/or drive it live via postMessage
+  `{ source: 'eg-host', type: 'host:header-offset', payload: { offset } }`
+  from the framing parent (same-origin or `earthguardians.org` only).
+
+### Supabase dashboard checklist
+
+- Auth → URL Configuration → **Redirect URLs** must contain the exact canonical
+  callback (trailing slash matters on static hosts):
+  `https://guardioesdaterra.github.io/EG-Maps/auth/callback/`
+- Do NOT add `earthguardians.org` there: `redirectTo` is built from the iframe's
+  own origin (github.io), never the host.
+- Google Cloud → OAuth client → Authorized redirect URIs must include
+  `https://<supabase-ref>.supabase.co/auth/v1/callback` (unchanged by this fix).
+
+### Verifying the fix
+
+1. Open the host page with the embed, DevTools Console + Network open.
+2. Click Sign In → the **whole tab** navigates to github.io `/eg-grants`
+   (not the iframe), then to `accounts.google.com` (chooser appears).
+3. Complete login → callback → back to `/eg-grants` as manager, no
+   `?eg-signin=` left in the URL.
+4. Failure signatures: frame-refusal console error = old code or sandboxed
+   iframe; `code verifier could not be found` on callback = flow started framed
+   (verifier in the wrong partition) — both mean the breakout didn't run.
+
+---
+
 *Last updated 2026-09-04.*

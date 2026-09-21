@@ -65,7 +65,20 @@ export interface HostEmbedMessage {
   payload?: { offset?: number; embedded?: boolean }
 }
 
-export function useHostEmbed() {
+export interface UseHostEmbedOptions {
+  /**
+   * Extra origin allow-list for inbound host messages (same-origin is always
+   * trusted). Mirrors useSquarespaceEmbed's `trustedOrigins` — without this,
+   * any framed page could spoof `host:ready` / `host:header-offset`.
+   */
+  trustedOrigins?: string[]
+}
+
+/** Default hosts allowed to drive the embedded offset protocol. */
+const DEFAULT_TRUSTED_ORIGINS = ['https://earthguardians.org', 'https://www.earthguardians.org']
+
+export function useHostEmbed(opts: UseHostEmbedOptions = {}) {
+  const trusted = new Set([...DEFAULT_TRUSTED_ORIGINS, ...(opts.trustedOrigins ?? [])])
   const isEmbedded = ref(false)
   const embedOffsetPx = ref(DEFAULT_OFFSET)
 
@@ -91,6 +104,12 @@ export function useHostEmbed() {
   const handleMessage = (event: MessageEvent) => {
     const data = event.data as HostEmbedMessage | undefined
     if (!data || data.source !== 'eg-host') return
+    // Only the framing parent (same-origin or allow-listed host) may drive
+    // embedded state — never arbitrary windows/openers.
+    if (typeof window !== 'undefined') {
+      if (event.source !== window.parent) return
+      if (event.origin !== window.location.origin && !trusted.has(event.origin)) return
+    }
     if (data.type === 'host:ready') {
       isEmbedded.value = data.payload?.embedded ?? true
       if (typeof data.payload?.offset === 'number') embedOffsetPx.value = data.payload.offset

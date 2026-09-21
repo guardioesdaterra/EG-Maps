@@ -169,3 +169,53 @@ export function withTimeout<T>(promise: Promise<T>, ms: number, label = 'operati
     if (timer) clearTimeout(timer)
   })
 }
+
+/**
+ * Query param carrying the "start OAuth top-level" request when the grants
+ * portal runs inside a third-party iframe (Google refuses to render its
+ * login page in a frame — X-Frame-Options: DENY — so the iframe breaks out
+ * to the top document and the top-level page restarts the flow there, where
+ * the PKCE verifier shares a storage partition with the callback exchange).
+ */
+export const AUTO_SIGNIN_PARAM = 'eg-signin'
+
+/** `login` = sign in if no session; `switch` = sign out first, then chooser. */
+export type AutoSignInMode = 'login' | 'switch'
+
+function parseAutoSignInMode(raw: string | null): AutoSignInMode | null {
+  if (raw === 'login' || raw === '1' || raw === 'true') return 'login'
+  if (raw === 'switch') return 'switch'
+  return null
+}
+
+/**
+ * Append (or overwrite) the auto-sign-in flag on an absolute URL. Pure.
+ * Returns null when `href` is malformed so callers can fall back safely.
+ */
+export function withAutoSignInFlag(href: string, mode: AutoSignInMode): string | null {
+  try {
+    const u = new URL(href)
+    u.searchParams.set(AUTO_SIGNIN_PARAM, mode)
+    return u.toString()
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Strip the auto-sign-in flag from an absolute URL and report the requested
+ * mode (null when absent/unknown). Pure + never throws: malformed input
+ * returns the input unchanged with mode null.
+ */
+export function takeAutoSignInFlag(href: string): { cleanHref: string; mode: AutoSignInMode | null } {
+  try {
+    const u = new URL(href)
+    const mode = u.searchParams.has(AUTO_SIGNIN_PARAM)
+      ? parseAutoSignInMode(u.searchParams.get(AUTO_SIGNIN_PARAM))
+      : null
+    u.searchParams.delete(AUTO_SIGNIN_PARAM)
+    return { cleanHref: u.toString(), mode }
+  } catch {
+    return { cleanHref: href, mode: null }
+  }
+}

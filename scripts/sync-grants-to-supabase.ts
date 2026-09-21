@@ -440,24 +440,94 @@ function findLatest(pattern: string): string | null {
   } catch { return null; }
 }
 
+async function closeExpired(
+  supabase: SupabaseClient<SupabaseDB>,
+  opts: { dryRun: boolean },
+): Promise<void> {
+  // Daily expiry sweep: flip status=open rows whose deadline (YYYY-MM-DD
+  // prefix) is before today (UTC) to status=expired. Dateless rows are
+  // rolling calls — absence of a date is not evidence of closure — and
+  // unparseable deadlines are reported, never flipped.
+  const today = new Date().toISOString().slice(0, 10);
+  const pageSize = 1000;
+  let from = 0;
+  let scanned = 0;
+  let dateless = 0;
+  let unparseable = 0;
+  const toExpire: string[] = [];
+
+  for (;;) {
+    const { data, error } = await supabase
+      .from("grants")
+      .select("id, deadline")
+      .eq("status", "open")
+      .range(from, from + pageSize - 1);
+    if (error) {
+      console.error("close-expired fetch failed:", error.message);
+      process.exit(2);
+    }
+    const rows = (data ?? []) as { id: string; deadline: string | null }[];
+    if (rows.length === 0) break;
+    scanned += rows.length;
+    for (const r of rows) {
+      const d = (r.deadline || "").trim();
+      if (!d) { dateless++; continue; }
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d);
+      if (!m) { unparseable++; continue; }
+      if (`${m[1]}-${m[2]}-${m[3]}` < today) toExpire.push(r.id);
+    }
+    if (rows.length < pageSize) break;
+    from += pageSize;
+  }
+
+  console.warn(`close-expired: scanned=${scanned} dateless=${dateless} unparseable=${unparseable} past-deadline=${toExpire.length}`);
+
+  if (toExpire.length === 0 || opts.dryRun) {
+    if (opts.dryRun) console.warn("dry-run: no writes performed");
+    return;
+  }
+
+  const nowIso = new Date().toISOString();
+  let expired = 0;
+  const errors: string[] = [];
+  for (let i = 0; i < toExpire.length; i += 200) {
+    const chunk = toExpire.slice(i, i + 200);
+    const { error } = await supabase
+      .from("grants")
+      .update({ status: "expired", updated_at: nowIso })
+      .in("id", chunk);
+    if (error) {
+      errors.push(`chunk@${i}: ${error.message}`);
+    } else {
+      expired += chunk.length;
+    }
+  }
+  console.warn(`close-expired: expired=${expired} errors=${errors.length}`);
+  for (const e of errors.slice(0, 10)) console.warn(`  • ${e}`);
+  if (errors.length > 0) process.exit(2);
+}
+
 async function main() {
   const mode = process.argv[2];
   const filePath = process.argv[3];
+  const dryRun = process.argv.includes("--dry-run");
 
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NUXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl) { console.error("ERROR: SUPABASE_URL required"); process.exit(1); }
   if (!serviceRoleKey) { console.error("ERROR: SUPABASE_SERVICE_ROLE_KEY required"); process.exit(1); }
-  if (!mode || (mode !== "grants" && mode !== "agents")) {
-    console.error("Usage: sync-grants-to-supabase.ts <grants|agents> [file]");
+  if (!mode || (mode !== "grants" && mode !== "agents" && mode !== "close-expired")) {
+    console.error("Usage: sync-grants-to-supabase.ts <grants|agents|close-expired> [file] [--dry-run]");
     process.exit(1);
   }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
 
   try {
-    if (mode === "grants") {
+    if (mode === "close-expired") {
+      await closeExpired(supabase, { dryRun });
+    } else if (mode === "grants") {
       const path = filePath || findLatest("grants_export_");
       if (!path) { console.error("No grants export file found"); process.exit(1); }
       await syncGrants(supabase, path);

@@ -219,3 +219,43 @@ export function takeAutoSignInFlag(href: string): { cleanHref: string; mode: Aut
     return { cleanHref: href, mode: null }
   }
 }
+
+/**
+ * Companion flag to ?eg-signin=: marks a top-level OAuth run whose fresh
+ * session must be relayed back into `window.opener` (the host iframe) via
+ * postMessage, so the user stays on the embedding host instead of github.io.
+ */
+export const AUTO_POSTBACK_PARAM = 'eg-postback'
+
+/** Set the postback flag on an absolute URL. Pure; null on malformed input. */
+export function withAutoPostbackFlag(href: string): string | null {
+  try {
+    const u = new URL(href)
+    u.searchParams.set(AUTO_POSTBACK_PARAM, '1')
+    return u.toString()
+  } catch {
+    return null
+  }
+}
+
+/** Strip the postback flag; never throws. */
+export function takeAutoPostbackFlag(href: string): { cleanHref: string; postback: boolean } {
+  try {
+    const u = new URL(href)
+    const postback = u.searchParams.get(AUTO_POSTBACK_PARAM) === '1'
+    u.searchParams.delete(AUTO_POSTBACK_PARAM)
+    return { cleanHref: u.toString(), postback }
+  } catch {
+    return { cleanHref: href, postback: false }
+  }
+}
+
+/**
+ * Cross-window session relay envelope (auth tab → opener iframe, same
+ * origin). The receiver persists it via `supabase.auth.setSession()`.
+ */
+export interface AuthSessionRelay {
+  source: 'eg-auth'
+  type: 'auth:session'
+  payload: { access_token: string; refresh_token: string }
+}

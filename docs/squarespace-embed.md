@@ -203,36 +203,49 @@ misread as CORS. (It is not CORS: the iframe origin is still github.io, so the
 `Origin` header — and therefore Supabase CORS behavior — is identical framed or
 direct. And `signInWithOAuth` performs no fetch at all.)
 
-The flow in `composables/useSupabaseAuth.ts` therefore always runs OAuth
-**top-level**:
+The flow in `composables/useSupabaseAuth.ts` therefore keeps OAuth top-level
+while the user stays on the host page, via an auth tab + session relay:
 
 1. Framed sign-in / switch-account click → the iframe does NOT touch Supabase.
-   It navigates the **top** document to the same grants page plus
-   `?eg-signin=login` (or `?eg-signin=switch`), via `window.top.location.href`
-   with a `_blank` popup fallback for sandboxed iframes.
-2. The top-level page consumes the flag on mount (`autoSignInIfRequested`,
-   wired into `pages/eg-grants/index.vue` + `fullscreen.vue`), strips it from
-   the URL, waits for session state, then starts the PKCE flow there — so the
-   verifier and the `/auth/callback/` exchange share one storage partition
-   (cross-site iframe storage is partitioned and invisible top-level).
-3. Google → Supabase → callback → back to `/eg-grants`, all top-level.
+   It opens an **auth tab**: `…/eg-grants/?eg-signin=login&eg-postback=1`
+   via `window.open` (deliberately without `noopener` — the tab needs
+   `window.opener`). If a popup blocker kills it, it falls back to full top
+   navigation (previous behavior).
+2. The tab consumes the flags on mount (`autoSignInIfRequested`, wired into
+   `pages/eg-grants/index.vue` + `fullscreen.vue`), runs the PKCE flow
+   top-level (Google renders, verifier shares a storage partition with the
+   `/auth/callback/` exchange), preserving the flags through `next`.
+3. Once signed in, the tab posts its fresh session to
+   `window.opener` (`{source:'eg-auth', type:'auth:session'}`) with
+   `targetOrigin` pinned to its own origin — deliverable only because the
+   opener is the same-origin iframe, so **no host-side relay script is
+   needed**. It then tries `window.close()` and otherwise shows a
+   "you can close this tab" screen (`isPostbackTab`/`postbackDone`).
+4. The iframe's `useSupabase` listener accepts same-origin relay messages and
+   persists them via `setSession()` — the normal flow (manager check, grants
+   load) picks up from there. Refresh token persists in the iframe partition,
+   so the embed stays logged in across reloads on the same host.
 
 ### Host requirements (Squarespace code block)
 
 ```html
 <iframe
-  src="https://guardioesdaterra.github.io/EG-Maps/eg-grants/"
+  src="https://guardioesdaterra.github.io/EG-Maps/eg-grants/?embed-offset=0"
   style="width: 100%; height: 900px; border: none;"
   loading="lazy"
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"
+  allow="clipboard-write"
   title="Earth Guardians Grants"
 ></iframe>
 ```
 
+- `?embed-offset=0` for chromeless fullscreen wrappers (otherwise `useHostEmbed`
+  reserves a 64px host-header offset). Omit it when the host does render a
+  header over the iframe, or pass its pixel height.
+- `allow="clipboard-write"` for the dashboard copy buttons.
 - Do NOT add a `sandbox` attribute. If the host insists on one, it MUST contain
-  `allow-scripts allow-same-origin allow-top-navigation allow-popups` —
-  without `allow-top-navigation` the breakout throws and users get a popup tab
-  instead; without `allow-same-origin` Supabase session storage breaks.
+  `allow-scripts allow-same-origin allow-popups` — without `allow-popups` the
+  auth tab cannot open (falls back to top navigation, leaving the host);
+  without `allow-same-origin` Supabase session storage breaks.
 - Optional: append `?embed=1&embed-offset=<px>` so `useHostEmbed` shifts fixed
   gates/modals below the host header, and/or drive it live via postMessage
   `{ source: 'eg-host', type: 'host:header-offset', payload: { offset } }`
@@ -251,13 +264,15 @@ The flow in `composables/useSupabaseAuth.ts` therefore always runs OAuth
 ### Verifying the fix
 
 1. Open the host page with the embed, DevTools Console + Network open.
-2. Click Sign In → the **whole tab** navigates to github.io `/eg-grants`
-   (not the iframe), then to `accounts.google.com` (chooser appears).
-3. Complete login → callback → back to `/eg-grants` as manager, no
-   `?eg-signin=` left in the URL.
-4. Failure signatures: frame-refusal console error = old code or sandboxed
-   iframe; `code verifier could not be found` on callback = flow started framed
-   (verifier in the wrong partition) — both mean the breakout didn't run.
+2. Click Sign In → an **auth tab** opens (host page untouched) → Google
+   chooser appears → complete login → tab shows "You're signed in" and closes.
+3. The iframe unlocks in place: manager gate passes, grants load, URL of the
+   host page unchanged, no `?eg-signin=` anywhere.
+4. Failure signatures: Google frame-refusal console error = pre-fix code or a
+   sandboxed iframe; `code verifier could not be found` on callback = flow
+   started framed (verifier in the wrong partition); iframe still gated after
+   the tab closes = relay rejected (check `event.origin` vs page origin in
+   the console) or a non-`@earthguardians.org` account (domain rule).
 
 ---
 

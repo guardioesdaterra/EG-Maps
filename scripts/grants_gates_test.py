@@ -422,4 +422,36 @@ assert G.is_valid_grant_candidate(
     "Open call for proposals. Grants up to $10,000. Deadline 2099-01-01.",
     url="https://funder.org/",
     deadline="2099-01-01", amount_max="$10,000") is True
+# 16. v2.8 — "due" deadline family (US-foundation phrasing, proven misses)
+_due_cases = [
+    ("For the sixth grant round applications are due by December 1, 2026.", "2026-12-01"),
+    ("Full proposals for small-tier grants are due by 20 September 2026.", "2026-09-20"),
+    ("Full Proposal Due Date October 27, 2026, 11:59 pm EST.", "2026-10-27"),
+    ("Pre-Proposal Due Date August 19, 2026.", "2026-08-19"),
+    ("Application Due Date: 15 March 2027.", "2027-03-15"),
+]
+for _text, _want in _due_cases:
+    _got = G.extract_deadline(_text)
+    assert _got == _want, f"DUE {_text!r} -> {_got!r} (want {_want!r})"
+# multi-stage RFP: full-proposal date wins over the earlier pre-proposal date
+_multi = ("Pre-Proposal Due Date August 19, 2026. Full Proposal Due Date October 27, 2026.")
+assert G.extract_deadline(_multi) == "2026-10-27", G.extract_deadline(_multi)
+# 17. v2.8 — generic relative verbs need a deadline anchor (no fabrication)
+assert G.extract_deadline(
+    "Projects must be completed within 12 months, however extensions may be considered."
+) == "", "DURATION FABRICATED"
+assert G.extract_deadline(
+    "We aim to get back to you with our response within 6 weeks."
+) == "", "RESPONSE-SLA FABRICATED"
+assert G.extract_deadline("Submit your application within 30 days of this announcement.") != "", \
+    "ANCHORED RELATIVE MISSED"
+# 18. v2.8 — funder detail verdicts
+_dl, _closed = G.analyze_detail_text(
+    "For the sixth grant round applications are due by December 1, 2026. Decisions by February 2027.")
+assert _dl == "2026-12-01" and not _closed, (_dl, _closed)
+_dl, _closed = G.analyze_detail_text(
+    "Applications closed on 04 September 2026. We are currently reviewing applications.")
+assert _dl is None and _closed, (_dl, _closed)
+_dl, _closed = G.analyze_detail_text(" rolling fund with no fixed deadline, apply anytime ")
+assert _dl is None and not _closed, (_dl, _closed)
 print("ALL GRANTS GATE TESTS PASSED")

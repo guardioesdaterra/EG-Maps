@@ -279,9 +279,12 @@ def is_likely_job(title: str, description: str = "") -> bool:
 
 CLOSED_KEYWORDS = [
     "encerrad", "finalizada", "concluída", "concluida", "resultado",
-    "selecionad", "divulgad", "closed", "expired", "ended", "completed",
+    "selecionad", "divulgad", "closed", "expired",
     "no longer accepting", "no longer accepting applications",
-    "applications are closed", "deadline has passed",
+    "applications are closed", "application closed", "applications closed",
+    "now closed", "call closed", "call is closed",
+    "submissions closed", "submissions are closed",
+    "no longer open", "deadline has passed",
 ]
 
 OPEN_KEYWORDS = [
@@ -742,6 +745,91 @@ async def verify_grant_urls(session, grants, max_check: int = 400):
                  url_checked_at=checked_at)
         kept.append(g)
     return kept, dropped
+
+
+# Max funder-page fetches per run (bounded: each costs one HTTP round-trip).
+BACKFILL_MAX_FETCH = 120
+BACKFILL_CONCURRENCY = 6
+
+
+async def backfill_deadlines(session, grants):
+    """Second-chance deadline pass for dateless grants with a funder link.
+
+    Aggregator posts (Terra Viva, RSS feeds, …) often omit the deadline that
+    the funder's own call page states. For grants with an empty deadline and
+    a valid grant_link, fetch the funder page and re-run extraction:
+      - future deadline found → set deadline, recompute urgency/highlights
+      - page shows CLOSED (or only a past deadline) → drop from export and
+        record a sidecar entry so the sync layer can flip the DB row
+    Returns (kept, dead) where dead holds {source, source_id, grant_link,
+    title, reason} dicts (source_id = export id = DB source_id natural key).
+    Pure decision logic lives in analyze_detail_text (unit-testable).
+    """
+    targets = [
+        g for g in grants
+        if not (g.get("deadline") or "").strip()
+        and is_valid_grant_url(g.get("grant_link") or "")
+    ][:BACKFILL_MAX_FETCH]
+    if not targets:
+        return grants, []
+
+    sem = asyncio.Semaphore(BACKFILL_CONCURRENCY)
+
+    async def _one(g):
+        url = (g.get("grant_link") or "").strip()
+        try:
+            async with sem:
+                html_raw = await fetch(session, url, use_cache=False)
+        except (aiohttp.ClientError, OSError, asyncio.TimeoutError) as e:
+            logging.debug(f"backfill fetch fail {url[:80]}: {e}")
+            return ("error", None)
+        if not html_raw:
+            return ("error", None)
+        try:
+            text = clean_html(html_raw)
+        except (ValueError, TypeError, AttributeError) as e:
+            logging.debug(f"backfill clean fail {url[:80]}: {e}")
+            return ("error", None)
+        return ("ok", analyze_detail_text(text))
+
+    results = await asyncio.gather(*[_one(g) for g in targets])
+    kept, dead = [], []
+    filled = 0
+    for g, (outcome, verdict) in zip(targets, results):
+        if outcome != "ok" or verdict is None:
+            kept.append(g)
+            continue
+        dl, closed = verdict
+        if dl:
+            g["deadline"] = dl
+            try:
+                _days, urg = compute_deadline_urgency(dl)
+                g["urgency"] = urg
+                g["highlights"] = compute_highlights(
+                    g.get("title", ""), g.get("description", ""),
+                    g.get("funder", ""), g.get("amount_max", ""),
+                    g.get("currency", ""), dl, g.get("status", "open"),
+                    g.get("categories", []), g.get("language", "en"))
+            except (ValueError, TypeError, KeyError) as e:
+                logging.debug(f"backfill recompute fail {g.get('id')}: {e}")
+            filled += 1
+            kept.append(g)
+        elif closed:
+            dead.append({
+                "source": g.get("source", ""),
+                "source_id": g.get("id", ""),
+                "grant_link": g.get("grant_link", ""),
+                "title": (g.get("title", "") or "")[:160],
+                "reason": "funder-page-closed",
+            })
+        else:
+            kept.append(g)
+    # Grants that were not targeted (already dated, or no funder link).
+    targeted_ids = {id(g) for g in targets}
+    kept.extend(g for g in grants if id(g) not in targeted_ids)
+    console.print(f"[green]✓ Deadline backfill:[/] {filled} filled, {len(dead)} dead, "
+                  f"{len(targets) - filled - len(dead)} still dateless")
+    return kept, dead
 
 
 def parse_amount_value(amount_max, currency):
@@ -1729,6 +1817,34 @@ def extract_amount(text):
     # v2.2: strip trailing sentence punctuation ("US$60,000." → "US$60,000")
     return raw.strip().rstrip(".,;:")
 
+# Anchors that must appear near a GENERIC relative time expression for it
+# to count as a deadline. Anti-signals mark duration/response prose that
+# must never yield a date ("completed within 12 months" is a project
+# duration, "response within 6 weeks" is a reply SLA — both fabricated
+# deadlines on funder pages before this guard).
+_REL_ANCHOR_RE = re.compile(
+    r'deadline|clos|due|submi|appl|propos|prazo|inscri|chamada|edital|'
+    r'candidat|appel|scaden|bewerb|einreich|fecha|cierre|convoc|postule|'
+    r'seleç|selecion|rok|termin|sista|ansø|haku|応募|申込|마감|신청')
+_REL_ANTI_RE = re.compile(
+    r'complet|conclu|duration|durée|durata|response|respond|get back|'
+    r'extensions?|lasting|valid (?:for|until)|within the|'
+    r'project .{0,25}(?:last|run|duration)|dentro d[eo]')
+
+
+def _relative_ok(blob: str, m) -> bool:
+    """True when a generic relative-time match reads as a deadline."""
+    before = blob[max(0, m.start() - 80):m.start()]
+    if not _REL_ANCHOR_RE.search(before):
+        after = blob[m.end():m.end() + 50]
+        if not _REL_ANCHOR_RE.search(after):
+            return False
+    near = blob[max(0, m.start() - 60):m.end()]
+    if _REL_ANTI_RE.search(near):
+        return False
+    return True
+
+
 def extract_deadline(text):
     """Extract deadline from text. Supports absolute dates and relative expressions in 10+ languages."""
     if not text:
@@ -1740,31 +1856,61 @@ def extract_deadline(text):
     # ══════════════════════════════════════════════════════════
     # RELATIVE DEADLINES — convert to absolute dates
     # ══════════════════════════════════════════════════════════
+    # v2.5 precision guard: generic verbs ("in", "within", "em", "dans",
+    # "en", "entro" + N days/weeks/months) also match duration/response
+    # prose — "completed within 12 months", "response within 6 weeks" —
+    # fabricating deadlines for dateless grants (observed on funder pages).
+    # Such matches only count with a deadline anchor nearby and no
+    # duration/response anti-signal. Inherently-anchored verbs
+    # ("prazo de", "daqui", "closing in", "X days from now") skip the check.
+
+    def _take(m, days, verb=""):
+        if not m:
+            return None
+        v = (verb or "").strip().lower()
+        anchored = ("prazo" in v) or (v == "daqui") or ("closing" in v)
+        if not anchored and not _relative_ok(blob, m):
+            return None
+        return (today + timedelta(days=days)).strftime("%Y-%m-%d")
 
     # ── Portuguese: "em 30 dias", "daqui 30 dias", "prazo de 30 dias" ──
-    rel_pt = re.search(r'(?:daqui|em|prazo\s+de)\s+(\d+)\s+dias?', blob)
+    rel_pt = re.search(r'(daqui|em|prazo\s+de)\s+(\d+)\s+dias?', blob)
     if rel_pt:
-        return (today + timedelta(days=int(rel_pt.group(1)))).strftime("%Y-%m-%d")
-    rel_pt_weeks = re.search(r'(?:daqui|em)\s+(\d+)\s+semanas?', blob)
+        got = _take(rel_pt, int(rel_pt.group(2)), rel_pt.group(1))
+        if got:
+            return got
+    rel_pt_weeks = re.search(r'(daqui|em)\s+(\d+)\s+semanas?', blob)
     if rel_pt_weeks:
-        return (today + timedelta(days=int(rel_pt_weeks.group(1)) * 7)).strftime("%Y-%m-%d")
-    rel_pt_months = re.search(r'(?:daqui|em)\s+(\d+)\s+meses?', blob)
+        got = _take(rel_pt_weeks, int(rel_pt_weeks.group(2)) * 7, rel_pt_weeks.group(1))
+        if got:
+            return got
+    rel_pt_months = re.search(r'(daqui|em)\s+(\d+)\s+meses?', blob)
     if rel_pt_months:
-        return (today + timedelta(days=int(rel_pt_months.group(1)) * 30)).strftime("%Y-%m-%d")
-    rel_pt_years = re.search(r'(?:daqui|em)\s+(\d+)\s+anos?', blob)
+        got = _take(rel_pt_months, int(rel_pt_months.group(2)) * 30, rel_pt_months.group(1))
+        if got:
+            return got
+    rel_pt_years = re.search(r'(daqui|em)\s+(\d+)\s+anos?', blob)
     if rel_pt_years:
-        return (today + timedelta(days=int(rel_pt_years.group(1)) * 365)).strftime("%Y-%m-%d")
+        got = _take(rel_pt_years, int(rel_pt_years.group(2)) * 365, rel_pt_years.group(1))
+        if got:
+            return got
 
     # ── English: "in 30 days", "30 days from now", "closing in 2 weeks" ──
-    rel_en_days = re.search(r'(?:in|within|closing\s+in|next)\s+(\d+)\s+days?', blob)
+    rel_en_days = re.search(r'(in|within|closing\s+in|next)\s+(\d+)\s+days?', blob)
     if rel_en_days:
-        return (today + timedelta(days=int(rel_en_days.group(1)))).strftime("%Y-%m-%d")
-    rel_en_weeks = re.search(r'(?:in|within|closing\s+in|next)\s+(\d+)\s+weeks?', blob)
+        got = _take(rel_en_days, int(rel_en_days.group(2)), rel_en_days.group(1))
+        if got:
+            return got
+    rel_en_weeks = re.search(r'(in|within|closing\s+in|next)\s+(\d+)\s+weeks?', blob)
     if rel_en_weeks:
-        return (today + timedelta(days=int(rel_en_weeks.group(1)) * 7)).strftime("%Y-%m-%d")
-    rel_en_months = re.search(r'(?:in|within|closing\s+in|next)\s+(\d+)\s+months?', blob)
+        got = _take(rel_en_weeks, int(rel_en_weeks.group(2)) * 7, rel_en_weeks.group(1))
+        if got:
+            return got
+    rel_en_months = re.search(r'(in|within|closing\s+in|next)\s+(\d+)\s+months?', blob)
     if rel_en_months:
-        return (today + timedelta(days=int(rel_en_months.group(1)) * 30)).strftime("%Y-%m-%d")
+        got = _take(rel_en_months, int(rel_en_months.group(2)) * 30, rel_en_months.group(1))
+        if got:
+            return got
     # "30 days from now", "by end of month", "by end of year"
     rel_en_from_now = re.search(r'(\d+)\s+days?\s+from\s+now', blob)
     if rel_en_from_now:
@@ -1781,46 +1927,70 @@ def extract_deadline(text):
     # ── French: "dans 30 jours", "dans 2 semaines", "dans 3 mois" ──
     rel_fr_days = re.search(r'dans\s+(\d+)\s+jours?', blob)
     if rel_fr_days:
-        return (today + timedelta(days=int(rel_fr_days.group(1)))).strftime("%Y-%m-%d")
+        got = _take(rel_fr_days, int(rel_fr_days.group(1)))
+        if got:
+            return got
     rel_fr_weeks = re.search(r'dans\s+(\d+)\s+semaines?', blob)
     if rel_fr_weeks:
-        return (today + timedelta(days=int(rel_fr_weeks.group(1)) * 7)).strftime("%Y-%m-%d")
+        got = _take(rel_fr_weeks, int(rel_fr_weeks.group(1)) * 7)
+        if got:
+            return got
     rel_fr_months = re.search(r'dans\s+(\d+)\s+mois', blob)
     if rel_fr_months:
-        return (today + timedelta(days=int(rel_fr_months.group(1)) * 30)).strftime("%Y-%m-%d")
+        got = _take(rel_fr_months, int(rel_fr_months.group(1)) * 30)
+        if got:
+            return got
 
     # ── Spanish: "en 30 días", "en 2 semanas", "en 3 meses" ──
     rel_es_days = re.search(r'en\s+(\d+)\s+d[ií]as?', blob)
     if rel_es_days:
-        return (today + timedelta(days=int(rel_es_days.group(1)))).strftime("%Y-%m-%d")
+        got = _take(rel_es_days, int(rel_es_days.group(1)))
+        if got:
+            return got
     rel_es_weeks = re.search(r'en\s+(\d+)\s+semanas?', blob)
     if rel_es_weeks:
-        return (today + timedelta(days=int(rel_es_weeks.group(1)) * 7)).strftime("%Y-%m-%d")
+        got = _take(rel_es_weeks, int(rel_es_weeks.group(1)) * 7)
+        if got:
+            return got
     rel_es_months = re.search(r'en\s+(\d+)\s+meses?', blob)
     if rel_es_months:
-        return (today + timedelta(days=int(rel_es_months.group(1)) * 30)).strftime("%Y-%m-%d")
+        got = _take(rel_es_months, int(rel_es_months.group(1)) * 30)
+        if got:
+            return got
 
     # ── German: "in 30 Tagen", "in 2 Wochen", "in 3 Monaten" ──
     rel_de_days = re.search(r'in\s+(\d+)\s+Tag(?:en)?', blob)
     if rel_de_days:
-        return (today + timedelta(days=int(rel_de_days.group(1)))).strftime("%Y-%m-%d")
+        got = _take(rel_de_days, int(rel_de_days.group(1)))
+        if got:
+            return got
     rel_de_weeks = re.search(r'in\s+(\d+)\s+Woch(?:en)?', blob)
     if rel_de_weeks:
-        return (today + timedelta(days=int(rel_de_weeks.group(1)) * 7)).strftime("%Y-%m-%d")
+        got = _take(rel_de_weeks, int(rel_de_weeks.group(1)) * 7)
+        if got:
+            return got
     rel_de_months = re.search(r'in\s+(\d+)\s+Monat(?:en)?', blob)
     if rel_de_months:
-        return (today + timedelta(days=int(rel_de_months.group(1)) * 30)).strftime("%Y-%m-%d")
+        got = _take(rel_de_months, int(rel_de_months.group(1)) * 30)
+        if got:
+            return got
 
     # ── Italian: "entro 30 giorni", "entro 2 settimane", "entro 3 mesi" ──
     rel_it_days = re.search(r'entro\s+(\d+)\s+giorni?', blob)
     if rel_it_days:
-        return (today + timedelta(days=int(rel_it_days.group(1)))).strftime("%Y-%m-%d")
+        got = _take(rel_it_days, int(rel_it_days.group(1)))
+        if got:
+            return got
     rel_it_weeks = re.search(r'entro\s+(\d+)\s+settiman[ae]', blob)
     if rel_it_weeks:
-        return (today + timedelta(days=int(rel_it_weeks.group(1)) * 7)).strftime("%Y-%m-%d")
+        got = _take(rel_it_weeks, int(rel_it_weeks.group(1)) * 7)
+        if got:
+            return got
     rel_it_months = re.search(r'entro\s+(\d+)\s+mesi', blob)
     if rel_it_months:
-        return (today + timedelta(days=int(rel_it_months.group(1)) * 30)).strftime("%Y-%m-%d")
+        got = _take(rel_it_months, int(rel_it_months.group(1)) * 30)
+        if got:
+            return got
 
     # ── Vague "soon"-style prose NEVER yields a date (v2 fix).
     # The old code fabricated today+14d for words like "próximo"/"soon"/
@@ -1848,6 +2018,15 @@ def extract_deadline(text):
         rf'[Dd]eadline\s+is\s+(\d{{1,2}}{ORD}\s+[A-Za-z]+\s+\d{{4}})',
         rf'[Cc]loses?(?:\s+\w+,?)?\s+([A-Za-z]+ \d{{1,2}}{ORD},?\s+\d{{4}})',
         rf'[Cc]loses?(?:\s+\w+,?)?\s+(\d{{1,2}}{ORD}\s+[A-Za-z]+,?\s+\d{{4}})',
+        # v2.5: "due" family — "applications are due by December 1, 2026",
+        # "Full Proposal Due Date October 27, 2026" (full proposal first:
+        # multi-stage RFPs also name an earlier pre-proposal date).
+        rf'[Ff]ull\s+[Pp]roposal\s+[Dd]ue\s+[Dd]ate\s*:?\s*([A-Za-z]+ \d{{1,2}}{ORD},?\s*\d{{4}})',
+        rf'[Ff]ull\s+[Pp]roposal\s+[Dd]ue\s+[Dd]ate\s*:?\s*(\d{{1,2}}{ORD}\s+[A-Za-z]+,?\s*\d{{4}})',
+        rf'(?:[Aa]pplications?|[Pp]roposals?)[^.\n]{{0,80}}?are\s+due\s+(?:by\s+)?([A-Za-z]+ \d{{1,2}}{ORD},?\s*\d{{4}})',
+        rf'(?:[Aa]pplications?|[Pp]roposals?)[^.\n]{{0,80}}?are\s+due\s+(?:by\s+)?(\d{{1,2}}{ORD}\s+[A-Za-z]+,?\s*\d{{4}})',
+        rf'[Dd]ue\s+[Dd]ate\s*:?\s*([A-Za-z]+ \d{{1,2}}{ORD},?\s*\d{{4}})',
+        rf'[Dd]ue\s+[Dd]ate\s*:?\s*(\d{{1,2}}{ORD}\s+[A-Za-z]+,?\s*\d{{4}})',
         # v2.4: month-day ranges "September 26-27, 2026" → END date
         r'([A-Za-z]+) (\d{1,2})\s*[–-]\s*(\d{1,2}),?\s*(\d{4})',
         # v2.2: fundsforNGOs feed style "Deadline: 18-Sep-26" / "18-Sep-2026"
@@ -1953,6 +2132,25 @@ def extract_deadline(text):
             # v2.3: slash dates are day-first outside the US ("31/08/26")
             return parse_date(raw_m, dayfirst=("/" in raw_m))
     return ""
+
+def analyze_detail_text(text):
+    """Decide a funder detail page: (deadline | None, closed: bool).
+
+    Used by the deadline backfill for aggregator rows whose own text has no
+    date. A found-but-past deadline counts as closed evidence and is never
+    stored (stale dates must not linger as live deadlines).
+    """
+    if not text:
+        return None, False
+    dl = extract_deadline(text)
+    if dl and not is_expired(dl):
+        return dl, False
+    if dl and is_expired(dl):
+        return None, True
+    if detect_status_from_text(text) == "closed":
+        return None, True
+    return None, False
+
 
 def _hint_hit(text_lower: str, hint: str) -> bool:
     """Word-boundary hint match. Plain ``in`` matching caused false
@@ -4546,7 +4744,7 @@ async def run_radar(sources_filter, country_filter, keywords, category_filter,
                    refresh, min_relevance, output_prefix,
                    min_signals=MIN_SIGNALS_DEFAULT, verify_urls=True,
                    require_terms=True, exclude_closed=True, exclude_expired=True,
-                   expired_grace_days=0):
+                   expired_grace_days=0, backfill=True):
     if refresh:
         for f in CACHE_DIR.glob("*.json"): f.unlink()
         console.print("[yellow]Cache cleared.[/]")
@@ -4607,6 +4805,19 @@ async def run_radar(sources_filter, country_filter, keywords, category_filter,
                                          timeout=aiohttp.ClientTimeout(total=120)) as vsession:
             unique, url_dropped = await verify_grant_urls(vsession, unique)
         console.print(f"[green]✓ URL verify:[/] {len(unique)} ok, {len(url_dropped)} broken/walled")
+
+    # 2b. Deadline backfill: dateless grants with a funder grant_link get
+    # their call page fetched once for a second extraction attempt. Rows
+    # whose funder page shows CLOSED are dropped here and recorded for the
+    # dead sidecar (sync flips the DB row — the analyzer never sees them,
+    # so no temporal-gate leak trip). Runs BEFORE the terms gate so newly
+    # dated grants can pass via deadline+amount.
+    dead_grants: list = []
+    if backfill and unique:
+        connector3 = aiohttp.TCPConnector(limit=MAX_CONCURRENT, ssl=False)
+        async with aiohttp.ClientSession(connector=connector3,
+                                         timeout=aiohttp.ClientTimeout(total=120)) as bsession:
+            unique, dead_grants = await backfill_deadlines(bsession, unique)
 
     # 3. Grant-vocabulary gate: require grant terms OR (deadline + amount)
     if require_terms:
@@ -4716,6 +4927,12 @@ async def run_radar(sources_filter, country_filter, keywords, category_filter,
     save_csv(filtered,      OUTPUT_DIR / f"{prefix}.csv")
     save_markdown(filtered, OUTPUT_DIR / f"{prefix}.md",
                   title=f"Grants Radar v2 — {country_filter or 'Worldwide'}")
+    if dead_grants:
+        with open(OUTPUT_DIR / f"dead_{prefix}.json", "w", encoding="utf-8") as f:
+            json.dump({"generated": datetime.now(timezone.utc).isoformat(),
+                       "total": len(dead_grants), "dead": dead_grants},
+                      f, ensure_ascii=False, indent=2)
+        console.print(f"[yellow]Dead sidecar:[/] dead_{prefix}.json ({len(dead_grants)} funder-page-closed)")
 
     console.print(f"[bold]Saved:[/] {prefix}.json / .csv / .md")
     print_table(filtered)
@@ -4750,6 +4967,8 @@ async def run_radar(sources_filter, country_filter, keywords, category_filter,
               help=f"Min grant-signal score 0–53 (default {MIN_SIGNALS_DEFAULT})")
 @click.option("--verify-urls/--no-verify-urls", default=True,
               help="HEAD/GET-check every URL; drop broken + login walls (default on)")
+@click.option("--backfill-deadlines/--no-backfill-deadlines", default=True,
+              help="Re-fetch funder pages of dateless grants for deadlines (default on)")
 @click.option("--require-terms/--no-require-terms", default=True,
               help="Require grant vocabulary or deadline+amount (default on)")
 @click.option("--output",   "-o", default="grants_radar",
@@ -4766,7 +4985,8 @@ async def run_radar(sources_filter, country_filter, keywords, category_filter,
 def main(country, sources, keywords, category, highlight, urgent, min_amount,
          refresh, min_score, min_signals, verify_urls, require_terms,
          output, list_sources, list_types,
-         include_closed, include_expired, expired_grace_days):
+         include_closed, include_expired, expired_grace_days,
+         backfill_deadlines):
     """
     \b
     GRANTS RADAR v2 — Earth Guardians South America
@@ -4796,7 +5016,7 @@ def main(country, sources, keywords, category, highlight, urgent, min_amount,
     asyncio.run(run_radar(sources, country, keywords, category, highlight, urgent, min_amount, refresh, min_score, output,
                           min_signals=min_signals, verify_urls=verify_urls, require_terms=require_terms,
                           exclude_closed=not include_closed, exclude_expired=not include_expired,
-                          expired_grace_days=expired_grace_days))
+                          expired_grace_days=expired_grace_days, backfill=backfill_deadlines))
 
 if __name__ == "__main__":
     main()

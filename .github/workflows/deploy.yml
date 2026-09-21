@@ -385,6 +385,15 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
 
+      - name: 📤 Upload dead-grants sidecar (funder-page-closed)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: grants-dead-sidecar
+          path: scripts/output/dead_*.*
+          retention-days: 14
+          if-no-files-found: ignore
+
   sync-culture:
     name: '🎭 Sync · cultural agents'
     runs-on: ubuntu-latest
@@ -498,6 +507,13 @@ jobs:
           path: scripts/output/
         continue-on-error: true
 
+      - name: 📥 Download dead-grants sidecar
+        uses: actions/download-artifact@v7
+        with:
+          name: grants-dead-sidecar
+          path: scripts/output/
+        continue-on-error: true
+
       - name: ☁️ Push grants to Supabase
         continue-on-error: true
         run: |
@@ -515,6 +531,19 @@ jobs:
             exit 0
           fi
           npx tsx scripts/sync-grants-to-supabase.ts grants "$EXPORT_FILE"
+        env:
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: ☁️ Flip funder-page-closed rows
+        continue-on-error: true
+        run: |
+          DEAD_FILE=$(ls -t scripts/output/dead_*.* 2>/dev/null | head -1 || true)
+          if [ -z "$DEAD_FILE" ]; then
+            echo "No dead-grants sidecar, skipping mark-dead"
+            exit 0
+          fi
+          npx tsx scripts/sync-grants-to-supabase.ts mark-dead "$DEAD_FILE"
         env:
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

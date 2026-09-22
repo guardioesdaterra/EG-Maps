@@ -436,8 +436,59 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .fs-container { padding: 0 1rem; }
+  .fs-container { padding: 0 12px; }
+  .fs-header {
+    padding: 0.65rem 0 0.6rem;
+    margin-bottom: 1rem;
+  }
+  .fs-header-inner {
+    gap: 8px;
+  }
+  .fs-header-left {
+    gap: 0.6rem;
+    min-width: 0;
+    flex: 1;
+  }
+  .fs-header-meta {
+    gap: 0.5rem;
+    min-width: 0;
+  }
   .fs-header-meta .fs-badge { display: none; }
+  .fs-title {
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fs-logo {
+    padding: 0.5rem 0.6rem;
+    min-height: 44px;
+    flex-shrink: 0;
+  }
+  .fs-logo-text { display: none; }
+  .fs-header-divider { display: none; }
+  .fs-back-btn {
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
+    padding: 0.5rem 0.7rem;
+  }
   .fs-back-btn span { display: none; }
+  .fs-main {
+    padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px));
+  }
+  /* gate states: roomy, tappable */
+  .eg-gate .text-center {
+    width: min(26rem, 100%);
+  }
+  .eg-gate button {
+    min-height: 48px;
+  }
+  .eg-gate button[class*="px-6"] {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 </style>

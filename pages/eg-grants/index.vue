@@ -424,7 +424,49 @@ canvas {
 .modal-fade-leave-to { opacity: 0; }
 
 @media (max-width: 768px) {
-  .grants-dashboard-section { padding: 1rem 6% 3rem; }
+  .grants-dashboard-section {
+    padding: 0.65rem 0 calc(2rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .dashboard-topbar {
+    margin: 0 12px 0.6rem;
+    justify-content: flex-start;
+  }
+
+  .fs-toggle-btn {
+    min-height: 44px;
+    padding: 0.6rem 1rem;
+    font-size: 0.75rem;
+    border-radius: 999px;
+  }
+
+  /* auth / gate states: full-width 48px targets, safe-area aware */
+  .eg-gate .text-center {
+    width: min(26rem, 100%);
+    padding: 0 4px calc(env(safe-area-inset-bottom, 0px));
+  }
+
+  .eg-gate button {
+    min-height: 48px;
+  }
+
+  .eg-gate button[class*="px-6"] {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .fs-toggle-btn span {
+    display: none;
+  }
+
+  .fs-toggle-btn {
+    min-width: 44px;
+    justify-content: center;
+  }
 }
 </style>
 

@@ -1,4 +1,5 @@
 scripts/__pycache__/
+scripts/cache/
 supabase/
 *.sql.tmp
 # Scraper exports are CI artifacts pushed straight to Supabase —

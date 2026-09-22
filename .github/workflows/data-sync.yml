@@ -1,0 +1,376 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# 🔄 Data sync — grants + cultural agents (split out of the deploy pipeline)
+#
+# Visual DAG (each job = one node in the GitHub graph):
+#
+#   ┌─ sync-grants ──┐
+#   └─ sync-culture ─┴─► sync-supabase-push ─► commit-cultural-data ─► summary
+#
+# What lands where:
+#   • grants export → Supabase only (scripts/output/grants_export_* is
+#     gitignored; the client reads grants live from Supabase).
+#   • cultural agents → Supabase AND committed back to
+#     public/data/cultural-agents/*.json, because the site serves those
+#     files statically (see composables/useCulturalAgentsData.ts). The
+#     commit retriggers the deploy pipeline, which rebuilds with fresh data.
+#
+# Loop guard: the push trigger ignores public/data/cultural-agents/**, so
+# the commit-back push (which touches ONLY those files) never retriggers
+# this workflow.
+#
+# Triggers: pushes to master/develop, every 2 hours, manual dispatch.
+# ══════════════════════════════════════════════════════════════════════════════
+name: 🔄 Data sync · grants + cultural agents
+
+on:
+  push:
+    branches: [master, develop]
+    paths-ignore:
+      - 'public/data/cultural-agents/**'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */2 * * *' # Every 2 hours — refresh grants radar
+
+permissions:
+  contents: write # commit-back of refreshed cultural-agents data
+
+concurrency:
+  group: data-sync-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10.12.0'
+  PYTHON_VERSION: '3.12'
+  # Shared pip set (repo has no requirements.txt; keep in ONE place).
+  PIP_DEPS: 'feedparser aiohttp aiofiles beautifulsoup4 lxml python-dateutil rich click'
+
+# ════════════════════════════════════════════════════════════════════════════
+# JOBS
+# ════════════════════════════════════════════════════════════════════════════
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # 1️⃣ Scrape sub-nodes (run concurrently) ─► Supabase push
+  # ─────────────────────────────────────────────────────────────────────────
+  sync-grants:
+    name: '🌱 Sync · grants scrape'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      export-file: ${{ steps.capture.outputs.export-file }}
+      accepted: ${{ steps.capture.outputs.accepted }}
+      open: ${{ steps.capture.outputs.open }}
+      expired: ${{ steps.capture.outputs.expired }}
+      closed: ${{ steps.capture.outputs.closed }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 🐍 Restore pip cache (incremental)
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          # Rebuild only when the scraper sources change.
+          key: pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-${{ hashFiles('scripts/grants.py', 'scripts/grants_gates_test.py') }}
+          restore-keys: |
+            pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-
+
+      - name: 🐍 Install Python dependencies
+        run: pip install $PIP_DEPS
+
+      - name: 🌱 Scrape grants (standing excluded; closed + past-deadline dropped)
+        run: python scripts/grants.py -o grants_export
+        continue-on-error: true
+
+      - id: capture
+        name: ✅ Analyze + validate grants output
+        run: |
+          # NOTE: `|| true` — the default GH Actions shell runs with
+          # `-e -o pipefail`, so a bare `ls` with no glob match (exit 2)
+          # would kill this step before the analyzer's graceful
+          # `__missing__` branch (exit 0) is reached.
+          EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1 || true)
+          {
+            echo "export-file=$EXPORT_FILE"
+          } >> "$GITHUB_OUTPUT"
+          # Analyzer prints the $GITHUB_STEP_SUMMARY section, appends
+          # accepted/open/expired/closed to $GITHUB_OUTPUT, and exits 1
+          # when a gate fails (0 accepted, or expired/closed rows leaked).
+          # __missing__ triggers the graceful no-export branch (exit 0).
+          python3 scripts/analyze_grants_export.py ${EXPORT_FILE:-__missing__} >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 📤 Upload grants export artifact
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: grants-export
+          path: scripts/output/grants_export_*.*
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: 📤 Upload dead-grants sidecar (funder-page-closed)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: grants-dead-sidecar
+          path: scripts/output/dead_*.*
+          retention-days: 14
+          if-no-files-found: ignore
+
+  sync-culture:
+    name: '🎭 Sync · cultural agents'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      export-file: ${{ steps.capture.outputs.export-file }}
+      total: ${{ steps.capture.outputs.total }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 🐍 Restore pip cache (incremental)
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-${{ hashFiles('scripts/sync-cultural-agents.py') }}
+          restore-keys: |
+            pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-
+
+      - name: 🐍 Install Python dependencies
+        run: pip install $PIP_DEPS
+
+      - name: 🎭 Sync cultural agents (Mapa Cultura + Floresta Ativista)
+        run: python scripts/sync-cultural-agents.py
+        continue-on-error: true
+
+      - id: capture
+        name: ✅ Validate cultural agents output
+        run: |
+          # NOTE: `|| true` — see sync-grants capture (pipefail + empty glob).
+          EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1 || true)
+          if [ -z "$EXPORT_FILE" ]; then
+            echo "No cultural agents export file found"
+            echo "export-file=" >> "$GITHUB_OUTPUT"
+            echo "total=0" >> "$GITHUB_OUTPUT"
+            {
+              echo "## 🎭 Cultural agents sync"
+              echo ""
+              echo "- Result: **no export produced** (scraper may have failed — see logs)"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "export-file=$EXPORT_FILE" >> "$GITHUB_OUTPUT"
+          STATS=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); agents=d.get('agents',[]); mapa=len([a for a in agents if a.get('source')=='mapa_cultura']); fa=len([a for a in agents if a.get('source')=='floresta_ativista']); print(f'Total: {len(agents)}, Mapa Cultura: {mapa}, Floresta Ativista: {fa}')" "$EXPORT_FILE")
+          echo "Cultural agents stats: $STATS"
+          TOTAL=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(len(d.get('agents',[])))" "$EXPORT_FILE")
+          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
+          {
+            echo "## 🎭 Cultural agents sync — ${EXPORT_FILE##*/}"
+            echo ""
+            echo "- Stats: **${STATS}**"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 📤 Upload cultural agents data (for commit-back job)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cultural-agents-data
+          path: public/data/cultural-agents/
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: 📤 Upload cultural agents export
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cultural-agents-export
+          path: scripts/output/cultural_agents_export_*.*
+          retention-days: 14
+          if-no-files-found: warn
+
+  sync-supabase-push:
+    name: '☁️ Sync · Supabase push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [sync-grants, sync-culture]
+    # Run even if one scrape failed so the surviving dataset still syncs;
+    # skip only when BOTH scrapes failed.
+    if: always() && (needs.sync-grants.result == 'success' || needs.sync-culture.result == 'success')
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm # ✅ incremental
+
+      - name: 📦 Install Node dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: 📥 Download grants export
+        uses: actions/download-artifact@v7
+        with:
+          name: grants-export
+          path: scripts/output/
+        continue-on-error: true
+
+      - name: 📥 Download cultural agents export
+        uses: actions/download-artifact@v7
+        with:
+          name: cultural-agents-export
+          path: scripts/output/
+        continue-on-error: true
+
+      - name: 📥 Download dead-grants sidecar
+        uses: actions/download-artifact@v7
+        with:
+          name: grants-dead-sidecar
+          path: scripts/output/
+        continue-on-error: true
+
+      - name: ☁️ Push grants to Supabase
+        continue-on-error: true
+        run: |
+          # NOTE: `|| true` — see sync-grants capture (pipefail + empty glob).
+          EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1 || true)
+          if [ -z "$EXPORT_FILE" ]; then
+            echo "No grants export file found, skipping sync"
+            exit 0
+          fi
+          # Temporal-gate defense in depth: the analyzer already failed the
+          # sync-grants job on expired/closed leaks — never push that export
+          # to Supabase (sync script double-guards, but skip early + loudly).
+          if [ "${{ needs.sync-grants.outputs.expired }}" != "0" ] || [ "${{ needs.sync-grants.outputs.closed }}" != "0" ]; then
+            echo "::warning::Grants temporal gate leaked (expired=${{ needs.sync-grants.outputs.expired }}, closed=${{ needs.sync-grants.outputs.closed }}) — skipping Supabase push for this export"
+            exit 0
+          fi
+          npx tsx scripts/sync-grants-to-supabase.ts grants "$EXPORT_FILE"
+        env:
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: ☁️ Flip funder-page-closed rows
+        continue-on-error: true
+        run: |
+          DEAD_FILE=$(ls -t scripts/output/dead_*.* 2>/dev/null | head -1 || true)
+          if [ -z "$DEAD_FILE" ]; then
+            echo "No dead-grants sidecar, skipping mark-dead"
+            exit 0
+          fi
+          npx tsx scripts/sync-grants-to-supabase.ts mark-dead "$DEAD_FILE"
+        env:
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: ☁️ Push cultural agents to Supabase
+        continue-on-error: true
+        run: |
+          # NOTE: `|| true` — see sync-grants capture (pipefail + empty glob).
+          EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1 || true)
+          if [ -z "$EXPORT_FILE" ]; then
+            echo "No cultural agents export file found, skipping sync"
+            exit 0
+          fi
+          npx tsx scripts/sync-grants-to-supabase.ts agents "$EXPORT_FILE"
+        env:
+          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## ☁️ Supabase push"
+            echo ""
+            echo "| Dataset | Scrape result | Push outcome |"
+            echo "|---|---|---|"
+            echo "| grants | \`${{ needs.sync-grants.result }}\` (accepted: \`${{ needs.sync-grants.outputs.accepted }}\`, open: \`${{ needs.sync-grants.outputs.open }}\`, expired/closed: \`${{ needs.sync-grants.outputs.expired }}\`/\`${{ needs.sync-grants.outputs.closed }}\`) | see logs |"
+            echo "| cultural agents | \`${{ needs.sync-culture.result }}\` (total: \`${{ needs.sync-culture.outputs.total }}\`) | see logs |"
+            echo ""
+            echo "_Individual push steps are \`continue-on-error\` so one failing dataset never blocks the other._"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 2️⃣ Commit refreshed static data back so the deploy pipeline
+  #    (separate workflow run) picks it up via checkout.
+  # ─────────────────────────────────────────────────────────────────────────
+  commit-cultural-data:
+    name: '💾 Commit · refreshed cultural agents'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [sync-culture]
+    if: needs.sync-culture.result == 'success'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: 📥 Download refreshed cultural agents data
+        uses: actions/download-artifact@v7
+        with:
+          name: cultural-agents-data
+          path: public/data/cultural-agents/
+
+      - name: 💾 Commit + push (bot)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data/cultural-agents/
+          if git diff --cached --quiet; then
+            echo "Cultural agents data unchanged — nothing to commit."
+            echo "COMMIT_OUTCOME=unchanged" >> "$GITHUB_ENV"
+          else
+            git commit -m "chore(data): refresh cultural agents" -m "Via Data sync workflow (scripts/sync-cultural-agents.py). Triggers a deploy rebuild with fresh static data."
+            git push
+            echo "COMMIT_OUTCOME=pushed" >> "$GITHUB_ENV"
+          fi
+
+      - name: 📝 Summary
+        if: always()
+        run: |
+          {
+            echo "## 💾 Cultural agents commit-back"
+            echo ""
+            echo "- Result: **${{ job.status }}**"
+            echo "- Outcome: **${COMMIT_OUTCOME:-unknown}**"
+            echo "  (\`unchanged\` = scrape matched repo · \`pushed\` = fresh data committed, deploy rebuild triggered)"
+            echo "- Loop guard: this workflow's push trigger ignores \`public/data/cultural-agents/**\`, so the bot push never retriggers a sync."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 3️⃣ Terminal aggregator — sync overview (always runs)
+  # ─────────────────────────────────────────────────────────────────────────
+  sync-summary:
+    name: '📊 Sync summary'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs:
+      - sync-grants
+      - sync-culture
+      - sync-supabase-push
+      - commit-cultural-data
+    if: always()
+    steps:
+      - name: 📊 Aggregate results
+        run: |
+          {
+            echo "# 📊 Data sync overview"
+            echo ""
+            echo "_ref \`${{ github.ref }}\` · sha \`${{ github.sha }}\` · event \`${{ github.event_name }}\`_"
+            echo ""
+            echo "| Node | Result | Output |"
+            echo "|---|---|---|"
+            echo "| 🌱 Grants scrape | \`${{ needs.sync-grants.result }}\` | accepted: \`${{ needs.sync-grants.outputs.accepted }}\` · open: \`${{ needs.sync-grants.outputs.open }}\` · expired: \`${{ needs.sync-grants.outputs.expired }}\` · closed: \`${{ needs.sync-grants.outputs.closed }}\` |"
+            echo "| 🎭 Cultural agents | \`${{ needs.sync-culture.result }}\` | total: \`${{ needs.sync-culture.outputs.total }}\` |"
+            echo "| ☁️ Supabase push | \`${{ needs.sync-supabase-push.result }}\` | grants + agents |"
+            echo "| 💾 Commit-back | \`${{ needs.commit-cultural-data.result }}\` | static data → repo (deploy rebuilds) |"
+          } >> "$GITHUB_STEP_SUMMARY"

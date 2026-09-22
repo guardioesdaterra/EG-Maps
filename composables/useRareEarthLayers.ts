@@ -19,6 +19,19 @@ import { cleanupCulturalLayers, setCulturalLayersVisibility, setupCulturalLayers
 
 const activePopups = new WeakMap<MapLibreMap, maplibregl.Popup>()
 
+/**
+ * Per-map handler guards. Posterior reconciles re-run the bootstrap path
+ * (late layer arrivals, post-style-switch re-syncs, load retries) while the
+ * map instance stays alive — map-level `on()` handlers survive `setStyle`
+ * and layer teardown, so re-attaching them would stack duplicates (N popups
+ * per click, N hover writes per mousemove). Layers/sources are safe to
+ * re-add (guarded by getSource/getLayer checks); handlers need these sets.
+ */
+const mapsWithPointHover = new WeakSet<MapLibreMap>()
+const mapsWithSiteHover = new WeakSet<MapLibreMap>()
+const mapsWithProtectedHover = new WeakSet<MapLibreMap>()
+const mapsWithUnifiedClick = new WeakSet<MapLibreMap>()
+
 function closeActivePopup(map: MapLibreMap) {
   const popup = activePopups.get(map)
   if (popup) { popup.remove(); activePopups.delete(map) }
@@ -187,6 +200,8 @@ function addPointLayers(map: MapLibreMap, source: string) {
 
 /** Hover affordances only — clicks are owned by the unified stacked handler. */
 function addClickHandlers(map: MapLibreMap, _options: RareEarthLayerOptions, cleanups: Array<() => void>) {
+  if (mapsWithPointHover.has(map)) return
+  mapsWithPointHover.add(map)
   const onPointEnter = (e: MapLayerMouseEvent) => {
     map.getCanvas().style.cursor = 'pointer'
     if (e.features?.length) {
@@ -216,6 +231,8 @@ function addPolygonHandlers(_map: MapLibreMap, _options: RareEarthLayerOptions, 
 
 /** Hover affordances only for conflict-site labels. */
 function addSiteHandlers(map: MapLibreMap, cleanups: Array<() => void>) {
+  if (mapsWithSiteHover.has(map)) return
+  mapsWithSiteHover.add(map)
   const onSiteEnter = () => { map.getCanvas().style.cursor = 'pointer' }
   const onSiteLeave = () => { map.getCanvas().style.cursor = '' }
   for (const layerId of ['ree-site-label', 'ree-site-glow']) {
@@ -235,6 +252,8 @@ function addSiteHandlers(map: MapLibreMap, cleanups: Array<() => void>) {
 
 /** Hover affordances only for protected-area fills. */
 function addProtectedAreaHandlers(map: MapLibreMap, cleanups: Array<() => void>) {
+  if (mapsWithProtectedHover.has(map)) return
+  mapsWithProtectedHover.add(map)
   for (const layerId of ['ree-protected-ti-fill', 'ree-protected-quilombo-fill', 'ree-protected-uc-fill', 'ree-protected-buffer-fill']) {
     const onProtEnter = () => { map.getCanvas().style.cursor = 'pointer' }
     const onProtLeave = () => { map.getCanvas().style.cursor = '' }
@@ -264,6 +283,11 @@ function shortName(v: unknown, max = 18): string {
  * as a tabbed popup instead of only the topmost feature winning.
  */
 function addUnifiedObservatoryClick(map: MapLibreMap, options: RareEarthLayerOptions, cleanups: Array<() => void>) {
+  // Idempotent per map instance: posterior reconciles (late arrivals, style
+  // re-syncs, retries) re-run the bootstrap path, and every extra
+  // map.on('click') would open another stacked popup per click.
+  if (mapsWithUnifiedClick.has(map)) return
+  mapsWithUnifiedClick.add(map)
   const QUERY_GROUPS: Array<{ layers: string[]; kind: StackedHit['kind'] }> = [
     { layers: ['ree-point-circle'], kind: 'claim' },
     { layers: ['ree-poly-fill'], kind: 'boundary' },
@@ -365,7 +389,7 @@ function addUnifiedObservatoryClick(map: MapLibreMap, options: RareEarthLayerOpt
             return
           }
           const html = buildRareEarthPopupHTML(adapted)
-          activePopups.set(map, new maplibregl.Popup({ offset: 12, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(html).setMaxWidth('420px').addTo(map))
+          activePopups.set(map, new maplibregl.Popup({ offset: 12, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(html).setMaxWidth('640px').addTo(map))
           return
         }
       }
@@ -383,7 +407,7 @@ function addUnifiedObservatoryClick(map: MapLibreMap, options: RareEarthLayerOpt
       const first = hits[0]
       const adapted = first.kind === 'boundary' ? adaptPolygonProps(first.props) : first.props
       const html = buildRareEarthPopupHTML(adapted)
-      activePopups.set(map, new maplibregl.Popup({ offset: 12, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(html).setMaxWidth('420px').addTo(map))
+      activePopups.set(map, new maplibregl.Popup({ offset: 12, closeButton: true, className: 'cyberpunk-popup' }).setLngLat(e.lngLat).setHTML(html).setMaxWidth('640px').addTo(map))
     } catch {
       /* fail-soft: a bad query must never break map clicks */
     }
@@ -459,17 +483,12 @@ export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncIn
       else addPolygonLayersToMap(map, polys, popup)
     }
     if (protectedAreas?.features?.length && !map.getSource(REE_SOURCE_PROTECTED)) {
-      // Late protected arrival: full bootstrap re-attaches layers; clicks
-      // stay owned by the unified map handler regardless of arrival order.
-      setupRareEarthLayers(map, {
-        points: points ?? { type: 'FeatureCollection', features: [] },
-        polys: polys ?? null,
-        protected: protectedAreas,
-        cultural: cultural ?? null,
-        networkFeatures: networkFeatures ?? null,
-        popup,
-        onClaimClick,
-      })
+      // Late protected arrival after the points-first bootstrap: add ONLY the
+      // missing protected source/layers. A full re-bootstrap here would tear
+      // down every claim/polygon layer mid-session (visible flicker, popup
+      // loss) — posterior calls must never rebuild the map.
+      addProtectedAreasLayer(map, protectedAreas)
+      addProtectedAreaHandlers(map, [])
     } else if (protectedAreas?.features?.length) {
       setSourceData(map, REE_SOURCE_PROTECTED, protectedAreas)
     }

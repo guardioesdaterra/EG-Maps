@@ -1192,23 +1192,23 @@ select option {
   background: rgba(10, 10, 14, 0.97);
   color: var(--obs-text-primary);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 0;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(0, 0, 0, 0.6);
-  max-width: min(26rem, 92vw);
+  max-width: min(40rem, 94vw);
 }
 .ree-popup-wrap .maplibregl-popup-tip {
   border-top-color: rgba(10, 10, 14, 0.97) !important;
   border-bottom-color: rgba(10, 10, 14, 0.97) !important;
 }
 .ree-popup-wrap--stacked .maplibregl-popup-content {
-  max-width: min(27.5rem, 94vw);
+  max-width: min(42rem, 95vw);
 }
 .ree-popup-wrap .maplibregl-popup-close-button {
   color: var(--obs-text-muted);
-  font-size: 18px;
-  padding: 4px 8px;
-  border-radius: 0 10px 0 6px;
+  font-size: 26px;
+  padding: 8px 14px;
+  border-radius: 0 12px 0 8px;
 }
 .ree-popup-wrap .maplibregl-popup-close-button:hover {
   color: var(--obs-text-primary);
@@ -1223,7 +1223,7 @@ select option {
   border-radius: 12px;
   padding: 0;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(0, 0, 0, 0.6);
-  max-width: min(26rem, 92vw);
+  max-width: min(40rem, 94vw);
 }
 .cyberpunk-popup .maplibregl-popup-tip {
   border-top-color: rgba(10, 10, 14, 0.97) !important;
@@ -1232,18 +1232,18 @@ select option {
 
 .ree-popup {
   font-family: inherit;
-  min-width: clamp(16rem, 70vw, 22rem);
-  max-width: min(26rem, 92vw);
+  min-width: clamp(24rem, 80vw, 34rem);
+  max-width: min(40rem, 94vw);
 }
 .ree-popup--stacked {
-  min-width: clamp(18rem, 78vw, 24rem);
-  max-width: min(27.5rem, 94vw);
+  min-width: clamp(26rem, 84vw, 36rem);
+  max-width: min(42rem, 95vw);
 }
 /* ── Stacked overlapping-layers popup ── */
 .ree-popup-wrap--stacked .maplibregl-popup-close-button {
-  width: 26px;
-  height: 26px;
-  font-size: 15px;
+  width: 38px;
+  height: 38px;
+  font-size: 21px;
   line-height: 1;
   padding: 0 0 2px;
   border-radius: 50%;
@@ -1259,11 +1259,11 @@ select option {
 .ree-popup__stack-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 42px 0 12px;
+  gap: 12px;
+  padding: 16px 64px 0 20px;
 }
 .ree-popup__stack-title {
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1274,24 +1274,24 @@ select option {
 }
 .ree-popup__stack-count {
   flex-shrink: 0;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 9px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
   background: var(--stack-accent, #e74c3c);
   color: #fff;
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 .ree-popup__tabs {
   display: flex;
-  gap: 6px;
+  gap: 10px;
   overflow-x: auto;
-  padding: 8px 12px 10px;
+  padding: 12px 20px 14px;
   margin-top: 2px;
   border-bottom: 2px solid var(--stack-accent, #e74c3c);
   scrollbar-width: thin;
@@ -1302,16 +1302,16 @@ select option {
 .ree-popup__tab {
   display: inline-flex;
   align-items: flex-start;
-  gap: 7px;
-  padding: 6px 10px;
-  border-radius: 9px;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 12px;
   border: 1.5px solid rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
   font-family: inherit;
   text-align: left;
   flex-shrink: 0;
-  max-width: 13rem;
+  max-width: 20rem;
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
 }
 .ree-popup__tab:hover {
@@ -1329,9 +1329,9 @@ select option {
   outline-offset: 2px;
 }
 .ree-popup__tab-dot {
-  width: 8px;
-  height: 8px;
-  margin-top: 4px;
+  width: 12px;
+  height: 12px;
+  margin-top: 6px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -1341,7 +1341,7 @@ select option {
   min-width: 0;
 }
 .ree-popup__tab-kind {
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -1350,18 +1350,18 @@ select option {
 }
 .ree-popup__tab-label {
   display: block;
-  font-size: 11.5px;
+  font-size: 17px;
   font-weight: 700;
   line-height: 1.35;
   color: rgba(255, 255, 255, 0.68);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 11rem;
+  max-width: 17rem;
 }
 .ree-popup__tab.is-active .ree-popup__tab-label { color: #fff; }
 .ree-popup__panels {
-  max-height: min(58vh, 28rem);
+  max-height: min(72vh, 44rem);
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
@@ -1376,47 +1376,47 @@ select option {
   --ree-accent: var(--danger);
 }
 .ree-popup__header {
-  padding: clamp(6px, 2vw, 10px) clamp(8px, 2.5vw, 12px) clamp(6px, 1.5vw, 8px);
+  padding: 16px 20px 12px;
   border-bottom: 1px solid var(--obs-panel-border);
 }
 .ree-popup__badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
-  margin-bottom: 4px;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 .ree-popup__badge {
-  font-size: clamp(6px, 1.5vw, 7px);
+  font-size: clamp(10px, 2vw, 11px);
   font-weight: 700;
-  padding: 1.5px 5px;
-  border-radius: 2px;
+  padding: 4px 10px;
+  border-radius: 4px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 .ree-popup__title {
   margin: 0;
-  font-size: clamp(11px, 2.5vw, 13px);
+  font-size: clamp(17px, 3.5vw, 21px);
   font-weight: 700;
   color: var(--obs-text-primary);
   line-height: 1.25;
   word-wrap: break-word;
 }
 .ree-popup__subtitle {
-  margin: 2px 0 0;
-  font-size: clamp(8px, 1.8vw, 9px);
+  margin: 4px 0 0;
+  font-size: clamp(12px, 2.5vw, 14px);
   color: var(--obs-text-muted);
   font-style: italic;
 }
-.ree-popup__body { padding: clamp(6px, 2vw, 8px) clamp(8px, 2.5vw, 12px) clamp(6px, 2vw, 10px); }
+.ree-popup__body { padding: 12px 20px 14px; }
 .ree-popup__danger {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 .ree-popup__danger-label {
-  font-size: 7px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--obs-text-muted);
@@ -1424,7 +1424,7 @@ select option {
 }
 .ree-popup__danger-bar {
   flex: 1;
-  height: 3px;
+  height: 6px;
   background: var(--obs-panel-border);
   border-radius: 2px;
   overflow: hidden;
@@ -1435,20 +1435,20 @@ select option {
   transition: width 0.2s;
 }
 .ree-popup__danger-score {
-  font-size: 10px;
+  font-size: 16px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  min-width: 22px;
+  min-width: 34px;
   text-align: right;
 }
 .ree-popup__fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px 10px;
+  gap: 8px 18px;
 }
 .ree-popup__field { min-width: 0; }
 .ree-popup__field-label {
-  font-size: 7px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--obs-text-muted);
@@ -1456,42 +1456,42 @@ select option {
   margin-bottom: 1px;
 }
 .ree-popup__field-value {
-  font-size: 10px;
+  font-size: 15px;
   color: var(--obs-text-primary);
   font-weight: 500;
   word-wrap: break-word;
 }
 .ree-popup__section {
-  margin-top: 7px;
-  padding-top: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid var(--glass-border-light);
 }
 .ree-popup__section-label {
-  font-size: 7px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--obs-text-muted);
   font-weight: 600;
-  margin-bottom: 3px;
+  margin-bottom: 6px;
 }
 .ree-popup__last-event {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .ree-popup__event-text {
   flex: 1;
-  font-size: 9px;
+  font-size: 14px;
   color: var(--obs-text-body);
   line-height: 1.35;
   word-wrap: break-word;
 }
 .ree-popup__event-freshness {
-  font-size: 7px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 2px;
+  padding: 3px 8px;
+  border-radius: 4px;
 }
 .ree-popup__event-freshness--recent { background: rgba(39, 174, 96, 0.18); color: var(--success); }
 .ree-popup__event-freshness--active { background: rgba(243, 156, 18, 0.18); color: var(--warning); }
@@ -1499,29 +1499,29 @@ select option {
 .ree-popup__overlaps {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
+  gap: 6px;
 }
 .ree-popup__overlap {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  font-size: 8px;
+  gap: 4px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 1px 4px;
-  border-radius: 2px;
+  padding: 3px 8px;
+  border-radius: 4px;
   background: rgba(231, 76, 60, 0.18);
   color: var(--danger);
 }
 .ree-popup__overlap-dist { opacity: 0.7; font-weight: 400; }
 .ree-popup__overlap-more {
-  font-size: 8px;
+  font-size: 12px;
   color: var(--obs-text-muted);
   align-self: center;
 }
 .ree-popup__footer {
   display: flex;
-  gap: 4px;
-  padding: 8px 12px 10px;
+  gap: 8px;
+  padding: 14px 20px 16px;
   border-top: 1px solid var(--obs-panel-border);
   flex-wrap: wrap;
 }
@@ -1531,11 +1531,11 @@ select option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  font-size: 8px;
+  gap: 6px;
+  font-size: 13px;
   font-weight: 700;
-  padding: 4px 6px;
-  border-radius: 4px;
+  padding: 10px 12px;
+  border-radius: 6px;
   text-decoration: none;
   letter-spacing: 0.04em;
   border: 1px solid;
@@ -1561,7 +1561,7 @@ select option {
   background: rgba(231, 76, 60, 0.15);
   border-color: var(--danger);
 }
-.ree-popup__action-icon { font-size: 10px; }
+.ree-popup__action-icon { font-size: 15px; }
 
 /* ── Preview card (compact on-map popup) ── */
 .preview-card-popup .maplibregl-popup-content {

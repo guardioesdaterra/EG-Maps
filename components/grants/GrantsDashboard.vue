@@ -1071,30 +1071,163 @@ const items = computed<MixedGrant[]>(() => {
 }
 
 @media (max-width: 768px) {
+  .gstore-header {
+    position: sticky;
+  }
+
   .gstore-header-inner {
-    padding: 0 16px;
-    height: 48px;
+    padding: 10px 12px;
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 10px;
+    row-gap: 10px;
   }
 
-  .gstore-main {
-    padding: 16px 16px 32px;
+  .gstore-header-left {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
+  .gstore-logo-text {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .gstore-header-right {
+    flex: 1 1 100%;
+    order: 3;
+    gap: 8px;
+  }
+
+  /* full-width thumb-friendly search on its own row */
   .gstore-search {
-    max-width: 160px;
+    max-width: none;
+    flex: 1 1 100%;
+    order: -1;
+  }
+
+  .gstore-search-input {
+    min-height: 44px;
+    font-size: 16px; /* prevents iOS auto-zoom on focus */
+    padding: 10px 38px 10px 40px;
+    border-radius: 12px;
+  }
+
+  .gstore-search-icon {
+    left: 14px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .gstore-search-clear {
+    width: 32px;
+    height: 32px;
+    right: 6px;
+    font-size: 12px;
+  }
+
+  .gstore-user-pill {
+    padding: 4px 6px 4px 4px;
+    gap: 4px;
+    max-width: 100%;
+  }
+
+  .gstore-user-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
   }
 
   .gstore-user-email {
     display: none;
   }
 
-  .gstore-card {
-    min-height: 140px;
-    padding: 12px;
+  .gstore-signout-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .gstore-google-btn {
+    min-height: 44px;
+    padding: 10px 18px;
+    font-size: 14px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* create → floating action button, thumb-reachable */
+  .gstore-create-btn {
+    position: fixed;
+    right: 16px;
+    bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+    z-index: 60;
+    min-height: 52px;
+    padding: 14px 20px;
+    font-size: 14px;
+    box-shadow:
+      0 8px 28px rgba(0, 0, 0, 0.45),
+      0 0 20px rgba(0, 255, 133, 0.25);
+  }
+
+  .gstore-create-btn:active {
+    transform: scale(0.96);
+  }
+
+  .gstore-main {
+    padding: 14px 12px calc(120px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .gstore-section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .gstore-section-header-left {
+    justify-content: flex-start;
   }
 
   .gstore-section-title {
-    font-size: 17px;
+    font-size: 18px;
+  }
+
+  .gstore-section-header-right {
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .gstore-sort {
+    flex: 1 1 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .gstore-sort-select {
+    width: 100%;
+    min-height: 44px;
+    font-size: 14px;
+    padding: 10px 34px 10px 14px;
+    border-radius: 12px;
+  }
+
+  .gstore-section-count-badge {
+    align-self: flex-start;
+  }
+
+  .gstore-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .gstore-filters .gstore-sort {
+    flex: none;
   }
 
   .gstore-badge {
@@ -1103,12 +1236,86 @@ const items = computed<MixedGrant[]>(() => {
 
   .gstore-grid,
   .gstore-skel-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
   }
 
-  .gstore-section-header {
-    flex-wrap: wrap;
-    gap: 10px;
+  .gstore-card {
+    min-height: 0;
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .gstore-card:active {
+    transform: scale(0.98);
+    background: var(--glass-hover);
+  }
+
+  .gstore-card-title {
+    font-size: 15px;
+    line-height: 1.45;
+    margin-bottom: 8px;
+  }
+
+  .gstore-card-meta {
+    gap: 4px;
+  }
+
+  .gstore-card-meta-item {
+    font-size: 12.5px;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .gstore-card-footer {
+    padding-top: 10px;
+    margin-top: 10px;
+  }
+
+  .gstore-card-amount {
+    font-size: 14px;
+  }
+
+  .gstore-card-tag {
+    font-size: 10px;
+    padding: 3px 7px;
+  }
+
+  .gstore-empty {
+    padding: 48px 16px;
+    font-size: 15px;
+  }
+
+  .gstore-empty-btn {
+    min-height: 48px;
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 380px) {
+  .gstore-header-inner {
+    padding: 8px 10px;
+  }
+
+  .gstore-main {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .gstore-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .gstore-card {
+    padding: 14px;
+  }
+
+  .gstore-section-title {
+    font-size: 17px;
   }
 }
 </style>

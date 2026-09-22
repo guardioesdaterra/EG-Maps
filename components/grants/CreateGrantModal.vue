@@ -414,8 +414,95 @@ async function handleSubmit() {
 }
 
 @media (max-width: 640px) {
+  .create-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .create-modal {
+    max-width: 100%;
+    width: 100%;
+    max-height: 92dvh;
+    border-radius: 20px 20px 0 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .create-modal-header {
+    padding: 18px 16px 0;
+  }
+
+  .create-modal-title {
+    font-size: 17px;
+  }
+
+  .create-modal-subtitle {
+    font-size: 13px;
+  }
+
+  .create-close-btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .create-modal-body {
+    padding: 16px;
+  }
+
+  .create-form {
+    gap: 16px;
+  }
+
   .create-row {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .create-label {
+    font-size: 13px;
+  }
+
+  .create-input,
+  .create-textarea,
+  .create-select {
+    font-size: 16px; /* prevents iOS auto-zoom */
+    padding: 12px 14px;
+    min-height: 48px;
+    border-radius: 12px;
+  }
+
+  .create-textarea {
+    min-height: 120px;
+  }
+
+  .create-modal-footer {
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    gap: 10px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .create-cancel-btn {
+    min-height: 52px;
+    padding: 12px 20px;
+    font-size: 14px;
+    border-radius: 12px;
+    flex: 0 0 auto;
+  }
+
+  .create-submit-btn {
+    min-height: 52px;
+    padding: 12px 20px;
+    font-size: 14px;
+    border-radius: 12px;
+    flex: 1;
+    justify-content: center;
   }
 }
 </style>

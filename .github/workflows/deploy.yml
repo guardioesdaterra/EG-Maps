@@ -5,15 +5,16 @@
 #
 #   detect-changes ─┬─ lint ──────────────┐
 #                   ├─ unit-tests ────────┤
-#                   ├─ typecheck ─────────┤
-#                   ├─ grants-gates ──────┤
-#                   ├─ sync-grants ────┐  │   ┌─ precompute-icons ──┐
-#                   ├─ sync-culture ───┤  ├──┤                     ├─► assemble ─► deploy ─► summary
-#                   │                  ├──►│  └─ precompute-overlaps┘
-#                   │   sync-supabase ◄┘   │
-#                   └─ playwright ─────────┘
+#                   ├─ typecheck ─────────┤                     ┌─ precompute-icons ──┐
+#                   ├─ grants-gates ──────┤                     │                     ├─► assemble ─► deploy ─► summary
+#                   └─ playwright ────────┴─► build-main ─┬─────┤                     │
+#                                         └─ build-develop ┘   └─ precompute-overlaps┘
 #                     (build-main & build-develop run in parallel once
-#                      lint + sync-supabase-push succeed)
+#                      lint succeeds)
+#
+#   Data sync (grants scrape, cultural agents, Supabase push) lives in
+#   data-sync.yml — it commits refreshed public/data/cultural-agents/*.json
+#   back to the branch, which retriggers this pipeline via push.
 #
 #   sync-develop runs ONLY on direct pushes to master: if develop does not
 #   contain master, it fast-forwards (or merges) develop to master so a
@@ -30,6 +31,7 @@
 #     rebuilt ONLY when their script + input hashes change (actions/cache hit → skip)
 #   • build-main / build-develop run in PARALLEL (were serial before → ~2× faster)
 #   • sync split into 3 sub-nodes so grants & culture scrape concurrently
+#     (now in data-sync.yml — see header note)
 #
 # Summaries: every job appends a markdown section to $GITHUB_STEP_SUMMARY;
 # the terminal `pipeline-summary` job aggregates all `needs.*.result` values.
@@ -40,16 +42,14 @@ on:
   push:
     branches: [master, develop]
   workflow_dispatch:
-  schedule:
-    - cron: '0 */2 * * *' # Every 2 hours — refresh grants radar
 
 permissions:
   contents: read
 
 concurrency:
-  # Scoped per branch + trigger so the 2h cron refresh never cancels a
-  # push build (and vice versa). Rapid pushes to the SAME branch still
-  # cancel their stale predecessors via cancel-in-progress.
+  # Scoped per branch + trigger so a data-sync commit-back push never
+  # cancels an in-flight push build (and vice versa). Rapid pushes to the
+  # SAME branch still cancel their stale predecessors via cancel-in-progress.
   group: pages-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 
@@ -74,7 +74,6 @@ jobs:
     outputs:
       app: ${{ steps.filter.outputs.app }}
       data-scripts: ${{ steps.filter.outputs.data-scripts }}
-      sync-scripts: ${{ steps.filter.outputs.sync-scripts }}
       docs-only: ${{ steps.filter.outputs.docs-only }}
     steps:
       - uses: actions/checkout@v6
@@ -101,11 +100,6 @@ jobs:
               - 'scripts/compute-overlaps.mjs'
               - 'public/data/species/**'
               - 'public/data/rare-earth/**'
-            sync-scripts:
-              - 'scripts/grants.py'
-              - 'scripts/grants_gates_test.py'
-              - 'scripts/sync-cultural-agents.py'
-              - 'scripts/sync-grants-to-supabase.ts'
             docs-only:
               - '*.md'
               - 'docs/**'
@@ -119,7 +113,6 @@ jobs:
             echo "|---|---|"
             echo "| app | \`${{ steps.filter.outputs.app }}\` |"
             echo "| data-scripts | \`${{ steps.filter.outputs.data-scripts }}\` |"
-            echo "| sync-scripts | \`${{ steps.filter.outputs.sync-scripts }}\` |"
             echo "| docs-only | \`${{ steps.filter.outputs.docs-only }}\` |"
             echo ""
             echo "_sha: \`${{ github.sha }}\` · event: \`${{ github.event_name }}\` · ref: \`${{ github.ref }}\`_"
@@ -321,263 +314,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ─────────────────────────────────────────────────────────────────────────
-  # 2️⃣ Sync sub-nodes (split from the old monolithic `sync` job)
-  #    ┌─ sync-grants ──┐
-  #    └─ sync-culture ─┴─► sync-supabase-push
-  # ─────────────────────────────────────────────────────────────────────────
-  sync-grants:
-    name: '🌱 Sync · grants scrape'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
-    outputs:
-      export-file: ${{ steps.capture.outputs.export-file }}
-      accepted: ${{ steps.capture.outputs.accepted }}
-      open: ${{ steps.capture.outputs.open }}
-      expired: ${{ steps.capture.outputs.expired }}
-      closed: ${{ steps.capture.outputs.closed }}
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: 🐍 Restore pip cache (incremental)
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/pip
-          # Rebuild only when the scraper sources change.
-          key: pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-${{ hashFiles('scripts/grants.py', 'scripts/grants_gates_test.py') }}
-          restore-keys: |
-            pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-
-
-      - name: 🐍 Install Python dependencies
-        run: pip install $PIP_DEPS
-
-      - name: 🌱 Scrape grants (standing excluded; closed + past-deadline dropped)
-        run: python scripts/grants.py -o grants_export
-        continue-on-error: true
-
-      - id: capture
-        name: ✅ Analyze + validate grants output
-        run: |
-          # NOTE: `|| true` — the default GH Actions shell runs with
-          # `-e -o pipefail`, so a bare `ls` with no glob match (exit 2)
-          # would kill this step before the analyzer's graceful
-          # `__missing__` branch (exit 0) is reached.
-          EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1 || true)
-          {
-            echo "export-file=$EXPORT_FILE"
-          } >> "$GITHUB_OUTPUT"
-          # Analyzer prints the $GITHUB_STEP_SUMMARY section, appends
-          # accepted/open/expired/closed to $GITHUB_OUTPUT, and exits 1
-          # when a gate fails (0 accepted, or expired/closed rows leaked).
-          # __missing__ triggers the graceful no-export branch (exit 0).
-          python3 scripts/analyze_grants_export.py ${EXPORT_FILE:-__missing__} >> "$GITHUB_STEP_SUMMARY"
-
-      - name: 📤 Upload grants export artifact
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: grants-export
-          path: scripts/output/grants_export_*.*
-          retention-days: 14
-          if-no-files-found: warn
-
-      - name: 📤 Upload dead-grants sidecar (funder-page-closed)
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: grants-dead-sidecar
-          path: scripts/output/dead_*.*
-          retention-days: 14
-          if-no-files-found: ignore
-
-  sync-culture:
-    name: '🎭 Sync · cultural agents'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
-    outputs:
-      export-file: ${{ steps.capture.outputs.export-file }}
-      total: ${{ steps.capture.outputs.total }}
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: 🐍 Restore pip cache (incremental)
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-${{ hashFiles('scripts/sync-cultural-agents.py') }}
-          restore-keys: |
-            pip-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-
-
-      - name: 🐍 Install Python dependencies
-        run: pip install $PIP_DEPS
-
-      - name: 🎭 Sync cultural agents (Mapa Cultura + Floresta Ativista)
-        run: python scripts/sync-cultural-agents.py
-        continue-on-error: true
-
-      - id: capture
-        name: ✅ Validate cultural agents output
-        run: |
-          # NOTE: `|| true` — see sync-grants capture (pipefail + empty glob).
-          EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1 || true)
-          if [ -z "$EXPORT_FILE" ]; then
-            echo "No cultural agents export file found"
-            echo "export-file=" >> "$GITHUB_OUTPUT"
-            echo "total=0" >> "$GITHUB_OUTPUT"
-            {
-              echo "## 🎭 Cultural agents sync"
-              echo ""
-              echo "- Result: **no export produced** (scraper may have failed — see logs)"
-            } >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          echo "export-file=$EXPORT_FILE" >> "$GITHUB_OUTPUT"
-          STATS=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); agents=d.get('agents',[]); mapa=len([a for a in agents if a.get('source')=='mapa_cultura']); fa=len([a for a in agents if a.get('source')=='floresta_ativista']); print(f'Total: {len(agents)}, Mapa Cultura: {mapa}, Floresta Ativista: {fa}')" "$EXPORT_FILE")
-          echo "Cultural agents stats: $STATS"
-          TOTAL=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(len(d.get('agents',[])))" "$EXPORT_FILE")
-          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
-          {
-            echo "## 🎭 Cultural agents sync — ${EXPORT_FILE##*/}"
-            echo ""
-            echo "- Stats: **${STATS}**"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: 📤 Upload cultural agents data (for build jobs)
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: cultural-agents-data
-          path: public/data/cultural-agents/
-          retention-days: 7
-          if-no-files-found: warn
-
-      - name: 📤 Upload cultural agents export
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: cultural-agents-export
-          path: scripts/output/cultural_agents_export_*.*
-          retention-days: 14
-          if-no-files-found: warn
-
-  sync-supabase-push:
-    name: '☁️ Sync · Supabase push'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [sync-grants, sync-culture]
-    # Run even if one scrape failed so the surviving dataset still syncs;
-    # skip only when BOTH scrapes failed.
-    if: always() && (needs.sync-grants.result == 'success' || needs.sync-culture.result == 'success')
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm # ✅ incremental
-
-      - name: 📦 Install Node dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: 📥 Download grants export
-        uses: actions/download-artifact@v7
-        with:
-          name: grants-export
-          path: scripts/output/
-        continue-on-error: true
-
-      - name: 📥 Download cultural agents export
-        uses: actions/download-artifact@v7
-        with:
-          name: cultural-agents-export
-          path: scripts/output/
-        continue-on-error: true
-
-      - name: 📥 Download dead-grants sidecar
-        uses: actions/download-artifact@v7
-        with:
-          name: grants-dead-sidecar
-          path: scripts/output/
-        continue-on-error: true
-
-      - name: ☁️ Push grants to Supabase
-        continue-on-error: true
-        run: |
-          # NOTE: `|| true` — see sync-grants capture (pipefail + empty glob).
-          EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1 || true)
-          if [ -z "$EXPORT_FILE" ]; then
-            echo "No grants export file found, skipping sync"
-            exit 0
-          fi
-          # Temporal-gate defense in depth: the analyzer already failed the
-          # sync-grants job on expired/closed leaks — never push that export
-          # to Supabase (sync script double-guards, but skip early + loudly).
-          if [ "${{ needs.sync-grants.outputs.expired }}" != "0" ] || [ "${{ needs.sync-grants.outputs.closed }}" != "0" ]; then
-            echo "::warning::Grants temporal gate leaked (expired=${{ needs.sync-grants.outputs.expired }}, closed=${{ needs.sync-grants.outputs.closed }}) — skipping Supabase push for this export"
-            exit 0
-          fi
-          npx tsx scripts/sync-grants-to-supabase.ts grants "$EXPORT_FILE"
-        env:
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-
-      - name: ☁️ Flip funder-page-closed rows
-        continue-on-error: true
-        run: |
-          DEAD_FILE=$(ls -t scripts/output/dead_*.* 2>/dev/null | head -1 || true)
-          if [ -z "$DEAD_FILE" ]; then
-            echo "No dead-grants sidecar, skipping mark-dead"
-            exit 0
-          fi
-          npx tsx scripts/sync-grants-to-supabase.ts mark-dead "$DEAD_FILE"
-        env:
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-
-      - name: ☁️ Push cultural agents to Supabase
-        continue-on-error: true
-        run: |
-          # NOTE: `|| true` — see sync-grants capture (pipefail + empty glob).
-          EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1 || true)
-          if [ -z "$EXPORT_FILE" ]; then
-            echo "No cultural agents export file found, skipping sync"
-            exit 0
-          fi
-          npx tsx scripts/sync-grants-to-supabase.ts agents "$EXPORT_FILE"
-        env:
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-
-      - name: 📝 Summary
-        if: always()
-        run: |
-          {
-            echo "## ☁️ Supabase push"
-            echo ""
-            echo "| Dataset | Scrape result | Push outcome |"
-            echo "|---|---|---|"
-            echo "| grants | \`${{ needs.sync-grants.result }}\` (accepted: \`${{ needs.sync-grants.outputs.accepted }}\`, open: \`${{ needs.sync-grants.outputs.open }}\`, expired/closed: \`${{ needs.sync-grants.outputs.expired }}\`/\`${{ needs.sync-grants.outputs.closed }}\`) | see logs |"
-            echo "| cultural agents | \`${{ needs.sync-culture.result }}\` (total: \`${{ needs.sync-culture.outputs.total }}\`) | see logs |"
-            echo ""
-            echo "_Individual push steps are \`continue-on-error\` so one failing dataset never blocks the other._"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # 3️⃣ Precompute validators (incremental — rebuild only on input change)
+  # 2️⃣ Precompute validators (incremental — rebuild only on input change)
   #     These warm the generated-data caches; build jobs reuse the same keys
   #     and skip regeneration on a cache hit.
   # ─────────────────────────────────────────────────────────────────────────
@@ -654,7 +391,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ─────────────────────────────────────────────────────────────────────────
-  # 4️⃣ E2E (parallel with everything; non-blocking)
+  # 3️⃣ E2E (parallel with everything; non-blocking)
   # ─────────────────────────────────────────────────────────────────────────
   playwright:
     name: '🎭 Playwright E2E'
@@ -727,16 +464,13 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ─────────────────────────────────────────────────────────────────────────
-  # 5️⃣ Builds — PARALLEL (were serial steps in one job before → ~2× faster)
+  # 4️⃣ Builds — PARALLEL (were serial steps in one job before → ~2× faster)
   # ─────────────────────────────────────────────────────────────────────────
   build-main:
     name: '🏗️ Build · production (master)'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [lint, sync-supabase-push]
-    # sync-supabase-push is resilient (runs on partial success); build must
-    # still run when sync is skipped/failed so pushes are never blocked.
-    if: always() && (needs.lint.result == 'success')
+    needs: [lint]
     permissions:
       contents: read
     outputs:
@@ -765,13 +499,6 @@ jobs:
       - name: 📦 Install dependencies (main)
         run: pnpm install --frozen-lockfile --prefer-offline
         working-directory: _src_main
-
-      - name: 📥 Download cultural agents data
-        uses: actions/download-artifact@v7
-        with:
-          name: cultural-agents-data
-          path: _src_main/public/data/cultural-agents/
-        continue-on-error: true
 
       - name: 🗃️ Restore Nuxt caches (incremental)
         uses: actions/cache@v5
@@ -860,8 +587,7 @@ jobs:
     name: '🧪 Build · test site (develop)'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [lint, sync-supabase-push]
-    if: always() && (needs.lint.result == 'success')
+    needs: [lint]
     permissions:
       contents: read
     outputs:
@@ -890,13 +616,6 @@ jobs:
       - name: 📦 Install dependencies (develop)
         run: pnpm install --frozen-lockfile --prefer-offline
         working-directory: _src_develop
-
-      - name: 📥 Download cultural agents data (develop)
-        uses: actions/download-artifact@v7
-        with:
-          name: cultural-agents-data
-          path: _src_develop/public/data/cultural-agents/
-        continue-on-error: true
 
       - name: 🗃️ Restore Nuxt caches (incremental)
         uses: actions/cache@v5
@@ -983,7 +702,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ─────────────────────────────────────────────────────────────────────────
-  # 6️⃣ Assemble + deploy
+  # 5️⃣ Assemble + deploy
   # ─────────────────────────────────────────────────────────────────────────
   assemble:
     name: '📦 Assemble combined site'
@@ -1094,7 +813,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ─────────────────────────────────────────────────────────────────────────
-  # 7️⃣ Terminal aggregator — full pipeline overview (always runs)
+  # 6️⃣ Terminal aggregator — full pipeline overview (always runs)
   # ─────────────────────────────────────────────────────────────────────────
   pipeline-summary:
     name: '📊 Pipeline summary'
@@ -1107,9 +826,6 @@ jobs:
       - unit-tests
       - typecheck
       - grants-gates
-      - sync-grants
-      - sync-culture
-      - sync-supabase-push
       - precompute-icons
       - precompute-overlaps
       - playwright
@@ -1138,13 +854,7 @@ jobs:
             echo "| 🛡️ Grants gates | \`${{ needs.grants-gates.result }}\` |"
             echo "| 🎭 Playwright E2E (non-blocking) | \`${{ needs.playwright.result }}\` |"
             echo ""
-            echo "## 🔄 Sync sub-nodes"
-            echo ""
-            echo "| Node | Result | Output |"
-            echo "|---|---|---|"
-            echo "| 🌱 Grants scrape | \`${{ needs.sync-grants.result }}\` | accepted: \`${{ needs.sync-grants.outputs.accepted }}\` · open: \`${{ needs.sync-grants.outputs.open }}\` · expired: \`${{ needs.sync-grants.outputs.expired }}\` · closed: \`${{ needs.sync-grants.outputs.closed }}\` |"
-            echo "| 🎭 Cultural agents | \`${{ needs.sync-culture.result }}\` | total: \`${{ needs.sync-culture.outputs.total }}\` |"
-            echo "| ☁️ Supabase push | \`${{ needs.sync-supabase-push.result }}\` | grants + agents |"
+            echo "_Data sync (grants scrape, cultural agents, Supabase push) now runs in the separate \`🔄 Data sync\` workflow — see its run summary._"
             echo ""
             echo "## 🧮 Precompute (incremental)"
             echo ""

@@ -985,9 +985,9 @@ function relativeTime(iso: string): string {
   font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);
 }
 .gdm-card-title svg { width: 15px; height: 15px; opacity: 0.7; }
-.gdm-card-text { margin: 0; font-size: 0.88rem; line-height: 1.55; color: var(--text-secondary); }
-.gdm-card-sub { margin: 0.3rem 0 0; font-size: 0.76rem; color: var(--text-muted); }
-.gdm-desc { margin: 0; font-size: clamp(0.86rem, 2vw, 0.94rem); line-height: 1.65; color: var(--text-primary); text-wrap: pretty; white-space: pre-wrap; }
+.gdm-card-text { margin: 0; font-size: 0.88rem; font-weight: 400; line-height: 1.55; color: var(--text-secondary); }
+.gdm-card-sub { margin: 0.3rem 0 0; font-size: 0.76rem; font-weight: 400; color: var(--text-muted); }
+.gdm-desc { margin: 0; font-size: clamp(0.86rem, 2vw, 0.94rem); font-weight: 400; line-height: 1.65; color: var(--text-primary); text-wrap: pretty; white-space: pre-wrap; }
 .gdm-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
 .gdm-chip {
   font-size: 0.72rem; font-weight: 700; color: var(--primary, #0e7490);
@@ -1060,7 +1060,7 @@ function relativeTime(iso: string): string {
 .gdm-comment-head { display: flex; align-items: baseline; gap: 0.5rem; }
 .gdm-comment-author { font-size: 0.8rem; font-weight: 800; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gdm-comment-time { font-size: 0.68rem; color: var(--text-muted); flex-shrink: 0; font-variant-numeric: tabular-nums; }
-.gdm-comment-text { margin: 0.25rem 0 0; font-size: 0.85rem; line-height: 1.55; color: var(--text-secondary); overflow-wrap: anywhere; }
+.gdm-comment-text { margin: 0.25rem 0 0; font-size: 0.85rem; font-weight: 400; line-height: 1.55; color: var(--text-secondary); overflow-wrap: anywhere; }
 .gdm-comment-del {
   flex-shrink: 0; border: none; background: none; cursor: pointer; padding: 0.3rem; border-radius: 6px;
   color: var(--text-muted); transition: color 0.15s, background 0.15s;

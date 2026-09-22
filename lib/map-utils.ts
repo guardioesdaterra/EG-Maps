@@ -621,9 +621,9 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
   const envFlag = props.env !== false && isHighEnvRisk(props as unknown as Record<string, unknown>)
   const susFlag = props.sus !== false && isSuspicious(props as unknown as Record<string, unknown>)
 
-  const flagsHTML = [milFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(231,76,60,0.2);color:var(--danger)">MIL</span>' : '',
-    envFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(39,174,96,0.2);color:var(--success)">ENV</span>' : '',
-    susFlag ? '<span style="font-size:7px;padding:1px 5px;border-radius:2px;font-weight:700;background:rgba(142,68,173,0.2);color:var(--purple)">SUS</span>' : '',
+  const flagsHTML = [milFlag ? '<span style="font-size:11px;padding:3px 9px;border-radius:4px;font-weight:700;background:rgba(231,76,60,0.2);color:var(--danger)">MIL</span>' : '',
+    envFlag ? '<span style="font-size:11px;padding:3px 9px;border-radius:4px;font-weight:700;background:rgba(39,174,96,0.2);color:var(--success)">ENV</span>' : '',
+    susFlag ? '<span style="font-size:11px;padding:3px 9px;border-radius:4px;font-weight:700;background:rgba(142,68,173,0.2);color:var(--purple)">SUS</span>' : '',
   ].filter(Boolean).join('')
 
   const anmUrl = buildAnmVerifyUrl(props.p, props.ano ?? props.y)
@@ -637,9 +637,9 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
   })
 
   const anmLink = anmUrl
-    ? `<a href="${escapeHtml(anmUrl)}" target="_blank" rel="noopener" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:9px;font-weight:700;padding:5px 8px;border-radius:4px;text-decoration:none;letter-spacing:0.04em;border:1px solid rgba(52,152,219,0.3);background:rgba(52,152,219,0.10);color:var(--info)">↗ Verify on ANM</a>`
+    ? `<a href="${escapeHtml(anmUrl)}" target="_blank" rel="noopener" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700;padding:10px 14px;border-radius:6px;text-decoration:none;letter-spacing:0.04em;border:1px solid rgba(52,152,219,0.3);background:rgba(52,152,219,0.10);color:var(--info)">↗ Verify on ANM</a>`
     : ''
-  const reportLink = `<a href="${escapeHtml(mailtoUrl)}" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:9px;font-weight:700;padding:5px 8px;border-radius:4px;text-decoration:none;letter-spacing:0.04em;border:1px solid rgba(231,76,60,0.25);background:rgba(231,76,60,0.08);color:var(--danger)">⚑ Report issue</a>`
+  const reportLink = `<a href="${escapeHtml(mailtoUrl)}" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700;padding:10px 14px;border-radius:6px;text-decoration:none;letter-spacing:0.04em;border:1px solid rgba(231,76,60,0.25);background:rgba(231,76,60,0.08);color:var(--danger)">⚑ Report issue</a>`
 
   const lastEvent = props.ev
   let lastEventHTML = ''
@@ -649,11 +649,11 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
     const ageYears = refYear ? Math.max(0, currentYear - refYear) : 99
     const evColor = ageYears < 1 ? 'var(--success)' : ageYears <= 3 ? 'var(--warning)' : 'var(--danger)'
     const evLabel = ageYears < 1 ? 'Recent' : ageYears <= 3 ? 'Active' : 'Stale'
-    lastEventHTML = `<div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--obs-panel-border)">
-      <div style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:2px">Last event</div>
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <span style="font-size:9.5px;color:var(--text-secondary);line-height:1.4;flex:1;word-wrap:break-word">${escapeHtml(lastEvent)}</span>
-        <span style="font-size:7.5px;padding:1px 6px;border-radius:2px;font-weight:700;background:${evColor}22;color:${evColor}">${evLabel}</span>
+    lastEventHTML = `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--obs-panel-border)">
+      <div style="font-size:11px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:4px">Last event</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:14px;color:var(--text-secondary);line-height:1.45;flex:1;word-wrap:break-word">${escapeHtml(lastEvent)}</span>
+        <span style="font-size:11px;padding:3px 9px;border-radius:4px;font-weight:700;background:${evColor}22;color:${evColor}">${evLabel}</span>
       </div>
     </div>`
   }
@@ -662,60 +662,60 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
   let overlapHTML = ''
   if (overlaps.length) {
     const items = overlaps.slice(0, 3).map(o =>
-      `<span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;padding:1px 5px;border-radius:2px;background:rgba(231,76,60,0.18);color:var(--danger);font-weight:600;margin:1px">⚠ ${escapeHtml(o.name)}${o.distance_km ? ` <span style="opacity:0.7;font-weight:400">· ${o.distance_km}km</span>` : ''}</span>`
+      `<span style="display:inline-flex;align-items:center;gap:5px;font-size:13px;padding:3px 9px;border-radius:4px;background:rgba(231,76,60,0.18);color:var(--danger);font-weight:600;margin:2px">⚠ ${escapeHtml(o.name)}${o.distance_km ? ` <span style="opacity:0.7;font-weight:400">· ${o.distance_km}km</span>` : ''}</span>`
     ).join('')
-    const more = overlaps.length > 3 ? `<span style="font-size:8px;color:var(--text-muted);margin-left:4px">+${overlaps.length - 3} more</span>` : ''
-    overlapHTML = `<div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--obs-panel-border)">
-      <div style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:3px">Overlaps</div>
+    const more = overlaps.length > 3 ? `<span style="font-size:12px;color:var(--text-muted);margin-left:6px">+${overlaps.length - 3} more</span>` : ''
+    overlapHTML = `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--obs-panel-border)">
+      <div style="font-size:11px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:6px">Overlaps</div>
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:0">${items}${more}</div>
     </div>`
   }
 
   const anoVal = props.ano ?? props.y
   const anoHTML = anoVal
-    ? `<details style="margin-top:7px;padding-top:7px;border-top:1px solid var(--obs-panel-border)">
-        <summary style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;cursor:pointer;list-style:none;user-select:none">▸ Ano de Protocolo</summary>
-        <div style="font-size:10.5px;color:var(--text-secondary);font-weight:500;margin-top:3px">${escapeHtml(String(anoVal))}</div>
+    ? `<details style="margin-top:12px;padding-top:10px;border-top:1px solid var(--obs-panel-border)">
+        <summary style="font-size:11px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;cursor:pointer;list-style:none;user-select:none">▸ Ano de Protocolo</summary>
+        <div style="font-size:15px;color:var(--text-secondary);font-weight:500;margin-top:5px">${escapeHtml(String(anoVal))}</div>
       </details>`
     : ''
 
   return `
-    <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;min-width:250px;position:relative">
+    <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;min-width:400px;position:relative">
       <!-- Corner accents -->
-      <div style="position:absolute;top:8px;left:8px;width:10px;height:10px;border-top:2px solid ${cat.color}60;border-left:2px solid ${cat.color}60;pointer-events:none;z-index:1" />
-      <div style="position:absolute;top:8px;right:8px;width:10px;height:10px;border-top:2px solid ${cat.color}60;border-right:2px solid ${cat.color}60;pointer-events:none;z-index:1" />
+      <div style="position:absolute;top:12px;left:12px;width:14px;height:14px;border-top:2px solid ${cat.color}60;border-left:2px solid ${cat.color}60;pointer-events:none;z-index:1" />
+      <div style="position:absolute;top:12px;right:12px;width:14px;height:14px;border-top:2px solid ${cat.color}60;border-right:2px solid ${cat.color}60;pointer-events:none;z-index:1" />
 
       <!-- Header -->
-      <div style="padding:14px 14px 10px;position:relative">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
-          <span style="display:inline-flex;align-items:center;gap:4px;font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${cat.color};color:#fff;letter-spacing:0.06em;text-transform:uppercase">${escapeHtml(cat.label)}</span>
-          <span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;font-weight:700;padding:2px 8px;border-radius:3px;background:${dangerColor};color:#fff">${(props.ds ?? 5).toFixed(1)} Danger</span>
-          ${netLabel ? `<span style="font-size:7px;padding:2px 6px;border-radius:2px;font-weight:600;background:rgba(41,128,185,0.2);color:var(--info);letter-spacing:0.03em">${escapeHtml(netLabel)}</span>` : ''}
+      <div style="padding:22px 22px 16px;position:relative">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:4px;background:${cat.color};color:#fff;letter-spacing:0.06em;text-transform:uppercase">${escapeHtml(cat.label)}</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:4px;background:${dangerColor};color:#fff">${(props.ds ?? 5).toFixed(1)} Danger</span>
+          ${netLabel ? `<span style="font-size:11px;padding:4px 10px;border-radius:4px;font-weight:600;background:rgba(41,128,185,0.2);color:var(--info);letter-spacing:0.03em">${escapeHtml(netLabel)}</span>` : ''}
           ${flagsHTML}
         </div>
-        <h3 style="margin:0;font-size:13px;font-weight:700;color:var(--text-primary);line-height:1.35;letter-spacing:0.01em;word-wrap:break-word">${escapeHtml(props.n || 'Unknown')}</h3>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;font-style:italic">${escapeHtml(props.s || '—')}</div>
+        <h3 style="margin:0;font-size:21px;font-weight:700;color:var(--text-primary);line-height:1.35;letter-spacing:0.01em;word-wrap:break-word">${escapeHtml(props.n || 'Unknown')}</h3>
+        <div style="font-size:15px;color:var(--text-muted);margin-top:4px;font-style:italic">${escapeHtml(props.s || '—')}</div>
       </div>
 
       <!-- Divider -->
-      <div style="height:1px;background:linear-gradient(90deg,transparent,${cat.color}30,transparent);margin:0 12px" />
+      <div style="height:1px;background:linear-gradient(90deg,transparent,${cat.color}30,transparent);margin:0 18px" />
 
       <!-- Body -->
-      <div style="padding:10px 14px 12px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 14px">
-          <div><div style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Process</div><div style="font-size:10.5px;color:var(--obs-text-primary);font-weight:500;word-wrap:break-word">${escapeHtml(props.p || '—')}</div></div>
-          <div><div style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Phase</div><div style="font-size:10.5px;color:var(--obs-text-primary);font-weight:500">${escapeHtml(props.f || '—')}</div></div>
-          <div><div style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">UF</div><div style="font-size:10.5px;color:var(--obs-text-primary);font-weight:500">${escapeHtml(props.u || '—')}</div></div>
-          <div><div style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Area</div><div style="font-size:10.5px;color:var(--obs-text-primary);font-weight:500">${area}</div></div>
+      <div style="padding:16px 22px 18px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 22px">
+          <div><div style="font-size:11px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Process</div><div style="font-size:16px;color:var(--obs-text-primary);font-weight:500;word-wrap:break-word">${escapeHtml(props.p || '—')}</div></div>
+          <div><div style="font-size:11px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Phase</div><div style="font-size:16px;color:var(--obs-text-primary);font-weight:500">${escapeHtml(props.f || '—')}</div></div>
+          <div><div style="font-size:11px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">UF</div><div style="font-size:16px;color:var(--obs-text-primary);font-weight:500">${escapeHtml(props.u || '—')}</div></div>
+          <div><div style="font-size:11px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Area</div><div style="font-size:16px;color:var(--obs-text-primary);font-weight:500">${area}</div></div>
         </div>
         ${anoHTML}
-        <div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--obs-panel-border)">
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Danger Level</span>
-            <div style="flex:1;height:4px;background:var(--obs-panel-border);border-radius:2px;overflow:hidden">
-              <div style="height:100%;width:${Math.min(100, (props.ds ?? 5) * 10)}%;background:${dangerColor};border-radius:2px;box-shadow:0 0 4px ${dangerColor}"></div>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--obs-panel-border)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:11px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600">Danger Level</span>
+            <div style="flex:1;height:6px;background:var(--obs-panel-border);border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${Math.min(100, (props.ds ?? 5) * 10)}%;background:${dangerColor};border-radius:3px;box-shadow:0 0 4px ${dangerColor}"></div>
             </div>
-            <span style="font-size:10px;font-weight:700;color:${dangerColor};min-width:24px;text-align:right">${(props.ds ?? 5).toFixed(1)}</span>
+            <span style="font-size:16px;font-weight:700;color:${dangerColor};min-width:36px;text-align:right">${(props.ds ?? 5).toFixed(1)}</span>
           </div>
         </div>
         ${lastEventHTML}
@@ -723,7 +723,7 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
       </div>
 
       <!-- Footer actions -->
-      <div style="display:flex;gap:6px;padding:8px 14px 12px;border-top:1px solid var(--obs-panel-border)">
+      <div style="display:flex;gap:10px;padding:14px 22px 18px;border-top:1px solid var(--obs-panel-border)">
         ${anmLink}
         ${reportLink}
       </div>

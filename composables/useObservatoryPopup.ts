@@ -267,9 +267,9 @@ function rareEarthPopupHTML(c: RareEarthPopupContent, t: (_key: string) => strin
     .join('')
 
   const collapsedFieldsHTML = c.collapsedFields && c.collapsedFields.length
-    ? `<details style="margin-top:7px;padding-top:7px;border-top:1px solid var(--obs-panel-border)">
-        <summary style="font-size:7.5px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;cursor:pointer;list-style:none;user-select:none">▸ ${escapeText(c.collapsedFields[0].label)}</summary>
-        <div style="font-size:10.5px;color:var(--text-secondary);font-weight:500;margin-top:3px">${escapeText(c.collapsedFields[0].value)}</div>
+    ? `<details style="margin-top:12px;padding-top:10px;border-top:1px solid var(--obs-panel-border)">
+        <summary style="font-size:11px;color:var(--obs-text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;cursor:pointer;list-style:none;user-select:none">▸ ${escapeText(c.collapsedFields[0].label)}</summary>
+        <div style="font-size:15px;color:var(--text-secondary);font-weight:500;margin-top:5px">${escapeText(c.collapsedFields[0].value)}</div>
       </details>`
     : ''
 
@@ -345,7 +345,7 @@ export function openRareEarthPopup(
     offset: 12,
     closeButton: true,
     className: 'ree-popup-wrap',
-    maxWidth: '400px',
+    maxWidth: '640px',
   })
     .setLngLat(lngLat)
     .setDOMContent(node)
@@ -426,8 +426,8 @@ function protectedPanelHTML(p: Record<string, unknown>): string {
       <p class="ree-popup__subtitle">${escapeText(kind)}</p>
     </div>
     <div class="ree-popup__body">
-      <p style="font-size:11px;line-height:1.5;color:var(--obs-text-body);margin:0">${note}</p>
-      ${sourceUrl ? `<a class="ree-popup__action ree-popup__action--primary" style="margin-top:8px" href="${escapeAttr(sourceUrl)}" target="_blank" rel="noopener">Source ↗</a>` : ''}
+      <p style="font-size:16px;line-height:1.55;color:var(--obs-text-body);margin:0">${note}</p>
+      ${sourceUrl ? `<a class="ree-popup__action ree-popup__action--primary" style="margin-top:12px" href="${escapeAttr(sourceUrl)}" target="_blank" rel="noopener">Source ↗</a>` : ''}
     </div>
   </div>`
 }
@@ -453,7 +453,7 @@ function waterPanelHTML(p: Record<string, unknown>): string {
       <h3 class="ree-popup__title">${escapeText(name)}</h3>
       ${sizeInfo ? `<p class="ree-popup__subtitle">${escapeText(sizeInfo)}</p>` : ''}
     </div>
-    ${(threat2 > 0 || threat5 > 0) ? `<div class="ree-popup__body"><div class="ree-popup__section" style="margin-top:0;padding-top:0;border-top:0"><div class="ree-popup__section-label">Mining pressure</div><div style="font-size:11px;font-weight:600">${threat2} claims ≤2km · ${threat5} claims ≤5km</div>${nearest ? `<div style="font-size:10px;color:var(--obs-text-muted);margin-top:2px">Nearest: ${escapeText(nearest)}</div>` : ''}</div></div>` : ''}
+    ${(threat2 > 0 || threat5 > 0) ? `<div class="ree-popup__body"><div class="ree-popup__section" style="margin-top:0;padding-top:0;border-top:0"><div class="ree-popup__section-label">Mining pressure</div><div style="font-size:16px;font-weight:600">${threat2} claims ≤2km · ${threat5} claims ≤5km</div>${nearest ? `<div style="font-size:14px;color:var(--obs-text-muted);margin-top:4px">Nearest: ${escapeText(nearest)}</div>` : ''}</div></div>` : ''}
   </div>`
 }
 
@@ -481,7 +481,7 @@ function geoPanelHTML(p: Record<string, unknown>): string {
       <div class="ree-popup__badges"><span class="ree-popup__badge" style="background:${typeColor};color:#fff">${typeLabel}</span></div>
       <h3 class="ree-popup__title">${escapeText(String(p.name ?? 'Unnamed area'))}</h3>
     </div>
-    <div class="ree-popup__body"><p style="font-size:11px;line-height:1.5;color:var(--obs-text-body);margin:0">${body}</p></div>
+    <div class="ree-popup__body"><p style="font-size:16px;line-height:1.55;color:var(--obs-text-body);margin:0">${body}</p></div>
   </div>`
 }
 
@@ -622,7 +622,7 @@ export function openStackedObservatoryPopup(
     offset: 12,
     closeButton: true,
     className: 'ree-popup-wrap ree-popup-wrap--stacked',
-    maxWidth: '420px',
+    maxWidth: '660px',
   })
     .setLngLat(lngLat)
     .setDOMContent(root)

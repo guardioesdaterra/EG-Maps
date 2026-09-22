@@ -764,6 +764,15 @@ export function useMapBase(config: MapBaseConfig) {
         // read as a provider flap.
         if (isInitializing && !created.loaded()) return
         if (next === lastAppliedProvider) return
+        // Posterior health-based flips must NEVER restyle a live map. A
+        // setStyle wipes every data source and flashes the loading overlay,
+        // which reads as the map "rebuilding out of blue" (the low-FPS auto
+        // fallback fires exactly on heavy observatory scenes). The auto
+        // health state still records and applies on the next init; only an
+        // explicit user toggle (preference !== 'auto') restyles a loaded map.
+        // lastAppliedProvider is intentionally left untouched on skip so a
+        // later manual toggle still diffs and applies.
+        if (created.loaded() && tileProvider.preference.value === 'auto') return
         console.warn(`[tile-provider] switching style ${prev} → ${next}`)
         applyProviderStyle(next)
       })
@@ -973,12 +982,12 @@ export function useMapBase(config: MapBaseConfig) {
     if (connections.showConnections.value && quality.settings.value.showParticles) connections.startParticles()
   })
 
-  // Structural REE inputs only — filtered-points updates use the cheap
-  // setData path inside useRareEarthController (no full teardown/flicker).
-  watch(() => [props.rareEarthPoints, props.rareEarthPolygons, props.rareEarthProtected, props.rareEarthWater, props.rareEarthCultural], () => {
-    if (!map || activeDataset.value !== 'vulcan-observatory') return
-    setupRareEarthLayers()
-  })
+  // NOTE: no structural REE watcher here on purpose. useRareEarthController
+  // owns the single debounced reconcile for ALL observatory inputs
+  // (points/filtered/polys/protected/water/cultural + map arrival) with
+  // retry-while-reloading. A second watcher here would fire a redundant
+  // immediate reconcile for every change (double layer churn per filter
+  // keystroke, double full-bootstrap on late arrivals).
 
   watch(showHexGrid, async (visible) => {
     runtime.hexGridPreference.value = visible

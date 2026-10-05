@@ -1,5 +1,5 @@
 {
- "last_sync": "2026-10-04T12:41:49.757Z",
+ "last_sync": "2026-10-05T15:05:57.339Z",
  "data_source": "ANM SIGMINE public dump (SP.zip + MG.zip shapefiles)",
  "sync_frequency": "daily",
  "sync_url": "https://dadosabertos.anm.gov.br/SIGMINE/PROCESSOS_MINERARIOS/",
@@ -250,5 +250,5 @@
   "total_claims_25km": 168,
   "total_area_ha": 145861.13
  },
- "generated": "2026-10-04T12:41:49.757Z"
+ "generated": "2026-10-05T15:05:57.339Z"
 }

@@ -40320,6 +40320,26 @@
           -21.5951341
         ]
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chococorn and the Sugarcane",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "366154",
+        "single_url": "https://rede.florestaativista.org/agente/366154/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.3325502,
+          -22.749332
+        ]
+      }
     }
   ]
 }

@@ -38,6 +38,11 @@ test.describe('Route availability', () => {
     { path: '/project-grants/3d', title: /Project Grants|3D/ },
     { path: '/endangered-species', title: /Endangered Species/ },
     { path: '/endangered-species/3d', title: /Endangered Species|3D/ },
+    { path: '/active-crews', title: /Active Crews/ },
+    { path: '/active-crews/3d', title: /Active Crews|3D/ },
+    { path: '/crew-projects', title: /Earth Guardians/ },
+    { path: '/vulcan-observatory', title: /Earth Guardians/ },
+    { path: '/vulcan-observatory/3d', title: /Earth Guardians/ },
     { path: '/globe', title: /Project Grants|3D/ },
   ]
 
@@ -178,6 +183,28 @@ test.describe('Page content rendering', () => {
 })
 
 test.describe('Navigation', () => {
+  test('homepage exposes Crew Projects and 2D/3D routes for key maps', async ({ page }) => {
+    await loadPage(page, '/')
+
+    const links = [
+      ['home-crew-projects-link', '/crew-projects'],
+      ['home-project-grants-2d', '/project-grants'],
+      ['home-project-grants-3d', '/project-grants/3d'],
+      ['home-species-2d', '/endangered-species'],
+      ['home-species-3d', '/endangered-species/3d'],
+      ['home-active-crews-2d', '/active-crews'],
+      ['home-active-crews-3d', '/active-crews/3d'],
+      ['home-vulcan-2d', '/vulcan-observatory'],
+      ['home-vulcan-3d', '/vulcan-observatory/3d'],
+    ] as const
+
+    for (const [testId, href] of links) {
+      const link = page.getByTestId(testId)
+      await expect(link).toBeVisible()
+      await expect(link).toHaveAttribute('href', href)
+    }
+  })
+
   test('navigates between main pages', async ({ page }) => {
     await loadPage(page, '/')
     const nav = page.getByRole('navigation', { name: 'Primary navigation' })

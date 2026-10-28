@@ -87,9 +87,10 @@
             <h3>{{ t('home.projectGrantsTitle') }}</h3>
             <p>{{ t('home.projectGrantsDesc') }}</p>
           </div>
-          <NuxtLink to="/project-grants" class="pathway-link" :aria-label="`${t('home.projectGrantsTitle')} — ${t('home.exploreTitle')}`">
-            <Icon name="lucide:arrow-up-right" aria-hidden="true" />
-          </NuxtLink>
+          <nav class="pathway-actions" :aria-label="`${t('home.projectGrantsTitle')} — ${t('home.dataMaps')}`">
+            <NuxtLink data-testid="home-project-grants-2d" to="/project-grants" class="pathway-view-link" :aria-label="`${t('home.projectGrantsTitle')} — ${t('home.view2d')}`">{{ t('home.view2d') }}</NuxtLink>
+            <NuxtLink data-testid="home-project-grants-3d" to="/project-grants/3d" class="pathway-view-link" :aria-label="`${t('home.projectGrantsTitle')} — ${t('home.view3d')}`">{{ t('home.view3d') }}</NuxtLink>
+          </nav>
         </article>
         <article class="pathway-row">
           <div class="pathway-icon pathway-icon--species"><Icon name="lucide:bird" aria-hidden="true" /></div>
@@ -97,9 +98,10 @@
             <h3>{{ t('home.speciesTitle') }}</h3>
             <p>{{ t('home.speciesDesc') }}</p>
           </div>
-          <NuxtLink to="/endangered-species" class="pathway-link" :aria-label="`${t('home.speciesTitle')} — ${t('home.exploreTitle')}`">
-            <Icon name="lucide:arrow-up-right" aria-hidden="true" />
-          </NuxtLink>
+          <nav class="pathway-actions" :aria-label="`${t('home.speciesTitle')} — ${t('home.dataMaps')}`">
+            <NuxtLink data-testid="home-species-2d" to="/endangered-species" class="pathway-view-link" :aria-label="`${t('home.speciesTitle')} — ${t('home.view2d')}`">{{ t('home.view2d') }}</NuxtLink>
+            <NuxtLink data-testid="home-species-3d" to="/endangered-species/3d" class="pathway-view-link" :aria-label="`${t('home.speciesTitle')} — ${t('home.view3d')}`">{{ t('home.view3d') }}</NuxtLink>
+          </nav>
         </article>
         <article class="pathway-row">
           <div class="pathway-icon pathway-icon--campaigns"><Icon name="lucide:megaphone" aria-hidden="true" /></div>
@@ -107,7 +109,7 @@
             <h3>{{ t('home.campaignsTitle') }}</h3>
             <p>{{ t('home.campaignsDesc') }}</p>
           </div>
-          <NuxtLink to="/campaigns" class="pathway-link" :aria-label="`${t('home.campaignsTitle')} — ${t('home.exploreTitle')}`">
+          <NuxtLink data-testid="home-campaigns-link" to="/campaigns" class="pathway-link" :aria-label="`${t('home.campaignsTitle')} — ${t('home.exploreTitle')}`">
             <Icon name="lucide:arrow-up-right" aria-hidden="true" />
           </NuxtLink>
         </article>
@@ -115,11 +117,33 @@
           <div class="pathway-icon pathway-icon--crews"><Icon name="lucide:users-round" aria-hidden="true" /></div>
           <div class="pathway-copy">
             <h3>{{ t('home.activeCrewsTitle') }}</h3>
-            <p>{{ t('home.startACrewDesc') }}</p>
+            <p>{{ t('home.activeCrewsDesc') }}</p>
           </div>
-          <NuxtLink to="/active-crews" class="pathway-link" :aria-label="`${t('home.activeCrewsTitle')} — ${t('home.exploreTitle')}`">
+          <nav class="pathway-actions" :aria-label="`${t('home.activeCrewsTitle')} — ${t('home.dataMaps')}`">
+            <NuxtLink data-testid="home-active-crews-2d" to="/active-crews" class="pathway-view-link" :aria-label="`${t('home.activeCrewsTitle')} — ${t('home.view2d')}`">{{ t('home.view2d') }}</NuxtLink>
+            <NuxtLink data-testid="home-active-crews-3d" to="/active-crews/3d" class="pathway-view-link" :aria-label="`${t('home.activeCrewsTitle')} — ${t('home.view3d')}`">{{ t('home.view3d') }}</NuxtLink>
+          </nav>
+        </article>
+        <article class="pathway-row">
+          <div class="pathway-icon pathway-icon--projects"><Icon name="lucide:mountain" aria-hidden="true" /></div>
+          <div class="pathway-copy">
+            <h3>{{ t('home.crewProjectsTitle') }}</h3>
+            <p>{{ t('home.crewProjectsDesc') }}</p>
+          </div>
+          <NuxtLink data-testid="home-crew-projects-link" to="/crew-projects" class="pathway-link" :aria-label="`${t('home.crewProjectsTitle')} — ${t('home.exploreTitle')}`">
             <Icon name="lucide:arrow-up-right" aria-hidden="true" />
           </NuxtLink>
+        </article>
+        <article class="pathway-row">
+          <div class="pathway-icon pathway-icon--vulcan"><Icon name="lucide:microscope" aria-hidden="true" /></div>
+          <div class="pathway-copy">
+            <h3>{{ t('home.vulcanTitle') }}</h3>
+            <p>{{ t('home.vulcanDesc') }}</p>
+          </div>
+          <nav class="pathway-actions" :aria-label="`${t('home.vulcanTitle')} — ${t('home.dataMaps')}`">
+            <NuxtLink data-testid="home-vulcan-2d" to="/vulcan-observatory" class="pathway-view-link" :aria-label="`${t('home.vulcanTitle')} — ${t('home.view2d')}`">{{ t('home.view2d') }}</NuxtLink>
+            <NuxtLink data-testid="home-vulcan-3d" to="/vulcan-observatory/3d" class="pathway-view-link" :aria-label="`${t('home.vulcanTitle')} — ${t('home.view3d')}`">{{ t('home.view3d') }}</NuxtLink>
+          </nav>
         </article>
       </div>
     </section>
@@ -504,7 +528,7 @@ onUnmounted(() => revealObserver?.disconnect())
 .pathway-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: clamp(1.5rem, 4vw, 4rem); }
 .pathway-row {
   display: grid;
-  grid-template-columns: 3rem minmax(0, 1fr) 2.7rem;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
   align-items: center;
   gap: 1rem;
   min-height: 8.5rem;
@@ -524,8 +548,29 @@ onUnmounted(() => revealObserver?.disconnect())
 .pathway-icon--species { color: var(--success); }
 .pathway-icon--campaigns { color: var(--accent); }
 .pathway-icon--crews { color: var(--warning); }
+.pathway-icon--projects { color: #0d966b; }
+.pathway-icon--vulcan { color: #b7791f; }
 .pathway-copy h3 { margin: 0; font-size: 0.96rem; font-weight: 850; line-height: 1.3; }
 .pathway-copy p { margin: 0.35rem 0 0; color: var(--text-secondary); font-size: 0.75rem; line-height: 1.55; }
+.pathway-actions { display: flex; align-items: center; gap: 0.4rem; }
+.pathway-view-link {
+  display: inline-flex;
+  min-height: 2.3rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.62rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+.pathway-view-link:hover { transform: translateY(-1px); border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); }
 .pathway-link {
   display: grid;
   width: 2.5rem;
@@ -635,7 +680,7 @@ onUnmounted(() => revealObserver?.disconnect())
   .hero-art-note--two { right: 0; }
   .scroll-cue { left: 0; }
   .pathway-list { grid-template-columns: 1fr; }
-  .pathway-row { min-height: 7.5rem; grid-template-columns: 2.7rem minmax(0, 1fr) 2.5rem; gap: 0.75rem; }
+  .pathway-row { min-height: 7.5rem; grid-template-columns: 2.7rem minmax(0, 1fr) auto; gap: 0.75rem; }
   .pathway-icon { width: 2.55rem; }
   .join-section { grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 1rem; }
   .join-mark { width: 2.8rem; }
@@ -643,7 +688,7 @@ onUnmounted(() => revealObserver?.disconnect())
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-core { animation: none; }
-  .action-button, .pathway-link, .join-link { transition: none; }
+  .action-button, .pathway-link, .pathway-view-link, .join-link { transition: none; }
   .reveal-ready [data-reveal] { opacity: 1; transform: none; transition: none; }
 }
 </style>

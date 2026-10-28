@@ -850,7 +850,7 @@
   "loading": {
     "projectGrantsMap": "प्रोजेक्ट अनुदान नक्शा लोड हो रहा है",
     "projectGrantsGlobe": "प्रोजेक्ट अनुदान ग्लोब लोड हो रहा है",
-    "endangeredSpeciesMap": "लुप्तप्राय प्रजाति नक्शा लोड हो रहा है",
+    "endangeredSpeciesMap": "लुप्तप्राय प्रजातियाँ लोड हो रही हैं",
     "endangeredSpeciesGlobe": "लुप्तप्राय प्रजाति ग्लोब लोड हो रहा है",
     "observatoryOfVulcan": "वल्कन वेधशाला लोड हो रही है",
     "observatoryOfVulcanGlobe": "वल्कन वेधशाला ग्लोब लोड हो रहा है",
@@ -973,7 +973,8 @@
     "crewActionDesc": "EG दल स्वस्थ, न्यायपूर्ण और टिकाऊ भविष्य के लिए कार्रवाई करने वाले युवा-नेतृत्व समूह हैं। दलों के पास अपने समुदायों को प्रभावित करने वाले जलवायु मुद्दों के जवाब में अपनी परियोजनाएँ और पहल आगे बढ़ाने की क्षमता है।",
     "ctaJoinTitle": "आंदोलन से जुड़ें",
     "ctaJoinDesc": "हमारे ग्रह के भविष्य के लिए कार्रवाई कर रहे युवा नेताओं के वैश्विक नेटवर्क का हिस्सा बनें।",
-    "joinCrew": "दल शुरू करें"
+    "joinCrew": "दल शुरू करें",
+    "openSpeciesMap": "लुप्तप्राय प्रजातियाँ देखें"
   },
   "crewProjects": {
     "title": "बड़े पैमाने पर",
@@ -1427,7 +1428,7 @@
     "crewSignupError": "कुछ गलत हुआ। पुनः प्रयास करें।",
     "crewSignupAlreadyRegistered": "आप पहले से पंजीकृत हैं!",
     "crewSignupContactCrews": "फ़ॉर्म में परेशानी? संपर्क करें",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "गोपनीयता नीति",
     "crewSignupRequired": "आवश्यक",
     "crewSignupBackToPortal": "डैशबोर्ड पर वापस",
@@ -1591,7 +1592,7 @@
       "description": "गंभीर रूप से लुप्तप्राय प्रजाति आवासों का 3D ग्लोब दृश्य।"
     },
     "endangeredSpecies2d": {
-      "title": "लुप्तप्राय प्रजातियाँ — 2D मानचित्र",
+      "title": "लुप्तप्राय प्रजातियाँ — 2D",
       "description": "दुनिया भर में लुप्तप्राय प्रजाति स्थानों का 2D मानचित्र दृश्य।"
     },
     "observatory3d": {

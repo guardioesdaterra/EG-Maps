@@ -924,7 +924,10 @@ export function useMapBase(config: MapBaseConfig) {
 
       created.addControl(
         new maplibregl.AttributionControl({
-          customAttribution: `EARTH GUARDIANS @ ${new Date().getFullYear()}`
+          customAttribution: [
+            `EARTH GUARDIANS @ ${new Date().getFullYear()}`,
+            '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">Geocoding: © OpenStreetMap contributors (ODbL 1.0)</a>',
+          ],
         })
       )
 

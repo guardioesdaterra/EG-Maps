@@ -850,7 +850,7 @@
   "loading": {
     "projectGrantsMap": "プロジェクト助成金マップを読み込み中",
     "projectGrantsGlobe": "プロジェクト助成金地球儀を読み込み中",
-    "endangeredSpeciesMap": "絶滅危惧種マップを読み込み中",
+    "endangeredSpeciesMap": "絶滅危惧種を読み込み中",
     "endangeredSpeciesGlobe": "絶滅危惧種地球儀を読み込み中",
     "observatoryOfVulcan": "バルカン観測所を読み込み中",
     "observatoryOfVulcanGlobe": "バルカン観測所地球儀を読み込み中",
@@ -973,7 +973,8 @@
     "crewActionDesc": "EGクルーは、健全で公正かつ持続可能な未来のために行動する若者主導のグループです。クルーは、地域社会に影響を与える気候問題に応えて、自らのプロジェクトや取り組みを進める力を持っています。",
     "ctaJoinTitle": "ムーブメントに参加する",
     "ctaJoinDesc": "地球の未来のために行動する若者リーダーのグローバルネットワークの一員になりましょう。",
-    "joinCrew": "クルーを始める"
+    "joinCrew": "クルーを始める",
+    "openSpeciesMap": "絶滅危惧種を見る"
   },
   "crewProjects": {
     "title": "大規模",
@@ -1427,7 +1428,7 @@
     "crewSignupError": "問題が発生しました。もう一度お試しください。",
     "crewSignupAlreadyRegistered": "登録済みです！",
     "crewSignupContactCrews": "フォームでお困りの方はこちらまでご連絡ください",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "プライバシーポリシー",
     "crewSignupRequired": "必須",
     "crewSignupBackToPortal": "ダッシュボードに戻る",
@@ -1591,7 +1592,7 @@
       "description": "深刻な絶滅の危機にある種の生息地の3D地球儀ビュー。"
     },
     "endangeredSpecies2d": {
-      "title": "絶滅危惧種 — 2Dマップ",
+      "title": "絶滅危惧種 — 2D",
       "description": "世界中の絶滅危惧種の生息地の2Dマップビュー。"
     },
     "observatory3d": {

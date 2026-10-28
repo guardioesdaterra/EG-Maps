@@ -701,7 +701,7 @@
   "loading": {
     "projectGrantsMap": "Caricamento mappa progetti finanziati",
     "projectGrantsGlobe": "Caricamento globo progetti finanziati",
-    "endangeredSpeciesMap": "Caricamento mappa specie a rischio",
+    "endangeredSpeciesMap": "Caricamento specie minacciate",
     "endangeredSpeciesGlobe": "Caricamento globo specie a rischio",
     "observatoryOfVulcan": "Caricamento Osservatorio del Vulcano",
     "observatoryOfVulcanGlobe": "Caricamento globo Osservatorio del Vulcano",
@@ -813,7 +813,8 @@
     "crewActionDesc": "I team di EG sono gruppi guidati dai giovani che agiscono per un futuro sano, giusto e sostenibile. I team hanno l'autonomia di portare avanti i propri progetti e iniziative in risposta ai problemi climatici delle loro comunità.",
     "ctaJoinTitle": "Unisciti al movimento",
     "ctaJoinDesc": "Diventa parte di una rete globale di giovani leader che agiscono per il futuro del nostro pianeta.",
-    "joinCrew": "Avvia un team"
+    "joinCrew": "Avvia un team",
+    "openSpeciesMap": "Esplora le specie a rischio"
   },
   "crewProjects": {
     "title": "Grande scala",
@@ -1240,7 +1241,7 @@
     "crewSignupError": "Qualcosa è andato storto. Riprova.",
     "crewSignupAlreadyRegistered": "Sei già registrato!",
     "crewSignupContactCrews": "Problemi con il modulo? Contatta",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "Informativa sulla privacy",
     "crewSignupRequired": "obbligatorio",
     "crewSignupBackToPortal": "Torna alla dashboard",
@@ -1404,7 +1405,7 @@
       "description": "Vista globo 3D degli habitat delle specie in pericolo critico."
     },
     "endangeredSpecies2d": {
-      "title": "Specie a rischio — Mappa 2D",
+      "title": "Specie a rischio — 2D",
       "description": "Vista mappa 2D delle posizioni delle specie a rischio nel mondo."
     },
     "observatory3d": {

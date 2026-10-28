@@ -850,7 +850,7 @@
   "loading": {
     "projectGrantsMap": "Projektförderungskarte wird geladen",
     "projectGrantsGlobe": "Projektförderungsglobus wird geladen",
-    "endangeredSpeciesMap": "Karte gefährdeter Arten wird geladen",
+    "endangeredSpeciesMap": "Lade gefährdete Arten",
     "endangeredSpeciesGlobe": "Globus gefährdeter Arten wird geladen",
     "observatoryOfVulcan": "Observatorium des Vulkan wird geladen",
     "observatoryOfVulcanGlobe": "Observatorium des Vulkan Globus wird geladen",
@@ -973,7 +973,8 @@
     "crewActionDesc": "EG-Crews sind jugendgeführte Gruppen, die sich für eine gesunde, gerechte und nachhaltige Zukunft einsetzen. Crews gestalten ihre eigenen Projekte und Initiativen als Antwort auf die Klimafragen ihrer Communities.",
     "ctaJoinTitle": "Werden Sie Teil der Bewegung",
     "ctaJoinDesc": "Werden Sie Teil eines weltweiten Netzwerks junger Führungskräfte, die sich für die Zukunft unseres Planeten einsetzen.",
-    "joinCrew": "Crew gründen"
+    "joinCrew": "Crew gründen",
+    "openSpeciesMap": "Gefährdete Arten entdecken"
   },
   "crewProjects": {
     "title": "Großmaßstab",
@@ -1427,7 +1428,7 @@
     "crewSignupError": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
     "crewSignupAlreadyRegistered": "Sie sind bereits registriert!",
     "crewSignupContactCrews": "Probleme mit dem Formular? Wenden Sie sich an",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "Datenschutzerklärung",
     "crewSignupRequired": "erforderlich",
     "crewSignupBackToPortal": "Zurück zum Dashboard",
@@ -1591,7 +1592,7 @@
       "description": "3D-Globusansicht der Lebensräume vom Aussterben bedrohter Arten."
     },
     "endangeredSpecies2d": {
-      "title": "Gefährdete Arten — 2D-Karte",
+      "title": "Gefährdete Arten — 2D",
       "description": "2D-Kartenansicht der Standorte gefährdeter Arten weltweit."
     },
     "observatory3d": {

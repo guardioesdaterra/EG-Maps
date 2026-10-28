@@ -701,7 +701,7 @@
   "loading": {
     "projectGrantsMap": "Загрузка карты проектных грантов",
     "projectGrantsGlobe": "Загрузка глобуса проектных грантов",
-    "endangeredSpeciesMap": "Загрузка карты исчезающих видов",
+    "endangeredSpeciesMap": "Загрузка исчезающих видов",
     "endangeredSpeciesGlobe": "Загрузка глобуса исчезающих видов",
     "observatoryOfVulcan": "Загрузка обсерватории Вулкана",
     "observatoryOfVulcanGlobe": "Загрузка глобуса обсерватории Вулкана",
@@ -813,7 +813,8 @@
     "crewActionDesc": "Команды EG — молодёжные группы, действующие ради здорового, справедливого и устойчивого будущего. Команды вправе продвигать собственные проекты и инициативы в ответ на климатические проблемы своих сообществ.",
     "ctaJoinTitle": "Присоединяйтесь к движению",
     "ctaJoinDesc": "Станьте частью глобальной сети молодых лидеров, действующих ради будущего нашей планеты.",
-    "joinCrew": "Создайте команду"
+    "joinCrew": "Создайте команду",
+    "openSpeciesMap": "Изучить исчезающие виды"
   },
   "crewProjects": {
     "title": "Крупный масштаб",
@@ -1240,7 +1241,7 @@
     "crewSignupError": "Что-то пошло не так. Попробуйте ещё раз.",
     "crewSignupAlreadyRegistered": "Вы уже зарегистрированы!",
     "crewSignupContactCrews": "Проблемы с формой? Напишите нам:",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "Политика конфиденциальности",
     "crewSignupRequired": "обязательно",
     "crewSignupBackToPortal": "Назад к панели",
@@ -1404,7 +1405,7 @@
       "description": "Вид 3D-глобуса мест обитания видов на грани исчезновения."
     },
     "endangeredSpecies2d": {
-      "title": "Исчезающие виды — 2D-карта",
+      "title": "Исчезающие виды — 2D",
       "description": "Вид 2D-карты мест обитания исчезающих видов по всему миру."
     },
     "observatory3d": {

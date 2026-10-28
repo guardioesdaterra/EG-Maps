@@ -38,7 +38,7 @@
             <div class="flow-icon flow-icon--discover"><Icon name="lucide:bird" /></div>
             <h3 class="flow-title">{{ t('campaigns.discover') }}</h3>
             <p class="flow-desc">{{ t('campaigns.discoverDesc') }}</p>
-            <NuxtLink to="/endangered-species" class="flow-link">Open Species Map <Icon name="lucide:arrow-right" class="h-3 w-3" /></NuxtLink>
+            <NuxtLink to="/endangered-species" class="flow-link">{{ t('campaigns.openSpeciesMap') }} <Icon name="lucide:arrow-right" class="h-3 w-3" /></NuxtLink>
           </div>
           <div class="flow-arrow"><Icon name="lucide:arrow-right" class="h-4 w-4" /></div>
           <div class="flow-step">

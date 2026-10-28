@@ -44,7 +44,7 @@
           <div>
             <h2 class="text-fluid-3xl font-black leading-tight">{{ t('info.projectGrants') }} + {{ t('info.endangeredSpecies') }}</h2>
             <p class="mt-2 xs:mt-3 text-fluid-sm leading-7 text-[var(--text-secondary)]">
-              The app brings Earth Guardians project grant locations and endangered species records into the same map language: searchable points, 2D views, globe views, shared connection lines, and animated particles.
+              The app brings Earth Guardians project grant locations and Endangered Species data into the same map language: searchable points, 2D views, globe views, shared connection lines, and animated particles.
             </p>
           </div>
           <div class="grid min-w-0 grid-cols-2 border border-white/10 dark:border-white/[0.06] text-center">

@@ -850,7 +850,7 @@
   "loading": {
     "projectGrantsMap": "جارٍ تحميل خريطة منح المشاريع",
     "projectGrantsGlobe": "جارٍ تحميل كرة منح المشاريع الأرضية",
-    "endangeredSpeciesMap": "جارٍ تحميل خريطة الأنواع المهددة",
+    "endangeredSpeciesMap": "جارٍ تحميل الأنواع المهددة بالانقراض",
     "endangeredSpeciesGlobe": "جارٍ تحميل كرة الأنواع المهددة الأرضية",
     "observatoryOfVulcan": "جارٍ تحميل مرصد فولكان",
     "observatoryOfVulcanGlobe": "جارٍ تحميل كرة مرصد فولكان الأرضية",
@@ -973,7 +973,8 @@
     "crewActionDesc": "فرق EG مجموعات يقودها الشباب تعمل من أجل مستقبل صحي وعادل ومستدام. تملك الفرق زمام المبادرة لطرح مشاريعها ومبادراتها الخاصة استجابة لقضايا المناخ التي تؤثر على مجتمعاتها.",
     "ctaJoinTitle": "انضم إلى الحركة",
     "ctaJoinDesc": "كن جزءًا من شبكة عالمية من قادة الشباب الذين يعملون من أجل مستقبل كوكبنا.",
-    "joinCrew": "ابدأ فريقًا"
+    "joinCrew": "ابدأ فريقًا",
+    "openSpeciesMap": "استكشف الأنواع المهددة بالانقراض"
   },
   "crewProjects": {
     "title": "نطاق واسع",
@@ -1427,7 +1428,7 @@
     "crewSignupError": "حدث خطأ ما. حاول مرة أخرى.",
     "crewSignupAlreadyRegistered": "أنت مسجل بالفعل!",
     "crewSignupContactCrews": "تواجه مشكلة في النموذج؟ تواصل مع",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "سياسة الخصوصية",
     "crewSignupRequired": "مطلوب",
     "crewSignupBackToPortal": "عودة إلى لوحة التحكم",
@@ -1591,7 +1592,7 @@
       "description": "عرض كرة أرضية ثلاثية الأبعاد لموائل الأنواع المهددة بشدة."
     },
     "endangeredSpecies2d": {
-      "title": "الأنواع المهددة بالانقراض — خريطة ثنائية الأبعاد",
+      "title": "الأنواع المهددة بالانقراض — ثنائي الأبعاد",
       "description": "عرض خريطة ثنائية الأبعاد لمواقع الأنواع المهددة حول العالم."
     },
     "observatory3d": {

@@ -850,7 +850,7 @@
   "loading": {
     "projectGrantsMap": "正在加载项目资助地图",
     "projectGrantsGlobe": "正在加载项目资助地球仪",
-    "endangeredSpeciesMap": "正在加载濒危物种地图",
+    "endangeredSpeciesMap": "正在加载濒危物种",
     "endangeredSpeciesGlobe": "正在加载濒危物种地球仪",
     "observatoryOfVulcan": "正在加载火山观测站",
     "observatoryOfVulcanGlobe": "正在加载火山观测站地球仪",
@@ -973,7 +973,8 @@
     "crewActionDesc": "EG团队是为健康、公正、可持续未来而行动的青年主导小组。团队有自主权推进自己的项目和倡议，以回应影响其社区的气候问题。",
     "ctaJoinTitle": "加入运动",
     "ctaJoinDesc": "成为全球青年领袖网络的一员，为地球的未来而行动。",
-    "joinCrew": "创建团队"
+    "joinCrew": "创建团队",
+    "openSpeciesMap": "探索濒危物种"
   },
   "crewProjects": {
     "title": "大型项目",
@@ -1427,7 +1428,7 @@
     "crewSignupError": "出了点问题，请重试。",
     "crewSignupAlreadyRegistered": "你已注册！",
     "crewSignupContactCrews": "表单遇到问题？请联系",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "隐私政策",
     "crewSignupRequired": "必填",
     "crewSignupBackToPortal": "返回仪表板",
@@ -1591,7 +1592,7 @@
       "description": "极危物种栖息地的3D地球仪视图。"
     },
     "endangeredSpecies2d": {
-      "title": "濒危物种 — 2D地图",
+      "title": "濒危物种 — 2D",
       "description": "世界各地濒危物种分布的2D地图视图。"
     },
     "observatory3d": {

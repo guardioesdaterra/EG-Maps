@@ -486,7 +486,7 @@ const iframeConfigs: IframeConfig[] = [
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
     allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
-    embedLabel: 'Endangered Species - 2D Map',
+    embedLabel: 'Endangered Species - 2D',
     embedWidth: '100%',
     embedHeight: '500px',
   },

@@ -701,7 +701,7 @@
   "loading": {
     "projectGrantsMap": "프로젝트 보조금 지도 로딩 중",
     "projectGrantsGlobe": "프로젝트 보조금 지구본 로딩 중",
-    "endangeredSpeciesMap": "멸종 위기 종 지도 로딩 중",
+    "endangeredSpeciesMap": "멸종 위기 종 로딩 중",
     "endangeredSpeciesGlobe": "멸종 위기 종 지구본 로딩 중",
     "observatoryOfVulcan": "불칸 천문대 로딩 중",
     "observatoryOfVulcanGlobe": "불칸 천문대 지구본 로딩 중",
@@ -813,7 +813,8 @@
     "crewActionDesc": "EG 크루는 건강하고 공정하며 지속가능한 미래를 위해 행동하는 청년 주도 그룹입니다. 크루는 지역사회에 영향을 미치는 기후 문제에 대응해 자신의 프로젝트와 이니셔티브를 추진할 힘을 가지고 있습니다.",
     "ctaJoinTitle": "무브먼트에 가입하기",
     "ctaJoinDesc": "지구의 미래를 위해 행동하는 청년 리더 글로벌 네트워크의 일원이 되세요.",
-    "joinCrew": "크루 시작하기"
+    "joinCrew": "크루 시작하기",
+    "openSpeciesMap": "멸종 위기종 둘러보기"
   },
   "crewProjects": {
     "title": "대규모",
@@ -1240,7 +1241,7 @@
     "crewSignupError": "문제가 발생했습니다. 다시 시도하세요.",
     "crewSignupAlreadyRegistered": "이미 등록되어 있습니다!",
     "crewSignupContactCrews": "양식에 문제가 있나요? 문의하세요",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "개인정보처리방침",
     "crewSignupRequired": "필수",
     "crewSignupBackToPortal": "대시보드로 돌아가기",
@@ -1404,7 +1405,7 @@
       "description": "심각한 멸종 위기종 서식지의 3D 지구본 보기."
     },
     "endangeredSpecies2d": {
-      "title": "멸종 위기종 — 2D 지도",
+      "title": "멸종 위기종 — 2D",
       "description": "전 세계 멸종 위기종 분포의 2D 지도 보기."
     },
     "observatory3d": {

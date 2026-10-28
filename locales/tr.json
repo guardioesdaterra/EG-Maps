@@ -701,7 +701,7 @@
   "loading": {
     "projectGrantsMap": "Proje Hibeleri Haritası Yükleniyor",
     "projectGrantsGlobe": "Proje Hibeleri Küresi Yükleniyor",
-    "endangeredSpeciesMap": "Nesli Tükenmekte Olan Türler Haritası Yükleniyor",
+    "endangeredSpeciesMap": "Nesli tükenmekte olan türler yükleniyor",
     "endangeredSpeciesGlobe": "Nesli Tükenmekte Olan Türler Küresi Yükleniyor",
     "observatoryOfVulcan": "Vulcan Gözlemevi Yükleniyor",
     "observatoryOfVulcanGlobe": "Vulcan Gözlemevi Küresi Yükleniyor",
@@ -813,7 +813,8 @@
     "crewActionDesc": "EG Ekipleri; sağlıklı, adil ve sürdürülebilir bir gelecek için eyleme geçen gençlik öncülüğünde gruplardır. Ekipler, topluluklarını etkileyen iklim sorunlarına yanıt olarak kendi projelerini ve girişimlerini ilerletme yetkisine sahiptir.",
     "ctaJoinTitle": "Harekete Katıl",
     "ctaJoinDesc": "Gezegenimizin geleceği için eyleme geçen genç liderlerden oluşan küresel bir ağın parçası olun.",
-    "joinCrew": "Bir Ekip Kur"
+    "joinCrew": "Bir Ekip Kur",
+    "openSpeciesMap": "Tehlikedeki türleri keşfet"
   },
   "crewProjects": {
     "title": "Büyük ölçekli",
@@ -1240,7 +1241,7 @@
     "crewSignupError": "Bir şeyler yanlış gitti. Lütfen tekrar deneyin.",
     "crewSignupAlreadyRegistered": "Zaten kayıtlısınız!",
     "crewSignupContactCrews": "Formda sorun mu yaşıyorsunuz? Şurayla iletişime geçin:",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "Gizlilik Politikası",
     "crewSignupRequired": "zorunlu",
     "crewSignupBackToPortal": "Panoya Dön",
@@ -1404,7 +1405,7 @@
       "description": "Kritik tehlikedeki tür habitatlarının 3D küre görünümü."
     },
     "endangeredSpecies2d": {
-      "title": "Tehlikedeki Türler — 2D Harita",
+      "title": "Tehlikedeki Türler — 2D",
       "description": "Dünya çapında tehlikedeki tür konumlarının 2D harita görünümü."
     },
     "observatory3d": {

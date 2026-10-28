@@ -259,9 +259,9 @@ const baseURL = useRuntimeConfig().app.baseURL
 useHead({
   title: computed(() => `EG–Maps — ${t('home.subtitle')}`),
   meta: [
-    { name: 'description', content: 'Official maps of Earth Guardians — project grants, endangered species, active Crews, Crew Projects and the Vulcan Observatory community map.' },
+    { name: 'description', content: 'Official maps of Earth Guardians — project grants, Endangered Species, active Crews, Large Scale and the Vulcan Observatory community map.' },
     { property: 'og:title', content: 'EG–Maps — Official maps of Earth Guardians' },
-    { property: 'og:description', content: 'Crews, grants, species and Crew Projects on interactive maps and globes.' },
+    { property: 'og:description', content: 'Crews, grants, Endangered Species and Large Scale projects on interactive maps and globes.' },
     { property: 'og:type', content: 'website' },
   ],
 })

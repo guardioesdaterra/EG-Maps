@@ -701,7 +701,7 @@
   "loading": {
     "projectGrantsMap": "Ładowanie mapy grantów projektowych",
     "projectGrantsGlobe": "Ładowanie globusa grantów projektowych",
-    "endangeredSpeciesMap": "Ładowanie mapy gatunków zagrożonych",
+    "endangeredSpeciesMap": "Ładowanie gatunków zagrożonych",
     "endangeredSpeciesGlobe": "Ładowanie globusa gatunków zagrożonych",
     "observatoryOfVulcan": "Ładowanie Obserwatorium Wulkana",
     "observatoryOfVulcanGlobe": "Ładowanie globusa Obserwatorium Wulkana",
@@ -813,7 +813,8 @@
     "crewActionDesc": "Drużyny EG to grupy młodzieżowe działające na rzecz zdrowej, sprawiedliwej i zrównoważonej przyszłości. Drużyny mają swobodę realizacji własnych projektów i inicjatyw w odpowiedzi na problemy klimatyczne swoich społeczności.",
     "ctaJoinTitle": "Dołącz do ruchu",
     "ctaJoinDesc": "Stań się częścią globalnej sieci młodych liderów działających na rzecz przyszłości naszej planety.",
-    "joinCrew": "Załóż drużynę"
+    "joinCrew": "Załóż drużynę",
+    "openSpeciesMap": "Poznaj zagrożone gatunki"
   },
   "crewProjects": {
     "title": "Duża skala",
@@ -1240,7 +1241,7 @@
     "crewSignupError": "Coś poszło nie tak. Spróbuj ponownie.",
     "crewSignupAlreadyRegistered": "Jesteś już zarejestrowany!",
     "crewSignupContactCrews": "Masz problem z formularzem? Napisz do",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "Polityka prywatności",
     "crewSignupRequired": "wymagane",
     "crewSignupBackToPortal": "Wróć do panelu",
@@ -1404,7 +1405,7 @@
       "description": "Widok globusa 3D siedlisk krytycznie zagrożonych gatunków."
     },
     "endangeredSpecies2d": {
-      "title": "Zagrożone gatunki — Mapa 2D",
+      "title": "Zagrożone gatunki — 2D",
       "description": "Widok mapy 2D lokalizacji zagrożonych gatunków na świecie."
     },
     "observatory3d": {

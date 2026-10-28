@@ -850,7 +850,7 @@
   "loading": {
     "projectGrantsMap": "Chargement de la carte des subventions",
     "projectGrantsGlobe": "Chargement du globe des subventions",
-    "endangeredSpeciesMap": "Chargement de la carte des espèces menacées",
+    "endangeredSpeciesMap": "Chargement des espèces menacées",
     "endangeredSpeciesGlobe": "Chargement du globe des espèces menacées",
     "observatoryOfVulcan": "Chargement de l'Observatoire Vulcan",
     "observatoryOfVulcanGlobe": "Chargement du globe de l'Observatoire Vulcan",
@@ -973,7 +973,8 @@
     "crewActionDesc": "Les équipes d'EG sont des groupes menés par les jeunes qui agissent pour un avenir sain, juste et durable. Les équipes ont l'agentivité pour porter leurs propres projets et initiatives en réponse aux enjeux climatiques qui affectent leurs communautés.",
     "ctaJoinTitle": "Rejoignez le Mouvement",
     "ctaJoinDesc": "Faites partie d'un réseau mondial de jeunes leaders qui agissent pour l'avenir de notre planète.",
-    "joinCrew": "Lancer une Équipe"
+    "joinCrew": "Lancer une Équipe",
+    "openSpeciesMap": "Découvrir les espèces menacées"
   },
   "crewProjects": {
     "title": "Grande échelle",
@@ -1427,7 +1428,7 @@
     "crewSignupError": "Une erreur est survenue. Veuillez réessayer.",
     "crewSignupAlreadyRegistered": "Vous êtes déjà inscrit !",
     "crewSignupContactCrews": "Un problème avec le formulaire ? Contactez",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "Politique de confidentialité",
     "crewSignupRequired": "obligatoire",
     "crewSignupBackToPortal": "Retour au Tableau de bord",
@@ -1591,7 +1592,7 @@
       "description": "Globe 3D des habitats d'espèces en danger critique."
     },
     "endangeredSpecies2d": {
-      "title": "Espèces Menacées — Carte 2D",
+      "title": "Espèces Menacées — 2D",
       "description": "Carte 2D des espèces menacées dans le monde."
     },
     "observatory3d": {

@@ -4,23 +4,11 @@
  * @deps @playwright/test (test, expect)
  */
 import { test, expect } from '@playwright/test'
+import { expectCanvasHasRenderedPixels } from './canvas-assertions'
 
 const IRRELEVANT_ERRORS = [
   'favicon.ico',
   'message port closed',
-  'Failed to initialize WebGL',
-  '_payload.json',
-  'Style is not done loading',
-  '404 (Not Found)',
-  'Failed to load resource',
-  'Hydration completed but contains mismatches',
-  'webgl',
-  'WebGL',
-  'GPU',
-  'gpu',
-  'MapLibre error: vt',
-  'UnifiedMap',
-  'GlobeView',
 ]
 
 test.describe('Page loads', () => {
@@ -48,15 +36,12 @@ test.describe('Page loads', () => {
 })
 
 test.describe('Map canvas rendering', () => {
-  test('project grants 2D renders canvas or loads gracefully', async ({ page }) => {
+  test('project grants 2D renders non-empty map pixels', async ({ page }) => {
     const resp = await page.goto('/project-grants', { waitUntil: 'domcontentloaded', timeout: 30000 })
     expect(resp?.status()).toBe(200)
-    await page.waitForTimeout(5000)
-    const canvas = page.locator('canvas').first()
-    const canvasCount = await canvas.count()
-    if (canvasCount > 0) {
-      await expect(canvas).toBeAttached({ timeout: 10000 })
-    }
+    const map = page.getByRole('region', { name: /Interactive world map/ })
+    const canvas = map.locator('canvas.maplibregl-canvas')
+    await expectCanvasHasRenderedPixels(canvas)
   })
 })
 

@@ -5,15 +5,12 @@
  */
 import { test, expect, type Page } from '@playwright/test'
 
-const BASE_URL = 'https://guardioesdaterra.github.io'
-const BASE_PATH = '/EG-Maps'
-
 function url(path: string): string {
-  return `${BASE_URL}${BASE_PATH}${path}`
+  return path.replace(/^\/+/, '') || './'
 }
 
 function route(path: string): string {
-  return `${BASE_PATH}${path}`
+  return path.replace(/^\/+/, '') || './'
 }
 
 async function loadPage(page: Page, path: string, waitForIdle = true) {
@@ -139,7 +136,7 @@ test.describe('Species image files', () => {
 test.describe('Page content rendering', () => {
   test('home page renders navigation and icons', async ({ page }) => {
     await loadPage(page, '/')
-    const nav = page.locator('nav')
+    const nav = page.getByRole('navigation', { name: 'Primary navigation' })
     await expect(nav).toBeVisible()
     const icons = page.locator('iconify-icon')
     await expect(icons.first()).toBeVisible()
@@ -149,9 +146,19 @@ test.describe('Page content rendering', () => {
 
   test('project grants page renders map container', async ({ page }) => {
     await loadPage(page, '/project-grants')
-    await page.waitForTimeout(3000)
-    const mapCanvas = page.locator('canvas').first()
+    const map = page.getByRole('region', { name: /Interactive world map/ })
+    await expect(map).toBeVisible()
+    const mapCanvas = map.locator('canvas.maplibregl-canvas')
     await expect(mapCanvas).toBeVisible({ timeout: 15000 })
+    const dimensions = await mapCanvas.evaluate((element) => {
+      const canvas = element as HTMLCanvasElement
+      const bounds = canvas.getBoundingClientRect()
+      return { width: canvas.width, height: canvas.height, displayWidth: bounds.width, displayHeight: bounds.height }
+    })
+    expect(dimensions.width).toBeGreaterThan(0)
+    expect(dimensions.height).toBeGreaterThan(0)
+    expect(dimensions.displayWidth).toBeGreaterThan(100)
+    expect(dimensions.displayHeight).toBeGreaterThan(100)
   })
 
   test('endangered species page loads without crash', async ({ page }) => {
@@ -173,12 +180,13 @@ test.describe('Page content rendering', () => {
 test.describe('Navigation', () => {
   test('navigates between main pages', async ({ page }) => {
     await loadPage(page, '/')
-    const nav = page.locator('nav')
+    const nav = page.getByRole('navigation', { name: 'Primary navigation' })
     const links = nav.locator('a')
     const hrefs = await links.evaluateAll(list => list.map(l => (l as HTMLAnchorElement).href))
+    const origin = new URL(page.url()).origin
 
     for (const href of hrefs) {
-      if (!href || href.includes('#') || href.startsWith('mailto:')) continue
+      if (!href || href.includes('#') || href.startsWith('mailto:') || new URL(href).origin !== origin) continue
       const resp = await page.goto(href, { waitUntil: 'domcontentloaded', timeout: 30000 })
       expect(resp?.status()).toBe(200)
       await page.waitForTimeout(500)
@@ -216,6 +224,10 @@ test.describe('Console errors', () => {
   for (const path of ['/', '/info', '/project-grants', '/endangered-species']) {
     test(`no app-level console errors on ${path}`, async ({ page }) => {
       const errors = await collectConsoleErrors(page)
+      const failedResponses: string[] = []
+      page.on('response', response => {
+        if (response.status() >= 400) failedResponses.push(`${response.status()}: ${response.url()}`)
+      })
       if (path === '/endangered-species') {
         await page.goto(route(path), { waitUntil: 'domcontentloaded', timeout: 30000 })
         await page.waitForTimeout(5000)
@@ -224,17 +236,22 @@ test.describe('Console errors', () => {
         await page.waitForTimeout(3000)
       }
 
-      const irrelevant = [
-        'favicon.ico',
-        'message port closed',
-        'Failed to initialize WebGL',
-        'Failed to initialize map',
-        'Failed to load species data',
-        'Style is not done loading',
-        '_payload.json',
-      ]
+      const irrelevant = ['favicon.ico', 'message port closed']
       const filtered = errors.filter(e => !irrelevant.some(i => e.includes(i)))
-      expect(filtered).toHaveLength(0)
+      // The no-key fallback style references this optional demo font, which
+      // returns 404 outside the app; keep every app-local and other HTTP error blocking.
+      const expectedExternalFont404 = failedResponses.filter(response =>
+        response.startsWith('404: https://demotiles.maplibre.org/font/'),
+      )
+      const unexpectedResponses = failedResponses.filter(response => !expectedExternalFont404.includes(response))
+      const generic404s = filtered.filter(error =>
+        error.includes('Failed to load resource: the server responded with a status of 404 ()'),
+      )
+      const unexpectedConsoleErrors = filtered.filter(error => !generic404s.includes(error))
+
+      expect(unexpectedResponses).toEqual([])
+      expect(generic404s.length).toBeLessThanOrEqual(expectedExternalFont404.length)
+      expect(unexpectedConsoleErrors).toEqual([])
     })
   }
 })

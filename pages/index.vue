@@ -594,26 +594,30 @@ function clearGlow(event: MouseEvent) {
 .bento-stat span { color: var(--text-muted); font-size: 0.55rem; font-weight: 750; letter-spacing: 0.05em; text-transform: uppercase; }
 .bento-links { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: auto; padding-top: 0.5rem; }
 .bento-link {
+  --button-start: #166534;
+  --button-end: #14532d;
   display: inline-flex;
   min-height: 44px;
   align-items: center;
   justify-content: center;
   gap: 0.3rem;
   padding: 0.55rem 0.65rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--button-end);
   border-radius: 6px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background-color: var(--button-end);
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0 1px, transparent 1px 6px), linear-gradient(135deg, var(--button-start), var(--button-end));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  color: #fff;
   font-size: 0.64rem;
   font-weight: 800;
   line-height: 1.15;
   text-decoration: none;
-  transition: background 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease;
+  transition: filter 150ms ease, transform 150ms ease;
 }
 .bento-link :deep(svg) { width: 0.9rem; height: 0.9rem; flex: 0 0 auto; }
-.bento-link:hover { transform: translateY(-1px); border-color: var(--accent); }
-.bento-link--primary { border-color: var(--accent); background: var(--accent); color: #fff; }
-.bento-link--primary:hover { background: color-mix(in srgb, var(--accent) 90%, #000); color: #fff; }
+.bento-links > .bento-link:first-child,
+.bento-link--primary { --button-start: #1d4ed8; --button-end: #1e40af; }
+.bento-link:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
 .story-section,
 .pathways-section,

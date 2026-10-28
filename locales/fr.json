@@ -11,7 +11,9 @@
     "joinEarthGuardians": "Rejoindre Earth Guardians",
     "switchToLight": "Passer au mode clair",
     "switchToDark": "Passer au mode sombre",
-    "language": "Langue"
+    "language": "Langue",
+    "privacy": "Confidentialité",
+    "terms": "Conditions"
   },
   "home": {
     "title": "Earth Guardians",
@@ -30,7 +32,7 @@
     "crewsCount": "Équipes",
     "projectsCount": "Projets",
     "beneficiariesCount": "Bénéficiaires",
-    "speciesCount": "Espèces",
+    "speciesCount": "Espèces menacées",
     "groupsCount": "Groupes",
     "allValue": "Tous",
     "activeCrewsCount": "Équipes actives",
@@ -94,13 +96,15 @@
     "skillBuilding": "Renforcement des compétences",
     "joinGlobal": "Rejoignez le réseau mondial",
     "youthLed": "Action menée par les jeunes",
-    "observatoryOfVulcan": "Observatoire Vulcan"
+    "observatoryOfVulcan": "Observatoire Vulcan",
+    "sections": "Sections"
   },
   "mapControls": {
     "search": "Rechercher",
     "searchProjects": "Rechercher des projets",
     "searchSpecies": "Rechercher des espèces",
     "searchCrews": "Rechercher des équipes",
+    "searchCities": "Rechercher des villes",
     "searchPlaceholder": "Rechercher par nom ou lieu...",
     "searchSpeciesPlaceholder": "Rechercher par nom ou région...",
     "showAll": "Tout afficher",
@@ -128,7 +132,48 @@
     "linkCopied": "Lien copié",
     "exportMap": "Exporter l’image de la carte",
     "exportData": "Exporter les données visibles en GeoJSON",
-    "legend": "Légende"
+    "legend": "Légende",
+    "nearby": "À proximité",
+    "nearbyLabel": "Trouver les équipes, projets et campagnes à proximité",
+    "offlineCachedData": "Mode hors ligne — les données en cache restent disponibles",
+    "nearbyPanel": {
+      "eyebrow": "Explorer les environs",
+      "title": "Trouver une action près de vous",
+      "consentTitle": "Utiliser votre position ?",
+      "consentDescription": "Nous utilisons votre position uniquement dans ce navigateur pour classer les équipes et projets à proximité. Elle n’est pas envoyée à Earth Guardians et n’est pas enregistrée par cette application.",
+      "consentLabel": "J’accepte de partager ma position approximative avec cette carte pour cette session.",
+      "locating": "Localisation…",
+      "findAction": "Trouver une action à proximité",
+      "locationError": "L’autorisation de localisation n’a pas été accordée. Vous pouvez l’activer dans les réglages de votre navigateur et réessayer.",
+      "locationActive": "Position active · approximative uniquement",
+      "clearLocation": "Effacer la position actuelle",
+      "categories": "Catégories à proximité",
+      "crews": "Équipes",
+      "projects": "Projets",
+      "campaigns": "Campagnes",
+      "noCrews": "Aucun emplacement d’équipe avec coordonnées n’est encore disponible.",
+      "noProjects": "Aucun emplacement de projet n’est encore disponible.",
+      "biodiversity": "Espèces menacées",
+      "biodiversityDesc": "Actions mondiales pour la biodiversité et les habitats.",
+      "chooseAction": "Choisir l’action maintenant",
+      "chooseActionDesc": "Justice climatique et action directe menées par des jeunes.",
+      "solutions": "Solutions durables",
+      "solutionsDesc": "Solutions locales pour les déchets et la résilience."
+    },
+    "imported": "Importé",
+    "populationUnit": "habitants",
+    "clusterPanel": {
+      "title": "Résultats groupés",
+      "count": "Résultats groupés : {count}",
+      "copyLink": "Copier le lien du groupe",
+      "linkCopied": "Lien du groupe copié",
+      "close": "Fermer les résultats groupés",
+      "searchLabel": "Rechercher dans les résultats groupés",
+      "searchPlaceholder": "Rechercher dans ce groupe…",
+      "visibleResults": "{count} résultats groupés visibles",
+      "empty": "Aucun résultat ne correspond à cette recherche.",
+      "activeCrewsSubtitle": "{crews} équipes actives · {countries} pays"
+    }
   },
   "mapTiles": {
     "maptiler": "Satellite",
@@ -209,7 +254,9 @@
     "switchTo2D": "Passer à la carte 2D",
     "switchTo3D": "Passer au globe 3D",
     "view2D": "Carte 2D",
-    "view3D": "Globe 3D"
+    "view3D": "Globe 3D",
+    "reloadPage": "Recharger la page",
+    "allSpeciesLoaded": "Toutes les données sur les espèces sont chargées"
   },
   "project": {
     "directBeneficiaries": "Bénéficiaires directs",
@@ -275,7 +322,10 @@
       "illegal": "Illégal",
       "env": "Risque Env.",
       "network": "Réseau",
-      "timeline": "Chronologie"
+      "timeline": "Chronologie",
+      "power": "Pouvoir",
+      "territory": "Territoire",
+      "culture": "Culture"
     },
     "dangerPanel": {
       "title": "Entreprises les plus dangereuses",
@@ -317,7 +367,11 @@
       "chinaBanTitle": "Interdiction d'exportation de la Chine (oct. 2025)",
       "chinaBanBody": "La Chine a interdit l'exportation de 12/17 éléments REE vers les États-Unis. 78 % des armes américaines dépendent des REE chinois. Mandat DFARS 2027 : les sous-traitants de la défense américaine doivent s'approvisionner en REE hors Chine.",
       "title": "title",
-      "empty": "empty"
+      "empty": "empty",
+      "liveTitle": "En direct : cette région",
+      "liveClaims": "titres critiques",
+      "liveArea": "surface critique",
+      "liveUs": "Lié aux États-Unis"
     },
     "illegal": {
       "landSpec": "Spéculation foncière",
@@ -411,7 +465,10 @@
       "heatmap": "Carte de chaleur de densité",
       "cultural": "Culturel et communautaire",
       "waterBodies": "Plans d'eau",
-      "protectedAreas": "Aires protégées"
+      "protectedAreas": "Aires protégées",
+      "statusTitle": "État de la couche",
+      "statusFailed": "en échec",
+      "foreignHeld": "Titres détenus par des intérêts étrangers"
     },
     "search": "Rechercher entreprise, substance, état...",
     "legend": {
@@ -702,7 +759,13 @@
         "unnamed": "Entrée sans nom",
         "unknownSource": "Inconnue",
         "pagePrev": "Page précédente",
-        "pageNext": "Page suivante"
+        "pageNext": "Page suivante",
+        "families": "Familles de repères",
+        "familyAgents": "Acteurs culturels",
+        "familySpaces": "Espaces culturels",
+        "familyIndigenous": "Peuples autochtones et peuples originels",
+        "sortFamily": "Famille",
+        "clearFilters": "Effacer"
       },
       "community": {
         "eyebrow": "Un observatoire vivant",
@@ -718,13 +781,71 @@
         "methodologyText": "Les données proviennent de dossiers publics et de sources communautaires. Considérez-les comme une invitation à enquêter, pas comme un substitut au consentement communautaire ni à une décision juridique.",
         "monitor": "Ouvrir le Suivi de terrain",
         "sources": "Voir les sources de données"
+      },
+      "tabs": {
+        "label": "Renseignements de l’observatoire",
+        "territory": "Territoire",
+        "culture": "Culture",
+        "power": "Pouvoirs",
+        "timeline": "Chronologie"
       }
     },
     "error": {
       "loadFailed": "Échec du chargement des données de l'observatoire",
       "retry": "Réessayer"
     },
-    "clearSearch": "Effacer la recherche"
+    "clearSearch": "Effacer la recherche",
+    "territory": {
+      "headline": "Titres miniers sur le terrain",
+      "claims": "titres",
+      "boundaries": "limites",
+      "area": "surface des titres",
+      "withOverlaps": "avec chevauchements",
+      "synced": "Synchronisation ANM",
+      "noBoundaries": "Aucune limite de titre chargée — seulement des points. Vérifiez l’état des couches ci-dessous.",
+      "bySubstance": "Titres par substance",
+      "overlapsTitle": "Chevauchements entre mines et territoires",
+      "noOverlaps": "Aucun chevauchement territorial enregistré pour les titres chargés.",
+      "overlappedBy": "{count} titres en chevauchement",
+      "overlappingClaims": "titres en chevauchement",
+      "protectedTitle": "Territoires protégés",
+      "source": "Source",
+      "noProtected": "Aucun territoire protégé dans le jeu de données chargé.",
+      "watersTitle": "Eaux sous pression",
+      "noWaters": "Aucune eau nommée n’a encore été évaluée — la couche de l’eau est toujours en cours de chargement.",
+      "watersLegend": "Les titres situés à moins de 2 km exercent une pression directe (rabattement, ruissellement) ; à moins de 5 km, ils partagent un aquifère ou un sous-bassin.",
+      "pressure": "PRESSION",
+      "watch": "SURVEILLANCE",
+      "claims2km": "titres ≤2 km",
+      "claims5km": "titres ≤5 km",
+      "flyToWater": "Aller à {name}",
+      "dossierDownload": "Exporter le dossier de preuves",
+      "dossierCopy": "Copier le dossier",
+      "dossierCopied": "Copié !",
+      "searchPlaceholder": "Rechercher des titres, détenteurs, processos…",
+      "sobDemanda": "Sob Demanda uniquement",
+      "filtersActive": "{count} filtres actifs",
+      "pinTitle": "Surveiller : votre position",
+      "pinBody": "{count} titres dans un rayon de 10 km autour de {label}.",
+      "pinNearest": "Le plus proche : {processo} · {holder} · {km} km"
+    },
+    "claimIntel": {
+      "holderTitle": "Historique du détenteur",
+      "claims": "titres",
+      "territoryTitle": "Chevauchements territoriaux"
+    },
+    "power": {
+      "noData": "L’analyse approfondie n’est pas encore chargée.",
+      "militaryTitle": "Empreinte critique pour le secteur militaire",
+      "criticalClaims": "titres critiques",
+      "criticalArea": "surface critique",
+      "usConnected": "Lié aux États-Unis",
+      "foreignTitle": "Part du capital étranger",
+      "sigiloTitle": "Titres sous secret (sigilo)",
+      "sigiloBody": "{total} titres sous secret ({pct} %) couvrant {area} ha — détenteurs et substances masqués.",
+      "topTitle": "Principaux détenteurs suspects",
+      "claims": "titres"
+    }
   },
   "loading": {
     "projectGrantsMap": "Chargement de la carte des subventions",
@@ -968,7 +1089,30 @@
     "joinCrew": "Lancez ou rejoignez une équipe",
     "moreTitle": "Sessions depuis 2023",
     "moreDesc": "Rédaction de demandes, préparation COP, visualisation de données, justice climatique et plus. Suivez les temps forts, clips et prochaines dates.",
-    "viewOnInstagram": "Voir sur Instagram"
+    "viewOnInstagram": "Voir sur Instagram",
+    "flyer": "Flyer",
+    "series2025Title": "Série mondiale de masterclasses · saison 2025",
+    "series2025Desc": "Cinq sessions de la saison 2025 — empathie, leadership des bénévoles, bénévolat en action, gouvernance de la biodiversité et outils numériques. Enregistrements, présentations et flyers ci-dessous.",
+    "gm5Date": "2025",
+    "gm5Title": "Les essentiels de Google Workspace : maîtriser Gmail, Docs, Sheets, Drive et Calendar",
+    "gm5Speaker": "avec Emmy Scott · animée par Moudjiba",
+    "gm5Desc": "Présentation pratique des outils essentiels de Google Workspace pour le travail des équipes — Gmail, Docs, Sheets, Drive et Calendar — avec questions-réponses en direct.",
+    "gm4Date": "28 septembre 2025",
+    "gm4Title": "Rio, la CDB et au-delà : une masterclass sur la gouvernance mondiale de la biodiversité",
+    "gm4Speaker": "avec GYBN USA · animée par Moudjiba",
+    "gm4Desc": "Comment fonctionne la gouvernance mondiale de la biodiversité — du Sommet de la Terre de Rio à la Convention sur la diversité biologique et au-delà — avec questions-réponses en direct.",
+    "gm3Date": "13 juillet 2025",
+    "gm3Title": "Bénévolat et changement social : comment utiliser son temps et ses talents pour changer le monde",
+    "gm3Speaker": "avec Meg Ferrigno — administratrice d’EG, fondatrice de Pureland Project et Moonpads · animée par Moudjiba",
+    "gm3Desc": "Comment utiliser son temps et ses talents pour faire la différence — le bénévolat comme moteur du changement social — avec questions-réponses en direct.",
+    "gm2Date": "2025",
+    "gm2Title": "Diriger et gérer une équipe de bénévoles",
+    "gm2Speaker": "avec Mme Rejoice A. Sosu-Ketek",
+    "gm2Desc": "Aucun bénévole ne se ressemble : comment bâtir une équipe solide, relever les défis de la gestion des bénévoles et diriger avec les bonnes approches et valeurs.",
+    "gm1Date": "2025",
+    "gm1Title": "Créer des liens plus profonds — maîtriser l’art de l’empathie",
+    "gm1Speaker": "avec Louka",
+    "gm1Desc": "Maîtriser l’art de l’empathie pour créer des liens plus profonds dans votre communauté et le travail de votre équipe."
   },
   "a11y": {
     "skipToContent": "Aller au contenu principal"

@@ -7,12 +7,12 @@
  */
 <template>
   <Teleport to="body">
-    <div v-if="visible" class="fixed inset-0 flex items-center justify-center p-4 claim-report-backdrop" role="dialog" :aria-modal="true" :aria-label="t('observatory.claimReport.title')">
+    <div v-if="visible" class="fixed inset-0 flex items-center justify-center p-4 claim-report-backdrop" role="dialog" aria-modal="true" aria-labelledby="claim-report-title" tabindex="-1" @keydown.escape="$emit('close')">
       <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="$emit('close')" />
       <div class="relative w-full max-w-md max-h-[80vh] overflow-y-auto z-10 claim-report-panel" ref="modalRef">
         <div class="p-5">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider">{{ t('observatory.claimReport.title') }}</h2>
+            <h2 id="claim-report-title" class="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider">{{ t('observatory.claimReport.title') }}</h2>
             <button type="button" class="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-lg leading-none" :aria-label="t('observatory.claimReport.close')" @click="$emit('close')">×</button>
           </div>
 

@@ -1,5 +1,5 @@
 <template>
-  <main id="main-content" class="home">
+  <main id="main-content" tabindex="-1" class="home">
     <PageTopbar />
 
     <div class="home-layout">
@@ -30,7 +30,7 @@
       </section>
 
       <!-- Right Panel: Bento Grid -->
-      <section class="home-right" aria-label="Sections">
+      <section class="home-right" :aria-label="t('home.exploreTitle')">
         <div class="bento">
 
           <!-- 1. Project Grants — tall -->
@@ -56,11 +56,11 @@
               <div class="bento-links">
                 <NuxtLink to="/project-grants" class="bento-link bento-link--primary" style="background: #8e44ad; border-color: #8e44ad">
                   <Icon name="lucide:map" class="h-3.5 w-3.5" />
-                  2D Map
+                  {{ t('globe.view2D') }}
                 </NuxtLink>
                 <NuxtLink to="/project-grants/3d" class="bento-link">
                   <Icon name="lucide:globe" class="h-3.5 w-3.5" />
-                  3D Globe
+                  {{ t('globe.view3D') }}
                 </NuxtLink>
               </div>
             </div>
@@ -94,7 +94,7 @@
                 </NuxtLink>
                 <NuxtLink to="/endangered-species" class="bento-link">
                   <Icon name="lucide:map" class="h-3.5 w-3.5" />
-                  Species Map
+                  {{ t('home.species') }}
                 </NuxtLink>
               </div>
             </div>
@@ -219,11 +219,11 @@
               <div class="bento-links">
                 <NuxtLink to="/vulcan-observatory" class="bento-link bento-link--primary" style="background: #f59e0b; border-color: #f59e0b">
                   <Icon name="lucide:map" class="h-3.5 w-3.5" />
-                  2D Map
+                  {{ t('globe.view2D') }}
                 </NuxtLink>
                 <NuxtLink to="/vulcan-observatory/3d" class="bento-link">
                   <Icon name="lucide:globe" class="h-3.5 w-3.5" />
-                  3D Globe
+                  {{ t('globe.view3D') }}
                 </NuxtLink>
               </div>
             </div>
@@ -259,9 +259,9 @@ const baseURL = useRuntimeConfig().app.baseURL
 useHead({
   title: computed(() => `EG–Maps — ${t('home.subtitle')}`),
   meta: [
-    { name: 'description', content: 'Official maps of Earth Guardians — project grants, endangered species, active crews, crew projects and the Vulcan Observatory community map.' },
+    { name: 'description', content: 'Official maps of Earth Guardians — project grants, endangered species, active Crews, Crew Projects and the Vulcan Observatory community map.' },
     { property: 'og:title', content: 'EG–Maps — Official maps of Earth Guardians' },
-    { property: 'og:description', content: 'Crews, grants, species and crew projects on interactive maps and globes.' },
+    { property: 'og:description', content: 'Crews, grants, species and Crew Projects on interactive maps and globes.' },
     { property: 'og:type', content: 'website' },
   ],
 })

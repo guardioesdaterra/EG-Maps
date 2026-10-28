@@ -196,7 +196,7 @@ export function useMapBase(config: MapBaseConfig) {
   let shareCopiedTimer: ReturnType<typeof setTimeout> | null = null
   const selectedSpeciesGroups = ref<string[]>(initialShareState.selectedSpeciesGroups ?? [])
   const clusterPanelItems = ref<ClusterResultItem[]>([])
-  const clusterPanelDataset = ref('Cluster results')
+  const clusterPanelDataset = ref(t('mapControls.clusterPanel.title'))
   const clusterPanelOpen = ref(false)
   const hasError = ref(false)
   const errorMessage = ref('')
@@ -520,19 +520,19 @@ export function useMapBase(config: MapBaseConfig) {
     const items: ClusterResultItem[] = []
     if (payload.dataset === 'project-grants') {
       for (const project of projectsData.value) if (ids.has(project.project_title)) items.push({ id: project.project_title, title: project.project_title, subtitle: project.country_province, color: '#22d3ee', coordinates: [project.longitude, project.latitude] })
-      clusterPanelDataset.value = 'Project grants'
+      clusterPanelDataset.value = t('home.projectGrants')
     } else if (payload.dataset === 'active-crews') {
-      for (const crew of crewsData.value) if (ids.has(crew.id)) items.push({ id: crew.id, title: crew.region, subtitle: `${crew.activeCrews} active crews · ${crew.countries} countries`, color: '#22c55e', coordinates: [crew.longitude, crew.latitude] })
+      for (const crew of crewsData.value) if (ids.has(crew.id)) items.push({ id: crew.id, title: crew.region, subtitle: t('mapControls.clusterPanel.activeCrewsSubtitle', { crews: crew.activeCrews, countries: crew.countries }), color: '#22c55e', coordinates: [crew.longitude, crew.latitude] })
       for (const location of crewLocationsData.value) {
         const id = `${location.name}-${location.lat}-${location.lng}`
         if (ids.has(id)) items.push({ id, title: location.name, subtitle: `${location.city}, ${location.country}`, color: location.status === 'active' ? '#22c55e' : '#f59e0b', coordinates: [location.lng, location.lat] })
       }
-      clusterPanelDataset.value = 'Active crews'
+      clusterPanelDataset.value = t('nav.activeCrews')
     } else if (payload.dataset === 'endangered-species') {
       for (const species of visibleSpecies.value) if (ids.has(species.id)) items.push({ id: species.id, title: species.commonName || species.scientificName, subtitle: species.scientificName, color: '#a855f7', coordinates: [species.lng, species.lat] })
-      clusterPanelDataset.value = 'Endangered species'
+      clusterPanelDataset.value = t('nav.endangeredSpecies')
     } else {
-      clusterPanelDataset.value = 'Observatory results'
+      clusterPanelDataset.value = t('home.observatoryOfVulcan')
     }
     clusterPanelItems.value = items
     clusterPanelOpen.value = items.length > 0

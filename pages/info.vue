@@ -301,7 +301,7 @@ const sourceGroups = computed<Array<{ title: string; items: SourceItem[] }>>(() 
   {
     title: t('info.sources.grants'),
     items: [
-      { name: 'Project grants', publisher: 'Earth Guardians crews & staff', license: 'Curated dataset · credit EG', url: 'https://www.earthguardians.org/crews', note: 'Grant locations and beneficiary figures as reported by the crews.' },
+      { name: 'Project grants', publisher: 'Earth Guardians Crews & staff', license: 'Curated dataset · credit EG', url: 'https://www.earthguardians.org/crews', note: 'Grant locations and beneficiary figures as reported by the Crews.' },
     ],
   },
   {

@@ -7,10 +7,10 @@
 <template>
   <Teleport to="body">
     <Transition name="modal-fade">
-      <div v-if="visible" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm kbd-backdrop" @click.self="$emit('close')">
-        <div class="obs-shortcuts-panel" role="dialog" aria-label="Keyboard shortcuts">
+        <div v-if="visible" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm kbd-backdrop" @click.self="$emit('close')" @keydown.esc="$emit('close')">
+        <div ref="panelRef" class="obs-shortcuts-panel" role="dialog" aria-modal="true" aria-labelledby="observatory-shortcuts-title" tabindex="-1">
           <div class="obs-shortcuts-panel__header">
-            <h2 class="obs-shortcuts-panel__title">⌨️ Keyboard Shortcuts</h2>
+            <h2 id="observatory-shortcuts-title" class="obs-shortcuts-panel__title">⌨️ Keyboard Shortcuts</h2>
             <button type="button" class="obs-shortcuts-panel__close" aria-label="Close" @click="$emit('close')">×</button>
           </div>
           <div class="obs-shortcuts-panel__body">
@@ -32,13 +32,19 @@
 
 <script setup lang="ts">
 
-defineProps<{
+import { computed, ref } from 'vue'
+import { useFocusTrap } from '@/composables/useFocusTrap'
+
+const props = defineProps<{
   visible: boolean
 }>()
 
 defineEmits<{
   'close': []
 }>()
+
+const panelRef = ref<HTMLElement | null>(null)
+useFocusTrap(panelRef, { active: computed(() => props.visible) })
 
 const shortcutGroups = [
   {
@@ -118,6 +124,10 @@ const shortcutGroups = [
 .obs-shortcuts-panel__close:hover {
   color: var(--danger);
   background: rgba(231, 76, 60, 0.1);
+}
+.obs-shortcuts-panel__close:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
 }
 .obs-shortcuts-panel__body {
   padding: clamp(8px, 1.5vw, 16px) clamp(10px, 2vw, 20px);

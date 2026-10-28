@@ -8,13 +8,13 @@
  */
 <template>
   <Transition name="modal-fade">
-    <div v-if="visible" class="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm uc-backdrop" @click.self="$emit('close')" @keydown.escape="$emit('close')" tabindex="0" ref="modalRef">
+    <div v-if="visible" class="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm uc-backdrop" role="dialog" aria-modal="true" aria-labelledby="user-contribution-modal-title" @click.self="$emit('close')" @keydown.escape="$emit('close')" tabindex="-1" ref="modalRef">
       <div class="obs-panel w-[min(92vw,min(520px,92vw))] max-h-[88vh] overflow-y-auto" @click.stop>
         
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <h2 class="text-sm font-black text-emerald-400 uppercase tracking-wider">Community Monitoring</h2>
+            <h2 id="user-contribution-modal-title" class="text-sm font-black text-emerald-400 uppercase tracking-wider">Community Monitoring</h2>
             <span v-if="contributions.length" class="text-[clamp(9px,1.4vw,12px)] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">{{ contributions.length }}</span>
           </div>
           <div class="flex items-center gap-1.5">
@@ -264,6 +264,7 @@
 
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import type { ObservatoryUpdate } from '~/composables/useObservatoryUpdates'
+import { useFocusTrap } from '~/composables/useFocusTrap'
 
 interface LocationSuggestion {
   name: string
@@ -304,6 +305,8 @@ const contributions = ref<ObservatoryUpdate[]>(loadContributions())
 const previewPhoto = ref<string | null>(null)
 const confirmDialog = ref<ConfirmDialog | null>(null)
 const modalRef = ref<HTMLElement | null>(null)
+const isActive = computed(() => props.visible)
+useFocusTrap(modalRef, { active: isActive })
 const submitting = ref(false)
 const submitResult = ref<SubmitResult | null>(null)
 

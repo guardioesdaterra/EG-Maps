@@ -20,7 +20,7 @@
           <p>
             This Privacy Policy covers <strong>EG-Maps</strong>, the interactive data-visualization platform
             operated by <strong>Earth Guardians</strong> (earthguardians.org), including the public maps
-            (project grants, endangered species, active crews, Vulcan observatory) and the restricted
+            (project grants, endangered species, Active Crews, Vulcan observatory) and the restricted
             <strong>EG-Grants</strong> portal that requires Google sign-in.
           </p>
         </section>
@@ -112,7 +112,7 @@
           <h2>8. Children's privacy</h2>
           <p>
             EG-Maps is not directed at children under 13, and we do not knowingly collect personal data from
-            children. Accounts for youth crew members are managed through a parent, guardian, or crew coordinator.
+            children. Accounts for youth Crew members are managed through a parent, guardian, or Crew coordinator.
           </p>
         </section>
 

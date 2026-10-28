@@ -11,7 +11,9 @@
     "joinEarthGuardians": "انضم إلى حراس الأرض",
     "switchToLight": "التبديل إلى الوضع الفاتح",
     "switchToDark": "التبديل إلى الوضع الداكن",
-    "language": "اللغة"
+    "language": "اللغة",
+    "privacy": "الخصوصية",
+    "terms": "الشروط"
   },
   "home": {
     "title": "حراس الأرض",
@@ -29,7 +31,7 @@
     "activeCrewsDesc": "استكشف الفرق النشطة لحراس الأرض عبر 7 مناطق — 131 فرقة، 1,241 عضو، 47 دولة حول العالم.",
     "projectsCount": "المشاريع",
     "beneficiariesCount": "المستفيدون",
-    "speciesCount": "سجلات الأنواع",
+    "speciesCount": "الأنواع المهددة بالانقراض",
     "groupsCount": "المجموعات",
     "allValue": "الكل",
     "activeCrewsCount": "الفرق النشطة",
@@ -94,13 +96,15 @@
     "skillBuilding": "بناء المهارات",
     "joinGlobal": "انضم إلى الشبكة العالمية",
     "youthLed": "عمل يقوده الشباب",
-    "observatoryOfVulcan": "مرصد فولكان"
+    "observatoryOfVulcan": "مرصد فولكان",
+    "sections": "الأقسام"
   },
   "mapControls": {
     "search": "بحث",
     "searchProjects": "بحث في المشاريع",
     "searchSpecies": "بحث في الأنواع",
     "searchCrews": "البحث عن فرق",
+    "searchCities": "ابحث عن المدن",
     "searchPlaceholder": "بحث بالاسم أو الموقع...",
     "searchSpeciesPlaceholder": "بحث بالاسم أو المنطقة...",
     "showAll": "إظهار الكل",
@@ -123,7 +127,48 @@
     "of": "من",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "أو افتح القائمة لاستعراض الكل",
-    "searchResults": "نتائج البحث"
+    "searchResults": "نتائج البحث",
+    "nearby": "بالقرب منك",
+    "nearbyLabel": "اعثر على الفرق والمشاريع والحملات القريبة",
+    "offlineCachedData": "وضع عدم الاتصال — تظل البيانات المخزنة مؤقتًا متاحة",
+    "nearbyPanel": {
+      "eyebrow": "استكشف ما حولك",
+      "title": "اعثر على نشاط قريب منك",
+      "consentTitle": "هل تريد استخدام موقعك؟",
+      "consentDescription": "نستخدم موقعك في هذا المتصفح فقط لترتيب الفرق والمشاريع القريبة. لا يُرسل إلى Earth Guardians ولا يخزنه هذا التطبيق.",
+      "consentLabel": "أوافق على مشاركة موقعي التقريبي مع هذه الخريطة خلال هذه الجلسة.",
+      "locating": "جارٍ تحديد الموقع…",
+      "findAction": "اعثر على نشاط قريب",
+      "locationError": "لم يُمنح إذن الوصول إلى الموقع. يمكنك تفعيله من إعدادات المتصفح والمحاولة مرة أخرى.",
+      "locationActive": "الموقع مفعّل · تقريبي فقط",
+      "clearLocation": "مسح الموقع الحالي",
+      "categories": "الفئات القريبة",
+      "crews": "الفرق",
+      "projects": "المشاريع",
+      "campaigns": "الحملات",
+      "noCrews": "لا تتوفر بعد مواقع فرق بإحداثيات.",
+      "noProjects": "لا تتوفر بعد مواقع للمشاريع.",
+      "biodiversity": "الأنواع المهددة بالانقراض",
+      "biodiversityDesc": "عمل عالمي من أجل التنوع البيولوجي والموائل.",
+      "chooseAction": "اختر نشاطًا الآن",
+      "chooseActionDesc": "عدالة مناخية وعمل مباشر يقودهما الشباب.",
+      "solutions": "حلول مستدامة",
+      "solutionsDesc": "حلول مجتمعية لإدارة النفايات وتعزيز الصمود."
+    },
+    "imported": "مُستورد",
+    "populationUnit": "نسمة",
+    "clusterPanel": {
+      "title": "نتائج التجميع",
+      "count": "نتائج التجميع: {count}",
+      "copyLink": "نسخ رابط التجميع",
+      "linkCopied": "تم نسخ رابط التجميع",
+      "close": "إغلاق نتائج التجميع",
+      "searchLabel": "البحث في نتائج التجميع",
+      "searchPlaceholder": "البحث في هذا التجميع…",
+      "visibleResults": "{count} من نتائج التجميع الظاهرة",
+      "empty": "لا توجد نتائج تطابق هذا البحث.",
+      "activeCrewsSubtitle": "{crews} فرق نشطة · {countries} دولة"
+    }
   },
   "mapTiles": {
     "maptiler": "قمر صناعي",
@@ -204,7 +249,9 @@
     "switchTo2D": "التبديل إلى عرض الخريطة ثنائية الأبعاد",
     "switchTo3D": "التبديل إلى عرض الكرة الأرضية ثلاثية الأبعاد",
     "view2D": "خريطة ثنائية الأبعاد",
-    "view3D": "كرة أرضية ثلاثية الأبعاد"
+    "view3D": "كرة أرضية ثلاثية الأبعاد",
+    "reloadPage": "إعادة تحميل الصفحة",
+    "allSpeciesLoaded": "تم تحميل جميع بيانات الأنواع"
   },
   "project": {
     "directBeneficiaries": "المستفيدون المباشرون",
@@ -241,7 +288,9 @@
     "ownProjectsRegionTitle": "مشاريع الفرق الميدانية",
     "crewProjectBadge": "مشروع فريق",
     "moreProjects": "المزيد من المشاريع المرتبطة",
-    "pageOf": "صفحة {page} من {pages}"
+    "pageOf": "صفحة {page} من {pages}",
+    "crewsInRegion": "الفرق في {region}",
+    "crewsInRegionHint": "جميع فرق هذه المنطقة — اختر واحدًا للتفاصيل"
   },
   "taxonomy": {
     "Mammal": "الثدييات",
@@ -268,7 +317,10 @@
       "illegal": "غير قانوني",
       "env": "مخاطر بيئية",
       "network": "شبكة",
-      "timeline": "جدول زمني"
+      "timeline": "جدول زمني",
+      "power": "القوة",
+      "territory": "الإقليم",
+      "culture": "الثقافة"
     },
     "dangerPanel": {
       "title": "أخطر الشركات",
@@ -310,7 +362,11 @@
       "chinaBanTitle": "حظر الصين للتصدير (أكتوبر 2025)",
       "chinaBanBody": "حظرت الصين تصدير 12/17 من عناصر REE إلى الولايات المتحدة. 78% من الأسلحة الأمريكية تعتمد على REE الصينية.",
       "title": "عنوان",
-      "empty": "لا توجد بيانات"
+      "empty": "لا توجد بيانات",
+      "liveTitle": "مباشر: هذه المنطقة",
+      "liveClaims": "مطالبات حرجة",
+      "liveArea": "منطقة حرجة",
+      "liveUs": "مرتبط بالولايات المتحدة"
     },
     "illegal": {
       "landSpec": "المضاربة على الأراضي",
@@ -371,7 +427,16 @@
       "title": "الجدول الزمني للطلبات (2000–2026)",
       "claims": "{count} طلب",
       "cumulative": "تراكمي {count}",
-      "empty": "لا توجد بيانات"
+      "empty": "لا توجد بيانات",
+      "total": "الإجمالي",
+      "readStory": "اقرأ القصة",
+      "hideStory": "Hide story",
+      "footer": "Yearly new المطالبات from ANM public records; the running الإجمالي compounds each year.",
+      "narrativeStart": "baseline: a few dozen المطالبات a year — rare earths not yet strategic.",
+      "narrative2010": "China bans rare-earth exports to Japan, the first warning shot — المطالبات jump past 500.",
+      "narrative2017": "the US declares rare earths critical (EO 13817); China threatens a US ban و the Pentagon starts investing.",
+      "narrative2021": "supercycle و Brazil rush — lithium و ASX juniors invade; 2023 peaks at 4,213 المطالبات as the US DFC funds Serra Verde.",
+      "narrative2024": "backlash: prosecutors challenge licensing و Operação Rejeito arrests an ANM director, while China bans 7 rare-earth elements."
     },
     "actions": {
       "verify": "تحقق من ANM",
@@ -391,7 +456,14 @@
       "heatmap": "خريطة كثافة",
       "cultural": "الثقافة والمجتمع",
       "waterBodies": "المسطحات المائية",
-      "protectedAreas": "المناطق المحمية"
+      "protectedAreas": "المناطق المحمية",
+      "conservationUnits": "وحدات الحفظ",
+      "bufferZones": "مناطق عازلة",
+      "protectedSearch": "المناطق المحمية والمناطق العازلة",
+      "noProtectedSearch": "لا توجد مناطق محمية مطابقة.",
+      "statusTitle": "حالة الطبقة",
+      "statusFailed": "فشل",
+      "foreignHeld": "مطالبات مملوكة لأجانب"
     },
     "search": "البحث عن شركة أو مادة أو ولاية...",
     "legend": {
@@ -429,7 +501,13 @@
       "year": "السنة",
       "unknown": "غير معروف",
       "lastEventActive": "نشط",
-      "overlaps": "تداخلات"
+      "overlaps": "تداخلات",
+      "stackedLayers": "طبقات متداخلة",
+      "tabClaim": "مطالبة",
+      "tabBoundary": "حدود",
+      "tabWater": "مياه",
+      "tabConflict": "نزاع",
+      "tabTerrain": "تضاريس"
     },
     "myTerritory": {
       "title": "أراضي",
@@ -674,7 +752,15 @@
         "unnamed": "مدخل بلا اسم",
         "unknownSource": "غير معروف",
         "pagePrev": "الصفحة السابقة",
-        "pageNext": "الصفحة التالية"
+        "pageNext": "الصفحة التالية",
+        "agentsLoading": "جارٍ تحميل الوكلاء الثقافيين…",
+        "agentsRetry": "إعادة المحاولة",
+        "families": "عائلات العلامات",
+        "familyAgents": "الوكلاء الثقافيون",
+        "familySpaces": "المساحات الثقافية",
+        "familyIndigenous": "الشعوب الأصلية والأولى",
+        "sortFamily": "العائلة",
+        "clearFilters": "مسح"
       },
       "community": {
         "eyebrow": "مرصد حي",
@@ -690,13 +776,71 @@
         "methodologyText": "تُجمع البيانات من السجلات العامة والمصادر المجتمعية. تعامل معها كدعوة للتحقيق، لا كبديل عن موافقة المجتمع أو التحديد القانوني.",
         "monitor": "فتح المراقب الميداني",
         "sources": "عرض مصادر البيانات"
+      },
+      "tabs": {
+        "label": "معلومات المرصد",
+        "territory": "الإقليم",
+        "culture": "الثقافة",
+        "power": "القوى",
+        "timeline": "الخط الزمني"
       }
     },
     "error": {
       "loadFailed": "فشل تحميل بيانات المرصد",
       "retry": "إعادة المحاولة"
     },
-    "clearSearch": "مسح البحث"
+    "clearSearch": "مسح البحث",
+    "territory": {
+      "headline": "المطالبات على الأرض",
+      "claims": "المطالبات",
+      "boundaries": "الحدود",
+      "area": "مساحة المطالبة",
+      "withOverlaps": "مع التداخلات",
+      "synced": "مزامنة ANM",
+      "noBoundaries": "لم تُحمّل حدود المطالبات — نقاط فقط. راجع حالة الطبقة أدناه.",
+      "bySubstance": "المطالبات حسب المادة",
+      "overlapsTitle": "تداخلات التعدين × الإقليم",
+      "noOverlaps": "لا توجد تداخلات إقليمية مسجلة للمطالبات المحمّلة.",
+      "overlappedBy": "{count} المطالبات المتداخلة",
+      "overlappingClaims": "المطالبات المتداخلة",
+      "protectedTitle": "الأقاليم المحمية",
+      "source": "المصدر",
+      "noProtected": "لا توجد أقاليم محمية في مجموعة البيانات المحمّلة.",
+      "watersTitle": "مياه تحت الضغط",
+      "noWaters": "لم تُقيّم أي مياه مسمّاة بعد — طبقة المياه ما زالت قيد التحميل.",
+      "watersLegend": "مطالبةs within 2km press directly (drawdown, runoff); within 5km share aquifer or sub-basin.",
+      "pressure": "ضغط",
+      "watch": "مراقبة",
+      "claims2km": "المطالبات ≤2km",
+      "claims5km": "المطالبات ≤5km",
+      "flyToWater": "Fly to {name}",
+      "dossierDownload": "تصدير ملف الأدلة",
+      "dossierCopy": "نسخ الملف",
+      "dossierCopied": "تم النسخ!",
+      "searchPlaceholder": "Search المطالبات, holders, processos…",
+      "sobDemanda": "Sob Demوa only",
+      "filtersActive": "{count} فلاتر نشطة",
+      "pinTitle": "مراقبة: موقعك",
+      "pinBody": "{count} المطالبات within 10km of {label}.",
+      "pinNearest": "الأقرب: {processo} · {holder} · {km}km"
+    },
+    "claimIntel": {
+      "holderTitle": "السجل السابق للمالك",
+      "claims": "المطالبات",
+      "territoryTitle": "تداخلات الإقليم"
+    },
+    "power": {
+      "noData": "لم يُحمّل التحليل العميق بعد.",
+      "militaryTitle": "بصمة بالغة الأهمية عسكريًا",
+      "criticalClaims": "مطالبات حرجة",
+      "criticalArea": "منطقة حرجة",
+      "usConnected": "مرتبط بالولايات المتحدة",
+      "foreignTitle": "حصة رأس المال الأجنبي",
+      "sigiloTitle": "مطالبات السرية (sigilo)",
+      "sigiloBody": "{total} المطالبات under secrecy ({pct}%) covering {area} ha — hidden holders, hidden substances.",
+      "topTitle": "أكثر المالكين إثارة للريبة",
+      "claims": "المطالبات"
+    }
   },
   "loading": {
     "projectGrantsMap": "جارٍ تحميل خريطة منح المشاريع",
@@ -764,10 +908,21 @@
       "grants": "المنح",
       "species": "الأنواع",
       "mains": "الرئيسية",
-      "feedback": "التعليقات"
+      "feedback": "التعليقات",
+      "sources": "المصادر"
     },
     "shareCorrections": "شارك التصحيحات أو البيانات المفقودة أو أفكار التفاعل لمساعدتنا على تحسين الخرائط.",
-    "homeLink": "الرئيسية"
+    "homeLink": "الرئيسية",
+    "sources": {
+      "title": "مصادر البيانات والتراخيص",
+      "intro": "Every layer on EG-Maps comes from a named publisher. This tab lists them all — who publishes each dataset, under which license, و how you may reuse it for research و community work.",
+      "observatory": "Vulcan Observatory — mining & territory",
+      "species": "الأنواع المهددة بالانقراض",
+      "grants": "منح المشاريع",
+      "basemap": "الخريطة الأساسية والصور ومحرك الخرائط",
+      "reuseTitle": "Licenses & reuse for research و community tools",
+      "openSource": "مفتوح المصدر"
+    }
   },
   "campaigns": {
     "title": "الحملات",
@@ -925,7 +1080,34 @@
     "joinCrew": "ابدأ فريقًا أو انضم إليه",
     "moreTitle": "جلسات منذ 2023",
     "moreDesc": "كتابة المنح والتحضير لـ COP وتصور البيانات والعدالة المناخية والمزيد. تابعنا للأبرز والمقاطع والمواعيد القادمة.",
-    "viewOnInstagram": "شاهد على Instagram"
+    "viewOnInstagram": "شاهد على Instagram",
+    "ep5Title": "القيادة التحويلية",
+    "ep5Speaker": "with Rejoice — أفريقيا RCC",
+    "ep5Desc": "What it takes to inspire change, foster resilient community leadership, و transform local action into lasting movement power.",
+    "ep5Time": "Sunday, September 20, 2026 · 12:00 PM EST | 4:00 PM UTC (GMT)",
+    "flyer": "منشور",
+    "series2025Title": "عالمي Masterclass Series · 2025 season",
+    "series2025Desc": "Five sessions from the 2025 season — empathy, volunteer leadership, volunteerism in action, biodiversity governance, و digital tools. Recordings, slide decks و flyers below.",
+    "gm5Date": "2025",
+    "gm5Title": "Google Workspace Essentials: Mastering Gmail, Docs, Sheets, Drive, و Calendar",
+    "gm5Speaker": "with Emmy Scott · hosted by Moudjiba",
+    "gm5Desc": "A practical walkthrough of the Google Workspace essentials for Crew work — Gmail, Docs, Sheets, Drive, و Calendar — with live Q&A.",
+    "gm4Date": "September 28, 2025",
+    "gm4Title": "Rio, the CBD & Beyond: A Masterclass on عالمي Biodiversity Governance",
+    "gm4Speaker": "with GYBN USA · hosted by Moudjiba",
+    "gm4Desc": "How global biodiversity governance works — from the Rio Earth Summit to the Convention on Biological Diversity و beyond — with live Q&A.",
+    "gm3Date": "July 13, 2025",
+    "gm3Title": "Volunteerism و Social Change: How to Use Your Time و Talents to Make a Difference in the World",
+    "gm3Speaker": "with Meg Ferrigno — EG Board Director, founder of Purelو Project و Moonpads · hosted by Moudjiba",
+    "gm3Desc": "How to use your time و talents to make a difference — volunteerism as a driver of social change — with live Q&A.",
+    "gm2Date": "2025",
+    "gm2Title": "Leading و Managing a Team of Volunteers",
+    "gm2Speaker": "with Ms Rejoice A. Sosu-Ketek",
+    "gm2Desc": "No two volunteers are the same — how to build a strong volunteer team, meet the challenges of managing volunteers, و lead with the right approaches و values.",
+    "gm1Date": "2025",
+    "gm1Title": "Unlock Deeper Connections — Master the Art of Empathy",
+    "gm1Speaker": "with Louka",
+    "gm1Desc": "Master the art of empathy to unlock deeper connections in your community و Crew work."
   },
   "a11y": {
     "skipToContent": "الانتقال إلى المحتوى الرئيسي"

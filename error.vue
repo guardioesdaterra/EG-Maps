@@ -4,7 +4,7 @@
  * @component error
  */
 <template>
-  <div class="min-h-[100svh] bg-[var(--bg-secondary)] flex flex-col items-center justify-center relative overflow-hidden">
+  <main id="main-content" tabindex="-1" aria-labelledby="error-heading" class="min-h-[100svh] bg-[var(--bg-secondary)] flex flex-col items-center justify-center relative overflow-hidden">
     
     <div class="absolute inset-0 bg-black/10 dark:bg-white/5 pointer-events-none" />
     <div class="absolute inset-0 pointer-events-none" style="box-shadow: inset 0 0 clamp(50px, 15vw, 200px) clamp(10px, 4vw, 50px) rgba(0,0,0,0.8)" />
@@ -19,7 +19,7 @@
       </div>
 
       
-      <h1 class="text-fluid-5xl font-bold mb-4 text-[var(--text-primary)]">
+      <h1 id="error-heading" class="text-fluid-5xl font-bold mb-4 text-[var(--text-primary)]">
         {{ error?.statusCode || 'Error' }}
       </h1>
 
@@ -44,7 +44,7 @@
         </button>
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">

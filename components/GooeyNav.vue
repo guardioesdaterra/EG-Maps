@@ -6,7 +6,7 @@
  */
 <template>
   <div class="gooey-nav relative overflow-visible" ref="containerRef">
-    <nav class="flex overflow-visible relative">
+    <nav class="flex overflow-visible relative" :aria-label="t('nav.home')">
       <ul
         ref="navRef"
         class="flex items-center gap-0.5 list-none p-0 m-0 relative z-[3] overflow-visible"
@@ -22,7 +22,9 @@
             :rel="item.external ? 'noopener noreferrer' : undefined"
             :aria-current="activeIndex === index ? 'page' : undefined"
             @click="e => handleClick(e, index)"
-            class="group relative flex flex-col items-center outline-none px-2.5 py-1.5"
+            :aria-label="t(item.labelKey)"
+            :title="t(item.labelKey)"
+            class="group relative flex flex-col items-center rounded-md px-2.5 py-1.5 outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
           >
             <div
               class="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[clamp(10px,1.5vw,13px)] font-medium rounded-md opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-lg whitespace-nowrap z-10 bg-gray-900 text-white border border-white/10"
@@ -79,7 +81,7 @@ const containerRef = useTemplateRef<HTMLDivElement>('containerRef')
 const navRef = useTemplateRef<HTMLUListElement>('navRef')
 const filterRef = useTemplateRef<HTMLSpanElement>('filterRef')
 
-const activeIndex = ref(0)
+const activeIndex = ref(-1)
 
 let resizeObserver: ResizeObserver | null = null
 
@@ -92,7 +94,7 @@ function computeActiveIndex(): number {
     if (p === '/info' && route.path === '/info') return i
     if (p !== '/' && p !== '/info' && route.path.startsWith(p)) return i
   }
-  return 0
+  return -1
 }
 
 watch(() => route.path, () => {
@@ -179,7 +181,9 @@ const handleClick = (e: Event, index: number) => {
 
     const particles = filterRef.value.querySelectorAll('.particle')
     particles.forEach(p => filterRef.value!.removeChild(p))
-    makeParticles(filterRef.value)
+    if (!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      makeParticles(filterRef.value)
+    }
   }
 }
 

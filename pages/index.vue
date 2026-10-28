@@ -2,54 +2,210 @@
   <main id="main-content" ref="homeRoot" tabindex="-1" class="home">
     <PageTopbar />
 
-    <section class="home-hero" aria-labelledby="home-title">
-      <div class="hero-copy" data-reveal>
-        <p class="eyebrow"><span class="eyebrow-mark" aria-hidden="true" />{{ t('home.title') }}</p>
-        <h1 id="home-title">{{ t('home.footer') }}<span class="title-period">.</span></h1>
-        <p class="hero-lede">{{ t('home.subtitleMore') }}</p>
-        <p class="hero-context">{{ t('home.subtitle') }}</p>
-        <nav class="hero-actions" :aria-label="t('home.exploreTitle')">
-          <NuxtLink to="/project-grants" class="action-button action-button--primary">
-            <Icon name="lucide:map" aria-hidden="true" />
-            {{ t('home.exploreTitle') }}
-            <Icon name="lucide:arrow-up-right" class="action-arrow" aria-hidden="true" />
-          </NuxtLink>
-          <a
-            href="https://www.earthguardians.org/crews"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="action-button action-button--quiet"
-          >
-            <Icon name="lucide:users-round" aria-hidden="true" />
-            {{ t('home.startACrewTitle') }}
-            <Icon name="lucide:arrow-up-right" class="action-arrow" aria-hidden="true" />
-          </a>
-        </nav>
-      </div>
+    <section class="home-hero" aria-label="EG-Maps">
+      <div class="home-layout">
+        <section class="home-left" aria-labelledby="home-title">
+          <div class="home-left-inner">
+            <img :src="`${baseURL}eg-logo.png`" alt="Earth Guardians" class="home-logo" />
+            <h1 id="home-title" class="home-title"><span class="glass-line">EG–Maps<span class="home-title-dot">.</span></span></h1>
+            <p class="home-subtitle"><span class="glass-line">{{ t('home.subtitle') }}</span></p>
+            <p class="home-submore"><span class="glass-line">{{ t('home.subtitleMore') }}</span></p>
+            <div class="home-orgline">
+              <a href="https://www.earthguardians.org" target="_blank" rel="noopener noreferrer" class="home-orglink">
+                <Icon name="lucide:arrow-up-right" aria-hidden="true" />
+                earthguardians.org
+              </a>
+              <NuxtLink to="/info" class="home-orglink home-orglink--muted">
+                {{ t('nav.info') }}
+              </NuxtLink>
+            </div>
+            <div class="home-divider" />
+            <div class="home-stats" role="group" :aria-label="t('home.dataMaps')">
+              <div v-for="stat in overviewStats" :key="stat.label" class="home-stat">
+                <span class="home-stat-value">{{ stat.value }}</span>
+                <span class="home-stat-label">{{ stat.label }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
 
-      <div class="hero-art" aria-hidden="true" data-reveal>
-        <div class="orbit orbit--outer" />
-        <div class="orbit orbit--middle" />
-        <div class="orbit orbit--inner" />
-        <div class="hero-core">
-          <img :src="`${baseURL}eg-logo.png`" alt="" class="hero-logo" />
-        </div>
-        <div class="orbit-node orbit-node--north"><Icon name="lucide:leaf" /></div>
-        <div class="orbit-node orbit-node--east"><Icon name="lucide:users-round" /></div>
-        <div class="orbit-node orbit-node--south"><Icon name="lucide:hand-heart" /></div>
-        <div class="orbit-node orbit-node--west"><Icon name="lucide:globe-2" /></div>
-        <div class="hero-art-caption">
-          <span class="caption-dot" />
-          <span>{{ t('home.youthLed') }}</span>
-        </div>
-        <span class="hero-art-note hero-art-note--one">{{ t('home.globalAction') }}</span>
-        <span class="hero-art-note hero-art-note--two">{{ t('home.ourWork') }}</span>
-      </div>
+        <section class="home-right" :aria-label="t('home.exploreTitle')">
+          <div class="bento">
+            <article class="bento-card bento-tall" style="--accent: #7e22ce" @mousemove="trackGlow" @mouseleave="clearGlow">
+              <div class="bento-glow" aria-hidden="true" />
+              <div class="bento-accent" aria-hidden="true" />
+              <div class="bento-body">
+                <div class="bento-icon" aria-hidden="true"><Icon name="lucide:hand-heart" /></div>
+                <h2 class="bento-title">{{ t('home.projectGrantsTitle') }}</h2>
+                <p class="bento-desc">{{ t('home.projectGrantsDesc') }}</p>
+                <div class="bento-stats">
+                  <div class="bento-stat">
+                    <strong>{{ projectStats.totalProjects }}</strong>
+                    <span>{{ t('home.projectsCount') }}</span>
+                  </div>
+                  <div class="bento-stat">
+                    <strong>{{ formatCompact(projectStats.totalBeneficiaries) }}+</strong>
+                    <span>{{ t('home.beneficiariesCount') }}</span>
+                  </div>
+                </div>
+                <div class="bento-links">
+                  <NuxtLink to="/project-grants" class="bento-link bento-link--primary" :aria-label="`${t('home.projectGrantsTitle')} — ${t('globe.view2D')}`">
+                    <Icon name="lucide:map" aria-hidden="true" />
+                    {{ t('globe.view2D') }}
+                  </NuxtLink>
+                  <NuxtLink to="/project-grants/3d" class="bento-link" :aria-label="`${t('home.projectGrantsTitle')} — ${t('globe.view3D')}`">
+                    <Icon name="lucide:globe" aria-hidden="true" />
+                    {{ t('globe.view3D') }}
+                  </NuxtLink>
+                </div>
+              </div>
+            </article>
 
-      <a class="scroll-cue" href="#home-story">
-        <span>{{ t('home.exploreTitle') }}</span>
-        <Icon name="lucide:arrow-down" aria-hidden="true" />
-      </a>
+            <article class="bento-card bento-tall" style="--accent: #15803d" @mousemove="trackGlow" @mouseleave="clearGlow">
+              <div class="bento-glow" aria-hidden="true" />
+              <div class="bento-accent" aria-hidden="true" />
+              <div class="bento-body">
+                <div class="bento-icon" aria-hidden="true"><Icon name="lucide:bird" /></div>
+                <h2 class="bento-title">{{ t('home.campaignsTitle') }}</h2>
+                <p class="bento-desc">{{ t('home.campaignsDesc') }}</p>
+                <p class="bento-kicker">{{ t('home.campaignsKicker') }}</p>
+                <div class="bento-stats">
+                  <div class="bento-stat">
+                    <strong>{{ speciesCount ?? '—' }}</strong>
+                    <span>{{ t('home.speciesCount') }}</span>
+                  </div>
+                  <div class="bento-stat">
+                    <strong>{{ t('home.allValue') }}</strong>
+                    <span>{{ t('home.countries') }}</span>
+                  </div>
+                </div>
+                <div class="bento-links">
+                  <NuxtLink to="/campaigns" class="bento-link bento-link--primary">
+                    <Icon name="lucide:megaphone" aria-hidden="true" />
+                    {{ t('home.campaignsTitle') }}
+                  </NuxtLink>
+                  <NuxtLink to="/endangered-species" class="bento-link">
+                    <Icon name="lucide:map" aria-hidden="true" />
+                    {{ t('home.species') }}
+                  </NuxtLink>
+                </div>
+              </div>
+            </article>
+
+            <article class="bento-card" style="--accent: #96600a" @mousemove="trackGlow" @mouseleave="clearGlow">
+              <div class="bento-glow" aria-hidden="true" />
+              <div class="bento-accent" aria-hidden="true" />
+              <div class="bento-body">
+                <div class="bento-icon" aria-hidden="true"><Icon name="lucide:graduation-cap" /></div>
+                <h2 class="bento-title">{{ t('home.masterclassesTitle') }}</h2>
+                <p class="bento-desc">{{ t('home.masterclassesDesc') }}</p>
+                <div class="bento-stats">
+                  <div class="bento-stat">
+                    <strong>{{ t('home.seriesStatusValue') }}</strong>
+                    <span>{{ t('home.seriesStatusLabel') }}</span>
+                  </div>
+                  <div class="bento-stat">
+                    <strong>{{ t('home.archiveValue') }}</strong>
+                    <span>{{ t('home.archiveLabel') }}</span>
+                  </div>
+                </div>
+                <div class="bento-links">
+                  <NuxtLink to="/masterclasses" class="bento-link bento-link--primary">
+                    <Icon name="lucide:book-open" aria-hidden="true" />
+                    {{ t('home.masterclassesTitle') }}
+                  </NuxtLink>
+                </div>
+              </div>
+            </article>
+
+            <article class="bento-card" style="--accent: #0e7490" @mousemove="trackGlow" @mouseleave="clearGlow">
+              <div class="bento-glow" aria-hidden="true" />
+              <div class="bento-accent" aria-hidden="true" />
+              <div class="bento-body">
+                <div class="bento-icon" aria-hidden="true"><Icon name="lucide:heart-handshake" /></div>
+                <h2 class="bento-title">{{ t('home.startACrewTitle') }}</h2>
+                <p class="bento-desc">{{ t('home.startACrewDesc') }}</p>
+                <div class="bento-stats">
+                  <div class="bento-stat">
+                    <strong>{{ crewOverallStats.totalActiveCrews }}</strong>
+                    <span>{{ t('home.crewsCount') }}</span>
+                  </div>
+                  <div class="bento-stat">
+                    <strong>{{ crewOverallStats.totalCountries }}</strong>
+                    <span>{{ t('home.countries') }}</span>
+                  </div>
+                </div>
+                <div class="bento-links">
+                  <NuxtLink to="/active-crews" class="bento-link bento-link--primary">
+                    <Icon name="lucide:users-round" aria-hidden="true" />
+                    {{ t('home.activeCrewsTitle') }}
+                  </NuxtLink>
+                  <a href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer" class="bento-link">
+                    <Icon name="lucide:arrow-up-right" aria-hidden="true" />
+                    {{ t('home.startACrewTitle') }}
+                  </a>
+                </div>
+              </div>
+            </article>
+
+            <article class="bento-card" style="--accent: #15803d" @mousemove="trackGlow" @mouseleave="clearGlow">
+              <div class="bento-glow" aria-hidden="true" />
+              <div class="bento-accent" aria-hidden="true" />
+              <div class="bento-body">
+                <div class="bento-icon" aria-hidden="true"><Icon name="lucide:mountain" /></div>
+                <h2 class="bento-title">{{ t('home.crewProjectsTitle') }}</h2>
+                <p class="bento-desc">{{ t('home.crewProjectsDesc') }}</p>
+                <div class="bento-stats">
+                  <div class="bento-stat">
+                    <strong>{{ t('home.crewProjectsStatValue') }}</strong>
+                    <span>{{ t('home.crewProjectsStatLabel') }}</span>
+                  </div>
+                  <div class="bento-stat">
+                    <strong>{{ t('home.crewProjectsPlaceValue') }}</strong>
+                    <span>{{ t('home.crewProjectsPlaceLabel') }}</span>
+                  </div>
+                </div>
+                <div class="bento-links">
+                  <NuxtLink data-testid="home-hero-crew-projects-link" to="/crew-projects" class="bento-link bento-link--primary">
+                    <Icon name="lucide:mountain" aria-hidden="true" />
+                    {{ t('home.crewProjectsTitle') }}
+                  </NuxtLink>
+                </div>
+              </div>
+            </article>
+
+            <article class="bento-card" style="--accent: #96600a" @mousemove="trackGlow" @mouseleave="clearGlow">
+              <div class="bento-glow" aria-hidden="true" />
+              <div class="bento-accent" aria-hidden="true" />
+              <div class="bento-body">
+                <div class="bento-icon" aria-hidden="true"><Icon name="lucide:microscope" /></div>
+                <h2 class="bento-title">{{ t('home.vulcanTitle') }}</h2>
+                <p class="bento-desc">{{ t('home.vulcanDesc') }}</p>
+                <div class="bento-stats">
+                  <div class="bento-stat">
+                    <strong>{{ t('home.vulcanFocusValue') }}</strong>
+                    <span>{{ t('home.vulcanFocusLabel') }}</span>
+                  </div>
+                  <div class="bento-stat">
+                    <strong>{{ t('home.vulcanDataValue') }}</strong>
+                    <span>{{ t('home.vulcanDataLabel') }}</span>
+                  </div>
+                </div>
+                <div class="bento-links">
+                  <NuxtLink to="/vulcan-observatory" class="bento-link bento-link--primary" :aria-label="`${t('home.vulcanTitle')} — ${t('globe.view2D')}`">
+                    <Icon name="lucide:map" aria-hidden="true" />
+                    {{ t('globe.view2D') }}
+                  </NuxtLink>
+                  <NuxtLink to="/vulcan-observatory/3d" class="bento-link" :aria-label="`${t('home.vulcanTitle')} — ${t('globe.view3D')}`">
+                    <Icon name="lucide:globe" aria-hidden="true" />
+                    {{ t('globe.view3D') }}
+                  </NuxtLink>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
     </section>
 
     <section id="home-story" class="story-section" aria-labelledby="story-title" data-reveal>
@@ -155,12 +311,7 @@
         <h2 id="join-title">{{ t('home.startACrewTitle') }}</h2>
         <p>{{ t('home.startACrewDesc') }}</p>
       </div>
-      <a
-        href="https://www.earthguardians.org/crews"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="join-link"
-      >
+      <a href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer" class="join-link">
         {{ t('home.startACrewTitle') }}
         <Icon name="lucide:arrow-up-right" aria-hidden="true" />
       </a>
@@ -182,11 +333,28 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { allProjectsData } from '@/lib/project-data'
+import { crewOverallStats } from '@/lib/crew-data'
+import { formatCompact } from '@/lib/utils'
 
 const { t } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
 const homeRoot = ref<HTMLElement | null>(null)
+const speciesCount = ref<number | null>(null)
 let revealObserver: IntersectionObserver | null = null
+const abortController = new AbortController()
+
+const projectStats = computed(() => {
+  const totalDirect = allProjectsData.reduce((sum, project) => sum + project.direct_beneficiaries, 0)
+  const totalIndirect = allProjectsData.reduce((sum, project) => sum + project.indirect_beneficiaries, 0)
+  return { totalProjects: allProjectsData.length, totalBeneficiaries: totalDirect + totalIndirect }
+})
+const overviewStats = computed(() => [
+  { value: crewOverallStats.totalActiveCrews, label: t('home.crewsCount') },
+  { value: projectStats.value.totalProjects, label: t('home.projectsCount') },
+  { value: speciesCount.value ?? '—', label: t('home.speciesCount') },
+  { value: crewOverallStats.totalCountries, label: t('home.countries') },
+])
 
 useHead({
   title: computed(() => `EG–Maps — ${t('home.subtitle')}`),
@@ -200,23 +368,53 @@ useHead({
 
 onMounted(() => {
   const root = homeRoot.value
-  if (!root || !('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  const targets = Array.from(root.querySelectorAll<HTMLElement>('[data-reveal]'))
-  if (!targets.length) return
-  root.classList.add('reveal-ready')
-  revealObserver = new IntersectionObserver((entries, observer) => {
-    for (const entry of entries) {
-      if (!entry.isIntersecting) continue
-      entry.target.classList.add('is-visible')
-      observer.unobserve(entry.target)
+  // The bento hero is intentionally static; only content below it reveals on scroll.
+  if (root && 'IntersectionObserver' in window && !reducedMotion) {
+    const targets = Array.from(root.querySelectorAll<HTMLElement>('[data-reveal]'))
+    if (targets.length) {
+      root.classList.add('reveal-ready')
+      revealObserver = new IntersectionObserver((entries, observer) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue
+          entry.target.classList.add('is-visible')
+          observer.unobserve(entry.target)
+        }
+      }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' })
+      targets.forEach(target => revealObserver?.observe(target))
     }
-  }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' })
+  }
 
-  targets.forEach(target => revealObserver?.observe(target))
+  void fetch(`${baseURL}data/species/index.json`, { signal: abortController.signal })
+    .then(response => response.ok ? response.json() : null)
+    .then(index => {
+      if (!index) return
+      const datasets = Array.isArray(index.datasets) ? index.datasets : []
+      speciesCount.value = datasets.reduce((total: number, dataset: { speciesCount?: number }) => total + (dataset.speciesCount ?? 0), 0)
+    })
+    .catch(() => {
+      // Keep the count unavailable when the static species index cannot be loaded.
+    })
 })
 
-onUnmounted(() => revealObserver?.disconnect())
+onUnmounted(() => {
+  revealObserver?.disconnect()
+  abortController.abort()
+})
+
+function trackGlow(event: MouseEvent) {
+  const card = event.currentTarget as HTMLElement
+  const rect = card.getBoundingClientRect()
+  card.style.setProperty('--mx', `${((event.clientX - rect.left) / rect.width) * 100}%`)
+  card.style.setProperty('--my', `${((event.clientY - rect.top) / rect.height) * 100}%`)
+}
+
+function clearGlow(event: MouseEvent) {
+  const card = event.currentTarget as HTMLElement
+  card.style.setProperty('--mx', '50%')
+  card.style.setProperty('--my', '50%')
+}
 </script>
 
 <style scoped>
@@ -225,470 +423,335 @@ onUnmounted(() => revealObserver?.disconnect())
   color: var(--text-primary);
   overflow: clip;
 }
-
 .home-hero {
-  position: relative;
-  isolation: isolate;
+  min-height: calc(100svh - 3.75rem);
+  min-height: calc(100dvh - 3.75rem);
+}
+.home-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 0.95fr);
-  align-items: center;
-  gap: clamp(1.5rem, 5vw, 5rem);
-  width: min(100% - 3rem, 84rem);
-  min-height: max(42rem, 100svh);
-  margin-inline: auto;
-  padding: clamp(7rem, 12vh, 9rem) 0 clamp(5rem, 8vh, 7rem);
+  grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
+  min-height: inherit;
 }
-.home-hero::before {
-  position: absolute;
-  z-index: -1;
-  inset: 8% -10% 3% 28%;
-  content: '';
-  background: radial-gradient(ellipse at 50% 46%, color-mix(in srgb, var(--primary) 13%, transparent), transparent 68%);
-  pointer-events: none;
-}
-.hero-copy { max-width: 42rem; }
-.eyebrow {
+.home-left {
   display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  margin: 0 0 1rem;
-  color: var(--text-secondary);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.13em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-.eyebrow-mark {
-  width: 0.55rem;
-  height: 0.55rem;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 0 0.28rem color-mix(in srgb, var(--success) 16%, transparent);
-}
-.home-hero h1 {
-  max-width: 12ch;
-  margin: 0;
-  font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(2.8rem, 6.4vw, 6rem);
-  font-weight: 900;
-  letter-spacing: -0.065em;
-  line-height: 0.99;
-  text-wrap: balance;
-}
-.title-period { color: var(--primary); }
-.hero-lede {
-  max-width: 38rem;
-  margin: clamp(1.2rem, 3vh, 1.8rem) 0 0;
-  color: var(--text-primary);
-  font-size: clamp(1rem, 1.45vw, 1.25rem);
-  font-weight: 600;
-  line-height: 1.65;
-  text-wrap: pretty;
-}
-.hero-context {
-  max-width: 34rem;
-  margin: 0.85rem 0 0;
-  color: var(--text-secondary);
-  font-size: 0.92rem;
-  line-height: 1.7;
-}
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.8rem;
-}
-.action-button {
-  display: inline-flex;
-  min-height: 3rem;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
-  padding: 0.65rem 0.9rem;
-  border: 1px solid var(--border-color);
-  border-radius: 0.7rem;
-  color: var(--text-primary);
-  font-size: 0.82rem;
-  font-weight: 800;
-  text-decoration: none;
-  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;
+  padding: clamp(2rem, 5vh, 5rem) clamp(1.5rem, 4vw, 4rem);
+  border-right: 1px solid var(--border-color);
 }
-.action-button:hover { transform: translateY(-2px); }
-.action-button--primary {
-  border-color: var(--primary);
-  background: var(--primary);
-  color: var(--primary-foreground);
+.home-left-inner { width: 100%; max-width: 28rem; }
+.home-logo {
+  display: block;
+  width: clamp(5.5rem, 10vw, 7.5rem);
+  height: clamp(5.5rem, 10vw, 7.5rem);
+  margin: 0 auto 1.5rem;
+  border-radius: 10px;
+  object-fit: contain;
 }
-.action-button--primary:hover { filter: brightness(1.06); }
-.action-button--quiet { background: var(--card); }
-.action-button--quiet:hover { border-color: var(--primary); background: var(--bg-secondary); }
-.action-arrow { width: 0.9rem; height: 0.9rem; margin-left: 0.15rem; opacity: 0.72; }
-
-.hero-art {
-  position: relative;
-  display: grid;
-  width: min(100%, 39rem);
-  aspect-ratio: 1;
-  place-items: center;
-  justify-self: end;
-  color: var(--primary);
+.home-title {
+  margin: 0;
+  font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
 }
-.orbit {
-  position: absolute;
-  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border-color));
-  border-radius: 50%;
-  pointer-events: none;
-}
-.orbit--outer { inset: 4%; border-style: dashed; opacity: 0.5; }
-.orbit--middle { inset: 15%; opacity: 0.72; }
-.orbit--inner { inset: 26%; border-color: color-mix(in srgb, var(--primary) 20%, transparent); }
-.hero-core {
-  display: grid;
-  width: 35%;
-  aspect-ratio: 1;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--primary) 48%, var(--border-color));
-  border-radius: 50%;
+.home-title-dot { color: var(--primary); }
+.glass-line {
+  display: inline;
+  padding: 0.08em 0.28em;
+  border: 1px solid color-mix(in srgb, var(--border-color) 48%, transparent);
+  border-radius: 0.35em;
   background: color-mix(in srgb, var(--card) 82%, transparent);
-  box-shadow: 0 1.5rem 5rem color-mix(in srgb, var(--primary) 18%, transparent), inset 0 0 2.5rem color-mix(in srgb, var(--primary) 9%, transparent);
-  animation: core-breathe 6s ease-in-out infinite;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--shadow-color) 40%, transparent), inset 0 1px 0 color-mix(in srgb, var(--text-primary) 5%, transparent);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
-.hero-logo { width: 56%; height: 56%; object-fit: contain; }
-.orbit-node {
-  position: absolute;
-  display: grid;
-  width: clamp(2.7rem, 5vw, 4rem);
-  aspect-ratio: 1;
-  place-items: center;
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
-  background: var(--card);
+.home-subtitle,
+.home-submore { line-height: 1.9; }
+.home-subtitle {
+  max-width: 26rem;
+  margin: 1rem 0 0;
   color: var(--text-primary);
-  box-shadow: var(--panel-shadow);
+  font-size: clamp(0.9rem, 1.3vw, 1.1rem);
+  font-weight: 700;
+  line-height: 1.5;
 }
-.orbit-node :deep(svg) { width: 42%; height: 42%; }
-.orbit-node--north { top: 12%; left: 49%; transform: translateX(-50%); }
-.orbit-node--east { top: 47%; right: 4%; }
-.orbit-node--south { bottom: 9%; left: 46%; }
-.orbit-node--west { top: 48%; left: 4%; }
-.hero-art-caption {
-  position: absolute;
-  right: 3%;
-  bottom: 23%;
+.home-submore {
+  max-width: 26rem;
+  margin: 0.6rem 0 0;
+  color: var(--text-secondary);
+  font-size: clamp(0.8rem, 1.1vw, 0.95rem);
+  line-height: 1.65;
+}
+.home-orgline { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+.home-orglink {
   display: inline-flex;
+  min-height: 44px;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 0.75rem;
+  gap: 0.3rem;
+  padding: 0.55rem 0.7rem;
   border: 1px solid var(--border-color);
-  border-radius: 999px;
-  background: var(--card);
-  color: var(--text-primary);
-  font-size: 0.66rem;
+  border-radius: 6px;
+  color: var(--primary);
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.04em;
-  box-shadow: var(--panel-shadow);
-}
-.caption-dot { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--success); }
-.hero-art-note {
-  position: absolute;
-  color: var(--text-muted);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.hero-art-note--one { top: 22%; left: 5%; }
-.hero-art-note--two { right: 7%; top: 20%; }
-.scroll-cue {
-  position: absolute;
-  bottom: 1.2rem;
-  left: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  color: var(--text-muted);
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
   text-decoration: none;
-  text-transform: uppercase;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
 }
-.scroll-cue :deep(svg) { width: 0.85rem; height: 0.85rem; color: var(--primary); }
-.scroll-cue:hover { color: var(--text-primary); }
+.home-orglink :deep(svg) { width: 0.9rem; height: 0.9rem; }
+.home-orglink:hover { border-color: var(--text-primary); background: var(--text-primary); color: var(--bg-primary); }
+.home-orglink--muted { color: var(--text-secondary); }
+.home-orglink--muted:hover { color: var(--bg-primary); }
+.home-divider { width: 3rem; height: 1px; margin: 2rem 0; background: var(--border-color); }
+.home-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 1.5rem; }
+.home-stat { display: flex; flex-direction: column; gap: 0.15rem; }
+.home-stat-value {
+  color: var(--text-primary);
+  font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+.home-stat-label { color: var(--text-muted); font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.home-right { display: flex; align-items: center; justify-content: center; padding: clamp(1rem, 2.5vh, 2.5rem) clamp(1rem, 2.5vw, 2rem); }
+.bento {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(9.6rem, auto);
+  gap: 0.75rem;
+}
+.bento-card {
+  --mx: 50%;
+  --my: 50%;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 91%, transparent);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--shadow-color) 35%, transparent), inset 0 1px 0 color-mix(in srgb, var(--text-primary) 4%, transparent);
+  backdrop-filter: blur(20px) saturate(1.35);
+  -webkit-backdrop-filter: blur(20px) saturate(1.35);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+.bento-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 12px 32px color-mix(in srgb, var(--shadow-color) 62%, transparent); }
+.bento-glow {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle 220px at var(--mx) var(--my), color-mix(in srgb, var(--accent) 28%, transparent), transparent 72%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms ease;
+}
+.bento-card:hover .bento-glow { opacity: 0.7; }
+.bento-accent {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.72;
+}
+.bento-body { position: relative; z-index: 1; display: flex; height: 100%; flex-direction: column; gap: 0.5rem; padding: 1rem; }
+.bento-tall { grid-row: span 2; }
+.bento-icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  margin: 0.1rem 0;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--card));
+  color: var(--accent);
+}
+.bento-icon :deep(svg) { width: 1.15rem; height: 1.15rem; }
+.bento-title { margin: 0; color: var(--text-primary); font-size: 0.95rem; font-weight: 850; line-height: 1.25; }
+.bento-desc {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.bento-kicker { margin: 0.1rem 0 0; color: var(--accent); font-size: 0.62rem; font-weight: 850; letter-spacing: 0.06em; text-transform: uppercase; }
+.bento-stats { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.25rem; }
+.bento-stat { display: flex; min-width: 0; flex-direction: column; gap: 0.08rem; }
+.bento-stat strong { color: var(--accent); font-size: 0.9rem; font-variant-numeric: tabular-nums; font-weight: 850; line-height: 1.2; }
+.bento-stat span { color: var(--text-muted); font-size: 0.55rem; font-weight: 750; letter-spacing: 0.05em; text-transform: uppercase; }
+.bento-links { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: auto; padding-top: 0.5rem; }
+.bento-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.64rem;
+  font-weight: 800;
+  line-height: 1.15;
+  text-decoration: none;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+.bento-link :deep(svg) { width: 0.9rem; height: 0.9rem; flex: 0 0 auto; }
+.bento-link:hover { transform: translateY(-1px); border-color: var(--accent); }
+.bento-link--primary { border-color: var(--accent); background: var(--accent); color: #fff; }
+.bento-link--primary:hover { background: color-mix(in srgb, var(--accent) 90%, #000); color: #fff; }
 
 .story-section,
 .pathways-section,
-.join-section {
-  width: min(100% - 3rem, 76rem);
-  margin-inline: auto;
-}
-.story-section {
-  padding: clamp(3.5rem, 8vw, 7rem) 0 clamp(4rem, 8vw, 7.5rem);
-  border-top: 1px solid var(--border-color);
-}
-.section-index {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  color: var(--text-muted);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-.section-index span:first-child {
-  display: grid;
-  width: 1.75rem;
-  aspect-ratio: 1;
-  place-items: center;
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
-  color: var(--primary);
-  letter-spacing: 0;
-}
-.story-split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.7fr);
-  align-items: start;
-  gap: clamp(2rem, 7vw, 7rem);
-  margin-top: 1.5rem;
-}
+.join-section { width: min(100% - 3rem, 76rem); margin-inline: auto; }
+.story-section { padding: clamp(3.5rem, 8vw, 7rem) 0 clamp(4rem, 8vw, 7.5rem); border-top: 1px solid var(--border-color); }
+.section-index { display: flex; align-items: center; gap: 0.7rem; color: var(--text-muted); font-size: 0.68rem; font-weight: 850; letter-spacing: 0.13em; text-transform: uppercase; }
+.section-index span:first-child { display: grid; width: 1.75rem; aspect-ratio: 1; place-items: center; border: 1px solid var(--border-color); border-radius: 50%; color: var(--primary); letter-spacing: 0; }
+.story-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.7fr); align-items: start; gap: clamp(2rem, 7vw, 7rem); margin-top: 1.5rem; }
 .story-split h2,
 .pathways-heading h2,
-.join-copy h2 {
-  margin: 0;
-  font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(1.8rem, 3.5vw, 3.4rem);
-  font-weight: 900;
-  letter-spacing: -0.055em;
-  line-height: 1.08;
-  text-wrap: balance;
-}
-.story-copy p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: clamp(0.95rem, 1.35vw, 1.1rem);
-  line-height: 1.8;
-}
-.text-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-top: 1.2rem;
-  color: var(--primary);
-  font-size: 0.82rem;
-  font-weight: 800;
-  text-decoration: none;
-}
+.join-copy h2 { margin: 0; font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif; font-size: clamp(1.8rem, 3.5vw, 3.4rem); font-weight: 900; letter-spacing: -0.055em; line-height: 1.08; text-wrap: balance; }
+.story-copy p { margin: 0; color: var(--text-secondary); font-size: clamp(0.95rem, 1.35vw, 1.1rem); line-height: 1.8; }
+.text-link { display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 1.2rem; color: var(--primary); font-size: 0.82rem; font-weight: 850; text-decoration: none; }
 .text-link :deep(svg) { width: 0.95rem; height: 0.95rem; }
 .text-link:hover { text-decoration: underline; text-underline-offset: 0.25em; }
-.story-principles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-  margin-top: clamp(2rem, 5vw, 3.5rem);
-  padding: 0;
-  list-style: none;
-}
-.story-principles li {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 2.65rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  background: var(--card);
-  color: var(--text-secondary);
-  font-size: 0.72rem;
-  font-weight: 750;
-}
+.story-principles { display: flex; flex-wrap: wrap; gap: 0.65rem; margin: clamp(2rem, 5vw, 3.5rem) 0 0; padding: 0; list-style: none; }
+.story-principles li { display: inline-flex; min-height: 2.65rem; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color); border-radius: 999px; background: var(--card); color: var(--text-secondary); font-size: 0.72rem; font-weight: 750; }
 .story-principles :deep(svg) { width: 0.95rem; height: 0.95rem; color: var(--primary); }
 
 .pathways-section { padding: clamp(3.5rem, 8vw, 7rem) 0; }
-.pathways-heading {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-}
-.pathways-heading .eyebrow { margin-bottom: 0.6rem; }
+.pathways-heading { display: flex; align-items: end; justify-content: space-between; gap: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); }
+.pathways-heading .eyebrow { margin: 0 0 0.6rem; }
+.eyebrow { display: flex; align-items: center; gap: 0.55rem; color: var(--text-secondary); font-size: 0.7rem; font-weight: 850; letter-spacing: 0.13em; line-height: 1.4; text-transform: uppercase; }
+.eyebrow-mark { width: 0.55rem; height: 0.55rem; flex: 0 0 auto; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 0.28rem color-mix(in srgb, var(--success) 16%, transparent); }
 .pathways-heading h2 { font-size: clamp(2rem, 4vw, 3.8rem); }
-.pathways-intro {
-  max-width: 26rem;
-  margin: 0 0 0.2rem;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  line-height: 1.7;
-}
-.pathway-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: clamp(1.5rem, 4vw, 4rem); }
+.pathways-intro { max-width: 26rem; margin: 0 0 0.2rem; color: var(--text-secondary); font-size: 0.85rem; line-height: 1.7; }
+.pathway-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.85rem; margin-top: 1.4rem; }
 .pathway-row {
-  display: grid;
-  grid-template-columns: 3rem minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 1rem;
-  min-height: 8.5rem;
-  padding: 1.15rem 0;
-  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  min-width: 0;
+  min-height: 15rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.15rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.9rem;
+  background: var(--card);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--shadow-color) 24%, transparent);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
-.pathway-icon {
-  display: grid;
-  width: 2.8rem;
-  aspect-ratio: 1;
-  place-items: center;
-  border-radius: 0.85rem;
-  background: var(--bg-secondary);
-  color: var(--primary);
-}
+.pathway-row:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--primary) 70%, var(--border-color)); box-shadow: 0 12px 24px color-mix(in srgb, var(--shadow-color) 26%, transparent); }
+.pathway-icon { display: grid; width: 2.8rem; flex: 0 0 auto; aspect-ratio: 1; place-items: center; border-radius: 0.85rem; background: var(--bg-secondary); color: var(--primary); }
 .pathway-icon :deep(svg) { width: 1.25rem; height: 1.25rem; }
 .pathway-icon--species { color: var(--success); }
 .pathway-icon--campaigns { color: var(--accent); }
 .pathway-icon--crews { color: var(--warning); }
 .pathway-icon--projects { color: #0d966b; }
-.pathway-icon--vulcan { color: #b7791f; }
-.pathway-copy h3 { margin: 0; font-size: 0.96rem; font-weight: 850; line-height: 1.3; }
+.pathway-icon--vulcan { color: #96600a; }
+.pathway-copy h3 { margin: 0; color: var(--text-primary); font-size: 0.96rem; font-weight: 850; line-height: 1.3; }
 .pathway-copy p { margin: 0.35rem 0 0; color: var(--text-secondary); font-size: 0.75rem; line-height: 1.55; }
-.pathway-actions { display: flex; align-items: center; gap: 0.4rem; }
+.pathway-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: auto; padding-top: 0.55rem; }
 .pathway-view-link {
   display: inline-flex;
-  min-height: 2.3rem;
+  min-height: 2.55rem;
   align-items: center;
   justify-content: center;
-  padding: 0.45rem 0.62rem;
+  padding: 0.5rem 0.7rem;
   border: 1px solid var(--border-color);
   border-radius: 999px;
-  background: var(--card);
-  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-size: 0.65rem;
-  font-weight: 800;
+  font-weight: 850;
   line-height: 1.1;
   text-decoration: none;
   white-space: nowrap;
   transition: color 160ms ease, background 160ms ease, border-color 160ms ease, transform 160ms ease;
 }
 .pathway-view-link:hover { transform: translateY(-1px); border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); }
-.pathway-link {
-  display: grid;
-  width: 2.5rem;
-  aspect-ratio: 1;
-  place-items: center;
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
-  color: var(--text-secondary);
-  transition: color 160ms ease, background 160ms ease, border-color 160ms ease, transform 160ms ease;
-}
+.pathway-link { display: grid; width: 2.65rem; min-height: 2.65rem; place-items: center; align-self: flex-end; margin-top: auto; border: 1px solid var(--border-color); border-radius: 50%; color: var(--text-primary); transition: color 160ms ease, background 160ms ease, border-color 160ms ease, transform 160ms ease; }
 .pathway-link :deep(svg) { width: 1rem; height: 1rem; }
 .pathway-link:hover { transform: translate(2px, -2px); border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); }
 
-.join-section {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: clamp(1rem, 3vw, 2.5rem);
-  margin-top: clamp(2rem, 5vw, 4rem);
-  margin-bottom: clamp(3rem, 7vw, 6rem);
-  padding: clamp(1.5rem, 4vw, 3rem);
-  border: 1px solid color-mix(in srgb, var(--primary) 55%, transparent);
-  border-radius: 1.2rem;
-  background: linear-gradient(115deg, color-mix(in srgb, var(--primary) 18%, var(--bg-secondary)), var(--card) 72%);
-}
-.join-mark {
-  display: grid;
-  width: clamp(3rem, 6vw, 4.5rem);
-  aspect-ratio: 1;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
+.join-section { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: clamp(1rem, 3vw, 2.5rem); margin-top: clamp(2rem, 5vw, 4rem); margin-bottom: clamp(3rem, 7vw, 6rem); padding: clamp(1.5rem, 4vw, 3rem); border: 1px solid color-mix(in srgb, var(--primary) 55%, var(--border-color)); border-radius: 1.2rem; background: linear-gradient(115deg, color-mix(in srgb, var(--primary) 14%, var(--bg-secondary)), var(--card) 72%); }
+.join-mark { display: grid; width: clamp(3rem, 6vw, 4.5rem); aspect-ratio: 1; place-items: center; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); }
 .join-mark :deep(svg) { width: 45%; height: 45%; }
-.join-copy .eyebrow { margin-bottom: 0.45rem; }
+.join-copy .eyebrow { margin: 0 0 0.45rem; }
 .join-copy h2 { font-size: clamp(1.5rem, 2.5vw, 2.2rem); }
 .join-copy > p:last-child { max-width: 34rem; margin: 0.45rem 0 0; color: var(--text-secondary); font-size: 0.82rem; line-height: 1.65; }
-.join-link {
-  display: inline-flex;
-  min-height: 2.8rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.65rem 0.9rem;
-  border-radius: 0.7rem;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  font-size: 0.78rem;
-  font-weight: 850;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: transform 160ms ease, filter 160ms ease;
-}
+.join-link { display: inline-flex; min-height: 2.8rem; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 0.9rem; border-radius: 0.7rem; background: var(--primary); color: var(--primary-foreground); font-size: 0.78rem; font-weight: 850; text-decoration: none; white-space: nowrap; transition: transform 160ms ease, filter 160ms ease; }
 .join-link:hover { transform: translateY(-2px); filter: brightness(1.08); }
 .join-link :deep(svg) { width: 0.95rem; height: 0.95rem; }
-
-.home-footer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 1.2rem 1.5rem calc(5.5rem + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--border-color);
-  text-align: center;
-}
+.home-footer { display: flex; flex-direction: column; align-items: center; gap: 0.65rem; padding: 1.2rem 1.5rem calc(5.5rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--border-color); text-align: center; }
 .home-footer-text { color: var(--text-muted); font-size: 0.62rem; font-weight: 750; letter-spacing: 0.07em; text-transform: uppercase; }
 .home-footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.35rem 1rem; }
-.home-footer-links a { color: var(--text-secondary); font-size: 0.72rem; font-weight: 650; text-decoration: none; }
+.home-footer-links a { color: var(--text-secondary); font-size: 0.72rem; font-weight: 700; text-decoration: none; }
 .home-footer-links a:hover { color: var(--text-primary); text-decoration: underline; text-underline-offset: 0.2em; }
 
 .reveal-ready [data-reveal] { opacity: 0; transform: translateY(1.25rem); transition: opacity 650ms ease, transform 650ms cubic-bezier(0.2, 0.7, 0.2, 1); }
 .reveal-ready [data-reveal].is-visible { opacity: 1; transform: translateY(0); }
-.hero-art[data-reveal] { transition-delay: 120ms; }
-@keyframes core-breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.035); }
-}
 
-@media (max-width: 850px) {
-  .home-hero {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    min-height: auto;
-    padding-top: 7rem;
-    padding-bottom: 5rem;
-  }
-  .hero-copy { max-width: 44rem; }
-  .hero-art { width: min(82vw, 30rem); justify-self: center; }
-  .scroll-cue { bottom: 1rem; }
-  .story-split { grid-template-columns: 1fr; gap: 1.2rem; }
-  .pathways-heading { align-items: start; flex-direction: column; gap: 0.85rem; }
+@media (max-width: 960px) {
+  .home-hero { min-height: auto; }
+  .home-layout { grid-template-columns: 1fr; }
+  .home-left { border-right: 0; border-bottom: 1px solid var(--border-color); padding: clamp(2rem, 5vh, 3rem) clamp(1.5rem, 4vw, 3rem); }
+  .home-right { padding: clamp(1rem, 2vh, 2rem) clamp(1rem, 2.5vw, 2rem); }
+  .home-left-inner { max-width: 42rem; }
+  .home-logo { margin-inline: 0; }
+  .pathways-heading { align-items: flex-start; flex-direction: column; gap: 0.85rem; }
+  .pathway-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (max-width: 620px) {
-  .home-hero,
+@media (max-width: 600px) {
+  .home-left { padding: 2rem 1rem; }
+  .home-logo { width: 5rem; height: 5rem; margin-bottom: 1.25rem; }
+  .home-title { font-size: clamp(2rem, 12vw, 3rem); }
+  .home-right { padding: 1rem; }
+  .bento { grid-template-columns: 1fr; gap: 0.6rem; }
+  .bento-tall { grid-row: span 1; }
+  .bento-card { min-height: 11rem; }
   .story-section,
   .pathways-section,
   .join-section { width: min(100% - 2rem, 76rem); }
-  .home-hero { padding-top: 6.4rem; padding-bottom: 4.5rem; }
-  .home-hero h1 { font-size: clamp(2.55rem, 12vw, 4.1rem); }
-  .hero-lede { font-size: 0.98rem; }
-  .hero-context { font-size: 0.83rem; }
-  .hero-art { width: min(92vw, 25rem); }
-  .hero-art-caption { right: 0; bottom: 20%; font-size: 0.58rem; }
-  .hero-art-note { font-size: 0.53rem; }
-  .hero-art-note--one { left: 0; }
-  .hero-art-note--two { right: 0; }
-  .scroll-cue { left: 0; }
+  .story-split { grid-template-columns: 1fr; gap: 1.2rem; }
   .pathway-list { grid-template-columns: 1fr; }
-  .pathway-row { min-height: 7.5rem; grid-template-columns: 2.7rem minmax(0, 1fr) auto; gap: 0.75rem; }
-  .pathway-icon { width: 2.55rem; }
+  .pathway-row { min-height: 12rem; }
   .join-section { grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 1rem; }
   .join-mark { width: 2.8rem; }
   .join-link { grid-column: 2; justify-self: start; }
 }
+@media (min-width: 1400px) {
+  .bento { gap: 1rem; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .hero-core { animation: none; }
-  .action-button, .pathway-link, .pathway-view-link, .join-link { transition: none; }
+  .bento-card,
+  .bento-glow,
+  .bento-link,
+  .home-orglink,
+  .pathway-row,
+  .pathway-link,
+  .pathway-view-link,
+  .join-link { transition: none; }
+  .bento-card:hover,
+  .pathway-row:hover,
+  .pathway-link:hover,
+  .pathway-view-link:hover,
+  .join-link:hover { transform: none; }
+  .bento-glow { display: none; }
   .reveal-ready [data-reveal] { opacity: 1; transform: none; transition: none; }
 }
 </style>

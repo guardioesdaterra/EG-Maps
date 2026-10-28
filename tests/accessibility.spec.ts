@@ -40,4 +40,24 @@ test.describe('keyboard accessibility', () => {
     await expect(languageButton).toBeFocused()
     await expect(languageButton).toHaveAttribute('aria-expanded', 'false')
   })
+
+  test('the bento hero stays outside scroll reveal while lower sections opt in', async ({ page }) => {
+    await page.goto('/')
+
+    const hero = page.locator('.home-hero')
+    await expect(hero).toBeVisible()
+    await expect(hero.locator('[data-reveal]')).toHaveCount(0)
+    await expect(page.locator('#home-story')).toHaveAttribute('data-reveal', '')
+    await expect(page.locator('.bento-card')).toHaveCount(6)
+  })
+
+  test('reduced motion leaves below-hero content visible without activating reveal', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('/')
+
+    const story = page.locator('#home-story')
+    await expect(story).toBeVisible()
+    await expect(story).toHaveCSS('opacity', '1')
+    await expect(page.locator('#main-content')).not.toHaveClass(/reveal-ready/)
+  })
 })

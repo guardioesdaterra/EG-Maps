@@ -11,7 +11,7 @@ export function useDarkMode() {
   const ui = useUiStore()
   return {
     isDark: ui.isDark,
-    isInitialized: ui.isDarkInitialized,
+    init: ui.initDarkMode,
     toggle: ui.toggleDarkMode,
     set: ui.setDarkMode,
   }

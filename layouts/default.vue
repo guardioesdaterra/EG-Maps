@@ -203,6 +203,7 @@ function updateDockFromHash() {
 }
 
 onMounted(() => {
+  initDarkMode()
   document.addEventListener('click', handleClickOutside)
   updateDockFromHash()
   window.addEventListener('hashchange', updateDockFromHash)
@@ -234,7 +235,7 @@ const headerItems: NavItem[] = [
   { path: '/info', labelKey: 'nav.info', icon: 'lucide:info', variant: 'cyan' },
 ]
 
-const { isDark, toggle: toggleDarkMode } = useDarkMode()
+const { isDark, init: initDarkMode, toggle: toggleDarkMode } = useDarkMode()
 const { showImportModal } = useCustomData()
 const tileProvider = useMapTileProvider()
 

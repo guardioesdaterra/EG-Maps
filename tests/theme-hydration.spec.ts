@@ -27,7 +27,9 @@ test('saved light theme is applied without Vue hydration mismatch warnings', asy
 })
 
 test('theme toggle is available on routes without a shared page topbar', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('darkMode', 'false'))
+  await page.addInitScript(() => {
+    if (window.top === window) localStorage.setItem('darkMode', 'false')
+  })
 
   for (const route of ['/', '/info', '/privacy', '/terms', '/iframe', '/iframe/squarespace']) {
     const response = await page.goto(route, { waitUntil: 'domcontentloaded' })

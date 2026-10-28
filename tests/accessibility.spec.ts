@@ -18,9 +18,10 @@ test.describe('keyboard accessibility', () => {
     await page.goto('/')
     await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {})
 
-    const speciesCardLink = page.locator('a.bento-link[href="/endangered-species"]')
-    await expect(speciesCardLink).toContainText('Endangered Species')
-    await expect(page.getByRole('link', { name: 'Project Grants' })).toBeVisible()
+    const speciesMapLink = page.getByTestId('home-species-2d')
+    await expect(speciesMapLink).toHaveAttribute('href', '/endangered-species')
+    await expect(speciesMapLink).toHaveAccessibleName(/Endangered Species/)
+    await expect(page.getByTestId('home-project-grants-2d')).toBeVisible()
     const languageButton = page.getByRole('button', { name: 'Language' })
     await expect(languageButton).toHaveAttribute('aria-expanded', 'false')
 

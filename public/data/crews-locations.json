@@ -250,7 +250,7 @@
         "city": "Monterrey",
         "state": "",
         "region": "North America",
-        "status": "active"
+        "status": "inactive"
       }
     },
     {
@@ -268,7 +268,7 @@
         "city": "Cuernavaca",
         "state": "",
         "region": "North America",
-        "status": "active"
+        "status": "inactive"
       }
     },
     {
@@ -376,7 +376,7 @@
         "city": "Santa Fe",
         "state": "NM",
         "region": "North America",
-        "status": "inactive"
+        "status": "active"
       }
     },
     {
@@ -2591,6 +2591,1006 @@
         "state": "Uttar pradesh",
         "region": "South Asia",
         "status": "inactive"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.607716,
+          38.7251776
+        ]
+      },
+      "properties": {
+        "name": "EG Colorado",
+        "country": "USA",
+        "city": "",
+        "state": "Colorado",
+        "region": "North America",
+        "status": "active",
+        "geocoding": {
+          "precision": "approximate_region",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Colorado%2C+USA&format=jsonv2&limit=1&addressdetails=1&featuretype=state",
+          "matchedPlace": "Colorado, United States",
+          "matchedPlaceType": "state",
+          "osmObject": {
+            "type": "relation",
+            "id": 161961
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "North & Cent America",
+            "row": 6,
+            "Crew Name": "EG Colorado",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country from the USA section heading at row 3; state inferred from the crew name."
+          },
+          "precisionNote": "State-level representative point only; the spreadsheet contains no city or street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.755997,
+          36.7014631
+        ]
+      },
+      "properties": {
+        "name": "EG California",
+        "country": "USA",
+        "city": "",
+        "state": "California",
+        "region": "North America",
+        "status": "active",
+        "geocoding": {
+          "precision": "approximate_region",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=California%2C+USA&format=jsonv2&limit=1&addressdetails=1&featuretype=state",
+          "matchedPlace": "California, United States",
+          "matchedPlaceType": "state",
+          "osmObject": {
+            "type": "relation",
+            "id": 165475
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "North & Cent America",
+            "row": 7,
+            "Crew Name": "EG California",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country from the USA section heading at row 3; state inferred from the crew name."
+          },
+          "precisionNote": "State-level representative point only; the spreadsheet contains no city or street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.9760751,
+          36.8496579
+        ]
+      },
+      "properties": {
+        "name": "EG Hampton Roads",
+        "country": "USA",
+        "city": "Virginia Beach",
+        "state": "Virginia",
+        "region": "North America",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Virginia+Beach%2C+Virginia%2C+USA&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Virginia Beach, Virginia, United States",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 206670
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "North & Cent America",
+            "row": 15,
+            "Crew Name": "Hampton Roads",
+            "Country": "USA",
+            "State/Province": "Virginia",
+            "City": "Virginia Beach",
+            "locationInference": "Country, state and city are populated in the spreadsheet."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.2421403,
+          34.9940654
+        ]
+      },
+      "properties": {
+        "name": "EG SEED (Students for Environmental Education and Defense)",
+        "country": "USA",
+        "city": "York",
+        "state": "South Carolina",
+        "region": "North America",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?city=York&state=South+Carolina&country=USA&format=jsonv2&limit=3&addressdetails=1",
+          "matchedPlace": "York, York County, South Carolina, United States",
+          "matchedPlaceType": "town",
+          "osmObject": {
+            "type": "relation",
+            "id": 194079
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "North & Cent America",
+            "row": 16,
+            "Crew Name": "SEED (Students for Environmental Education and Defense)",
+            "Country": "USA",
+            "State/Province": "SC",
+            "City": "York",
+            "locationInference": "Country and city are populated; SC was expanded to South Carolina. Selected the York town result, not the county result."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -85.1091173,
+          34.91591
+        ]
+      },
+      "properties": {
+        "name": "EG Ringgold Environmental Club",
+        "country": "USA",
+        "city": "Ringgold",
+        "state": "Georgia",
+        "region": "North America",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Ringgold%2C+Georgia%2C+USA&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Ringgold, Catoosa County, Georgia, United States",
+          "matchedPlaceType": "village",
+          "osmObject": {
+            "type": "relation",
+            "id": 119549
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "North & Cent America",
+            "row": 17,
+            "Crew Name": "Ringgold Environmental Club",
+            "Country": "USA",
+            "State/Province": "GA",
+            "City": "Ringgold",
+            "locationInference": "Country, state abbreviation GA and city are populated; GA was expanded to Georgia."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.6390989,
+          35.7803977
+        ]
+      },
+      "properties": {
+        "name": "EG Raleigh",
+        "country": "USA",
+        "city": "Raleigh",
+        "state": "North Carolina",
+        "region": "North America",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Raleigh%2C+USA&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Raleigh, Wake County, North Carolina, United States",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 179052
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "North & Cent America",
+            "row": 31,
+            "Crew Name": "Raleigh",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country from the USA section heading at row 28; city inferred from the crew name. North Carolina is the matching locality returned by Nominatim."
+          },
+          "precisionNote": "City-level point; location was inferred from the name and USA section, not from address fields."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          69.2787079,
+          41.3123363
+        ]
+      },
+      "properties": {
+        "name": "EG Ecoeducation.uz",
+        "country": "Uzbekistan",
+        "city": "Tashkent",
+        "state": "Tashkent",
+        "region": "Europe",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Tashkent%2C+Uzbekistan&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Toshkent, 100000, Oʻzbekiston",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 2216724
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Europe",
+            "row": 20,
+            "Crew Name": "Ecoeducation.uz",
+            "Country": "Uzbekistan",
+            "State/Province": "Tashkent",
+            "City": "Tashkent",
+            "locationInference": "Country, state and city are populated in the spreadsheet."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2315915,
+          4.1567895
+        ]
+      },
+      "properties": {
+        "name": "EG Cameroon",
+        "country": "Cameroon",
+        "city": "Buea",
+        "state": "South West",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Buea%2C+Cameroon&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Buea, Fako, Southwest, Cameroun",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 3834929
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 13,
+            "Crew Name": "Cameroon",
+            "Country": null,
+            "State/Province": "Buea",
+            "City": null,
+            "locationInference": "Country inferred from the CAMEROON section heading at row 12; the spreadsheet puts Buea in State/Province and leaves City blank, so Buea was treated as the city."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.1140089,
+          -1.9534357
+        ]
+      },
+      "properties": {
+        "name": "EG Kigali",
+        "country": "Rwanda",
+        "city": "Kigali",
+        "state": "Kigali",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Kigali%2C+Rwanda&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "City of Kigali, Rwanda",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 1708283
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 46,
+            "Crew Name": "Kigali",
+            "Country": "Rwanda",
+            "State/Province": "Kigali",
+            "City": "Kigali",
+            "locationInference": "Country, state and city are populated in the spreadsheet."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.1140089,
+          -1.9534357
+        ]
+      },
+      "properties": {
+        "name": "EG Impact",
+        "country": "Rwanda",
+        "city": "Kigali",
+        "state": "Kigali",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Kigali%2C+Rwanda&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "City of Kigali, Rwanda",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 1708283
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 47,
+            "Crew Name": "Impact",
+            "Country": "Rwanda",
+            "State/Province": "Kigali",
+            "City": null,
+            "locationInference": "Country and State/Province=Kigali are populated; City is blank, so Kigali from the state field was used as the city-level anchor."
+          },
+          "precisionNote": "City-level point derived from State/Province=Kigali because City is blank."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.085695,
+          0.1723828
+        ]
+      },
+      "properties": {
+        "name": "EG SAUF Conservation",
+        "country": "Uganda",
+        "city": "Kasese",
+        "state": "Western Uganda",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Kasese%2C+Western+Region%2C+Uganda&format=jsonv2&limit=5&addressdetails=1",
+          "matchedPlace": "Kasese, Western Region, Uganda",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 2685125666
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 57,
+            "Crew Name": "SAUF Conservation",
+            "Country": "Uganda",
+            "State/Province": "Western Uganda",
+            "City": "Kasese",
+            "locationInference": "Country, state and city are populated; selected the city match, not the separate district/region result."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -13.26795,
+          8.479004
+        ]
+      },
+      "properties": {
+        "name": "EG Canopy AI Vanguard",
+        "country": "Sierra Leone",
+        "city": "Freetown",
+        "state": "Central urban-rural",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Freetown%2C+Sierra+Leone&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Freetown, Western Area Urban, Western Area, Sierra Leone",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "node",
+            "id": 27565056
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 64,
+            "Crew Name": "Canopy AI Vanguard",
+            "Country": "Sierra Leone",
+            "State/Province": "Central urban-rural",
+            "City": "Freetown",
+            "locationInference": "Country, State/Province and City are populated; the coordinate uses the Freetown city result."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.5589884,
+          -14.5189121
+        ]
+      },
+      "properties": {
+        "name": "EG Zambia",
+        "country": "Zambia",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Zambia&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Zambia",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 195271
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 71,
+            "Crew Name": "Zambia",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name and Zambia section heading; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.1535811,
+          4.6125522
+        ]
+      },
+      "properties": {
+        "name": "EG Girls for Climate Action",
+        "country": "Cameroon",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Cameroon&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Cameroun",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 192830
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 85,
+            "Crew Name": "Girls for Climate Action",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country from the CAMEROON subsection heading at row 84; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -4.2961436,
+          11.1765796
+        ]
+      },
+      "properties": {
+        "name": "EG Bindougousso",
+        "country": "Burkina Faso",
+        "city": "Bobo-Dioulasso",
+        "state": "Hauts-Bassins",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "approximate_region",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Bobo-Dioulasso%2C+Burkina+Faso&format=jsonv2&limit=3&addressdetails=1",
+          "matchedPlace": "Bobo-Dioulasso, Houet, Hauts-Bassins, Burkina Faso",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 257506849
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 87,
+            "Crew Name": "Bindougousso",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country from the BURKINA FASO subsection heading at row 86; the crew name is Bindougousso. Nominatim found the name on a market/POI within Bobo-Dioulasso, so the parent-city point is used instead."
+          },
+          "precisionNote": "Approximate parent-city point (Bobo-Dioulasso), not the market/POI returned for Bindougousso."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.2675469,
+          26.2540493
+        ]
+      },
+      "properties": {
+        "name": "EG EGYPT R.",
+        "country": "Egypt",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Egypt&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "مصر",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 1473947
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 92,
+            "Crew Name": "EGYPT R.",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name EGYPT R.; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -15.4900464,
+          13.470062
+        ]
+      },
+      "properties": {
+        "name": "EG GAMBIA",
+        "country": "Gambia",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Gambia&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Gambia",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 192774
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 93,
+            "Crew Name": "GAMBIA",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name GAMBIA; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.0800271,
+          8.0300284
+        ]
+      },
+      "properties": {
+        "name": "EG GHANA",
+        "country": "Ghana",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Ghana&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Ghana",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 192781
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 94,
+            "Crew Name": "GHANA",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name GHANA; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.3350193,
+          -29.6039267
+        ]
+      },
+      "properties": {
+        "name": "EG LESOTHO A.",
+        "country": "Lesotho",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Lesotho&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Lesotho",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 2093234
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 110,
+            "Crew Name": "LESOTHO A.",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name LESOTHO A.; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4416422,
+          -18.9249604
+        ]
+      },
+      "properties": {
+        "name": "EG MADAGASCAR",
+        "country": "Madagascar",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Madagascar&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Madagasikara / Madagascar",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 447325
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 111,
+            "Crew Name": "MADAGASCAR",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name MADAGASCAR; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.9301963,
+          -13.2687204
+        ]
+      },
+      "properties": {
+        "name": "EG MALAWI A.",
+        "country": "Malawi",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Malawi&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Malawi",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 195290
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 112,
+            "Crew Name": "MALAWI A.",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name MALAWI A.; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.0199765,
+          8.7800265
+        ]
+      },
+      "properties": {
+        "name": "EG Togo",
+        "country": "Togo",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Togo&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Togo",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 192782
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, French Crews",
+            "row": 49,
+            "Crew Name": "Togo",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Crew name and Togo subsection identify the country; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.215829,
+          6.130419
+        ]
+      },
+      "properties": {
+        "name": "EG Climate Elite",
+        "country": "Togo",
+        "city": "Lomé",
+        "state": "Region Maritime",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Lom%C3%A9%2C+Togo&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Lomé, Région Maritime, Togo",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 6607308
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, French Crews",
+            "row": 57,
+            "Crew Name": "Climate Elite",
+            "Country": "Togo",
+            "State/Province": "Region Maritime",
+            "City": "LOME",
+            "locationInference": "Country, region and city are populated; LOME was normalized to Lomé."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          64.1818037,
+          39.740839
+        ]
+      },
+      "properties": {
+        "name": "EG Phoenix",
+        "country": "Uzbekistan",
+        "city": "Jondor",
+        "state": "Bukhara",
+        "region": "South Asia",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Jondor%2C+Bukhara%2C+Uzbekistan&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Jondor, Jondor tumani, Buxoro Viloyati, 200600, Oʻzbekiston",
+          "matchedPlaceType": "town",
+          "osmObject": {
+            "type": "way",
+            "id": 45589943
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "South Asia",
+            "row": 29,
+            "Crew Name": "Phoenix",
+            "Country": "Uzbekistan",
+            "State/Province": "Bukhara",
+            "City": "Jondor",
+            "locationInference": "Country, state and city are populated in the spreadsheet; Nominatim classifies Jondor as a town."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.8545071,
+          18.5213738
+        ]
+      },
+      "properties": {
+        "name": "EG Pune",
+        "country": "India",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "region": "South Asia",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Pune%2C+India&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Pune, Pune City Subdistrict, Pune, Maharashtra, 411001, India",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "node",
+            "id": 16174445
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "South Asia",
+            "row": 34,
+            "Crew Name": "Pune",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Only the crew name Pune is present; the South Asia tab plus the unique Pune, India geocoder match support this city-level inference. State Maharashtra is from the geocoder result."
+          },
+          "precisionNote": "City-level point inferred from the crew name and South Asia context; no City/Country column values are supplied."
+        }
       }
     }
   ]

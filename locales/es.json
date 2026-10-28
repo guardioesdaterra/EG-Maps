@@ -11,7 +11,9 @@
     "joinEarthGuardians": "Unirse a Earth Guardians",
     "switchToLight": "Cambiar a modo claro",
     "switchToDark": "Cambiar a modo oscuro",
-    "language": "Idioma"
+    "language": "Idioma",
+    "privacy": "Privacidad",
+    "terms": "Términos"
   },
   "home": {
     "title": "Earth Guardians",
@@ -30,7 +32,7 @@
     "crewsCount": "Equipos",
     "projectsCount": "Proyectos",
     "beneficiariesCount": "Beneficiarios",
-    "speciesCount": "Especies",
+    "speciesCount": "Especies en peligro",
     "groupsCount": "Grupos",
     "allValue": "Todos",
     "activeCrewsCount": "Equipos Activos",
@@ -94,13 +96,15 @@
     "skillBuilding": "Desarrollo de habilidades",
     "joinGlobal": "Únete a la red global",
     "youthLed": "Acción liderada por jóvenes",
-    "observatoryOfVulcan": "Observatorio Vulcan"
+    "observatoryOfVulcan": "Observatorio Vulcan",
+    "sections": "Secciones"
   },
   "mapControls": {
     "search": "Buscar",
     "searchProjects": "Buscar proyectos",
     "searchSpecies": "Buscar especies",
     "searchCrews": "Buscar Equipes",
+    "searchCities": "Buscar ciudades",
     "searchPlaceholder": "Buscar por nombre o ubicación...",
     "searchSpeciesPlaceholder": "Buscar por nombre o región...",
     "showAll": "Mostrar todo",
@@ -123,7 +127,48 @@
     "of": "de",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "o abre la lista para ver todo",
-    "searchResults": "Resultados de búsqueda"
+    "searchResults": "Resultados de búsqueda",
+    "nearby": "Cerca",
+    "nearbyLabel": "Encuentra equipos, proyectos y campañas cercanos",
+    "offlineCachedData": "Modo sin conexión — los datos almacenados en caché siguen disponibles",
+    "nearbyPanel": {
+      "eyebrow": "Explora lo cercano",
+      "title": "Encuentra acciones cerca de ti",
+      "consentTitle": "¿Usar tu ubicación?",
+      "consentDescription": "Usamos tu ubicación solo en este navegador para ordenar equipos y proyectos cercanos. No se envía a Earth Guardians ni se almacena en esta aplicación.",
+      "consentLabel": "Acepto compartir mi ubicación aproximada con este mapa durante esta sesión.",
+      "locating": "Localizando…",
+      "findAction": "Buscar acciones cercanas",
+      "locationError": "No se concedió el permiso de ubicación. Puedes activarlo en la configuración de tu navegador e intentarlo de nuevo.",
+      "locationActive": "Ubicación activa · solo aproximada",
+      "clearLocation": "Borrar ubicación actual",
+      "categories": "Categorías cercanas",
+      "crews": "Equipos",
+      "projects": "Proyectos",
+      "campaigns": "Campañas",
+      "noCrews": "Aún no hay ubicaciones de equipos con coordenadas disponibles.",
+      "noProjects": "Aún no hay ubicaciones de proyectos disponibles.",
+      "biodiversity": "Especies en peligro",
+      "biodiversityDesc": "Acción global por la biodiversidad y los hábitats.",
+      "chooseAction": "Elige la acción ahora",
+      "chooseActionDesc": "Justicia climática y acción directa lideradas por jóvenes.",
+      "solutions": "Soluciones sostenibles",
+      "solutionsDesc": "Soluciones comunitarias para los residuos y la resiliencia."
+    },
+    "imported": "Importado",
+    "populationUnit": "habitantes",
+    "clusterPanel": {
+      "title": "Resultados agrupados",
+      "count": "Resultados agrupados: {count}",
+      "copyLink": "Copiar enlace del grupo",
+      "linkCopied": "Enlace del grupo copiado",
+      "close": "Cerrar resultados agrupados",
+      "searchLabel": "Buscar en los resultados agrupados",
+      "searchPlaceholder": "Buscar en este grupo…",
+      "visibleResults": "{count} resultados agrupados visibles",
+      "empty": "Ningún resultado coincide con esta búsqueda.",
+      "activeCrewsSubtitle": "{crews} cuadrillas activas · {countries} países"
+    }
   },
   "mapTiles": {
     "maptiler": "Satélite",
@@ -204,7 +249,9 @@
     "switchTo2D": "Cambiar a mapa 2D",
     "switchTo3D": "Cambiar a globo 3D",
     "view2D": "Mapa 2D",
-    "view3D": "Globo 3D"
+    "view3D": "Globo 3D",
+    "reloadPage": "Recargar página",
+    "allSpeciesLoaded": "Todos los datos de especies cargados"
   },
   "project": {
     "directBeneficiaries": "Beneficiarios directos",
@@ -270,7 +317,10 @@
       "illegal": "Ilegal",
       "env": "Riesgo Amb.",
       "network": "Red",
-      "timeline": "Cronología"
+      "timeline": "Cronología",
+      "power": "Poder",
+      "territory": "Territorio",
+      "culture": "Cultura"
     },
     "dangerPanel": {
       "title": "Empresas más peligrosas",
@@ -312,7 +362,11 @@
       "chinaBanTitle": "Prohibición de exportación de China (oct 2025)",
       "chinaBanBody": "China prohibió la exportación de 12/17 elementos REE a EE.UU. El 78% de las armas de EE.UU. dependen de REE chinos. Mandato DFARS 2027: los contratistas de defensa de EE.UU. deben obtener REE fuera de China.",
       "title": "title",
-      "empty": "empty"
+      "empty": "empty",
+      "liveTitle": "En vivo: esta región",
+      "liveClaims": "reclamos críticos",
+      "liveArea": "área crítica",
+      "liveUs": "Conectado con EE. UU."
     },
     "illegal": {
       "landSpec": "Especulación de tierras",
@@ -406,7 +460,10 @@
       "heatmap": "Mapa de calor de densidad",
       "cultural": "Cultural & Comunidad",
       "waterBodies": "Cuerpos de agua",
-      "protectedAreas": "Áreas protegidas"
+      "protectedAreas": "Áreas protegidas",
+      "statusTitle": "Estado de la capa",
+      "statusFailed": "fallida",
+      "foreignHeld": "Reclamos en manos extranjeras"
     },
     "culturalLayers": {
       "filterTitle": "Filtros Culturales",
@@ -697,7 +754,13 @@
         "unnamed": "Entrada sin nombre",
         "unknownSource": "Desconocida",
         "pagePrev": "Página anterior",
-        "pageNext": "Página siguiente"
+        "pageNext": "Página siguiente",
+        "families": "Familias de marcadores",
+        "familyAgents": "Agentes culturales",
+        "familySpaces": "Espacios culturales",
+        "familyIndigenous": "Pueblos indígenas y originarios",
+        "sortFamily": "Familia",
+        "clearFilters": "Borrar"
       },
       "community": {
         "eyebrow": "Un observatorio vivo",
@@ -713,13 +776,71 @@
         "methodologyText": "Los datos provienen de registros públicos y fuentes comunitarias. Tómalos como una invitación a investigar, no como un sustituto del consentimiento comunitario ni de una determinación legal.",
         "monitor": "Abrir Monitoreo de Campo",
         "sources": "Ver fuentes de datos"
+      },
+      "tabs": {
+        "label": "Inteligencia del observatorio",
+        "territory": "Territorio",
+        "culture": "Cultura",
+        "power": "Poderes",
+        "timeline": "Cronología"
       }
     },
     "error": {
       "loadFailed": "Error al cargar los datos del observatorio",
       "retry": "Reintentar"
     },
-    "clearSearch": "Borrar búsqueda"
+    "clearSearch": "Borrar búsqueda",
+    "territory": {
+      "headline": "Reclamos sobre el terreno",
+      "claims": "reclamos",
+      "boundaries": "límites",
+      "area": "área de reclamos",
+      "withOverlaps": "con superposiciones",
+      "synced": "Sincronización ANM",
+      "noBoundaries": "No se cargaron los límites de los reclamos: solo hay puntos. Consulta el estado de las capas a continuación.",
+      "bySubstance": "Reclamos por sustancia",
+      "overlapsTitle": "Superposiciones entre minería y territorio",
+      "noOverlaps": "No se registraron superposiciones territoriales para los reclamos cargados.",
+      "overlappedBy": "{count} reclamos superpuestos",
+      "overlappingClaims": "reclamos superpuestos",
+      "protectedTitle": "Territorios protegidos",
+      "source": "Fuente",
+      "noProtected": "No hay territorios protegidos en el conjunto de datos cargado.",
+      "watersTitle": "Aguas bajo presión",
+      "noWaters": "Aún no se han evaluado aguas con nombre: la capa de agua sigue cargándose.",
+      "watersLegend": "Los reclamos dentro de 2 km ejercen presión directa (descenso del nivel, escorrentía); dentro de 5 km comparten acuífero o subcuenca.",
+      "pressure": "PRESIÓN",
+      "watch": "VIGILANCIA",
+      "claims2km": "reclamos ≤2 km",
+      "claims5km": "reclamos ≤5 km",
+      "flyToWater": "Ir a {name}",
+      "dossierDownload": "Exportar expediente de evidencias",
+      "dossierCopy": "Copiar expediente",
+      "dossierCopied": "¡Copiado!",
+      "searchPlaceholder": "Buscar reclamos, titulares, procesos…",
+      "sobDemanda": "Solo Sob Demanda",
+      "filtersActive": "{count} filtros activos",
+      "pinTitle": "Vigilar: tu ubicación",
+      "pinBody": "{count} reclamos en un radio de 10 km de {label}.",
+      "pinNearest": "Más cercano: {processo} · {holder} · {km} km"
+    },
+    "claimIntel": {
+      "holderTitle": "Historial del titular",
+      "claims": "reclamos",
+      "territoryTitle": "Superposiciones territoriales"
+    },
+    "power": {
+      "noData": "El análisis profundo aún no se ha cargado.",
+      "militaryTitle": "Huella crítica para el ámbito militar",
+      "criticalClaims": "reclamos críticos",
+      "criticalArea": "área crítica",
+      "usConnected": "Conectado con EE. UU.",
+      "foreignTitle": "Participación de capital extranjero",
+      "sigiloTitle": "Reclamos bajo secreto (sigilo)",
+      "sigiloBody": "{total} reclamos bajo secreto ({pct}%) que cubren {area} ha: titulares y sustancias ocultos.",
+      "topTitle": "Principales titulares sospechosos",
+      "claims": "reclamos"
+    }
   },
   "loading": {
     "projectGrantsMap": "Cargando mapa de subvenciones",
@@ -963,7 +1084,30 @@
     "joinCrew": "Inicia o únete a un equipo",
     "moreTitle": "Sesiones desde 2023",
     "moreDesc": "Redacción de solicitudes, preparación para la COP, visualización de datos, justicia climática y más. Síguenos para destacados, clips y próximas fechas.",
-    "viewOnInstagram": "Ver en Instagram"
+    "viewOnInstagram": "Ver en Instagram",
+    "flyer": "Folleto",
+    "series2025Title": "Serie global de masterclasses · temporada 2025",
+    "series2025Desc": "Cinco sesiones de la temporada 2025: empatía, liderazgo de voluntariado, voluntariado en acción, gobernanza de la biodiversidad y herramientas digitales. Grabaciones, presentaciones y folletos a continuación.",
+    "gm5Date": "2025",
+    "gm5Title": "Fundamentos de Google Workspace: dominio de Gmail, Docs, Sheets, Drive y Calendar",
+    "gm5Speaker": "con Emmy Scott · organizada por Moudjiba",
+    "gm5Desc": "Recorrido práctico por las herramientas esenciales de Google Workspace para el trabajo de los equipos —Gmail, Docs, Sheets, Drive y Calendar— con preguntas y respuestas en directo.",
+    "gm4Date": "28 de septiembre de 2025",
+    "gm4Title": "Río, el CDB y más allá: una masterclass sobre gobernanza mundial de la biodiversidad",
+    "gm4Speaker": "con GYBN USA · organizada por Moudjiba",
+    "gm4Desc": "Cómo funciona la gobernanza mundial de la biodiversidad —desde la Cumbre de la Tierra de Río hasta el Convenio sobre la Diversidad Biológica y más allá— con preguntas y respuestas en directo.",
+    "gm3Date": "13 de julio de 2025",
+    "gm3Title": "Voluntariado y cambio social: cómo usar tu tiempo y tus talentos para marcar la diferencia en el mundo",
+    "gm3Speaker": "con Meg Ferrigno — directora de la junta de EG, fundadora de Pureland Project y Moonpads · organizada por Moudjiba",
+    "gm3Desc": "Cómo usar tu tiempo y tus talentos para marcar la diferencia —el voluntariado como motor del cambio social— con preguntas y respuestas en directo.",
+    "gm2Date": "2025",
+    "gm2Title": "Liderar y gestionar un equipo de voluntarios",
+    "gm2Speaker": "con la Sra. Rejoice A. Sosu-Ketek",
+    "gm2Desc": "No hay dos voluntarios iguales: cómo formar un equipo sólido, afrontar los retos de gestionar voluntarios y liderar con los enfoques y valores adecuados.",
+    "gm1Date": "2025",
+    "gm1Title": "Descubre conexiones más profundas: domina el arte de la empatía",
+    "gm1Speaker": "con Louka",
+    "gm1Desc": "Domina el arte de la empatía para crear conexiones más profundas en tu comunidad y en el trabajo de tu equipo."
   },
   "a11y": {
     "skipToContent": "Saltar al contenido principal"

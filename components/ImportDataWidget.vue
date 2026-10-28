@@ -8,19 +8,22 @@
     <div class="absolute bottom-4 right-4 z-[900] min-w-[200px] max-w-[280px]" :style="{ bottom: '5rem' }">
       <CustomLayerPanel />
     </div>
-    <div v-if="selectedCustomFeature" ref="popupOverlayRef" class="custom-popup-overlay-fixed" role="dialog" aria-modal="true" tabindex="0" @click.self="selectFeature(null)" @keydown.esc="selectFeature(null)">
-      <div class="custom-popup-content">
-        <button class="custom-popup-close-btn" @click="selectFeature(null)" aria-label="Close">
+    <div v-if="selectedCustomFeature" ref="popupOverlayRef" class="custom-popup-overlay-fixed" role="dialog" aria-modal="true" aria-labelledby="custom-feature-title" @click.self="selectFeature(null)" @keydown.esc="selectFeature(null)">
+      <div ref="popupContentRef" class="custom-popup-content" tabindex="-1">
+        <button type="button" class="custom-popup-close-btn" @click="selectFeature(null)" :aria-label="t('general.close')">
           <Icon name="lucide:x" class="h-5 w-5" />
         </button>
         <img v-if="featureImage" :src="featureImage" :alt="featureTitle" class="mb-3 w-full rounded-lg object-cover" style="max-height: 200px" @error="onImageError">
-        <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ featureTitle }}</h3>
+        <h2 id="custom-feature-title" class="text-lg font-semibold text-[var(--text-primary)]">{{ featureTitle }}</h2>
         <p v-if="featureDesc" class="mt-1 text-sm text-[var(--text-secondary)]">{{ featureDesc }}</p>
         <table v-if="featureProps.length > 0" class="mt-3 w-full text-sm">
-          <tr v-for="[key, val] in featureProps" :key="key" class="border-t border-[var(--border)]">
-            <td class="py-1 pr-2 font-medium text-[var(--text-secondary)]">{{ key }}</td>
-            <td class="py-1 text-[var(--text-primary)]">{{ val }}</td>
-          </tr>
+          <caption class="sr-only">{{ featureTitle }}</caption>
+          <tbody>
+            <tr v-for="[key, val] in featureProps" :key="key" class="border-t border-[var(--border)]">
+              <th scope="row" class="py-1 pr-2 text-left font-medium text-[var(--text-secondary)]">{{ key }}</th>
+              <td class="py-1 text-[var(--text-primary)]">{{ val }}</td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -28,18 +31,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useCustomData } from '~/composables/useCustomData'
 import type { ImportResult, ImportFormat } from '~/lib/parsers/index'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
 defineProps<{ isEmbed?: boolean }>()
 
 const { addDataset, selectedCustomFeature, selectFeature, showImportModal } = useCustomData()
-const popupOverlayRef = ref<HTMLElement | null>(null)
-
-watch(selectedCustomFeature, (f) => {
-  if (f) nextTick(() => popupOverlayRef.value?.focus())
-})
+const { t } = useI18n()
+const popupContentRef = ref<HTMLElement | null>(null)
+const isPopupOpen = computed(() => !!selectedCustomFeature.value)
+useFocusTrap(popupContentRef, { active: isPopupOpen })
 
 function handleAdd(result: ImportResult, format: ImportFormat) {
   addDataset(result, format)

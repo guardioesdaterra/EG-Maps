@@ -4,10 +4,10 @@
  */
 <template>
   <Teleport to="body">
-    <div v-if="show" class="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 p-4" @click.self="$emit('close')">
+    <div v-if="show" ref="modalRef" class="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="import-modal-title" tabindex="-1" @click.self="$emit('close')" @keydown.escape="$emit('close')">
       <div class="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl bg-[var(--bg-primary)] shadow-2xl">
         <div class="flex items-center justify-between border-b border-[var(--border)] px-6 py-4">
-          <h2 class="text-lg font-semibold text-[var(--text-primary)]">Import Data</h2>
+          <h2 id="import-modal-title" class="text-lg font-semibold text-[var(--text-primary)]">Import Data</h2>
           <button aria-label="Close" class="text-[var(--text-secondary)] hover:text-[var(--text-primary)]" @click="$emit('close')">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -59,11 +59,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useCustomData } from '~/composables/useCustomData'
 import type { ImportResult, ImportFormat } from '~/lib/parsers/index'
+import { useFocusTrap } from '~/composables/useFocusTrap'
 
-defineProps<{ show: boolean }>()
+const props = defineProps<{ show: boolean }>()
+const modalRef = ref<HTMLElement | null>(null)
+useFocusTrap(modalRef, { active: computed(() => props.show) })
 const emit = defineEmits<{
   close: []
   add: [result: ImportResult, format: ImportFormat]

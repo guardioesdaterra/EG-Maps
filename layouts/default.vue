@@ -97,7 +97,7 @@
     </header>
 
     
-    <nav v-if="showDock && !hideAll && !isEgGrantsRoute" class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] xs:bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
+    <div v-if="showDock && !hideAll && !isEgGrantsRoute" class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] xs:bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
       <div :class="dockShellClass">
         <div class="flex items-center gap-1">
           <GooeyNav :items="navItems" />
@@ -108,8 +108,13 @@
           
           <div class="relative" ref="langDropdownRef">
             <button
-              @click="showLangMenu = !showLangMenu"
-              class="group relative flex min-h-10 min-w-10 flex-col items-center justify-center"
+              ref="langMenuButtonRef"
+              type="button"
+              @click="toggleLanguageMenu"
+              class="group relative flex min-h-10 min-w-10 flex-col items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+              :aria-label="t('nav.language')"
+              :aria-expanded="showLangMenu"
+              aria-controls="language-options"
             >
               <div
                 :class="[tooltipClass, 'opacity-0 group-hover:opacity-100 transition-opacity duration-150']"
@@ -127,16 +132,22 @@
             <Transition name="dropdown">
               <div
                 v-if="showLangMenu"
+                id="language-options"
+                role="group"
+                :aria-label="t('nav.language')"
                 :class="dropdownClass"
+                @keydown.esc.stop.prevent="closeLanguageMenu(true)"
               >
                 <button
                   v-for="loc in availableLocales"
                   :key="loc"
-                  @click="setLocale(loc); showLangMenu = false"
-                  :class="getDropdownItemClass(loc)"
+                  type="button"
+                  @click="selectLanguage(loc)"
+                  :class="[getDropdownItemClass(loc), 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-400']"
+                  :aria-pressed="locale === loc"
                 >
                   <span>{{ localeNames[loc] }}</span>
-                  <Icon v-if="locale === loc" name="lucide:check" class="h-3.5 w-3.5" />
+                  <Icon v-if="locale === loc" name="lucide:check" class="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               </div>
             </Transition>
@@ -148,14 +159,16 @@
           
           <div class="relative" ref="importBtnRef">
             <button
+              type="button"
               @click="showImportModal = !showImportModal"
-              class="group relative flex min-h-10 min-w-10 flex-col items-center justify-center"
-              aria-label="Import custom data"
+              class="group relative flex min-h-10 min-w-10 flex-col items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+              :aria-label="t('observatory.contribution.import')"
+              :aria-expanded="showImportModal"
             >
               <div
                 :class="[tooltipClass, 'opacity-0 group-hover:opacity-100 transition-opacity duration-150']"
               >
-                Import Data
+                {{ t('observatory.contribution.import') }}
                 <div :class="tooltipArrowClass" />
               </div>
 
@@ -166,13 +179,13 @@
           </div>
         </div>
       </div>
-    </nav>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n as useAppI18n } from '@/composables/useI18n'
 import { useCustomData } from '@/composables/useCustomData'
 import { useMapTileProvider } from '@/composables/useMapTileProvider'
@@ -287,6 +300,25 @@ const dropdownClass = computed(() => [
 
 const showLangMenu = ref(false)
 const langDropdownRef = ref<HTMLElement | null>(null)
+const langMenuButtonRef = ref<HTMLButtonElement | null>(null)
+
+function toggleLanguageMenu() {
+  if (showLangMenu.value) {
+    closeLanguageMenu()
+  } else {
+    showLangMenu.value = true
+  }
+}
+
+function closeLanguageMenu(returnFocus = false) {
+  showLangMenu.value = false
+  if (returnFocus) nextTick(() => langMenuButtonRef.value?.focus())
+}
+
+function selectLanguage(loc: string) {
+  setLocale(loc)
+  closeLanguageMenu(true)
+}
 
 function handleClickOutside(event: MouseEvent) {
   if (langDropdownRef.value && !langDropdownRef.value.contains(event.target as Node)) {

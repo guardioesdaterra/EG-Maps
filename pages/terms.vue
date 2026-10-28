@@ -27,7 +27,7 @@
           <h2>2. Who may use EG-Maps</h2>
           <p>
             The public maps are free for everyone to explore. Restricted areas such as the EG-Grants portal
-            require Google sign-in and are limited to authorized Earth Guardians staff and crew accounts.
+            require Google sign-in and are limited to authorized Earth Guardians staff and Crew accounts.
             Access is verified server-side and may be revoked at any time.
           </p>
         </section>

@@ -5,17 +5,19 @@
     "projectGrants": "Projectsubsidies",
     "endangeredSpecies": "Bedreigde diersoorten",
     "observatoryOfVulcan": "Observatorium van Vulcanus",
-    "activeCrews": "Actieve crews",
+    "activeCrews": "Actieve Crews",
     "egGrants": "EG-subsidies",
     "crews": "Crews",
     "joinEarthGuardians": "Sluit je aan bij Earth Guardians",
     "switchToLight": "Overschakelen naar lichte modus",
     "switchToDark": "Overschakelen naar donkere modus",
-    "language": "Taal"
+    "language": "Taal",
+    "privacy": "Privacy",
+    "terms": "Voorwaarden"
   },
   "home": {
     "title": "Earth Guardians",
-    "subtitle": "Officiële kaarten van Earth Guardians — crews, subsidies, soorten en crewprojecten.",
+    "subtitle": "Officiële kaarten van Earth Guardians — Crews, subsidies, soorten en crewprojecten.",
     "dataMaps": "Datakaarten",
     "2d": "2D",
     "3d": "3D",
@@ -25,14 +27,14 @@
     "speciesDesc": "Ontdek ernstig bedreigde diersoorten en hun leefgebieden wereldwijd.",
     "observatoryTitle": "Observatorium van Vulcanus",
     "observatoryDesc": "Zeldzame aardmetalen mijnbouwclaims in Brazilië — kapitaalinvasie, bedrijfsnetwerken, militaire belangen en sociaal-milieueffecten.",
-    "activeCrewsTitle": "Actieve crews",
-    "activeCrewsDesc": "Ontdek de actieve crews van Earth Guardians in 7 regio’s — 131 crews, 1.241 leden, 47 landen wereldwijd.",
+    "activeCrewsTitle": "Actieve Crews",
+    "activeCrewsDesc": "Ontdek de actieve Crews van Earth Guardians in 7 regio’s — 131 Crews, 1.241 leden, 47 landen wereldwijd.",
     "projectsCount": "Projecten",
     "beneficiariesCount": "Begunstigden",
-    "speciesCount": "Soortrecords",
+    "speciesCount": "Bedreigde diersoorten",
     "groupsCount": "Groepen",
     "allValue": "Alle",
-    "activeCrewsCount": "Actieve crews",
+    "activeCrewsCount": "Actieve Crews",
     "crewMembersCount": "Crewleden",
     "view2d": "2D-kaart",
     "view3d": "3D-globe",
@@ -55,15 +57,15 @@
     "countries": "Landen",
     "ctaGrants": "Ontdek subsidies",
     "exploreTitle": "Ontdek de kaarten",
-    "exploreDesc": "Interactieve 2D-kaarten en 3D-globes visualiseren subsidies, crews, campagnes en bedreigde soorten wereldwijd.",
-    "subtitleMore": "EG-Maps is de kaartenapp van EarthGuardians.org. Vind een crew, een subsidie, een soortrecord of een project — en kom in actie met de mensen erachter.",
+    "exploreDesc": "Interactieve 2D-kaarten en 3D-globes visualiseren subsidies, Crews, campagnes en bedreigde soorten wereldwijd.",
+    "subtitleMore": "EG-Maps is de kaartenapp van EarthGuardians.org. Vind een Crew, een subsidie, een soortrecord of een project — en kom in actie met de mensen erachter.",
     "ourWork": "Onze kaarten",
-    "ourWorkDesc": "Door jongeren geleide crews op de kaart — met de data achter hun werk",
+    "ourWorkDesc": "Door jongeren geleide Crews op de kaart — met de data achter hun werk",
     "campaignsTitle": "Campagnes",
     "campaignsDesc": "EG-campagnes en de kaarten erachter — inclusief de soortenkaart voor Biodiversiteitsdag.",
     "campaignsKicker": "Biodiversiteitsdag · soortenkaart binnen",
     "crewProjectsTitle": "Crewprojecten",
-    "crewProjectsDesc": "Herstel door crews in Sierra Leone en Togo — mangroven, bossen en boerderijen in gemeenschapsbeheer.",
+    "crewProjectsDesc": "Herstel door Crews in Sierra Leone en Togo — mangroven, bossen en boerderijen in gemeenschapsbeheer.",
     "vulcanTitle": "Observatorium van Vulcanus",
     "vulcanDesc": "Communitykaart van zeldzame-aardmetalen mijnbouwclaims rond Poços de Caldas, Brazilië — claims, water, beschermde gebieden en cultureel leven.",
     "vulcanFocusValue": "Planalto Vulcânico",
@@ -73,19 +75,19 @@
     "crewProjectsStatValue": "110+ ha",
     "crewProjectsStatLabel": "Tot nu toe hersteld",
     "crewProjectsPlaceValue": "7 continenten",
-    "crewProjectsPlaceLabel": "Waar crews werken",
+    "crewProjectsPlaceLabel": "Waar Crews werken",
     "seriesStatusValue": "Lopend",
     "seriesStatusLabel": "Serie",
     "archiveValue": "2023–2026",
     "archiveLabel": "Sessiejaren",
     "masterclassesTitle": "Masterclasses",
     "masterclassesDesc": "Lopende trainingserie voor crewleden — opnames, slides en FR/ES/PT-samenvattingen.",
-    "startACrewTitle": "Start een crew",
-    "startACrewDesc": "Vind het crewnetwerk op de kaart of start je eigen crew met Earth Guardians.",
+    "startACrewTitle": "Start een Crew",
+    "startACrewDesc": "Vind het crewnetwerk op de kaart of start je eigen Crew met Earth Guardians.",
     "dispersed": "uitgekeerd",
     "120projects": "120 gefinancierde projecten",
     "300kTrees": "300K+ geplante bomen",
-    "131crews": "131 actieve crews in 47 landen",
+    "131crews": "131 actieve Crews in 47 landen",
     "speciesCampaigns": "Soortgerichte campagnes",
     "globalAction": "Mondiale gemeenschapsactie",
     "largeScale": "Grootschalige projecten",
@@ -94,13 +96,15 @@
     "skillBuilding": "Vaardigheden opbouwen",
     "joinGlobal": "Sluit je aan bij het mondiale netwerk",
     "youthLed": "Actie door jongeren",
-    "observatoryOfVulcan": "Observatorium van Vulcanus"
+    "observatoryOfVulcan": "Observatorium van Vulcanus",
+    "sections": "Secties"
   },
   "mapControls": {
     "search": "Zoeken",
     "searchProjects": "Projecten zoeken",
     "searchSpecies": "Soorten zoeken",
     "searchCrews": "Crews zoeken",
+    "searchCities": "Steden zoeken",
     "searchPlaceholder": "Zoeken op naam of locatie...",
     "searchSpeciesPlaceholder": "Zoeken op naam of regio...",
     "showAll": "Alles tonen",
@@ -123,7 +127,48 @@
     "of": "van",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "of open de lijst om alles te bekijken",
-    "searchResults": "Zoekresultaten"
+    "searchResults": "Zoekresultaten",
+    "nearby": "In de buurt",
+    "nearbyLabel": "Vind Crews, projecten en campagnes in de buurt",
+    "offlineCachedData": "Offline-modus — gegevens in de cache blijven beschikbaar",
+    "nearbyPanel": {
+      "eyebrow": "Ontdek wat dichtbij is",
+      "title": "Vind actie bij jou in de buurt",
+      "consentTitle": "Je locatie gebruiken?",
+      "consentDescription": "We gebruiken je locatie alleen in deze browser om Crews en projecten in de buurt te sorteren. De locatie wordt niet naar Earth Guardians gestuurd en niet door deze app opgeslagen.",
+      "consentLabel": "Ik ga ermee akkoord mijn geschatte locatie voor deze sessie met deze kaart te delen.",
+      "locating": "Locatie bepalen…",
+      "findAction": "Actie in de buurt vinden",
+      "locationError": "Locatietoestemming is niet verleend. Je kunt dit inschakelen in de browserinstellingen en het opnieuw proberen.",
+      "locationActive": "Locatie actief · alleen bij benadering",
+      "clearLocation": "Huidige locatie wissen",
+      "categories": "Categorieën in de buurt",
+      "crews": "Crews",
+      "projects": "Projecten",
+      "campaigns": "Campagnes",
+      "noCrews": "Er zijn nog geen crewlocaties met coördinaten beschikbaar.",
+      "noProjects": "Er zijn nog geen projectlocaties beschikbaar.",
+      "biodiversity": "Bedreigde soorten",
+      "biodiversityDesc": "Wereldwijde actie voor biodiversiteit en leefgebieden.",
+      "chooseAction": "Kies nu een actie",
+      "chooseActionDesc": "Door jongeren geleide klimaatrechtvaardigheid en directe actie.",
+      "solutions": "Duurzame oplossingen",
+      "solutionsDesc": "Oplossingen voor afval en veerkracht op gemeenschapsniveau."
+    },
+    "imported": "Geïmporteerd",
+    "populationUnit": "inwoners",
+    "clusterPanel": {
+      "title": "Clusterresultaten",
+      "count": "Clusterresultaten: {count}",
+      "copyLink": "Clusterlink kopiëren",
+      "linkCopied": "Clusterlink gekopieerd",
+      "close": "Clusterresultaten sluiten",
+      "searchLabel": "Clusterresultaten doorzoeken",
+      "searchPlaceholder": "Dit cluster doorzoeken…",
+      "visibleResults": "{count} zichtbare clusterresultaten",
+      "empty": "Geen resultaten komen overeen met deze zoekopdracht.",
+      "activeCrewsSubtitle": "{crews} actieve teams · {countries} landen"
+    }
   },
   "mapTiles": {
     "maptiler": "Satelliet",
@@ -174,13 +219,13 @@
     "unknownBeneficiaries": "Onbekend",
     "treesPlanted": "Geplante bomen & mangroven",
     "dispersed": "Tot nu toe uitgekeerd",
-    "activeCrews": "Actieve crews",
+    "activeCrews": "Actieve Crews",
     "collapse": "Inklappen",
     "expand": "Uitklappen",
     "close": "Sluiten",
     "markerLegend": "Markerkleuren",
     "markerSize": "Markergrootte",
-    "activeCrewsTitle": "Actieve crews",
+    "activeCrewsTitle": "Actieve Crews",
     "regions": "Regio’s",
     "crews": "Crews",
     "members": "Leden",
@@ -189,8 +234,8 @@
     "crewsActive1to5": "1–5 actief",
     "crewsInactive": "Inactief",
     "crewsSidebarDesc": "Crews zijn door jongeren geleide, intergenerationele groepen van gepassioneerde leiders die in actie komen voor een gezonde, rechtvaardige en duurzame toekomst. Ze zijn het hart van EG, want natuurlijke, duurzame en organische verandering komt niet van bovenaf — maar uit brede culturele verschuivingen, geïnspireerd door toegewijde individuen die vooroplopen.",
-    "crewsSidebarSupport": "We steunen onze crews met persoonlijk mentorschap op maat, projectsubsidies, online en fysieke trainingen, masterclasses, mondiale campagnes en meer!",
-    "crewsSidebarCta": "Lees meer en start vandaag nog je eigen crew! We kijken ernaar uit je te verwelkomen in ons mondiale netwerk van jonge leiders en changemakers."
+    "crewsSidebarSupport": "We steunen onze Crews met persoonlijk mentorschap op maat, projectsubsidies, online en fysieke trainingen, masterclasses, mondiale campagnes en meer!",
+    "crewsSidebarCta": "Lees meer en start vandaag nog je eigen Crew! We kijken ernaar uit je te verwelkomen in ons mondiale netwerk van jonge leiders en changemakers."
   },
   "globe": {
     "loading": "3D-globe laden",
@@ -204,7 +249,9 @@
     "switchTo2D": "Overschakelen naar 2D-kaartweergave",
     "switchTo3D": "Overschakelen naar 3D-globeweergave",
     "view2D": "2D-kaart",
-    "view3D": "3D-globe"
+    "view3D": "3D-globe",
+    "reloadPage": "Pagina opnieuw laden",
+    "allSpeciesLoaded": "Alle soortgegevens geladen"
   },
   "project": {
     "directBeneficiaries": "Directe begunstigden",
@@ -226,22 +273,24 @@
     "iucnProfile": "IUCN-profiel"
   },
   "crews": {
-    "activeCrews": "Actieve crews",
-    "inactiveCrews": "Inactieve crews",
+    "activeCrews": "Actieve Crews",
+    "inactiveCrews": "Inactieve Crews",
     "totalMembers": "Totaal leden",
     "countries": "Landen",
     "region": "Regio",
     "growthSince2022": "Groei sinds 2022",
-    "projectsOfCrew": "Projectsubsidies gerelateerd aan deze crew",
-    "projectsOfCrewHint": "Gekoppeld aan deze crew via plaats, naam of nabijheid",
+    "projectsOfCrew": "Projectsubsidies gerelateerd aan deze Crew",
+    "projectsOfCrewHint": "Gekoppeld aan deze Crew via plaats, naam of nabijheid",
     "projectsOfRegion": "Projectsubsidies uit {region}",
-    "projectsOfRegionHint": "Gekoppeld aan crews in de hele regio",
+    "projectsOfRegionHint": "Gekoppeld aan Crews in de hele regio",
     "ownProjectsTitle": "Crewproject in de buurt",
     "flyToProject": "Vlieg erheen",
     "ownProjectsRegionTitle": "Crewprojecten op locatie",
     "crewProjectBadge": "Crewproject",
     "moreProjects": "Meer gekoppelde projecten",
-    "pageOf": "Pagina {page} van {pages}"
+    "pageOf": "Pagina {page} van {pages}",
+    "crewsInRegion": "Crews in {region}",
+    "crewsInRegionHint": "Alle Crews in deze regio — selecteer er één voor details"
   },
   "taxonomy": {
     "Mammal": "Zoogdieren",
@@ -268,7 +317,10 @@
       "illegal": "Illegaal",
       "env": "Milieurisico",
       "network": "Netwerk",
-      "timeline": "Tijdlijn"
+      "timeline": "Tijdlijn",
+      "power": "Macht",
+      "territory": "Gebied",
+      "culture": "Cultuur"
     },
     "dangerPanel": {
       "title": "Gevaarlijkste ondernemingen",
@@ -310,7 +362,11 @@
       "chinaBanTitle": "China-exportverbod (okt 2025)",
       "chinaBanBody": "China heeft de export van 12/17 REE-elementen naar de VS verboden. 78% van de Amerikaanse wapens is afhankelijk van Chinese REE. DFARS 2027-mandaat: Amerikaanse defensieaannemers moeten niet-Chinese REE betrekken.",
       "title": "Titel",
-      "empty": "Geen data"
+      "empty": "Geen data",
+      "liveTitle": "Live: deze regio",
+      "liveClaims": "kritieke claims",
+      "liveArea": "kritiek gebied",
+      "liveUs": "VS-gerelateerd"
     },
     "illegal": {
       "landSpec": "Grondspeculatie",
@@ -371,7 +427,16 @@
       "title": "Claimtijdlijn (2000–2026)",
       "claims": "{count} claims",
       "cumulative": "cum. {count}",
-      "empty": "Geen data"
+      "empty": "Geen data",
+      "total": "totaal",
+      "readStory": "Lees het verhaal",
+      "hideStory": "Verhaal verbergen",
+      "footer": "Jaarly new claims from ANM public records; the running totaal compounds each year.",
+      "narrativeStart": "baseline: a few dozen claims a year — rare earths not yet strategic.",
+      "narrative2010": "China bans rare-earth exports to Japan, the first warning shot — claims jump past 500.",
+      "narrative2017": "the US declares rare earths critical (EO 13817); China threatens a US ban en the Pentagon starts investing.",
+      "narrative2021": "supercycle en Brazil rush — lithium en ASX juniors invade; 2023 peaks at 4,213 claims as the US DFC funds Serra Verde.",
+      "narrative2024": "backlash: prosecutors challenge licensing en Operação Rejeito arrests an ANM director, while China bans 7 rare-earth elements."
     },
     "actions": {
       "verify": "Verifiëren op ANM",
@@ -391,7 +456,14 @@
       "heatmap": "Dichtheid warmtekaart",
       "cultural": "Cultuur & community",
       "waterBodies": "Waterlichamen",
-      "protectedAreas": "Beschermde gebieden"
+      "protectedAreas": "Beschermde gebieden",
+      "conservationUnits": "Natuurbeschermingseenheden",
+      "bufferZones": "Bufferzones",
+      "protectedSearch": "Beschermde gebieden en bufferzones",
+      "noProtectedSearch": "Geen beschermde gebieden gevonden.",
+      "statusTitle": "Laagstatus",
+      "statusFailed": "mislukt",
+      "foreignHeld": "Claims in buitenlens bezit"
     },
     "myTerritory": {
       "title": "Mijn territorium",
@@ -459,7 +531,13 @@
       "year": "Jaar",
       "unknown": "Onbekend",
       "lastEventActive": "Actief",
-      "overlaps": "Overlappingen"
+      "overlaps": "Overlappingen",
+      "stackedLayers": "Overlappende lagen",
+      "tabClaim": "Claim",
+      "tabBoundary": "Grens",
+      "tabWater": "Water",
+      "tabConflict": "Conflict",
+      "tabTerrain": "Terrein"
     },
     "sync": {
       "lastSync": "Laatste ANM-synchronisatie",
@@ -674,7 +752,15 @@
         "unnamed": "Naamloos item",
         "unknownSource": "Onbekend",
         "pagePrev": "Vorige pagina",
-        "pageNext": "Volgende pagina"
+        "pageNext": "Volgende pagina",
+        "agentsLoading": "Cultuurle actoren laden…",
+        "agentsRetry": "Opnieuw proberen",
+        "families": "Markerfamilies",
+        "familyAgents": "Cultuurle actoren",
+        "familySpaces": "Cultuurle ruimtes",
+        "familyIndigenous": "Inheemse en oorspronkelijke volkeren",
+        "sortFamily": "Familie",
+        "clearFilters": "Wissen"
       },
       "community": {
         "eyebrow": "Een levend observatorium",
@@ -690,13 +776,71 @@
         "methodologyText": "Data zijn samengesteld uit openbare registers en communitygerichte bronnen. Zie ze als een uitnodiging om te onderzoeken — niet als vervanging voor communitytoestemming of juridische vaststelling.",
         "monitor": "Open de veldmonitor",
         "sources": "Bekijk databronnen"
+      },
+      "tabs": {
+        "label": "Observatoriuminformatie",
+        "territory": "Gebied",
+        "culture": "Cultuur",
+        "power": "Machten",
+        "timeline": "Tijdlijn"
       }
     },
     "error": {
       "loadFailed": "Observatoriumdata konden niet worden geladen",
       "retry": "Opnieuw proberen"
     },
-    "clearSearch": "Zoekopdracht wissen"
+    "clearSearch": "Zoekopdracht wissen",
+    "territory": {
+      "headline": "Claims op de grond",
+      "claims": "claims",
+      "boundaries": "grenzen",
+      "area": "claimgebied",
+      "withOverlaps": "met overlap",
+      "synced": "ANM-synchronisatie",
+      "noBoundaries": "Geen claimgrenzen geladen — alleen punten. Controleer hieronder de laagstatus.",
+      "bySubstance": "Claims per stof",
+      "overlapsTitle": "Overlap tussen mijnbouw en gebied",
+      "noOverlaps": "Geen gebiedsoverlap geregistreerd voor de geladen claims.",
+      "overlappedBy": "{count} overlappende claims",
+      "overlappingClaims": "overlappende claims",
+      "protectedTitle": "Beschermde gebieden",
+      "source": "Bron",
+      "noProtected": "Geen beschermde gebieden in de geladen dataset.",
+      "watersTitle": "Wateren onder druk",
+      "noWaters": "Nog geen benoemde wateren beoordeeld — waterlaag wordt nog geladen.",
+      "watersLegend": "Claims metin 2km press directly (drawdown, runoff); metin 5km share aquifer or sub-basin.",
+      "pressure": "DRUK",
+      "watch": "BEWAKEN",
+      "claims2km": "claims ≤2km",
+      "claims5km": "claims ≤5km",
+      "flyToWater": "Fly to {name}",
+      "dossierDownload": "Bewijsdossier exporteren",
+      "dossierCopy": "Dossier kopiëren",
+      "dossierCopied": "Gekopieerd!",
+      "searchPlaceholder": "Search claims, holders, processos…",
+      "sobDemanda": "Sob Demena only",
+      "filtersActive": "{count} filters actief",
+      "pinTitle": "Bewaken: jouw locatie",
+      "pinBody": "{count} claims metin 10km of {label}.",
+      "pinNearest": "Dichtstbijzijnde: {processo} · {holder} · {km}km"
+    },
+    "claimIntel": {
+      "holderTitle": "Trackrecord van houder",
+      "claims": "claims",
+      "territoryTitle": "Gebiedsoverlap"
+    },
+    "power": {
+      "noData": "Diepgaene analyse nog niet geladen.",
+      "militaryTitle": "Militair kritieke voetafdruk",
+      "criticalClaims": "kritieke claims",
+      "criticalArea": "kritiek gebied",
+      "usConnected": "VS-gerelateerd",
+      "foreignTitle": "Aeneel buitenlens kapitaal",
+      "sigiloTitle": "Geheime (sigilo) claims",
+      "sigiloBody": "{total} geheime claims ({pct}%) over {area} ha — houders en stoffen verborgen.",
+      "topTitle": "Meest verdachte houders",
+      "claims": "claims"
+    }
   },
   "loading": {
     "projectGrantsMap": "Projectsubsidiekaart laden",
@@ -705,9 +849,9 @@
     "endangeredSpeciesGlobe": "Globe bedreigde soorten laden",
     "observatoryOfVulcan": "Observatorium van Vulcanus laden",
     "observatoryOfVulcanGlobe": "Observatorium van Vulcanus Globe laden",
-    "activeCrewsMap": "Actieve crews kaart laden",
+    "activeCrewsMap": "Actieve Crews kaart laden",
     "initializingVisualization": "Interactieve visualisatie initialiseren...",
-    "activeCrewsGlobe": "Globe van actieve crews"
+    "activeCrewsGlobe": "Globe van actieve Crews"
   },
   "error": {
     "pageNotFound": "Pagina niet gevonden",
@@ -764,10 +908,21 @@
       "grants": "Subsidies",
       "species": "Soorten",
       "mains": "Mains",
-      "feedback": "Feedback"
+      "feedback": "Feedback",
+      "sources": "Bronnen"
     },
     "shareCorrections": "Deel correcties, ontbrekende data of interactie-ideeën om ons te helpen de kaarten te verbeteren.",
-    "homeLink": "Home"
+    "homeLink": "Home",
+    "sources": {
+      "title": "Databronnen en licenties",
+      "intro": "Every layer on EG-Maps comes from a named publisher. This tab lists them all — who publishes each dataset, under which license, en how you may reuse it for research en community work.",
+      "observatory": "Vulcan Observatory — mining & territory",
+      "species": "Bedreigde soorten",
+      "grants": "Projectsubsidies",
+      "basemap": "Basiskaart, beeldmateriaal en kaartengine",
+      "reuseTitle": "Licenses & reuse for research en community tools",
+      "openSource": "Open source"
+    }
   },
   "campaigns": {
     "title": "Campagnes",
@@ -817,7 +972,7 @@
   },
   "crewProjects": {
     "title": "Crewprojecten",
-    "description": "Grootschalige en kleinschalige projecten door EG-crews wereldwijd, die de impact van klimaatactie door jongeren laten zien.",
+    "description": "Grootschalige en kleinschalige projecten door EG-Crews wereldwijd, die de impact van klimaatactie door jongeren laten zien.",
     "largeScaleTitle": "Grootschalige crewimpact",
     "largeScaleDesc": "Grote crewinitiatieven met aanzienlijke milieu- en gemeenschapsimpact in meerdere landen.",
     "sherbroTitle": "Sherbro Island, Sierra Leone",
@@ -855,14 +1010,14 @@
     "communityTitle": "Veerkracht van gemeenschappen",
     "communityDesc": "Lokale initiatieven bouwen capaciteit in gemeenschappen op om klimaatuitdagingen aan te pakken en duurzame oplossingen te creëren.",
     "ctaTitle": "Start je eigen crewproject",
-    "ctaDesc": "Elke crew heeft de ruimte om eigen projecten en initiatieven op te zetten als antwoord op de klimaatproblemen van hun gemeenschappen.",
-    "startCrew": "Start een crew"
+    "ctaDesc": "Elke Crew heeft de ruimte om eigen projecten en initiatieven op te zetten als antwoord op de klimaatproblemen van hun gemeenschappen.",
+    "startCrew": "Start een Crew"
   },
   "masterclasses": {
     "title": "Masterclasses",
     "description": "Lopende trainingserie voor Earth-Guardians-crewleden — livesessies plus eerdere opnames, slides en FR/ES/PT-samenvattingen.",
     "series2026Title": "Mondiale masterclass-serie · seizoen 2026",
-    "series2026Desc": "Een lopende serie voor crewleden — digitale tools, klimaatpsychologie, financiering en activisme. Nieuwe sessies worden aangekondigd via crews en op Instagram.",
+    "series2026Desc": "Een lopende serie voor crewleden — digitale tools, klimaatpsychologie, financiering en activisme. Nieuwe sessies worden aangekondigd via Crews en op Instagram.",
     "ep1Title": "Digitale tools voor de beweging",
     "ep1Speaker": "met Emmy Scott",
     "ep1Desc": "Offline dataverzameling voor veldcampagnes — KoboCollect, Zoho Forms, FastField, Jotform Mobile — plus de grenzen van Google Forms en praktische veldworkflows.",
@@ -874,7 +1029,7 @@
     "ep3Desc": "Financieringsstrategieën en het schrijven van subsidieaanvragen voor basisgroepen — hoe communityorganisaties klimaatfinanciering aanpakken.",
     "ep4Title": "Zo start en vergroot je je activisme",
     "ep4Speaker": "met Rena Kawasaki — East Asia RCC",
-    "ep4Desc": "Praktische stappen van interesse naar volgehouden actie — van de eerste bijeenkomst tot een draaiende crew.",
+    "ep4Desc": "Praktische stappen van interesse naar volgehouden actie — van de eerste bijeenkomst tot een draaiende Crew.",
     "ep4Time": "Zondag om 12.00 uur EST",
     "registerZoom": "Registreer op Zoom",
     "registerNote": "Zoom-link gedeeld via crewkanalen",
@@ -887,7 +1042,7 @@
     "pastTrainingsTitle": "Eerdere sessies · 2023–2024",
     "grantWritingDate": "2024",
     "grantWritingTitle": "Subsidieaanvragen voor klimaatprojecten",
-    "grantWritingDesc": "Schrijf een financierbaar voorstel van één pagina voor het project van je crew.",
+    "grantWritingDesc": "Schrijf een financierbaar voorstel van één pagina voor het project van je Crew.",
     "projectManagementDate": "2024",
     "projectManagementTitle": "Projectmanagement voor jonge leiders",
     "projectManagementDesc": "Plan, voer uit en evalueer een communityproject van begin tot eind.",
@@ -921,11 +1076,38 @@
     "financeSkill": "Klimaatfinanciering",
     "financeSkillDesc": "Begrijp financieringsmechanismen en het mobiliseren van middelen voor klimaatprojecten van onderop.",
     "ctaTitle": "Mis geen sessie",
-    "ctaDesc": "Aankomende masterclasses worden aangekondigd via crews en op Instagram. Eerdere hoogtepunten vind je daar ook.",
-    "joinCrew": "Start een crew of sluit je aan",
+    "ctaDesc": "Aankomende masterclasses worden aangekondigd via Crews en op Instagram. Eerdere hoogtepunten vind je daar ook.",
+    "joinCrew": "Start een Crew of sluit je aan",
     "moreTitle": "Sessies sinds 2023",
     "moreDesc": "Subsidieaanvragen, COP-voorbereiding, datavisualisatie, klimaatrechtvaardigheid en meer. Volg ons voor hoogtepunten, clips en aankomende data.",
-    "viewOnInstagram": "Bekijk op Instagram"
+    "viewOnInstagram": "Bekijk op Instagram",
+    "ep5Title": "Transformationeel leiderschap",
+    "ep5Speaker": "met Rejoice — Africa RCC",
+    "ep5Desc": "What it takes to inspire change, foster resilient community leadership, en transform local action into lasting movement power.",
+    "ep5Time": "Sunday, September 20, 2026 · 12:00 PM EST | 4:00 PM UTC (GMT)",
+    "flyer": "Flyer",
+    "series2025Title": "Wereldwijd Masterclass Series · 2025 season",
+    "series2025Desc": "Five sessions from the 2025 season — empathy, volunteer leadership, volunteerism in action, biodiversity governance, en digital tools. Recordings, slide decks en flyers below.",
+    "gm5Date": "2025",
+    "gm5Title": "Google Workspace Essentials: Mastering Gmail, Docs, Sheets, Drive, en Calendar",
+    "gm5Speaker": "met Emmy Scott · hosted door Moudjiba",
+    "gm5Desc": "A practical walkthrough of the Google Workspace essentials for Crew work — Gmail, Docs, Sheets, Drive, en Calendar — met live Q&A.",
+    "gm4Date": "September 28, 2025",
+    "gm4Title": "Rio, the CBD & Beyond: A Masterclass on Wereldwijd Biodiversity Governance",
+    "gm4Speaker": "met GYBN USA · hosted door Moudjiba",
+    "gm4Desc": "How global biodiversity governance works — from the Rio Earth Summit to the Convention on Biological Diversity en beyond — met live Q&A.",
+    "gm3Date": "July 13, 2025",
+    "gm3Title": "Volunteerism en Social Change: How to Use Your Time en Talents to Make a Difference in the World",
+    "gm3Speaker": "met Meg Ferrigno — EG Board Director, founder of Purelen Project en Moonpads · hosted door Moudjiba",
+    "gm3Desc": "How to use your time en talents to make a difference — volunteerism as a driver of social change — met live Q&A.",
+    "gm2Date": "2025",
+    "gm2Title": "Leading en Managing a Team of Volunteers",
+    "gm2Speaker": "met Ms Rejoice A. Sosu-Ketek",
+    "gm2Desc": "Geen two volunteers are the same — how to build a strong volunteer team, meet the challenges of managing volunteers, en lead met the right approaches en values.",
+    "gm1Date": "2025",
+    "gm1Title": "Unlock Deeper Connections — Master the Art of Empathy",
+    "gm1Speaker": "met Louka",
+    "gm1Desc": "Master the art of empathy to unlock deeper connections in your community en Crew work."
   },
   "a11y": {
     "skipToContent": "Naar hoofdinhoud springen"
@@ -1388,8 +1570,8 @@
       "description": "Vergelijk dezelfde dataset in 2D-kaart- en 3D-globeweergave."
     },
     "activeCrews2d": {
-      "title": "Actieve crews — 2D-kaart",
-      "description": "2D-kaartweergave van wereldwijd actieve Earth-Guardians-crews."
+      "title": "Actieve Crews — 2D-kaart",
+      "description": "2D-kaartweergave van wereldwijd actieve Earth-Guardians-Crews."
     },
     "projectGrants3d": {
       "title": "Projectsubsidies — 3D-globe",

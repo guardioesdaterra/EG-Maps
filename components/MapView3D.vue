@@ -6,9 +6,9 @@
  * @deps vue (ref, watch, computed, defineAsyncComponent); @/composables/useMapBase (useMapBase); ~/composables/useSpeciesData (useSpeciesIndex)
  */
 <template>
-  <div id="main-content" tabindex="-1" class="w-full h-[100svh] relative overflow-hidden bg-black focus:outline-none" role="main" aria-label="3D Globe Visualization">
+  <div id="main-content" tabindex="-1" class="w-full h-[100svh] relative overflow-hidden bg-black focus:outline-none" role="main" :aria-label="t('globe.view3D')">
     <Transition name="fade">
-      <div v-if="isLoading" class="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center">
+      <div v-if="isLoading" class="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center" role="status" aria-live="polite" aria-busy="true">
         <div class="relative mb-5 xs:mb-6">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-16 xs:w-20 h-16 xs:h-20 text-white" viewBox="0 0 24 24">
             <path d="M0 0h24v24H0z" fill="none" />
@@ -21,7 +21,7 @@
           </div>
         </div>
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('globe.loading') }}</p>
-        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews').toLowerCase() : activeDataset === 'vulcan-observatory' ? t('home.observatoryOfVulcan').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
+        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews') : activeDataset === 'vulcan-observatory' ? t('home.observatoryOfVulcan').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
         <div class="mt-3 xs:mt-4 flex gap-1">
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
@@ -58,7 +58,7 @@
 
     <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-15" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
 
-    <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" :style="{ zIndex: 'var(--z-map-base)' }" />
+    <div ref="mapContainerRef" tabindex="0" role="region" :aria-label="t('globe.view3D')" :aria-busy="isLoading" class="absolute inset-0 w-full h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400" :style="{ zIndex: 'var(--z-map-base)' }" />
     <ClusterResultsPanel
       v-if="clusterPanelOpen"
       :items="clusterPanelItems"
@@ -66,7 +66,7 @@
       @close="closeClusterPanel"
       @select="selectClusterItem"
     />
-    <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-[clamp(4.25rem,11vh,6rem)] z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/70 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm sm:left-auto sm:top-[max(1rem,env(safe-area-inset-top))] sm:right-[max(1rem,env(safe-area-inset-right))]" aria-label="Find nearby crews, projects and campaigns" @click="nearbyOpen = true">⌖ Nearby</button>
+    <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-[clamp(4.25rem,11vh,6rem)] z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/70 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm sm:left-auto sm:top-[max(1rem,env(safe-area-inset-top))] sm:right-[max(1rem,env(safe-area-inset-right))]" aria-haspopup="dialog" :aria-label="t('mapControls.nearbyLabel')" @click="nearbyOpen = true"><span aria-hidden="true">⌖</span> {{ t('mapControls.nearby') }}</button>
     <NearbyPanel v-if="nearbyOpen" :projects="projectsData" :crew-locations="crewLocationsData" @close="nearbyOpen = false" @navigate="navigateToLocation" />
     <slot name="overlays" />
 
@@ -85,14 +85,14 @@
     <MapControls v-if="activeDataset !== 'vulcan-observatory' && !hideAll" :is-globe-view="true" :show-hex-grid="showHexGrid" :show-connections="showConnections" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :crews="activeDataset === 'active-crews' ? crewsData : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" :style="{ zIndex: 'var(--z-map-ui-controls)' }" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" />
 
     <Transition name="fade">
-      <div v-if="hasError" class="absolute inset-0 bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center text-white z-[2000]">
+      <div v-if="hasError" class="absolute inset-0 bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center text-white z-[2000]" role="alert" aria-live="assertive">
         <div class="relative mb-5 xs:mb-6">
           <div class="w-14 h-14 xs:w-16 xs:h-16 rounded-full bg-[var(--text-primary)]/10 animate-pulse" />
           <Icon name="lucide:alert-triangle" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-7 w-7 xs:h-8 xs:w-8 text-[var(--text-primary)]" />
         </div>
         <h2 class="text-lg xs:text-xl font-bold mb-1.5 xs:mb-2">{{ t('globe.unableToLoad') }}</h2>
         <p class="text-gray-400 mb-4 text-center px-4 xs:px-4 max-w-xs xs:max-w-md text-sm xs:text-base">{{ errorMessage || t('globe.connectionError') }}</p>
-        <button v-if="!noWebglSupport" @click="() => { hasError = false; initMap() }" class="px-5 xs:px-6 py-2 xs:py-2.5 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg font-medium hover:opacity-80 transition-all duration-300 flex items-center gap-2 text-sm xs:text-base">
+        <button v-if="!noWebglSupport" type="button" @click="() => { hasError = false; initMap() }" class="px-5 xs:px-6 py-2 xs:py-2.5 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg font-medium hover:opacity-80 transition-all duration-300 flex items-center gap-2 text-sm xs:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black">
           <Icon name="lucide:refresh-cw" class="h-4 w-4" />
           {{ t('globe.tryAgain') }}
         </button>
@@ -101,10 +101,10 @@
 
     
     <Transition name="scale-fade">
-      <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Species details" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
-        <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" aria-label="Close species details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+      <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="speciesData?.commonName || t('nav.endangeredSpecies')" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
+        <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div v-if="availablePopupLocales.length > 0" class="species-popup-lang-bar">
-          <button v-for="loc in availablePopupLocales" :key="loc" class="species-popup-lang-btn" :class="{ active: popupLocale === loc }" @click="popupLocale = loc" :aria-label="`Show in ${(localeNames as Record<string, string>)[loc] || loc}`">{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
+          <button v-for="loc in availablePopupLocales" :key="loc" :lang="loc" class="species-popup-lang-btn" :class="{ active: popupLocale === loc }" @click="popupLocale = loc">{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
         </div>
         <div class="species-popup-content-fixed">
           <MapSpeciesPopup :species="speciesData" />
@@ -114,8 +114,8 @@
 
     
     <Transition name="scale-fade">
-      <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Project details" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
-        <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+      <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="projectData?.project_title || t('home.projectGrants')" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
+        <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="project-popup-content-fixed">
           <MapProjectPopup :project="projectData" />
         </div>
@@ -124,8 +124,8 @@
 
     
     <Transition name="scale-fade">
-      <div v-if="showCrewOverlay" ref="crewOverlayRef" class="crew-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
-        <button ref="crewCloseBtnRef" class="crew-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+      <div v-if="showCrewOverlay" ref="crewOverlayRef" class="crew-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="crewData?.name || t('nav.activeCrews')" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
+        <button ref="crewCloseBtnRef" class="crew-popup-close-btn-fixed" @click="closeCrewOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="crew-popup-content-fixed">
           <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" :projects="visibleProjects" :crew-locations="crewLocationsData" @select-crew="openCrewLocationOverlay" @fly-to-project="(lat, lng) => navigateToLocation(lat, lng)" />
         </div>
@@ -320,7 +320,7 @@ if (props.defaultDataset === 'endangered-species') {
         dataPushed = true
         base.speciesIndexData.value = speciesIdx.value
       }
-      dataStatusText.value = 'All species data loaded ✓'
+      dataStatusText.value = t('globe.allSpeciesLoaded')
       setTimeout(() => { showDataLoading.value = false }, 2500)
     } else {
       showDataLoading.value = true

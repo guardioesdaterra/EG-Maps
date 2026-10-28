@@ -13,6 +13,7 @@ import {
   groupPaletteItems,
   type CommandPaletteItem,
 } from '@/composables/useCommandPalette'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const { t } = useI18n()
 const { open, query: stateQuery, items, closePalette, setQuery: setStateQuery } = useCommandPalette()
@@ -21,7 +22,7 @@ const inputRef = ref<HTMLInputElement | null>(null)
 const panelRef = ref<HTMLElement | null>(null)
 const query = ref('')
 const activeIndex = ref(0)
-const lastFocusedElement = ref<HTMLElement | null>(null)
+useFocusTrap(panelRef, { active: open, autoFocus: false })
 
 watch(() => stateQuery.value, v => { query.value = v })
 watch(query, v => { setStateQuery(v) })
@@ -62,13 +63,11 @@ function focusInput() {
 
 watch(open, (isOpen) => {
   if (isOpen) {
-    lastFocusedElement.value = document.activeElement as HTMLElement | null
     document.body.classList.add('cmd-open')
     activeIndex.value = 0
     focusInput()
   } else {
     document.body.classList.remove('cmd-open')
-    nextTick(() => lastFocusedElement.value?.focus())
   }
 })
 
@@ -177,7 +176,7 @@ onUnmounted(() => {
           </div>
 
           <div id="command-palette-results" class="cmd-results" role="listbox">
-            <div v-if="filteredItems.length === 0" class="cmd-empty">
+            <div v-if="filteredItems.length === 0" class="cmd-empty" role="status" aria-live="polite">
               {{ t('palette.noResults') }}
             </div>
             <template v-else>

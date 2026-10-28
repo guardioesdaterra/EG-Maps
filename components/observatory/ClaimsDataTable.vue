@@ -12,14 +12,14 @@
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="visible" class="claims-dt-backdrop fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" @click.self="$emit('close')">
-        <div class="obs-datatable" role="dialog" aria-label="Claims data table" ref="panelRef">
+        <div class="obs-datatable" role="dialog" aria-modal="true" aria-labelledby="claims-table-title" ref="panelRef">
           <div class="obs-datatable__header">
             <div class="flex items-center gap-3">
-              <h2 class="obs-datatable__title">
+              <h2 id="claims-table-title" class="obs-datatable__title">
                 <Icon name="lucide:table" class="w-3 h-3 inline mr-1" />
                 Claims Data
               </h2>
-              <span class="obs-datatable__count">{{ sortedData.length.toLocaleString() }} claims</span>
+              <span class="obs-datatable__count" aria-live="polite">{{ sortedData.length.toLocaleString() }} claims</span>
             </div>
             <div class="flex items-center gap-2">
               <input
@@ -33,21 +33,24 @@
           </div>
           <div class="obs-datatable__body" ref="scrollContainer" @scroll="onScroll">
             <table class="obs-datatable__table">
+              <caption class="sr-only">Claims data table</caption>
               <thead class="obs-datatable__thead">
                 <tr>
-                  <th v-for="col in columns" :key="col.key" class="obs-datatable__th" @click="toggleSort(col.key)">
+                <th v-for="col in columns" :key="col.key" class="obs-datatable__th" scope="col">
+                  <button type="button" class="obs-datatable__sort" :aria-label="`Sort by ${col.label || 'category'}`" :aria-pressed="sortKey === col.key" @click="toggleSort(col.key)">
                     <span class="flex items-center gap-1">
                       {{ col.label }}
                       <span v-if="sortKey === col.key" class="text-red-400">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
                     </span>
-                  </th>
+                  </button>
+                </th>
                 </tr>
               </thead>
               <tbody class="obs-datatable__tbody">
-                <tr v-for="row in visibleRows" :key="row.p" class="obs-datatable__row" @click="$emit('fly-to', [row.lo, row.la])">
-                  <td class="obs-datatable__td">
+                <tr v-for="row in visibleRows" :key="row.p" class="obs-datatable__row" tabindex="0" @click="$emit('fly-to', [row.lo, row.la])" @keydown.enter="$emit('fly-to', [row.lo, row.la])" @keydown.space.prevent="$emit('fly-to', [row.lo, row.la])">
+                  <th scope="row" class="obs-datatable__td">
                     <span class="obs-datatable__cat-dot" :style="{ background: catColor(row.c) }" />
-                  </td>
+                  </th>
                   <td class="obs-datatable__td obs-datatable__td--name">{{ row.n || '—' }}</td>
                   <td class="obs-datatable__td font-mono text-[clamp(8px,1.3vw,11px)]">{{ row.p || '—' }}</td>
                   <td class="obs-datatable__td">{{ row.u || '—' }}</td>
@@ -256,12 +259,28 @@ watch(() => props.visible, (v) => {
   background: rgba(0, 0, 0, 0.8);
   border-bottom: 1px solid var(--glass-border);
   text-align: left;
-  cursor: pointer;
   user-select: none;
   white-space: nowrap;
 }
 .obs-datatable__th:hover {
   color: rgba(255, 255, 255, 0.7);
+}
+.obs-datatable__sort {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.obs-datatable__sort:focus-visible,
+.obs-datatable__row:focus-visible,
+.obs-datatable__close:focus-visible,
+.obs-datatable__search:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
 }
 .obs-datatable__row {
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);

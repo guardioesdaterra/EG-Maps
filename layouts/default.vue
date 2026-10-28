@@ -186,7 +186,7 @@
 <script setup lang="ts">
 
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { useI18n as useAppI18n } from '@/composables/useI18n'
+import { useI18n as useAppI18n, type Locale } from '@/composables/useI18n'
 import { useCustomData } from '@/composables/useCustomData'
 import { useMapTileProvider } from '@/composables/useMapTileProvider'
 
@@ -315,7 +315,7 @@ function closeLanguageMenu(returnFocus = false) {
   if (returnFocus) nextTick(() => langMenuButtonRef.value?.focus())
 }
 
-function selectLanguage(loc: string) {
+function selectLanguage(loc: Locale) {
   setLocale(loc)
   closeLanguageMenu(true)
 }

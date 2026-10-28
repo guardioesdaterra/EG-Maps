@@ -168,7 +168,12 @@
       "visibleResults": "{count} 个可见聚类结果",
       "empty": "没有结果匹配此搜索。",
       "activeCrewsSubtitle": "{crews} 个活跃团队 · {countries} 个国家"
-    }
+    },
+    "shareMap": "分享地图",
+    "linkCopied": "链接已复制",
+    "exportMap": "导出地图图片",
+    "exportData": "导出可见数据为 GeoJSON",
+    "legend": "图例"
   },
   "mapTiles": {
     "maptiler": "卫星",

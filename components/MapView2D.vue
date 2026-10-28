@@ -129,7 +129,7 @@
 
     
     <Transition name="scale-fade">
-      <div v-if="showCrewOverlay" ref="crewOverlayRef" class="crew-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="crewData?.name || t('nav.activeCrews')" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
+      <div v-if="showCrewOverlay" ref="crewOverlayRef" class="crew-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="crewOverlayLabel" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
         <button ref="crewCloseBtnRef" class="crew-popup-close-btn-fixed" @click="closeCrewOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="crew-popup-content-fixed">
           <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" :projects="visibleProjects" :crew-locations="crewLocationsData" @select-crew="openCrewLocationOverlay" @fly-to-project="(lat, lng) => navigateToLocation(lat, lng)" />
@@ -269,6 +269,12 @@ const {
   initMap,
   clusterPanelItems, clusterPanelDataset, clusterPanelOpen, closeClusterPanel,
 } = ctx
+
+const crewOverlayLabel = computed(() => {
+  const crew = crewData.value
+  if (!crew) return t('nav.activeCrews')
+  return ('name' in crew ? crew.name : crew.region) || t('nav.activeCrews')
+})
 
 function selectClusterItem(item: ClusterResultItem) {
   // Disambiguation choice → open its details popup (navigating alone would be

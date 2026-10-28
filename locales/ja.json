@@ -168,7 +168,12 @@
       "visibleResults": "{count}件の表示中のクラスター結果",
       "empty": "この検索に一致する結果はありません。",
       "activeCrewsSubtitle": "活動中のクルー{crews}組 · {countries}か国"
-    }
+    },
+    "shareMap": "地図を共有",
+    "linkCopied": "リンクをコピーしました",
+    "exportMap": "地図画像をエクスポート",
+    "exportData": "表示中のデータをGeoJSONとしてエクスポート",
+    "legend": "凡例"
   },
   "mapTiles": {
     "maptiler": "衛星",

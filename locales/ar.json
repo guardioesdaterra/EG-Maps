@@ -168,7 +168,12 @@
       "visibleResults": "{count} من نتائج التجميع الظاهرة",
       "empty": "لا توجد نتائج تطابق هذا البحث.",
       "activeCrewsSubtitle": "{crews} فرق نشطة · {countries} دولة"
-    }
+    },
+    "shareMap": "مشاركة الخريطة",
+    "linkCopied": "تم نسخ الرابط",
+    "exportMap": "تصدير صورة الخريطة",
+    "exportData": "تصدير البيانات الظاهرة بصيغة GeoJSON",
+    "legend": "مفتاح الخريطة"
   },
   "mapTiles": {
     "maptiler": "قمر صناعي",

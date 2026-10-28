@@ -168,7 +168,12 @@
       "visibleResults": "{count} zichtbare clusterresultaten",
       "empty": "Geen resultaten komen overeen met deze zoekopdracht.",
       "activeCrewsSubtitle": "{crews} actieve teams · {countries} landen"
-    }
+    },
+    "shareMap": "Kaart delen",
+    "linkCopied": "Link gekopieerd",
+    "exportMap": "Kaartafbeelding exporteren",
+    "exportData": "Zichtbare gegevens exporteren als GeoJSON",
+    "legend": "Legenda"
   },
   "mapTiles": {
     "maptiler": "Satelliet",

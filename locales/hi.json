@@ -168,7 +168,12 @@
       "visibleResults": "{count} दृश्यमान क्लस्टर परिणाम",
       "empty": "इस खोज से कोई परिणाम मेल नहीं खाता।",
       "activeCrewsSubtitle": "{crews} सक्रिय दल · {countries} देश"
-    }
+    },
+    "shareMap": "मानचित्र साझा करें",
+    "linkCopied": "लिंक कॉपी किया गया",
+    "exportMap": "मानचित्र छवि निर्यात करें",
+    "exportData": "दिखाई देने वाला डेटा GeoJSON के रूप में निर्यात करें",
+    "legend": "मानचित्र संकेत"
   },
   "mapTiles": {
     "maptiler": "सैटेलाइट",

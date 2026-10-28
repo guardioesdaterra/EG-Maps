@@ -1,210 +1,100 @@
 /*!
- * squarespace-embed.js — Earth Guardians Squarespace component launcher.
+ * squarespace-embed.js — Earth Guardians Squarespace map launcher.
  *
- * What this does
- * --------------
- * 1. Creates a transparent iframe that loads the prerendered Nuxt page at
- *    `${ORIGIN}/iframe/squarespace`.
- * 2. Listens for `embed:height` postMessage events from inside the iframe and
- *    resizes the iframe to match (so the page never has scrollbars).
- * 3. Forwards the host Squarespace page's theme (light/dark/auto) into the
- *    embed so the land outlines match the host's brand.
- * 4. Re-emits `embed:click` and `embed:error` as DOM CustomEvents so the
- *    host page can hook analytics into crew interactions.
- *
- * How to use it in Squarespace
- * ----------------------------
- * Add a Code Block (or footer Code Injection) and paste:
- *
- *   <div id="eg-active-crews" style="min-height:480px"></div>
- *   <script src="https://<YOUR-DOMAIN>/squarespace-embed.js"
- *           data-origin="https://<YOUR-DOMAIN>"
- *           data-theme="auto"
- *           data-min-height="480"
- *           data-accent="#22d3ee"
- *           defer></script>
- *
- * The script auto-mounts when the DOM is ready. Multiple containers are
- * supported — pass `data-target="<css-selector>"` or rely on the default
- * (`[data-eg-embed]` then `#eg-active-crews` fallback). Each container may
- * override data-path, data-theme, data-min-height, data-accent and data-label.
- *
- * Build note
- * ----------
- * `data-origin` MUST be the absolute URL where the static `dist/` is hosted
- * (GitHub Pages, Cloudflare Pages, Netlify, etc.). The iframe is the most
- * reliable cross-origin surface for embedding MapLibre into Squarespace,
- * which strips <script> tags injected via the text editor.
- *
- * License: MIT
+ * Default destination: /active-crews?embed=true&hideAll=true
+ * Override the route with data-path and the app subpath with data-base-url.
+ * The map emits crew-map-ready and, in 3D mode, crew-resize messages.
  */
 (function () {
   'use strict';
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-  /** @typedef {{ container: HTMLElement; iframe: HTMLIFrameElement; channel: string }} Mount */
-
-  var PROTOCOL = 'squarespace-embed';
-  var PROTOCOL_VERSION = 1;
   var DEFAULT_SELECTOR = '[data-eg-embed], #eg-active-crews';
 
-  /** Read a data-* attribute with a typed default. */
-  function attr(el, name, fallback) {
-    var v = el.getAttribute(name);
-    return v == null ? fallback : v;
+  function attr(element, name, fallback) {
+    var value = element.getAttribute(name);
+    return value == null ? fallback : value;
   }
 
-  /** Inject a single <script> tag and resolve when it (and its CSS) are loaded. */
-  function injectStylesheet(href) {
-    return new Promise(function (resolve) {
-      var link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      link.onload = function () { resolve(); };
-      link.onerror = function () { resolve(); };
-      document.head.appendChild(link);
-    });
+  function supportsCss(property, value) {
+    return typeof value === 'string' && window.CSS && typeof window.CSS.supports === 'function' && window.CSS.supports(property, value);
   }
 
-  /** Mount a single embed inside the given container element. */
-  function mount(container, cfg) {
+  function mount(container, config) {
     if (container.__egMounted) return;
     container.__egMounted = true;
     container.style.position = container.style.position || 'relative';
 
     var iframe = document.createElement('iframe');
-    iframe.title = 'Earth Guardians — ' + (cfg.label || 'Embedded component');
+    iframe.title = 'Earth Guardians — ' + (config.label || 'Active Crews map');
     iframe.loading = 'lazy';
     iframe.allow = 'geolocation';
-    iframe.allowTransparency = 'true';
     iframe.frameBorder = '0';
     iframe.scrolling = 'no';
-    iframe.setAttribute('allowtransparency', 'true');
     iframe.style.cssText = [
       'display:block',
       'width:100%',
+      'height:' + config.minHeight + 'px',
+      'min-height:' + config.minHeight + 'px',
       'border:0',
-      'background:transparent',
-      'min-height:' + cfg.minHeight + 'px',
-      'color-scheme:light dark'
+      'background:transparent'
     ].join(';');
-    var path = cfg.path || '/iframe/squarespace';
-    // Keep a configured GitHub Pages subpath (for example /EG-Maps/test/).
-    // A leading slash would otherwise escape that subpath.
-    var originBase = cfg.origin.endsWith('/') ? cfg.origin : cfg.origin + '/';
+
+    var path = config.path || '/active-crews';
+    var originBase = config.origin.endsWith('/') ? config.origin : config.origin + '/';
     var routePath = path.replace(/^\/+/, '');
-    // Prepend baseURL if configured on the container
-    var baseUrl = container.getAttribute('data-base-url') || '';
-    if (baseUrl) {
-      baseUrl = baseUrl.replace(/\/+$/, '');
-      routePath = baseUrl + '/' + routePath;
-    }
+    var baseUrl = (attr(container, 'data-base-url', config.baseUrl) || '').replace(/\/+$/, '');
+    if (baseUrl) routePath = baseUrl + '/' + routePath;
+
     var url = new URL(routePath, originBase);
-    url.searchParams.set('embed', '1');
-    if (cfg.theme) url.searchParams.set('theme', cfg.theme);
-    if (cfg.accent) url.searchParams.set('accent', cfg.accent.replace('#', ''));
+    url.searchParams.set('embed', 'true');
+    url.searchParams.set('hideAll', 'true');
     iframe.src = url.toString();
     container.appendChild(iframe);
 
-    var channel = 'eg-embed-' + Math.random().toString(36).slice(2, 10);
-    /** @type {Mount} */ var m2 = { container: container, iframe: iframe, channel: channel };
-
-    var ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(function () {
-      post(m2, 'host:resize', { height: container.clientHeight });
-    }) : null;
-    if (ro) ro.observe(container);
-
     window.addEventListener('message', function (event) {
+      if (event.origin !== url.origin || event.source !== iframe.contentWindow) return;
       var data = event.data;
-      if (!data || data.source !== PROTOCOL || data.version !== PROTOCOL_VERSION) return;
-      switch (data.type) {
-      case 'embed:ready':
-          if (event.source !== iframe.contentWindow) break;
-          post(m2, 'host:ready', { theme: cfg.theme || 'auto', channel: channel });
-          // Match height to current container.
-          post(m2, 'host:resize', { height: container.clientHeight });
-          break;
-        case 'embed:height':
-          if (event.source !== iframe.contentWindow) break;
-          if (typeof data.payload === 'number') {
-            var h = Math.max(cfg.minHeight, data.payload);
-            iframe.style.height = h + 'px';
-          }
-          break;
-        case 'embed:click':
-          if (event.source !== iframe.contentWindow) break;
-          container.dispatchEvent(new CustomEvent('eg-embed:click', {
-            bubbles: true, detail: data.payload,
-          }));
-          break;
-        case 'embed:error':
-          if (event.source !== iframe.contentWindow) break;
-          container.dispatchEvent(new CustomEvent('eg-embed:error', {
-            bubbles: true, detail: data.payload,
-          }));
-          // eslint-disable-next-line no-console
-          console.error('[eg-embed] map error', data.payload);
-          break;
+      if (!data || typeof data !== 'object') return;
+      if (data.type === 'crew-map-ready') container.setAttribute('data-eg-ready', 'true');
+      if (data.type === 'crew-resize' && data.payload && typeof data.payload === 'object') {
+        var width = data.payload.width;
+        var height = data.payload.height;
+        if (supportsCss('width', width)) iframe.style.width = width;
+        if (supportsCss('height', height)) iframe.style.height = height;
       }
     });
-
-    // React to host theme changes — emit a fresh host:theme every time Squarespace
-    // toggles a class on <html> (Squarespace adds `dark` or `light`).
-    var themeProbe = new MutationObserver(function () {
-      var t = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-      post(m2, 'host:theme', { theme: t });
-    });
-    themeProbe.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-    return m2;
   }
 
-  function post(mount, type, payload) {
-    if (!mount.iframe || !mount.iframe.contentWindow) return;
-    mount.iframe.contentWindow.postMessage({
-      source: PROTOCOL,
-      version: PROTOCOL_VERSION,
-      type: type,
-      payload: payload,
-    }, '*');
-  }
-
-  /** Read cfg from a <script data-* ...> element. */
   function readConfig(script) {
+    var scriptUrl = script.src ? new URL(script.src, window.location.href) : new URL(window.location.href);
+    var scriptBaseUrl = script.src ? scriptUrl.pathname.replace(/[^/]*$/, '') : '';
     return {
-      origin: attr(script, 'data-origin', script.src ? new URL(script.src).origin : window.location.origin),
-      theme: attr(script, 'data-theme', 'auto'),
+      origin: attr(script, 'data-origin', scriptUrl.origin),
+      baseUrl: attr(script, 'data-base-url', scriptBaseUrl),
       minHeight: parseInt(attr(script, 'data-min-height', '480'), 10) || 480,
       target: attr(script, 'data-target', ''),
-      path: attr(script, 'data-path', '/iframe/squarespace'),
-      accent: attr(script, 'data-accent', ''),
-      label: attr(script, 'data-label', ''),
+      path: attr(script, 'data-path', '/active-crews'),
+      label: attr(script, 'data-label', '')
     };
   }
 
   function init() {
     var script = document.currentScript || document.querySelector('script[data-eg-embed-launch]');
     if (!script) return;
-    var cfg = readConfig(script);
-
-    var containers = cfg.target
-      ? Array.prototype.slice.call(document.querySelectorAll(cfg.target))
+    var config = readConfig(script);
+    var containers = config.target
+      ? Array.prototype.slice.call(document.querySelectorAll(config.target))
       : Array.prototype.slice.call(document.querySelectorAll(DEFAULT_SELECTOR));
     if (!containers.length) return;
 
-    // Make Squarespace respect transparency: strip any iframe background.
-    var style = document.createElement('style');
-    style.textContent = 'iframe[allowtransparency]{background:transparent !important}';
-    document.head.appendChild(style);
-
-    containers.forEach(function (c) {
-      mount(c, {
-        origin: attr(c, 'data-origin', cfg.origin),
-        theme: attr(c, 'data-theme', cfg.theme),
-        minHeight: parseInt(attr(c, 'data-min-height', String(cfg.minHeight)), 10) || cfg.minHeight,
-        path: attr(c, 'data-path', cfg.path),
-        accent: attr(c, 'data-accent', cfg.accent),
-        label: attr(c, 'data-label', cfg.label),
+    containers.forEach(function (container) {
+      mount(container, {
+        origin: attr(container, 'data-origin', config.origin),
+        baseUrl: attr(container, 'data-base-url', config.baseUrl),
+        minHeight: parseInt(attr(container, 'data-min-height', String(config.minHeight)), 10) || config.minHeight,
+        path: attr(container, 'data-path', config.path),
+        label: attr(container, 'data-label', config.label)
       });
     });
   }

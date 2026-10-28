@@ -32,9 +32,14 @@ Create a `.env` file from the template:
 ```env
 NUXT_PUBLIC_MAPTILER_API_KEY=your_key
 NUXT_PUBLIC_SUPABASE_URL=your_project_url
-NUXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_key
+NUXT_PUBLIC_SUPABASE_KEY=your_anon_key
+# Required only for Supabase CLI Edge Function deployment:
+SUPABASE_PROJECT_REF=
+# Local admin/sync scripts only; not used by the Edge Function deploy command:
+SUPABASE_SERVICE_ROLE_KEY=
 ```
+
+Keep `SUPABASE_SERVICE_ROLE_KEY` server-side and out of client-prefixed variables. On Windows, use `Copy-Item .env.example .env`; the `pnpm` commands above run from PowerShell, while `push.sh` requires Bash/Git Bash. The Edge Function deploy command does not set secrets; Supabase injects its reserved runtime variables.
 
 ## Code Conventions
 

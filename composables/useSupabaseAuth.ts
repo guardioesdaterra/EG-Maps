@@ -10,7 +10,7 @@
  * @deps vue (ref, watch); ./useSupabase (useSupabase); ~/lib/auth-redirect (buildAuthCallbackUrl, safeNext, stripBasePath, takeAutoPostbackFlag, takeAutoSignInFlag, withAutoPostbackFlag, withAutoSignInFlag, withTimeout)
  */
 import { ref, watch } from 'vue'
-import { useSupabase } from './useSupabase'
+import { setAuthRelayWindow, useSupabase } from './useSupabase'
 import {
   buildAuthCallbackUrl,
   safeNext,
@@ -88,8 +88,13 @@ function openAuthTopLevel(returnTo: string | undefined, mode: AutoSignInMode): b
   const withFlag = withAutoSignInFlag(absoluteAppUrl(target), mode)
   const topUrl = withFlag && withAutoPostbackFlag(withFlag)
   if (!topUrl) return false
+  setAuthRelayWindow(null)
   try {
-    if (window.open(topUrl, '_blank')) return true
+    const authTab = window.open(topUrl, '_blank')
+    if (authTab) {
+      setAuthRelayWindow(authTab)
+      return true
+    }
   } catch { /* popup blocked — fall through to top navigation */ }
   navigateTopLevel(topUrl)
   return true

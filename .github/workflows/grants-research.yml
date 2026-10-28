@@ -51,6 +51,9 @@ jobs:
     name: '🔭 Research new grant sources'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      GRANTS_RESEARCH_FOCUS: ${{ inputs.focus || 'worldwide' }}
+      GRANTS_RESEARCH_EXTRA: ${{ inputs.extra_instructions || '' }}
     steps:
       - uses: actions/checkout@v6
 
@@ -72,9 +75,6 @@ jobs:
           REPORT_FILE="$REPORT_DIR/$TODAY.md"
           echo "report-file=$REPORT_FILE" >> "$GITHUB_OUTPUT"
 
-          FOCUS="${{ inputs.focus || 'worldwide' }}"
-          EXTRA="${{ inputs.extra_instructions || '' }}"
-
           # NOTE: `opencode run "<message>"` is non-interactive; no --model
           # flag → opencode default model (see header note about `-p`).
           # pipefail is on in GH runners, so an opencode failure fails the step.
@@ -83,7 +83,7 @@ jobs:
           CONTEXT
           - This repo aggregates open socio-environmental art-activism grants in scripts/grants.py (see the ALL_SOURCES registry and fetch_* functions for what is ALREADY covered — never propose a source that duplicates an existing key).
           - Mission focus: youth climate justice, art-activism, indigenous / quilombola / traditional-community rights, endangered-species conservation, feminist funds, grassroots environment, community media.
-          - Regional focus for this run: $FOCUS. $EXTRA
+          - Regional focus for this run: $GRANTS_RESEARCH_FOCUS. $GRANTS_RESEARCH_EXTRA
 
           TASK (read-only — do NOT edit, commit, or create code files)
           1. Read scripts/grants.py ALL_SOURCES keys so you know current coverage.
@@ -112,20 +112,22 @@ jobs:
 
       - name: 📝 Summary
         if: always()
+        env:
+          REPORT_FILE: ${{ steps.scout.outputs.report-file }}
         run: |
           {
             echo "## 🔭 Grants research scout"
             echo ""
             echo "- Result: **${{ job.status }}**"
-            echo "- Focus: \`${{ inputs.focus || 'worldwide' }}\`"
-            echo "- Report: \`${{ steps.scout.outputs.report-file }}\` (see artifacts, 30-day retention)"
+            echo "- Focus: \`$GRANTS_RESEARCH_FOCUS\`"
+            echo "- Report: \`$REPORT_FILE\` (see artifacts, 30-day retention)"
             echo "- Model: opencode default (no \`--model\` flag)"
             echo ""
             echo "_Read-only run: curate findings into \`scripts/grants.py\` fetchers manually._"
           } >> "$GITHUB_STEP_SUMMARY"
           # Embed the full exec output (all URLs, grants, data) in the summary
           # so reviewers never need to download the artifact.
-          REPORT="${{ steps.scout.outputs.report-file }}"
+          REPORT="$REPORT_FILE"
           if [ -n "$REPORT" ] && [ -f "$REPORT" ]; then
             {
               echo ""

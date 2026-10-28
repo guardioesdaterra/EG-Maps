@@ -100,7 +100,7 @@ Every world ships in **2D** (MapLibre GL) and **3D** (globe) flavors:
 |-------|-----------|
 | 💸 `/eg-grants` + `/eg-grants/fullscreen` | Grants discovery portal — globe + worldwide grid, 60+ scraped sources, deadlines, amounts, manager approvals, voting & comments |
 | 🎓 `/masterclasses` · 📣 `/campaigns` · 🗂️ `/crew-projects` | Learning, campaign and crew-project hubs |
-| 🖼️ `/iframe` + `/iframe/squarespace` | Lightweight embed builds (`postMessage` API, `?hideAll` / `?no-control` / `?embed` flags) for Squarespace & partners |
+| 🖼️ `/iframe` + `/iframe/squarespace` | Embed examples/integration guide; the Active Crews map itself is `/active-crews` (embed flags: `?embed=true&hideAll=true`) |
 | ℹ️ `/info` · 🏠 `/` | About/feedback page + cinematic Three.js hero landing |
 
 ---
@@ -240,6 +240,29 @@ pnpm install
 cp .env.example .env
 ```
 
+#### Windows PowerShell
+
+```powershell
+git clone https://github.com/guardioesdaterra/EG-Maps.git
+Set-Location EG-Maps
+pnpm install
+Copy-Item .env.example .env
+pnpm dev
+```
+
+The `pnpm` app commands also work in PowerShell. `push.sh` is Bash-only; use Git Bash for it, or run the deployment and Git commands individually.
+
+To deploy Edge Functions from Windows, install the CLI with Scoop and authenticate, then set the intended `SUPABASE_PROJECT_REF` in the ignored `.env` file:
+
+```powershell
+scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+scoop install supabase
+supabase login
+pnpm supabase:deploy
+```
+
+The repository does not include the `supabase/functions` sources, so the deploy command will stop with a clear error until those authorized files are available locally.
+
 ### Environment
 
 ```env
@@ -249,6 +272,12 @@ NUXT_PUBLIC_MAPTILER_API_KEY=your_api_key_here
 # 🔌 Supabase — auth, grants, community pins (required for live features)
 NUXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NUXT_PUBLIC_SUPABASE_KEY=your-anon-key-here
+
+# 🔧 Supabase CLI target (required only to deploy Edge Functions)
+SUPABASE_PROJECT_REF=
+
+# 🔒 Local admin/sync scripts only; not used by Edge Function deploy
+SUPABASE_SERVICE_ROLE_KEY=
 
 # 🌍 Deployment base (GitHub Pages subdirectory)
 NUXT_APP_BASE_URL=/
@@ -285,9 +314,11 @@ pnpm test       # ✅ vitest unit tests
 | 🧬 Species index | `pnpm species:index` | Rebuild species search index |
 | 🌱 Crew grants | `pnpm crew-grants:generate` / `:check` | Generate / verify crew-grant links |
 | 🗺️ Tiles | `pnpm tiles:download` / `pnpm tiles:stats` | Offline MBTiles fetch / stats |
-| ☁️ Edge functions | `pnpm supabase:deploy` | Deploy all 5 Supabase edge functions |
+| ☁️ Edge functions | `pnpm supabase:deploy` | Validate project/source, then deploy function directories under `supabase/functions/`; changes no secrets |
 
 Plus `scripts/` power tools: `sync-grants-to-supabase.ts` (radar → DB), `sync-anm-vulcan.mjs` + `sniff-anm.mjs` (mining data), `scan-i18n.ts` + `update-locales.mjs` (translations), `compute-overlaps.mjs` (claim overlaps), CSV/GeoJSON/KML/KMZ parsers in `lib/parsers/`.
+
+The edge-deploy command requires Node.js 22.9+, the Supabase CLI on `PATH`, an authenticated CLI session, `SUPABASE_PROJECT_REF`, and local function sources. It has no project-ref fallback and fails before contacting Supabase when the target or function source is missing. This repository does not track the `supabase/` directory, so Edge Function deployment is unavailable from a clean checkout until the intended project and authorized sources are supplied locally. The command does not set secrets; Supabase provides its reserved runtime variables to Edge Functions. Do not commit `.env` or add the service-role key to client variables.
 
 ---
 

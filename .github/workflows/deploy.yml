@@ -439,8 +439,6 @@ jobs:
           CI: true
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
 
       - name: 📤 Upload Playwright report
@@ -537,13 +535,16 @@ jobs:
         run: node scripts/compute-overlaps.mjs
         working-directory: _src_main
 
-      - name: 🔍 Verify secrets
+      - name: 🔍 Validate public Supabase configuration
         run: |
-          echo "SUPABASE_URL=${SUPABASE_URL:0:30}..."
-          echo "SUPABASE_KEY length=${#SUPABASE_KEY}"
+          missing=0
+          if [ -z "$NUXT_PUBLIC_SUPABASE_URL" ]; then echo "::error::NUXT_PUBLIC_SUPABASE_URL is missing"; missing=1; fi
+          if [ -z "$NUXT_PUBLIC_SUPABASE_KEY" ]; then echo "::error::NUXT_PUBLIC_SUPABASE_KEY is missing"; missing=1; fi
+          if [ "$missing" -ne 0 ]; then exit 1; fi
+          echo "Public Supabase configuration is present (values not displayed)."
         env:
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
 
       - name: 🏗️ Build main (production)
         run: pnpm generate
@@ -551,8 +552,6 @@ jobs:
         env:
           NUXT_APP_BASE_URL: /EG-Maps/
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
 
@@ -652,14 +651,23 @@ jobs:
         run: node scripts/compute-overlaps.mjs
         working-directory: _src_develop
 
+      - name: 🔍 Validate public Supabase configuration
+        run: |
+          missing=0
+          if [ -z "$NUXT_PUBLIC_SUPABASE_URL" ]; then echo "::error::NUXT_PUBLIC_SUPABASE_URL is missing"; missing=1; fi
+          if [ -z "$NUXT_PUBLIC_SUPABASE_KEY" ]; then echo "::error::NUXT_PUBLIC_SUPABASE_KEY is missing"; missing=1; fi
+          if [ "$missing" -ne 0 ]; then exit 1; fi
+          echo "Public Supabase configuration is present (values not displayed)."
+        env:
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+
       - name: 🧪 Build develop (test)
         run: pnpm generate
         working-directory: _src_develop
         env:
           NUXT_APP_BASE_URL: /EG-Maps/test/
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
 

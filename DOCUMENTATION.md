@@ -28,8 +28,10 @@ EG-Maps is a **static-generated Nuxt 3 SPA**. `nuxt.config.ts` enables `ssr: tru
 - **Dev:** `pnpm dev` → `nuxt dev` (HMR via ws://localhost).
 - **Test:** `pnpm test` → `vitest run`; `pnpm test:e2e` (Playwright `playwright.config.ts`).
 - **Lint:** `pnpm lint` → `eslint .`. Format is Prettier (`.prettierrc`), no enforced Prettier run.
-- **Supabase deploy:** `npm run supabase:deploy` (defined in `package.json`) iterates `crew-sync`, `is-manager`, `grants`, `crews-create`, `register-pin`.
-- **Auto-deploy (CI):** `.github/workflows/deploy.yml` (Node 22, pnpm 10.12.0) deploys on push to `main` and `develop`, every 2 hours, and `workflow_dispatch`.
+- **Supabase Edge deploy:** `pnpm supabase:deploy` validates the explicit project target and deployable function sources under `supabase/functions/`, then deploys them without changing secrets.
+- **Auto-deploy (CI):** `.github/workflows/deploy.yml` builds the `master` and `develop` sites and deploys the combined artifact to GitHub Pages. Data scraping/push is handled separately by `.github/workflows/data-sync.yml`.
+
+The repository ignores and does not track `supabase/`, so Edge Function sources are unavailable in a clean checkout. The command requires the operator to set the intended project reference locally; it contains no project-ID or secret fallback and fails before contacting Supabase when the target or sources are missing. Supabase injects its reserved runtime variables into Edge Functions, so this deploy command does not try to set `SUPABASE_*` secrets.
 
 ### Manual chunking (`nuxt.config.ts:131-150`)
 
@@ -301,7 +303,7 @@ Quality auto-tuning (`useAdaptiveQuality` + `lib/constants.ts:65-135`):
 
 ### Git
 - Conventional-commit style implied. No `.git/hooks` provided.
-- `push.sh` (root) auto-commits ANY staged change with message `'update'` AND runs `npm run supabase:deploy` before push. Don't run blindly (see `/home/hautly/AGENTS.md`).
+- `push.sh` (root) is Bash-only and fail-fast: it runs `pnpm supabase:deploy`, stages changes, commits only when there is a staged diff, then pushes. On Windows use Git Bash or run commands individually in PowerShell. It will stop at deploy validation when credentials or local Edge Function sources are missing.
 - `.gitignore` excludes `supabase/`, `*.sql.tmp`, `.nuxt/`, `.output/`, `dist/`, `node_modules/`.
 
 ---
@@ -335,8 +337,8 @@ Plausible analytics: only loaded when `NUXT_PUBLIC_PLAUSIBLE_DOMAIN` is set in `
 | Service | Where | Auth |
 |---------|-------|------|
 | **MapTiler Cloud** | `useMapLibre.getMapStyle()` | API key in URL (`?key=…`); two failure modes: 403 (invalid) or generic timeout (30 s, fallback to demotiles) |
-| **Supabase REST + Edge Functions** | `lib/supabase.ts`, `useGrants.ts`, `useUserPin.ts` | Anon key in client; service role inside edge functions only |
-| **Supabase Storage** | `useDataDownload.ts` | Service role (server-side) |
+| **Supabase REST + Edge Functions** | `lib/supabase.ts`, `useGrants.ts`, `useUserPin.ts` | Public anon key in client; service role only in server/admin tooling; Supabase injects its reserved runtime variables into Edge Functions |
+| **Supabase Storage** | `useDataDownload.ts` | Server-side/admin credentials only |
 | **Wikimedia Commons** | `lib/species-utils.ts` (URL build) | None — public, no key |
 | **Plausible** | `app.vue` (defer-cdn script) | Domain by env var |
 | **Google OAuth** | `useSupabaseAuth.signIn()` | PKCE flow, `redirectTo = window.location.origin + /auth/callback` |
@@ -369,18 +371,16 @@ runtimeConfig: {
     maptilerApiKey: env.NUXT_PUBLIC_MAPTILER_API_KEY || env.MAPTILER_API_KEY || '',
     plausibleDomain: env.NUXT_PUBLIC_PLAUSIBLE_DOMAIN || '',
     supabaseUrl: env.NUXT_PUBLIC_SUPABASE_URL || '',
-    supabaseKey: env.NUXT_PUBLIC_SUPABASE_KEY || '',  // NB: renamed from .env.example's NUXT_PUBLIC_SUPABASE_ANON_KEY
+    supabaseKey: env.NUXT_PUBLIC_SUPABASE_KEY || '',
   },
 }
 ```
 
-> **Gotcha:** `.env.example` documents `NUXT_PUBLIC_SUPABASE_KEY` but in earlier code paths the variable was `NUXT_PUBLIC_SUPABASE_ANON_KEY`. The current `nuxt.config.ts` reads `SUPABASE_KEY`. If you copy `.env.example` as-is, you also need the matching import in the deploy script (which uses `NUXT_PUBLIC_SUPABASE_ANON_KEY`).
+The app, `.env.example`, and production/test build steps use the same public contract: `NUXT_PUBLIC_SUPABASE_URL` and `NUXT_PUBLIC_SUPABASE_KEY`. `SUPABASE_SERVICE_ROLE_KEY` is server-side only and must never use a `NUXT_PUBLIC_` prefix.
 
 ### `.github/workflows/deploy.yml`
 
-Triggers: push to `main`/`develop`, every 2 hours, `workflow_dispatch`. Permissions: `contents: read`, `pages: write`, `id-token: write`. Uses `pnpm/action-setup@v6` with version `10.12.0` (matches `packageManager`).
-
-Two jobs: `sync` (Supabase data sync) → `build` (Nuxt build → upload artifact → deploy to Pages). Only builds to GitHub Pages — staging server is local.
+The build workflow validates that both public Supabase values exist without printing them, then builds `master` and `develop`, assembles the artifacts, and deploys to GitHub Pages. It does not deploy Edge Functions; data-sync runs in the separate workflow.
 
 ---
 
@@ -405,8 +405,8 @@ pnpm test
 # E2E (against local server)
 pnpm test:e2e
 
-# Deploy edge functions
-npm run supabase:deploy
+# Deploy local Edge Function sources (requires authorized project ref/secrets and Supabase CLI)
+pnpm supabase:deploy
 
 # Re-download map tiles for offline preview
 pnpm tiles:download --region lat/lng bbox --zoom 0-8
@@ -431,7 +431,7 @@ node --env-file=.env scripts/sync-grants-to-supabase.ts grants scripts/output/gr
 4. **No retry on edge-function call failures.** Errors land in `useToast` as a one-shot. Pages don't poll/retry.
 5. **The two largest files are `pages/eg-grants/index.vue` (1,339 LOC) and `composables/useMapBase.ts` (700 LOC).** Both are de-facto monoliths — touch them only with intent.
 6. **`useToast.useToast()` re-creates `state = useState('toast', …)` correct;** the `timers` map is per-call and leaks if a component that pushes the toast is unmounted before the timeout fires. (See Bugs §B6.)
-7. **Service role only in edge functions.** Never expose `SUPABASE_SERVICE_ROLE_KEY` to the client. The repo doesn't reference it anywhere client-side; ensure you don't add new client code paths that do.
+7. **Service role stays server-side.** Never expose `SUPABASE_SERVICE_ROLE_KEY` to the client. Local admin/sync scripts may require it; deployed Edge Functions receive Supabase-managed runtime variables.
 8. **`getSupabaseClient`** silently creates a placeholder client when env vars are empty — most downstream operations will throw, but the placeholder itself can mask config errors. See Bugs §B1.
 9. **Geographic coordinate convention** is WGS84 lng-lat tuple (`[lng, lat]`). Latitude-first variants are rejected by `lib/map-utils.isValidCoordinate`. Watch for ForEach that swaps these.
 10. **MapTiler key is in URL** (not header). It's safe to expose per MapTiler's domain-restriction model but consider URL-rewriting if you switch to a domain-restricted setup.

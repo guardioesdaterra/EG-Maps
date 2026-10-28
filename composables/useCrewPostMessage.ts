@@ -371,6 +371,7 @@ export function useCrewPostMessage(
   /* ── postMessage listener ─────────────────────────────────────────── */
 
   function handleMessage(event: MessageEvent) {
+    if (event.source !== window.parent) return
     if (!ALLOWED_ORIGINS.has(event.origin)) return
 
     const data = event.data

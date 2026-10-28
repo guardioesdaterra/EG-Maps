@@ -16,7 +16,7 @@ test.describe('keyboard accessibility', () => {
   test('mobile icon navigation has names and the language selector supports Escape', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/')
-    await page.waitForFunction(() => Boolean((document.querySelector('#__nuxt') as HTMLElement & { __vue_app__?: unknown } | null)?.__vue_app__))
+    await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {})
 
     const speciesCardLink = page.locator('a.bento-link[href="/endangered-species"]')
     await expect(speciesCardLink).toContainText('Endangered Species')
@@ -24,11 +24,11 @@ test.describe('keyboard accessibility', () => {
     const languageButton = page.getByRole('button', { name: 'Language' })
     await expect(languageButton).toHaveAttribute('aria-expanded', 'false')
 
-    await page.waitForFunction(() => {
-      const button = document.querySelector('button[aria-label="Language"]') as (HTMLElement & { __vnode?: { props?: Record<string, unknown> } }) | null
-      return typeof button?.__vnode?.props?.onClick === 'function'
-    })
+    await languageButton.click()
+    await expect(languageButton).toHaveAttribute('aria-expanded', 'true')
     await languageButton.focus()
+    await page.keyboard.press('Enter')
+    await expect(languageButton).toHaveAttribute('aria-expanded', 'false')
     await page.keyboard.press('Enter')
     await expect(languageButton).toHaveAttribute('aria-expanded', 'true')
     const firstLanguageOption = page.locator('#language-options').getByRole('button').first()

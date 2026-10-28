@@ -146,7 +146,7 @@ test.describe('Page content rendering', () => {
 
   test('project grants page renders map container', async ({ page }) => {
     await loadPage(page, '/project-grants')
-    const map = page.getByRole('region', { name: /Interactive world map/ })
+    const map = page.getByRole('region', { name: '2D Map', exact: true })
     await expect(map).toBeVisible()
     const mapCanvas = map.locator('canvas.maplibregl-canvas')
     await expect(mapCanvas).toBeVisible({ timeout: 15000 })

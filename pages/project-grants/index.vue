@@ -59,7 +59,7 @@ useHead({
 <style scoped>
 .former-eg-link {
   position: fixed;
-  top: max(1rem, env(safe-area-inset-top));
+  top: max(4.5rem, calc(env(safe-area-inset-top) + 3.75rem));
   left: max(1rem, env(safe-area-inset-left));
   z-index: 760;
   display: flex;

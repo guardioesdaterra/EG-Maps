@@ -95,6 +95,51 @@
         </template>
         <p>{{ fullscreen ? t('mapControls.exitFullscreen') : t('mapControls.enterFullscreen') }}</p>
       </UiTooltip>
+
+      <UiTooltip :side="isMobile ? 'right' : 'left'">
+        <template #trigger>
+          <UiButton
+            variant="outline"
+            size="icon"
+            class="map-tool-button"
+            @click="emit('share')"
+            :aria-label="shareCopied ? t('mapControls.linkCopied') : t('mapControls.shareMap')"
+          >
+            <iconify-icon :icon="shareCopied ? 'lucide:check' : 'lucide:share-2'" class="h-4 w-4 xs:h-5 xs:w-5" />
+          </UiButton>
+        </template>
+        <p>{{ shareCopied ? t('mapControls.linkCopied') : t('mapControls.shareMap') }}</p>
+      </UiTooltip>
+
+      <UiTooltip :side="isMobile ? 'right' : 'left'">
+        <template #trigger>
+          <UiButton
+            variant="outline"
+            size="icon"
+            class="map-tool-button"
+            @click="emit('export')"
+            :aria-label="t('mapControls.exportMap')"
+          >
+            <iconify-icon icon="lucide:image-down" class="h-4 w-4 xs:h-5 xs:w-5" />
+          </UiButton>
+        </template>
+        <p>{{ t('mapControls.exportMap') }}</p>
+      </UiTooltip>
+
+      <UiTooltip :side="isMobile ? 'right' : 'left'">
+        <template #trigger>
+          <UiButton
+            variant="outline"
+            size="icon"
+            class="map-tool-button"
+            @click="emit('export-data')"
+            :aria-label="t('mapControls.exportData')"
+          >
+            <iconify-icon icon="lucide:download" class="h-4 w-4 xs:h-5 xs:w-5" />
+          </UiButton>
+        </template>
+        <p>{{ t('mapControls.exportData') }}</p>
+      </UiTooltip>
     </div>
 
     
@@ -300,6 +345,7 @@ interface Props {
   species?: (Species | SpeciesIndexItem)[]
   filterOpen?: boolean
   isEmbed?: boolean
+  shareCopied?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -309,6 +355,7 @@ const props = withDefaults(defineProps<Props>(), {
   dataset: 'project-grants',
   filterOpen: false,
   isEmbed: false,
+  shareCopied: false,
 })
 
 const emit = defineEmits<{
@@ -317,6 +364,9 @@ const emit = defineEmits<{
   'toggle-filter': []
   'search-open-change': [open: boolean]
   'navigate': [lat: number, lng: number]
+  'share': []
+  'export': []
+  'export-data': []
 }>()
 
 const isMobile = useMediaQuery('(max-width: 768px)')

@@ -8,7 +8,7 @@
  */
 import { ref, shallowRef, computed, nextTick, onMounted, onUnmounted, watch, type Ref } from 'vue'
 import maplibregl from 'maplibre-gl'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import { useFocusTrap } from '@/composables/useFocusTrap'
@@ -21,19 +21,22 @@ import { getPopupContent } from '@/composables/useCulturalLayers'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { useAdaptiveQuality } from '@/composables/useAdaptiveQuality'
 import { useMapTileProvider } from '@/composables/useMapTileProvider'
+import { useOfflineTiles, isSafeTileUrl, MAX_TILE_BYTES } from '@/composables/useOfflineTiles'
 import { usePerformance } from '@/composables/usePerformance'
 import { allProjectsData } from '@/lib/project-data'
-import { openRareEarthOverlayPopup } from '@/lib/map-utils'
+import { openRareEarthOverlayPopup, MAP_GROUP_COLORS, type Species } from '@/lib/map-utils'
 import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
 import { HEX_GRID } from '@/lib/constants'
 import { VULCAN_CENTER } from '@/composables/useVulcanCircles'
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
-import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { ParticleQualityConfig } from '@/lib/map-effects'
 import { useAppRuntime } from '@/composables/useAppRuntime'
+import { parseMapShareState, serializeMapShareState, buildMapShareUrl } from '@/lib/map-state'
+import { exportMapToImage, buildMapExportCollection, downloadMapGeoJSON, mapExportFilename, type ExportLegendItem } from '@/lib/map-export'
+import { getProjectMapColor } from '@/lib/colors'
 
 export interface ClusterResultItem {
   id: string
@@ -73,6 +76,46 @@ function tEnd(label: string) {
   try { console.timeEnd(label) } catch { /* already cleared */ }
 }
 
+let offlineTileProtocolRegistered = false
+let offlineTileProtocolCache: ReturnType<typeof useOfflineTiles> | null = null
+function registerOfflineTileProtocol(cache: ReturnType<typeof useOfflineTiles>) {
+  offlineTileProtocolCache = cache
+  if (offlineTileProtocolRegistered) return
+  maplibregl.addProtocol('egoffline', async (request, abortController) => {
+    const activeCache = offlineTileProtocolCache
+    if (!activeCache) throw new Error('Offline tile cache is unavailable')
+    const protocolUrl = new URL(request.url)
+    const sourceUrl = protocolUrl.searchParams.get('url')
+    if (!sourceUrl || !isSafeTileUrl(sourceUrl)) throw new Error('Invalid offline tile request')
+    const parsed = new URL(sourceUrl)
+    const match = parsed.pathname.match(/\/tiles\/satellite(?:-[^/]+)?\/(\d+)\/(\d+)\/(\d+)\.(?:jpg|jpeg|png|webp)$/i)
+    if (!match) throw new Error('Unsupported offline tile path')
+    const [, zText, xText, yText] = match
+    const z = Number(zText); const x = Number(xText); const y = Number(yText)
+    const cached = await activeCache.getTile(z, x, y)
+    if (cached) return { data: cached }
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      throw new Error(`Tile ${z}/${x}/${y} is not available offline`)
+    }
+
+    const response = await fetch(sourceUrl, { signal: abortController.signal })
+    if (!response.ok) throw new Error(`Tile request failed (${response.status})`)
+    const contentType = response.headers.get('content-type') || 'image/jpeg'
+    const contentLength = Number(response.headers.get('content-length') || 0)
+    if (contentLength > MAX_TILE_BYTES) throw new Error('Tile exceeds the local cache size limit')
+    const data = await response.arrayBuffer()
+    if (data.byteLength > MAX_TILE_BYTES) throw new Error('Tile exceeds the local cache size limit')
+    void activeCache.setTile(z, x, y, data, contentType)
+    return { data }
+  })
+  offlineTileProtocolRegistered = true
+}
+
+function transformMapTileRequest(url: string, resourceType?: string) {
+  if (resourceType !== 'Tile' || !isSafeTileUrl(url)) return { url }
+  return { url: `egoffline://tile?url=${encodeURIComponent(url)}` }
+}
+
 export interface MapBaseProps {
   projects?: ProjectData[]
   species?: Species[]
@@ -108,13 +151,19 @@ export function useMapBase(config: MapBaseConfig) {
 
   const { t, locale, localeNames } = useI18n()
   const route = useRoute()
+  const router = useRouter()
   const speciesPanel = useSpeciesPanel()
   const baseURL = useRuntimeConfig().app.baseURL
   const isMobile = useMediaQuery('(max-width: 768px)')
   const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
+  const offlineTiles = useOfflineTiles(MAPTILER_API_KEY)
+  const initialShareState = parseMapShareState(route.query)
+  const initialCameraState = initialShareState
 
   const quality = useAdaptiveQuality()
   const runtime = useAppRuntime()
+  if (initialShareState.showHexGrid !== undefined) runtime.hexGridPreference.value = initialShareState.showHexGrid
+  if (initialShareState.showConnections !== undefined) runtime.connectionsPreference.value = initialShareState.showConnections
   const tileProvider = useMapTileProvider()
   const perf = usePerformance()
 
@@ -143,7 +192,9 @@ export function useMapBase(config: MapBaseConfig) {
     return filteredSpeciesList.value ?? (activeDataset.value === 'endangered-species' ? speciesIndexData.value : speciesData.value)
   })
   const activeDataset = ref<'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'>(props.defaultDataset || 'project-grants')
-  const selectedSpeciesGroups = ref<string[]>([])
+  const shareCopied = ref(false)
+  let shareCopiedTimer: ReturnType<typeof setTimeout> | null = null
+  const selectedSpeciesGroups = ref<string[]>(initialShareState.selectedSpeciesGroups ?? [])
   const clusterPanelItems = ref<ClusterResultItem[]>([])
   const clusterPanelDataset = ref('Cluster results')
   const clusterPanelOpen = ref(false)
@@ -291,6 +342,127 @@ export function useMapBase(config: MapBaseConfig) {
       })
     }
   }
+
+  function getCurrentMapCamera() {
+    const center = map?.getCenter()
+    const isRee = activeDataset.value === 'vulcan-observatory'
+    const fallbackCenter = initialCameraState.center ?? (isRee ? (isGlobe ? [-48, -15] : [-46.533, -21.914]) : (isGlobe ? [0, 20] : [0, 0]))
+    let fallbackZoom = initialCameraState.zoom ?? (isRee ? (isGlobe ? 4.2 : 9.5) : isMobile.value ? (isGlobe ? 1 : 1.2) : (isGlobe ? 1.8 : 2))
+    if (initialCameraState.zoom === undefined && route.query.zoom != null) {
+      const tileMaxZoom = quality.settings.value.tileResolution === 'low' ? 14 : quality.settings.value.tileResolution === 'medium' ? 17 : 22
+      fallbackZoom = Math.max(0, Math.min(1, parseFloat(String(route.query.zoom)) || 0)) * tileMaxZoom
+    }
+    return {
+      center: (center ? [center.lng, center.lat] : fallbackCenter) as [number, number],
+      zoom: map?.getZoom() ?? fallbackZoom,
+      bearing: map?.getBearing() ?? initialCameraState.bearing ?? 0,
+      pitch: map?.getPitch() ?? initialCameraState.pitch ?? 0,
+    }
+  }
+
+  function syncMapCameraToUrl() {
+    if (!map || !isMounted || !map.loaded()) return
+    const queryState = serializeMapShareState({
+      ...getCurrentMapCamera(),
+      showHexGrid: showHexGrid.value,
+      showConnections: showConnections.value,
+      selectedSpeciesGroups: selectedSpeciesGroups.value,
+    })
+    if (Object.entries(queryState).every(([key, value]) => String(route.query[key] ?? '') === value)) return
+    const query = { ...route.query, ...queryState }
+    if (!queryState.mapGroups) delete query.mapGroups
+    void router.replace({ query, hash: route.hash }).catch(() => {})
+  }
+
+  async function shareMap(): Promise<boolean> {
+    if (typeof window === 'undefined') return false
+    const state = {
+      ...getCurrentMapCamera(),
+      showHexGrid: showHexGrid.value,
+      showConnections: showConnections.value,
+      selectedSpeciesGroups: selectedSpeciesGroups.value,
+    }
+    const shareUrl = buildMapShareUrl(window.location.href, state)
+    const queryState = serializeMapShareState(state)
+    try {
+      const query = { ...route.query, ...queryState }
+      if (!queryState.mapGroups) delete query.mapGroups
+      await router.replace({ query, hash: route.hash })
+    } catch { /* the generated URL remains usable even if router replacement fails */ }
+
+    let copied = false
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl)
+        copied = true
+      }
+    } catch { /* try the older browser copy path */ }
+    if (!copied) {
+      const textarea = document.createElement('textarea')
+      textarea.value = shareUrl
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      try { copied = document.execCommand('copy') } catch { copied = false }
+      textarea.remove()
+    }
+    if (shareCopiedTimer) clearTimeout(shareCopiedTimer)
+    shareCopied.value = copied
+    if (copied) shareCopiedTimer = setTimeout(() => { shareCopied.value = false }, 2000)
+    return copied
+  }
+
+  function getExportLegendItems(): ExportLegendItem[] {
+    if (activeDataset.value === 'endangered-species') {
+      return Object.entries(MAP_GROUP_COLORS).map(([group, color]) => ({ label: t(`taxonomy.${group}`) || group, color }))
+    }
+    if (activeDataset.value === 'project-grants') {
+      return [
+        { label: '≤100', color: getProjectMapColor(100, 0) },
+        { label: '101–500', color: getProjectMapColor(101, 0) },
+        { label: '501–1K', color: getProjectMapColor(501, 0) },
+        { label: '>1K', color: getProjectMapColor(1001, 0) },
+      ]
+    }
+    return [
+      { label: t('stats.crewsActive20'), color: '#27ae60' },
+      { label: t('stats.crewsActive5to20'), color: '#5dade2' },
+      { label: t('stats.crewsActive1to5'), color: '#8e44ad' },
+      { label: t('stats.crewsInactive'), color: '#f39c12' },
+    ]
+  }
+
+  async function exportMapImage() {
+    if (!mapContainerRef.value) return
+    const datasetLabel = activeDataset.value === 'project-grants' ? t('home.projectGrantsTitle')
+      : activeDataset.value === 'endangered-species' ? t('home.speciesTitle')
+        : activeDataset.value === 'active-crews' ? t('home.activeCrewsTitle') : t('home.observatoryTitle')
+    const featureCount = activeDataset.value === 'project-grants' ? visibleProjects.value.length
+      : activeDataset.value === 'endangered-species' ? visibleSpecies.value.length
+        : activeDataset.value === 'active-crews' ? crewLocationsData.value.length + crewsData.value.length
+          : (props.rareEarthFiltered?.features.length || props.rareEarthPoints?.features.length || 0)
+    await exportMapToImage(mapContainerRef.value, {
+      format: 'png', resolution: '1x', includeLegend: true, includeTitle: true,
+      legendItems: getExportLegendItems(),
+      legendTitle: t('mapControls.legend'),
+    }, { title: datasetLabel, filterSummary: `${featureCount} features` })
+  }
+
+  function exportVisibleData() {
+    const observatory = props.rareEarthFiltered?.features?.length ? props.rareEarthFiltered : props.rareEarthPoints
+    const collection = buildMapExportCollection({
+      dataset: activeDataset.value,
+      projects: visibleProjects.value,
+      species: visibleSpecies.value,
+      crews: crewsData.value,
+      crewLocations: crewLocationsData.value,
+      observatory,
+    })
+    downloadMapGeoJSON(collection, mapExportFilename(activeDataset.value))
+  }
+
   // Fly-to requested before map creation (restored hash, sidebar jumps).
   // Stored here and flushed in setMapInstance + style/load handlers.
   let pendingFlyToTarget: { lng: number; lat: number; zoom?: number } | null = props.flyToTarget ?? null
@@ -697,7 +869,7 @@ export function useMapBase(config: MapBaseConfig) {
       // NOTE: SSG bakes NUXT_PUBLIC_MAPTILER_API_KEY at build time — a key
       // added only to the deploy environment after `nuxt generate` will NOT
       // reach the client bundle (it stays '' and the local fallback wins).
-      tileProvider.evaluateNetworkHints(MAPTILER_API_KEY)
+      tileProvider.evaluateNetworkHints(MAPTILER_API_KEY, offlineTiles.stats.value.cachedTiles > 0)
       if (!MAPTILER_API_KEY && import.meta.dev) {
         console.warn('[tile-provider] no MapTiler API key — using local fallback style. Set NUXT_PUBLIC_MAPTILER_API_KEY (or MAPTILER_API_KEY) before building.')
       }
@@ -708,7 +880,9 @@ export function useMapBase(config: MapBaseConfig) {
 
       // Read zoom param: 0..1 maps linearly to minZoom..maxZoom
       let initialZoom = isRee ? (isGlobe ? 4.2 : 9.5) : isMobile.value ? (isGlobe ? 1.0 : 1.2) : (isGlobe ? 1.8 : 2)
-      if (!import.meta.server) {
+      if (initialCameraState.zoom !== undefined) {
+        initialZoom = initialCameraState.zoom
+      } else if (!import.meta.server) {
         const urlZoom = route.query.zoom
         if (urlZoom != null) {
           const t = Math.max(0, Math.min(1, parseFloat(String(urlZoom)) || 0))
@@ -716,14 +890,19 @@ export function useMapBase(config: MapBaseConfig) {
         }
       }
 
+      registerOfflineTileProtocol(offlineTiles)
       const created = new maplibregl.Map({
         container: mapContainerRef.value,
         style: mapStyle,
         zoom: initialZoom,
-        center: isRee ? (isGlobe ? [-48, -15] : [-46.533, -21.914]) : (isGlobe ? [0, 20] : [0, 0]),
+        center: initialCameraState.center ?? (isRee ? (isGlobe ? [-48, -15] : [-46.533, -21.914]) : (isGlobe ? [0, 20] : [0, 0])),
+        bearing: initialCameraState.bearing ?? 0,
+        pitch: initialCameraState.pitch ?? 0,
         attributionControl: false,
         renderWorldCopies: !isGlobe,
         fadeDuration: 100,
+        preserveDrawingBuffer: true,
+        transformRequest: transformMapTileRequest,
         minZoom: isRee ? (isGlobe ? VULCAN_MIN_ZOOM_GLOBE : VULCAN_MIN_ZOOM_2D) : undefined,
         maxBounds: isRee && !isGlobe ? VULCAN_MAX_BOUNDS : undefined,
         maxZoom: tileMaxZoom,
@@ -735,6 +914,7 @@ export function useMapBase(config: MapBaseConfig) {
         maxPitch: qs.antialiasing ? 60 : 45,
       } as maplibregl.MapOptions & { antialias?: boolean; preferCanvas?: boolean; crossSourceCollisions?: boolean; maxPitch?: number })
       setMapInstance(created)
+      created.on('moveend', syncMapCameraToUrl)
       mapCanvas = map!.getCanvas()
       mapCanvas.addEventListener('webglcontextlost', onWebglContextLost, { passive: false })
 
@@ -915,10 +1095,12 @@ export function useMapBase(config: MapBaseConfig) {
 
   /* ── lifecycle ────────────────────────────────────────────────────── */
 
-  onMounted(() => {
+  onMounted(async () => {
     isMounted = true
     checkViewportSize()
     window.addEventListener('resize', scheduleViewportCheck, { passive: true })
+    await offlineTiles.init()
+    if (!isMounted) return
     showFilterPanel.value = false
     initMap()
   })
@@ -929,6 +1111,7 @@ export function useMapBase(config: MapBaseConfig) {
     onBeforeCleanup?.()
     if (loadingTimeout) clearTimeout(loadingTimeout)
     if (rebuildTimer) { clearTimeout(rebuildTimer); rebuildTimer = null }
+    if (shareCopiedTimer) { clearTimeout(shareCopiedTimer); shareCopiedTimer = null }
     stopFpsReporting()
     connections.cleanup()
     previewCard.close()
@@ -1006,6 +1189,8 @@ export function useMapBase(config: MapBaseConfig) {
     if (connections.showConnections.value && quality.settings.value.showParticles) connections.startParticles()
   })
 
+  watch([showHexGrid, connections.showConnections, selectedSpeciesGroups], syncMapCameraToUrl, { deep: true })
+
   watch(() => props.flyToTarget, (target) => {
     if (!target) return
     if (!map) {
@@ -1056,6 +1241,7 @@ export function useMapBase(config: MapBaseConfig) {
     handleSpeciesSelected, openRareEarthOverlay,
     handleFilterChange, handleProjectFilterChange,
     handleSearchOpenChange, handleSpeciesGroupSelection, toggleLegendGroup,
+    shareCopied, shareMap, exportMapImage, exportVisibleData, offlineTiles,
     initMap, mapRef,
     // Back-compat: `map` was a null snapshot. Expose a live getter.
     get map() { return mapRef.value },

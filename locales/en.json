@@ -125,7 +125,12 @@
     "of": "of",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "or open the list to browse all",
-    "searchResults": "Search results"
+    "searchResults": "Search results",
+    "shareMap": "Share map",
+    "linkCopied": "Link copied",
+    "exportMap": "Export map image",
+    "exportData": "Export visible data as GeoJSON",
+    "legend": "Legend"
   },
   "mapTiles": {
     "maptiler": "Satellite",

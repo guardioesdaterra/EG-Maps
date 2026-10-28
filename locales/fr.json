@@ -123,7 +123,12 @@
     "of": "sur",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "ou ouvrez la liste pour tout parcourir",
-    "searchResults": "Résultats de recherche"
+    "searchResults": "Résultats de recherche",
+    "shareMap": "Partager la carte",
+    "linkCopied": "Lien copié",
+    "exportMap": "Exporter l’image de la carte",
+    "exportData": "Exporter les données visibles en GeoJSON",
+    "legend": "Légende"
   },
   "mapTiles": {
     "maptiler": "Satellite",

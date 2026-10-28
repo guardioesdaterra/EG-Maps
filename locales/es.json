@@ -123,7 +123,12 @@
     "of": "de",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "o abre la lista para ver todo",
-    "searchResults": "Resultados de búsqueda"
+    "searchResults": "Resultados de búsqueda",
+    "shareMap": "Compartir mapa",
+    "linkCopied": "Enlace copiado",
+    "exportMap": "Exportar imagen del mapa",
+    "exportData": "Exportar datos visibles como GeoJSON",
+    "legend": "Leyenda"
   },
   "mapTiles": {
     "maptiler": "Satélite",

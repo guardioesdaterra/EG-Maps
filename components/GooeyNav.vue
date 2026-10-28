@@ -24,7 +24,7 @@
             @click="e => handleClick(e, index)"
             :aria-label="t(item.labelKey)"
             :title="t(item.labelKey)"
-            class="group relative flex flex-col items-center rounded-md px-2.5 py-1.5 outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+            class="group relative flex flex-col items-center rounded-md px-2.5 py-1.5 outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-primary)]"
           >
             <div
               class="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[clamp(10px,1.5vw,13px)] font-medium rounded-md opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-lg whitespace-nowrap z-10 bg-gray-900 text-white border border-white/10"
@@ -297,6 +297,6 @@ onUnmounted(() => {
   width: 3px;
   height: 3px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.8);
+  background: currentColor;
 }
 </style>

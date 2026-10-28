@@ -13,13 +13,13 @@
     --text-secondary: #525252;
     /* #5b5b5b ≈ 6.8:1 on white — small/muted text stays legible in light mode */
     --text-muted: #5b5b5b;
-    --border-color: #d4d4d4;
+    --border-color: #8f8f8f;
     --shadow-color: rgba(0, 0, 0, 0.1);
     --map-bg: #e8e8e8;
-    --cyber-cyan: #06b6d4;
-    --cyber-purple: #a855f7;
-    --cyber-pink: #ec4899;
-    --cyber-green: #10b981;
+    --cyber-cyan: #0e7490;
+    --cyber-purple: #7e22ce;
+    --cyber-pink: #be185d;
+    --cyber-green: #15803d;
 
     /* Tailwind CSS semantic tokens - light */
     --background: #fafafa;
@@ -32,13 +32,13 @@
     --secondary-foreground: #0a0a0a;
     --muted: #f5f5f5;
     --muted-foreground: #5b5b5b;
-    --accent: #a855f7;
+    --accent: #7e22ce;
     --accent-foreground: #ffffff;
     --destructive: #dc2626;
     --destructive-foreground: #ffffff;
-    --ring: #06b6d4;
-    --border: #d4d4d4;
-    --input: #d4d4d4;
+    --ring: #0e7490;
+    --border: #8f8f8f;
+    --input: #8f8f8f;
     --card: #ffffff;
     --card-foreground: #0a0a0a;
     --popover: #ffffff;
@@ -46,7 +46,7 @@
 
     /* Panel / control variables - light */
     --panel-bg: rgba(255, 255, 255, 0.92);
-    --panel-border: rgba(6, 182, 212, 0.25);
+    --panel-border: rgba(14, 116, 144, 0.75);
     --panel-shadow: 0 16px 40px rgba(0, 0, 0, 0.1), 0 0 24px rgba(6, 182, 212, 0.06);
     --tool-btn-bg: rgba(255, 255, 255, 0.95);
     --tool-btn-border: #000;
@@ -55,16 +55,16 @@
     --tool-btn-active-text: #fff;
     --tool-btn-active-border: #000;
     --tool-btn-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
-    --tool-btn-muted-border: rgba(0, 0, 0, 0.15);
+    --tool-btn-muted-border: #8f8f8f;
     --tool-btn-muted-text: #5b5b5b;
     --stat-card-bg: rgba(255, 255, 255, 0.5);
-    --stat-card-border: rgba(0, 0, 0, 0.08);
+    --stat-card-border: #8f8f8f;
     --stat-card-text: #525252;
     --stat-card-label: #737373;
     --tooltip-bg: #0a0a0a;
     --tooltip-text: #ffffff;
     --input-bg: rgba(0, 0, 0, 0.04);
-    --input-border: rgba(6, 182, 212, 0.25);
+    --input-border: rgba(14, 116, 144, 0.75);
     --input-text: #171717;
     --input-placeholder: #5b5b5b;
     --search-result-hover-bg: rgba(6, 182, 212, 0.06);
@@ -103,7 +103,7 @@
 
     /* Glass panel - light */
     --glass-bg: rgba(255, 255, 255, 0.92);
-    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-border: #8f8f8f;
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     --glass-border-light: rgba(0, 0, 0, 0.04);
 
@@ -138,12 +138,16 @@
     --border-color: #262626;
     --shadow-color: rgba(0, 0, 0, 0.5);
     --map-bg: #000000;
+    --cyber-cyan: #06b6d4;
+    --cyber-purple: #a855f7;
+    --cyber-pink: #ec4899;
+    --cyber-green: #10b981;
 
     /* Tailwind CSS semantic tokens - dark */
     --background: #0a0a0a;
     --foreground: #e5e5e5;
     --primary: #06b6d4;
-    --primary-foreground: #ffffff;
+    --primary-foreground: #0a0a0a;
     --secondary: #1a1a1a;
     --secondary-foreground: #e5e5e5;
     --muted: #1a1a1a;
@@ -229,7 +233,13 @@
   }
 
   ::selection {
-    @apply bg-cyan-500/30 text-white;
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 
   /* Mobile-friendly fixes */
@@ -373,8 +383,8 @@ body.cmd-open { overflow: hidden; }
   }
 
   .glass-subtle {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     backdrop-filter: blur(16px) saturate(1.4);
     -webkit-backdrop-filter: blur(16px) saturate(1.4);
   }
@@ -392,8 +402,8 @@ body.cmd-open { overflow: hidden; }
   }
 
   .glass-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--card);
+    border: 1px solid var(--border);
     backdrop-filter: blur(12px) saturate(1.3);
     -webkit-backdrop-filter: blur(12px) saturate(1.3);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -406,10 +416,16 @@ body.cmd-open { overflow: hidden; }
 
   /* Cyberpunk button styles */
   .cyber-btn {
-    @apply px-4 py-2 bg-black/70 border border-cyan-900/50 text-cyan-400 font-medium rounded-md
-           hover:bg-cyan-950/30 hover:text-cyan-300 hover:border-cyan-700/50
-           transition-all duration-200 shadow-[0_0_10px_rgba(6,182,212,0.2)]
-           focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-black;
+    @apply px-4 py-2 border font-medium rounded-md transition-all duration-200;
+    background: var(--panel-bg);
+    border-color: var(--panel-border);
+    color: var(--primary);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--primary) 20%, transparent);
+  }
+  .cyber-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
   }
 
   .cyber-btn-primary {
@@ -643,12 +659,12 @@ body.cmd-open { overflow: hidden; }
   .filter-chip {
     @apply inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium
            border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)]
-           hover:bg-[#0e7490] hover:text-white hover:border-[#0e7490]
+           hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] hover:border-[var(--primary)]
            transition-all duration-200 cursor-pointer select-none;
   }
 
   .filter-chip-active {
-    @apply filter-chip bg-[#0e7490] text-white border-[#0e7490];
+    @apply filter-chip bg-[var(--primary)] text-[var(--primary-foreground)] border-[var(--primary)];
   }
 
   /* Species filter panel (matching original site) */

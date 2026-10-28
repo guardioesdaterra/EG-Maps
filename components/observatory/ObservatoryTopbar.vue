@@ -378,6 +378,50 @@ const statsSummary = computed(() => {
 }
 
 /* ── Progressive disclosure: numbers disappear as space shrinks ── */
+:global(html:not(.dark)) .obs-topbar {
+  background: var(--glass-bg);
+  border-color: var(--border-color);
+  box-shadow: var(--glass-shadow);
+}
+:global(html:not(.dark)) .obs-topbar__title { color: var(--danger); }
+:global(html:not(.dark)) .obs-topbar__sub,
+:global(html:not(.dark)) .obs-stat__label,
+:global(html:not(.dark)) .obs-stat__total,
+:global(html:not(.dark)) .obs-view-tab,
+:global(html:not(.dark)) .obs-menu-btn { color: var(--text-secondary); }
+:global(html:not(.dark)) .obs-stat {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+:global(html:not(.dark)) .obs-stat__count,
+:global(html:not(.dark)) .obs-stat__total strong { color: var(--text-primary); }
+:global(html:not(.dark)) .obs-stat__sep,
+:global(html:not(.dark)) .obs-topbar__sep { background: var(--border-color); }
+:global(html:not(.dark)) .obs-view-toggle {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+:global(html:not(.dark)) .obs-view-tab:hover,
+:global(html:not(.dark)) .obs-menu-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+:global(html:not(.dark)) .obs-view-tab.is-active {
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+:global(html:not(.dark)) .obs-menu-btn.is-active {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+}
+:global(html:not(.dark)) .obs-menu-btn__dot {
+  background: var(--primary);
+  box-shadow: 0 0 4px var(--primary);
+}
+:global(html:not(.dark)) .obs-menu-btn:focus-visible,
+:global(html:not(.dark)) .obs-view-tab:focus-visible { outline-color: var(--ring); }
 @media (max-width: 1100px) {
   .obs-stat__label,
   .obs-stat__total-label { display: none; }

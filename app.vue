@@ -31,7 +31,7 @@ import { useDarkMode } from '@/composables/useDarkMode'
 import { useRoute } from 'vue-router'
 
 const { t } = useI18n()
-const { isDark } = useDarkMode()
+const { isDark, init: initDarkMode } = useDarkMode()
 const skipLabel = computed(() => t('a11y.skipToContent'))
 
 const veilOpacity = computed(() => {
@@ -54,6 +54,7 @@ function trackPageview(url: string) {
 }
 
 onMounted(() => {
+  initDarkMode()
   if (plausibleDomain) {
     trackPageview(window.location.href)
   }
@@ -104,12 +105,12 @@ useHead({
 .skip-link:focus,
 .skip-link:focus-visible {
   transform: translateY(0);
-  outline: 2px solid #5dade2;
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
 
 #main-content:focus {
-  outline: 2px solid #5dade2;
+  outline: 2px solid var(--ring);
   outline-offset: 4px;
 }
 

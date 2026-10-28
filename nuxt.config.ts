@@ -77,9 +77,8 @@ export default defineNuxtConfig({
           innerHTML: `(function() {
             try {
               var saved = localStorage.getItem('darkMode');
-              if (saved === 'true' || saved === null) {
-                document.documentElement.classList.add('dark');
-              }
+              var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+              document.documentElement.classList.toggle('dark', saved === 'true' || (saved === null && prefersDark));
             } catch (e) {}
           })();`,
           type: 'text/javascript',

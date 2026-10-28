@@ -25,3 +25,18 @@ test('saved light theme is applied without Vue hydration mismatch warnings', asy
   await expect.poll(() => page.evaluate(() => localStorage.getItem('darkMode'))).toBe('false')
   expect(hydrationMessages).toEqual([])
 })
+
+test('theme toggle is available on routes without a shared page topbar', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('darkMode', 'false'))
+
+  for (const route of ['/', '/info', '/privacy', '/terms', '/iframe', '/iframe/squarespace']) {
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded' })
+    expect(response?.status(), `${route} should load`).toBe(200)
+
+    const toggle = page.getByRole('button', { name: 'Switch to Dark Mode' }).first()
+    await expect(toggle, `${route} should expose a theme switch`).toBeVisible()
+    await toggle.click()
+    await expect(page.locator('html')).toHaveClass(/\bdark\b/)
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('darkMode'))).toBe('true')
+  }
+})

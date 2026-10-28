@@ -42,9 +42,10 @@ export function useUiStore() {
 
   function getInitialDarkMode(): boolean {
     if (!import.meta.client) return true
-    const saved = localStorage.getItem('darkMode')
+    let saved: string | null = null
+    try { saved = localStorage.getItem('darkMode') } catch { /* use system preference */ }
     if (saved !== null) return saved === 'true'
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
   }
 
   function initDarkMode() {

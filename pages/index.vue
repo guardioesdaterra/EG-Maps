@@ -1,241 +1,150 @@
 <template>
-  <main id="main-content" tabindex="-1" class="home">
+  <main id="main-content" ref="homeRoot" tabindex="-1" class="home">
     <PageTopbar />
 
-    <div class="home-layout">
-      <!-- Left Panel -->
-      <section class="home-left">
-        <div class="home-left-inner">
-          <img :src="`${baseURL}eg-logo.png`" alt="Earth Guardians" class="home-logo" />
-          <h1 class="home-title"><span class="glass-line">EG–Maps<span class="home-title-dot">.</span></span></h1>
-          <p class="home-subtitle"><span class="glass-line">{{ t('home.subtitle') }}</span></p>
-          <p class="home-submore"><span class="glass-line">{{ t('home.subtitleMore') }}</span></p>
-          <div class="home-orgline">
-            <a href="https://www.earthguardians.org" target="_blank" rel="noopener noreferrer" class="home-orglink">
-              <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" />
-              earthguardians.org
-            </a>
-            <NuxtLink to="/info" class="home-orglink home-orglink--muted">
-              {{ t('nav.info') }}
-            </NuxtLink>
-          </div>
-          <div class="home-divider" />
-          <div class="home-stats">
-            <div v-for="stat in overviewStats" :key="stat.label" class="home-stat">
-              <span class="home-stat-value">{{ stat.value }}</span>
-              <span class="home-stat-label">{{ stat.label }}</span>
-            </div>
-          </div>
+    <section class="home-hero" aria-labelledby="home-title">
+      <div class="hero-copy" data-reveal>
+        <p class="eyebrow"><span class="eyebrow-mark" aria-hidden="true" />{{ t('home.title') }}</p>
+        <h1 id="home-title">{{ t('home.footer') }}<span class="title-period">.</span></h1>
+        <p class="hero-lede">{{ t('home.subtitleMore') }}</p>
+        <p class="hero-context">{{ t('home.subtitle') }}</p>
+        <nav class="hero-actions" :aria-label="t('home.exploreTitle')">
+          <NuxtLink to="/project-grants" class="action-button action-button--primary">
+            <Icon name="lucide:map" aria-hidden="true" />
+            {{ t('home.exploreTitle') }}
+            <Icon name="lucide:arrow-up-right" class="action-arrow" aria-hidden="true" />
+          </NuxtLink>
+          <a
+            href="https://www.earthguardians.org/crews"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="action-button action-button--quiet"
+          >
+            <Icon name="lucide:users-round" aria-hidden="true" />
+            {{ t('home.startACrewTitle') }}
+            <Icon name="lucide:arrow-up-right" class="action-arrow" aria-hidden="true" />
+          </a>
+        </nav>
+      </div>
+
+      <div class="hero-art" aria-hidden="true" data-reveal>
+        <div class="orbit orbit--outer" />
+        <div class="orbit orbit--middle" />
+        <div class="orbit orbit--inner" />
+        <div class="hero-core">
+          <img :src="`${baseURL}eg-logo.png`" alt="" class="hero-logo" />
         </div>
-      </section>
-
-      <!-- Right Panel: Bento Grid -->
-      <section class="home-right" :aria-label="t('home.exploreTitle')">
-        <div class="bento">
-
-          <!-- 1. Project Grants — tall -->
-          <article class="bento-card bento-tall" style="--accent: #8e44ad" @mousemove="trackGlow" @mouseleave="clearGlow">
-            <div class="bento-glow" />
-            <div class="bento-accent" />
-            <div class="bento-body">
-              <div class="bento-icon" style="background: #8e44ad14; color: #8e44ad">
-                <Icon name="lucide:hand-heart" />
-              </div>
-              <h2 class="bento-title">{{ t('home.projectGrantsTitle') }}</h2>
-              <p class="bento-desc">{{ t('home.projectGrantsDesc') }}</p>
-              <div class="bento-stats">
-                <div class="bento-stat">
-                  <strong style="color: #8e44ad">{{ projectStats.totalProjects }}</strong>
-                  <span>{{ t('home.projectsCount') }}</span>
-                </div>
-                <div class="bento-stat">
-                  <strong style="color: #8e44ad">{{ formatCompact(projectStats.totalBeneficiaries) }}+</strong>
-                  <span>{{ t('home.beneficiariesCount') }}</span>
-                </div>
-              </div>
-              <div class="bento-links">
-                <NuxtLink to="/project-grants" class="bento-link bento-link--primary" style="background: #8e44ad; border-color: #8e44ad">
-                  <Icon name="lucide:map" class="h-3.5 w-3.5" />
-                  {{ t('globe.view2D') }}
-                </NuxtLink>
-                <NuxtLink to="/project-grants/3d" class="bento-link">
-                  <Icon name="lucide:globe" class="h-3.5 w-3.5" />
-                  {{ t('globe.view3D') }}
-                </NuxtLink>
-              </div>
-            </div>
-          </article>
-
-          <!-- 2. Campaigns — tall (species map lives inside: Biodiversity Day) -->
-          <article class="bento-card bento-tall" style="--accent: #27ae60" @mousemove="trackGlow" @mouseleave="clearGlow">
-            <div class="bento-glow" />
-            <div class="bento-accent" />
-            <div class="bento-body">
-              <div class="bento-icon" style="background: #27ae6014; color: #27ae60">
-                <Icon name="lucide:bird" />
-              </div>
-              <h2 class="bento-title">{{ t('home.campaignsTitle') }}</h2>
-              <p class="bento-desc">{{ t('home.campaignsDesc') }}</p>
-              <p class="bento-kicker" style="color: #27ae60">{{ t('home.campaignsKicker') }}</p>
-              <div class="bento-stats">
-                <div class="bento-stat">
-                  <strong style="color: #27ae60">{{ speciesCount || '—' }}</strong>
-                  <span>{{ t('home.speciesCount') }}</span>
-                </div>
-                <div class="bento-stat">
-                  <strong style="color: #27ae60">{{ t('home.allValue') }}</strong>
-                  <span>{{ t('home.countries') }}</span>
-                </div>
-              </div>
-              <div class="bento-links">
-                <NuxtLink to="/campaigns" class="bento-link bento-link--primary" style="background: #27ae60; border-color: #27ae60">
-                  <Icon name="lucide:megaphone" class="h-3.5 w-3.5" />
-                  {{ t('home.campaignsTitle') }}
-                </NuxtLink>
-                <NuxtLink to="/endangered-species" class="bento-link">
-                  <Icon name="lucide:map" class="h-3.5 w-3.5" />
-                  {{ t('home.species') }}
-                </NuxtLink>
-              </div>
-            </div>
-          </article>
-
-          <!-- 3. Masterclasses -->
-          <article class="bento-card" style="--accent: #f39c12" @mousemove="trackGlow" @mouseleave="clearGlow">
-            <div class="bento-glow" />
-            <div class="bento-accent" />
-            <div class="bento-body">
-              <div class="bento-icon" style="background: #f39c1214; color: #f39c12">
-                <Icon name="lucide:graduation-cap" />
-              </div>
-              <h2 class="bento-title">{{ t('home.masterclassesTitle') }}</h2>
-              <p class="bento-desc">{{ t('home.masterclassesDesc') }}</p>
-              <div class="bento-stats">
-                <div class="bento-stat">
-                  <strong style="color: #f39c12">{{ t('home.seriesStatusValue') }}</strong>
-                  <span>{{ t('home.seriesStatusLabel') }}</span>
-                </div>
-                <div class="bento-stat">
-                  <strong style="color: #f39c12">{{ t('home.archiveValue') }}</strong>
-                  <span>{{ t('home.archiveLabel') }}</span>
-                </div>
-              </div>
-              <div class="bento-links">
-                <NuxtLink to="/masterclasses" class="bento-link bento-link--primary" style="background: #f39c12; border-color: #f39c12">
-                  <Icon name="lucide:book-open" class="h-3.5 w-3.5" />
-                  All Classes
-                </NuxtLink>
-              </div>
-            </div>
-          </article>
-
-          <!-- 4. Start a Crew -->
-          <article class="bento-card" style="--accent: #8b5cf6" @mousemove="trackGlow" @mouseleave="clearGlow">
-            <div class="bento-glow" />
-            <div class="bento-accent" />
-            <div class="bento-body">
-              <div class="bento-icon" style="background: #8b5cf614; color: #8b5cf6">
-                <Icon name="lucide:heart-handshake" />
-              </div>
-              <h2 class="bento-title">{{ t('home.startACrewTitle') }}</h2>
-              <p class="bento-desc">{{ t('home.startACrewDesc') }}</p>
-              <div class="bento-stats">
-                <div class="bento-stat">
-                  <strong style="color: #8b5cf6">{{ crewOverallStats.totalActiveCrews }}</strong>
-                  <span>{{ t('home.crewsCount') }}</span>
-                </div>
-                <div class="bento-stat">
-                  <strong style="color: #8b5cf6">{{ crewOverallStats.totalCountries }}</strong>
-                  <span>{{ t('home.countries') }}</span>
-                </div>
-              </div>
-              <div class="bento-links">
-                <NuxtLink to="/active-crews" class="bento-link bento-link--primary" style="background: #8b5cf6; border-color: #8b5cf6">
-                  <Icon name="lucide:users" class="h-3.5 w-3.5" />
-                  Our Crews
-                </NuxtLink>
-                <a
-                  href="https://www.earthguardians.org"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="bento-link"
-                >
-                  <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" />
-                  Join EG
-                </a>
-              </div>
-            </div>
-          </article>
-
-          <!-- 5. Large Scale -->
-          <article class="bento-card" style="--accent: #10b981" @mousemove="trackGlow" @mouseleave="clearGlow">
-            <div class="bento-glow" />
-            <div class="bento-accent" />
-            <div class="bento-body">
-              <div class="bento-icon" style="background: #10b98114; color: #10b981">
-                <Icon name="lucide:briefcase" />
-              </div>
-              <h2 class="bento-title">{{ t('home.crewProjectsTitle') }}</h2>
-              <p class="bento-desc">{{ t('home.crewProjectsDesc') }}</p>
-              <div class="bento-stats">
-                <div class="bento-stat">
-                  <strong style="color: #10b981">{{ t('home.crewProjectsStatValue') }}</strong>
-                  <span>{{ t('home.crewProjectsStatLabel') }}</span>
-                </div>
-                <div class="bento-stat">
-                  <strong style="color: #10b981">{{ t('home.crewProjectsPlaceValue') }}</strong>
-                  <span>{{ t('home.crewProjectsPlaceLabel') }}</span>
-                </div>
-              </div>
-              <div class="bento-links">
-                <NuxtLink to="/crew-projects" class="bento-link bento-link--primary" style="background: #10b981; border-color: #10b981">
-                  <Icon name="lucide:mountain" class="h-3.5 w-3.5" />
-                  {{ t('home.crewProjectsTitle') }}
-                </NuxtLink>
-              </div>
-            </div>
-          </article>
-
-          <!-- 6. Vulcan Observatory — community-driven map -->
-          <article class="bento-card" style="--accent: #f59e0b" @mousemove="trackGlow" @mouseleave="clearGlow">
-            <div class="bento-glow" />
-            <div class="bento-accent" />
-            <div class="bento-body">
-              <div class="bento-icon" style="background: #f59e0b14; color: #f59e0b">
-                <Icon name="lucide:microscope" />
-              </div>
-              <h2 class="bento-title">{{ t('home.vulcanTitle') }}</h2>
-              <p class="bento-desc">{{ t('home.vulcanDesc') }}</p>
-              <div class="bento-stats">
-                <div class="bento-stat">
-                  <strong style="color: #f59e0b">{{ t('home.vulcanFocusValue') }}</strong>
-                  <span>{{ t('home.vulcanFocusLabel') }}</span>
-                </div>
-                <div class="bento-stat">
-                  <strong style="color: #f59e0b">{{ t('home.vulcanDataValue') }}</strong>
-                  <span>{{ t('home.vulcanDataLabel') }}</span>
-                </div>
-              </div>
-              <div class="bento-links">
-                <NuxtLink to="/vulcan-observatory" class="bento-link bento-link--primary" style="background: #f59e0b; border-color: #f59e0b">
-                  <Icon name="lucide:map" class="h-3.5 w-3.5" />
-                  {{ t('globe.view2D') }}
-                </NuxtLink>
-                <NuxtLink to="/vulcan-observatory/3d" class="bento-link">
-                  <Icon name="lucide:globe" class="h-3.5 w-3.5" />
-                  {{ t('globe.view3D') }}
-                </NuxtLink>
-              </div>
-            </div>
-          </article>
-
+        <div class="orbit-node orbit-node--north"><Icon name="lucide:leaf" /></div>
+        <div class="orbit-node orbit-node--east"><Icon name="lucide:users-round" /></div>
+        <div class="orbit-node orbit-node--south"><Icon name="lucide:hand-heart" /></div>
+        <div class="orbit-node orbit-node--west"><Icon name="lucide:globe-2" /></div>
+        <div class="hero-art-caption">
+          <span class="caption-dot" />
+          <span>{{ t('home.youthLed') }}</span>
         </div>
-      </section>
-    </div>
+        <span class="hero-art-note hero-art-note--one">{{ t('home.globalAction') }}</span>
+        <span class="hero-art-note hero-art-note--two">{{ t('home.ourWork') }}</span>
+      </div>
+
+      <a class="scroll-cue" href="#home-story">
+        <span>{{ t('home.exploreTitle') }}</span>
+        <Icon name="lucide:arrow-down" aria-hidden="true" />
+      </a>
+    </section>
+
+    <section id="home-story" class="story-section" aria-labelledby="story-title" data-reveal>
+      <div class="section-index"><span>01</span><span>{{ t('home.ourWork') }}</span></div>
+      <div class="story-split">
+        <h2 id="story-title">{{ t('home.ourWorkDesc') }}</h2>
+        <div class="story-copy">
+          <p>{{ t('home.subtitleMore') }}</p>
+          <NuxtLink to="/info" class="text-link">
+            {{ t('nav.info') }}
+            <Icon name="lucide:arrow-up-right" aria-hidden="true" />
+          </NuxtLink>
+        </div>
+      </div>
+      <ul class="story-principles">
+        <li><Icon name="lucide:users-round" aria-hidden="true" />{{ t('home.youthLed') }}</li>
+        <li><Icon name="lucide:heart-handshake" aria-hidden="true" />{{ t('home.globalAction') }}</li>
+        <li><Icon name="lucide:map-pin" aria-hidden="true" />{{ t('home.largeScale') }}</li>
+      </ul>
+    </section>
+
+    <section class="pathways-section" aria-labelledby="pathways-title" data-reveal>
+      <header class="pathways-heading">
+        <div>
+          <p class="eyebrow"><span class="eyebrow-mark" aria-hidden="true" />{{ t('home.exploreTitle') }}</p>
+          <h2 id="pathways-title">{{ t('home.ourWork') }}</h2>
+        </div>
+        <p class="pathways-intro">{{ t('home.subtitle') }}</p>
+      </header>
+
+      <div class="pathway-list">
+        <article class="pathway-row">
+          <div class="pathway-icon pathway-icon--grants"><Icon name="lucide:hand-heart" aria-hidden="true" /></div>
+          <div class="pathway-copy">
+            <h3>{{ t('home.projectGrantsTitle') }}</h3>
+            <p>{{ t('home.projectGrantsDesc') }}</p>
+          </div>
+          <NuxtLink to="/project-grants" class="pathway-link" :aria-label="`${t('home.projectGrantsTitle')} — ${t('home.exploreTitle')}`">
+            <Icon name="lucide:arrow-up-right" aria-hidden="true" />
+          </NuxtLink>
+        </article>
+        <article class="pathway-row">
+          <div class="pathway-icon pathway-icon--species"><Icon name="lucide:bird" aria-hidden="true" /></div>
+          <div class="pathway-copy">
+            <h3>{{ t('home.speciesTitle') }}</h3>
+            <p>{{ t('home.speciesDesc') }}</p>
+          </div>
+          <NuxtLink to="/endangered-species" class="pathway-link" :aria-label="`${t('home.speciesTitle')} — ${t('home.exploreTitle')}`">
+            <Icon name="lucide:arrow-up-right" aria-hidden="true" />
+          </NuxtLink>
+        </article>
+        <article class="pathway-row">
+          <div class="pathway-icon pathway-icon--campaigns"><Icon name="lucide:megaphone" aria-hidden="true" /></div>
+          <div class="pathway-copy">
+            <h3>{{ t('home.campaignsTitle') }}</h3>
+            <p>{{ t('home.campaignsDesc') }}</p>
+          </div>
+          <NuxtLink to="/campaigns" class="pathway-link" :aria-label="`${t('home.campaignsTitle')} — ${t('home.exploreTitle')}`">
+            <Icon name="lucide:arrow-up-right" aria-hidden="true" />
+          </NuxtLink>
+        </article>
+        <article class="pathway-row">
+          <div class="pathway-icon pathway-icon--crews"><Icon name="lucide:users-round" aria-hidden="true" /></div>
+          <div class="pathway-copy">
+            <h3>{{ t('home.activeCrewsTitle') }}</h3>
+            <p>{{ t('home.startACrewDesc') }}</p>
+          </div>
+          <NuxtLink to="/active-crews" class="pathway-link" :aria-label="`${t('home.activeCrewsTitle')} — ${t('home.exploreTitle')}`">
+            <Icon name="lucide:arrow-up-right" aria-hidden="true" />
+          </NuxtLink>
+        </article>
+      </div>
+    </section>
+
+    <section class="join-section" aria-labelledby="join-title" data-reveal>
+      <div class="join-mark" aria-hidden="true"><Icon name="lucide:heart-handshake" /></div>
+      <div class="join-copy">
+        <p class="eyebrow">{{ t('home.youthLed') }}</p>
+        <h2 id="join-title">{{ t('home.startACrewTitle') }}</h2>
+        <p>{{ t('home.startACrewDesc') }}</p>
+      </div>
+      <a
+        href="https://www.earthguardians.org/crews"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="join-link"
+      >
+        {{ t('home.startACrewTitle') }}
+        <Icon name="lucide:arrow-up-right" aria-hidden="true" />
+      </a>
+    </section>
 
     <footer class="home-footer">
       <span class="home-footer-text">{{ t('home.footer') }}</span>
-      <nav class="home-footer-links" aria-label="Footer">
+      <nav class="home-footer-links" :aria-label="t('home.exploreTitle')">
         <a href="https://www.earthguardians.org" target="_blank" rel="noopener noreferrer">earthguardians.org</a>
         <NuxtLink to="/info">{{ t('nav.info') }}</NuxtLink>
         <NuxtLink to="/campaigns">{{ t('home.campaignsTitle') }}</NuxtLink>
@@ -248,498 +157,493 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue'
-import { allProjectsData } from '@/lib/project-data'
-import { crewOverallStats } from '@/lib/crew-data'
-import { formatCompact } from '@/lib/utils'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 const { t } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
+const homeRoot = ref<HTMLElement | null>(null)
+let revealObserver: IntersectionObserver | null = null
 
 useHead({
   title: computed(() => `EG–Maps — ${t('home.subtitle')}`),
   meta: [
-    { name: 'description', content: 'Official maps of Earth Guardians — project grants, Endangered Species, active Crews, Large Scale and the Vulcan Observatory community map.' },
+    { name: 'description', content: 'Explore Earth Guardians maps of youth-led Crews, community projects, climate campaigns and biodiversity — then act with the people behind the work.' },
     { property: 'og:title', content: 'EG–Maps — Official maps of Earth Guardians' },
-    { property: 'og:description', content: 'Crews, grants, Endangered Species and Large Scale projects on interactive maps and globes.' },
+    { property: 'og:description', content: 'Explore youth-led Crews, community projects, climate campaigns and biodiversity, mapped with the people behind the work.' },
     { property: 'og:type', content: 'website' },
   ],
 })
 
-const speciesCount = ref(4815)
-const abortController = new AbortController()
+onMounted(() => {
+  const root = homeRoot.value
+  if (!root || !('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
-const projectStats = computed(() => {
-  const totalDirect = allProjectsData.reduce((s, p) => s + p.direct_beneficiaries, 0)
-  const totalIndirect = allProjectsData.reduce((s, p) => s + p.indirect_beneficiaries, 0)
-  return { totalProjects: allProjectsData.length, totalBeneficiaries: totalDirect + totalIndirect }
-})
-
-const overviewStats = computed(() => [
-  { value: crewOverallStats.totalActiveCrews, label: t('home.crewsCount') },
-  { value: projectStats.value.totalProjects, label: t('home.projectsCount') },
-  { value: speciesCount.value || '—', label: t('home.speciesCount') },
-  { value: crewOverallStats.totalCountries, label: t('home.countries') },
-])
-
-onMounted(async () => {
-  await nextTick()
-  try {
-    const res = await fetch(`${baseURL}data/species/index.json`, { signal: abortController.signal })
-    if (res.ok) {
-      const index = await res.json()
-      const datasetsIndex = index.datasets ?? []
-      let total = 0
-      for (const ds of datasetsIndex) total += ds.speciesCount ?? 0
-      speciesCount.value = total
+  const targets = Array.from(root.querySelectorAll<HTMLElement>('[data-reveal]'))
+  if (!targets.length) return
+  root.classList.add('reveal-ready')
+  revealObserver = new IntersectionObserver((entries, observer) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue
+      entry.target.classList.add('is-visible')
+      observer.unobserve(entry.target)
     }
-  } catch { /* keep defaults */ }
+  }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' })
+
+  targets.forEach(target => revealObserver?.observe(target))
 })
 
-onUnmounted(() => abortController.abort())
-
-const trackGlow = (e: MouseEvent) => {
-  const card = e.currentTarget as HTMLElement
-  const rect = card.getBoundingClientRect()
-  card.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`)
-  card.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`)
-}
-
-const clearGlow = (e: MouseEvent) => {
-  const card = e.currentTarget as HTMLElement
-  card.style.setProperty('--mx', '50%')
-  card.style.setProperty('--my', '50%')
-}
+onUnmounted(() => revealObserver?.disconnect())
 </script>
 
 <style scoped>
-/* ══════════════════════════════════════════════
-   EG-Maps Home — Half-Screen + Bento Grid
-   ══════════════════════════════════════════════ */
 .home {
   min-height: 100svh;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  background: transparent;
   color: var(--text-primary);
+  overflow: clip;
 }
 
-/* ── Split Layout ── */
-.home-layout {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
-  min-height: 0;
-}
-
-/* ── Left Panel ── */
-.home-left {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(2rem, 5vh, 5rem) clamp(1.5rem, 4vw, 4rem);
-  border-right: 1px solid var(--border-color);
-}
-.home-left-inner { max-width: 28rem; width: 100%; }
-.home-logo {
-  display: block;
-  width: clamp(5.5rem, 10vw, 7.5rem);
-  height: clamp(5.5rem, 10vw, 7.5rem);
-  object-fit: contain;
-  border-radius: 10px;
-  margin: 0 auto 1.5rem;
-}
-.home-title {
-  font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
-  font-weight: 900;
-  letter-spacing: -0.05em;
-  line-height: 0.9;
-  margin: 0;
-}
-.home-title-dot { color: var(--primary); }
-/* Per-line glass chips: each wrapped line gets its own frosted background
-   sized to the text (box-decoration-break clones the chip per fragment). */
-.glass-line {
-  display: inline;
-  padding: 0.08em 0.28em;
-  border-radius: 0.35em;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px) saturate(1.5);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-}
-:global(.dark) .glass-line {
-  border-color: rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.03);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-/* Breathing room so cloned line chips don't touch when text wraps */
-.home-subtitle, .home-submore { line-height: 1.9; }
-.home-subtitle {
-  margin: 1rem 0 0;
-  font-size: clamp(0.9rem, 1.3vw, 1.1rem);
-  line-height: 1.5;
-  color: var(--text-primary);
-  font-weight: 600;
-  max-width: 26rem;
-}
-.home-submore {
-  margin: 0.6rem 0 0;
-  font-size: clamp(0.8rem, 1.1vw, 0.95rem);
-  line-height: 1.55;
-  color: var(--text-secondary);
-  max-width: 26rem;
-}
-.home-orgline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1.25rem;
-}
-.home-orglink {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--primary);
-  text-decoration: none;
-  padding: 0.55rem 0.7rem;
-  min-height: 44px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  transition: background 0.15s, color 0.15s;
-}
-.home-orglink:hover { background: var(--text-primary); color: var(--bg-primary); }
-.home-orglink--muted { color: var(--text-secondary); }
-.home-orglink--muted:hover { color: var(--bg-primary); }
-.home-divider {
-  width: 3rem;
-  height: 1px;
-  background: var(--border-color);
-  margin: 2rem 0;
-}
-
-/* ── Stats ── */
-.home-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem 1.5rem;
-}
-.home-stat { display: flex; flex-direction: column; gap: 0.15rem; }
-.home-stat-value {
-  font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(1.5rem, 3vw, 2.25rem);
-  font-weight: 900;
-  letter-spacing: -0.06em;
-  line-height: 1;
-  color: var(--text-primary);
-}
-.home-stat-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-/* ── Right Panel ── */
-.home-right {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(1rem, 2.5vh, 2.5rem) clamp(1rem, 2.5vw, 2rem);
-}
-
-/* ══════════════════════════════════════
-   Bento Grid
-   ══════════════════════════════════════ */
-.bento {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto auto;
-  gap: 0.75rem;
-  width: 100%;
-}
-
-/* ── Card base — glassmorphism ── */
-.bento-card {
-  --mx: 50%;
-  --my: 50%;
+.home-hero {
   position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px) saturate(1.5);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 0.95fr);
+  align-items: center;
+  gap: clamp(1.5rem, 5vw, 5rem);
+  width: min(100% - 3rem, 84rem);
+  min-height: max(42rem, 100svh);
+  margin-inline: auto;
+  padding: clamp(7rem, 12vh, 9rem) 0 clamp(5rem, 8vh, 7rem);
 }
-:global(.dark) .bento-card {
-  border-color: rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.03);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-
-.bento-glow {
+.home-hero::before {
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  background: radial-gradient(
-    circle 200px at var(--mx) var(--my),
-    var(--accent, var(--primary)),
-    transparent 70%
-  );
-  transition: opacity 0.3s ease;
+  z-index: -1;
+  inset: 8% -10% 3% 28%;
+  content: '';
+  background: radial-gradient(ellipse at 50% 46%, color-mix(in srgb, var(--primary) 13%, transparent), transparent 68%);
   pointer-events: none;
-  z-index: 0;
 }
-:global(.dark) .bento-glow {
-  opacity: 0;
-}
-.bento-card:hover .bento-glow {
-  opacity: 0.12;
-}
-:global(.dark) .bento-card:hover .bento-glow {
-  opacity: 0.18;
-}
-
-.bento-accent {
-  position: relative;
-  z-index: 1;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent, var(--primary)), transparent);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.bento-card:hover .bento-accent { opacity: 1; }
-
-.bento-body {
-  position: relative;
-  z-index: 1;
-  padding: 1rem 1.125rem 1.125rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-.bento-badge {
-  font-size: 0.58rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.bento-kicker {
-  font-size: 0.62rem;
-  font-weight: 700;
-  margin: 0;
-}
-.bento-icon {
-  width: 2rem;
-  height: 2rem;
+.hero-copy { max-width: 42rem; }
+.eyebrow {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  margin: 0.1rem 0;
-  transition: background 0.2s;
-}
-.bento-card:hover .bento-icon {
-  background: rgba(255, 255, 255, 0.08);
-}
-.bento-title {
-  font-size: 0.95rem;
-  font-weight: 800;
-  line-height: 1.25;
-  margin: 0;
-}
-.bento-desc {
-  font-size: 0.72rem;
-  line-height: 1.5;
+  gap: 0.55rem;
+  margin: 0 0 1rem;
   color: var(--text-secondary);
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.bento-stats {
-  display: flex;
-  gap: 1rem;
-  margin-top: 0.35rem;
-}
-.bento-stat { display: flex; flex-direction: column; gap: 0; }
-.bento-stat strong {
-  font-size: 0.9rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-.bento-stat span {
-  font-size: 0.55rem;
+  letter-spacing: 0.13em;
+  line-height: 1.4;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  font-weight: 600;
 }
-
-/* ── Links ── */
-.bento-links {
+.eyebrow-mark {
+  width: 0.55rem;
+  height: 0.55rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 0.28rem color-mix(in srgb, var(--success) 16%, transparent);
+}
+.home-hero h1 {
+  max-width: 12ch;
+  margin: 0;
+  font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(2.8rem, 6.4vw, 6rem);
+  font-weight: 900;
+  letter-spacing: -0.065em;
+  line-height: 0.99;
+  text-wrap: balance;
+}
+.title-period { color: var(--primary); }
+.hero-lede {
+  max-width: 38rem;
+  margin: clamp(1.2rem, 3vh, 1.8rem) 0 0;
+  color: var(--text-primary);
+  font-size: clamp(1rem, 1.45vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+.hero-context {
+  max-width: 34rem;
+  margin: 0.85rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+.hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
-  margin-top: 0.5rem;
+  gap: 0.75rem;
+  margin-top: 1.8rem;
 }
-.bento-link {
+.action-button {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.7rem;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+.action-button:hover { transform: translateY(-2px); }
+.action-button--primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.action-button--primary:hover { filter: brightness(1.06); }
+.action-button--quiet { background: var(--card); }
+.action-button--quiet:hover { border-color: var(--primary); background: var(--bg-secondary); }
+.action-arrow { width: 0.9rem; height: 0.9rem; margin-left: 0.15rem; opacity: 0.72; }
+
+.hero-art {
+  position: relative;
+  display: grid;
+  width: min(100%, 39rem);
+  aspect-ratio: 1;
+  place-items: center;
+  justify-self: end;
+  color: var(--primary);
+}
+.orbit {
+  position: absolute;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border-color));
+  border-radius: 50%;
+  pointer-events: none;
+}
+.orbit--outer { inset: 4%; border-style: dashed; opacity: 0.5; }
+.orbit--middle { inset: 15%; opacity: 0.72; }
+.orbit--inner { inset: 26%; border-color: color-mix(in srgb, var(--primary) 20%, transparent); }
+.hero-core {
+  display: grid;
+  width: 35%;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--primary) 48%, var(--border-color));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--card) 82%, transparent);
+  box-shadow: 0 1.5rem 5rem color-mix(in srgb, var(--primary) 18%, transparent), inset 0 0 2.5rem color-mix(in srgb, var(--primary) 9%, transparent);
+  animation: core-breathe 6s ease-in-out infinite;
+}
+.hero-logo { width: 56%; height: 56%; object-fit: contain; }
+.orbit-node {
+  position: absolute;
+  display: grid;
+  width: clamp(2.7rem, 5vw, 4rem);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--text-primary);
+  box-shadow: var(--panel-shadow);
+}
+.orbit-node :deep(svg) { width: 42%; height: 42%; }
+.orbit-node--north { top: 12%; left: 49%; transform: translateX(-50%); }
+.orbit-node--east { top: 47%; right: 4%; }
+.orbit-node--south { bottom: 9%; left: 46%; }
+.orbit-node--west { top: 48%; left: 4%; }
+.hero-art-caption {
+  position: absolute;
+  right: 3%;
+  bottom: 23%;
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.55rem 0.6rem;
-  min-height: 44px;
-  border-radius: 6px;
-  font-size: 0.62rem;
-  font-weight: 700;
-  text-decoration: none;
-  color: var(--text-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-.bento-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-  border-color: var(--accent, var(--primary));
-}
-.bento-link--primary {
-  color: #fff;
-}
-.bento-link--primary:hover {
-  opacity: 0.85;
-  color: #fff;
-}
-
-/* ── Tall cards span 2 rows ── */
-.bento-tall {
-  grid-row: span 2;
-}
-
-/* ── Wide card spans full width ── */
-.bento-wide {
-  grid-column: 1 / -1;
-}
-
-/* ── Wide card inner layout ── */
-.bento-wide-body {
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 2rem;
-}
-.bento-wide-left { flex: 1; min-width: 0; }
-.bento-wide-right {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  flex-shrink: 0;
-  padding-top: 1.2rem;
-}
-
-/* ── Footer ── */
-.home-footer {
-  border-top: 1px solid var(--border-color);
-  padding: 1rem 0 calc(1rem + env(safe-area-inset-bottom));
-  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
-  text-align: center;
-  display: flex;
-  flex-direction: column;
   gap: 0.5rem;
-  align-items: center;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text-primary);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  box-shadow: var(--panel-shadow);
 }
-.home-footer-text {
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.caption-dot { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--success); }
+.hero-art-note {
+  position: absolute;
   color: var(--text-muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
-.home-footer-links {
+.hero-art-note--one { top: 22%; left: 5%; }
+.hero-art-note--two { right: 7%; top: 20%; }
+.scroll-cue {
+  position: absolute;
+  bottom: 1.2rem;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.scroll-cue :deep(svg) { width: 0.85rem; height: 0.85rem; color: var(--primary); }
+.scroll-cue:hover { color: var(--text-primary); }
+
+.story-section,
+.pathways-section,
+.join-section {
+  width: min(100% - 3rem, 76rem);
+  margin-inline: auto;
+}
+.story-section {
+  padding: clamp(3.5rem, 8vw, 7rem) 0 clamp(4rem, 8vw, 7.5rem);
+  border-top: 1px solid var(--border-color);
+}
+.section-index {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.section-index span:first-child {
+  display: grid;
+  width: 1.75rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  color: var(--primary);
+  letter-spacing: 0;
+}
+.story-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.7fr);
+  align-items: start;
+  gap: clamp(2rem, 7vw, 7rem);
+  margin-top: 1.5rem;
+}
+.story-split h2,
+.pathways-heading h2,
+.join-copy h2 {
+  margin: 0;
+  font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1.8rem, 3.5vw, 3.4rem);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+.story-copy p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: clamp(0.95rem, 1.35vw, 1.1rem);
+  line-height: 1.8;
+}
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 1.2rem;
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.text-link :deep(svg) { width: 0.95rem; height: 0.95rem; }
+.text-link:hover { text-decoration: underline; text-underline-offset: 0.25em; }
+.story-principles {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.25rem 1rem;
+  gap: 0.65rem;
+  margin-top: clamp(2rem, 5vw, 3.5rem);
+  padding: 0;
+  list-style: none;
 }
-.home-footer-links a {
-  font-size: 0.7rem;
-  font-weight: 600;
+.story-principles li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.65rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--card);
   color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+.story-principles :deep(svg) { width: 0.95rem; height: 0.95rem; color: var(--primary); }
+
+.pathways-section { padding: clamp(3.5rem, 8vw, 7rem) 0; }
+.pathways-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.pathways-heading .eyebrow { margin-bottom: 0.6rem; }
+.pathways-heading h2 { font-size: clamp(2rem, 4vw, 3.8rem); }
+.pathways-intro {
+  max-width: 26rem;
+  margin: 0 0 0.2rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+.pathway-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: clamp(1.5rem, 4vw, 4rem); }
+.pathway-row {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) 2.7rem;
+  align-items: center;
+  gap: 1rem;
+  min-height: 8.5rem;
+  padding: 1.15rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.pathway-icon {
+  display: grid;
+  width: 2.8rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 0.85rem;
+  background: var(--bg-secondary);
+  color: var(--primary);
+}
+.pathway-icon :deep(svg) { width: 1.25rem; height: 1.25rem; }
+.pathway-icon--species { color: var(--success); }
+.pathway-icon--campaigns { color: var(--accent); }
+.pathway-icon--crews { color: var(--warning); }
+.pathway-copy h3 { margin: 0; font-size: 0.96rem; font-weight: 850; line-height: 1.3; }
+.pathway-copy p { margin: 0.35rem 0 0; color: var(--text-secondary); font-size: 0.75rem; line-height: 1.55; }
+.pathway-link {
+  display: grid;
+  width: 2.5rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+.pathway-link :deep(svg) { width: 1rem; height: 1rem; }
+.pathway-link:hover { transform: translate(2px, -2px); border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); }
+
+.join-section {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  margin-top: clamp(2rem, 5vw, 4rem);
+  margin-bottom: clamp(3rem, 7vw, 6rem);
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  border-radius: 1.2rem;
+  background: linear-gradient(115deg, color-mix(in srgb, var(--primary) 18%, var(--bg-secondary)), var(--card) 72%);
+}
+.join-mark {
+  display: grid;
+  width: clamp(3rem, 6vw, 4.5rem);
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.join-mark :deep(svg) { width: 45%; height: 45%; }
+.join-copy .eyebrow { margin-bottom: 0.45rem; }
+.join-copy h2 { font-size: clamp(1.5rem, 2.5vw, 2.2rem); }
+.join-copy > p:last-child { max-width: 34rem; margin: 0.45rem 0 0; color: var(--text-secondary); font-size: 0.82rem; line-height: 1.65; }
+.join-link {
+  display: inline-flex;
+  min-height: 2.8rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 0.7rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.78rem;
+  font-weight: 850;
   text-decoration: none;
+  white-space: nowrap;
+  transition: transform 160ms ease, filter 160ms ease;
 }
-.home-footer-links a:hover { color: var(--text-primary); }
+.join-link:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.join-link :deep(svg) { width: 0.95rem; height: 0.95rem; }
 
-/* ══════════════════════════════════════
-   Responsive
-   ══════════════════════════════════════ */
+.home-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 1.2rem 1.5rem calc(5.5rem + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+.home-footer-text { color: var(--text-muted); font-size: 0.62rem; font-weight: 750; letter-spacing: 0.07em; text-transform: uppercase; }
+.home-footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.35rem 1rem; }
+.home-footer-links a { color: var(--text-secondary); font-size: 0.72rem; font-weight: 650; text-decoration: none; }
+.home-footer-links a:hover { color: var(--text-primary); text-decoration: underline; text-underline-offset: 0.2em; }
 
-/* Tablet: stack left/right */
-@media (max-width: 960px) {
-  .home-layout {
+.reveal-ready [data-reveal] { opacity: 0; transform: translateY(1.25rem); transition: opacity 650ms ease, transform 650ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+.reveal-ready [data-reveal].is-visible { opacity: 1; transform: translateY(0); }
+.hero-art[data-reveal] { transition-delay: 120ms; }
+@keyframes core-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.035); }
+}
+
+@media (max-width: 850px) {
+  .home-hero {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+    min-height: auto;
+    padding-top: 7rem;
+    padding-bottom: 5rem;
   }
-  .home-left {
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
-    padding: clamp(2rem, 5vh, 3rem) clamp(1.5rem, 4vw, 3rem);
-  }
-  .home-right {
-    padding: clamp(1rem, 2vh, 2rem) clamp(1rem, 2.5vw, 2rem);
-  }
+  .hero-copy { max-width: 44rem; }
+  .hero-art { width: min(82vw, 30rem); justify-self: center; }
+  .scroll-cue { bottom: 1rem; }
+  .story-split { grid-template-columns: 1fr; gap: 1.2rem; }
+  .pathways-heading { align-items: start; flex-direction: column; gap: 0.85rem; }
 }
-
-/* Mobile: bento becomes single column */
-@media (max-width: 600px) {
-  .bento {
-    grid-template-columns: 1fr;
-    gap: 0.6rem;
-  }
-  .bento-tall {
-    grid-row: span 1;
-  }
-  .bento-wide-body {
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  .bento-wide-right {
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding-top: 0;
-    gap: 0.3rem;
-  }
-  .home-title {
-    font-size: clamp(2rem, 12vw, 3rem);
-  }
-  .home-logo {
-    width: 5rem;
-    height: 5rem;
-    margin: 0 auto 1.25rem;
-  }
+@media (max-width: 620px) {
+  .home-hero,
+  .story-section,
+  .pathways-section,
+  .join-section { width: min(100% - 2rem, 76rem); }
+  .home-hero { padding-top: 6.4rem; padding-bottom: 4.5rem; }
+  .home-hero h1 { font-size: clamp(2.55rem, 12vw, 4.1rem); }
+  .hero-lede { font-size: 0.98rem; }
+  .hero-context { font-size: 0.83rem; }
+  .hero-art { width: min(92vw, 25rem); }
+  .hero-art-caption { right: 0; bottom: 20%; font-size: 0.58rem; }
+  .hero-art-note { font-size: 0.53rem; }
+  .hero-art-note--one { left: 0; }
+  .hero-art-note--two { right: 0; }
+  .scroll-cue { left: 0; }
+  .pathway-list { grid-template-columns: 1fr; }
+  .pathway-row { min-height: 7.5rem; grid-template-columns: 2.7rem minmax(0, 1fr) 2.5rem; gap: 0.75rem; }
+  .pathway-icon { width: 2.55rem; }
+  .join-section { grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 1rem; }
+  .join-mark { width: 2.8rem; }
+  .join-link { grid-column: 2; justify-self: start; }
 }
-
-/* Desktop wide: wider bento */
-@media (min-width: 1400px) {
-  .bento {
-    gap: 1rem;
-  }
+@media (prefers-reduced-motion: reduce) {
+  .hero-core { animation: none; }
+  .action-button, .pathway-link, .join-link { transition: none; }
+  .reveal-ready [data-reveal] { opacity: 1; transform: none; transition: none; }
 }
 </style>

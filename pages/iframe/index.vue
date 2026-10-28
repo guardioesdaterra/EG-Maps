@@ -4,23 +4,23 @@
  * @component iframe
  */
 <template>
-  <main id="main-content" tabindex="-1" class="bg-white dark:bg-[var(--bg-primary)] text-black dark:text-[var(--text-primary)] min-h-screen">
+  <main id="main-content" tabindex="-1" class="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
     <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       
       <header class="mb-8">
         <h1 class="text-3xl font-black tracking-tight sm:text-4xl">
           {{ t('iframe.title') }}
         </h1>
-        <p class="mt-2 text-lg text-black/70 dark:text-[var(--text-secondary)]">
+        <p class="mt-2 text-lg text-[var(--text-secondary)]">
           {{ t('iframe.subtitle') }}
         </p>
       </header>
 
       
-      <section class="mb-8 rounded-xl border-2 border-black/20 dark:border-[var(--border-color)] overflow-hidden">
-        <div class="border-b-2 border-black/20 dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
+      <section class="mb-8 rounded-xl border-2 border-[var(--border-color)] overflow-hidden">
+        <div class="border-b-2 border-[var(--border-color)] px-4 py-3 bg-[var(--bg-secondary)]">
           <h2 class="text-lg font-bold">{{ t('iframe.picker.title') }}</h2>
-          <p class="text-sm text-black/60 dark:text-[var(--text-secondary)]">
+          <p class="text-sm text-[var(--text-secondary)]">
             {{ t('iframe.picker.description') }}
           </p>
         </div>
@@ -32,7 +32,7 @@
               class="flex-1 text-3xl font-black py-8 rounded-xl border-2 transition-all duration-200"
               :class="pickerMode === '2d'
                 ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105'
-                : 'bg-black/5 dark:bg-white/5 border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10'"
+                : 'bg-[var(--bg-secondary)] border-[var(--border-color)] hover:bg-[var(--bg-tertiary)]'"
             >
               2D
             </button>
@@ -41,7 +41,7 @@
               class="flex-1 text-3xl font-black py-8 rounded-xl border-2 transition-all duration-200"
               :class="pickerMode === '3d'
                 ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105'
-                : 'bg-black/5 dark:bg-white/5 border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10'"
+                : 'bg-[var(--bg-secondary)] border-[var(--border-color)] hover:bg-[var(--bg-tertiary)]'"
             >
               3D
             </button>
@@ -54,14 +54,14 @@
               @click="pickerDataset = ds.key"
               class="px-5 py-2.5 rounded-lg text-sm font-medium border transition-colors"
               :class="pickerDataset === ds.key
-                ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
-                : 'bg-black/5 dark:bg-white/5 border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10'"
+                ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] border-[var(--text-primary)]'
+                : 'bg-[var(--bg-secondary)] border-[var(--border-color)] hover:bg-[var(--bg-tertiary)]'"
             >
               {{ ds.label }}
             </button>
           </div>
           
-          <div v-if="pickerMode" class="w-full border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
+          <div v-if="pickerMode" class="w-full border border-[var(--border-color)] rounded-lg overflow-hidden">
             <iframe
               :src="pickerIframeSrc"
               class="w-full h-[min(500px,80vw)] border-0"
@@ -87,10 +87,10 @@
       </section>
 
       
-      <section class="mb-8 rounded-xl border-2 border-black/20 dark:border-[var(--border-color)] overflow-hidden">
-        <div class="border-b-2 border-black/20 dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
+      <section class="mb-8 rounded-xl border-2 border-[var(--border-color)] overflow-hidden">
+        <div class="border-b-2 border-[var(--border-color)] px-4 py-3 bg-[var(--bg-secondary)]">
           <h2 class="text-lg font-bold">{{ t('iframe.compare.title') }}</h2>
-          <p class="text-sm text-black/60 dark:text-[var(--text-secondary)]">
+          <p class="text-sm text-[var(--text-secondary)]">
             {{ t('iframe.compare.description') }}
           </p>
         </div>
@@ -98,19 +98,19 @@
           <div
             v-for="comp in compareConfigs"
             :key="comp.key"
-            class="border border-black/10 dark:border-[var(--border-color)] rounded-lg p-4"
+            class="border border-[var(--border-color)] rounded-lg p-4"
           >
             <h3 class="font-bold mb-3">{{ comp.label }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p class="text-xs font-medium text-black/50 dark:text-[var(--text-secondary)] mb-1">2D Map</p>
+                <p class="text-xs font-medium text-[var(--text-muted)] mb-1">2D Map</p>
                 <div
                   :ref="(el) => observeContainer(comp.key + '-2d', el as HTMLElement | null)"
-                  class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+                  class="border border-[var(--border-color)] rounded-lg overflow-hidden"
                 >
                   <div
                     v-if="!isVisible[comp.key + '-2d']"
-                    class="bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm h-64"
+                    class="bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] text-sm h-64"
                   >
                     {{ t('iframe.loadingPreview') }}
                   </div>
@@ -125,14 +125,14 @@
                 </div>
               </div>
               <div>
-                <p class="text-xs font-medium text-black/50 dark:text-[var(--text-secondary)] mb-1">3D Globe</p>
+                <p class="text-xs font-medium text-[var(--text-muted)] mb-1">3D Globe</p>
                 <div
                   :ref="(el) => observeContainer(comp.key + '-3d', el as HTMLElement | null)"
-                  class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+                  class="border border-[var(--border-color)] rounded-lg overflow-hidden"
                 >
                   <div
                     v-if="!isVisible[comp.key + '-3d']"
-                    class="bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm h-64"
+                    class="bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] text-sm h-64"
                   >
                     {{ t('iframe.loadingPreview') }}
                   </div>
@@ -156,11 +156,11 @@
         <section
           v-for="item in iframeConfigs"
           :key="item.key"
-          class="rounded-xl border-2 border-black dark:border-[var(--border-color)] overflow-hidden"
+          class="rounded-xl border-2 border-[var(--border-color)] overflow-hidden"
         >
-          <div class="border-b-2 border-black dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
+          <div class="border-b-2 border-[var(--border-color)] px-4 py-3 bg-[var(--bg-secondary)]">
             <h2 class="text-lg font-bold">{{ t(`iframe.${item.key}.title`) }}</h2>
-            <p class="text-sm text-black/60 dark:text-[var(--text-secondary)]">
+            <p class="text-sm text-[var(--text-secondary)]">
               {{ t(`iframe.${item.key}.description`) }}
             </p>
           </div>
@@ -168,12 +168,12 @@
             
             <div
               :ref="(el) => observeContainer(item.key, el as HTMLElement | null)"
-              class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+              class="mb-4 border border-[var(--border-color)] rounded-lg overflow-hidden"
             >
               
               <div
                 v-if="!isVisible[item.key]"
-                class="bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm"
+                class="bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] text-sm"
                 :class="item.placeholderClass"
               >
                 {{ t('iframe.loadingPreview') }}
@@ -207,30 +207,30 @@
       </div>
 
       
-      <section class="mt-8 rounded-xl border-2 border-black dark:border-[var(--border-color)] overflow-hidden">
-        <div class="border-b-2 border-black dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
+      <section class="mt-8 rounded-xl border-2 border-[var(--border-color)] overflow-hidden">
+        <div class="border-b-2 border-[var(--border-color)] px-4 py-3 bg-[var(--bg-secondary)]">
           <h2 class="text-lg font-bold">{{ t('iframe.usage.title') }}</h2>
         </div>
         <div class="p-4 space-y-4">
           <div>
             <h3 class="font-bold mb-2">{{ t('iframe.usage.queryParams.title') }}</h3>
-            <ul class="list-disc list-inside text-sm text-black/70 dark:text-[var(--text-secondary)] space-y-1">
-              <li><code class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs">embed=true</code> — {{ t('iframe.usage.queryParams.embed') }}</li>
-              <li><code class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs">no-control=true</code> — {{ t('iframe.usage.queryParams.noControl') }}</li>
-              <li><code class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs">hideAll=true</code> — {{ t('iframe.usage.queryParams.hideAll') }}</li>
-              <li><code class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs">controls=true</code> — {{ t('iframe.usage.queryParams.controls') }}</li>
-              <li><code class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs">lang=es</code> — {{ t('iframe.usage.queryParams.lang') }}</li>
+            <ul class="list-disc list-inside text-sm text-[var(--text-secondary)] space-y-1">
+              <li><code class="bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-xs">embed=true</code> — {{ t('iframe.usage.queryParams.embed') }}</li>
+              <li><code class="bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-xs">no-control=true</code> — {{ t('iframe.usage.queryParams.noControl') }}</li>
+              <li><code class="bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-xs">hideAll=true</code> — {{ t('iframe.usage.queryParams.hideAll') }}</li>
+              <li><code class="bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-xs">controls=true</code> — {{ t('iframe.usage.queryParams.controls') }}</li>
+              <li><code class="bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-xs">lang=es</code> — {{ t('iframe.usage.queryParams.lang') }}</li>
             </ul>
           </div>
           <div>
             <h3 class="font-bold mb-2">{{ t('iframe.usage.autoHide.title') }}</h3>
-            <p class="text-sm text-black/70 dark:text-[var(--text-secondary)]">
+            <p class="text-sm text-[var(--text-secondary)]">
               {{ t('iframe.usage.autoHide.description') }}
             </p>
           </div>
           <div>
             <h3 class="font-bold mb-2">{{ t('iframe.usage.viewportSizes.title') }}</h3>
-            <ul class="list-disc list-inside text-sm text-black/70 dark:text-[var(--text-secondary)] space-y-1">
+            <ul class="list-disc list-inside text-sm text-[var(--text-secondary)] space-y-1">
               <li><strong>Banner</strong> — {{ t('iframe.usage.viewportSizes.banner') }}</li>
               <li><strong>Small Card</strong> — {{ t('iframe.usage.viewportSizes.smallCard') }}</li>
               <li><strong>Medium Card</strong> — {{ t('iframe.usage.viewportSizes.mediumCard') }}</li>
@@ -240,13 +240,13 @@
           </div>
           <div>
             <h3 class="font-bold mb-2">{{ t('iframe.usage.security.title') }}</h3>
-            <p class="text-sm text-black/70 dark:text-[var(--text-secondary)]">
+            <p class="text-sm text-[var(--text-secondary)]">
               {{ t('iframe.usage.security.description') }}
             </p>
           </div>
           <div>
             <h3 class="font-bold mb-2">{{ t('iframe.usage.performance.title') }}</h3>
-            <p class="text-sm text-black/70 dark:text-[var(--text-secondary)]">
+            <p class="text-sm text-[var(--text-secondary)]">
               {{ t('iframe.usage.performance.description') }}
             </p>
           </div>

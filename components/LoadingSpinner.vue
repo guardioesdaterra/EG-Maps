@@ -49,16 +49,16 @@ const wrapperClass = computed(() => {
 
 const iconClass = computed(() => {
   return {
-    'text-white/70': true,
+    'text-[var(--text-secondary)]': true,
     [sizeClasses[props.size]]: true,
   }
 })
 
 const messageClass = computed(() => {
-  if (props.size === 'sm') return 'text-xs text-gray-400'
-  if (props.size === 'md') return 'text-sm text-gray-400'
-  if (props.size === 'lg') return 'text-base text-gray-300'
-  return 'text-lg text-gray-300'
+  if (props.size === 'sm') return 'text-xs text-[var(--text-secondary)]'
+  if (props.size === 'md') return 'text-sm text-[var(--text-secondary)]'
+  if (props.size === 'lg') return 'text-base text-[var(--text-secondary)]'
+  return 'text-lg text-[var(--text-secondary)]'
 })
 
 </script>

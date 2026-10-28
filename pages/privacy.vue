@@ -7,7 +7,7 @@
  */
 <template>
   <main id="main-content" tabindex="-1" class="flex min-h-[100svh] justify-center bg-[var(--bg-primary)] section-padding-x py-[max(4.75rem,8vh)] pb-[max(7rem,env(safe-area-inset-bottom))] text-[var(--text-primary)]">
-    <article class="w-container-narrow rounded-[14px] border border-white/10 bg-white/[0.06] backdrop-blur-[20px] backdrop-saturate-[1.5] shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:border-white/[0.06] dark:bg-white/[0.03] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
+    <article class="card w-container-narrow overflow-hidden rounded-[14px] shadow-lg">
       <header class="border-b-2 border-[var(--border-color)] card-padding-lg">
         <p class="text-[clamp(10px,1.5vw,13px)] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">Earth Guardians · EG-Maps</p>
         <h1 class="mt-1.5 text-fluid-4xl font-black leading-tight tracking-normal">Privacy Policy</h1>

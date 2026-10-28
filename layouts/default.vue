@@ -111,7 +111,7 @@
               ref="langMenuButtonRef"
               type="button"
               @click="toggleLanguageMenu"
-              class="group relative flex min-h-10 min-w-10 flex-col items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+              class="group relative flex min-h-10 min-w-10 flex-col items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
               :aria-label="t('nav.language')"
               :aria-expanded="showLangMenu"
               aria-controls="language-options"
@@ -143,7 +143,7 @@
                   :key="loc"
                   type="button"
                   @click="selectLanguage(loc)"
-                  :class="[getDropdownItemClass(loc), 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-400']"
+                  :class="[getDropdownItemClass(loc), 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--ring)]']"
                   :aria-pressed="locale === loc"
                 >
                   <span>{{ localeNames[loc] }}</span>
@@ -154,6 +154,24 @@
           </div>
 
           
+          <button
+            v-if="showThemeToggleInDock"
+            type="button"
+            class="group relative flex min-h-10 min-w-10 flex-col items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            :aria-label="isDark ? t('nav.switchToLight') : t('nav.switchToDark')"
+            :title="isDark ? t('nav.switchToLight') : t('nav.switchToDark')"
+            :aria-pressed="isDark"
+            @click="toggleDarkMode"
+          >
+            <div :class="[tooltipClass, 'opacity-0 group-hover:opacity-100 transition-opacity duration-150']">
+              {{ isDark ? t('nav.switchToLight') : t('nav.switchToDark') }}
+              <div :class="tooltipArrowClass" />
+            </div>
+            <div :class="utilityIconClass">
+              <Icon :name="isDark ? 'lucide:sun' : 'lucide:moon'" class="h-4 w-4" />
+            </div>
+          </button>
+
           <div :class="separatorClass" />
 
           
@@ -161,7 +179,7 @@
             <button
               type="button"
               @click="showImportModal = !showImportModal"
-              class="group relative flex min-h-10 min-w-10 flex-col items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+              class="group relative flex min-h-10 min-w-10 flex-col items-center justify-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
               :aria-label="t('observatory.contribution.import')"
               :aria-expanded="showImportModal"
             >
@@ -203,7 +221,6 @@ function updateDockFromHash() {
 }
 
 onMounted(() => {
-  initDarkMode()
   document.addEventListener('click', handleClickOutside)
   updateDockFromHash()
   window.addEventListener('hashchange', updateDockFromHash)
@@ -235,7 +252,7 @@ const headerItems: NavItem[] = [
   { path: '/info', labelKey: 'nav.info', icon: 'lucide:info', variant: 'cyan' },
 ]
 
-const { isDark, init: initDarkMode, toggle: toggleDarkMode } = useDarkMode()
+const { isDark, toggle: toggleDarkMode } = useDarkMode()
 const { showImportModal } = useCustomData()
 const tileProvider = useMapTileProvider()
 
@@ -273,17 +290,29 @@ const view3DRoute = computed(() => {
 })
 
 const isLightTheme = computed(() => !isDark.value)
+const showThemeToggleInDock = computed(() => {
+  const path = route.path.replace(/\/+$/, '') || '/'
+  const hasAlwaysVisiblePageToggle = isVulcanRoute.value || ['/', '/campaigns', '/crew-projects', '/masterclasses'].includes(path)
+  const hasVisibleUnifiedHeaderToggle = (isMapRoute.value || path === '/info') && !noControl.value && !hideAll.value && !controlsForced.value && !isVulcanRoute.value
+  const hasPageThemeToggle = hasAlwaysVisiblePageToggle || hasVisibleUnifiedHeaderToggle
+  return !hasPageThemeToggle
+})
 const unifiedHeaderShellClass = computed(() => [
   'flex flex-row w-full sm:w-fit max-w-full items-center justify-between gap-1 rounded-xl border p-1 shadow-xl backdrop-blur-xl overflow-x-auto scrollbar-none',
   isLightTheme.value
-    ? 'bg-white/95 border-black text-black shadow-[var(--panel-shadow)]'
+    ? 'bg-white/95 border-[var(--border-color)] text-[var(--text-primary)] shadow-[var(--panel-shadow)]'
     : 'bg-black/80 border-white/20 text-white shadow-[var(--panel-shadow)]',
 ])
 const headerSeparatorClass = computed(() => [
   'mx-0.5 h-5 w-px self-center',
-  isLightTheme.value ? 'bg-black/30' : 'bg-white/20',
+  isLightTheme.value ? 'bg-[var(--border-color)]' : 'bg-white/20',
 ])
-const dockShellClass = 'max-w-full px-1.5 py-1.5 rounded-xl shadow-lg backdrop-blur-2xl bg-black/80 text-white'
+const dockShellClass = computed(() => [
+  'max-w-full px-1.5 py-1.5 rounded-xl border shadow-lg backdrop-blur-2xl',
+  isLightTheme.value
+    ? 'bg-white/95 border-[var(--border-color)] text-[var(--text-primary)]'
+    : 'bg-black/90 border-white/15 text-white',
+])
 const headerUtilityClass = computed(() => [
   'inline-flex min-h-10 min-w-10 sm:min-h-8 sm:min-w-0 items-center justify-center gap-1 rounded-md px-2 text-xs font-semibold transition-colors max-sm:px-0',
   isLightTheme.value
@@ -292,11 +321,21 @@ const headerUtilityClass = computed(() => [
 ])
 const tooltipClass = 'absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[10px] font-medium rounded-md opacity-0 transition-all duration-150 pointer-events-none shadow-lg whitespace-nowrap z-10 text-white bg-gray-900 border border-white/10'
 const tooltipArrowClass = 'absolute top-full left-1/2 -translate-x-1/2 border-[4px] border-transparent border-t-gray-900'
-const utilityIconClass = 'flex items-center justify-center rounded-lg transition-all duration-150 ease-out text-white/70 hover:bg-white/10 hover:text-white w-7 h-7'
-const separatorClass = 'mx-1 h-6 w-px self-center bg-white/15'
+const utilityIconClass = computed(() => [
+  'flex items-center justify-center rounded-lg transition-all duration-150 ease-out w-7 h-7',
+  isLightTheme.value
+    ? 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
+    : 'text-white/80 hover:bg-white/10 hover:text-white',
+])
+const separatorClass = computed(() => [
+  'mx-1 h-6 w-px self-center',
+  isLightTheme.value ? 'bg-[var(--border-color)]' : 'bg-white/20',
+])
 const dropdownClass = computed(() => [
   'absolute bottom-full left-1/2 -translate-x-1/2 mb-2 overflow-hidden rounded-lg shadow-xl min-w-[clamp(8rem,15vw,9rem)]',
-  'bg-gray-900/95 backdrop-blur border border-white/10',
+  isLightTheme.value
+    ? 'bg-white/95 backdrop-blur border border-[var(--border-color)]'
+    : 'bg-gray-900/95 backdrop-blur border border-white/10',
 ])
 
 const showLangMenu = ref(false)
@@ -335,6 +374,9 @@ const isActive = (path: string) => {
 
 function getDropdownItemClass(loc: string) {
   const base = 'w-full px-3 py-2 text-xs text-left transition-colors flex items-center justify-between'
+  if (isLightTheme.value) {
+    return `${base} hover:bg-[var(--bg-secondary)] ${locale.value === loc ? 'text-[var(--primary-foreground)] bg-[var(--primary)]' : 'text-[var(--text-primary)]'}`
+  }
   return `${base} hover:bg-white/10 ${locale.value === loc ? 'text-white bg-white/20' : 'text-gray-300'}`
 }
 

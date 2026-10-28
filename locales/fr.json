@@ -62,7 +62,7 @@
     "campaignsTitle": "Campagnes",
     "campaignsDesc": "Les campagnes d'EG et les cartes qui les accompagnent — dont la carte des espèces menacées créée pour la Journée de la biodiversité.",
     "campaignsKicker": "Journée de la biodiversité · carte des espèces incluse",
-    "crewProjectsTitle": "Projets des Équipes",
+    "crewProjectsTitle": "Grande échelle",
     "crewProjectsDesc": "Restauration menée par les équipes en Sierra Leone et au Togo — mangroves, forêts et fermes en gestion communautaire.",
     "vulcanTitle": "Observatoire Vulcan",
     "vulcanDesc": "Carte communautaire des demandes minières de terres rares autour de Poços de Caldas, Brésil — demandes, eau, territoires protégés et vie culturelle.",
@@ -855,7 +855,7 @@
     "joinCrew": "Lancer une Équipe"
   },
   "crewProjects": {
-    "title": "Projets des Équipes",
+    "title": "Grande échelle",
     "description": "Projets à grande et petite échelle menés par les équipes d'EG dans le monde, montrant l'impact de l'action climatique menée par les jeunes.",
     "largeScaleTitle": "Impact d'Équipes à Grande Échelle",
     "largeScaleDesc": "Grandes initiatives d'équipes ayant créé un impact environnemental et communautaire significatif dans plusieurs pays.",

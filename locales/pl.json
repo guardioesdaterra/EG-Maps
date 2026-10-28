@@ -62,7 +62,7 @@
     "campaignsTitle": "Kampanie",
     "campaignsDesc": "Kampanie EG i mapy, które za nimi stoją — w tym mapa zagrożonych gatunków stworzona na Dzień Bioróżnorodności.",
     "campaignsKicker": "Dzień Bioróżnorodności · mapa gatunków w środku",
-    "crewProjectsTitle": "Projekty drużyn",
+    "crewProjectsTitle": "Duża skala",
     "crewProjectsDesc": "Odbudowa prowadzona przez drużyny w Sierra Leone i Togo — namorzyny, lasy i gospodarstwa pod zarządem społeczności.",
     "vulcanTitle": "Obserwatorium Vulcan",
     "vulcanDesc": "Społecznościowa mapa koncesji wydobywczych metali ziem rzadkich wokół Poços de Caldas w Brazylii — koncesje, woda, terytoria chronione i życie kulturalne.",
@@ -816,7 +816,7 @@
     "joinCrew": "Załóż drużynę"
   },
   "crewProjects": {
-    "title": "Projekty drużyn",
+    "title": "Duża skala",
     "description": "Małe i duże projekty prowadzone przez drużyny EG na całym świecie, pokazujące wpływ młodzieżowych działań klimatycznych.",
     "largeScaleTitle": "Wpływ drużyn na dużą skalę",
     "largeScaleDesc": "Ważne inicjatywy drużyn, które przyniosły znaczący wpływ środowiskowy i społecznościowy w wielu krajach.",

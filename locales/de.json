@@ -62,7 +62,7 @@
     "campaignsTitle": "Kampagnen",
     "campaignsDesc": "EG-Kampagnen und die Karten dahinter — inklusive der Artenschutzkarte zum Tag der biologischen Vielfalt.",
     "campaignsKicker": "Tag der biologischen Vielfalt · Artenschutzkarte entdecken",
-    "crewProjectsTitle": "Crew-Projekte",
+    "crewProjectsTitle": "Großmaßstab",
     "crewProjectsDesc": "Renaturierung durch Crews in Sierra Leone und Togo — Mangroven, Wälder und Farmen in gemeinschaftlicher Verwaltung.",
     "vulcanTitle": "Observatorium des Vulkan",
     "vulcanDesc": "Community-Karte zu Seltene-Erden-Abbaurechten rund um Poços de Caldas, Brasilien — Konzessionen, Wasser, Schutzgebiete und kulturelles Leben.",
@@ -816,7 +816,7 @@
     "joinCrew": "Crew gründen"
   },
   "crewProjects": {
-    "title": "Crew-Projekte",
+    "title": "Großmaßstab",
     "description": "Groß- und Kleinprojekte von EG-Crews weltweit — sie zeigen die Wirkung jugendgeführten Klimahandelns.",
     "largeScaleTitle": "Große Crew-Wirkung",
     "largeScaleDesc": "Bedeutende Crew-Initiativen mit erheblicher Umwelt- und Community-Wirkung in mehreren Ländern.",

@@ -62,7 +62,7 @@
     "campaignsTitle": "行动",
     "campaignsDesc": "EG的行动及其背后的地图 — 包括为生物多样性日打造的濒危物种地图。",
     "campaignsKicker": "生物多样性日 · 内含物种地图",
-    "crewProjectsTitle": "团队项目",
+    "crewProjectsTitle": "大型项目",
     "crewProjectsDesc": "Sierra Leone和Togo的团队主导修复 — 社区管理下的红树林、森林和农场。",
     "vulcanTitle": "火山观测站",
     "vulcanDesc": "巴西Poços de Caldas周边稀土采矿权的社区地图 — 申请、水源、受保护领地与文化生活。",
@@ -816,7 +816,7 @@
     "joinCrew": "创建团队"
   },
   "crewProjects": {
-    "title": "团队项目",
+    "title": "大型项目",
     "description": "世界各地EG团队主导的大规模与小规模项目，展现青年主导气候行动的影响力。",
     "largeScaleTitle": "大规模团队影响力",
     "largeScaleDesc": "在多个国家产生重大环境与社区影响的主要团队倡议。",

@@ -62,7 +62,7 @@
     "campaignsTitle": "Kampanyalar",
     "campaignsDesc": "EG kampanyaları ve arkalarındaki haritalar — Biyoçeşitlilik Günü için hazırlanan tehlikedeki türler haritası dahil.",
     "campaignsKicker": "Biyoçeşitlilik Günü · tür haritası içeride",
-    "crewProjectsTitle": "Ekip Projeleri",
+    "crewProjectsTitle": "Büyük ölçekli",
     "crewProjectsDesc": "Sierra Leone ve Togo'da ekip öncülüğünde restorasyon — topluluk yönetiminde mangrovlar, ormanlar ve çiftlikler.",
     "vulcanTitle": "Vulcan Gözlemevi",
     "vulcanDesc": "Brezilya'da Poços de Caldas çevresindeki nadir toprak madenciliği taleplerinin topluluk haritası — talepler, su, korunan bölgeler ve kültürel yaşam.",
@@ -816,7 +816,7 @@
     "joinCrew": "Bir Ekip Kur"
   },
   "crewProjects": {
-    "title": "Ekip Projeleri",
+    "title": "Büyük ölçekli",
     "description": "Dünya çapında EG Ekipleri öncülüğünde büyük ve küçük ölçekli projeler; gençlik öncülüğünde iklim eyleminin etkisini gösterir.",
     "largeScaleTitle": "Büyük Ölçekli Ekip Etkisi",
     "largeScaleDesc": "Birden fazla ülkede önemli çevresel ve toplumsal etki yaratan büyük ekip girişimleri.",

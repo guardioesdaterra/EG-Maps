@@ -62,7 +62,7 @@
     "campaignsTitle": "キャンペーン",
     "campaignsDesc": "EGのキャンペーンとその背景にあるマップ — 生物多様性の日のために作られた絶滅危惧種マップを含みます。",
     "campaignsKicker": "生物多様性の日 · 絶滅危惧種マップを収録",
-    "crewProjectsTitle": "クルループロジェクト",
+    "crewProjectsTitle": "大規模",
     "crewProjectsDesc": "Sierra LeoneとTogoにおけるクルー主導の再生 — コミュニティ管理のもとにあるマングローブ、森林、農場。",
     "vulcanTitle": "バルカン観測所",
     "vulcanDesc": "ブラジル・Poços de Caldas周辺の希土類鉱業権のコミュニティマップ — 申請、水、保護地域、文化的な暮らし。",
@@ -816,7 +816,7 @@
     "joinCrew": "クルーを始める"
   },
   "crewProjects": {
-    "title": "クルループロジェクト",
+    "title": "大規模",
     "description": "世界中のEGクルーが主導する大規模・小規模プロジェクト。若者主導の気候アクションのインパクトを示しています。",
     "largeScaleTitle": "大規模なクルーのインパクト",
     "largeScaleDesc": "複数の国で大きな環境・コミュニティへのインパクトを生み出した主要なクルーの取り組み。",

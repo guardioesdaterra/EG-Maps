@@ -62,7 +62,7 @@
     "campaignsTitle": "Campanhas",
     "campaignsDesc": "Campanhas de EG e os mapas por trás delas, incluindo o mapa de espécies ameaçadas criado para o Dia da Biodiversidade.",
     "campaignsKicker": "Dia da Biodiversidade · mapa de espécies incluído",
-    "crewProjectsTitle": "Projetos das Equipes",
+    "crewProjectsTitle": "Grande Escala",
     "crewProjectsDesc": "Restauração liderada por equipes em Sierra Leone e Togo — manguezais, florestas e fazendas sob gestão comunitária.",
     "vulcanTitle": "Observatório Vulcan",
     "vulcanDesc": "Mapa comunitário de requerimentos de mineração de terras raras em torno de Poços de Caldas, Brasil — requerimentos, água, territórios protegidos e vida cultural.",
@@ -855,7 +855,7 @@
     "joinCrew": "Crie uma Equipe"
   },
   "crewProjects": {
-    "title": "Projetos das Equipes",
+    "title": "Grande Escala",
     "description": "Projetos de grande e pequena escala liderados por equipes de EG no mundo todo, mostrando o impacto da ação climática liderada por jovens.",
     "largeScaleTitle": "Impacto de Equipes em Grande Escala",
     "largeScaleDesc": "Grandes iniciativas de equipes que criaram impacto ambiental e comunitário significativo em vários países.",

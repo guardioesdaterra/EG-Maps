@@ -167,7 +167,7 @@
             </div>
           </article>
 
-          <!-- 5. Crew Projects -->
+          <!-- 5. Large Scale -->
           <article class="bento-card" style="--accent: #10b981" @mousemove="trackGlow" @mouseleave="clearGlow">
             <div class="bento-glow" />
             <div class="bento-accent" />
@@ -190,7 +190,7 @@
               <div class="bento-links">
                 <NuxtLink to="/crew-projects" class="bento-link bento-link--primary" style="background: #10b981; border-color: #10b981">
                   <Icon name="lucide:mountain" class="h-3.5 w-3.5" />
-                  Crew Projects
+                  {{ t('home.crewProjectsTitle') }}
                 </NuxtLink>
               </div>
             </div>

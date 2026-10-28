@@ -62,7 +62,7 @@
     "campaignsTitle": "Kampanjer",
     "campaignsDesc": "EG-kampanjer och kartorna bakom dem — inklusive artkartan som togs fram till biologiska mångfaldens dag.",
     "campaignsKicker": "Biologiska mångfaldens dag · artkarta ingår",
-    "crewProjectsTitle": "Crewprojekt",
+    "crewProjectsTitle": "Storskaligt",
     "crewProjectsDesc": "Restaurering av crews i Sierra Leone och Togo — mangrove, skogar och gårdar i gemensam förvaltning.",
     "vulcanTitle": "Vulcanobservatoriet",
     "vulcanDesc": "Communitykarta över gruvanspråk för sällsynta jordartsmetaller runt Poços de Caldas, Brasilien — anspråk, vatten, skyddade områden och kulturliv.",
@@ -816,7 +816,7 @@
     "joinCrew": "Starta en crew"
   },
   "crewProjects": {
-    "title": "Crewprojekt",
+    "title": "Storskaligt",
     "description": "Storskaliga och småskaliga projekt av EG-crews världen över, som visar effekten av ungdomsledd klimataktion.",
     "largeScaleTitle": "Storskalig creweffekt",
     "largeScaleDesc": "Stora crewinitiativ med betydande miljö- och communityeffekt i flera länder.",

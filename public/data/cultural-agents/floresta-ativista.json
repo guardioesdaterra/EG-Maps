@@ -156,8 +156,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -47.7695758,
-          -21.2147472
+          -47.768500558598,
+          -21.215530320796
         ]
       }
     },
@@ -1818,6 +1818,46 @@
         "coordinates": [
           -46.8805398,
           -21.5951341
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chococorn and the Sugarcane",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "366154",
+        "single_url": "https://rede.florestaativista.org/agente/366154/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.3325502,
+          -22.749332
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ana Jesus",
+        "type": "cultural",
+        "subtype": "rural",
+        "source": "floresta_ativista",
+        "source_id": "371070",
+        "single_url": "https://rede.florestaativista.org/agente/371070/",
+        "status": "active",
+        "description": "Cultural agent from Floresta Ativista"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -47.1484743,
+          -22.9689117
         ]
       }
     }

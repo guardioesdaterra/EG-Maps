@@ -86,7 +86,7 @@
                   </NuxtLink>
                   <NuxtLink to="/endangered-species" class="bento-link">
                     <Icon name="lucide:map" aria-hidden="true" />
-                    {{ t('home.species') }}
+                    {{ t('home.speciesTitle') }}
                   </NuxtLink>
                 </div>
               </div>

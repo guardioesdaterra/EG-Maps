@@ -186,6 +186,11 @@ test.describe('Navigation', () => {
   test('homepage exposes Crew Projects and 2D/3D routes for key maps', async ({ page }) => {
     await loadPage(page, '/')
 
+    const heroSpeciesLink = page.locator('.home-hero').getByRole('link', { name: 'Endangered Species', exact: true })
+    await expect(heroSpeciesLink).toBeVisible()
+    await expect(heroSpeciesLink).toHaveAttribute('href', '/endangered-species')
+    await expect(page.locator('.home-hero')).toContainText('Explore the range of Crew-led work, from ecosystem restoration and regenerative agriculture to climate education, artivism and community resilience.')
+
     const links = [
       ['home-crew-projects-link', '/crew-projects'],
       ['home-project-grants-2d', '/project-grants'],

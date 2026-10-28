@@ -3016,7 +3016,7 @@
           "matchedPlace": "Kasese, Western Region, Uganda",
           "matchedPlaceType": "city",
           "osmObject": {
-            "type": "relation",
+            "type": "node",
             "id": 2685125666
           },
           "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
@@ -3176,7 +3176,7 @@
           "matchedPlace": "Bobo-Dioulasso, Houet, Hauts-Bassins, Burkina Faso",
           "matchedPlaceType": "city",
           "osmObject": {
-            "type": "relation",
+            "type": "node",
             "id": 257506849
           },
           "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",

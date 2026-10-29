@@ -39,6 +39,7 @@ test.describe('Route availability', () => {
     { path: '/endangered-species', title: /Endangered Species/ },
     { path: '/endangered-species/3d', title: /Endangered Species|3D/ },
     { path: '/active-crews', title: /Crews Map/ },
+    { path: '/crews/', title: /Crews Map/ },
     { path: '/active-crews/3d', title: /Crews Map|3D/ },
     { path: '/crew-projects', title: /Earth Guardians/ },
     { path: '/vulcan-observatory', title: /Earth Guardians/ },

@@ -52,7 +52,7 @@
     </div>
     <div class="absolute inset-0 pointer-events-none z-20" :style="{ boxShadow: `inset 0 0 clamp(40px, 12vw, 150px) clamp(8px, 3vw, 30px) rgba(0,0,0,0.7)` }"></div>
 
-    <div class="absolute inset-0 pointer-events-none opacity-[0.03]" :style="{ zIndex: 'calc(var(--z-map-effects) + 1)', backgroundImage: `image-set(url(${baseURL}grid-overlay.png) 1x, url(${baseURL}grid-overlay.png) 2x)`, backgroundRepeat: 'repeat' }" />
+    <div class="absolute inset-0 pointer-events-none opacity-[0.03]" :style="{ zIndex: 'calc(var(--z-map-effects) + 1)', backgroundImage: `image-set(url(${baseURL}grid-overlay.webp) type('image/webp') 1x, url(${baseURL}grid-overlay.webp) type('image/webp') 2x, url(${baseURL}grid-overlay.png) type('image/png') 1x, url(${baseURL}grid-overlay.png) type('image/png') 2x)`, backgroundRepeat: 'repeat' }" />
     <div class="absolute -inset-3 pointer-events-none opacity-[0.02] animate-noise-bg" :style="{ zIndex: 'calc(var(--z-map-effects) + 2)', backgroundImage: `image-set(url(${baseURL}noise.png) 1x, url(${baseURL}noise.png) 2x)`, backgroundRepeat: 'repeat' }" />
     <div aria-hidden="true" class="absolute inset-0 pointer-events-none opacity-[0.02]" :style="{ zIndex: 'calc(var(--z-map-effects) + 3)', backgroundImage: `image-set(url(${baseURL}scanline.gif) 1x, url(${baseURL}scanline.gif) 2x)`, backgroundRepeat: 'repeat' }" />
 
@@ -175,8 +175,12 @@ let isUserInteracting = false
 let interactionTimeout: ReturnType<typeof setTimeout> | null = null
 let visibilityHandler: (() => void) | null = null
 let starResizeCleanup: (() => void) | null = null
+let activeMap: maplibregl.Map | null = null
+let starInitTimeout: ReturnType<typeof setTimeout> | null = null
+let drawStars: (() => void) | null = null
 
 function initStarCanvas() {
+  stopStarCanvas()
   const canvasRef = starCanvasRef.value
   if (!canvasRef) return
   const ctxRef = canvasRef.getContext('2d')
@@ -223,7 +227,7 @@ function initStarCanvas() {
 
   function draw() {
     if (!ctx || !canvas) return
-    if (document.hidden) { starAnimationId = requestAnimationFrame(draw); return }
+    if (document.hidden) { starAnimationId = null; return }
     ctx.clearRect(0, 0, w, h)
     for (const s of stars) {
       s.a += s.da; if (s.a > 1) s.a = 1; if (s.a < 0.2) s.a = 0.2
@@ -232,19 +236,29 @@ function initStarCanvas() {
     }
     starAnimationId = requestAnimationFrame(draw)
   }
-  draw()
+  drawStars = draw
+  if (!document.hidden) draw()
+}
+
+function pauseStarCanvas() {
+  if (starAnimationId !== null) { cancelAnimationFrame(starAnimationId); starAnimationId = null }
+}
+
+function resumeStarCanvas() {
+  if (!document.hidden && starAnimationId === null && drawStars) drawStars()
 }
 
 function stopStarCanvas() {
-  if (starAnimationId !== null) { cancelAnimationFrame(starAnimationId); starAnimationId = null }
+  pauseStarCanvas()
   if (starResizeCleanup) { starResizeCleanup(); starResizeCleanup = null }
+  drawStars = null
 }
 
 function startAutoRotate(map: maplibregl.Map) {
-  if (rotationAnimationId !== null) return
+  if (document.hidden || rotationAnimationId !== null) return
   function rotate() {
-    if (!map || !base.isMounted || isUserInteracting) { rotationAnimationId = null; return }
-    if (document.hidden) { rotationAnimationId = requestAnimationFrame(rotate); return }
+    if (!map || activeMap !== map || !base.isMounted || isUserInteracting) { rotationAnimationId = null; return }
+    if (document.hidden) { rotationAnimationId = null; return }
     const center = map.getCenter()
     // Use jumpTo (instant) instead of easeTo to avoid creating an internal
     // MapLibre animation that conflicts with user drag interactions.
@@ -268,12 +282,31 @@ const base = useMapBase({
   },
   onMapReady: (map) => {
     emit('mapInit', map)
+    activeMap = map
+    if (!visibilityHandler) {
+      visibilityHandler = () => {
+        if (document.hidden) {
+          pauseStarCanvas()
+          stopAutoRotate()
+          return
+        }
+        resumeStarCanvas()
+        if (activeMap && base.quality.settings.value.autoRotate && !isUserInteracting) {
+          startAutoRotate(activeMap)
+        }
+      }
+      document.addEventListener('visibilitychange', visibilityHandler)
+    }
     customLayerCtx.syncNow()
     // Focus the map canvas so it can receive keyboard and pointer events
     // immediately — avoids the "must zoom before drag" issue on some browsers.
     try { map.getCanvas().focus() } catch { /* ignore */ }
     if (base.quality.settings.value.starCount > 0) {
-      setTimeout(() => initStarCanvas(), 500)
+      if (starInitTimeout) clearTimeout(starInitTimeout)
+      starInitTimeout = setTimeout(() => {
+        starInitTimeout = null
+        if (activeMap === map && base.isMounted) initStarCanvas()
+      }, 500)
     }
     if (base.quality.settings.value.autoRotate) {
       startAutoRotate(map)
@@ -296,9 +329,11 @@ const base = useMapBase({
     map.on('touchcancel', resumeAutoRotate)
   },
   onBeforeCleanup: () => {
+    activeMap = null
+    if (starInitTimeout) { clearTimeout(starInitTimeout); starInitTimeout = null }
     stopAutoRotate()
     stopStarCanvas()
-    if (interactionTimeout) clearTimeout(interactionTimeout)
+    if (interactionTimeout) { clearTimeout(interactionTimeout); interactionTimeout = null }
     if (visibilityHandler) { document.removeEventListener('visibilitychange', visibilityHandler); visibilityHandler = null }
   },
 })

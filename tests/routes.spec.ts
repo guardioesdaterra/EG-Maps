@@ -62,6 +62,7 @@ test.describe('Static asset availability', () => {
     '/noise.png',
     '/white-banner.png',
     '/grid-overlay.png',
+    '/grid-overlay.webp',
     '/marker-icon.png',
     '/marker-icon-2x.png',
     '/marker-shadow.png',

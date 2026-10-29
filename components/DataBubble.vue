@@ -278,7 +278,7 @@ const crewLegendItems = computed(() => [
 ])
 
 const crewStatusItems = computed<Array<{ status: CrewStatus; color: string; label: string }>>(() => [
-  { status: 'active', color: '#22c55e', label: t('stats.active') },
+  { status: 'active', color: '#22c55e', label: t('filter.active') },
   { status: 'inactive', color: '#f59e0b', label: t('stats.crewsInactive') },
 ])
 

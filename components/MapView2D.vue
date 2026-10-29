@@ -11,7 +11,7 @@
       {{ t('mapControls.offlineCachedData') }}
     </div>
     <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-[clamp(4.25rem,11vh,6rem)] z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/70 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm sm:left-auto sm:top-[max(1rem,env(safe-area-inset-top))] sm:right-[max(1rem,env(safe-area-inset-right))]" aria-haspopup="dialog" :aria-label="t('mapControls.nearbyLabel')" @click="nearbyOpen = true"><span aria-hidden="true">⌖</span> {{ t('mapControls.nearby') }}</button>
-    <NearbyPanel v-if="nearbyOpen" :projects="projectsData" :crew-locations="crewLocationsData" @close="nearbyOpen = false" @navigate="navigateToLocation" />
+    <NearbyPanel v-if="nearbyOpen" :projects="projectsData" :crew-locations="visibleCrewLocations" @close="nearbyOpen = false" @navigate="navigateToLocation" />
     
     <Transition name="fade">
       <div v-if="isLoading" class="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center" role="status" aria-live="polite" aria-busy="true">
@@ -86,7 +86,7 @@
     <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" />
     <SpeciesFilterPanel v-if="activeDataset === 'endangered-species' && showFilterPanel" ref="speciesFilterPanelRef" :species="speciesIndexData" @filter-change="handleFilterChange" @group-selection-change="handleSpeciesGroupSelection" @close="showFilterPanel = false" />
 
-    <DataBubble v-if="!hideAll && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" :position-bottom="isMobile ? 'clamp(5.5rem,12vh,7rem)' : 'clamp(1rem, 4vh, 2rem)'" @toggle-group="toggleLegendGroup" />
+    <DataBubble v-if="!hideAll && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :selected-crew-statuses="selectedCrewStatuses" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" :position-bottom="isMobile ? 'clamp(5.5rem,12vh,7rem)' : 'clamp(1rem, 4vh, 2rem)'" @toggle-group="toggleLegendGroup" @toggle-crew-status="toggleCrewStatus" />
 
     <MapControls v-if="activeDataset !== 'vulcan-observatory' && !hideAll" :is-globe-view="false" :show-hex-grid="showHexGrid" :show-connections="showConnections" :share-copied="shareCopied" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :crews="activeDataset === 'active-crews' ? crewsData : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" @share="shareMap" @export="exportMapImage" @export-data="exportVisibleData" :style="{ zIndex: 'var(--z-map-ui-controls)' }" />
 
@@ -132,7 +132,7 @@
       <div v-if="showCrewOverlay" ref="crewOverlayRef" class="crew-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="crewOverlayLabel" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
         <button ref="crewCloseBtnRef" class="crew-popup-close-btn-fixed" @click="closeCrewOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="crew-popup-content-fixed">
-          <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" :projects="visibleProjects" :crew-locations="crewLocationsData" @select-crew="openCrewLocationOverlay" @fly-to-project="(lat, lng) => navigateToLocation(lat, lng)" />
+          <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" :projects="visibleProjects" :crew-locations="visibleCrewLocations" @select-crew="openCrewLocationOverlay" @fly-to-project="(lat, lng) => navigateToLocation(lat, lng)" />
         </div>
       </div>
     </Transition>
@@ -248,8 +248,8 @@ useHead({
 
 const {
   t, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,
-  projectsData, speciesIndexData, visibleProjects, crewsData, crewLocationsData,
-  activeDataset, selectedSpeciesGroups,
+  projectsData, speciesIndexData, visibleProjects, crewsData, crewLocationsData, visibleCrewLocations,
+  activeDataset, selectedSpeciesGroups, selectedCrewStatuses, toggleCrewStatus,
   hasError, errorMessage, noWebglSupport, shareCopied, shareMap, exportMapImage, exportVisibleData,
   showHexGrid, showFilterPanel, speciesFilterPanelRef,
   showConnections, toggleConnections,

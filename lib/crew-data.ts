@@ -25,13 +25,15 @@ export interface CrewRegionData {
   history: CrewRegionHistory[]
 }
 
+export type CrewStatus = 'active' | 'inactive'
+
 export interface CrewLocation {
   name: string
   country: string
   city: string
   state: string
   region: string
-  status: 'active' | 'inactive'
+  status: CrewStatus
   lat: number
   lng: number
 }

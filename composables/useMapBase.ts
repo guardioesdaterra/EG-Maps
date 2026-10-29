@@ -29,7 +29,7 @@ import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
 import { HEX_GRID } from '@/lib/constants'
 import { VULCAN_CENTER } from '@/composables/useVulcanCircles'
 import type { ProjectData } from '@/lib/types'
-import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
+import type { CrewRegionData, CrewLocation, CrewStatus } from '@/lib/crew-data'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { ParticleQualityConfig } from '@/lib/map-effects'
@@ -185,6 +185,8 @@ export function useMapBase(config: MapBaseConfig) {
   }, { immediate: false })
   const crewsData = computed(() => props.crews || [])
   const crewLocationsData = computed(() => props.crewLocations || [])
+  const selectedCrewStatuses = ref<CrewStatus[]>(['active', 'inactive'])
+  const visibleCrewLocations = computed(() => crewLocationsData.value.filter(location => selectedCrewStatuses.value.includes(location.status)))
   const filteredProjectsList = ref<ProjectData[] | null>(null)
   const filteredSpeciesList = ref<SpeciesIndexItem[] | null>(null)
   const visibleProjects = computed(() => filteredProjectsList.value ?? projectsData.value)
@@ -457,7 +459,7 @@ export function useMapBase(config: MapBaseConfig) {
       projects: visibleProjects.value,
       species: visibleSpecies.value,
       crews: crewsData.value,
-      crewLocations: crewLocationsData.value,
+      crewLocations: visibleCrewLocations.value,
       observatory,
     })
     downloadMapGeoJSON(collection, mapExportFilename(activeDataset.value))
@@ -666,7 +668,8 @@ export function useMapBase(config: MapBaseConfig) {
         speciesIndex: isRee ? [] : visibleSpecies.value,
         species: isRee ? [] : speciesData.value,
         crews: isRee ? [] : crewsData.value,
-        crewLocations: isRee ? [] : crewLocationsData.value,
+        crewLocations: isRee ? [] : visibleCrewLocations.value,
+        crewStatuses: selectedCrewStatuses.value,
         selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
         rareEarthFeatures: isRee
           ? (props.rareEarthFiltered?.features?.length
@@ -698,7 +701,8 @@ export function useMapBase(config: MapBaseConfig) {
       speciesIndex: isRee ? [] : visibleSpecies.value,
       species: isRee ? [] : speciesData.value,
       crews: isRee ? [] : crewsData.value,
-      crewLocations: isRee ? [] : crewLocationsData.value,
+      crewLocations: isRee ? [] : visibleCrewLocations.value,
+      crewStatuses: selectedCrewStatuses.value,
       selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
       rareEarthFeatures: isRee
         ? (props.rareEarthFiltered?.features?.length
@@ -744,6 +748,17 @@ export function useMapBase(config: MapBaseConfig) {
         selectedSpeciesGroups.value = selectedSpeciesGroups.value.filter(x => x !== g)
       }
     }
+  }
+
+  function toggleCrewStatus(status: CrewStatus) {
+    const selected = new Set(selectedCrewStatuses.value)
+    if (selected.has(status)) {
+      if (selected.size === 1) return
+      selected.delete(status)
+    } else {
+      selected.add(status)
+    }
+    selectedCrewStatuses.value = (['active', 'inactive'] as const).filter(item => selected.has(item))
   }
 
   function handleSpeciesGroupSelection(groups: string[]) {
@@ -829,7 +844,7 @@ export function useMapBase(config: MapBaseConfig) {
     const qNow = quality.settings.value
     if (qNow.showConnections && connections.showConnections.value) {
       if (activeDataset.value === 'active-crews') {
-        connections.addConnections('active-crews', [], [], crewLocationsData.value)
+        connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
       } else {
         connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
       }
@@ -1036,7 +1051,7 @@ export function useMapBase(config: MapBaseConfig) {
         if (activeDataset.value !== 'vulcan-observatory') {
           if (qNow.showConnections) {
             if (activeDataset.value === 'active-crews') {
-              connections.addConnections('active-crews', [], [], crewLocationsData.value)
+              connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
             } else {
               connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
             }
@@ -1170,10 +1185,10 @@ export function useMapBase(config: MapBaseConfig) {
   // Popup/UI composables react to locale changes themselves. Marker GeoJSON
   // contains locale-independent data, so do not reserialize large sources here.
 
-  watch(crewLocationsData, () => {
+  watch([crewLocationsData, selectedCrewStatuses], () => {
     if (!map || activeDataset.value !== 'active-crews') return
     rebuildMarkers()
-    connections.addConnections('active-crews', [], [], crewLocationsData.value)
+    connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
     if (connections.showConnections.value && quality.settings.value.showParticles) connections.startParticles()
   })
 
@@ -1191,7 +1206,7 @@ export function useMapBase(config: MapBaseConfig) {
   watch([visibleSpecies, visibleProjects], () => {
     if (!map || activeDataset.value === 'vulcan-observatory') return
     if (activeDataset.value === 'active-crews') {
-      connections.addConnections('active-crews', [], [], crewLocationsData.value)
+      connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
     } else {
       connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
     }
@@ -1215,7 +1230,7 @@ export function useMapBase(config: MapBaseConfig) {
   watch(connections.showConnections, () => {
     runtime.connectionsPreference.value = connections.showConnections.value
     if (activeDataset.value === 'active-crews') {
-      connections.addConnections('active-crews', [], [], crewLocationsData.value)
+      connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
     } else {
       connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
     }
@@ -1252,9 +1267,9 @@ export function useMapBase(config: MapBaseConfig) {
   return {
     t, locale, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,
     speciesPanel,
-    projectsData, speciesIndexData, crewsData, crewLocationsData,
+    projectsData, speciesIndexData, crewsData, crewLocationsData, visibleCrewLocations,
     filteredProjectsList, filteredSpeciesList, visibleProjects, visibleSpecies,
-    activeDataset, selectedSpeciesGroups,
+    activeDataset, selectedSpeciesGroups, selectedCrewStatuses, toggleCrewStatus,
     hasError, errorMessage, noWebglSupport, isLoading,
     clusterPanelItems, clusterPanelDataset, clusterPanelOpen, closeClusterPanel,
     showHexGrid, showFilterPanel, speciesFilterPanelRef,

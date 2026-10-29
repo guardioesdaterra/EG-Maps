@@ -46,6 +46,7 @@
 
 import { ref, onMounted, onUnmounted, watch, useTemplateRef } from 'vue'
 import { useI18n } from '~/composables/useI18n'
+import { canonicalizeMapLayoutPath } from '@/lib/map-routes'
 
 interface GooeyNavItem {
   path: string
@@ -86,13 +87,14 @@ const activeIndex = ref(-1)
 let resizeObserver: ResizeObserver | null = null
 
 function computeActiveIndex(): number {
+  const currentPath = canonicalizeMapLayoutPath(route.path)
   for (let i = 0; i < props.items.length; i++) {
     const item = props.items[i]
     if (item.external) continue
     const p = item.path
-    if (p === '/' && route.path === '/') return i
-    if (p === '/info' && route.path === '/info') return i
-    if (p !== '/' && p !== '/info' && route.path.startsWith(p)) return i
+    if (p === '/' && currentPath === '/') return i
+    if (p === '/info' && currentPath === '/info') return i
+    if (p !== '/' && p !== '/info' && currentPath.startsWith(p)) return i
   }
   return -1
 }

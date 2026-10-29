@@ -76,6 +76,11 @@ export default defineNuxtConfig({
         {
           innerHTML: `(function() {
             try {
+              var mapRoutes = ['project-grants', 'endangered-species', 'vulcan-observatory', 'active-crews', 'crews'];
+              var routeSegments = window.location.pathname.split('/');
+              if (routeSegments.some(function(segment) { return mapRoutes.indexOf(segment) !== -1; })) {
+                document.documentElement.dataset.egInitialMapSearch = window.location.search;
+              }
               var saved = localStorage.getItem('darkMode');
               var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
               document.documentElement.classList.toggle('dark', saved === 'true' || (saved === null && prefersDark));

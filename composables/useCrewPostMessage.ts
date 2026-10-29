@@ -184,8 +184,29 @@ export function useCrewPostMessage(
     route = useRoute()
   } catch { route = null }
 
+  function isHideAllEnabled(queryValue: unknown): boolean {
+    if (queryValue === 'true') return true
+    if (import.meta.client !== true) return false
+    const initialSearch = document.documentElement.dataset.egInitialMapSearch ?? ''
+    return new URLSearchParams(window.location.search).get('hideAll') === 'true'
+      || new URLSearchParams(initialSearch).get('hideAll') === 'true'
+  }
+
+  function getLiveUrlParams(): URLSearchParams {
+    const params = new URLSearchParams(document.documentElement.dataset.egInitialMapSearch ?? '')
+    new URLSearchParams(window.location.search).forEach((value, key) => { params.set(key, value) })
+    return params
+  }
+
   const activeRegion = ref('')
-  const hideAll = ref(false)
+  const hideAll = ref(isHideAllEnabled(route?.query.hideAll))
+  if (route) {
+    watch(
+      () => route?.query.hideAll,
+      value => { hideAll.value = isHideAllEnabled(value) },
+      { immediate: true },
+    )
+  }
 
   /* ── helpers ──────────────────────────────────────────────────────── */
 
@@ -322,7 +343,7 @@ export function useCrewPostMessage(
     }
 
     // Sync URL without reload — preserve all existing params
-    const params = new URLSearchParams(window.location.search)
+    const params = getLiveUrlParams()
     if (region) {
       params.set('region', region)
     } else {
@@ -399,7 +420,7 @@ export function useCrewPostMessage(
           const targetPath = wants3d ? `${basePath}/3d` : basePath
           // Read the live URL query (source of truth after replaceState),
           // not the possibly-stale router query object.
-          const liveParams = new URLSearchParams(window.location.search)
+          const liveParams = getLiveUrlParams()
           const liveQuery: Record<string, string> = {}
           liveParams.forEach((v, k) => { liveQuery[k] = v })
           if (router) {
@@ -442,7 +463,7 @@ export function useCrewPostMessage(
 
   function applyInitialUrlFilter() {
     if (import.meta.server) return
-    const params = new URLSearchParams(window.location.search)
+    const params = getLiveUrlParams()
     const region = (params.get('region') ?? '').trim().toLowerCase()
     const ha = params.get('hideAll')
     const zoomParam = params.get('zoom')

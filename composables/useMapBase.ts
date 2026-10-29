@@ -153,12 +153,25 @@ export function useMapBase(config: MapBaseConfig) {
   const { t, locale, localeNames } = useI18n()
   const route = useRoute()
   const router = useRouter()
+  function mapQueryValue(name: string): unknown {
+    const routeValue = route.query[name]
+    if (routeValue !== undefined) return routeValue
+    if (import.meta.client !== true) return undefined
+    const liveValue = new URLSearchParams(window.location.search).get(name)
+    if (liveValue !== null) return liveValue
+    return new URLSearchParams(document.documentElement.dataset.egInitialMapSearch ?? '').get(name)
+  }
+  const initialUrlQuery: Record<string, string> = {}
+  if (import.meta.client === true) {
+    new URLSearchParams(document.documentElement.dataset.egInitialMapSearch ?? '').forEach((value, key) => { initialUrlQuery[key] = value })
+    new URLSearchParams(window.location.search).forEach((value, key) => { initialUrlQuery[key] = value })
+  }
   const speciesPanel = useSpeciesPanel()
   const baseURL = useRuntimeConfig().app.baseURL
   const isMobile = useMediaQuery('(max-width: 768px)')
   const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
   const offlineTiles = useOfflineTiles(MAPTILER_API_KEY)
-  const initialShareState = parseMapShareState(route.query)
+  const initialShareState = parseMapShareState({ ...initialUrlQuery, ...route.query })
   const initialCameraState = initialShareState
 
   const quality = useAdaptiveQuality()
@@ -211,23 +224,23 @@ export function useMapBase(config: MapBaseConfig) {
 
   const isEmbed = computed(() => {
     if (import.meta.server) return false
-    return route.query.embed === 'true'
+    return mapQueryValue('embed') === 'true'
   })
 
   const noControl = computed(() => {
     if (import.meta.server) return false
-    return route.query['no-control'] === 'true'
+    return mapQueryValue('no-control') === 'true'
   })
 
   const hideAll = computed(() => {
     if (props.hideAll !== undefined) return props.hideAll
     if (import.meta.server) return false
-    return route.query.hideAll === 'true'
+    return mapQueryValue('hideAll') === 'true'
   })
 
   const controlsForced = computed(() => {
     if (import.meta.server) return false
-    return route.query.controls === 'true'
+    return mapQueryValue('controls') === 'true'
   })
 
   const isSmallViewport = ref(false)
@@ -351,9 +364,10 @@ export function useMapBase(config: MapBaseConfig) {
     const isRee = activeDataset.value === 'vulcan-observatory'
     const fallbackCenter = initialCameraState.center ?? (isRee ? (isGlobe ? [-48, -15] : [-46.533, -21.914]) : (isGlobe ? [0, 20] : [0, 0]))
     let fallbackZoom = initialCameraState.zoom ?? (isRee ? (isGlobe ? 4.2 : 9.5) : isMobile.value ? (isGlobe ? 1 : 1.2) : (isGlobe ? 1.8 : 2))
-    if (initialCameraState.zoom === undefined && route.query.zoom != null) {
+    const urlZoom = mapQueryValue('zoom')
+    if (initialCameraState.zoom === undefined && urlZoom != null) {
       const tileMaxZoom = quality.settings.value.tileResolution === 'low' ? 14 : quality.settings.value.tileResolution === 'medium' ? 17 : 22
-      fallbackZoom = Math.max(0, Math.min(1, parseFloat(String(route.query.zoom)) || 0)) * tileMaxZoom
+      fallbackZoom = Math.max(0, Math.min(1, parseFloat(String(urlZoom)) || 0)) * tileMaxZoom
     }
     return {
       center: (center ? [center.lng, center.lat] : fallbackCenter) as [number, number],
@@ -371,8 +385,14 @@ export function useMapBase(config: MapBaseConfig) {
       showConnections: showConnections.value,
       selectedSpeciesGroups: selectedSpeciesGroups.value,
     })
-    if (Object.entries(queryState).every(([key, value]) => String(route.query[key] ?? '') === value)) return
-    const query = { ...route.query, ...queryState }
+    const urlQuery: Record<string, string> = {}
+    new URLSearchParams(document.documentElement.dataset.egInitialMapSearch ?? '').forEach((value, key) => { urlQuery[key] = value })
+    new URLSearchParams(window.location.search).forEach((value, key) => { urlQuery[key] = value })
+    const currentQuery = { ...urlQuery, ...route.query }
+    const mapStateIsCurrent = Object.entries(queryState).every(([key, value]) => String(currentQuery[key] ?? '') === value)
+    const routerHasUrlQuery = Object.entries(urlQuery).every(([key, value]) => String(route.query[key] ?? '') === value)
+    if (mapStateIsCurrent && routerHasUrlQuery) return
+    const query = { ...urlQuery, ...route.query, ...queryState }
     if (!queryState.mapGroups) delete query.mapGroups
     void router.replace({ query, hash: route.hash }).catch(() => {})
   }
@@ -925,14 +945,12 @@ export function useMapBase(config: MapBaseConfig) {
 
       // Read zoom param: 0..1 maps linearly to minZoom..maxZoom
       let initialZoom = isRee ? (isGlobe ? 4.2 : 9.5) : isMobile.value ? (isGlobe ? 1.0 : 1.2) : (isGlobe ? 1.8 : 2)
+      const urlZoom = mapQueryValue('zoom')
       if (initialCameraState.zoom !== undefined) {
         initialZoom = initialCameraState.zoom
-      } else if (!import.meta.server) {
-        const urlZoom = route.query.zoom
-        if (urlZoom != null) {
-          const t = Math.max(0, Math.min(1, parseFloat(String(urlZoom)) || 0))
-          initialZoom = t * tileMaxZoom
-        }
+      } else if (urlZoom != null) {
+        const t = Math.max(0, Math.min(1, parseFloat(String(urlZoom)) || 0))
+        initialZoom = t * tileMaxZoom
       }
 
       registerOfflineTileProtocol(offlineTiles)

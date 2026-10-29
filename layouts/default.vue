@@ -97,7 +97,7 @@
     </header>
 
     
-    <div v-if="showDock && !hideAll && !isEgGrantsRoute" data-map-popup-safe-area="bottom" class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] xs:bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
+    <div v-if="layoutControlsReady && showDock && !hideAll && !isEgGrantsRoute" data-map-popup-safe-area="bottom" class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] xs:bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
       <div :class="dockShellClass">
         <div class="flex items-center gap-1">
           <GooeyNav :items="navItems" />
@@ -207,12 +207,15 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n as useAppI18n, type Locale } from '@/composables/useI18n'
 import { useCustomData } from '@/composables/useCustomData'
 import { useMapTileProvider } from '@/composables/useMapTileProvider'
+import { canonicalizeMapLayoutPath, isMapLayoutRoute } from '@/lib/map-routes'
 
 const route = useRoute()
+const router = useRouter()
 
 const { t, locale, availableLocales, localeNames, setLocale } = useAppI18n()
 
 const showDock = ref(true)
+const layoutControlsReady = ref(false)
 
 function updateDockFromHash() {
   if (typeof window !== 'undefined') {
@@ -220,9 +223,24 @@ function updateDockFromHash() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
+  if (isMapLayoutRoute(route.path)) {
+    const initialQuery: Record<string, string> = {}
+    const initialSearch = document.documentElement.dataset.egInitialMapSearch ?? ''
+    new URLSearchParams(initialSearch).forEach((value, key) => { initialQuery[key] = value })
+    const currentQuery = route.query
+    const needsRestore = Object.entries(initialQuery).some(([key, value]) => String(currentQuery[key] ?? '') !== value)
+    if (needsRestore) {
+      try {
+        await router.replace({ query: { ...initialQuery, ...currentQuery }, hash: route.hash })
+      } catch { /* Keep captured flags active if the router cannot restore the URL. */ }
+    }
+    const queryRestored = Object.entries(initialQuery).every(([key, value]) => String(route.query[key] ?? '') === value)
+    if (queryRestored) delete document.documentElement.dataset.egInitialMapSearch
+  }
   updateDockFromHash()
+  layoutControlsReady.value = true
   window.addEventListener('hashchange', updateDockFromHash)
 })
 
@@ -268,24 +286,30 @@ const tileProviderTitle = computed(() => {
   return base
 })
 
-const isMapRoute = computed(() =>
-  route.path.startsWith('/project-grants') || route.path.startsWith('/endangered-species') || route.path.startsWith('/vulcan-observatory') || route.path.startsWith('/active-crews')
-)
-const is3DRoute = computed(() => route.path.endsWith('/3d'))
-const noControl = computed(() => route.query['no-control'] === 'true')
-const hideAll = computed(() => route.query.hideAll === 'true')
-const controlsForced = computed(() => route.query.controls === 'true')
+const mapRoutePath = computed(() => canonicalizeMapLayoutPath(route.path))
+const isMapRoute = computed(() => isMapLayoutRoute(route.path))
+const is3DRoute = computed(() => mapRoutePath.value.endsWith('/3d'))
+function queryFlagIsTrue(name: string): boolean {
+  if (route.query[name] === 'true') return true
+  if (import.meta.client !== true) return false
+  const initialSearch = document.documentElement.dataset.egInitialMapSearch ?? ''
+  return new URLSearchParams(window.location.search).get(name) === 'true'
+    || new URLSearchParams(initialSearch).get(name) === 'true'
+}
+const noControl = computed(() => queryFlagIsTrue('no-control'))
+const hideAll = computed(() => queryFlagIsTrue('hideAll'))
+const controlsForced = computed(() => queryFlagIsTrue('controls'))
 const isVulcanRoute = computed(() => route.path.startsWith('/vulcan-observatory'))
 const isEgGrantsRoute = computed(() => route.path.startsWith('/eg-grants'))
-const showUnifiedHeader = computed(() => (isMapRoute.value || route.path === '/info') && !noControl.value && !hideAll.value && !controlsForced.value && !isVulcanRoute.value)
+const showUnifiedHeader = computed(() => layoutControlsReady.value && (isMapRoute.value || route.path === '/info') && !noControl.value && !hideAll.value && !controlsForced.value && !isVulcanRoute.value)
 const showViewToggle = computed(() => isMapRoute.value && !noControl.value && !hideAll.value && !controlsForced.value)
 
 const view2DRoute = computed(() => {
-  const p = route.path.replace(/\/+$/, '')
+  const p = mapRoutePath.value
   return p.endsWith('/3d') ? p.replace(/\/3d$/, '') : p
 })
 const view3DRoute = computed(() => {
-  const p = route.path.replace(/\/+$/, '')
+  const p = mapRoutePath.value
   return p.endsWith('/3d') ? p : `${p}/3d`
 })
 

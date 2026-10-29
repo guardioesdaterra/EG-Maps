@@ -16,6 +16,7 @@
     "test": "pnpm test:unit",
     "test:unit": "vitest run",
     "test:e2e": "pnpm build && playwright test --config=playwright.config.ts",
+    "test:perf": "bash scripts/prepare-map-performance-site.sh",
     "typecheck": "nuxi prepare && vue-tsc --noEmit",
     "test:watch": "vitest",
     "species:index": "node scripts/create-species-index.mjs",

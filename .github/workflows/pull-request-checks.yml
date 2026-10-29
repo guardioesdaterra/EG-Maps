@@ -57,8 +57,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Install Playwright Chromium and WebKit
+        run: pnpm exec playwright install --with-deps chromium webkit
 
       - name: Run E2E tests
         run: pnpm test:e2e
@@ -66,6 +66,22 @@ jobs:
           CI: true
           PLAYWRIGHT_REPORT_DIR: ${{ runner.temp }}/playwright-report
           PLAYWRIGHT_RESULTS_DIR: ${{ runner.temp }}/playwright-results
+
+      - name: Map performance regression budgets
+        run: pnpm test:perf
+        env:
+          CI: true
+          PLAYWRIGHT_PERF_REPORT_DIR: ${{ runner.temp }}/map-performance-report
+          PLAYWRIGHT_PERF_RESULTS_DIR: ${{ runner.temp }}/map-performance-results
+
+      - name: Upload map performance report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: map-performance-report
+          path: ${{ runner.temp }}/map-performance-report/
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: Upload Playwright report
         if: always()

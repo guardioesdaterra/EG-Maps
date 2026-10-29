@@ -161,8 +161,9 @@ export const allCrewRegionsData: CrewRegionData[] = [
 ]
 
 export const crewOverallStats = {
-  totalActiveCrews: 131,
-  totalInactiveCrews: 26,
+  totalCrews: 169,
+  totalActiveCrews: 142,
+  totalInactiveCrews: 27,
   totalMembers: 1241,
   totalCountries: 47,
   lastAuditDate: '2026-01-31',

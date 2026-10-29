@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildCrewStatusGeoJSON } from '../composables/useMapMarker'
-import { allCrewRegionsData, type CrewLocation } from '../lib/crew-data'
+import { allCrewRegionsData, crewOverallStats, type CrewLocation } from '../lib/crew-data'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const LOCATION_FIXTURE = join(ROOT, 'public', 'data', 'crews-locations.json')
@@ -59,6 +59,15 @@ describe('crew map status rendering', () => {
     expect(statusCounts(points)).toEqual({ active: 142, inactive: 27 })
     expect(points.find(feature => feature.properties?.status === 'active')?.properties?.color).toBe('#22c55e')
     expect(points.find(feature => feature.properties?.status === 'inactive')?.properties?.color).toBe('#f59e0b')
+  })
+
+  it('keeps the homepage crew total and status counts synchronized with the location dataset', () => {
+    const active = locations.filter(location => location.status === 'active').length
+    const inactive = locations.filter(location => location.status === 'inactive').length
+
+    expect(crewOverallStats.totalCrews).toBe(locations.length)
+    expect(crewOverallStats.totalActiveCrews).toBe(active)
+    expect(crewOverallStats.totalInactiveCrews).toBe(inactive)
   })
 
   it('signals inactive crews at regional zoom using the existing amber marker color', () => {

@@ -25,6 +25,7 @@ import { useOfflineTiles, isSafeTileUrl, MAX_TILE_BYTES } from '@/composables/us
 import { usePerformance } from '@/composables/usePerformance'
 import { allProjectsData } from '@/lib/project-data'
 import { openRareEarthOverlayPopup, MAP_GROUP_COLORS, type Species } from '@/lib/map-utils'
+import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
 import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
 import { HEX_GRID } from '@/lib/constants'
 import { VULCAN_CENTER } from '@/composables/useVulcanCircles'
@@ -604,7 +605,7 @@ export function useMapBase(config: MapBaseConfig) {
     const p = (feature.properties ?? {}) as Record<string, unknown>
     const html = getPopupContent(p)
     const coords = (feature.geometry as GeoJSON.Point).coordinates
-    culturalPopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    culturalPopup = new maplibregl.Popup(withMapPopupSafeArea({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer()))
       .setLngLat([coords[0] as number, coords[1] as number])
       .setHTML(html)
       .setMaxWidth('none')

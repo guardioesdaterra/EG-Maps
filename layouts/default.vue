@@ -9,7 +9,7 @@
     <slot />
 
     
-    <header v-if="showUnifiedHeader" class="fixed left-2 right-2 xs:left-4 xs:right-4 top-[max(0.5rem,env(safe-area-inset-top))] z-[10000] sm:left-auto sm:right-[max(1rem,env(safe-area-inset-right))]">
+    <header v-if="showUnifiedHeader" data-map-popup-safe-area="top" class="fixed left-2 right-2 xs:left-4 xs:right-4 top-[max(0.5rem,env(safe-area-inset-top))] z-[10000] sm:left-auto sm:right-[max(1rem,env(safe-area-inset-right))]">
       <div :class="unifiedHeaderShellClass">
         
         <div v-if="showViewToggle" class="map-view-switcher flex flex-row items-center gap-0.5">
@@ -97,7 +97,7 @@
     </header>
 
     
-    <div v-if="showDock && !hideAll && !isEgGrantsRoute" class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] xs:bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
+    <div v-if="showDock && !hideAll && !isEgGrantsRoute" data-map-popup-safe-area="bottom" class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] xs:bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
       <div :class="dockShellClass">
         <div class="flex items-center gap-1">
           <GooeyNav :items="navItems" />

@@ -2155,6 +2155,15 @@ select option {
   }
 }
 
+@media (max-width: 768px) {
+  .maplibregl-popup-content {
+    max-height: calc(100dvh - 11rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* Full-screen detail overlays become edge-to-edge sheets on phones */
 @media (max-width: 640px) {
   .species-popup-overlay-fixed,

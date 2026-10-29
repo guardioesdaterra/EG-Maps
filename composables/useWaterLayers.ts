@@ -7,6 +7,7 @@
  */
 import type { Map as MapLibreMap, MapLayerMouseEvent, DataDrivenPropertyValueSpecification } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
+import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
 
 const activePopups = new WeakMap<MapLibreMap, maplibregl.Popup>()
 
@@ -180,7 +181,7 @@ export function setupWaterLayers(
       ${p.osm_id ? `<a href="https://www.openstreetmap.org/${p.osm_id ? 'way' : 'relation'}/${p.osm_id}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-size:10px;color:var(--info)">View on OSM &rarr;</a>` : ''}
     </div>`
 
-    activePopups.set(map, new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    activePopups.set(map, new maplibregl.Popup(withMapPopupSafeArea({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer()))
       .setLngLat(e.lngLat)
       .setHTML(html)
       .setMaxWidth('none')

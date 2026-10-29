@@ -127,7 +127,7 @@
                 <p class="bento-desc">{{ t('home.startACrewDesc') }}</p>
                 <div class="bento-stats">
                   <div class="bento-stat">
-                    <strong>{{ crewOverallStats.totalActiveCrews }}</strong>
+                    <strong>{{ crewOverallStats.totalCrews }}</strong>
                     <span>{{ t('home.crewsCount') }}</span>
                   </div>
                   <div class="bento-stat">
@@ -350,7 +350,7 @@ const projectStats = computed(() => {
   return { totalProjects: allProjectsData.length, totalBeneficiaries: totalDirect + totalIndirect }
 })
 const overviewStats = computed(() => [
-  { value: crewOverallStats.totalActiveCrews, label: t('home.crewsCount') },
+  { value: crewOverallStats.totalCrews, label: t('home.crewsCount') },
   { value: projectStats.value.totalProjects, label: t('home.projectsCount') },
   { value: speciesCount.value ?? '—', label: t('home.speciesCount') },
   { value: crewOverallStats.totalCountries, label: t('home.countries') },

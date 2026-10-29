@@ -8,6 +8,7 @@
  */
 import type { Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
+import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
 import { isMilitaryInterest, isHighEnvRisk, isSuspiciousBasic, buildAnmVerifyUrl, buildClaimReportMailtoUrl } from '@/lib/observatory-analysis'
 import { RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
 import { useObservatorySelection } from '@/composables/useObservatorySelection'
@@ -341,12 +342,12 @@ export function openRareEarthPopup(
     })
   })
 
-  const popup = new maplibregl.Popup({
+  const popup = new maplibregl.Popup(withMapPopupSafeArea({
     offset: 12,
     closeButton: true,
     className: 'ree-popup-wrap',
     maxWidth: '640px',
-  })
+  }, map.getContainer()))
     .setLngLat(lngLat)
     .setDOMContent(node)
     .addTo(map)
@@ -618,12 +619,12 @@ export function openStackedObservatoryPopup(
     })
   })
 
-  const popup = new maplibregl.Popup({
+  const popup = new maplibregl.Popup(withMapPopupSafeArea({
     offset: 12,
     closeButton: true,
     className: 'ree-popup-wrap ree-popup-wrap--stacked',
     maxWidth: '660px',
-  })
+  }, map.getContainer()))
     .setLngLat(lngLat)
     .setDOMContent(root)
     .addTo(map)

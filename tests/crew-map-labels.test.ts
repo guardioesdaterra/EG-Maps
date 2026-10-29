@@ -21,7 +21,7 @@ interface LocaleMessages {
   home: { activeCrewsTitle?: string }
   stats: {
     activeCrewsTitle?: string
-    active?: string
+    activeCrews?: string
     crewsInactive?: string
   }
 }
@@ -47,9 +47,9 @@ describe('global Crews Map naming', () => {
     expect(mapTitle).toBeTruthy()
     expect(bubbleTitle).toBe(mapTitle)
     expect(mapTitle).not.toBe(PREVIOUS_LABELS[locale])
-    expect(messages.stats.active).toBeTruthy()
+    expect(messages.stats.activeCrews).toBeTruthy()
     expect(messages.stats.crewsInactive).toBeTruthy()
-    expect(messages.stats.active).not.toBe(mapTitle)
+    expect(messages.stats.activeCrews).not.toBe(mapTitle)
     expect(messages.stats.crewsInactive).not.toBe(mapTitle)
   })
 })

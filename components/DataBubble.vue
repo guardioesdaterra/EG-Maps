@@ -305,7 +305,9 @@ const speciesLegendItems = computed(() => [
 
 @media (max-width: 480px) {
   .data-bubble {
-    right: 0.375rem;
+    left: max(0.375rem, env(safe-area-inset-left));
+    right: auto;
+    align-items: flex-start;
   }
 }
 
@@ -372,9 +374,11 @@ const speciesLegendItems = computed(() => [
 @media (max-width: 480px) {
   .bubble-panel {
     min-width: 11rem;
-    max-width: calc(100vw - 1.5rem);
+    max-width: min(20rem, calc(100vw - 5rem));
     margin-bottom: 0.375rem;
-    max-height: min(55dvh, 24rem);
+    max-height: min(55dvh, 24rem, max(6rem, calc(100dvh - 10rem)));
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 }
 

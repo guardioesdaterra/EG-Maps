@@ -48,7 +48,31 @@
 
   function resolveBase(script) {
     if (!script || !script.src) return ORIGIN;
-    try { return new URL(script.src).origin; } catch (e) { return ORIGIN; }
+    try { return new URL(script.src, window.location.href).origin; } catch (e) { return ORIGIN; }
+  }
+
+  function resolveAppBase(script) {
+    if (!script || !script.src) return '';
+    try {
+      var pathname = new URL(script.src, window.location.href).pathname;
+      var directory = pathname.replace(/[^/]*$/, '');
+      return directory === '/' ? '' : directory.replace(/\/+$/, '');
+    } catch (e) { return ''; }
+  }
+
+  function appBaseUrl(cfg) {
+    var base = new URL(cfg.origin.endsWith('/') ? cfg.origin : cfg.origin + '/');
+    var basePath = String(cfg.baseUrl || '').trim();
+    base.pathname = basePath && basePath !== '/'
+      ? '/' + basePath.replace(/^\/+|\/+$/g, '') + '/'
+      : '/';
+    base.search = '';
+    base.hash = '';
+    return base.toString();
+  }
+
+  function appUrl(cfg, path) {
+    return new URL(String(path || '').replace(/^\/+/, ''), appBaseUrl(cfg)).toString();
   }
 
   /* ── postMessage bridge ──────────────────────────────────────────── */
@@ -73,16 +97,13 @@
     iframe.scrolling = 'no';
     iframe.style.cssText = 'display:block;width:100%;border:0;background:transparent;min-height:' + cfg.minHeight + 'px;color-scheme:light dark';
 
-    var base = cfg.origin.endsWith('/') ? cfg.origin : cfg.origin + '/';
-    var routePath = cfg.path.replace(/^\/+/, '');
-    // Prepend baseURL (e.g. /test/) if configured on the container
-    var baseUrl = attr(container, 'data-base-url', '');
-    if (baseUrl) {
-      baseUrl = baseUrl.replace(/\/+$/, '');
-      routePath = baseUrl + '/' + routePath;
-    }
-    var url = new URL(routePath, base);
-    url.searchParams.set('embed', '1');
+    var app = {
+      origin: cfg.origin,
+      baseUrl: attr(container, 'data-base-url', cfg.baseUrl || ''),
+    };
+    var url = new URL(appUrl(app, cfg.path));
+    url.searchParams.set('embed', 'true');
+    url.searchParams.set('hideAll', 'true');
     if (cfg.theme) url.searchParams.set('theme', cfg.theme);
     if (cfg.accent) url.searchParams.set('accent', cfg.accent.replace('#', ''));
     iframe.src = url.toString();
@@ -160,9 +181,12 @@
     container.style.position = 'relative';
     container.style.minHeight = cfg.minHeight + 'px';
 
-    var base = cfg.origin.endsWith('/') ? cfg.origin : cfg.origin + '/';
-    var cssUrl = base + '_nuxt/maplibre-gl.css';
-    var jsUrl = base + '_nuxt/entry.js';
+    var app = {
+      origin: cfg.origin,
+      baseUrl: attr(container, 'data-base-url', cfg.baseUrl || ''),
+    };
+    var cssUrl = appUrl(app, '_nuxt/maplibre-gl.css');
+    var jsUrl = appUrl(app, '_nuxt/entry.js');
 
     await loadCSS(cssUrl);
     await loadScript(jsUrl);
@@ -178,15 +202,9 @@
     iframe.scrolling = 'no';
     iframe.style.cssText = 'display:block;width:100%;border:0;background:transparent;min-height:' + cfg.minHeight + 'px;color-scheme:light dark';
 
-    var routePath = cfg.path.replace(/^\/+/, '');
-    var baseUrl = attr(container, 'data-base-url', '');
-    if (baseUrl) {
-      baseUrl = baseUrl.replace(/\/+$/, '');
-      routePath = baseUrl + '/' + routePath;
-    }
-    var url = new URL(routePath, base);
-    url.searchParams.set('embed', '1');
-    url.searchParams.set('hideAll', '1');
+    var url = new URL(appUrl(app, cfg.path));
+    url.searchParams.set('embed', 'true');
+    url.searchParams.set('hideAll', 'true');
     if (cfg.theme) url.searchParams.set('theme', cfg.theme);
     iframe.src = url.toString();
     container.appendChild(iframe);
@@ -251,18 +269,19 @@
     injectStyles();
     var ds = cfg.dataset || 'active-crews';
     var route = DATASET_ROUTES[ds] || DATASET_ROUTES['active-crews'];
+    var mapUrl = appUrl(cfg, route.path);
 
     container.innerHTML = '<div class="eg-widget eg-widget-card">' +
       '<p class="eg-widget-eyebrow">Earth Guardians</p>' +
       '<p class="eg-widget-stat" data-eg-count>Loading…</p>' +
       '<p class="eg-widget-label">' + route.label + '</p>' +
-      '<a class="eg-widget-link" href="' + cfg.origin + route.path + '" target="_blank" rel="noopener">Explore on map →</a>' +
+      '<a class="eg-widget-link" href="' + mapUrl + '" target="_blank" rel="noopener">Explore on map →</a>' +
       '</div>';
 
     // Fetch the data endpoint to get real counts
-    var dataUrl = cfg.origin + '/data/crews-locations.json';
-    if (ds.indexOf('species') !== -1) dataUrl = cfg.origin + '/data/species/index.json';
-    if (ds.indexOf('grants') !== -1) dataUrl = cfg.origin + '/data/species/index.json';
+    var dataUrl = appUrl(cfg, '/data/crews-locations.json');
+    if (ds.indexOf('species') !== -1) dataUrl = appUrl(cfg, '/data/species/index.json');
+    if (ds.indexOf('grants') !== -1) dataUrl = appUrl(cfg, '/data/species/index.json');
 
     fetch(dataUrl).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
       var countEl = container.querySelector('[data-eg-count]');
@@ -295,13 +314,13 @@
     container.appendChild(grid);
 
     // Fetch counts
-    fetch(cfg.origin + '/data/crews-locations.json').then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
+    fetch(appUrl(cfg, '/data/crews-locations.json')).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
       if (!data || !data.features) return;
       var el = container.querySelector('[data-eg-mini="active-crews"]');
       if (el) el.textContent = new Intl.NumberFormat('en-US').format(data.features.length);
     }).catch(function () {});
 
-    fetch(cfg.origin + '/data/species/index.json').then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
+    fetch(appUrl(cfg, '/data/species/index.json')).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
       if (!data) return;
       var arr = data.features || data;
       var el1 = container.querySelector('[data-eg-mini="project-grants"]');
@@ -323,7 +342,7 @@
 
   /* ── Mode 4: Web Component <eg-map> ─────────────────────────────── */
 
-  function defineEgMap() {
+  function defineEgMap(defaultOrigin, defaultBaseUrl) {
     if (typeof customElements === 'undefined') return;
     if (customElements.get('eg-map')) return;
 
@@ -340,7 +359,8 @@
         var height = parseInt(this.getAttribute('height') || '480', 10);
         var theme = this.getAttribute('theme') || 'auto';
         var accent = this.getAttribute('accent') || '';
-        var origin = this.getAttribute('origin') || resolveBase(document.currentScript);
+        var origin = this.getAttribute('origin') || defaultOrigin;
+        var baseUrl = this.getAttribute('base-url') || defaultBaseUrl;
 
         var route = DATASET_ROUTES[dataset] || DATASET_ROUTES['active-crews'];
 
@@ -357,12 +377,14 @@
         if (mode === 'widget') {
           mountWidget(container, {
             origin: origin,
+            baseUrl: baseUrl,
             dataset: dataset,
             widgetType: 'stats',
           });
         } else {
           this._mount = mountIframe(container, {
             origin: origin,
+            baseUrl: baseUrl,
             path: route.path,
             minHeight: height,
             theme: theme,
@@ -381,7 +403,7 @@
       }
 
       static get observedAttributes() {
-        return ['dataset', 'mode', 'height', 'theme', 'accent'];
+        return ['dataset', 'mode', 'height', 'theme', 'accent', 'origin', 'base-url'];
       }
 
       attributeChangedCallback() {
@@ -406,7 +428,8 @@
     style.textContent = 'iframe[allowtransparency]{background:transparent !important}';
     document.head.appendChild(style);
 
-    var origin = resolveBase(script);
+    var origin = attr(script, 'data-origin', resolveBase(script));
+    var defaultBaseUrl = attr(script, 'data-base-url', resolveAppBase(script));
     var defaultTheme = attr(script, 'data-theme', 'auto');
     var defaultMinHeight = parseInt(attr(script, 'data-min-height', '480'), 10) || 480;
 
@@ -421,6 +444,7 @@
       if (mode === 'inline') {
         mountInline(c, {
           origin: attr(c, 'data-origin', origin),
+          baseUrl: attr(c, 'data-base-url', defaultBaseUrl),
           path: route.path,
           minHeight: parseInt(attr(c, 'data-min-height', String(defaultMinHeight)), 10) || defaultMinHeight,
           theme: attr(c, 'data-theme', defaultTheme),
@@ -430,6 +454,7 @@
       } else {
         mountIframe(c, {
           origin: attr(c, 'data-origin', origin),
+          baseUrl: attr(c, 'data-base-url', defaultBaseUrl),
           path: route.path,
           minHeight: parseInt(attr(c, 'data-min-height', String(defaultMinHeight)), 10) || defaultMinHeight,
           theme: attr(c, 'data-theme', defaultTheme),
@@ -445,6 +470,7 @@
       var wc = widgetContainers[j];
       mountWidget(wc, {
         origin: attr(wc, 'data-origin', origin),
+        baseUrl: attr(wc, 'data-base-url', defaultBaseUrl),
         widgetType: attr(wc, 'data-eg-widget', 'stats'),
         dataset: attr(wc, 'data-dataset', 'active-crews'),
         datasets: attr(wc, 'data-datasets', ''),
@@ -452,7 +478,7 @@
     }
 
     // 3. Define Web Component
-    defineEgMap();
+    defineEgMap(origin, defaultBaseUrl);
   }
 
   if (document.readyState === 'loading') {

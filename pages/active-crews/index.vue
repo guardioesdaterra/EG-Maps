@@ -112,9 +112,9 @@ async function loadCrewLocations() {
 onMounted(() => { void loadCrewLocations() })
 
 useHead({
-  title: 'Active Crews Map (2D) | Earth Guardians',
+  title: 'Crews Map (2D) | Earth Guardians',
   meta: [
-    { name: 'description', content: 'Interactive 2D map showing Earth Guardians Active Crews worldwide' },
+    { name: 'description', content: 'Interactive 2D map of Earth Guardians crews worldwide' },
   ],
 })
 

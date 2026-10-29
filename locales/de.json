@@ -5,7 +5,7 @@
     "projectGrants": "Projektförderungen",
     "endangeredSpecies": "Gefährdete Arten",
     "observatoryOfVulcan": "Observatorium des Vulkan",
-    "activeCrews": "Aktive Crews",
+    "activeCrews": "Crews-Karte",
     "egGrants": "EG-Förderungen",
     "crews": "Crews",
     "joinEarthGuardians": "Earth Guardians beitreten",
@@ -27,8 +27,8 @@
     "speciesDesc": "Entdecken Sie vom Aussterben bedrohte Arten und ihre Lebensräume weltweit.",
     "observatoryTitle": "Observatorium des Vulkan",
     "observatoryDesc": "Seltene-Erden-Abbaurechte in Brasilien — Kapitalinvasion, Unternehmensnetzwerke, militärische Interessen und sozio-ökologische Auswirkungen.",
-    "activeCrewsTitle": "Aktive Crews",
-    "activeCrewsDesc": "Entdecken Sie die aktiven Crews von Earth Guardians in 7 Regionen — 131 Crews, 1.241 Mitglieder, 47 Länder weltweit.",
+    "activeCrewsTitle": "Crews-Karte",
+    "activeCrewsDesc": "Entdecken Sie das Crew-Netzwerk von Earth Guardians in 7 Regionen — 131 aktive Crews, 1.241 Mitglieder, 47 Länder weltweit.",
     "projectsCount": "Projekte",
     "beneficiariesCount": "Begünstigte",
     "speciesCount": "Gefährdete Arten",
@@ -854,9 +854,9 @@
     "endangeredSpeciesGlobe": "Globus gefährdeter Arten wird geladen",
     "observatoryOfVulcan": "Observatorium des Vulkan wird geladen",
     "observatoryOfVulcanGlobe": "Observatorium des Vulkan Globus wird geladen",
-    "activeCrewsMap": "Lade Aktive-Crews-Karte",
+    "activeCrewsMap": "Crews-Karte wird geladen",
     "initializingVisualization": "Interaktive Visualisierung wird initialisiert...",
-    "activeCrewsGlobe": "Globus der aktiven Crews"
+    "activeCrewsGlobe": "3D-Crews-Karte wird geladen"
   },
   "error": {
     "pageNotFound": "Seite nicht gefunden",

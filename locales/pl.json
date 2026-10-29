@@ -5,7 +5,7 @@
     "projectGrants": "Granty projektowe",
     "endangeredSpecies": "Gatunki zagrożone",
     "observatoryOfVulcan": "Obserwatorium Wulkana",
-    "activeCrews": "Aktywne drużyny",
+    "activeCrews": "Mapa ekip",
     "egGrants": "EG Grants",
     "crews": "Drużyny",
     "joinEarthGuardians": "Dołącz do Earth Guardians",
@@ -25,8 +25,8 @@
     "speciesDesc": "Odkryj krytycznie zagrożone gatunki i ich siedliska na całym świecie.",
     "observatoryTitle": "Obserwatorium Wulkana",
     "observatoryDesc": "Brazylijskie roszczenia górnicze dotyczące metali ziem rzadkich — inwazja kapitału, sieci korporacyjne, interesy wojskowe i wpływ społeczno-środowiskowy.",
-    "activeCrewsTitle": "Aktywne drużyny",
-    "activeCrewsDesc": "Poznaj aktywne drużyny Earth Guardians w 7 regionach — 131 drużyn, 1241 członków, 47 krajów.",
+    "activeCrewsTitle": "Mapa ekip",
+    "activeCrewsDesc": "Poznaj sieć ekip Earth Guardians w 7 regionach — 131 aktywnych ekip, 1241 członków, 47 krajów.",
     "projectsCount": "Projekty",
     "beneficiariesCount": "Beneficjenci",
     "speciesCount": "Gatunki",
@@ -705,9 +705,9 @@
     "endangeredSpeciesGlobe": "Ładowanie globusa gatunków zagrożonych",
     "observatoryOfVulcan": "Ładowanie Obserwatorium Wulkana",
     "observatoryOfVulcanGlobe": "Ładowanie globusa Obserwatorium Wulkana",
-    "activeCrewsMap": "Ładowanie mapy aktywnych drużyn",
+    "activeCrewsMap": "Ładowanie mapy ekip",
     "initializingVisualization": "Inicjalizacja interaktywnej wizualizacji...",
-    "activeCrewsGlobe": "Globus aktywnych drużyn"
+    "activeCrewsGlobe": "Ładowanie mapy 3D ekip"
   },
   "error": {
     "pageNotFound": "Nie znaleziono strony",

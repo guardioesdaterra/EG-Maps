@@ -77,7 +77,7 @@
 
     var iframe = document.createElement('iframe');
     var path = attr(container, 'data-path', config.path) || '/active-crews';
-    var label = attr(container, 'data-label', config.label) || (isHomePath(path) ? 'EG-Maps home' : 'Active Crews map');
+    var label = attr(container, 'data-label', config.label) || (isHomePath(path) ? 'EG-Maps home' : 'Crews Map');
     var originBase = config.origin.endsWith('/') ? config.origin : config.origin + '/';
     var routePath = path.replace(/^\/+/, '');
     var baseUrl = (attr(container, 'data-base-url', config.baseUrl) || '').replace(/\/+$/, '');

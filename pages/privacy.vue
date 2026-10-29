@@ -20,7 +20,7 @@
           <p>
             This Privacy Policy covers <strong>EG-Maps</strong>, the interactive data-visualization platform
             operated by <strong>Earth Guardians</strong> (earthguardians.org), including the public maps
-            (project grants, endangered species, Active Crews, Vulcan observatory) and the restricted
+            (project grants, endangered species, Crews Map, Vulcan observatory) and the restricted
             <strong>EG-Grants</strong> portal that requires Google sign-in.
           </p>
         </section>

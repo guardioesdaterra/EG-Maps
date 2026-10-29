@@ -5,7 +5,7 @@
     "projectGrants": "प्रोजेक्ट अनुदान",
     "endangeredSpecies": "लुप्तप्राय प्रजातियाँ",
     "observatoryOfVulcan": "वल्कन वेधशाला",
-    "activeCrews": "सक्रिय दल",
+    "activeCrews": "दल मानचित्र",
     "egGrants": "EG Grants",
     "crews": "दल",
     "joinEarthGuardians": "अर्थ गार्जियंस में शामिल हों",
@@ -27,8 +27,8 @@
     "speciesDesc": "दुनिया भर में गंभीर रूप से लुप्तप्राय प्रजातियों और उनके आवासों की खोज करें।",
     "observatoryTitle": "वल्कन वेधशाला",
     "observatoryDesc": "ब्राज़ील दुर्लभ मृदा खनन दावे — पूंजी आक्रमण, कॉर्पोरेट नेटवर्क, सैन्य हित और सामाजिक-पर्यावरणीय प्रभाव।",
-    "activeCrewsTitle": "सक्रिय दल",
-    "activeCrewsDesc": "पृथ्वी रक्षकों के 7 क्षेत्रों में सक्रिय दलों का अन्वेषण करें — 131 दल, 1,241 सदस्य, 47 देश।",
+    "activeCrewsTitle": "दल मानचित्र",
+    "activeCrewsDesc": "Earth Guardians के 7 क्षेत्रों में फैले दल नेटवर्क को जानें — 131 सक्रिय दल, 1,241 सदस्य और 47 देश।",
     "projectsCount": "प्रोजेक्ट",
     "beneficiariesCount": "लाभार्थी",
     "speciesCount": "लुप्तप्राय प्रजातियाँ",
@@ -854,9 +854,9 @@
     "endangeredSpeciesGlobe": "लुप्तप्राय प्रजाति ग्लोब लोड हो रहा है",
     "observatoryOfVulcan": "वल्कन वेधशाला लोड हो रही है",
     "observatoryOfVulcanGlobe": "वल्कन वेधशाला ग्लोब लोड हो रहा है",
-    "activeCrewsMap": "सक्रिय दल मानचित्र लोड हो रहा है",
+    "activeCrewsMap": "दल मानचित्र लोड हो रहा है",
     "initializingVisualization": "इंटरैक्टिव विज़ुअलाइज़ेशन प्रारंभ हो रहा है...",
-    "activeCrewsGlobe": "सक्रिय दल ग्लोब"
+    "activeCrewsGlobe": "3D दल मानचित्र लोड हो रहा है"
   },
   "error": {
     "pageNotFound": "पृष्ठ नहीं मिला",

@@ -5,7 +5,7 @@
     "projectGrants": "Progetti finanziati",
     "endangeredSpecies": "Specie a rischio",
     "observatoryOfVulcan": "Osservatorio del Vulcano",
-    "activeCrews": "Team attivi",
+    "activeCrews": "Mappa dei team",
     "egGrants": "EG Grants",
     "crews": "Team",
     "joinEarthGuardians": "Unisciti a Earth Guardians",
@@ -25,8 +25,8 @@
     "speciesDesc": "Scopri le specie in pericolo critico e i loro habitat in tutto il mondo.",
     "observatoryTitle": "Osservatorio del Vulcano",
     "observatoryDesc": "Concessioni minerarie per terre rare in Brasile — invasione di capitali, reti societarie, interessi militari e impatto socio-ambientale.",
-    "activeCrewsTitle": "Team attivi",
-    "activeCrewsDesc": "Esplora i team attivi di Earth Guardians in 7 regioni — 131 team, 1.241 membri, 47 paesi nel mondo.",
+    "activeCrewsTitle": "Mappa dei team",
+    "activeCrewsDesc": "Esplora la rete dei team di Earth Guardians in 7 regioni — 131 team attivi, 1.241 membri e 47 paesi nel mondo.",
     "projectsCount": "Progetti",
     "beneficiariesCount": "Beneficiari",
     "speciesCount": "Specie",
@@ -705,9 +705,9 @@
     "endangeredSpeciesGlobe": "Caricamento globo specie a rischio",
     "observatoryOfVulcan": "Caricamento Osservatorio del Vulcano",
     "observatoryOfVulcanGlobe": "Caricamento globo Osservatorio del Vulcano",
-    "activeCrewsMap": "Caricamento mappa team attivi",
+    "activeCrewsMap": "Caricamento della mappa dei team",
     "initializingVisualization": "Inizializzazione visualizzazione interattiva...",
-    "activeCrewsGlobe": "Globo dei team attivi"
+    "activeCrewsGlobe": "Caricamento della mappa 3D dei team"
   },
   "error": {
     "pageNotFound": "Pagina non trovata",

@@ -237,8 +237,8 @@
   /* ── Mode 3: data widgets ───────────────────────────────────────── */
 
   var DATASET_ROUTES = {
-    'active-crews': { path: '/active-crews', label: 'Active Crews' },
-    'active-crews-3d': { path: '/active-crews/3d', label: 'Active Crews Globe' },
+    'active-crews': { path: '/active-crews', label: 'Crews Map' },
+    'active-crews-3d': { path: '/active-crews/3d', label: 'Crews Map (3D)' },
     'project-grants': { path: '/project-grants', label: 'Project Grants' },
     'project-grants-3d': { path: '/project-grants/3d', label: 'Project Grants Globe' },
     'endangered-species': { path: '/endangered-species', label: 'Endangered Species' },

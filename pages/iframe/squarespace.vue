@@ -300,7 +300,7 @@ const tiers = [
 ]
 
 const datasets = [
-  { key: 'active-crews', label: 'Active Crews', route: '/active-crews', route3d: '/active-crews/3d' },
+  { key: 'active-crews', label: 'Crews Map', route: '/active-crews', route3d: '/active-crews/3d' },
   { key: 'project-grants', label: 'Project Grants', route: '/project-grants', route3d: '/project-grants/3d' },
   { key: 'endangered-species', label: 'Endangered Species', route: '/endangered-species', route3d: '/endangered-species/3d' },
 ]

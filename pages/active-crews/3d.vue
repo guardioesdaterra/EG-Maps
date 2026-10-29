@@ -115,9 +115,9 @@ onMounted(() => {
 })
 
 useHead({
-  title: 'Active Crews Globe (3D) | Earth Guardians',
+  title: 'Crews Map (3D) | Earth Guardians',
   meta: [
-    { name: 'description', content: 'Interactive 3D globe showing Earth Guardians Active Crews worldwide' },
+    { name: 'description', content: 'Interactive 3D globe of Earth Guardians crews worldwide' },
   ],
 })
 

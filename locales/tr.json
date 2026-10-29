@@ -5,7 +5,7 @@
     "projectGrants": "Proje Hibeleri",
     "endangeredSpecies": "Nesli Tükenmekte Olan Türler",
     "observatoryOfVulcan": "Vulcan Gözlemevi",
-    "activeCrews": "Aktif Ekipler",
+    "activeCrews": "Ekip Haritası",
     "egGrants": "EG Grants",
     "crews": "Ekipler",
     "joinEarthGuardians": "Earth Guardians'a Katıl",
@@ -25,8 +25,8 @@
     "speciesDesc": "Kritik derecede tehlike altındaki türleri ve dünya genelindeki yaşam alanlarını keşfedin.",
     "observatoryTitle": "Vulcan Gözlemevi",
     "observatoryDesc": "Brezilya nadir toprak madenciliği talepleri — sermaye istilası, kurumsal ağlar, askeri çıkarlar ve sosyo-çevresel etki.",
-    "activeCrewsTitle": "Aktif Ekipler",
-    "activeCrewsDesc": "Earth Guardians'ın 7 bölgedeki aktif ekiplerini keşfedin — 131 ekip, 1.241 üye, 47 ülke.",
+    "activeCrewsTitle": "Ekip Haritası",
+    "activeCrewsDesc": "Earth Guardians'ın 7 bölgedeki ekip ağını keşfedin — 131 aktif ekip, 1.241 üye ve 47 ülke.",
     "projectsCount": "Projeler",
     "beneficiariesCount": "Yararlanıcılar",
     "speciesCount": "Tür Kayıtları",
@@ -705,9 +705,9 @@
     "endangeredSpeciesGlobe": "Nesli Tükenmekte Olan Türler Küresi Yükleniyor",
     "observatoryOfVulcan": "Vulcan Gözlemevi Yükleniyor",
     "observatoryOfVulcanGlobe": "Vulcan Gözlemevi Küresi Yükleniyor",
-    "activeCrewsMap": "Aktif Ekipler Haritası Yükleniyor",
+    "activeCrewsMap": "Ekip haritası yükleniyor",
     "initializingVisualization": "Etkileşimli görselleştirme başlatılıyor...",
-    "activeCrewsGlobe": "Aktif Ekipler Küresi"
+    "activeCrewsGlobe": "3D ekip haritası yükleniyor"
   },
   "error": {
     "pageNotFound": "Sayfa bulunamadı",

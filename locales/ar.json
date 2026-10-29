@@ -5,7 +5,7 @@
     "projectGrants": "منح المشاريع",
     "endangeredSpecies": "الأنواع المهددة بالانقراض",
     "observatoryOfVulcan": "مرصد فولكان",
-    "activeCrews": "الفرق النشطة",
+    "activeCrews": "خريطة الفرق",
     "egGrants": "منح EG",
     "crews": "الفرق",
     "joinEarthGuardians": "انضم إلى حراس الأرض",
@@ -27,8 +27,8 @@
     "speciesDesc": "اكتشف الأنواع المهددة بالانقراض بشكل حرج وموائلها حول العالم.",
     "observatoryTitle": "مرصد فولكان",
     "observatoryDesc": "مطالبات تعدين العناصر الأرضية النادرة في البرازيل — غزو رأس المال، شبكات الشركات، المصالح العسكرية والأثر الاجتماعي البيئي.",
-    "activeCrewsTitle": "الفرق النشطة",
-    "activeCrewsDesc": "استكشف الفرق النشطة لحراس الأرض عبر 7 مناطق — 131 فرقة، 1,241 عضو، 47 دولة حول العالم.",
+    "activeCrewsTitle": "خريطة الفرق",
+    "activeCrewsDesc": "استكشف شبكة فرق Earth Guardians عبر 7 مناطق — 131 فريقًا نشطًا، و1,241 عضوًا، و47 دولة حول العالم.",
     "projectsCount": "المشاريع",
     "beneficiariesCount": "المستفيدون",
     "speciesCount": "الأنواع المهددة بالانقراض",
@@ -854,9 +854,9 @@
     "endangeredSpeciesGlobe": "جارٍ تحميل كرة الأنواع المهددة الأرضية",
     "observatoryOfVulcan": "جارٍ تحميل مرصد فولكان",
     "observatoryOfVulcanGlobe": "جارٍ تحميل كرة مرصد فولكان الأرضية",
-    "activeCrewsMap": "جاري تحميل خريطة الفرق النشطة",
+    "activeCrewsMap": "جارٍ تحميل خريطة الفرق",
     "initializingVisualization": "جارٍ تهيئة التصور التفاعلي...",
-    "activeCrewsGlobe": "الكرة الأرضية للفرق النشطة"
+    "activeCrewsGlobe": "جارٍ تحميل الخريطة ثلاثية الأبعاد للفرق"
   },
   "error": {
     "pageNotFound": "الصفحة غير موجودة",

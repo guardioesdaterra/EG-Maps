@@ -374,11 +374,14 @@ onMounted(() => {
   if (root && 'IntersectionObserver' in window && !reducedMotion) {
     const targets = Array.from(root.querySelectorAll<HTMLElement>('[data-reveal]'))
     if (targets.length) {
-      root.classList.add('reveal-ready')
       revealObserver = new IntersectionObserver((entries, observer) => {
         for (const entry of entries) {
           if (!entry.isIntersecting) continue
           entry.target.classList.add('is-visible')
+          // Progressive enhancement: do not hide page content until the observer
+          // has positively reported a visible target (some embedded WebViews
+          // create observers before their iframe has usable dimensions).
+          root.classList.add('reveal-ready')
           observer.unobserve(entry.target)
         }
       }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' })
@@ -419,11 +422,14 @@ function clearGlow(event: MouseEvent) {
 
 <style scoped>
 .home {
+  min-height: 100vh;
   min-height: 100svh;
+  min-height: 100dvh;
   color: var(--text-primary);
   overflow: clip;
 }
 .home-hero {
+  min-height: calc(100vh - 3.75rem);
   min-height: calc(100svh - 3.75rem);
   min-height: calc(100dvh - 3.75rem);
 }

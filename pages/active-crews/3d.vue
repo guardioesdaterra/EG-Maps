@@ -6,7 +6,29 @@
  */
 <template>
   <ClientOnly>
-    <MapView3D :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" :hide-all="crewPostMsg.hideAll.value" @map-init="handleMapInit" />
+    <MapView3D :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" :hide-all="crewPostMsg.hideAll.value" @map-init="handleMapInit">
+      <template #overlays>
+        <Transition name="fade">
+          <div
+            v-if="mapReady && !crewPostMsg.hideAll.value && (crewLocationsLoading || crewLocationsError)"
+            class="absolute bottom-[max(4.75rem,env(safe-area-inset-bottom))] left-1/2 z-[var(--z-map-ui-controls)] flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/15 bg-black/85 px-3 py-2 text-xs text-white shadow-lg"
+            :role="crewLocationsError ? 'alert' : 'status'"
+            aria-live="polite"
+            :aria-busy="crewLocationsLoading"
+          >
+            <span v-if="crewLocationsLoading" aria-hidden="true" class="h-3.5 w-3.5 rounded-full border-2 border-white/80 border-r-transparent motion-safe:animate-spin motion-reduce:animate-none" />
+            <span class="font-medium">{{ t('nav.activeCrews') }}</span>
+            <span>{{ crewLocationsError ? t('general.error') : t('general.loading') }}</span>
+            <button
+              v-if="crewLocationsError"
+              type="button"
+              class="rounded-full border border-white/25 px-2.5 py-1 font-semibold hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              @click="loadCrewLocations"
+            >{{ t('general.retry') }}</button>
+          </div>
+        </Transition>
+      </template>
+    </MapView3D>
     <template #fallback>
       <div class="flex flex-col h-[100svh] w-full items-center justify-center bg-black text-white">
         <div class="relative mb-[clamp(1.5rem,4vw,3rem)] flex items-center justify-center">
@@ -41,6 +63,9 @@ const baseURL = useRuntimeConfig().app.baseURL
 
 const crewRegions = allCrewRegionsData
 const crewLocations = ref<CrewLocation[]>([])
+const crewLocationsLoading = ref(false)
+const crewLocationsError = ref(false)
+const mapReady = ref(false)
 
 // Map instance ref — set when MapView3D emits mapInit
 const mapInstance = vueRef<MapLibreMap | null>(null)
@@ -54,34 +79,45 @@ const crewPostMsg = useCrewPostMessage({
 
 function handleMapInit(map: MapLibreMap) {
   mapInstance.value = map
+  if (map.loaded()) mapReady.value = true
+  else map.once('load', () => { mapReady.value = true })
 }
 
-onMounted(async () => {
-  // Signal ideal iframe dimensions for 3D globe mode (roughly square)
-  crewPostMsg.sendResizeHint('min(70vh, 90vw)', '70vh')
-
+async function loadCrewLocations() {
+  crewLocationsLoading.value = true
+  crewLocationsError.value = false
   try {
     const res = await fetch(`${baseURL}data/crews-locations.json`)
-    if (res.ok) {
-      const geojson = await res.json()
-      crewLocations.value = geojson.features.map((f: GeoJSON.Feature) => ({
-        name: (f.properties?.name as string) ?? '',
-        country: (f.properties?.country as string) ?? '',
-        city: (f.properties?.city as string) ?? '',
-        state: (f.properties?.state as string) ?? '',
-        region: (f.properties?.region as string) ?? '',
-        status: ((f.properties?.status as string) === 'inactive' ? 'inactive' : 'active') as 'active' | 'inactive',
-        lat: (f.geometry as GeoJSON.Point).coordinates[1],
-        lng: (f.geometry as GeoJSON.Point).coordinates[0],
-      }))
-    }
-  } catch { /* ignore */ }
+    if (!res.ok) throw new Error(`Crew locations request failed: ${res.status}`)
+    const geojson = await res.json()
+    if (!Array.isArray(geojson.features)) throw new Error('Crew locations response is invalid')
+    crewLocations.value = geojson.features.map((f: GeoJSON.Feature) => ({
+      name: (f.properties?.name as string) ?? '',
+      country: (f.properties?.country as string) ?? '',
+      city: (f.properties?.city as string) ?? '',
+      state: (f.properties?.state as string) ?? '',
+      region: (f.properties?.region as string) ?? '',
+      status: ((f.properties?.status as string) === 'inactive' ? 'inactive' : 'active') as 'active' | 'inactive',
+      lat: (f.geometry as GeoJSON.Point).coordinates[1],
+      lng: (f.geometry as GeoJSON.Point).coordinates[0],
+    }))
+  } catch {
+    crewLocationsError.value = true
+  } finally {
+    crewLocationsLoading.value = false
+  }
+}
+
+onMounted(() => {
+  // Signal ideal iframe dimensions for 3D globe mode (roughly square)
+  crewPostMsg.sendResizeHint('min(70vh, 90vw)', '70vh')
+  void loadCrewLocations()
 })
 
 useHead({
-  title: 'Active Crews Globe (3D) | Earth Guardians',
+  title: 'Crews Map (3D) | Earth Guardians',
   meta: [
-    { name: 'description', content: 'Interactive 3D globe showing Earth Guardians Active Crews worldwide' },
+    { name: 'description', content: 'Interactive 3D globe of Earth Guardians crews worldwide' },
   ],
 })
 

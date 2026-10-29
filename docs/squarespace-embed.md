@@ -38,6 +38,12 @@ For a GitHub Pages deployment with a repository subpath, include that subpath in
 | `data-min-height` | `480` | Initial/minimum iframe height in pixels. |
 | `data-label` | `Active Crews map` | Accessible iframe title suffix. |
 | `data-target` | `[data-eg-embed="active-crews"], #eg-active-crews` | CSS selector for the container(s). |
+| `data-loading` | `lazy` for maps; `eager` for `/` | Use `eager` for the first visible map when a nested WebView delays native lazy loading. |
+| `data-scrolling` | `no` for maps; `auto` for `/` | Keep map canvases fixed; allow the long home page to scroll inside its iframe. |
+
+For example, a home embed can use `<div data-eg-embed="active-crews" data-path="/" data-label="EG-Maps home"></div>`. The launcher starts the home eagerly and enables iframe scrolling; map routes keep the existing lazy default to avoid starting every map on a long Squarespace page. Set `data-loading="eager"` on a map container only when it is meant to appear immediately and the host WebView is delaying it.
+
+The launcher now mounts matching containers that Squarespace inserts after the script runs, and cleans up its iframe/listeners if the host removes a container. While the iframe document loads, the host shows a small accessible loading state. The container exposes `data-eg-loading`, `data-eg-loaded`, `data-eg-ready`, or `data-eg-error`/`data-eg-timeout` for inspection; `data-eg-ready` remains specific to the existing Active Crews readiness message.
 
 ---
 

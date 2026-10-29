@@ -15,7 +15,7 @@ import { findSpeciesAtCoord as _findSpeciesAtCoord } from '@/lib/species-utils'
 import { SPECIES_COORD_TOLERANCE } from '@/lib/constants'
 import { CULTURAL_FAMILY_STYLES, getCulturalFamily } from '@/lib/cultural-marker-taxonomy'
 import type { ProjectData } from '@/lib/types'
-import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
+import type { CrewRegionData, CrewLocation, CrewStatus } from '@/lib/crew-data'
 import { resolveCrewRegion } from '@/lib/crew-grants'
 import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
@@ -46,6 +46,7 @@ export interface RebuildArgs {
   species:              Species[]
   crews:                CrewRegionData[]
   crewLocations:        CrewLocation[]
+  crewStatuses?:        CrewStatus[]
   selectedSpeciesGroups: string[]
   rareEarthFeatures?:   GeoJSON.Feature[]
   culturalFeatures?:   GeoJSON.Feature[]
@@ -89,6 +90,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   let lastSpeciesIdxRef: SpeciesIndexItem[] | null = null
   let lastSpeciesRef: Species[] | null = null
   let lastCrewsRef: CrewRegionData[] | null = null
+  let latestArgs: RebuildArgs | null = null
 
   const handlers: Array<{ id: string; evt: keyof MapLayerEventType; fn: (e: MapLayerMouseEvent) => void }> = []
 
@@ -107,12 +109,14 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     lastSpeciesIdxRef = null
     lastSpeciesRef = null
     lastCrewsRef = null
+    latestArgs = null
     map = null
   }
 
   /* ── 🏠 SWARM 3 · DATA + SOURCE MANAGEMENT (6) ───────────────────── */
 
   function rebuild(a: RebuildArgs) {
+    latestArgs = a
     const m = map
     if (!m || !m.isStyleLoaded()) return
     const ds = a.dataset as MarkerDataset
@@ -127,6 +131,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   }
 
   function update(a: RebuildArgs) {
+    latestArgs = a
     const m = map
     if (!m || currentDataset !== a.dataset || !m.getSource(SOURCE)) {
       rebuild(a)
@@ -276,7 +281,8 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
         CREW_MOSAIC_ZOOM_MIN, low,
         CREW_MOSAIC_ZOOM_MAX, high] as unknown as ExpressionSpecification
 
-    const colorExpr = ['match', ['get', '_bubbleIndex'],
+    const colorExpr = ['case', ['==', ['get', '_status'], 'inactive'], '#f59e0b',
+      ['match', ['get', '_bubbleIndex'],
       0, '#22c55e',
       1, '#22c55e',
       2, '#3b82f6',
@@ -285,7 +291,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       5, '#a855f7',
       6, '#a855f7',
       7, '#a855f7',
-      '#ec4899'] as unknown as ExpressionSpecification
+      '#ec4899']] as unknown as ExpressionSpecification
 
     const allBubblesFilter = ['all', ['!has', 'point_count'], ['==', '_type', 'crewRegion']] as FilterSpecification
     const primaryFilter = ['all',
@@ -451,7 +457,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       _lastPointClick = now
       const f = e.features[0]
       const coords = (f.geometry as GeoJSON.Point).coordinates as [number, number]
-      dispatchPoint(ds, f, coords, a)
+      dispatchPoint(ds, f, coords, latestArgs ?? a)
     }
   }
 
@@ -673,7 +679,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
 const GEOJSON_CONVERTERS: Record<MarkerDataset, (a: RebuildArgs) => GeoJSON.FeatureCollection> = {
   'project-grants':       a => toProjectGeoJSON(a.projects),
   'endangered-species':   a => toSpeciesGeoJSON(a.speciesIndex, a.species, a.selectedSpeciesGroups),
-  'active-crews':         a => toCrewGeoJSON(a.crews, a.crewLocations),
+  'active-crews':         a => buildCrewStatusGeoJSON(a.crews, a.crewLocations, a.crewStatuses),
   'vulcan-observatory':   a => toRareEarthGeoJSON(a.rareEarthFeatures ?? [], a.culturalFeatures ?? []),
 }
 
@@ -782,12 +788,24 @@ function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: str
   return result
 }
 
-function toCrewGeoJSON(regions: CrewRegionData[], locations: CrewLocation[]): GeoJSON.FeatureCollection {
+export function buildCrewStatusGeoJSON(
+  regions: CrewRegionData[],
+  locations: CrewLocation[],
+  statuses: readonly CrewStatus[] = ['active', 'inactive'],
+): GeoJSON.FeatureCollection {
+  const activeSelected = statuses.includes('active')
+  const inactiveSelected = statuses.includes('inactive')
+  const visibleRegions = regions.map(region => ({
+    ...region,
+    activeCrews: activeSelected ? region.activeCrews : 0,
+    inactiveCrews: inactiveSelected ? region.inactiveCrews : 0,
+  }))
+
   return {
     type: 'FeatureCollection',
     features: [
-      ...buildCrewRegionMarkers(regions),
-      ...buildCrewLocationPoints(locations),
+      ...buildCrewRegionMarkers(visibleRegions),
+      ...buildCrewLocationPoints(locations, statuses),
     ],
   }
 }
@@ -796,25 +814,32 @@ function buildCrewRegionMarkers(regions: CrewRegionData[]): GeoJSON.Feature[] {
   const features: GeoJSON.Feature[] = []
   for (const r of regions) {
     if ((r.activeCrews === 0 && r.inactiveCrews === 0) || !isValidCoordinate(r.latitude, r.longitude)) continue
-    const bubbles = MAX_CREW_BUBBLES
+    const showActive = r.activeCrews > 0
+    const showInactive = r.inactiveCrews > 0
+    const activeBubbles = showActive ? MAX_CREW_BUBBLES : 0
+    const inactiveBubbles = showInactive ? (showActive ? 1 : MAX_CREW_BUBBLES) : 0
+    const bubbles = activeBubbles + inactiveBubbles
     const positions = computeCrewMosaicPositions(bubbles, r.latitude, r.longitude)
-    const color = r.activeCrews > 20 ? '#22c55e' : r.activeCrews > 5 ? '#3b82f6' : '#a855f7'
+    const scaleCount = r.activeCrews || r.inactiveCrews
+    const color = scaleCount > 20 ? '#22c55e' : scaleCount > 5 ? '#3b82f6' : '#a855f7'
     const bubbleRadius = bubbles === 1 ? 7 : bubbles <= 3 ? 5.5 : bubbles <= 6 ? 4.5 : 4
 
     for (let i = 0; i < bubbles; i++) {
       const pos = positions[i]
       const isPrimary = i === 0
+      const isInactive = !showActive || i >= activeBubbles
       features.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [pos.lng, pos.lat] },
         properties: {
           id: r.id, _type: 'crewRegion',
-          _bubbleIndex: i, _isPrimary: isPrimary,
+          _bubbleIndex: Math.min(i, MAX_CREW_BUBBLES - 1), _isPrimary: isPrimary,
+          _status: isInactive ? 'inactive' : 'active',
           _origLat: r.latitude, _origLng: r.longitude,
           _mosaicLat: pos.lat, _mosaicLng: pos.lng,
           _mosaicRadius: pos.radius, _bubbleRadius: bubbleRadius,
           color, size: bubbleRadius * 2, label: '',
-          _regionLabel: isPrimary ? `${r.region} · ${r.activeCrews}` : '',
+          _regionLabel: isPrimary ? `${r.region} · ${r.activeCrews || r.inactiveCrews}` : '',
           region: r.region, activeCrews: r.activeCrews, inactiveCrews: r.inactiveCrews,
           totalMembers: r.totalMembers, countries: r.countries,
           // NOTE: `history` (array) is deliberately NOT stored here — only
@@ -828,8 +853,8 @@ function buildCrewRegionMarkers(regions: CrewRegionData[]): GeoJSON.Feature[] {
   return features
 }
 
-function buildCrewLocationPoints(locations: CrewLocation[]): GeoJSON.Feature[] {
-  const valid = locations.filter(l => isValidCoordinate(l.lat, l.lng))
+function buildCrewLocationPoints(locations: CrewLocation[], statuses: readonly CrewStatus[]): GeoJSON.Feature[] {
+  const valid = locations.filter(l => statuses.includes(normalizeCrewStatus(l.status)) && isValidCoordinate(l.lat, l.lng))
   const groups = groupCrewsByCoord(valid)
 
   const features: GeoJSON.Feature[] = []
@@ -839,6 +864,7 @@ function buildCrewLocationPoints(locations: CrewLocation[]): GeoJSON.Feature[] {
     const isMulti = group.length > 1
 
     group.forEach((loc, i) => {
+      const status = normalizeCrewStatus(loc.status)
       let offsetLng = 0
       let offsetLat = 0
       if (isMulti) {
@@ -858,16 +884,20 @@ function buildCrewLocationPoints(locations: CrewLocation[]): GeoJSON.Feature[] {
           _type: 'crewLocation',
           _crewGroup: isMulti ? groupKey : undefined,
           _origLat: loc.lat, _origLng: loc.lng,
-          color: loc.status === 'active' ? '#22c55e' : '#f59e0b',
+          color: status === 'active' ? '#22c55e' : '#f59e0b',
           size: 6, label: '',
           name: loc.name, country: loc.country, city: loc.city,
-          state: loc.state, region: loc.region, status: loc.status,
+          state: loc.state, region: loc.region, status,
           lat: loc.lat, lng: loc.lng,
         },
       })
     })
   }
   return features
+}
+
+function normalizeCrewStatus(status: CrewStatus | undefined): CrewStatus {
+  return status === 'inactive' ? 'inactive' : 'active'
 }
 
 function groupCrewsByCoord(locations: CrewLocation[]): CrewLocation[][] {

@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest'
 
 // Keep this list aligned with i18n.locales in nuxt.config.ts.
 const loadedLocales = ['en', 'es', 'fr', 'pt', 'ar', 'hi', 'ja', 'zh', 'nl', 'de'] as const
+const allLocales = [...loadedLocales, 'it', 'ko', 'pl', 'ru', 'sv', 'tr'] as const
 
 type JsonRecord = Record<string, unknown>
 
@@ -54,6 +55,18 @@ describe('loaded locale catalogs', () => {
   it.each(loadedLocales)('%s uses the endangered-species name for the home count', (locale) => {
     const home = readLocale(locale).home as { species?: unknown; speciesCount?: unknown }
     expect(home.speciesCount, `${locale}.home.speciesCount`).toBe(home.species)
+  })
+
+  it.each(allLocales)('%s uses the map title for stats and preserves Active/Inactive labels', (locale) => {
+    const catalog = readLocale(locale)
+    const nav = catalog.nav as JsonRecord
+    const stats = catalog.stats as JsonRecord
+    const crews = catalog.crews as JsonRecord
+
+    expect(stats.activeCrewsTitle, `${locale}.stats.activeCrewsTitle`).toBe(nav.activeCrews)
+    expect(crews.activeCrews, `${locale}.crews.activeCrews`).not.toBe(nav.activeCrews)
+    expect(crews.inactiveCrews, `${locale}.crews.inactiveCrews`).not.toBe(nav.activeCrews)
+    expect(crews.activeCrews, `${locale}.crews.activeCrews`).not.toBe(crews.inactiveCrews)
   })
 
   it.each(loadedLocales)('%s capitalizes the English Crew term in app copy', (locale) => {

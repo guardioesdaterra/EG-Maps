@@ -22,6 +22,10 @@ const panelRef = ref<HTMLElement | null>(null)
 const listRef = ref<HTMLElement | null>(null)
 const backdropRef = ref<HTMLElement | null>(null)
 let panelAnim: gsap.core.Timeline | null = null
+function handleAnimationVisibility() {
+  if (document.hidden) gsap.ticker.sleep()
+  else gsap.ticker.wake()
+}
 useFocusTrap(panelRef, { active: isOpen })
 
 watch(isOpen, (open) => {
@@ -79,11 +83,14 @@ function selectSpecies(species: SpeciesIndexItem) {
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown)
+  document.addEventListener('visibilitychange', handleAnimationVisibility)
+  if (document.hidden) gsap.ticker.sleep()
 })
 
 onBeforeUnmount(() => {
   panelAnim?.kill()
   document.removeEventListener('keydown', handleKeydown)
+  document.removeEventListener('visibilitychange', handleAnimationVisibility)
 })
 
 </script>

@@ -25,11 +25,12 @@ import { useOfflineTiles, isSafeTileUrl, MAX_TILE_BYTES } from '@/composables/us
 import { usePerformance } from '@/composables/usePerformance'
 import { allProjectsData } from '@/lib/project-data'
 import { openRareEarthOverlayPopup, MAP_GROUP_COLORS, type Species } from '@/lib/map-utils'
+import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
 import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
 import { HEX_GRID } from '@/lib/constants'
 import { VULCAN_CENTER } from '@/composables/useVulcanCircles'
 import type { ProjectData } from '@/lib/types'
-import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
+import type { CrewRegionData, CrewLocation, CrewStatus } from '@/lib/crew-data'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { ParticleQualityConfig } from '@/lib/map-effects'
@@ -185,6 +186,8 @@ export function useMapBase(config: MapBaseConfig) {
   }, { immediate: false })
   const crewsData = computed(() => props.crews || [])
   const crewLocationsData = computed(() => props.crewLocations || [])
+  const selectedCrewStatuses = ref<CrewStatus[]>(['active', 'inactive'])
+  const visibleCrewLocations = computed(() => crewLocationsData.value.filter(location => selectedCrewStatuses.value.includes(location.status)))
   const filteredProjectsList = ref<ProjectData[] | null>(null)
   const filteredSpeciesList = ref<SpeciesIndexItem[] | null>(null)
   const visibleProjects = computed(() => filteredProjectsList.value ?? projectsData.value)
@@ -457,7 +460,7 @@ export function useMapBase(config: MapBaseConfig) {
       projects: visibleProjects.value,
       species: visibleSpecies.value,
       crews: crewsData.value,
-      crewLocations: crewLocationsData.value,
+      crewLocations: visibleCrewLocations.value,
       observatory,
     })
     downloadMapGeoJSON(collection, mapExportFilename(activeDataset.value))
@@ -468,12 +471,27 @@ export function useMapBase(config: MapBaseConfig) {
   let pendingFlyToTarget: { lng: number; lat: number; zoom?: number } | null = props.flyToTarget ?? null
   let isMounted = false
   let loadingTimeout: ReturnType<typeof setTimeout> | null = null
+  let styleSwitchTimer: ReturnType<typeof setTimeout> | null = null
+  let styleSwitchIdleHandler: (() => void) | null = null
+  let styleSwitchGeneration = 0
   let lastFocusedEl: HTMLElement | null = null
   let rebuildPending = false
   let rebuildTimer: ReturnType<typeof setTimeout> | null = null
   let initialRebuildDone = false
   let isInitializing = false
   let mapCanvas: HTMLCanvasElement | null = null
+
+  function clearLoadingTimeout() {
+    if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null }
+  }
+
+  function clearStyleSwitchBackstop() {
+    styleSwitchGeneration++
+    if (styleSwitchTimer) { clearTimeout(styleSwitchTimer); styleSwitchTimer = null }
+    if (styleSwitchIdleHandler && map) map.off('idle', styleSwitchIdleHandler)
+    styleSwitchIdleHandler = null
+  }
+
   const onWebglContextLost = (event: Event) => {
     event.preventDefault()
     console.error('[EG Maps] WebGL context lost during map rendering')
@@ -587,7 +605,7 @@ export function useMapBase(config: MapBaseConfig) {
     const p = (feature.properties ?? {}) as Record<string, unknown>
     const html = getPopupContent(p)
     const coords = (feature.geometry as GeoJSON.Point).coordinates
-    culturalPopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    culturalPopup = new maplibregl.Popup(withMapPopupSafeArea({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer()))
       .setLngLat([coords[0] as number, coords[1] as number])
       .setHTML(html)
       .setMaxWidth('none')
@@ -651,7 +669,8 @@ export function useMapBase(config: MapBaseConfig) {
         speciesIndex: isRee ? [] : visibleSpecies.value,
         species: isRee ? [] : speciesData.value,
         crews: isRee ? [] : crewsData.value,
-        crewLocations: isRee ? [] : crewLocationsData.value,
+        crewLocations: isRee ? [] : visibleCrewLocations.value,
+        crewStatuses: selectedCrewStatuses.value,
         selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
         rareEarthFeatures: isRee
           ? (props.rareEarthFiltered?.features?.length
@@ -683,7 +702,8 @@ export function useMapBase(config: MapBaseConfig) {
       speciesIndex: isRee ? [] : visibleSpecies.value,
       species: isRee ? [] : speciesData.value,
       crews: isRee ? [] : crewsData.value,
-      crewLocations: isRee ? [] : crewLocationsData.value,
+      crewLocations: isRee ? [] : visibleCrewLocations.value,
+      crewStatuses: selectedCrewStatuses.value,
       selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
       rareEarthFeatures: isRee
         ? (props.rareEarthFiltered?.features?.length
@@ -731,6 +751,17 @@ export function useMapBase(config: MapBaseConfig) {
     }
   }
 
+  function toggleCrewStatus(status: CrewStatus) {
+    const selected = new Set(selectedCrewStatuses.value)
+    if (selected.has(status)) {
+      if (selected.size === 1) return
+      selected.delete(status)
+    } else {
+      selected.add(status)
+    }
+    selectedCrewStatuses.value = (['active', 'inactive'] as const).filter(item => selected.has(item))
+  }
+
   function handleSpeciesGroupSelection(groups: string[]) {
     selectedSpeciesGroups.value = groups
   }
@@ -752,6 +783,8 @@ export function useMapBase(config: MapBaseConfig) {
     // Style already matches the target — setStyle would wipe all data
     // layers and reload tiles for no reason (reads as a provider flap).
     if (target === lastAppliedProvider && map.isStyleLoaded()) return
+    clearStyleSwitchBackstop()
+    const switchGeneration = styleSwitchGeneration
     lastAppliedProvider = target
     tileProvider.noteStyleStart()
     hasError.value = false
@@ -766,19 +799,26 @@ export function useMapBase(config: MapBaseConfig) {
       // clear the flag and re-attach the style-wiped data layers there.
       // (The style.load handler below re-attaches layers too; this is the
       // guaranteed backstop that also un-sticks the overlay.)
-      const switchTimer = setTimeout(() => {
+      styleSwitchTimer = setTimeout(() => {
+        if (styleSwitchGeneration !== switchGeneration) return
+        styleSwitchTimer = null
         // Backstop: never leave the overlay stuck if 'idle' is delayed
         // (e.g. a hung glyph/tile fetch on a poor link).
         if (isMounted) isLoading.value = false
       }, 20000)
-      map.once('idle', () => {
-        clearTimeout(switchTimer)
+      const onStyleIdle = () => {
+        if (styleSwitchGeneration !== switchGeneration) return
+        if (styleSwitchTimer) { clearTimeout(styleSwitchTimer); styleSwitchTimer = null }
+        styleSwitchIdleHandler = null
         if (!isMounted) return
         isLoading.value = false
         resyncLayersAfterStyle()
-      })
+      }
+      styleSwitchIdleHandler = onStyleIdle
+      map.once('idle', onStyleIdle)
     } catch (err) {
       console.error('[EG Maps] failed to switch tile provider style', err)
+      clearStyleSwitchBackstop()
       isLoading.value = false
     }
   }
@@ -805,7 +845,7 @@ export function useMapBase(config: MapBaseConfig) {
     const qNow = quality.settings.value
     if (qNow.showConnections && connections.showConnections.value) {
       if (activeDataset.value === 'active-crews') {
-        connections.addConnections('active-crews', [], [], crewLocationsData.value)
+        connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
       } else {
         connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
       }
@@ -833,6 +873,11 @@ export function useMapBase(config: MapBaseConfig) {
       return
     }
     if (!mapContainerRef.value) return
+
+    if (force) {
+      clearLoadingTimeout()
+      clearStyleSwitchBackstop()
+    }
 
     tStart('[perf] initMap total')
     tStart('[perf] initMap → MapLibre constructor')
@@ -991,7 +1036,7 @@ export function useMapBase(config: MapBaseConfig) {
         tStart('[perf] initMap → rebuildMarkers')
         if (import.meta.dev) console.warn(`[useMapBase] map.on('load'): dataset=${activeDataset.value}`)
         isLoading.value = false
-        if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null }
+        clearLoadingTimeout()
         marker.init(map!)
         if (activeDataset.value === 'vulcan-observatory') {
           setupRareEarthLayers()
@@ -1007,7 +1052,7 @@ export function useMapBase(config: MapBaseConfig) {
         if (activeDataset.value !== 'vulcan-observatory') {
           if (qNow.showConnections) {
             if (activeDataset.value === 'active-crews') {
-              connections.addConnections('active-crews', [], [], crewLocationsData.value)
+              connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
             } else {
               connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
             }
@@ -1061,6 +1106,7 @@ export function useMapBase(config: MapBaseConfig) {
       })
 
       loadingTimeout = setTimeout(() => {
+        loadingTimeout = null
         if (isLoading.value) {
           // Tiles/style never became ready — degrade to the local fallback in
           // auto mode (MapTiler stays the default everywhere else). Only when
@@ -1112,7 +1158,8 @@ export function useMapBase(config: MapBaseConfig) {
     isMounted = false
     isInitializing = false
     onBeforeCleanup?.()
-    if (loadingTimeout) clearTimeout(loadingTimeout)
+    clearLoadingTimeout()
+    clearStyleSwitchBackstop()
     if (rebuildTimer) { clearTimeout(rebuildTimer); rebuildTimer = null }
     if (shareCopiedTimer) { clearTimeout(shareCopiedTimer); shareCopiedTimer = null }
     stopFpsReporting()
@@ -1136,14 +1183,13 @@ export function useMapBase(config: MapBaseConfig) {
 
   /* ── watchers ─────────────────────────────────────────────────────── */
 
-  watch(locale, () => {
-    updateMarkerData()
-  })
+  // Popup/UI composables react to locale changes themselves. Marker GeoJSON
+  // contains locale-independent data, so do not reserialize large sources here.
 
-  watch(crewLocationsData, () => {
+  watch([crewLocationsData, selectedCrewStatuses], () => {
     if (!map || activeDataset.value !== 'active-crews') return
     rebuildMarkers()
-    connections.addConnections('active-crews', [], [], crewLocationsData.value)
+    connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
     if (connections.showConnections.value && quality.settings.value.showParticles) connections.startParticles()
   })
 
@@ -1161,7 +1207,7 @@ export function useMapBase(config: MapBaseConfig) {
   watch([visibleSpecies, visibleProjects], () => {
     if (!map || activeDataset.value === 'vulcan-observatory') return
     if (activeDataset.value === 'active-crews') {
-      connections.addConnections('active-crews', [], [], crewLocationsData.value)
+      connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
     } else {
       connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
     }
@@ -1185,7 +1231,7 @@ export function useMapBase(config: MapBaseConfig) {
   watch(connections.showConnections, () => {
     runtime.connectionsPreference.value = connections.showConnections.value
     if (activeDataset.value === 'active-crews') {
-      connections.addConnections('active-crews', [], [], crewLocationsData.value)
+      connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
     } else {
       connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
     }
@@ -1222,9 +1268,9 @@ export function useMapBase(config: MapBaseConfig) {
   return {
     t, locale, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,
     speciesPanel,
-    projectsData, speciesIndexData, crewsData, crewLocationsData,
+    projectsData, speciesIndexData, crewsData, crewLocationsData, visibleCrewLocations,
     filteredProjectsList, filteredSpeciesList, visibleProjects, visibleSpecies,
-    activeDataset, selectedSpeciesGroups,
+    activeDataset, selectedSpeciesGroups, selectedCrewStatuses, toggleCrewStatus,
     hasError, errorMessage, noWebglSupport, isLoading,
     clusterPanelItems, clusterPanelDataset, clusterPanelOpen, closeClusterPanel,
     showHexGrid, showFilterPanel, speciesFilterPanelRef,

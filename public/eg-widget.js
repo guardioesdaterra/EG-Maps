@@ -112,7 +112,7 @@
     var channel = 'eg-' + Math.random().toString(36).slice(2, 8);
     var mount = { container: container, iframe: iframe, channel: channel };
 
-    window.addEventListener('message', function (e) {
+    function onMessage(e) {
       var d = e.data;
       if (!d || d.source !== PROTOCOL || d.version !== PROTOCOL_VERSION) return;
       if (e.source !== iframe.contentWindow) return;
@@ -131,7 +131,8 @@
           container.dispatchEvent(new CustomEvent('eg:error', { bubbles: true, detail: d.payload }));
           break;
       }
-    });
+    }
+    window.addEventListener('message', onMessage);
 
     var ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(function () {
       postToFrame(iframe, 'host:resize', { height: container.clientHeight });
@@ -143,6 +144,16 @@
       postToFrame(iframe, 'host:theme', { theme: t });
     });
     probe.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    mount.cleanup = function () {
+      window.removeEventListener('message', onMessage);
+      if (ro) ro.disconnect();
+      probe.disconnect();
+      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+      if (container.__egMount === mount) delete container.__egMount;
+      delete container.__egMounted;
+    };
+    container.__egMount = mount;
 
     return mount;
   }
@@ -365,7 +376,7 @@
         var route = DATASET_ROUTES[dataset] || DATASET_ROUTES['active-crews'];
 
         // Create shadow DOM for style encapsulation
-        this._shadow = this.attachShadow({ mode: 'open' });
+        this._shadow = this.shadowRoot || this.attachShadow({ mode: 'open' });
         var wrapper = document.createElement('div');
         wrapper.style.cssText = 'width:100%;min-height:' + height + 'px;position:relative';
         this._shadow.appendChild(wrapper);
@@ -395,11 +406,9 @@
       }
 
       disconnectedCallback() {
-        if (this._shadow) {
-          this._shadow.innerHTML = '';
-          this._shadow = null;
-        }
+        if (this._mount && typeof this._mount.cleanup === 'function') this._mount.cleanup();
         this._mount = null;
+        if (this._shadow) this._shadow.replaceChildren();
       }
 
       static get observedAttributes() {

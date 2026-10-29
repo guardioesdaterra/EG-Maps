@@ -38,6 +38,7 @@ const MapView2D = defineAsyncComponent(() => import('~/components/MapView2D.vue'
 
 const { t } = useI18n()
 const baseURL = useRuntimeConfig().app.baseURL
+definePageMeta({ alias: ['/crews'] })
 
 const crewRegions = allCrewRegionsData
 const crewLocations = ref<CrewLocation[]>([])

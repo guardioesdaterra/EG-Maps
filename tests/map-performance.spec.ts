@@ -47,7 +47,8 @@ const MAP_TITLE_LOCALES = ['en', 'es', 'pt', 'fr', 'ja', 'zh', 'ar', 'hi', 'nl',
 
 interface MapLocaleCopy {
   home: { activeCrewsTitle: string }
-  stats: { activeCrewsTitle: string; active: string; crewsInactive: string; close: string; markerLegend: string }
+  filter: { active: string }
+  stats: { activeCrewsTitle: string; crewsInactive: string; close: string; markerLegend: string }
   mapControls: { exportData: string }
 }
 
@@ -410,7 +411,9 @@ async function measureAndCheckEmbeddedMapRoute(page: Page, scenario: MapScenario
   await expect(page.getByRole('button', { name: /grid/i })).toHaveCount(0)
   await expect(page.getByRole('button', { name: /filter/i })).toHaveCount(0)
   if (scenario.path.startsWith('/active-crews/') && scenario.mode === '2d') {
-    await expect(page.getByRole('button', { name: 'Crews Map', exact: true })).toBeVisible()
+    expect(url.pathname.replace(/\/$/, ''), `${scenario.name} should remain on the Crews Map route`).toBe(expectedPath)
+    expect(metrics.colorSamples, `${scenario.name} should render a non-empty map canvas`)
+      .toBeGreaterThanOrEqual(MAP_BUDGETS.minimumDistinctCanvasSamples)
   }
 
   return { name: scenario.name, path: scenario.path, mode: scenario.mode, ...metrics }
@@ -751,7 +754,8 @@ test.describe('map performance and behavior regression pass', () => {
     expect(child, 'embedded map frame should be available').toBeTruthy()
     const childPath = new URL(child!.url()).pathname.replace(/\/$/, '')
     expect(childPath, 'iframe must load Active Crews, not the app home route').toBe('/active-crews')
-    await expect(frame.getByRole('button', { name: 'Crews Map', exact: true })).toBeVisible()
+    expect(colorSamples, 'embedded Active Crews route should render a non-empty canvas')
+      .toBeGreaterThanOrEqual(MAP_BUDGETS.minimumDistinctCanvasSamples)
     await page.waitForTimeout(200)
     const metrics = await child!.evaluate(({ colorSamples }) => {
       const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
@@ -884,7 +888,7 @@ test.describe('map performance and behavior regression pass', () => {
       const copy = loadMapLocaleCopy(locale)
       expect(copy.stats.activeCrewsTitle, `${locale} bubble title should match the localized map name`)
         .toBe(copy.home.activeCrewsTitle)
-      expect(copy.stats.active).not.toBe(copy.stats.activeCrewsTitle)
+      expect(copy.filter.active).not.toBe(copy.stats.activeCrewsTitle)
       expect(copy.stats.crewsInactive).not.toBe(copy.stats.activeCrewsTitle)
 
       await setAppLocale(page, locale)
@@ -895,7 +899,7 @@ test.describe('map performance and behavior regression pass', () => {
       const panel = page.getByRole('region', { name: copy.stats.activeCrewsTitle, exact: true })
       await expect(panel).toBeVisible()
       await expect(panel.locator('.bubble-panel-title')).toHaveText(copy.stats.activeCrewsTitle)
-      await expect(panel.getByRole('button', { name: copy.stats.active, exact: true }))
+      await expect(panel.getByRole('button', { name: copy.filter.active, exact: true }))
         .toHaveAttribute('aria-pressed', 'true')
       await expect(panel.getByRole('button', { name: copy.stats.crewsInactive, exact: true }))
         .toHaveAttribute('aria-pressed', 'true')
@@ -905,7 +909,7 @@ test.describe('map performance and behavior regression pass', () => {
     await setAppLocale(page, 'en')
     const englishPanel = page.getByRole('region', { name: english.stats.activeCrewsTitle, exact: true })
     const inactive = englishPanel.getByRole('button', { name: english.stats.crewsInactive, exact: true })
-    const active = englishPanel.getByRole('button', { name: english.stats.active, exact: true })
+    const active = englishPanel.getByRole('button', { name: english.filter.active, exact: true })
 
     const inactiveOffMs = await measureStateChange(page, english.stats.crewsInactive, 'aria-pressed', 'false')
     await assertInteractionBudget(inactiveOffMs)
@@ -917,7 +921,7 @@ test.describe('map performance and behavior regression pass', () => {
 
     const inactiveOnMs = await measureStateChange(page, english.stats.crewsInactive, 'aria-pressed', 'true')
     await assertInteractionBudget(inactiveOnMs)
-    const activeOffMs = await measureStateChange(page, english.stats.active, 'aria-pressed', 'false')
+    const activeOffMs = await measureStateChange(page, english.filter.active, 'aria-pressed', 'false')
     await assertInteractionBudget(activeOffMs)
     const inactiveOnlyDownloadPromise = page.waitForEvent('download')
     await page.getByRole('button', { name: english.mapControls.exportData, exact: true }).click()
@@ -925,7 +929,7 @@ test.describe('map performance and behavior regression pass', () => {
     expect(inactiveOnly.length, 'inactive-only export should retain visible inactive location records').toBeGreaterThan(0)
     expect(inactiveOnly.every(status => status === 'inactive')).toBe(true)
 
-    const activeOnMs = await measureStateChange(page, english.stats.active, 'aria-pressed', 'true')
+    const activeOnMs = await measureStateChange(page, english.filter.active, 'aria-pressed', 'true')
     await assertInteractionBudget(activeOnMs)
     await expect(active).toHaveAttribute('aria-pressed', 'true')
     await expect(inactive).toHaveAttribute('aria-pressed', 'true')

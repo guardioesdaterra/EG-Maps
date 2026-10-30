@@ -49,7 +49,7 @@ test.describe('keyboard accessibility', () => {
     await expect(hero).toBeVisible()
     await expect(hero.locator('[data-reveal]')).toHaveCount(0)
     await expect(page.locator('#home-story')).toHaveAttribute('data-reveal', '')
-    await expect(page.locator('.bento-card')).toHaveCount(6)
+    await expect(page.locator('.bento-card')).toHaveCount(5)
   })
 
   test('reduced motion leaves below-hero content visible without activating reveal', async ({ page }) => {

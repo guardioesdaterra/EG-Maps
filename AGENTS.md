@@ -82,7 +82,7 @@ EG-Maps/
 │   ├── colors.ts         # Color utilities
 │   ├── utils.ts          # Helper functions (cn, formatCompact, etc.)
 │   ├── project-data.ts   # Project grants data
-│   ├── crew-data.ts      # Static crew registry (~131 crews)
+│   ├── crew-data.ts      # Static crew registry (~169 crews)
 │   ├── map-utils.ts      # Map-specific utilities
 │   ├── map-effects.ts    # Visual effects
 │   └── image-utils.ts    # Image handling
@@ -241,6 +241,7 @@ pnpm test:watch     # Watch mode
 | **Fixed** | `status` value "pending" not in sync whitelist — silently coerced to "unknown" | sync-grants-to-supabase.ts:244 |
 | **Fixed** | `useSupabase.ts` imported `Subscription` type removed in Supabase v2 | useSupabase.ts:8 |
 | **Fixed** | CI lint/unit-tests had `continue-on-error: true` — failures silently passed | deploy.yml:190,218 |
+| **Fixed** | Front-page stats audit (2026-10-30): countries 47→52 (deduped Burkina Faso/Cameroun/USA-Turtle Island), per-region active/inactive aggregates realigned with `public/data/crews-locations.json` (169 total, 142 active, 27 inactive) | crew-data.ts |
 | High | MapTiler API key exposed in client-side code | nuxt.config.ts |
 | Medium | `formatCompact()` duplicated | index.vue, info.vue |
 | Medium | Inline `<style>` injection in GlobeView | GlobeView.vue:783 |

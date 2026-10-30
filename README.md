@@ -380,7 +380,7 @@ EG-Maps/
 |---------|--------|---------|
 | 🌱 Projects | `lib/project-data.ts` | Bundled in JS payload |
 | 🐆 Species | `/public/data/species/{region}.json` + indexes | Lazy per-region → `memCache` → **IndexedDB** (`useSpeciesData`) |
-| 🔥 Crews | `lib/crew-data.ts` (~131 crews) | Static registry |
+| 🔥 Crews | `lib/crew-data.ts` (~169 crews) | Static registry |
 | ⛏️ Rare-earth / protected areas | `/public/data/rare-earth/*.geojson` | Static GeoJSON layers |
 | 🎭 Cultural agents | `/public/data/cultural-agents/*.json` | Region-split fetch |
 | 🖼️ Species images | Wikimedia Commons (URL-built, cached + SVG fallback) | On demand |

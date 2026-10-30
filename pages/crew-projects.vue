@@ -25,7 +25,12 @@
         </div>
         <div class="impact-divider" />
         <div class="impact-item">
-          <strong>4</strong>
+          <strong>300K+</strong>
+          <span>people monitored</span>
+        </div>
+        <div class="impact-divider" />
+        <div class="impact-item">
+          <strong>3</strong>
           <span>countries</span>
         </div>
         <div class="impact-divider" />
@@ -105,6 +110,33 @@
               <li><span class="bullet" />{{ t('crewProjects.amegnranItem1') }}</li>
               <li><span class="bullet" />{{ t('crewProjects.amegnranItem2') }}</li>
               <li><span class="bullet" />{{ t('crewProjects.amegnranItem3') }}</li>
+            </ul>
+          </article>
+
+          <!-- 7K Project -->
+          <article class="project-card">
+            <div class="project-head">
+              <h3 class="project-name">{{ t('crewProjects.brazil7kTitle') }}</h3>
+              <span class="project-location">{{ t('crewProjects.brazil7kLocation') }}</span>
+            </div>
+            <ul class="project-list">
+              <li><span class="bullet" />{{ t('crewProjects.brazil7kItem1') }}</li>
+              <li><span class="bullet" />{{ t('crewProjects.brazil7kItem2') }}</li>
+              <li><span class="bullet" />{{ t('crewProjects.brazil7kItem3') }}</li>
+              <li><span class="bullet" />{{ t('crewProjects.brazil7kItem4') }}</li>
+            </ul>
+          </article>
+
+          <!-- Vulcan Observatory Institute -->
+          <article class="project-card">
+            <div class="project-head">
+              <h3 class="project-name">{{ t('crewProjects.vulcanInstituteTitle') }}</h3>
+              <span class="project-location">{{ t('crewProjects.vulcanInstituteLocation') }}</span>
+            </div>
+            <ul class="project-list">
+              <li><span class="bullet" />{{ t('crewProjects.vulcanInstituteItem1') }}</li>
+              <li><span class="bullet" />{{ t('crewProjects.vulcanInstituteItem2') }}</li>
+              <li><span class="bullet" />{{ t('crewProjects.vulcanInstituteItem3') }}</li>
             </ul>
           </article>
         </div>

@@ -77,7 +77,7 @@ describe('crew map status rendering', () => {
 
     expect(mixedRegion).toHaveLength(6)
     expect(inactiveIndicators).toHaveLength(1)
-    expect(inactiveIndicators[0].properties?.inactiveCrews).toBe(1)
+    expect(inactiveIndicators[0].properties?.inactiveCrews).toBe(2)
   })
 
   it('filters locations and regional markers by status without changing the default', () => {

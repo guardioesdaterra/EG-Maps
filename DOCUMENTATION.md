@@ -88,7 +88,7 @@ EG-Maps/
 │   ├── observatory-tabs.ts       # Static tab config
 │   ├── observatory-timeline.ts   # Year slider ticks
 │   ├── observatory-analysis.ts   # Overlap + danger-score math
-│   ├── crew-data.ts              # Static crew registry (~131 crews, source of truth for /active-crews)
+│   ├── crew-data.ts              # Static crew registry (~169 crews, source of truth for /active-crews)
 │   ├── enterprise-data.ts        # Static mining company/corporate group data
 │   ├── rare-earth-geo-data.ts    # Static Brazilian rare-earth mining traces
 │   ├── brazilian-cities.ts       # Geocoding hints

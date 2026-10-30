@@ -196,7 +196,7 @@ test.describe('Navigation', () => {
     await expect(page.locator('.home-hero')).toContainText('Explore the range of Crew-led work, from ecosystem restoration and regenerative agriculture to climate education, artivism and community resilience.')
 
     const hero = page.locator('.home-hero')
-    await expect(hero.locator('.bento-card')).toHaveCount(6)
+    await expect(hero.locator('.bento-card')).toHaveCount(5)
     await expect(hero.locator('a[href="/project-grants"]')).toBeVisible()
     await expect(hero.locator('a[href="/project-grants/3d"]')).toBeVisible()
     await expect(hero.locator('a[href="/endangered-species"]')).toBeVisible()

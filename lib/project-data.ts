@@ -32,6 +32,24 @@ export const allProjectsData: ProjectData[] = [
       indirect_beneficiaries: 300,
     },
     {
+      project_title: "7K Project",
+      country_province: "Aguas da Prata, Sao Paulo (Brazil)",
+      latitude: -21.9449,
+      longitude: -46.7168,
+      direct_beneficiaries: 8000,
+      indirect_beneficiaries: 21000,
+    },
+    {
+      // Vulcan Observatory Institute — the 300k+ figure is the population living
+      // inside the monitored area (direct reach); indirect reach is not published.
+      project_title: "Vulcan Observatory Institute",
+      country_province: "Pocos de Caldas, Minas Gerais (Brazil)",
+      latitude: -21.914138005195028,
+      longitude: -46.53311955736603,
+      direct_beneficiaries: 300000,
+      indirect_beneficiaries: 0,
+    },
+    {
       project_title: "Rede Colaborativa de Monitoramento de Microplastico (Collaborative Network for Microplastic Monitoring)",
       country_province: "Florianopolis, Santa Catarina (Brazil)",
       latitude: -27.5969,

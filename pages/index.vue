@@ -31,7 +31,7 @@
 
         <section class="home-right" :aria-label="t('home.exploreTitle')">
           <div class="bento">
-            <article class="bento-card bento-tall" style="--accent: #7e22ce" @mousemove="trackGlow" @mouseleave="clearGlow">
+            <article class="bento-card" style="--accent: #7e22ce" @mousemove="trackGlow" @mouseleave="clearGlow">
               <div class="bento-glow" aria-hidden="true" />
               <div class="bento-accent" aria-hidden="true" />
               <div class="bento-body">
@@ -61,7 +61,7 @@
               </div>
             </article>
 
-            <article class="bento-card bento-tall" style="--accent: #15803d" @mousemove="trackGlow" @mouseleave="clearGlow">
+            <article class="bento-card" style="--accent: #15803d" @mousemove="trackGlow" @mouseleave="clearGlow">
               <div class="bento-glow" aria-hidden="true" />
               <div class="bento-accent" aria-hidden="true" />
               <div class="bento-body">
@@ -148,7 +148,7 @@
               </div>
             </article>
 
-            <article class="bento-card" style="--accent: #15803d" @mousemove="trackGlow" @mouseleave="clearGlow">
+            <article class="bento-card bento-wide" style="--accent: #15803d" @mousemove="trackGlow" @mouseleave="clearGlow">
               <div class="bento-glow" aria-hidden="true" />
               <div class="bento-accent" aria-hidden="true" />
               <div class="bento-body">
@@ -164,41 +164,23 @@
                     <strong>{{ t('home.crewProjectsPlaceValue') }}</strong>
                     <span>{{ t('home.crewProjectsPlaceLabel') }}</span>
                   </div>
+                  <div class="bento-stat">
+                    <strong>{{ t('home.crewProjectsVulcanValue') }}</strong>
+                    <span>{{ t('home.crewProjectsVulcanLabel') }}</span>
+                  </div>
                 </div>
                 <div class="bento-links">
                   <NuxtLink data-testid="home-hero-crew-projects-link" to="/crew-projects" class="bento-link bento-link--primary">
                     <Icon name="lucide:mountain" aria-hidden="true" />
                     {{ t('home.crewProjectsTitle') }}
                   </NuxtLink>
-                </div>
-              </div>
-            </article>
-
-            <article class="bento-card" style="--accent: #96600a" @mousemove="trackGlow" @mouseleave="clearGlow">
-              <div class="bento-glow" aria-hidden="true" />
-              <div class="bento-accent" aria-hidden="true" />
-              <div class="bento-body">
-                <div class="bento-icon" aria-hidden="true"><Icon name="lucide:microscope" /></div>
-                <h2 class="bento-title">{{ t('home.vulcanTitle') }}</h2>
-                <p class="bento-desc">{{ t('home.vulcanDesc') }}</p>
-                <div class="bento-stats">
-                  <div class="bento-stat">
-                    <strong>{{ t('home.vulcanFocusValue') }}</strong>
-                    <span>{{ t('home.vulcanFocusLabel') }}</span>
-                  </div>
-                  <div class="bento-stat">
-                    <strong>{{ t('home.vulcanDataValue') }}</strong>
-                    <span>{{ t('home.vulcanDataLabel') }}</span>
-                  </div>
-                </div>
-                <div class="bento-links">
-                  <NuxtLink to="/vulcan-observatory" class="bento-link bento-link--primary" :aria-label="`${t('home.vulcanTitle')} — ${t('globe.view2D')}`">
+                  <NuxtLink to="/vulcan-observatory" class="bento-link" :aria-label="`${t('home.vulcanTitle')} — ${t('globe.view2D')}`">
                     <Icon name="lucide:map" aria-hidden="true" />
-                    {{ t('globe.view2D') }}
+                    {{ t('home.vulcanTitle') }}
                   </NuxtLink>
                   <NuxtLink to="/vulcan-observatory/3d" class="bento-link" :aria-label="`${t('home.vulcanTitle')} — ${t('globe.view3D')}`">
                     <Icon name="lucide:globe" aria-hidden="true" />
-                    {{ t('globe.view3D') }}
+                    {{ t('home.vulcanTitle') }}
                   </NuxtLink>
                 </div>
               </div>
@@ -492,7 +474,7 @@ function clearGlow(event: MouseEvent) {
   opacity: 0.72;
 }
 .bento-body { position: relative; z-index: 1; display: flex; height: 100%; flex-direction: column; gap: 0.5rem; padding: 1rem; }
-.bento-tall { grid-row: span 2; }
+.bento-wide { grid-column: span 2; }
 .bento-icon {
   display: grid;
   width: 2rem;
@@ -598,7 +580,7 @@ function clearGlow(event: MouseEvent) {
   .home-title { font-size: clamp(2rem, 12vw, 3rem); }
   .home-right { padding: 1rem; }
   .bento { grid-template-columns: 1fr; gap: 0.6rem; }
-  .bento-tall { grid-row: span 1; }
+  .bento-wide { grid-column: span 1; }
   .bento-card { min-height: 11rem; }
   .story-section,
   .join-section { width: min(100% - 2rem, 76rem); }

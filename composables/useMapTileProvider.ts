@@ -197,7 +197,7 @@ export const useMapTileProvider = createSharedComposable(() => {
   }
 
   /** Evaluate offline / data-saver / very-slow-network hints (call at map init). */
-  function evaluateNetworkHints(apiKey: string): TileProvider {
+  function evaluateNetworkHints(apiKey: string, hasOfflineTiles = false): TileProvider {
     const hints = connectionHints()
     if (preference.value !== 'auto') return effectiveProvider.value
     if (!apiKey) {
@@ -206,6 +206,10 @@ export const useMapTileProvider = createSharedComposable(() => {
       return 'fallback'
     }
     if (hints.offline) {
+      if (hasOfflineTiles) {
+        clearAutoFallback()
+        return 'maptiler'
+      }
       engageAutoFallback('offline')
       return effectiveProvider.value
     }

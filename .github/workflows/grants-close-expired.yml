@@ -52,12 +52,13 @@ jobs:
 
       - name: 🕛 Expire past-deadline grants
         run: |
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
+          if [ "$DRY_RUN" = "true" ]; then
             npx tsx scripts/sync-grants-to-supabase.ts close-expired --dry-run
           else
             npx tsx scripts/sync-grants-to-supabase.ts close-expired
           fi
         env:
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 

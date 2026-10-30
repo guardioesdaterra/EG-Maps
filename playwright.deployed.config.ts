@@ -8,7 +8,7 @@ export default defineConfig({
   workers: 1,
   reporter: 'list',
   use: {
-    baseURL: 'https://guardioesdaterra.github.io',
+    baseURL: 'https://guardioesdaterra.github.io/EG-Maps/',
     trace: 'on-first-retry',
   },
   projects: [

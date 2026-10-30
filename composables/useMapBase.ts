@@ -8,7 +8,7 @@
  */
 import { ref, shallowRef, computed, nextTick, onMounted, onUnmounted, watch, type Ref } from 'vue'
 import maplibregl from 'maplibre-gl'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import { useFocusTrap } from '@/composables/useFocusTrap'
@@ -21,19 +21,23 @@ import { getPopupContent } from '@/composables/useCulturalLayers'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { useAdaptiveQuality } from '@/composables/useAdaptiveQuality'
 import { useMapTileProvider } from '@/composables/useMapTileProvider'
+import { useOfflineTiles, isSafeTileUrl, MAX_TILE_BYTES } from '@/composables/useOfflineTiles'
 import { usePerformance } from '@/composables/usePerformance'
 import { allProjectsData } from '@/lib/project-data'
-import { openRareEarthOverlayPopup } from '@/lib/map-utils'
+import { openRareEarthOverlayPopup, MAP_GROUP_COLORS, type Species } from '@/lib/map-utils'
+import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
 import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
 import { HEX_GRID } from '@/lib/constants'
 import { VULCAN_CENTER } from '@/composables/useVulcanCircles'
 import type { ProjectData } from '@/lib/types'
-import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
-import type { Species } from '@/lib/map-utils'
+import type { CrewRegionData, CrewLocation, CrewStatus } from '@/lib/crew-data'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 import type { ParticleQualityConfig } from '@/lib/map-effects'
 import { useAppRuntime } from '@/composables/useAppRuntime'
+import { parseMapShareState, serializeMapShareState, buildMapShareUrl } from '@/lib/map-state'
+import { exportMapToImage, buildMapExportCollection, downloadMapGeoJSON, mapExportFilename, type ExportLegendItem } from '@/lib/map-export'
+import { getProjectMapColor } from '@/lib/colors'
 
 export interface ClusterResultItem {
   id: string
@@ -73,6 +77,46 @@ function tEnd(label: string) {
   try { console.timeEnd(label) } catch { /* already cleared */ }
 }
 
+let offlineTileProtocolRegistered = false
+let offlineTileProtocolCache: ReturnType<typeof useOfflineTiles> | null = null
+function registerOfflineTileProtocol(cache: ReturnType<typeof useOfflineTiles>) {
+  offlineTileProtocolCache = cache
+  if (offlineTileProtocolRegistered) return
+  maplibregl.addProtocol('egoffline', async (request, abortController) => {
+    const activeCache = offlineTileProtocolCache
+    if (!activeCache) throw new Error('Offline tile cache is unavailable')
+    const protocolUrl = new URL(request.url)
+    const sourceUrl = protocolUrl.searchParams.get('url')
+    if (!sourceUrl || !isSafeTileUrl(sourceUrl)) throw new Error('Invalid offline tile request')
+    const parsed = new URL(sourceUrl)
+    const match = parsed.pathname.match(/\/tiles\/satellite(?:-[^/]+)?\/(\d+)\/(\d+)\/(\d+)\.(?:jpg|jpeg|png|webp)$/i)
+    if (!match) throw new Error('Unsupported offline tile path')
+    const [, zText, xText, yText] = match
+    const z = Number(zText); const x = Number(xText); const y = Number(yText)
+    const cached = await activeCache.getTile(z, x, y)
+    if (cached) return { data: cached }
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      throw new Error(`Tile ${z}/${x}/${y} is not available offline`)
+    }
+
+    const response = await fetch(sourceUrl, { signal: abortController.signal })
+    if (!response.ok) throw new Error(`Tile request failed (${response.status})`)
+    const contentType = response.headers.get('content-type') || 'image/jpeg'
+    const contentLength = Number(response.headers.get('content-length') || 0)
+    if (contentLength > MAX_TILE_BYTES) throw new Error('Tile exceeds the local cache size limit')
+    const data = await response.arrayBuffer()
+    if (data.byteLength > MAX_TILE_BYTES) throw new Error('Tile exceeds the local cache size limit')
+    void activeCache.setTile(z, x, y, data, contentType)
+    return { data }
+  })
+  offlineTileProtocolRegistered = true
+}
+
+function transformMapTileRequest(url: string, resourceType?: string) {
+  if (resourceType !== 'Tile' || !isSafeTileUrl(url)) return { url }
+  return { url: `egoffline://tile?url=${encodeURIComponent(url)}` }
+}
+
 export interface MapBaseProps {
   projects?: ProjectData[]
   species?: Species[]
@@ -108,13 +152,32 @@ export function useMapBase(config: MapBaseConfig) {
 
   const { t, locale, localeNames } = useI18n()
   const route = useRoute()
+  const router = useRouter()
+  function mapQueryValue(name: string): unknown {
+    const routeValue = route.query[name]
+    if (routeValue !== undefined) return routeValue
+    if (import.meta.client !== true) return undefined
+    const liveValue = new URLSearchParams(window.location.search).get(name)
+    if (liveValue !== null) return liveValue
+    return new URLSearchParams(document.documentElement.dataset.egInitialMapSearch ?? '').get(name)
+  }
+  const initialUrlQuery: Record<string, string> = {}
+  if (import.meta.client === true) {
+    new URLSearchParams(document.documentElement.dataset.egInitialMapSearch ?? '').forEach((value, key) => { initialUrlQuery[key] = value })
+    new URLSearchParams(window.location.search).forEach((value, key) => { initialUrlQuery[key] = value })
+  }
   const speciesPanel = useSpeciesPanel()
   const baseURL = useRuntimeConfig().app.baseURL
   const isMobile = useMediaQuery('(max-width: 768px)')
   const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
+  const offlineTiles = useOfflineTiles(MAPTILER_API_KEY)
+  const initialShareState = parseMapShareState({ ...initialUrlQuery, ...route.query })
+  const initialCameraState = initialShareState
 
   const quality = useAdaptiveQuality()
   const runtime = useAppRuntime()
+  if (initialShareState.showHexGrid !== undefined) runtime.hexGridPreference.value = initialShareState.showHexGrid
+  if (initialShareState.showConnections !== undefined) runtime.connectionsPreference.value = initialShareState.showConnections
   const tileProvider = useMapTileProvider()
   const perf = usePerformance()
 
@@ -136,6 +199,8 @@ export function useMapBase(config: MapBaseConfig) {
   }, { immediate: false })
   const crewsData = computed(() => props.crews || [])
   const crewLocationsData = computed(() => props.crewLocations || [])
+  const selectedCrewStatuses = ref<CrewStatus[]>(['active', 'inactive'])
+  const visibleCrewLocations = computed(() => crewLocationsData.value.filter(location => selectedCrewStatuses.value.includes(location.status)))
   const filteredProjectsList = ref<ProjectData[] | null>(null)
   const filteredSpeciesList = ref<SpeciesIndexItem[] | null>(null)
   const visibleProjects = computed(() => filteredProjectsList.value ?? projectsData.value)
@@ -143,9 +208,11 @@ export function useMapBase(config: MapBaseConfig) {
     return filteredSpeciesList.value ?? (activeDataset.value === 'endangered-species' ? speciesIndexData.value : speciesData.value)
   })
   const activeDataset = ref<'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'>(props.defaultDataset || 'project-grants')
-  const selectedSpeciesGroups = ref<string[]>([])
+  const shareCopied = ref(false)
+  let shareCopiedTimer: ReturnType<typeof setTimeout> | null = null
+  const selectedSpeciesGroups = ref<string[]>(initialShareState.selectedSpeciesGroups ?? [])
   const clusterPanelItems = ref<ClusterResultItem[]>([])
-  const clusterPanelDataset = ref('Cluster results')
+  const clusterPanelDataset = ref(t('mapControls.clusterPanel.title'))
   const clusterPanelOpen = ref(false)
   const hasError = ref(false)
   const errorMessage = ref('')
@@ -157,23 +224,23 @@ export function useMapBase(config: MapBaseConfig) {
 
   const isEmbed = computed(() => {
     if (import.meta.server) return false
-    return route.query.embed === 'true'
+    return mapQueryValue('embed') === 'true'
   })
 
   const noControl = computed(() => {
     if (import.meta.server) return false
-    return route.query['no-control'] === 'true'
+    return mapQueryValue('no-control') === 'true'
   })
 
   const hideAll = computed(() => {
     if (props.hideAll !== undefined) return props.hideAll
     if (import.meta.server) return false
-    return route.query.hideAll === 'true'
+    return mapQueryValue('hideAll') === 'true'
   })
 
   const controlsForced = computed(() => {
     if (import.meta.server) return false
-    return route.query.controls === 'true'
+    return mapQueryValue('controls') === 'true'
   })
 
   const isSmallViewport = ref(false)
@@ -291,17 +358,160 @@ export function useMapBase(config: MapBaseConfig) {
       })
     }
   }
+
+  function getCurrentMapCamera() {
+    const center = map?.getCenter()
+    const isRee = activeDataset.value === 'vulcan-observatory'
+    const fallbackCenter = initialCameraState.center ?? (isRee ? (isGlobe ? [-48, -15] : [-46.533, -21.914]) : (isGlobe ? [0, 20] : [0, 0]))
+    let fallbackZoom = initialCameraState.zoom ?? (isRee ? (isGlobe ? 4.2 : 9.5) : isMobile.value ? (isGlobe ? 1 : 1.2) : (isGlobe ? 1.8 : 2))
+    const urlZoom = mapQueryValue('zoom')
+    if (initialCameraState.zoom === undefined && urlZoom != null) {
+      const tileMaxZoom = quality.settings.value.tileResolution === 'low' ? 14 : quality.settings.value.tileResolution === 'medium' ? 17 : 22
+      fallbackZoom = Math.max(0, Math.min(1, parseFloat(String(urlZoom)) || 0)) * tileMaxZoom
+    }
+    return {
+      center: (center ? [center.lng, center.lat] : fallbackCenter) as [number, number],
+      zoom: map?.getZoom() ?? fallbackZoom,
+      bearing: map?.getBearing() ?? initialCameraState.bearing ?? 0,
+      pitch: map?.getPitch() ?? initialCameraState.pitch ?? 0,
+    }
+  }
+
+  function syncMapCameraToUrl() {
+    if (!map || !isMounted || !map.loaded()) return
+    const queryState = serializeMapShareState({
+      ...getCurrentMapCamera(),
+      showHexGrid: showHexGrid.value,
+      showConnections: showConnections.value,
+      selectedSpeciesGroups: selectedSpeciesGroups.value,
+    })
+    const urlQuery: Record<string, string> = {}
+    new URLSearchParams(document.documentElement.dataset.egInitialMapSearch ?? '').forEach((value, key) => { urlQuery[key] = value })
+    new URLSearchParams(window.location.search).forEach((value, key) => { urlQuery[key] = value })
+    const currentQuery = { ...urlQuery, ...route.query }
+    const mapStateIsCurrent = Object.entries(queryState).every(([key, value]) => String(currentQuery[key] ?? '') === value)
+    const routerHasUrlQuery = Object.entries(urlQuery).every(([key, value]) => String(route.query[key] ?? '') === value)
+    if (mapStateIsCurrent && routerHasUrlQuery) return
+    const query = { ...urlQuery, ...route.query, ...queryState }
+    if (!queryState.mapGroups) delete query.mapGroups
+    void router.replace({ query, hash: route.hash }).catch(() => {})
+  }
+
+  async function shareMap(): Promise<boolean> {
+    if (typeof window === 'undefined') return false
+    const state = {
+      ...getCurrentMapCamera(),
+      showHexGrid: showHexGrid.value,
+      showConnections: showConnections.value,
+      selectedSpeciesGroups: selectedSpeciesGroups.value,
+    }
+    const shareUrl = buildMapShareUrl(window.location.href, state)
+    const queryState = serializeMapShareState(state)
+    try {
+      const query = { ...route.query, ...queryState }
+      if (!queryState.mapGroups) delete query.mapGroups
+      await router.replace({ query, hash: route.hash })
+    } catch { /* the generated URL remains usable even if router replacement fails */ }
+
+    let copied = false
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl)
+        copied = true
+      }
+    } catch { /* try the older browser copy path */ }
+    if (!copied) {
+      const textarea = document.createElement('textarea')
+      textarea.value = shareUrl
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      try { copied = document.execCommand('copy') } catch { copied = false }
+      textarea.remove()
+    }
+    if (shareCopiedTimer) clearTimeout(shareCopiedTimer)
+    shareCopied.value = copied
+    if (copied) shareCopiedTimer = setTimeout(() => { shareCopied.value = false }, 2000)
+    return copied
+  }
+
+  function getExportLegendItems(): ExportLegendItem[] {
+    if (activeDataset.value === 'endangered-species') {
+      return Object.entries(MAP_GROUP_COLORS).map(([group, color]) => ({ label: t(`taxonomy.${group}`) || group, color }))
+    }
+    if (activeDataset.value === 'project-grants') {
+      return [
+        { label: '≤100', color: getProjectMapColor(100, 0) },
+        { label: '101–500', color: getProjectMapColor(101, 0) },
+        { label: '501–1K', color: getProjectMapColor(501, 0) },
+        { label: '>1K', color: getProjectMapColor(1001, 0) },
+      ]
+    }
+    return [
+      { label: t('stats.crewsActive20'), color: '#27ae60' },
+      { label: t('stats.crewsActive5to20'), color: '#5dade2' },
+      { label: t('stats.crewsActive1to5'), color: '#8e44ad' },
+      { label: t('stats.crewsInactive'), color: '#f39c12' },
+    ]
+  }
+
+  async function exportMapImage() {
+    if (!mapContainerRef.value) return
+    const datasetLabel = activeDataset.value === 'project-grants' ? t('home.projectGrantsTitle')
+      : activeDataset.value === 'endangered-species' ? t('home.speciesTitle')
+        : activeDataset.value === 'active-crews' ? t('home.activeCrewsTitle') : t('home.observatoryTitle')
+    const featureCount = activeDataset.value === 'project-grants' ? visibleProjects.value.length
+      : activeDataset.value === 'endangered-species' ? visibleSpecies.value.length
+        : activeDataset.value === 'active-crews' ? crewLocationsData.value.length + crewsData.value.length
+          : (props.rareEarthFiltered?.features.length || props.rareEarthPoints?.features.length || 0)
+    await exportMapToImage(mapContainerRef.value, {
+      format: 'png', resolution: '1x', includeLegend: true, includeTitle: true,
+      legendItems: getExportLegendItems(),
+      legendTitle: t('mapControls.legend'),
+    }, { title: datasetLabel, filterSummary: `${featureCount} features` })
+  }
+
+  function exportVisibleData() {
+    const observatory = props.rareEarthFiltered?.features?.length ? props.rareEarthFiltered : props.rareEarthPoints
+    const collection = buildMapExportCollection({
+      dataset: activeDataset.value,
+      projects: visibleProjects.value,
+      species: visibleSpecies.value,
+      crews: crewsData.value,
+      crewLocations: visibleCrewLocations.value,
+      observatory,
+    })
+    downloadMapGeoJSON(collection, mapExportFilename(activeDataset.value))
+  }
+
   // Fly-to requested before map creation (restored hash, sidebar jumps).
   // Stored here and flushed in setMapInstance + style/load handlers.
   let pendingFlyToTarget: { lng: number; lat: number; zoom?: number } | null = props.flyToTarget ?? null
   let isMounted = false
   let loadingTimeout: ReturnType<typeof setTimeout> | null = null
+  let styleSwitchTimer: ReturnType<typeof setTimeout> | null = null
+  let styleSwitchIdleHandler: (() => void) | null = null
+  let styleSwitchGeneration = 0
   let lastFocusedEl: HTMLElement | null = null
   let rebuildPending = false
   let rebuildTimer: ReturnType<typeof setTimeout> | null = null
   let initialRebuildDone = false
   let isInitializing = false
   let mapCanvas: HTMLCanvasElement | null = null
+
+  function clearLoadingTimeout() {
+    if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null }
+  }
+
+  function clearStyleSwitchBackstop() {
+    styleSwitchGeneration++
+    if (styleSwitchTimer) { clearTimeout(styleSwitchTimer); styleSwitchTimer = null }
+    if (styleSwitchIdleHandler && map) map.off('idle', styleSwitchIdleHandler)
+    styleSwitchIdleHandler = null
+  }
+
   const onWebglContextLost = (event: Event) => {
     event.preventDefault()
     console.error('[EG Maps] WebGL context lost during map rendering')
@@ -348,19 +558,19 @@ export function useMapBase(config: MapBaseConfig) {
     const items: ClusterResultItem[] = []
     if (payload.dataset === 'project-grants') {
       for (const project of projectsData.value) if (ids.has(project.project_title)) items.push({ id: project.project_title, title: project.project_title, subtitle: project.country_province, color: '#22d3ee', coordinates: [project.longitude, project.latitude] })
-      clusterPanelDataset.value = 'Project grants'
+      clusterPanelDataset.value = t('home.projectGrants')
     } else if (payload.dataset === 'active-crews') {
-      for (const crew of crewsData.value) if (ids.has(crew.id)) items.push({ id: crew.id, title: crew.region, subtitle: `${crew.activeCrews} active crews · ${crew.countries} countries`, color: '#22c55e', coordinates: [crew.longitude, crew.latitude] })
+      for (const crew of crewsData.value) if (ids.has(crew.id)) items.push({ id: crew.id, title: crew.region, subtitle: t('mapControls.clusterPanel.activeCrewsSubtitle', { crews: crew.activeCrews, countries: crew.countries }), color: '#22c55e', coordinates: [crew.longitude, crew.latitude] })
       for (const location of crewLocationsData.value) {
         const id = `${location.name}-${location.lat}-${location.lng}`
         if (ids.has(id)) items.push({ id, title: location.name, subtitle: `${location.city}, ${location.country}`, color: location.status === 'active' ? '#22c55e' : '#f59e0b', coordinates: [location.lng, location.lat] })
       }
-      clusterPanelDataset.value = 'Active crews'
+      clusterPanelDataset.value = t('nav.activeCrews')
     } else if (payload.dataset === 'endangered-species') {
       for (const species of visibleSpecies.value) if (ids.has(species.id)) items.push({ id: species.id, title: species.commonName || species.scientificName, subtitle: species.scientificName, color: '#a855f7', coordinates: [species.lng, species.lat] })
-      clusterPanelDataset.value = 'Endangered species'
+      clusterPanelDataset.value = t('nav.endangeredSpecies')
     } else {
-      clusterPanelDataset.value = 'Observatory results'
+      clusterPanelDataset.value = t('home.observatoryOfVulcan')
     }
     clusterPanelItems.value = items
     clusterPanelOpen.value = items.length > 0
@@ -415,7 +625,7 @@ export function useMapBase(config: MapBaseConfig) {
     const p = (feature.properties ?? {}) as Record<string, unknown>
     const html = getPopupContent(p)
     const coords = (feature.geometry as GeoJSON.Point).coordinates
-    culturalPopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+    culturalPopup = new maplibregl.Popup(withMapPopupSafeArea({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer()))
       .setLngLat([coords[0] as number, coords[1] as number])
       .setHTML(html)
       .setMaxWidth('none')
@@ -479,7 +689,8 @@ export function useMapBase(config: MapBaseConfig) {
         speciesIndex: isRee ? [] : visibleSpecies.value,
         species: isRee ? [] : speciesData.value,
         crews: isRee ? [] : crewsData.value,
-        crewLocations: isRee ? [] : crewLocationsData.value,
+        crewLocations: isRee ? [] : visibleCrewLocations.value,
+        crewStatuses: selectedCrewStatuses.value,
         selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
         rareEarthFeatures: isRee
           ? (props.rareEarthFiltered?.features?.length
@@ -511,7 +722,8 @@ export function useMapBase(config: MapBaseConfig) {
       speciesIndex: isRee ? [] : visibleSpecies.value,
       species: isRee ? [] : speciesData.value,
       crews: isRee ? [] : crewsData.value,
-      crewLocations: isRee ? [] : crewLocationsData.value,
+      crewLocations: isRee ? [] : visibleCrewLocations.value,
+      crewStatuses: selectedCrewStatuses.value,
       selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
       rareEarthFeatures: isRee
         ? (props.rareEarthFiltered?.features?.length
@@ -559,6 +771,17 @@ export function useMapBase(config: MapBaseConfig) {
     }
   }
 
+  function toggleCrewStatus(status: CrewStatus) {
+    const selected = new Set(selectedCrewStatuses.value)
+    if (selected.has(status)) {
+      if (selected.size === 1) return
+      selected.delete(status)
+    } else {
+      selected.add(status)
+    }
+    selectedCrewStatuses.value = (['active', 'inactive'] as const).filter(item => selected.has(item))
+  }
+
   function handleSpeciesGroupSelection(groups: string[]) {
     selectedSpeciesGroups.value = groups
   }
@@ -580,6 +803,8 @@ export function useMapBase(config: MapBaseConfig) {
     // Style already matches the target — setStyle would wipe all data
     // layers and reload tiles for no reason (reads as a provider flap).
     if (target === lastAppliedProvider && map.isStyleLoaded()) return
+    clearStyleSwitchBackstop()
+    const switchGeneration = styleSwitchGeneration
     lastAppliedProvider = target
     tileProvider.noteStyleStart()
     hasError.value = false
@@ -594,19 +819,26 @@ export function useMapBase(config: MapBaseConfig) {
       // clear the flag and re-attach the style-wiped data layers there.
       // (The style.load handler below re-attaches layers too; this is the
       // guaranteed backstop that also un-sticks the overlay.)
-      const switchTimer = setTimeout(() => {
+      styleSwitchTimer = setTimeout(() => {
+        if (styleSwitchGeneration !== switchGeneration) return
+        styleSwitchTimer = null
         // Backstop: never leave the overlay stuck if 'idle' is delayed
         // (e.g. a hung glyph/tile fetch on a poor link).
         if (isMounted) isLoading.value = false
       }, 20000)
-      map.once('idle', () => {
-        clearTimeout(switchTimer)
+      const onStyleIdle = () => {
+        if (styleSwitchGeneration !== switchGeneration) return
+        if (styleSwitchTimer) { clearTimeout(styleSwitchTimer); styleSwitchTimer = null }
+        styleSwitchIdleHandler = null
         if (!isMounted) return
         isLoading.value = false
         resyncLayersAfterStyle()
-      })
+      }
+      styleSwitchIdleHandler = onStyleIdle
+      map.once('idle', onStyleIdle)
     } catch (err) {
       console.error('[EG Maps] failed to switch tile provider style', err)
+      clearStyleSwitchBackstop()
       isLoading.value = false
     }
   }
@@ -633,7 +865,7 @@ export function useMapBase(config: MapBaseConfig) {
     const qNow = quality.settings.value
     if (qNow.showConnections && connections.showConnections.value) {
       if (activeDataset.value === 'active-crews') {
-        connections.addConnections('active-crews', [], [], crewLocationsData.value)
+        connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
       } else {
         connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
       }
@@ -661,6 +893,11 @@ export function useMapBase(config: MapBaseConfig) {
       return
     }
     if (!mapContainerRef.value) return
+
+    if (force) {
+      clearLoadingTimeout()
+      clearStyleSwitchBackstop()
+    }
 
     tStart('[perf] initMap total')
     tStart('[perf] initMap → MapLibre constructor')
@@ -697,7 +934,7 @@ export function useMapBase(config: MapBaseConfig) {
       // NOTE: SSG bakes NUXT_PUBLIC_MAPTILER_API_KEY at build time — a key
       // added only to the deploy environment after `nuxt generate` will NOT
       // reach the client bundle (it stays '' and the local fallback wins).
-      tileProvider.evaluateNetworkHints(MAPTILER_API_KEY)
+      tileProvider.evaluateNetworkHints(MAPTILER_API_KEY, offlineTiles.stats.value.cachedTiles > 0)
       if (!MAPTILER_API_KEY && import.meta.dev) {
         console.warn('[tile-provider] no MapTiler API key — using local fallback style. Set NUXT_PUBLIC_MAPTILER_API_KEY (or MAPTILER_API_KEY) before building.')
       }
@@ -708,22 +945,27 @@ export function useMapBase(config: MapBaseConfig) {
 
       // Read zoom param: 0..1 maps linearly to minZoom..maxZoom
       let initialZoom = isRee ? (isGlobe ? 4.2 : 9.5) : isMobile.value ? (isGlobe ? 1.0 : 1.2) : (isGlobe ? 1.8 : 2)
-      if (!import.meta.server) {
-        const urlZoom = route.query.zoom
-        if (urlZoom != null) {
-          const t = Math.max(0, Math.min(1, parseFloat(String(urlZoom)) || 0))
-          initialZoom = t * tileMaxZoom
-        }
+      const urlZoom = mapQueryValue('zoom')
+      if (initialCameraState.zoom !== undefined) {
+        initialZoom = initialCameraState.zoom
+      } else if (urlZoom != null) {
+        const t = Math.max(0, Math.min(1, parseFloat(String(urlZoom)) || 0))
+        initialZoom = t * tileMaxZoom
       }
 
+      registerOfflineTileProtocol(offlineTiles)
       const created = new maplibregl.Map({
         container: mapContainerRef.value,
         style: mapStyle,
         zoom: initialZoom,
-        center: isRee ? (isGlobe ? [-48, -15] : [-46.533, -21.914]) : (isGlobe ? [0, 20] : [0, 0]),
+        center: initialCameraState.center ?? (isRee ? (isGlobe ? [-48, -15] : [-46.533, -21.914]) : (isGlobe ? [0, 20] : [0, 0])),
+        bearing: initialCameraState.bearing ?? 0,
+        pitch: initialCameraState.pitch ?? 0,
         attributionControl: false,
         renderWorldCopies: !isGlobe,
         fadeDuration: 100,
+        preserveDrawingBuffer: true,
+        transformRequest: transformMapTileRequest,
         minZoom: isRee ? (isGlobe ? VULCAN_MIN_ZOOM_GLOBE : VULCAN_MIN_ZOOM_2D) : undefined,
         maxBounds: isRee && !isGlobe ? VULCAN_MAX_BOUNDS : undefined,
         maxZoom: tileMaxZoom,
@@ -735,6 +977,7 @@ export function useMapBase(config: MapBaseConfig) {
         maxPitch: qs.antialiasing ? 60 : 45,
       } as maplibregl.MapOptions & { antialias?: boolean; preferCanvas?: boolean; crossSourceCollisions?: boolean; maxPitch?: number })
       setMapInstance(created)
+      created.on('moveend', syncMapCameraToUrl)
       mapCanvas = map!.getCanvas()
       mapCanvas.addEventListener('webglcontextlost', onWebglContextLost, { passive: false })
 
@@ -744,7 +987,10 @@ export function useMapBase(config: MapBaseConfig) {
 
       created.addControl(
         new maplibregl.AttributionControl({
-          customAttribution: `EARTH GUARDIANS @ ${new Date().getFullYear()}`
+          customAttribution: [
+            `EARTH GUARDIANS @ ${new Date().getFullYear()}`,
+            '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">Geocoding: © OpenStreetMap contributors (ODbL 1.0)</a>',
+          ],
         })
       )
 
@@ -808,7 +1054,7 @@ export function useMapBase(config: MapBaseConfig) {
         tStart('[perf] initMap → rebuildMarkers')
         if (import.meta.dev) console.warn(`[useMapBase] map.on('load'): dataset=${activeDataset.value}`)
         isLoading.value = false
-        if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null }
+        clearLoadingTimeout()
         marker.init(map!)
         if (activeDataset.value === 'vulcan-observatory') {
           setupRareEarthLayers()
@@ -824,7 +1070,7 @@ export function useMapBase(config: MapBaseConfig) {
         if (activeDataset.value !== 'vulcan-observatory') {
           if (qNow.showConnections) {
             if (activeDataset.value === 'active-crews') {
-              connections.addConnections('active-crews', [], [], crewLocationsData.value)
+              connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
             } else {
               connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
             }
@@ -878,6 +1124,7 @@ export function useMapBase(config: MapBaseConfig) {
       })
 
       loadingTimeout = setTimeout(() => {
+        loadingTimeout = null
         if (isLoading.value) {
           // Tiles/style never became ready — degrade to the local fallback in
           // auto mode (MapTiler stays the default everywhere else). Only when
@@ -915,10 +1162,12 @@ export function useMapBase(config: MapBaseConfig) {
 
   /* ── lifecycle ────────────────────────────────────────────────────── */
 
-  onMounted(() => {
+  onMounted(async () => {
     isMounted = true
     checkViewportSize()
     window.addEventListener('resize', scheduleViewportCheck, { passive: true })
+    await offlineTiles.init()
+    if (!isMounted) return
     showFilterPanel.value = false
     initMap()
   })
@@ -927,8 +1176,10 @@ export function useMapBase(config: MapBaseConfig) {
     isMounted = false
     isInitializing = false
     onBeforeCleanup?.()
-    if (loadingTimeout) clearTimeout(loadingTimeout)
+    clearLoadingTimeout()
+    clearStyleSwitchBackstop()
     if (rebuildTimer) { clearTimeout(rebuildTimer); rebuildTimer = null }
+    if (shareCopiedTimer) { clearTimeout(shareCopiedTimer); shareCopiedTimer = null }
     stopFpsReporting()
     connections.cleanup()
     previewCard.close()
@@ -950,14 +1201,13 @@ export function useMapBase(config: MapBaseConfig) {
 
   /* ── watchers ─────────────────────────────────────────────────────── */
 
-  watch(locale, () => {
-    updateMarkerData()
-  })
+  // Popup/UI composables react to locale changes themselves. Marker GeoJSON
+  // contains locale-independent data, so do not reserialize large sources here.
 
-  watch(crewLocationsData, () => {
+  watch([crewLocationsData, selectedCrewStatuses], () => {
     if (!map || activeDataset.value !== 'active-crews') return
     rebuildMarkers()
-    connections.addConnections('active-crews', [], [], crewLocationsData.value)
+    connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
     if (connections.showConnections.value && quality.settings.value.showParticles) connections.startParticles()
   })
 
@@ -975,7 +1225,7 @@ export function useMapBase(config: MapBaseConfig) {
   watch([visibleSpecies, visibleProjects], () => {
     if (!map || activeDataset.value === 'vulcan-observatory') return
     if (activeDataset.value === 'active-crews') {
-      connections.addConnections('active-crews', [], [], crewLocationsData.value)
+      connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
     } else {
       connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
     }
@@ -999,12 +1249,14 @@ export function useMapBase(config: MapBaseConfig) {
   watch(connections.showConnections, () => {
     runtime.connectionsPreference.value = connections.showConnections.value
     if (activeDataset.value === 'active-crews') {
-      connections.addConnections('active-crews', [], [], crewLocationsData.value)
+      connections.addConnections('active-crews', [], [], visibleCrewLocations.value)
     } else {
       connections.addConnections(activeDataset.value as 'project-grants' | 'endangered-species', visibleProjects.value, visibleSpecies.value)
     }
     if (connections.showConnections.value && quality.settings.value.showParticles) connections.startParticles()
   })
+
+  watch([showHexGrid, connections.showConnections, selectedSpeciesGroups], syncMapCameraToUrl, { deep: true })
 
   watch(() => props.flyToTarget, (target) => {
     if (!target) return
@@ -1034,9 +1286,9 @@ export function useMapBase(config: MapBaseConfig) {
   return {
     t, locale, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,
     speciesPanel,
-    projectsData, speciesIndexData, crewsData, crewLocationsData,
+    projectsData, speciesIndexData, crewsData, crewLocationsData, visibleCrewLocations,
     filteredProjectsList, filteredSpeciesList, visibleProjects, visibleSpecies,
-    activeDataset, selectedSpeciesGroups,
+    activeDataset, selectedSpeciesGroups, selectedCrewStatuses, toggleCrewStatus,
     hasError, errorMessage, noWebglSupport, isLoading,
     clusterPanelItems, clusterPanelDataset, clusterPanelOpen, closeClusterPanel,
     showHexGrid, showFilterPanel, speciesFilterPanelRef,
@@ -1056,6 +1308,7 @@ export function useMapBase(config: MapBaseConfig) {
     handleSpeciesSelected, openRareEarthOverlay,
     handleFilterChange, handleProjectFilterChange,
     handleSearchOpenChange, handleSpeciesGroupSelection, toggleLegendGroup,
+    shareCopied, shareMap, exportMapImage, exportVisibleData, offlineTiles,
     initMap, mapRef,
     // Back-compat: `map` was a null snapshot. Expose a live getter.
     get map() { return mapRef.value },

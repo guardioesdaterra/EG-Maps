@@ -83,7 +83,6 @@ jobs:
 
       - name: 🌱 Scrape grants (standing excluded; closed + past-deadline dropped)
         run: python scripts/grants.py -o grants_export
-        continue-on-error: true
 
       - id: capture
         name: ✅ Analyze + validate grants output
@@ -96,11 +95,12 @@ jobs:
           {
             echo "export-file=$EXPORT_FILE"
           } >> "$GITHUB_OUTPUT"
-          # Analyzer prints the $GITHUB_STEP_SUMMARY section, appends
-          # accepted/open/expired/closed to $GITHUB_OUTPUT, and exits 1
-          # when a gate fails (0 accepted, or expired/closed rows leaked).
-          # __missing__ triggers the graceful no-export branch (exit 0).
-          python3 scripts/analyze_grants_export.py ${EXPORT_FILE:-__missing__} >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$EXPORT_FILE" ]; then
+            echo "::error::Grants scraper completed without producing scripts/output/grants_export_*.json"
+            exit 1
+          fi
+          # Analyzer appends counts to GITHUB_OUTPUT and exits nonzero when a gate fails.
+          python3 scripts/analyze_grants_export.py "$EXPORT_FILE" >> "$GITHUB_STEP_SUMMARY"
 
       - name: 📤 Upload grants export artifact
         if: always()
@@ -147,7 +147,6 @@ jobs:
 
       - name: 🎭 Sync cultural agents (Mapa Cultura + Floresta Ativista)
         run: python scripts/sync-cultural-agents.py
-        continue-on-error: true
 
       - id: capture
         name: ✅ Validate cultural agents output
@@ -155,15 +154,10 @@ jobs:
           # NOTE: `|| true` — see sync-grants capture (pipefail + empty glob).
           EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1 || true)
           if [ -z "$EXPORT_FILE" ]; then
-            echo "No cultural agents export file found"
             echo "export-file=" >> "$GITHUB_OUTPUT"
             echo "total=0" >> "$GITHUB_OUTPUT"
-            {
-              echo "## 🎭 Cultural agents sync"
-              echo ""
-              echo "- Result: **no export produced** (scraper may have failed — see logs)"
-            } >> "$GITHUB_STEP_SUMMARY"
-            exit 0
+            echo "::error::Cultural agents scraper completed without producing scripts/output/cultural_agents_export_*.json"
+            exit 1
           fi
           echo "export-file=$EXPORT_FILE" >> "$GITHUB_OUTPUT"
           STATS=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); agents=d.get('agents',[]); mapa=len([a for a in agents if a.get('source')=='mapa_cultura']); fa=len([a for a in agents if a.get('source')=='floresta_ativista']); print(f'Total: {len(agents)}, Mapa Cultura: {mapa}, Floresta Ativista: {fa}')" "$EXPORT_FILE")
@@ -199,6 +193,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [sync-grants, sync-culture]
+    outputs:
+      grants-push: ${{ steps.push-grants.outcome }}
+      dead-push: ${{ steps.push-dead.outcome }}
+      agents-push: ${{ steps.push-agents.outcome }}
     # Run even if one scrape failed so the surviving dataset still syncs;
     # skip only when BOTH scrapes failed.
     if: always() && (needs.sync-grants.result == 'success' || needs.sync-culture.result == 'success')
@@ -219,6 +217,8 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: 📥 Download grants export
+        if: needs.sync-grants.result == 'success'
+        id: download-grants
         uses: actions/download-artifact@v7
         with:
           name: grants-export
@@ -226,6 +226,8 @@ jobs:
         continue-on-error: true
 
       - name: 📥 Download cultural agents export
+        if: needs.sync-culture.result == 'success'
+        id: download-agents
         uses: actions/download-artifact@v7
         with:
           name: cultural-agents-export
@@ -240,29 +242,42 @@ jobs:
         continue-on-error: true
 
       - name: ☁️ Push grants to Supabase
+        id: push-grants
         continue-on-error: true
         run: |
           # NOTE: `|| true` — see sync-grants capture (pipefail + empty glob).
           EXPORT_FILE=$(ls -t scripts/output/grants_export_*.json 2>/dev/null | head -1 || true)
-          if [ -z "$EXPORT_FILE" ]; then
-            echo "No grants export file found, skipping sync"
+          if [ "$SYNC_GRANTS_RESULT" != "success" ]; then
+            echo "Skipping grants push because the scrape/validation job failed."
             exit 0
+          fi
+          if [ -z "$EXPORT_FILE" ]; then
+            echo "::error::Grants scrape succeeded but its export artifact is missing."
+            exit 1
           fi
           # Temporal-gate defense in depth: the analyzer already failed the
           # sync-grants job on expired/closed leaks — never push that export
           # to Supabase (sync script double-guards, but skip early + loudly).
-          if [ "${{ needs.sync-grants.outputs.expired }}" != "0" ] || [ "${{ needs.sync-grants.outputs.closed }}" != "0" ]; then
-            echo "::warning::Grants temporal gate leaked (expired=${{ needs.sync-grants.outputs.expired }}, closed=${{ needs.sync-grants.outputs.closed }}) — skipping Supabase push for this export"
-            exit 0
+          if [ "$GRANTS_EXPIRED" != "0" ] || [ "$GRANTS_CLOSED" != "0" ]; then
+            echo "::error::Grants temporal gate leaked (expired=$GRANTS_EXPIRED, closed=$GRANTS_CLOSED); refusing to push this export."
+            exit 1
           fi
           npx tsx scripts/sync-grants-to-supabase.ts grants "$EXPORT_FILE"
         env:
+          SYNC_GRANTS_RESULT: ${{ needs.sync-grants.result }}
+          GRANTS_EXPIRED: ${{ needs.sync-grants.outputs.expired }}
+          GRANTS_CLOSED: ${{ needs.sync-grants.outputs.closed }}
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: ☁️ Flip funder-page-closed rows
+        id: push-dead
         continue-on-error: true
         run: |
+          if [ "$SYNC_GRANTS_RESULT" != "success" ]; then
+            echo "Skipping dead-grants update because the grants scrape/validation job failed."
+            exit 0
+          fi
           DEAD_FILE=$(ls -t scripts/output/dead_*.* 2>/dev/null | head -1 || true)
           if [ -z "$DEAD_FILE" ]; then
             echo "No dead-grants sidecar, skipping mark-dead"
@@ -270,36 +285,56 @@ jobs:
           fi
           npx tsx scripts/sync-grants-to-supabase.ts mark-dead "$DEAD_FILE"
         env:
+          SYNC_GRANTS_RESULT: ${{ needs.sync-grants.result }}
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: ☁️ Push cultural agents to Supabase
+        id: push-agents
         continue-on-error: true
         run: |
           # NOTE: `|| true` — see sync-grants capture (pipefail + empty glob).
           EXPORT_FILE=$(ls -t scripts/output/cultural_agents_export_*.json 2>/dev/null | head -1 || true)
-          if [ -z "$EXPORT_FILE" ]; then
-            echo "No cultural agents export file found, skipping sync"
+          if [ "$SYNC_CULTURE_RESULT" != "success" ]; then
+            echo "Skipping cultural agents push because the scrape/validation job failed."
             exit 0
+          fi
+          if [ -z "$EXPORT_FILE" ]; then
+            echo "::error::Cultural agents scrape succeeded but its export artifact is missing."
+            exit 1
           fi
           npx tsx scripts/sync-grants-to-supabase.ts agents "$EXPORT_FILE"
         env:
+          SYNC_CULTURE_RESULT: ${{ needs.sync-culture.result }}
           SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: 📝 Summary
         if: always()
+        env:
+          GRANTS_RESULT: ${{ needs.sync-grants.result }}
+          CULTURE_RESULT: ${{ needs.sync-culture.result }}
+          PUSH_RESULT: ${{ job.status }}
+          GRANTS_PUSH: ${{ steps.push-grants.outcome }}
+          DEAD_PUSH: ${{ steps.push-dead.outcome }}
+          AGENTS_PUSH: ${{ steps.push-agents.outcome }}
         run: |
           {
             echo "## ☁️ Supabase push"
             echo ""
             echo "| Dataset | Scrape result | Push outcome |"
             echo "|---|---|---|"
-            echo "| grants | \`${{ needs.sync-grants.result }}\` (accepted: \`${{ needs.sync-grants.outputs.accepted }}\`, open: \`${{ needs.sync-grants.outputs.open }}\`, expired/closed: \`${{ needs.sync-grants.outputs.expired }}\`/\`${{ needs.sync-grants.outputs.closed }}\`) | see logs |"
-            echo "| cultural agents | \`${{ needs.sync-culture.result }}\` (total: \`${{ needs.sync-culture.outputs.total }}\`) | see logs |"
+            echo "| grants | \`$GRANTS_RESULT\` | \`$GRANTS_PUSH\` (dead sidecar: \`$DEAD_PUSH\`) |"
+            echo "| cultural agents | \`$CULTURE_RESULT\` | \`$AGENTS_PUSH\` |"
             echo ""
-            echo "_Individual push steps are \`continue-on-error\` so one failing dataset never blocks the other._"
+            echo "_Push steps run independently; any failed scrape, validation, artifact download, or database write fails this workflow._"
           } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$GRANTS_RESULT" != "success" ] || [ "$CULTURE_RESULT" != "success" ] || \
+             [ "$GRANTS_PUSH" = "failure" ] || [ "$DEAD_PUSH" = "failure" ] || \
+             [ "$AGENTS_PUSH" = "failure" ] || [ "$PUSH_RESULT" = "failure" ]; then
+            echo "::error::At least one data-sync scrape, validation, artifact, or Supabase push step failed."
+            exit 1
+          fi
 
   # ─────────────────────────────────────────────────────────────────────────
   # 2️⃣ Commit refreshed static data back so the deploy pipeline

@@ -21,13 +21,14 @@
             size="icon"
             class="map-tool-button relative"
             @click="toggleSearch"
-            :aria-label="t('mapControls.search')"
+            :aria-label="searchHeading"
+            :aria-expanded="showSearch"
           >
             <iconify-icon icon="streamline-freehand:search-magnifier" class="h-4 w-4 xs:h-5 xs:w-5" />
             <span v-if="recentSearches.length > 0" class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full" style="background: var(--accent)" />
           </UiButton>
         </template>
-        <p>{{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'vulcan-observatory' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }} <span class="ml-1" style="color: var(--text-muted)">{{ t('mapControls.keyboardShortcut') }}</span></p>
+        <p>{{ searchHeading }} <kbd class="ml-1 px-1 py-0.5 rounded text-[10px]" style="background: var(--input-bg); color: var(--text-muted)">/</kbd></p>
       </UiTooltip>
 
       
@@ -39,6 +40,7 @@
             :class="`map-tool-button ${filterOpen ? 'map-tool-button-active' : ''}`"
             @click="toggleFilterPanel"
             :aria-label="filterOpen ? t('mapControls.hideFilters') : t('mapControls.showFilters')"
+            :aria-expanded="filterOpen"
           >
             <iconify-icon icon="streamline-freehand:controls-sliders-vertical" class="h-4 w-4 xs:h-5 xs:w-5" />
           </UiButton>
@@ -55,6 +57,7 @@
             :class="`map-tool-button ${showConnections ? 'map-tool-button-active' : 'map-tool-button-muted'}`"
             @click="emit('toggle-connections')"
             :aria-label="showConnections ? t('mapControls.hideConnections') : t('mapControls.showConnections')"
+            :aria-pressed="showConnections"
           >
             <iconify-icon :icon="showConnections ? 'gis:route' : 'streamline-freehand:unlink-broken-chain-1'" class="h-4 w-4 xs:h-5 xs:w-5" />
           </UiButton>
@@ -71,6 +74,7 @@
             class="map-tool-button"
             @click="emit('toggle-hex-grid')"
             :aria-label="showHexGrid ? t('mapControls.hideHexGrid') : t('mapControls.showHexGrid')"
+            :aria-pressed="showHexGrid"
           >
             <iconify-icon v-if="showHexGrid" icon="lucide:grid-3x3" class="h-4 w-4 xs:h-5 xs:w-5" />
             <iconify-icon v-else icon="gis:layers" class="h-4 w-4 xs:h-5 xs:w-5" />
@@ -88,6 +92,7 @@
             class="map-tool-button"
             @click="toggleFullscreen"
             :aria-label="fullscreen ? t('mapControls.exitFullscreen') : t('mapControls.enterFullscreen')"
+            :aria-pressed="fullscreen"
           >
             <iconify-icon v-if="fullscreen" icon="streamline-freehand:ui-page-scroll" class="h-4 w-4 xs:h-5 xs:w-5" />
             <iconify-icon v-else icon="streamline-freehand:resize-expand-arrow" class="h-4 w-4 xs:h-5 xs:w-5" />
@@ -95,20 +100,66 @@
         </template>
         <p>{{ fullscreen ? t('mapControls.exitFullscreen') : t('mapControls.enterFullscreen') }}</p>
       </UiTooltip>
+
+      <UiTooltip :side="isMobile ? 'right' : 'left'">
+        <template #trigger>
+          <UiButton
+            variant="outline"
+            size="icon"
+            class="map-tool-button"
+            @click="emit('share')"
+            :aria-label="shareCopied ? t('mapControls.linkCopied') : t('mapControls.shareMap')"
+          >
+            <iconify-icon :icon="shareCopied ? 'lucide:check' : 'lucide:share-2'" class="h-4 w-4 xs:h-5 xs:w-5" />
+          </UiButton>
+        </template>
+        <p>{{ shareCopied ? t('mapControls.linkCopied') : t('mapControls.shareMap') }}</p>
+      </UiTooltip>
+
+      <UiTooltip :side="isMobile ? 'right' : 'left'">
+        <template #trigger>
+          <UiButton
+            variant="outline"
+            size="icon"
+            class="map-tool-button"
+            @click="emit('export')"
+            :aria-label="t('mapControls.exportMap')"
+          >
+            <iconify-icon icon="lucide:image-down" class="h-4 w-4 xs:h-5 xs:w-5" />
+          </UiButton>
+        </template>
+        <p>{{ t('mapControls.exportMap') }}</p>
+      </UiTooltip>
+
+      <UiTooltip :side="isMobile ? 'right' : 'left'">
+        <template #trigger>
+          <UiButton
+            variant="outline"
+            size="icon"
+            class="map-tool-button"
+            @click="emit('export-data')"
+            :aria-label="t('mapControls.exportData')"
+          >
+            <iconify-icon icon="lucide:download" class="h-4 w-4 xs:h-5 xs:w-5" />
+          </UiButton>
+        </template>
+        <p>{{ t('mapControls.exportData') }}</p>
+      </UiTooltip>
     </div>
 
     
     <Transition name="search-panel">
-      <div 
+      <div
         v-if="showSearch" 
+        :id="searchPanelId"
         :class="`absolute ${isMobile ? 'top-[clamp(4.75rem,12vh,7rem)] left-[max(0.5rem,env(safe-area-inset-left))] right-[max(0.5rem,env(safe-area-inset-right))] max-w-full max-h-[calc(100svh-6rem)]' : 'top-20 right-16 w-[min(20rem,calc(100vw-5rem))] max-h-[calc(100svh-8rem)]'} z-[700] panel-cyber p-2.5 xs:p-3 overflow-hidden flex flex-col`"
         role="dialog"
-        :aria-label="t('mapControls.search')"
+        :aria-labelledby="searchTitleId"
       >
         <div class="flex justify-between items-center mb-2 xs:mb-3">
-          <h3 class="text-xs xs:text-sm font-bold text-[var(--tool-btn-text)] flex items-center gap-1.5 xs:gap-2">
+          <h3 :id="searchTitleId" class="text-xs xs:text-sm font-bold text-[var(--tool-btn-text)] flex items-center gap-1.5 xs:gap-2">
             <iconify-icon icon="streamline-freehand:search-magnifier" class="h-3.5 w-3.5 xs:h-4 xs:w-4" />
-            {{ dataset === 'project-grants' ? t('mapControls.searchProjects') : dataset === 'vulcan-observatory' ? 'Search cities' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpecies') }}
+            {{ searchHeading }}
           </h3>
           <div class="flex items-center gap-1">
             <span class="text-[clamp(10px,1.5vw,13px)] text-[var(--text-muted)] hidden sm:inline">ESC</span>
@@ -123,19 +174,25 @@
             <UiInput
               ref="searchInputRef"
               type="text"
-              :placeholder="dataset === 'project-grants' ? t('mapControls.searchPlaceholder') : dataset === 'vulcan-observatory' ? 'Search Brazilian cities...' : dataset === 'active-crews' ? t('mapControls.searchCrews') : t('mapControls.searchSpeciesPlaceholder')"
+              :placeholder="searchPlaceholder"
               v-model="searchQuery"
               class="pr-8"
               :style="{ background: 'var(--input-bg)', borderColor: 'var(--input-border)', color: 'var(--input-text)' }"
               @keydown="handleSearchKeydown"
-              :aria-label="t('mapControls.search')"
+              :aria-label="dataset === 'vulcan-observatory' ? searchPlaceholder : searchHeading"
+              role="combobox"
+              aria-autocomplete="list"
+              :aria-expanded="showSearch"
+              :aria-controls="searchResultsId"
+              :aria-activedescendant="selectedIndex >= 0 && searchResults.length > 0 ? searchOptionId(selectedIndex) : undefined"
             />
             <iconify-icon v-if="!searchQuery" icon="streamline-freehand:search-magnifier" class="absolute right-2.5 top-2.5 h-4 w-4 text-[var(--text-muted)]" />
             <button 
               v-else 
+              type="button"
               class="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors p-0.5"
               @click="clearSearch"
-              :aria-label="t('general.close')"
+              :aria-label="t('observatory.clearSearch')"
             >
               <iconify-icon icon="streamline-freehand:remove-delete-sign-bold" class="h-4 w-4" />
             </button>
@@ -147,6 +204,7 @@
             :title="t('mapControls.showAll')"
             @click="toggleAllItems"
             :aria-label="t('mapControls.showAll')"
+            :aria-pressed="showAllItems"
           >
             <iconify-icon icon="streamline-freehand:lists-bullets" class="h-4 w-4" />
           </UiButton>
@@ -159,6 +217,7 @@
             <button
               v-for="recent in recentSearches.slice(0, 3)"
               :key="recent"
+              type="button"
               class="text-xs px-2 py-1 rounded transition-colors flex items-center gap-1 bg-[var(--input-bg)] text-[var(--text-muted)] hover:bg-[var(--search-result-hover-bg)] hover:text-[var(--search-result-text)]"
               @click="applyRecentSearch(recent)"
             >
@@ -179,6 +238,7 @@
 
         
         <div 
+          :id="searchResultsId"
           ref="resultsContainerRef"
           :class="`space-y-0.5 flex-1 min-h-0 ${isMobile ? 'max-h-[42vh]' : 'max-h-[clamp(16rem,28vh,20rem)]'} overflow-y-auto cyber-scrollbar pr-1`"
           role="listbox"
@@ -188,6 +248,7 @@
             <div
               v-for="(result, index) in searchResults"
               :key="`search-result-${index}`"
+              :id="searchOptionId(index)"
               :ref="(el: any) => { if (index === selectedIndex) selectedResultEl = el as Element | null }"
               :class="`group flex items-start p-2 rounded cursor-pointer transition-all duration-150 ${index === selectedIndex ? 'ring-1' : ''}`"
               :style="{
@@ -202,7 +263,7 @@
               <div class="flex-1 min-w-0">
                 <h4 class="text-sm font-medium truncate transition-colors text-[var(--search-result-text)] group-hover:text-[var(--search-result-selected-text)]">
                   {{ getResultTitle(result) }}
-                  <span v-if="isCustomResult(result)" class="ml-1.5 inline-flex items-center gap-0.5 text-[10px] px-1 py-0.5 rounded bg-[var(--tool-btn-active-bg)] text-[var(--tool-btn-active-text)]">Import</span>
+                  <span v-if="isCustomResult(result)" class="ml-1.5 inline-flex items-center gap-0.5 text-[10px] px-1 py-0.5 rounded bg-[var(--tool-btn-active-bg)] text-[var(--tool-btn-active-text)]">{{ t('mapControls.imported') }}</span>
                 </h4>
                 <div class="flex justify-between items-center">
                   <p class="text-xs text-[var(--text-muted)] flex items-center">
@@ -216,7 +277,7 @@
                     {{ getSpeciesGroup(result) }}
                   </p>
                   <p v-else-if="getCityPopulation(result)" class="text-xs text-[var(--text-muted)]">
-                    {{ getCityPopulation(result)?.toLocaleString() }} hab.
+                    {{ getCityPopulation(result)?.toLocaleString() }} {{ t('mapControls.populationUnit') }}
                   </p>
                 </div>
               </div>
@@ -224,9 +285,9 @@
             </div>
           </template>
           <template v-else>
-            <div v-if="searchQuery.length > 0" class="flex flex-col items-center justify-center py-6 text-center">
+            <div v-if="searchQuery.length > 0" class="flex flex-col items-center justify-center py-6 text-center" role="status" aria-live="polite" aria-atomic="true">
               <iconify-icon icon="streamline-freehand:search-magnifier" class="h-8 w-8 mb-2" style="color: var(--text-muted);" />
-              <p class="text-sm" style="color: var(--text-secondary);">{{ t('mapControls.noResults') }} "{{ searchQuery }}"</p>
+              <p class="text-sm" style="color: var(--text-secondary);">{{ dataset === 'vulcan-observatory' ? t('observatory.geoLocate.noResults') : t('mapControls.noResults') }} "{{ searchQuery }}"</p>
               <p class="text-xs mt-1" style="color: var(--text-muted);">{{ t('mapControls.tryDifferent') }}</p>
             </div>
             <div v-else-if="!showAllItems" class="flex flex-col space-y-3 items-center justify-center py-6">
@@ -252,12 +313,12 @@
 
         
         <div class="mt-3 pt-2 border-t flex justify-between items-center" style="border-color: var(--panel-border);">
-          <p class="text-xs" style="color: var(--text-muted);">
+          <p class="text-xs" style="color: var(--text-muted);" aria-live="polite" aria-atomic="true">
             {{ showAllItems ? t('mapControls.allItems') : searchQuery ? t('mapControls.results') : t('mapControls.recent') }}: {{ searchResults.length || recentSearches.length }}
           </p>
           <p v-if="selectedIndex >= 0 && searchResults.length > 0" class="text-xs text-[var(--tool-btn-text)] flex items-center gap-1">
             <iconify-icon icon="streamline-freehand:flip-reflect-up" class="h-3 w-3" />
-            {{ selectedIndex + 1 }} {{ t('mapControls.of') || 'of' }} {{ searchResults.length }}
+            {{ selectedIndex + 1 }} {{ t('mapControls.of') }} {{ searchResults.length }}
           </p>
         </div>
       </div>
@@ -267,7 +328,7 @@
 
 <script setup lang="ts">
 
-import { ref, watch, nextTick, computed, onMounted, onUnmounted } from 'vue'
+import { ref, watch, nextTick, computed, onMounted, onUnmounted, useId } from 'vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import { allProjectsData } from '@/lib/project-data'
@@ -300,6 +361,7 @@ interface Props {
   species?: (Species | SpeciesIndexItem)[]
   filterOpen?: boolean
   isEmbed?: boolean
+  shareCopied?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -309,6 +371,7 @@ const props = withDefaults(defineProps<Props>(), {
   dataset: 'project-grants',
   filterOpen: false,
   isEmbed: false,
+  shareCopied: false,
 })
 
 const emit = defineEmits<{
@@ -317,11 +380,31 @@ const emit = defineEmits<{
   'toggle-filter': []
   'search-open-change': [open: boolean]
   'navigate': [lat: number, lng: number]
+  'share': []
+  'export': []
+  'export-data': []
 }>()
 
 const isMobile = useMediaQuery('(max-width: 768px)')
 const { t } = useI18n()
 const { datasets: customDatasets } = useCustomData()
+const searchInstanceId = useId()
+const searchPanelId = `map-search-${searchInstanceId}`
+const searchTitleId = `${searchPanelId}-title`
+const searchResultsId = `${searchPanelId}-results`
+const searchOptionId = (index: number) => `${searchResultsId}-option-${index}`
+const searchHeading = computed(() => {
+  if (props.dataset === 'project-grants') return t('mapControls.searchProjects')
+  if (props.dataset === 'vulcan-observatory') return t('mapControls.searchCities')
+  if (props.dataset === 'active-crews') return t('mapControls.searchCrews')
+  return t('mapControls.searchSpecies')
+})
+const searchPlaceholder = computed(() => {
+  if (props.dataset === 'project-grants') return t('mapControls.searchPlaceholder')
+  if (props.dataset === 'vulcan-observatory') return t('observatory.geoLocate.cityPlaceholder')
+  if (props.dataset === 'active-crews') return t('mapControls.searchCrews')
+  return t('mapControls.searchSpeciesPlaceholder')
+})
 
 function featureTitle(f: GeoJSON.Feature): string {
   const p = f.properties || {}
@@ -406,6 +489,7 @@ const searchQuery = ref('')
 type SearchResult = ProjectData | Species | BrazilianCity | CrewRegionData | CustomSearchItem
 const searchResults = ref<SearchResult[]>([])
 const searchInputRef = ref<{ inputRef?: HTMLInputElement } | null>(null)
+const searchReturnFocus = ref<HTMLElement | null>(null)
 const selectedIndex = ref(-1)
 const selectedResultEl = ref<Element | null>(null)
 const resultsContainerRef = ref<HTMLElement | null>(null)
@@ -448,9 +532,14 @@ function clearSearch() {
   input?.focus()
 }
 
-function toggleSearch() {
-  showSearch.value = !showSearch.value
-  emit('search-open-change', showSearch.value)
+function toggleSearch(event?: MouseEvent) {
+  if (showSearch.value) {
+    closeSearch()
+    return
+  }
+  searchReturnFocus.value = (event?.currentTarget as HTMLElement | null) ?? document.activeElement as HTMLElement | null
+  showSearch.value = true
+  emit('search-open-change', true)
 }
 
 function toggleFilterPanel() {
@@ -492,7 +581,8 @@ function handleSearchKeydown(e: KeyboardEvent) {
 function scrollToSelected() {
   nextTick(() => {
     if (selectedResultEl.value && resultsContainerRef.value) {
-      selectedResultEl.value.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      const behavior = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+      selectedResultEl.value.scrollIntoView({ block: 'nearest', behavior })
     }
   })
 }
@@ -536,7 +626,7 @@ function getResultLocation(result: SearchResult): string {
   if (isCustomResult(result)) return result._customDatasetName
   if (isProjectResult(result)) return result.country_province
   if (isSpeciesResult(result)) return result.region
-  if (isCrewResult(result)) return `${result.activeCrews} active crews`
+  if (isCrewResult(result)) return `${result.activeCrews} active Crews`
   return `${result.name}, ${result.state}`
 }
 
@@ -664,13 +754,9 @@ function handleKeyboardShortcut(e: KeyboardEvent) {
 
   if (e.key === '/' && !showSearch.value) {
     e.preventDefault()
+    searchReturnFocus.value = document.activeElement as HTMLElement | null
     showSearch.value = true
     emit('search-open-change', true)
-  }
-  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-    e.preventDefault()
-    showSearch.value = !showSearch.value
-    emit('search-open-change', showSearch.value)
   }
   if (e.key === 'Escape' && showSearch.value) {
     closeSearch()
@@ -720,6 +806,11 @@ function closeSearch() {
   showAllItems.value = false
   searchResults.value = []
   emit('search-open-change', false)
+  const returnFocus = searchReturnFocus.value
+  searchReturnFocus.value = null
+  nextTick(() => {
+    if (returnFocus?.isConnected) returnFocus.focus()
+  })
 }
 
 </script>

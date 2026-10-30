@@ -6,7 +6,7 @@
  */
 <template>
   <main id="main-content" tabindex="-1" class="flex min-h-[100svh] items-center justify-center bg-[var(--bg-primary)] section-padding-x py-[max(4.75rem,8vh)] pb-[max(7rem,env(safe-area-inset-bottom))] text-[var(--text-primary)]">
-    <section class="w-container-narrow max-h-[calc(100svh-9rem)] overflow-hidden rounded-[14px] border border-white/10 bg-white/[0.06] backdrop-blur-[20px] backdrop-saturate-[1.5] text-[var(--text-primary)] shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:border-white/[0.06] dark:bg-white/[0.03] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
+    <section class="card w-container-narrow max-h-[calc(100svh-9rem)] overflow-hidden rounded-[14px] text-[var(--text-primary)] shadow-lg">
       <header class="border-b-2 border-[var(--border-color)] card-padding-lg">
         <div class="flex flex-col gap-fluid sm:flex-row sm:items-start sm:justify-between">
           <div class="min-w-0 flex-1">
@@ -24,7 +24,7 @@
         </div>
       </header>
 
-      <div class="grid grid-cols-2 border-b border-white/10 dark:border-white/[0.06] sm:grid-cols-5">
+      <div class="grid grid-cols-2 border-b border-[var(--border-color)] sm:grid-cols-5">
         <button
           v-for="tab in tabs"
           :key="tab.id"
@@ -44,10 +44,10 @@
           <div>
             <h2 class="text-fluid-3xl font-black leading-tight">{{ t('info.projectGrants') }} + {{ t('info.endangeredSpecies') }}</h2>
             <p class="mt-2 xs:mt-3 text-fluid-sm leading-7 text-[var(--text-secondary)]">
-              The app brings Earth Guardians project grant locations and endangered species records into the same map language: searchable points, 2D views, globe views, shared connection lines, and animated particles.
+              The app brings Earth Guardians project grant locations and Endangered Species data into the same map language: searchable points, 2D views, globe views, shared connection lines, and animated particles.
             </p>
           </div>
-          <div class="grid min-w-0 grid-cols-2 border border-white/10 dark:border-white/[0.06] text-center">
+          <div class="grid min-w-0 grid-cols-2 border border-[var(--border-color)] text-center">
             <div class="border-b border-r border-[var(--border-color)] p-3 xs:p-4">
               <p class="text-fluid-3xl font-black leading-none">{{ projectCount }}</p>
               <p class="mt-1 text-[clamp(10px,1.5vw,13px)] xs:text-[clamp(11px,1.6vw,14px)] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">{{ t('info.projects') }}</p>
@@ -301,7 +301,7 @@ const sourceGroups = computed<Array<{ title: string; items: SourceItem[] }>>(() 
   {
     title: t('info.sources.grants'),
     items: [
-      { name: 'Project grants', publisher: 'Earth Guardians crews & staff', license: 'Curated dataset · credit EG', url: 'https://www.earthguardians.org/crews', note: 'Grant locations and beneficiary figures as reported by the crews.' },
+      { name: 'Project grants', publisher: 'Earth Guardians Crews & staff', license: 'Curated dataset · credit EG', url: 'https://www.earthguardians.org/crews', note: 'Grant locations and beneficiary figures as reported by the Crews.' },
     ],
   },
   {

@@ -5,13 +5,15 @@
     "projectGrants": "प्रोजेक्ट अनुदान",
     "endangeredSpecies": "लुप्तप्राय प्रजातियाँ",
     "observatoryOfVulcan": "वल्कन वेधशाला",
-    "activeCrews": "सक्रिय दल",
+    "activeCrews": "दल मानचित्र",
     "egGrants": "EG Grants",
     "crews": "दल",
     "joinEarthGuardians": "अर्थ गार्जियंस में शामिल हों",
     "switchToLight": "लाइट मोड पर स्विच करें",
     "switchToDark": "डार्क मोड पर स्विच करें",
-    "language": "भाषा"
+    "language": "भाषा",
+    "privacy": "गोपनीयता",
+    "terms": "शर्तें"
   },
   "home": {
     "title": "अर्थ गार्जियंस",
@@ -25,11 +27,11 @@
     "speciesDesc": "दुनिया भर में गंभीर रूप से लुप्तप्राय प्रजातियों और उनके आवासों की खोज करें।",
     "observatoryTitle": "वल्कन वेधशाला",
     "observatoryDesc": "ब्राज़ील दुर्लभ मृदा खनन दावे — पूंजी आक्रमण, कॉर्पोरेट नेटवर्क, सैन्य हित और सामाजिक-पर्यावरणीय प्रभाव।",
-    "activeCrewsTitle": "सक्रिय दल",
-    "activeCrewsDesc": "पृथ्वी रक्षकों के 7 क्षेत्रों में सक्रिय दलों का अन्वेषण करें — 131 दल, 1,241 सदस्य, 47 देश।",
+    "activeCrewsTitle": "दल मानचित्र",
+    "activeCrewsDesc": "Earth Guardians के 7 क्षेत्रों में फैले दल नेटवर्क को जानें — 131 सक्रिय दल, 1,241 सदस्य और 47 देश।",
     "projectsCount": "प्रोजेक्ट",
     "beneficiariesCount": "लाभार्थी",
-    "speciesCount": "प्रजाति रिकॉर्ड",
+    "speciesCount": "प्रलेखित प्रजातियाँ",
     "groupsCount": "समूह",
     "allValue": "सभी",
     "activeCrewsCount": "सक्रिय दल",
@@ -62,8 +64,8 @@
     "campaignsTitle": "अभियान",
     "campaignsDesc": "EG अभियान और उनके पीछे के मानचित्र — जैव विविधता दिवस के लिए बनाया गया लुप्तप्राय प्रजाति मानचित्र सहित।",
     "campaignsKicker": "जैव विविधता दिवस · प्रजाति मानचित्र अंदर",
-    "crewProjectsTitle": "दल परियोजनाएँ",
-    "crewProjectsDesc": "सिएरा लियोन और टोगो में दल-नेतृत्व पुनरुद्धार — सामुदायिक प्रबंधन के तहत मैंग्रोव, वन और खेत।",
+    "crewProjectsTitle": "बड़े पैमाने पर",
+    "crewProjectsDesc": "इकोसिस्टम पुनर्स्थापन और पुनर्योजी कृषि से लेकर जलवायु शिक्षा, आर्टिविज़्म और सामुदायिक लचीलेपन तक, क्रू के विविध कार्यों को जानें।",
     "vulcanTitle": "वल्कन वेधशाला",
     "vulcanDesc": "ब्राज़ील में पोसोस डे काल्डास के आसपास दुर्लभ-मृदा खनन दावों का सामुदायिक मानचित्र — दावे, जल, संरक्षित क्षेत्र और सांस्कृतिक जीवन।",
     "vulcanFocusValue": "Planalto Vulcânico",
@@ -94,13 +96,15 @@
     "skillBuilding": "कौशल विकास",
     "joinGlobal": "वैश्विक नेटवर्क से जुड़ें",
     "youthLed": "युवा-नेतृत्व कार्रवाई",
-    "observatoryOfVulcan": "वल्कन वेधशाला"
+    "observatoryOfVulcan": "वल्कन वेधशाला",
+    "sections": "अनुभाग"
   },
   "mapControls": {
     "search": "खोजें",
     "searchProjects": "प्रोजेक्ट खोजें",
     "searchSpecies": "प्रजाति खोजें",
     "searchCrews": "दल खोजें",
+    "searchCities": "शहर खोजें",
     "searchPlaceholder": "नाम या स्थान से खोजें...",
     "searchSpeciesPlaceholder": "नाम या क्षेत्र से खोजें...",
     "showAll": "सभी दिखाएं",
@@ -123,7 +127,53 @@
     "of": "का",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "या सभी ब्राउज़ करने के लिए सूची खोलें",
-    "searchResults": "खोज परिणाम"
+    "searchResults": "खोज परिणाम",
+    "nearby": "आस-पास",
+    "nearbyLabel": "आस-पास के दल, प्रोजेक्ट और अभियान खोजें",
+    "offlineCachedData": "ऑफ़लाइन मोड — कैश किया गया डेटा उपलब्ध रहेगा",
+    "nearbyPanel": {
+      "eyebrow": "आस-पास देखें",
+      "title": "अपने पास कार्रवाई खोजें",
+      "consentTitle": "क्या आपका स्थान इस्तेमाल करें?",
+      "consentDescription": "हम आपके स्थान का उपयोग केवल इसी ब्राउज़र में आस-पास के दलों और प्रोजेक्ट को क्रमबद्ध करने के लिए करते हैं। इसे Earth Guardians को नहीं भेजा जाता और यह ऐप इसे संग्रहीत नहीं करता।",
+      "consentLabel": "मैं इस सत्र के लिए इस मानचित्र के साथ अपना अनुमानित स्थान साझा करने की सहमति देता/देती हूँ।",
+      "locating": "स्थान खोज रहे हैं…",
+      "findAction": "आस-पास की कार्रवाई खोजें",
+      "locationError": "स्थान की अनुमति नहीं दी गई। आप इसे ब्राउज़र सेटिंग में सक्षम करके फिर कोशिश कर सकते हैं।",
+      "locationActive": "स्थान सक्रिय · केवल अनुमानित",
+      "clearLocation": "वर्तमान स्थान हटाएं",
+      "categories": "आस-पास की श्रेणियां",
+      "crews": "दल",
+      "projects": "प्रोजेक्ट",
+      "campaigns": "अभियान",
+      "noCrews": "निर्देशांकों वाले दलों के स्थान अभी उपलब्ध नहीं हैं।",
+      "noProjects": "प्रोजेक्ट के स्थान अभी उपलब्ध नहीं हैं।",
+      "biodiversity": "लुप्तप्राय प्रजातियां",
+      "biodiversityDesc": "वैश्विक जैव विविधता और आवासों के लिए कार्रवाई।",
+      "chooseAction": "अभी कार्रवाई चुनें",
+      "chooseActionDesc": "युवाओं के नेतृत्व में जलवायु न्याय और प्रत्यक्ष कार्रवाई।",
+      "solutions": "टिकाऊ समाधान",
+      "solutionsDesc": "समुदाय-स्तरीय कचरा प्रबंधन और लचीलेपन के समाधान।"
+    },
+    "imported": "आयातित",
+    "populationUnit": "निवासी",
+    "clusterPanel": {
+      "title": "क्लस्टर परिणाम",
+      "count": "क्लस्टर परिणाम: {count}",
+      "copyLink": "क्लस्टर लिंक कॉपी करें",
+      "linkCopied": "क्लस्टर लिंक कॉपी किया गया",
+      "close": "क्लस्टर परिणाम बंद करें",
+      "searchLabel": "क्लस्टर परिणाम खोजें",
+      "searchPlaceholder": "इस क्लस्टर में खोजें…",
+      "visibleResults": "{count} दृश्यमान क्लस्टर परिणाम",
+      "empty": "इस खोज से कोई परिणाम मेल नहीं खाता।",
+      "activeCrewsSubtitle": "{crews} सक्रिय दल · {countries} देश"
+    },
+    "shareMap": "मानचित्र साझा करें",
+    "linkCopied": "लिंक कॉपी किया गया",
+    "exportMap": "मानचित्र छवि निर्यात करें",
+    "exportData": "दिखाई देने वाला डेटा GeoJSON के रूप में निर्यात करें",
+    "legend": "मानचित्र संकेत"
   },
   "mapTiles": {
     "maptiler": "सैटेलाइट",
@@ -180,7 +230,7 @@
     "close": "बंद करें",
     "markerLegend": "मार्कर रंग",
     "markerSize": "मार्कर आकार",
-    "activeCrewsTitle": "सक्रिय दल",
+    "activeCrewsTitle": "दल मानचित्र",
     "regions": "क्षेत्र",
     "crews": "दल",
     "members": "सदस्य",
@@ -204,7 +254,9 @@
     "switchTo2D": "2D नक्शा दृश्य पर स्विच करें",
     "switchTo3D": "3D ग्लोब दृश्य पर स्विच करें",
     "view2D": "2D नक्शा",
-    "view3D": "3D ग्लोब"
+    "view3D": "3D ग्लोब",
+    "reloadPage": "पृष्ठ पुनः लोड करें",
+    "allSpeciesLoaded": "प्रजातियों का सभी डेटा लोड हो गया है"
   },
   "project": {
     "directBeneficiaries": "प्रत्यक्ष लाभार्थी",
@@ -241,7 +293,9 @@
     "ownProjectsRegionTitle": "स्थलीय दल परियोजनाएँ",
     "crewProjectBadge": "दल परियोजना",
     "moreProjects": "और जुड़े प्रोजेक्ट",
-    "pageOf": "पृष्ठ {page} / {pages}"
+    "pageOf": "पृष्ठ {page} / {pages}",
+    "crewsInRegion": "के दल {region}",
+    "crewsInRegionHint": "इस क्षेत्र के सभी दल — विवरण के लिए एक चुनें"
   },
   "taxonomy": {
     "Mammal": "स्तनधारी",
@@ -268,7 +322,10 @@
       "illegal": "अवैध",
       "env": "पर्यावरण जोखिम",
       "network": "नेटवर्क",
-      "timeline": "टाइमलाइन"
+      "timeline": "टाइमलाइन",
+      "power": "शक्ति",
+      "territory": "क्षेत्र",
+      "culture": "संस्कृति"
     },
     "dangerPanel": {
       "title": "सबसे खतरनाक उद्यम",
@@ -310,7 +367,11 @@
       "chinaBanTitle": "चीन निर्यात प्रतिबंध (अक्टूबर 2025)",
       "chinaBanBody": "चीन ने अमेरिका को 12/17 REE तत्वों के निर्यात पर प्रतिबंध लगाया। अमेरिकी हथियारों का 78% चीनी REE पर निर्भर है।",
       "title": "शीर्षक",
-      "empty": "कोई डेटा नहीं"
+      "empty": "कोई डेटा नहीं",
+      "liveTitle": "लाइव: यह क्षेत्र",
+      "liveClaims": "महत्वपूर्ण दावे",
+      "liveArea": "महत्वपूर्ण क्षेत्र",
+      "liveUs": "अमेरिका से जुड़ा"
     },
     "illegal": {
       "landSpec": "भूमि सट्टा",
@@ -371,7 +432,16 @@
       "title": "दावों की टाइमलाइन (2000–2026)",
       "claims": "{count} दावे",
       "cumulative": "संचयी {count}",
-      "empty": "कोई डेटा नहीं"
+      "empty": "कोई डेटा नहीं",
+      "total": "कुल",
+      "readStory": "कहानी पढ़ें",
+      "hideStory": "Hide story",
+      "footer": "Yearly new दावे from ANM public records; the running कुल compounds each year.",
+      "narrativeStart": "baseline: a few dozen दावे a year — rare earths not yet strategic.",
+      "narrative2010": "China bans rare-earth exports to Japan, the first warning shot — दावे jump past 500.",
+      "narrative2017": "the US declares rare earths critical (EO 13817); China threatens a US ban और the Pentagon starts investing.",
+      "narrative2021": "supercycle और Brazil rush — lithium और ASX juniors invade; 2023 peaks at 4,213 दावे as the US DFC funds Serra Verde.",
+      "narrative2024": "backlash: prosecutors challenge licensing और Operação Rejeito arrests an ANM director, while China bans 7 rare-earth elements."
     },
     "actions": {
       "verify": "ANM पर सत्यापित करें",
@@ -391,7 +461,14 @@
       "heatmap": "घनत्व हीटमैप",
       "cultural": "संस्कृति और समुदाय",
       "waterBodies": "जल निकाय",
-      "protectedAreas": "संरक्षित क्षेत्र"
+      "protectedAreas": "संरक्षित क्षेत्र",
+      "conservationUnits": "संरक्षण इकाइयाँ",
+      "bufferZones": "बफ़र ज़ोन",
+      "protectedSearch": "संरक्षित क्षेत्र और बफ़र ज़ोन",
+      "noProtectedSearch": "कोई मेल खाता संरक्षित क्षेत्र नहीं।",
+      "statusTitle": "परत की स्थिति",
+      "statusFailed": "विफल",
+      "foreignHeld": "विदेशी-धारित दावे"
     },
     "search": "उद्यम, पदार्थ, राज्य खोजें...",
     "legend": {
@@ -429,7 +506,13 @@
       "year": "वर्ष",
       "unknown": "अज्ञात",
       "lastEventActive": "सक्रिय",
-      "overlaps": "ओवरलैप"
+      "overlaps": "ओवरलैप",
+      "stackedLayers": "ओवरलैपिंग परतें",
+      "tabClaim": "दावा",
+      "tabBoundary": "सीमा",
+      "tabWater": "जल",
+      "tabConflict": "संघर्ष",
+      "tabTerrain": "भू-भाग"
     },
     "myTerritory": {
       "title": "मेरा क्षेत्र",
@@ -674,7 +757,15 @@
         "unnamed": "अनाम प्रविष्टि",
         "unknownSource": "अज्ञात",
         "pagePrev": "पिछला पृष्ठ",
-        "pageNext": "अगला पृष्ठ"
+        "pageNext": "अगला पृष्ठ",
+        "agentsLoading": "सांस्कृतिक एजेंट लोड हो रहे हैं…",
+        "agentsRetry": "फिर कोशिश करें",
+        "families": "मार्कर परिवार",
+        "familyAgents": "सांस्कृतिक एजेंट",
+        "familySpaces": "सांस्कृतिक स्थान",
+        "familyIndigenous": "स्वदेशी और मूल निवासी",
+        "sortFamily": "परिवार",
+        "clearFilters": "साफ़ करें"
       },
       "community": {
         "eyebrow": "जीवंत वेधशाला",
@@ -690,24 +781,82 @@
         "methodologyText": "डेटा सार्वजनिक रिकॉर्ड और सामुदायिक स्रोतों से जोड़ा गया है। इसे जाँच के निमंत्रण की तरह लें, सामुदायिक सहमति या कानूनी निर्धारण के विकल्प की तरह नहीं।",
         "monitor": "क्षेत्र मॉनिटर खोलें",
         "sources": "डेटा स्रोत देखें"
+      },
+      "tabs": {
+        "label": "वेधशाला जानकारी",
+        "territory": "क्षेत्र",
+        "culture": "संस्कृति",
+        "power": "शक्तियाँ",
+        "timeline": "समयरेखा"
       }
     },
     "error": {
       "loadFailed": "वेधशाला डेटा लोड विफल",
       "retry": "पुनः प्रयास करें"
     },
-    "clearSearch": "खोज साफ़ करें"
+    "clearSearch": "खोज साफ़ करें",
+    "territory": {
+      "headline": "ज़मीन पर दावे",
+      "claims": "दावे",
+      "boundaries": "सीमाएँ",
+      "area": "दावे का क्षेत्रफल",
+      "withOverlaps": "ओवरलैप सहित",
+      "synced": "ANM सिंक",
+      "noBoundaries": "दावों की सीमाएँ लोड नहीं हुईं — केवल बिंदु हैं। नीचे परत की स्थिति देखें।",
+      "bySubstance": "पदार्थ के अनुसार दावे",
+      "overlapsTitle": "खनन × क्षेत्र ओवरलैप",
+      "noOverlaps": "लोड किए गए दावों के लिए कोई क्षेत्रीय ओवरलैप दर्ज नहीं है।",
+      "overlappedBy": "{count} ओवरलैप वाले दावे",
+      "overlappingClaims": "ओवरलैप वाले दावे",
+      "protectedTitle": "संरक्षित क्षेत्र",
+      "source": "स्रोत",
+      "noProtected": "लोड किए गए डेटासेट में कोई संरक्षित क्षेत्र नहीं है।",
+      "watersTitle": "दबाव में जलस्रोत",
+      "noWaters": "अभी तक किसी नामित जलस्रोत का आकलन नहीं हुआ — जल परत अभी लोड हो रही है।",
+      "watersLegend": "दावाs within 2km press directly (drawdown, runoff); within 5km share aquifer or sub-basin.",
+      "pressure": "दबाव",
+      "watch": "निगरानी",
+      "claims2km": "दावे ≤2km",
+      "claims5km": "दावे ≤5km",
+      "flyToWater": "Fly to {name}",
+      "dossierDownload": "साक्ष्य डॉसियर निर्यात करें",
+      "dossierCopy": "डॉसियर कॉपी करें",
+      "dossierCopied": "कॉपी किया गया!",
+      "searchPlaceholder": "Search दावे, holders, processos…",
+      "sobDemanda": "Sob Demऔरa only",
+      "filtersActive": "{count} फ़िल्टर सक्रिय",
+      "pinTitle": "निगरानी: आपका स्थान",
+      "pinBody": "{count} दावे within 10km of {label}.",
+      "pinNearest": "निकटतम: {processo} · {holder} · {km}km"
+    },
+    "claimIntel": {
+      "holderTitle": "धारक का रिकॉर्ड",
+      "claims": "दावे",
+      "territoryTitle": "क्षेत्रीय ओवरलैप"
+    },
+    "power": {
+      "noData": "गहन विश्लेषण अभी लोड नहीं हुआ।",
+      "militaryTitle": "सैन्य-दृष्टि से महत्वपूर्ण प्रभाव",
+      "criticalClaims": "महत्वपूर्ण दावे",
+      "criticalArea": "महत्वपूर्ण क्षेत्र",
+      "usConnected": "अमेरिका से जुड़ा",
+      "foreignTitle": "विदेशी पूंजी का हिस्सा",
+      "sigiloTitle": "गोपनीयता (sigilo) वाले दावे",
+      "sigiloBody": "{total} दावे under secrecy ({pct}%) covering {area} ha — hidden holders, hidden substances.",
+      "topTitle": "सबसे संदिग्ध धारक",
+      "claims": "दावे"
+    }
   },
   "loading": {
     "projectGrantsMap": "प्रोजेक्ट अनुदान नक्शा लोड हो रहा है",
     "projectGrantsGlobe": "प्रोजेक्ट अनुदान ग्लोब लोड हो रहा है",
-    "endangeredSpeciesMap": "लुप्तप्राय प्रजाति नक्शा लोड हो रहा है",
+    "endangeredSpeciesMap": "लुप्तप्राय प्रजातियाँ लोड हो रही हैं",
     "endangeredSpeciesGlobe": "लुप्तप्राय प्रजाति ग्लोब लोड हो रहा है",
     "observatoryOfVulcan": "वल्कन वेधशाला लोड हो रही है",
     "observatoryOfVulcanGlobe": "वल्कन वेधशाला ग्लोब लोड हो रहा है",
-    "activeCrewsMap": "सक्रिय दल मानचित्र लोड हो रहा है",
+    "activeCrewsMap": "दल मानचित्र लोड हो रहा है",
     "initializingVisualization": "इंटरैक्टिव विज़ुअलाइज़ेशन प्रारंभ हो रहा है...",
-    "activeCrewsGlobe": "सक्रिय दल ग्लोब"
+    "activeCrewsGlobe": "3D दल मानचित्र लोड हो रहा है"
   },
   "error": {
     "pageNotFound": "पृष्ठ नहीं मिला",
@@ -764,10 +913,21 @@
       "grants": "अनुदान",
       "species": "प्रजातियाँ",
       "mains": "मुख्य",
-      "feedback": "प्रतिक्रिया"
+      "feedback": "प्रतिक्रिया",
+      "sources": "स्रोत"
     },
     "shareCorrections": "मानचित्र सुधारने हेतु सुधार, छूटा डेटा या इंटरैक्शन विचार साझा करें।",
-    "homeLink": "मुख्य पृष्ठ"
+    "homeLink": "मुख्य पृष्ठ",
+    "sources": {
+      "title": "डेटा स्रोत और लाइसेंस",
+      "intro": "Every layer on EG-Maps comes from a named publisher. This tab lists them all — who publishes each dataset, under which license, और how you may reuse it for research और community work.",
+      "observatory": "Vulcan Observatory — mining & territory",
+      "species": "लुप्तप्राय प्रजातियाँ",
+      "grants": "प्रोजेक्ट अनुदान",
+      "basemap": "बेसमैप, इमेजरी और मैप इंजन",
+      "reuseTitle": "Licenses & reuse for research और community tools",
+      "openSource": "ओपन सोर्स"
+    }
   },
   "campaigns": {
     "title": "अभियान",
@@ -813,10 +973,11 @@
     "crewActionDesc": "EG दल स्वस्थ, न्यायपूर्ण और टिकाऊ भविष्य के लिए कार्रवाई करने वाले युवा-नेतृत्व समूह हैं। दलों के पास अपने समुदायों को प्रभावित करने वाले जलवायु मुद्दों के जवाब में अपनी परियोजनाएँ और पहल आगे बढ़ाने की क्षमता है।",
     "ctaJoinTitle": "आंदोलन से जुड़ें",
     "ctaJoinDesc": "हमारे ग्रह के भविष्य के लिए कार्रवाई कर रहे युवा नेताओं के वैश्विक नेटवर्क का हिस्सा बनें।",
-    "joinCrew": "दल शुरू करें"
+    "joinCrew": "दल शुरू करें",
+    "openSpeciesMap": "लुप्तप्राय प्रजातियाँ देखें"
   },
   "crewProjects": {
-    "title": "दल परियोजनाएँ",
+    "title": "बड़े पैमाने पर",
     "description": "दुनिया भर में EG दलों के नेतृत्व वाली बड़े और छोटे पैमाने की परियोजनाएँ, युवा-नेतृत्व जलवायु कार्रवाई का प्रभाव दर्शाती हैं।",
     "largeScaleTitle": "बड़े पैमाने का दल प्रभाव",
     "largeScaleDesc": "दलों की प्रमुख पहल जिन्होंने कई देशों में महत्वपूर्ण पर्यावरणीय और सामुदायिक प्रभाव डाला है।",
@@ -925,7 +1086,34 @@
     "joinCrew": "दल शुरू करें या जुड़ें",
     "moreTitle": "2023 से सत्र",
     "moreDesc": "अनुदान लेखन, COP तैयारी, डेटा विज़ुअलाइज़ेशन, जलवायु न्याय और अधिक। झलकियों, क्लिप और आगामी तिथियों हेतु फ़ॉलो करें।",
-    "viewOnInstagram": "Instagram पर देखें"
+    "viewOnInstagram": "Instagram पर देखें",
+    "ep5Title": "परिवर्तनकारी नेतृत्व",
+    "ep5Speaker": "with Rejoice — अफ़्रीका RCC",
+    "ep5Desc": "What it takes to inspire change, foster resilient community leadership, और transform local action into lasting movement power.",
+    "ep5Time": "Sunday, September 20, 2026 · 12:00 PM EST | 4:00 PM UTC (GMT)",
+    "flyer": "फ़्लायर",
+    "series2025Title": "वैश्विक Masterclass Series · 2025 season",
+    "series2025Desc": "Five sessions from the 2025 season — empathy, volunteer leadership, volunteerism in action, biodiversity governance, और digital tools. Recordings, slide decks और flyers below.",
+    "gm5Date": "2025",
+    "gm5Title": "Google Workspace Essentials: Mastering Gmail, Docs, Sheets, Drive, और Calendar",
+    "gm5Speaker": "with Emmy Scott · hosted by Moudjiba",
+    "gm5Desc": "A practical walkthrough of the Google Workspace essentials for Crew work — Gmail, Docs, Sheets, Drive, और Calendar — with live Q&A.",
+    "gm4Date": "September 28, 2025",
+    "gm4Title": "Rio, the CBD & Beyond: A Masterclass on वैश्विक Biodiversity Governance",
+    "gm4Speaker": "with GYBN USA · hosted by Moudjiba",
+    "gm4Desc": "How global biodiversity governance works — from the Rio Earth Summit to the Convention on Biological Diversity और beyond — with live Q&A.",
+    "gm3Date": "July 13, 2025",
+    "gm3Title": "Volunteerism और Social Change: How to Use Your Time और Talents to Make a Difference in the World",
+    "gm3Speaker": "with Meg Ferrigno — EG Board Director, founder of Purelऔर Project और Moonpads · hosted by Moudjiba",
+    "gm3Desc": "How to use your time और talents to make a difference — volunteerism as a driver of social change — with live Q&A.",
+    "gm2Date": "2025",
+    "gm2Title": "Leading और Managing a Team of Volunteers",
+    "gm2Speaker": "with Ms Rejoice A. Sosu-Ketek",
+    "gm2Desc": "No two volunteers are the same — how to build a strong volunteer team, meet the challenges of managing volunteers, और lead with the right approaches और values.",
+    "gm1Date": "2025",
+    "gm1Title": "Unlock Deeper Connections — Master the Art of Empathy",
+    "gm1Speaker": "with Louka",
+    "gm1Desc": "Master the art of empathy to unlock deeper connections in your community और Crew work."
   },
   "a11y": {
     "skipToContent": "मुख्य सामग्री पर जाएं"
@@ -1240,7 +1428,7 @@
     "crewSignupError": "कुछ गलत हुआ। पुनः प्रयास करें।",
     "crewSignupAlreadyRegistered": "आप पहले से पंजीकृत हैं!",
     "crewSignupContactCrews": "फ़ॉर्म में परेशानी? संपर्क करें",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "गोपनीयता नीति",
     "crewSignupRequired": "आवश्यक",
     "crewSignupBackToPortal": "डैशबोर्ड पर वापस",
@@ -1404,7 +1592,7 @@
       "description": "गंभीर रूप से लुप्तप्राय प्रजाति आवासों का 3D ग्लोब दृश्य।"
     },
     "endangeredSpecies2d": {
-      "title": "लुप्तप्राय प्रजातियाँ — 2D मानचित्र",
+      "title": "लुप्तप्राय प्रजातियाँ — 2D",
       "description": "दुनिया भर में लुप्तप्राय प्रजाति स्थानों का 2D मानचित्र दृश्य।"
     },
     "observatory3d": {

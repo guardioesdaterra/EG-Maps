@@ -5,13 +5,15 @@
     "projectGrants": "プロジェクト助成金",
     "endangeredSpecies": "絶滅危惧種",
     "observatoryOfVulcan": "バルカン観測所",
-    "activeCrews": "アクティブクルー",
+    "activeCrews": "クルーマップ",
     "egGrants": "EG助成金",
     "crews": "クルー",
     "joinEarthGuardians": "アースガーディアンズに参加",
     "switchToLight": "ライトモードに切り替え",
     "switchToDark": "ダークモードに切り替え",
-    "language": "言語"
+    "language": "言語",
+    "privacy": "プライバシー",
+    "terms": "利用規約"
   },
   "home": {
     "title": "アースガーディアンズ",
@@ -25,11 +27,11 @@
     "speciesDesc": "世界中の深刻な絶滅の危機にある種とその生息地を発見できます。",
     "observatoryTitle": "バルカン観測所",
     "observatoryDesc": "ブラジルの希土類鉱業権 — 資本侵攻、企業ネットワーク、軍事利益、社会環境への影響。",
-    "activeCrewsTitle": "アクティブクルー",
-    "activeCrewsDesc": "アースガーディアンズのアクティブクルーを7つの地域で探索 — 131のクルー、1,241人のメンバー、47カ国に広がっています。",
+    "activeCrewsTitle": "クルーマップ",
+    "activeCrewsDesc": "Earth Guardiansの7地域に広がるクルーネットワークを探索 — 131のアクティブクルー、1,241人のメンバー、47カ国。",
     "projectsCount": "プロジェクト",
     "beneficiariesCount": "受益者",
-    "speciesCount": "種の記録",
+    "speciesCount": "記録された種",
     "groupsCount": "グループ",
     "allValue": "すべて",
     "activeCrewsCount": "アクティブクルー",
@@ -62,8 +64,8 @@
     "campaignsTitle": "キャンペーン",
     "campaignsDesc": "EGのキャンペーンとその背景にあるマップ — 生物多様性の日のために作られた絶滅危惧種マップを含みます。",
     "campaignsKicker": "生物多様性の日 · 絶滅危惧種マップを収録",
-    "crewProjectsTitle": "クルループロジェクト",
-    "crewProjectsDesc": "Sierra LeoneとTogoにおけるクルー主導の再生 — コミュニティ管理のもとにあるマングローブ、森林、農場。",
+    "crewProjectsTitle": "大規模",
+    "crewProjectsDesc": "生態系の回復や再生型農業から、気候教育、アーティビズム、地域社会のレジリエンス向上まで、クルーの幅広い活動を紹介します。",
     "vulcanTitle": "バルカン観測所",
     "vulcanDesc": "ブラジル・Poços de Caldas周辺の希土類鉱業権のコミュニティマップ — 申請、水、保護地域、文化的な暮らし。",
     "vulcanFocusValue": "Planalto Vulcânico",
@@ -94,13 +96,15 @@
     "skillBuilding": "スキル習得",
     "joinGlobal": "グローバルネットワークに参加",
     "youthLed": "若者主導のアクション",
-    "observatoryOfVulcan": "バルカン観測所"
+    "observatoryOfVulcan": "バルカン観測所",
+    "sections": "セクション"
   },
   "mapControls": {
     "search": "検索",
     "searchProjects": "プロジェクトを検索",
     "searchSpecies": "種を検索",
     "searchCrews": "クルーを検索",
+    "searchCities": "都市を検索",
     "searchPlaceholder": "名前または場所で検索...",
     "searchSpeciesPlaceholder": "名前または領域で検索...",
     "showAll": "すべて表示",
@@ -123,7 +127,53 @@
     "of": "/",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "またはリストを開いてすべて閲覧",
-    "searchResults": "検索結果"
+    "searchResults": "検索結果",
+    "nearby": "近く",
+    "nearbyLabel": "近くのクルー、プロジェクト、キャンペーンを探す",
+    "offlineCachedData": "オフラインモード — キャッシュ済みデータは引き続き利用できます",
+    "nearbyPanel": {
+      "eyebrow": "近くを探索",
+      "title": "近くのアクションを探す",
+      "consentTitle": "位置情報を使用しますか？",
+      "consentDescription": "近くのクルーやプロジェクトを並べ替えるため、このブラウザー内でのみ位置情報を使用します。Earth Guardiansに送信されることも、このアプリに保存されることもありません。",
+      "consentLabel": "このセッション中、このマップとおおよその位置情報を共有することに同意します。",
+      "locating": "位置情報を取得中…",
+      "findAction": "近くのアクションを探す",
+      "locationError": "位置情報の使用が許可されませんでした。ブラウザーの設定で有効にして、もう一度お試しください。",
+      "locationActive": "位置情報が有効 · おおよその位置のみ",
+      "clearLocation": "現在の位置情報を消去",
+      "categories": "近くのカテゴリ",
+      "crews": "クルー",
+      "projects": "プロジェクト",
+      "campaigns": "キャンペーン",
+      "noCrews": "座標付きのクルーの位置情報はまだありません。",
+      "noProjects": "プロジェクトの位置情報はまだありません。",
+      "biodiversity": "絶滅危惧種",
+      "biodiversityDesc": "世界の生物多様性と生息地のためのアクション。",
+      "chooseAction": "今すぐアクションを選ぶ",
+      "chooseActionDesc": "若者が主導する気候正義と直接行動。",
+      "solutions": "持続可能な解決策",
+      "solutionsDesc": "地域規模の廃棄物対策とレジリエンスの解決策。"
+    },
+    "imported": "インポート済み",
+    "populationUnit": "人",
+    "clusterPanel": {
+      "title": "クラスターの結果",
+      "count": "クラスターの結果: {count}",
+      "copyLink": "クラスターのリンクをコピー",
+      "linkCopied": "クラスターのリンクをコピーしました",
+      "close": "クラスターの結果を閉じる",
+      "searchLabel": "クラスターの結果を検索",
+      "searchPlaceholder": "このクラスターを検索…",
+      "visibleResults": "{count}件の表示中のクラスター結果",
+      "empty": "この検索に一致する結果はありません。",
+      "activeCrewsSubtitle": "活動中のクルー{crews}組 · {countries}か国"
+    },
+    "shareMap": "地図を共有",
+    "linkCopied": "リンクをコピーしました",
+    "exportMap": "地図画像をエクスポート",
+    "exportData": "表示中のデータをGeoJSONとしてエクスポート",
+    "legend": "凡例"
   },
   "mapTiles": {
     "maptiler": "衛星",
@@ -180,7 +230,7 @@
     "close": "閉じる",
     "markerLegend": "マーカーの色",
     "markerSize": "マーカーのサイズ",
-    "activeCrewsTitle": "アクティブクルー",
+    "activeCrewsTitle": "クルーマップ",
     "regions": "地域",
     "crews": "クルー",
     "members": "メンバー",
@@ -204,7 +254,9 @@
     "switchTo2D": "2Dマップ表示に切り替え",
     "switchTo3D": "3D地球儀表示に切り替え",
     "view2D": "2Dマップ",
-    "view3D": "3D地球儀"
+    "view3D": "3D地球儀",
+    "reloadPage": "ページを再読み込み",
+    "allSpeciesLoaded": "すべての種データを読み込みました"
   },
   "project": {
     "directBeneficiaries": "直接受益者",
@@ -241,7 +293,9 @@
     "ownProjectsRegionTitle": "現地クルーのプロジェクト",
     "crewProjectBadge": "クルループロジェクト",
     "moreProjects": "リンクされた他のプロジェクト",
-    "pageOf": "全{pages}ページ中 {page}ページ目"
+    "pageOf": "全{pages}ページ中 {page}ページ目",
+    "crewsInRegion": "{region}のクルー",
+    "crewsInRegionHint": "この地域の全クルー — 詳細を見るには1つ選択"
   },
   "taxonomy": {
     "Mammal": "哺乳類",
@@ -268,7 +322,10 @@
       "illegal": "違法",
       "env": "環境リスク",
       "network": "ネットワーク",
-      "timeline": "タイムライン"
+      "timeline": "タイムライン",
+      "power": "勢力",
+      "territory": "領域",
+      "culture": "文化"
     },
     "dangerPanel": {
       "title": "最も危険な企業",
@@ -310,7 +367,11 @@
       "chinaBanTitle": "中国の輸出禁止（2025年10月）",
       "chinaBanBody": "中国は12/17のREE元素の米国への輸出を禁止しました。米国の武器の78%は中国産REEに依存しています。",
       "title": "title",
-      "empty": "empty"
+      "empty": "empty",
+      "liveTitle": "ライブ：この地域",
+      "liveClaims": "重要な鉱業権",
+      "liveArea": "重要エリア",
+      "liveUs": "米国関連"
     },
     "illegal": {
       "landSpec": "土地投機",
@@ -371,7 +432,16 @@
       "title": "申請タイムライン（2000–2026）",
       "claims": "{count}申請",
       "cumulative": "累計 {count}",
-      "empty": "empty"
+      "empty": "empty",
+      "total": "合計",
+      "readStory": "ストーリーを読む",
+      "hideStory": "ストーリーを隠す",
+      "footer": "年ly new 鉱業権 from ANM public records; the running 合計 compounds each year.",
+      "narrativeStart": "baseline: a few dozen 鉱業権 a year — rare earths not yet strategic.",
+      "narrative2010": "China bans rare-earth exports to Japan, the first warning shot — 鉱業権 jump past 500.",
+      "narrative2017": "the US declares rare earths critical (EO 13817); China threatens a US ban および the Pentagon starts investing.",
+      "narrative2021": "supercycle および Brazil rush — lithium および ASX juniors invade; 2023 peaks at 4,213 鉱業権 as the US DFC funds Serra Verde.",
+      "narrative2024": "backlash: prosecutors challenge licensing および Operação Rejeito arrests an ANM director, while China bans 7 rare-earth elements."
     },
     "actions": {
       "verify": "ANMで確認",
@@ -391,7 +461,14 @@
       "heatmap": "密度ヒートマップ",
       "cultural": "文化・コミュニティ",
       "waterBodies": "水域",
-      "protectedAreas": "保護地域"
+      "protectedAreas": "保護地域",
+      "conservationUnits": "保全ユニット",
+      "bufferZones": "緩衝地帯",
+      "protectedSearch": "保護地域と緩衝地帯",
+      "noProtectedSearch": "一致する保護地域はありません。",
+      "statusTitle": "レイヤー状態",
+      "statusFailed": "失敗",
+      "foreignHeld": "外国保有の鉱業権"
     },
     "search": "企業、物質、州を検索...",
     "legend": {
@@ -429,7 +506,13 @@
       "year": "年",
       "unknown": "不明",
       "lastEventActive": "アクティブ",
-      "overlaps": "重複"
+      "overlaps": "重複",
+      "stackedLayers": "重複レイヤー",
+      "tabClaim": "鉱業権",
+      "tabBoundary": "境界",
+      "tabWater": "水域",
+      "tabConflict": "紛争",
+      "tabTerrain": "地形"
     },
     "yearSlider": {
       "title": "提出年",
@@ -674,7 +757,15 @@
         "unnamed": "無名の項目",
         "unknownSource": "不明",
         "pagePrev": "前のページ",
-        "pageNext": "次のページ"
+        "pageNext": "次のページ",
+        "agentsLoading": "文化的エージェントを読み込み中…",
+        "agentsRetry": "再試行",
+        "families": "マーカー分類",
+        "familyAgents": "文化的エージェント",
+        "familySpaces": "文化空間",
+        "familyIndigenous": "先住民・原住民族",
+        "sortFamily": "分類",
+        "clearFilters": "クリア"
       },
       "community": {
         "eyebrow": "生きた観測所",
@@ -690,24 +781,82 @@
         "methodologyText": "データは公開記録とコミュニティ向け資料から編集されています。コミュニティの同意や法的判断の代わりではなく、調査への招待として受け取ってください。",
         "monitor": "フィールドモニターを開く",
         "sources": "データソースを見る"
+      },
+      "tabs": {
+        "label": "観測所インテリジェンス",
+        "territory": "領域",
+        "culture": "文化",
+        "power": "勢力",
+        "timeline": "年表"
       }
     },
     "error": {
       "loadFailed": "観測所データの読み込みに失敗しました",
       "retry": "再試行する"
     },
-    "clearSearch": "検索をクリア"
+    "clearSearch": "検索をクリア",
+    "territory": {
+      "headline": "現地の鉱業権",
+      "claims": "鉱業権",
+      "boundaries": "境界",
+      "area": "鉱業権エリア",
+      "withOverlaps": "重複あり",
+      "synced": "ANM同期",
+      "noBoundaries": "鉱業権の境界を読み込めませんでした — 点のみ表示しています。下のレイヤー状態を確認してください。",
+      "bySubstance": "物質別の鉱業権",
+      "overlapsTitle": "採掘 × 領域の重複",
+      "noOverlaps": "読み込まれた鉱業権に領域の重複は記録されていません。",
+      "overlappedBy": "{count} 重複する鉱業権",
+      "overlappingClaims": "重複する鉱業権",
+      "protectedTitle": "保護地域",
+      "source": "出典",
+      "noProtected": "読み込まれたデータセットに保護地域はありません。",
+      "watersTitle": "圧力を受ける水域",
+      "noWaters": "名称付き水域はまだ評価されていません — 水レイヤーを読み込み中です。",
+      "watersLegend": "鉱業権s （in 2km press directly (drawdown, runoff); （in 5km share aquifer or sub-basin.",
+      "pressure": "圧力",
+      "watch": "監視",
+      "claims2km": "鉱業権 ≤2km",
+      "claims5km": "鉱業権 ≤5km",
+      "flyToWater": "Fly to {name}",
+      "dossierDownload": "証拠資料をエクスポート",
+      "dossierCopy": "資料をコピー",
+      "dossierCopied": "コピーしました！",
+      "searchPlaceholder": "Search 鉱業権, holders, processos…",
+      "sobDemanda": "Sob Demおよびa only",
+      "filtersActive": "{count} 件のフィルターが有効",
+      "pinTitle": "監視：現在地",
+      "pinBody": "{count} 鉱業権 （in 10km of {label}.",
+      "pinNearest": "最寄り： {processo} · {holder} · {km}km"
+    },
+    "claimIntel": {
+      "holderTitle": "保有者の実績",
+      "claims": "鉱業権",
+      "territoryTitle": "領域の重複"
+    },
+    "power": {
+      "noData": "詳細分析はまだ読み込まれていません。",
+      "militaryTitle": "軍事上重要な影響範囲",
+      "criticalClaims": "重要な鉱業権",
+      "criticalArea": "重要エリア",
+      "usConnected": "米国関連",
+      "foreignTitle": "外国資本の割合",
+      "sigiloTitle": "秘密扱い（sigilo）の鉱業権",
+      "sigiloBody": "{total}件の秘密扱いの鉱業権（{pct}%）、面積{area} ha — 保有者と物質は非公開。",
+      "topTitle": "疑わしい保有者トップ",
+      "claims": "鉱業権"
+    }
   },
   "loading": {
     "projectGrantsMap": "プロジェクト助成金マップを読み込み中",
     "projectGrantsGlobe": "プロジェクト助成金地球儀を読み込み中",
-    "endangeredSpeciesMap": "絶滅危惧種マップを読み込み中",
+    "endangeredSpeciesMap": "絶滅危惧種を読み込み中",
     "endangeredSpeciesGlobe": "絶滅危惧種地球儀を読み込み中",
     "observatoryOfVulcan": "バルカン観測所を読み込み中",
     "observatoryOfVulcanGlobe": "バルカン観測所地球儀を読み込み中",
-    "activeCrewsMap": "アクティブクルーマップを読み込み中",
+    "activeCrewsMap": "クルーマップを読み込み中",
     "initializingVisualization": "インタラクティブ可視化を初期化中...",
-    "activeCrewsGlobe": "アクティブクルーの地球儀"
+    "activeCrewsGlobe": "3Dクルーマップを読み込み中"
   },
   "error": {
     "pageNotFound": "ページが見つかりません",
@@ -764,10 +913,21 @@
       "grants": "助成金",
       "species": "種",
       "mains": "主要メンバー",
-      "feedback": "フィードバック"
+      "feedback": "フィードバック",
+      "sources": "出典"
     },
     "shareCorrections": "マップ改善のため、修正、不足データ、操作のアイデアを共有してください。",
-    "homeLink": "ホーム"
+    "homeLink": "ホーム",
+    "sources": {
+      "title": "データソースとライセンス",
+      "intro": "Every layer on EG-Maps comes from a named publisher. This tab lists them all — who publishes each dataset, under which license, および how you may reuse it for research および community work.",
+      "observatory": "Vulcan Observatory — mining & territory",
+      "species": "絶滅危惧種",
+      "grants": "プロジェクト助成金",
+      "basemap": "ベースマップ、画像、地図エンジン",
+      "reuseTitle": "研究・コミュニティツール向けライセンスと再利用",
+      "openSource": "オープンソース"
+    }
   },
   "campaigns": {
     "title": "キャンペーン",
@@ -813,10 +973,11 @@
     "crewActionDesc": "EGクルーは、健全で公正かつ持続可能な未来のために行動する若者主導のグループです。クルーは、地域社会に影響を与える気候問題に応えて、自らのプロジェクトや取り組みを進める力を持っています。",
     "ctaJoinTitle": "ムーブメントに参加する",
     "ctaJoinDesc": "地球の未来のために行動する若者リーダーのグローバルネットワークの一員になりましょう。",
-    "joinCrew": "クルーを始める"
+    "joinCrew": "クルーを始める",
+    "openSpeciesMap": "絶滅危惧種を見る"
   },
   "crewProjects": {
-    "title": "クルループロジェクト",
+    "title": "大規模",
     "description": "世界中のEGクルーが主導する大規模・小規模プロジェクト。若者主導の気候アクションのインパクトを示しています。",
     "largeScaleTitle": "大規模なクルーのインパクト",
     "largeScaleDesc": "複数の国で大きな環境・コミュニティへのインパクトを生み出した主要なクルーの取り組み。",
@@ -925,7 +1086,34 @@
     "joinCrew": "クルーを始める・参加する",
     "moreTitle": "2023年以降のセッション",
     "moreDesc": "助成金申請書の書き方、COP準備、データ可視化、気候正義など。ハイライト、クリップ、今後の日程をフォローしましょう。",
-    "viewOnInstagram": "Instagramで見る"
+    "viewOnInstagram": "Instagramで見る",
+    "ep5Title": "変革型リーダーシップ",
+    "ep5Speaker": "（ Rejoice — Africa RCC",
+    "ep5Desc": "What it takes to inspire change, foster resilient community leadership, および transform local action into lasting movement power.",
+    "ep5Time": "Sunday, September 20, 2026 · 12:00 PM EST | 4:00 PM UTC (GMT)",
+    "flyer": "チラシ",
+    "series2025Title": "グローバル Masterclass Series · 2025 season",
+    "series2025Desc": "Five sessions from the 2025 season — empathy, volunteer leadership, volunteerism in action, biodiversity governance, および digital tools. Recordings, slide decks および flyers below.",
+    "gm5Date": "2025",
+    "gm5Title": "Google Workspace Essentials: Mastering Gmail, Docs, Sheets, Drive, および Calendar",
+    "gm5Speaker": "（ Emmy Scott · hosted による Moudjiba",
+    "gm5Desc": "A practical walkthrough of the Google Workspace essentials for Crew work — Gmail, Docs, Sheets, Drive, および Calendar — （ live Q&A.",
+    "gm4Date": "September 28, 2025",
+    "gm4Title": "Rio, the CBD & Beyond: A Masterclass on グローバル Biodiversity Governance",
+    "gm4Speaker": "（ GYBN USA · hosted による Moudjiba",
+    "gm4Desc": "How global biodiversity governance works — from the Rio Earth Summit to the Convention on Biological Diversity および beyond — （ live Q&A.",
+    "gm3Date": "July 13, 2025",
+    "gm3Title": "Volunteerism および Social Change: How to Use Your Time および Talents to Make a Difference in the World",
+    "gm3Speaker": "（ Meg Ferrigno — EG Board Director, founder of Purelおよび Project および Moonpads · hosted による Moudjiba",
+    "gm3Desc": "How to use your time および talents to make a difference — volunteerism as a driver of social change — （ live Q&A.",
+    "gm2Date": "2025",
+    "gm2Title": "Leading および Managing a Team of Volunteers",
+    "gm2Speaker": "（ Ms Rejoice A. Sosu-Ketek",
+    "gm2Desc": "ありません：two volunteers are the same — how to build a strong volunteer team, meet the challenges of managing volunteers, および lead （ the right approaches および values.",
+    "gm1Date": "2025",
+    "gm1Title": "Unlock Deeper Connections — Master the Art of Empathy",
+    "gm1Speaker": "（ Louka",
+    "gm1Desc": "Master the art of empathy to unlock deeper connections in your community および Crew work."
   },
   "a11y": {
     "skipToContent": "メインコンテンツへスキップ"
@@ -1240,7 +1428,7 @@
     "crewSignupError": "問題が発生しました。もう一度お試しください。",
     "crewSignupAlreadyRegistered": "登録済みです！",
     "crewSignupContactCrews": "フォームでお困りの方はこちらまでご連絡ください",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "プライバシーポリシー",
     "crewSignupRequired": "必須",
     "crewSignupBackToPortal": "ダッシュボードに戻る",
@@ -1404,7 +1592,7 @@
       "description": "深刻な絶滅の危機にある種の生息地の3D地球儀ビュー。"
     },
     "endangeredSpecies2d": {
-      "title": "絶滅危惧種 — 2Dマップ",
+      "title": "絶滅危惧種 — 2D",
       "description": "世界中の絶滅危惧種の生息地の2Dマップビュー。"
     },
     "observatory3d": {

@@ -5,7 +5,7 @@
     "projectGrants": "Granty projektowe",
     "endangeredSpecies": "Gatunki zagrożone",
     "observatoryOfVulcan": "Obserwatorium Wulkana",
-    "activeCrews": "Aktywne drużyny",
+    "activeCrews": "Mapa ekip",
     "egGrants": "EG Grants",
     "crews": "Drużyny",
     "joinEarthGuardians": "Dołącz do Earth Guardians",
@@ -25,11 +25,11 @@
     "speciesDesc": "Odkryj krytycznie zagrożone gatunki i ich siedliska na całym świecie.",
     "observatoryTitle": "Obserwatorium Wulkana",
     "observatoryDesc": "Brazylijskie roszczenia górnicze dotyczące metali ziem rzadkich — inwazja kapitału, sieci korporacyjne, interesy wojskowe i wpływ społeczno-środowiskowy.",
-    "activeCrewsTitle": "Aktywne drużyny",
-    "activeCrewsDesc": "Poznaj aktywne drużyny Earth Guardians w 7 regionach — 131 drużyn, 1241 członków, 47 krajów.",
+    "activeCrewsTitle": "Mapa ekip",
+    "activeCrewsDesc": "Poznaj sieć ekip Earth Guardians w 7 regionach — 131 aktywnych ekip, 1241 członków, 47 krajów.",
     "projectsCount": "Projekty",
     "beneficiariesCount": "Beneficjenci",
-    "speciesCount": "Gatunki",
+    "speciesCount": "Udokumentowane gatunki",
     "groupsCount": "Grupy",
     "allValue": "Wszystkie",
     "activeCrewsCount": "Aktywne drużyny",
@@ -62,8 +62,8 @@
     "campaignsTitle": "Kampanie",
     "campaignsDesc": "Kampanie EG i mapy, które za nimi stoją — w tym mapa zagrożonych gatunków stworzona na Dzień Bioróżnorodności.",
     "campaignsKicker": "Dzień Bioróżnorodności · mapa gatunków w środku",
-    "crewProjectsTitle": "Projekty drużyn",
-    "crewProjectsDesc": "Odbudowa prowadzona przez drużyny w Sierra Leone i Togo — namorzyny, lasy i gospodarstwa pod zarządem społeczności.",
+    "crewProjectsTitle": "Duża skala",
+    "crewProjectsDesc": "Poznaj różnorodne działania zespołów: od odtwarzania ekosystemów i rolnictwa regeneratywnego po edukację klimatyczną, artywizm i odporność społeczności.",
     "vulcanTitle": "Obserwatorium Vulcan",
     "vulcanDesc": "Społecznościowa mapa koncesji wydobywczych metali ziem rzadkich wokół Poços de Caldas w Brazylii — koncesje, woda, terytoria chronione i życie kulturalne.",
     "vulcanFocusValue": "Planalto Vulcânico",
@@ -175,7 +175,7 @@
     "close": "Zamknij",
     "markerLegend": "Kolory znaczników",
     "markerSize": "Rozmiar znaczników",
-    "activeCrewsTitle": "Aktywne drużyny",
+    "activeCrewsTitle": "Mapa ekip",
     "regions": "Regiony",
     "crews": "Drużyny",
     "members": "Członkowie",
@@ -701,13 +701,13 @@
   "loading": {
     "projectGrantsMap": "Ładowanie mapy grantów projektowych",
     "projectGrantsGlobe": "Ładowanie globusa grantów projektowych",
-    "endangeredSpeciesMap": "Ładowanie mapy gatunków zagrożonych",
+    "endangeredSpeciesMap": "Ładowanie gatunków zagrożonych",
     "endangeredSpeciesGlobe": "Ładowanie globusa gatunków zagrożonych",
     "observatoryOfVulcan": "Ładowanie Obserwatorium Wulkana",
     "observatoryOfVulcanGlobe": "Ładowanie globusa Obserwatorium Wulkana",
-    "activeCrewsMap": "Ładowanie mapy aktywnych drużyn",
+    "activeCrewsMap": "Ładowanie mapy ekip",
     "initializingVisualization": "Inicjalizacja interaktywnej wizualizacji...",
-    "activeCrewsGlobe": "Globus aktywnych drużyn"
+    "activeCrewsGlobe": "Ładowanie mapy 3D ekip"
   },
   "error": {
     "pageNotFound": "Nie znaleziono strony",
@@ -813,10 +813,11 @@
     "crewActionDesc": "Drużyny EG to grupy młodzieżowe działające na rzecz zdrowej, sprawiedliwej i zrównoważonej przyszłości. Drużyny mają swobodę realizacji własnych projektów i inicjatyw w odpowiedzi na problemy klimatyczne swoich społeczności.",
     "ctaJoinTitle": "Dołącz do ruchu",
     "ctaJoinDesc": "Stań się częścią globalnej sieci młodych liderów działających na rzecz przyszłości naszej planety.",
-    "joinCrew": "Załóż drużynę"
+    "joinCrew": "Załóż drużynę",
+    "openSpeciesMap": "Poznaj zagrożone gatunki"
   },
   "crewProjects": {
-    "title": "Projekty drużyn",
+    "title": "Duża skala",
     "description": "Małe i duże projekty prowadzone przez drużyny EG na całym świecie, pokazujące wpływ młodzieżowych działań klimatycznych.",
     "largeScaleTitle": "Wpływ drużyn na dużą skalę",
     "largeScaleDesc": "Ważne inicjatywy drużyn, które przyniosły znaczący wpływ środowiskowy i społecznościowy w wielu krajach.",
@@ -1240,7 +1241,7 @@
     "crewSignupError": "Coś poszło nie tak. Spróbuj ponownie.",
     "crewSignupAlreadyRegistered": "Jesteś już zarejestrowany!",
     "crewSignupContactCrews": "Masz problem z formularzem? Napisz do",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "Polityka prywatności",
     "crewSignupRequired": "wymagane",
     "crewSignupBackToPortal": "Wróć do panelu",
@@ -1404,7 +1405,7 @@
       "description": "Widok globusa 3D siedlisk krytycznie zagrożonych gatunków."
     },
     "endangeredSpecies2d": {
-      "title": "Zagrożone gatunki — Mapa 2D",
+      "title": "Zagrożone gatunki — 2D",
       "description": "Widok mapy 2D lokalizacji zagrożonych gatunków na świecie."
     },
     "observatory3d": {

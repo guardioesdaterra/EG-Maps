@@ -27,7 +27,7 @@ const MapView2D = defineAsyncComponent(() => import('~/components/MapView2D.vue'
 const { t } = useI18n()
 
 useHead({
-  title: 'Endangered Species Map (2D) | Earth Guardians',
+  title: 'Endangered Species (2D) | Earth Guardians',
   meta: [
     { name: 'description', content: 'Interactive 2D map of critically endangered species around the world' },
   ],

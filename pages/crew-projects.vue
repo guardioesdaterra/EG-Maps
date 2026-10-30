@@ -6,7 +6,7 @@
       <!-- Header -->
       <header class="page-header">
         <img :src="`${baseURL}eg-logo.png`" alt="Earth Guardians" class="page-header-logo" />
-        <h1 class="page-title">Crew Projects</h1>
+        <h1 class="page-title">{{ t('crewProjects.title') }}</h1>
         <p class="page-desc">
           Large-scale and small-scale projects led by EG Crews around the world, demonstrating the impact of youth-led climate action.
         </p>

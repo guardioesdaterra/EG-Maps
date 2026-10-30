@@ -5,7 +5,7 @@
     "projectGrants": "Progetti finanziati",
     "endangeredSpecies": "Specie a rischio",
     "observatoryOfVulcan": "Osservatorio del Vulcano",
-    "activeCrews": "Team attivi",
+    "activeCrews": "Mappa dei team",
     "egGrants": "EG Grants",
     "crews": "Team",
     "joinEarthGuardians": "Unisciti a Earth Guardians",
@@ -25,11 +25,11 @@
     "speciesDesc": "Scopri le specie in pericolo critico e i loro habitat in tutto il mondo.",
     "observatoryTitle": "Osservatorio del Vulcano",
     "observatoryDesc": "Concessioni minerarie per terre rare in Brasile — invasione di capitali, reti societarie, interessi militari e impatto socio-ambientale.",
-    "activeCrewsTitle": "Team attivi",
-    "activeCrewsDesc": "Esplora i team attivi di Earth Guardians in 7 regioni — 131 team, 1.241 membri, 47 paesi nel mondo.",
+    "activeCrewsTitle": "Mappa dei team",
+    "activeCrewsDesc": "Esplora la rete dei team di Earth Guardians in 7 regioni — 131 team attivi, 1.241 membri e 47 paesi nel mondo.",
     "projectsCount": "Progetti",
     "beneficiariesCount": "Beneficiari",
-    "speciesCount": "Specie",
+    "speciesCount": "Specie documentate",
     "groupsCount": "Gruppi",
     "allValue": "Tutti",
     "activeCrewsCount": "Team attivi",
@@ -62,8 +62,8 @@
     "campaignsTitle": "Campagne",
     "campaignsDesc": "Campagne di EG e le mappe dietro di esse — inclusa la mappa delle specie a rischio creata per la Giornata della biodiversità.",
     "campaignsKicker": "Giornata della biodiversità · mappa delle specie all'interno",
-    "crewProjectsTitle": "Progetti dei team",
-    "crewProjectsDesc": "Ripristino guidato dai team in Sierra Leone e Togo — mangrovie, foreste e fattorie in gestione comunitaria.",
+    "crewProjectsTitle": "Grande scala",
+    "crewProjectsDesc": "Scopri le diverse attività dei Crew: ripristino degli ecosistemi, agricoltura rigenerativa, educazione climatica, artivismo e resilienza comunitaria.",
     "vulcanTitle": "Osservatorio Vulcan",
     "vulcanDesc": "Mappa di comunità delle concessioni minerarie di terre rare intorno a Poços de Caldas, Brasile — concessioni, acqua, territori protetti e vita culturale.",
     "vulcanFocusValue": "Planalto Vulcânico",
@@ -175,7 +175,7 @@
     "close": "Chiudi",
     "markerLegend": "Colori dei marcatori",
     "markerSize": "Dimensione dei marcatori",
-    "activeCrewsTitle": "Team attivi",
+    "activeCrewsTitle": "Mappa dei team",
     "regions": "Regioni",
     "crews": "Team",
     "members": "Membri",
@@ -701,13 +701,13 @@
   "loading": {
     "projectGrantsMap": "Caricamento mappa progetti finanziati",
     "projectGrantsGlobe": "Caricamento globo progetti finanziati",
-    "endangeredSpeciesMap": "Caricamento mappa specie a rischio",
+    "endangeredSpeciesMap": "Caricamento specie minacciate",
     "endangeredSpeciesGlobe": "Caricamento globo specie a rischio",
     "observatoryOfVulcan": "Caricamento Osservatorio del Vulcano",
     "observatoryOfVulcanGlobe": "Caricamento globo Osservatorio del Vulcano",
-    "activeCrewsMap": "Caricamento mappa team attivi",
+    "activeCrewsMap": "Caricamento della mappa dei team",
     "initializingVisualization": "Inizializzazione visualizzazione interattiva...",
-    "activeCrewsGlobe": "Globo dei team attivi"
+    "activeCrewsGlobe": "Caricamento della mappa 3D dei team"
   },
   "error": {
     "pageNotFound": "Pagina non trovata",
@@ -813,10 +813,11 @@
     "crewActionDesc": "I team di EG sono gruppi guidati dai giovani che agiscono per un futuro sano, giusto e sostenibile. I team hanno l'autonomia di portare avanti i propri progetti e iniziative in risposta ai problemi climatici delle loro comunità.",
     "ctaJoinTitle": "Unisciti al movimento",
     "ctaJoinDesc": "Diventa parte di una rete globale di giovani leader che agiscono per il futuro del nostro pianeta.",
-    "joinCrew": "Avvia un team"
+    "joinCrew": "Avvia un team",
+    "openSpeciesMap": "Esplora le specie a rischio"
   },
   "crewProjects": {
-    "title": "Progetti dei team",
+    "title": "Grande scala",
     "description": "Progetti su larga e piccola scala guidati dai team di EG in tutto il mondo, che dimostrano l'impatto dell'azione climatica guidata dai giovani.",
     "largeScaleTitle": "Impatto dei team su larga scala",
     "largeScaleDesc": "Grandi iniziative dei team che hanno creato un impatto ambientale e comunitario significativo in più paesi.",
@@ -1240,7 +1241,7 @@
     "crewSignupError": "Qualcosa è andato storto. Riprova.",
     "crewSignupAlreadyRegistered": "Sei già registrato!",
     "crewSignupContactCrews": "Problemi con il modulo? Contatta",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "Informativa sulla privacy",
     "crewSignupRequired": "obbligatorio",
     "crewSignupBackToPortal": "Torna alla dashboard",
@@ -1404,7 +1405,7 @@
       "description": "Vista globo 3D degli habitat delle specie in pericolo critico."
     },
     "endangeredSpecies2d": {
-      "title": "Specie a rischio — Mappa 2D",
+      "title": "Specie a rischio — 2D",
       "description": "Vista mappa 2D delle posizioni delle specie a rischio nel mondo."
     },
     "observatory3d": {

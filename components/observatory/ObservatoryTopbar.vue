@@ -315,8 +315,8 @@ const statsSummary = computed(() => {
   align-items: center;
   gap: 2px;
   padding: 2px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 9px;
 }
 .obs-view-tab {
@@ -344,8 +344,8 @@ const statsSummary = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: 1px solid transparent;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.75);
   cursor: pointer;
@@ -354,9 +354,9 @@ const statsSummary = computed(() => {
   flex-shrink: 0;
 }
 .obs-menu-btn svg { width: 1rem; height: 1rem; }
-.obs-menu-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.08); }
+.obs-menu-btn:hover { background: rgba(0, 0, 0, 0.97); color: #fff; border-color: rgba(255, 255, 255, 0.22); }
 .obs-menu-btn.is-active {
-  background: color-mix(in srgb, var(--obs-emerald, #10b981) 20%, transparent);
+  background: color-mix(in srgb, var(--obs-emerald, #10b981) 25%, rgba(0, 0, 0, 0.9));
   border-color: color-mix(in srgb, var(--obs-emerald, #10b981) 45%, transparent);
   color: var(--obs-emerald, #10b981);
 }
@@ -378,6 +378,54 @@ const statsSummary = computed(() => {
 }
 
 /* ── Progressive disclosure: numbers disappear as space shrinks ── */
+:global(html:not(.dark)) .obs-topbar {
+  background: var(--glass-bg);
+  border-color: var(--border-color);
+  box-shadow: var(--glass-shadow);
+}
+:global(html:not(.dark)) .obs-topbar__title { color: var(--danger); }
+:global(html:not(.dark)) .obs-topbar__sub,
+:global(html:not(.dark)) .obs-stat__label,
+:global(html:not(.dark)) .obs-stat__total,
+:global(html:not(.dark)) .obs-view-tab,
+:global(html:not(.dark)) .obs-menu-btn { color: var(--text-secondary); }
+:global(html:not(.dark)) .obs-menu-btn {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+:global(html:not(.dark)) .obs-stat {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+:global(html:not(.dark)) .obs-stat__count,
+:global(html:not(.dark)) .obs-stat__total strong { color: var(--text-primary); }
+:global(html:not(.dark)) .obs-stat__sep,
+:global(html:not(.dark)) .obs-topbar__sep { background: var(--border-color); }
+:global(html:not(.dark)) .obs-view-toggle {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+:global(html:not(.dark)) .obs-view-tab:hover,
+:global(html:not(.dark)) .obs-menu-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+:global(html:not(.dark)) .obs-view-tab.is-active {
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+:global(html:not(.dark)) .obs-menu-btn.is-active {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 20%, var(--bg-secondary));
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+}
+:global(html:not(.dark)) .obs-menu-btn__dot {
+  background: var(--primary);
+  box-shadow: 0 0 4px var(--primary);
+}
+:global(html:not(.dark)) .obs-menu-btn:focus-visible,
+:global(html:not(.dark)) .obs-view-tab:focus-visible { outline-color: var(--ring); }
 @media (max-width: 1100px) {
   .obs-stat__label,
   .obs-stat__total-label { display: none; }

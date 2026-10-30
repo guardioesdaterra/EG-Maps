@@ -11,7 +11,7 @@ useHead({ title: 'Globe | Earth Guardians' })
 
 </script>
 <template>
-  <main id="main-content" class="min-h-screen bg-black flex items-center justify-center">
-    <p class="text-white/60 text-sm">Redirecting to the 3D globe…</p>
+  <main id="main-content" tabindex="-1" class="flex min-h-screen items-center justify-center bg-[var(--bg-primary)] text-[var(--text-primary)]">
+    <p class="text-sm text-[var(--text-secondary)]">Redirecting to the 3D globe…</p>
   </main>
 </template>

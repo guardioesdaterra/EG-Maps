@@ -4,23 +4,23 @@
  * @component iframe
  */
 <template>
-  <main id="main-content" tabindex="-1" class="bg-white dark:bg-[var(--bg-primary)] text-black dark:text-[var(--text-primary)] min-h-screen">
+  <main id="main-content" tabindex="-1" class="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
     <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       
       <header class="mb-8">
         <h1 class="text-3xl font-black tracking-tight sm:text-4xl">
           {{ t('iframe.title') }}
         </h1>
-        <p class="mt-2 text-lg text-black/70 dark:text-[var(--text-secondary)]">
+        <p class="mt-2 text-lg text-[var(--text-secondary)]">
           {{ t('iframe.subtitle') }}
         </p>
       </header>
 
       
-      <section class="mb-8 rounded-xl border-2 border-black/20 dark:border-[var(--border-color)] overflow-hidden">
-        <div class="border-b-2 border-black/20 dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
+      <section class="mb-8 rounded-xl border-2 border-[var(--border-color)] overflow-hidden">
+        <div class="border-b-2 border-[var(--border-color)] px-4 py-3 bg-[var(--bg-secondary)]">
           <h2 class="text-lg font-bold">{{ t('iframe.picker.title') }}</h2>
-          <p class="text-sm text-black/60 dark:text-[var(--text-secondary)]">
+          <p class="text-sm text-[var(--text-secondary)]">
             {{ t('iframe.picker.description') }}
           </p>
         </div>
@@ -32,7 +32,7 @@
               class="flex-1 text-3xl font-black py-8 rounded-xl border-2 transition-all duration-200"
               :class="pickerMode === '2d'
                 ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105'
-                : 'bg-black/5 dark:bg-white/5 border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10'"
+                : 'bg-[var(--bg-secondary)] border-[var(--border-color)] hover:bg-[var(--bg-tertiary)]'"
             >
               2D
             </button>
@@ -41,7 +41,7 @@
               class="flex-1 text-3xl font-black py-8 rounded-xl border-2 transition-all duration-200"
               :class="pickerMode === '3d'
                 ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105'
-                : 'bg-black/5 dark:bg-white/5 border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10'"
+                : 'bg-[var(--bg-secondary)] border-[var(--border-color)] hover:bg-[var(--bg-tertiary)]'"
             >
               3D
             </button>
@@ -54,21 +54,41 @@
               @click="pickerDataset = ds.key"
               class="px-5 py-2.5 rounded-lg text-sm font-medium border transition-colors"
               :class="pickerDataset === ds.key
-                ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white'
-                : 'bg-black/5 dark:bg-white/5 border-black/20 dark:border-white/20 hover:bg-black/10 dark:hover:bg-white/10'"
+                ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] border-[var(--text-primary)]'
+                : 'bg-[var(--bg-secondary)] border-[var(--border-color)] hover:bg-[var(--bg-tertiary)]'"
             >
               {{ ds.label }}
             </button>
           </div>
           
-          <div v-if="pickerMode" class="w-full border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden">
+          <div v-if="pickerMode" class="relative w-full border border-[var(--border-color)] rounded-lg overflow-hidden" :aria-busy="previewStatus.picker === 'loading'">
             <iframe
+              :key="`${pickerIframeSrc}:${previewRevision.picker}`"
               :src="pickerIframeSrc"
               class="w-full h-[min(500px,80vw)] border-0"
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"
               :title="pickerIframeTitle"
+              @load="markPreviewLoaded('picker')"
+              @error="markPreviewFailed('picker')"
             ></iframe>
+            <div
+              v-if="previewStatus.picker !== 'loaded'"
+              class="absolute inset-0 flex items-center justify-center bg-[var(--bg-secondary)]/95 text-[var(--text-secondary)]"
+              :role="previewStatus.picker === 'error' ? 'alert' : 'status'"
+              aria-live="polite"
+            >
+              <div v-if="previewStatus.picker === 'error'" class="flex flex-col items-center gap-2 text-sm">
+                <span>{{ t('general.error') }}</span>
+                <button type="button" class="rounded-md border border-[var(--border-color)] px-3 py-1.5 font-medium hover:bg-[var(--bg-tertiary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" @click="retryPreview('picker')">
+                  {{ t('general.retry') }}
+                </button>
+              </div>
+              <div v-else class="flex items-center gap-2 text-sm">
+                <span aria-hidden="true" class="h-4 w-4 rounded-full border-2 border-current border-r-transparent motion-safe:animate-spin motion-reduce:animate-none" />
+                <span>{{ t('general.loading') }}</span>
+              </div>
+            </div>
           </div>
           
           <div v-if="pickerMode" class="w-full relative">
@@ -87,10 +107,10 @@
       </section>
 
       
-      <section class="mb-8 rounded-xl border-2 border-black/20 dark:border-[var(--border-color)] overflow-hidden">
-        <div class="border-b-2 border-black/20 dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
+      <section class="mb-8 rounded-xl border-2 border-[var(--border-color)] overflow-hidden">
+        <div class="border-b-2 border-[var(--border-color)] px-4 py-3 bg-[var(--bg-secondary)]">
           <h2 class="text-lg font-bold">{{ t('iframe.compare.title') }}</h2>
-          <p class="text-sm text-black/60 dark:text-[var(--text-secondary)]">
+          <p class="text-sm text-[var(--text-secondary)]">
             {{ t('iframe.compare.description') }}
           </p>
         </div>
@@ -98,52 +118,94 @@
           <div
             v-for="comp in compareConfigs"
             :key="comp.key"
-            class="border border-black/10 dark:border-[var(--border-color)] rounded-lg p-4"
+            class="border border-[var(--border-color)] rounded-lg p-4"
           >
             <h3 class="font-bold mb-3">{{ comp.label }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p class="text-xs font-medium text-black/50 dark:text-[var(--text-secondary)] mb-1">2D Map</p>
+                <p class="text-xs font-medium text-[var(--text-muted)] mb-1">2D Map</p>
                 <div
                   :ref="(el) => observeContainer(comp.key + '-2d', el as HTMLElement | null)"
-                  class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+                  class="relative border border-[var(--border-color)] rounded-lg overflow-hidden"
+                  :aria-busy="previewStatus[comp.key + '-2d'] === 'loading'"
                 >
                   <div
                     v-if="!isVisible[comp.key + '-2d']"
-                    class="bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm h-64"
+                    class="bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] text-sm h-64"
                   >
                     {{ t('iframe.loadingPreview') }}
                   </div>
                   <iframe
                     v-else
+                    :key="`${comp.key}-2d:${previewRevision[comp.key + '-2d']}`"
                     :src="comp.src2d"
                     class="w-full h-64 border-0"
                     loading="lazy"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"
                     :title="comp.label + ' 2D'"
+                    @load="markPreviewLoaded(comp.key + '-2d')"
+                    @error="markPreviewFailed(comp.key + '-2d')"
                   ></iframe>
+                  <div
+                    v-if="isVisible[comp.key + '-2d'] && previewStatus[comp.key + '-2d'] !== 'loaded'"
+                    class="absolute inset-0 flex items-center justify-center bg-[var(--bg-secondary)]/95 text-[var(--text-secondary)]"
+                    :role="previewStatus[comp.key + '-2d'] === 'error' ? 'alert' : 'status'"
+                    aria-live="polite"
+                  >
+                    <div v-if="previewStatus[comp.key + '-2d'] === 'error'" class="flex flex-col items-center gap-2 text-sm">
+                      <span>{{ t('general.error') }}</span>
+                      <button type="button" class="rounded-md border border-[var(--border-color)] px-3 py-1.5 font-medium hover:bg-[var(--bg-tertiary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" @click="retryPreview(comp.key + '-2d')">
+                        {{ t('general.retry') }}
+                      </button>
+                    </div>
+                    <div v-else class="flex items-center gap-2 text-sm">
+                      <span aria-hidden="true" class="h-4 w-4 rounded-full border-2 border-current border-r-transparent motion-safe:animate-spin motion-reduce:animate-none" />
+                      <span>{{ t('general.loading') }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div>
-                <p class="text-xs font-medium text-black/50 dark:text-[var(--text-secondary)] mb-1">3D Globe</p>
+                <p class="text-xs font-medium text-[var(--text-muted)] mb-1">3D Globe</p>
                 <div
                   :ref="(el) => observeContainer(comp.key + '-3d', el as HTMLElement | null)"
-                  class="border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+                  class="relative border border-[var(--border-color)] rounded-lg overflow-hidden"
+                  :aria-busy="previewStatus[comp.key + '-3d'] === 'loading'"
                 >
                   <div
                     v-if="!isVisible[comp.key + '-3d']"
-                    class="bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm h-64"
+                    class="bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] text-sm h-64"
                   >
                     {{ t('iframe.loadingPreview') }}
                   </div>
                   <iframe
                     v-else
+                    :key="`${comp.key}-3d:${previewRevision[comp.key + '-3d']}`"
                     :src="comp.src3d"
                     class="w-full h-64 border-0"
                     loading="lazy"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"
                     :title="comp.label + ' 3D'"
+                    @load="markPreviewLoaded(comp.key + '-3d')"
+                    @error="markPreviewFailed(comp.key + '-3d')"
                   ></iframe>
+                  <div
+                    v-if="isVisible[comp.key + '-3d'] && previewStatus[comp.key + '-3d'] !== 'loaded'"
+                    class="absolute inset-0 flex items-center justify-center bg-[var(--bg-secondary)]/95 text-[var(--text-secondary)]"
+                    :role="previewStatus[comp.key + '-3d'] === 'error' ? 'alert' : 'status'"
+                    aria-live="polite"
+                  >
+                    <div v-if="previewStatus[comp.key + '-3d'] === 'error'" class="flex flex-col items-center gap-2 text-sm">
+                      <span>{{ t('general.error') }}</span>
+                      <button type="button" class="rounded-md border border-[var(--border-color)] px-3 py-1.5 font-medium hover:bg-[var(--bg-tertiary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" @click="retryPreview(comp.key + '-3d')">
+                        {{ t('general.retry') }}
+                      </button>
+                    </div>
+                    <div v-else class="flex items-center gap-2 text-sm">
+                      <span aria-hidden="true" class="h-4 w-4 rounded-full border-2 border-current border-r-transparent motion-safe:animate-spin motion-reduce:animate-none" />
+                      <span>{{ t('general.loading') }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -156,11 +218,11 @@
         <section
           v-for="item in iframeConfigs"
           :key="item.key"
-          class="rounded-xl border-2 border-black dark:border-[var(--border-color)] overflow-hidden"
+          class="rounded-xl border-2 border-[var(--border-color)] overflow-hidden"
         >
-          <div class="border-b-2 border-black dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
+          <div class="border-b-2 border-[var(--border-color)] px-4 py-3 bg-[var(--bg-secondary)]">
             <h2 class="text-lg font-bold">{{ t(`iframe.${item.key}.title`) }}</h2>
-            <p class="text-sm text-black/60 dark:text-[var(--text-secondary)]">
+            <p class="text-sm text-[var(--text-secondary)]">
               {{ t(`iframe.${item.key}.description`) }}
             </p>
           </div>
@@ -168,26 +230,47 @@
             
             <div
               :ref="(el) => observeContainer(item.key, el as HTMLElement | null)"
-              class="mb-4 border border-black/20 dark:border-[var(--border-color)] rounded-lg overflow-hidden"
+              class="relative mb-4 border border-[var(--border-color)] rounded-lg overflow-hidden"
+              :class="item.placeholderClass"
+              :aria-busy="previewStatus[item.key] === 'loading'"
             >
               
               <div
                 v-if="!isVisible[item.key]"
-                class="bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 text-sm"
-                :class="item.placeholderClass"
+                class="absolute inset-0 flex items-center justify-center bg-[var(--bg-secondary)] text-[var(--text-secondary)] text-sm"
               >
                 {{ t('iframe.loadingPreview') }}
               </div>
               
               <iframe
                 v-else
+                :key="`${item.key}:${previewRevision[item.key]}`"
                 :src="item.src"
                 class="border-0 w-full"
                 :class="item.iframeClass"
                 :title="t(`iframe.${item.key}.title`)"
                 loading="lazy"
                 :allow="item.allow"
+                @load="markPreviewLoaded(item.key)"
+                @error="markPreviewFailed(item.key)"
               ></iframe>
+              <div
+                v-if="isVisible[item.key] && previewStatus[item.key] !== 'loaded'"
+                class="absolute inset-0 flex items-center justify-center bg-[var(--bg-secondary)]/95 text-[var(--text-secondary)]"
+                :role="previewStatus[item.key] === 'error' ? 'alert' : 'status'"
+                aria-live="polite"
+              >
+                <div v-if="previewStatus[item.key] === 'error'" class="flex flex-col items-center gap-2 text-sm">
+                  <span>{{ t('general.error') }}</span>
+                  <button type="button" class="rounded-md border border-[var(--border-color)] px-3 py-1.5 font-medium hover:bg-[var(--bg-tertiary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" @click="retryPreview(item.key)">
+                    {{ t('general.retry') }}
+                  </button>
+                </div>
+                <div v-else class="flex items-center gap-2 text-sm">
+                  <span aria-hidden="true" class="h-4 w-4 rounded-full border-2 border-current border-r-transparent motion-safe:animate-spin motion-reduce:animate-none" />
+                  <span>{{ t('general.loading') }}</span>
+                </div>
+              </div>
             </div>
             
             <div class="relative">
@@ -207,30 +290,30 @@
       </div>
 
       
-      <section class="mt-8 rounded-xl border-2 border-black dark:border-[var(--border-color)] overflow-hidden">
-        <div class="border-b-2 border-black dark:border-[var(--border-color)] px-4 py-3 bg-black/5 dark:bg-[var(--card)]">
+      <section class="mt-8 rounded-xl border-2 border-[var(--border-color)] overflow-hidden">
+        <div class="border-b-2 border-[var(--border-color)] px-4 py-3 bg-[var(--bg-secondary)]">
           <h2 class="text-lg font-bold">{{ t('iframe.usage.title') }}</h2>
         </div>
         <div class="p-4 space-y-4">
           <div>
             <h3 class="font-bold mb-2">{{ t('iframe.usage.queryParams.title') }}</h3>
-            <ul class="list-disc list-inside text-sm text-black/70 dark:text-[var(--text-secondary)] space-y-1">
-              <li><code class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs">embed=true</code> — {{ t('iframe.usage.queryParams.embed') }}</li>
-              <li><code class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs">no-control=true</code> — {{ t('iframe.usage.queryParams.noControl') }}</li>
-              <li><code class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs">hideAll=true</code> — {{ t('iframe.usage.queryParams.hideAll') }}</li>
-              <li><code class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs">controls=true</code> — {{ t('iframe.usage.queryParams.controls') }}</li>
-              <li><code class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs">lang=es</code> — {{ t('iframe.usage.queryParams.lang') }}</li>
+            <ul class="list-disc list-inside text-sm text-[var(--text-secondary)] space-y-1">
+              <li><code class="bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-xs">embed=true</code> — {{ t('iframe.usage.queryParams.embed') }}</li>
+              <li><code class="bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-xs">no-control=true</code> — {{ t('iframe.usage.queryParams.noControl') }}</li>
+              <li><code class="bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-xs">hideAll=true</code> — {{ t('iframe.usage.queryParams.hideAll') }}</li>
+              <li><code class="bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-xs">controls=true</code> — {{ t('iframe.usage.queryParams.controls') }}</li>
+              <li><code class="bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-xs">lang=es</code> — {{ t('iframe.usage.queryParams.lang') }}</li>
             </ul>
           </div>
           <div>
             <h3 class="font-bold mb-2">{{ t('iframe.usage.autoHide.title') }}</h3>
-            <p class="text-sm text-black/70 dark:text-[var(--text-secondary)]">
+            <p class="text-sm text-[var(--text-secondary)]">
               {{ t('iframe.usage.autoHide.description') }}
             </p>
           </div>
           <div>
             <h3 class="font-bold mb-2">{{ t('iframe.usage.viewportSizes.title') }}</h3>
-            <ul class="list-disc list-inside text-sm text-black/70 dark:text-[var(--text-secondary)] space-y-1">
+            <ul class="list-disc list-inside text-sm text-[var(--text-secondary)] space-y-1">
               <li><strong>Banner</strong> — {{ t('iframe.usage.viewportSizes.banner') }}</li>
               <li><strong>Small Card</strong> — {{ t('iframe.usage.viewportSizes.smallCard') }}</li>
               <li><strong>Medium Card</strong> — {{ t('iframe.usage.viewportSizes.mediumCard') }}</li>
@@ -240,13 +323,13 @@
           </div>
           <div>
             <h3 class="font-bold mb-2">{{ t('iframe.usage.security.title') }}</h3>
-            <p class="text-sm text-black/70 dark:text-[var(--text-secondary)]">
+            <p class="text-sm text-[var(--text-secondary)]">
               {{ t('iframe.usage.security.description') }}
             </p>
           </div>
           <div>
             <h3 class="font-bold mb-2">{{ t('iframe.usage.performance.title') }}</h3>
-            <p class="text-sm text-black/70 dark:text-[var(--text-secondary)]">
+            <p class="text-sm text-[var(--text-secondary)]">
               {{ t('iframe.usage.performance.description') }}
             </p>
           </div>
@@ -280,7 +363,7 @@ const pickerMode = ref<'2d' | '3d' | null>(null)
 const pickerDataset = ref('active-crews')
 
 const pickerDatasets = [
-  { key: 'active-crews', label: 'Active Crews' },
+  { key: 'active-crews', label: 'Crews Map' },
   { key: 'project-grants', label: 'Project Grants' },
   { key: 'endangered-species', label: 'Endangered Species' },
   { key: 'vulcan-observatory', label: 'Vulcan Observatory' },
@@ -318,7 +401,7 @@ interface CompareItem {
 const compareConfigs: CompareItem[] = [
   {
     key: 'comp-active-crews',
-    label: 'Active Crews',
+    label: 'Crews Map',
     src2d: `${embedBaseURL}active-crews?embed=true&hideAll=true`,
     src3d: `${embedBaseURL}active-crews/3d?embed=true&hideAll=true`,
   },
@@ -362,7 +445,7 @@ const iframeConfigs: IframeConfig[] = [
     placeholderClass: 'h-96',
     iframeClass: 'h-96',
     allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
-    embedLabel: 'Earth Guardians Active Crews',
+    embedLabel: 'Earth Guardians Crews Map',
     embedWidth: '100%',
     embedHeight: '100vh',
   },
@@ -373,7 +456,7 @@ const iframeConfigs: IframeConfig[] = [
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
     allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
-    embedLabel: 'Earth Guardians Active Crews',
+    embedLabel: 'Earth Guardians Crews Map',
     embedWidth: '100%',
     embedHeight: '500px',
   },
@@ -381,10 +464,10 @@ const iframeConfigs: IframeConfig[] = [
     key: 'responsive',
     src: `${embedBaseURL}active-crews/3d?embed=true`,
     params: 'embed=true',
-    placeholderClass: 'relative w-full',
+    placeholderClass: 'w-full aspect-video',
     iframeClass: 'absolute inset-0 w-full h-full',
     allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
-    embedLabel: 'Earth Guardians Active Crews',
+    embedLabel: 'Earth Guardians Crews Map',
     embedWidth: '100%',
     embedHeight: '100%',
   },
@@ -395,7 +478,7 @@ const iframeConfigs: IframeConfig[] = [
     placeholderClass: 'w-[300px] h-[250px]',
     iframeClass: 'w-full h-full',
     allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
-    embedLabel: 'Earth Guardians Active Crews',
+    embedLabel: 'Earth Guardians Crews Map',
     embedWidth: '300px',
     embedHeight: '250px',
   },
@@ -406,7 +489,7 @@ const iframeConfigs: IframeConfig[] = [
     placeholderClass: 'w-full max-w-[600px] aspect-[3/2]',
     iframeClass: 'w-full h-full',
     allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
-    embedLabel: 'Earth Guardians Active Crews',
+    embedLabel: 'Earth Guardians Crews Map',
     embedWidth: '600px',
     embedHeight: '400px',
   },
@@ -417,7 +500,7 @@ const iframeConfigs: IframeConfig[] = [
     placeholderClass: 'w-full max-w-[900px] aspect-[3/2]',
     iframeClass: 'w-full h-full',
     allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
-    embedLabel: 'Earth Guardians Active Crews',
+    embedLabel: 'Earth Guardians Crews Map',
     embedWidth: '900px',
     embedHeight: '600px',
   },
@@ -428,7 +511,7 @@ const iframeConfigs: IframeConfig[] = [
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
     allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
-    embedLabel: 'Earth Guardians Active Crews - Interactive',
+    embedLabel: 'Earth Guardians Crews Map - Interactive',
     embedWidth: '100%',
     embedHeight: '500px',
   },
@@ -440,7 +523,7 @@ const iframeConfigs: IframeConfig[] = [
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
     allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
-    embedLabel: 'Earth Guardians Active Crews - 2D',
+    embedLabel: 'Earth Guardians Crews Map - 2D',
     embedWidth: '100%',
     embedHeight: '500px',
   },
@@ -486,7 +569,7 @@ const iframeConfigs: IframeConfig[] = [
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
     allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
-    embedLabel: 'Endangered Species - 2D Map',
+    embedLabel: 'Endangered Species - 2D',
     embedWidth: '100%',
     embedHeight: '500px',
   },
@@ -521,7 +604,7 @@ const iframeConfigs: IframeConfig[] = [
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
     allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
-    embedLabel: 'Earth Guardians Active Crews - No Controls',
+    embedLabel: 'Earth Guardians Crews Map - No Controls',
     embedWidth: '100%',
     embedHeight: '500px',
   },
@@ -532,7 +615,7 @@ const iframeConfigs: IframeConfig[] = [
     placeholderClass: 'h-[500px]',
     iframeClass: 'h-[500px]',
     allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen',
-    embedLabel: 'Earth Guardians Active Crews - Globe Only',
+    embedLabel: 'Earth Guardians Crews Map - Globe Only',
     embedWidth: '100%',
     embedHeight: '500px',
   },
@@ -571,15 +654,46 @@ function buildEmbedCode(item: IframeConfig): string {
 ></iframe>`
 }
 
+type PreviewStatus = 'idle' | 'loading' | 'loaded' | 'error'
+
+const previewStatus = reactive<Record<string, PreviewStatus>>({ picker: 'idle' })
+const previewRevision = reactive<Record<string, number>>({ picker: 0 })
 const isVisible = reactive<Record<string, boolean>>({})
-for (const cfg of iframeConfigs) isVisible[cfg.key] = false
+for (const cfg of iframeConfigs) {
+  isVisible[cfg.key] = false
+  previewStatus[cfg.key] = 'idle'
+  previewRevision[cfg.key] = 0
+}
 for (const comp of compareConfigs) {
   isVisible[comp.key + '-2d'] = false
   isVisible[comp.key + '-3d'] = false
+  previewStatus[comp.key + '-2d'] = 'idle'
+  previewStatus[comp.key + '-3d'] = 'idle'
+  previewRevision[comp.key + '-2d'] = 0
+  previewRevision[comp.key + '-3d'] = 0
+}
+
+watch(pickerIframeSrc, (src) => {
+  if (src) previewStatus.picker = 'loading'
+})
+
+function markPreviewLoaded(key: string) {
+  if (key in previewStatus) previewStatus[key] = 'loaded'
+}
+
+function markPreviewFailed(key: string) {
+  if (key in previewStatus) previewStatus[key] = 'error'
+}
+
+function retryPreview(key: string) {
+  if (!(key in previewStatus)) return
+  previewStatus[key] = 'loading'
+  previewRevision[key] = (previewRevision[key] ?? 0) + 1
 }
 
 const containerMap = new Map<string, HTMLElement>()
 const timers = new Map<string, ReturnType<typeof setTimeout>>()
+let previewObserver: IntersectionObserver | null = null
 
 function observeContainer(key: string, el: HTMLElement | null) {
   if (el) containerMap.set(key, el)
@@ -599,18 +713,22 @@ onMounted(() => {
         const key = elToKey.get(entry.target)
         if (!key) continue
 
+        const pending = timers.get(key)
+        if (pending) clearTimeout(pending)
+        timers.delete(key)
+
         if (entry.isIntersecting) {
-          const pending = timers.get(key)
-          if (pending) clearTimeout(pending)
+          if (isVisible[key]) continue
           timers.set(key, setTimeout(() => {
             isVisible[key] = true
+            previewStatus[key] = 'loading'
             timers.delete(key)
           }, ENTER_DELAY))
         } else {
-          const pending = timers.get(key)
-          if (pending) clearTimeout(pending)
+          if (!isVisible[key]) continue
           timers.set(key, setTimeout(() => {
             isVisible[key] = false
+            previewStatus[key] = 'idle'
             timers.delete(key)
           }, EXIT_DELAY))
         }
@@ -618,14 +736,16 @@ onMounted(() => {
     },
     { rootMargin: '200px 0px', threshold: 0.25 },
   )
+  previewObserver = observer
 
   for (const el of containerMap.values()) observer.observe(el)
+})
 
-  onUnmounted(() => {
-    observer.disconnect()
-    for (const t of timers.values()) clearTimeout(t)
-    timers.clear()
-  })
+onUnmounted(() => {
+  previewObserver?.disconnect()
+  previewObserver = null
+  for (const timer of timers.values()) clearTimeout(timer)
+  timers.clear()
 })
 
 useHead({

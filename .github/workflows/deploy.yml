@@ -239,7 +239,7 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: ⚙️ Unit tests
-        run: pnpm test
+        run: pnpm test:unit
 
       - name: 📝 Summary
         if: always()
@@ -248,7 +248,7 @@ jobs:
             echo "## ⚙️ Unit tests (vitest)"
             echo ""
             echo "- Result: **${{ job.status }}**"
-            echo "- Suite: \`pnpm test\` (vitest run)"
+            echo "- Suite: \`pnpm test:unit\` (vitest run)"
           } >> "$GITHUB_STEP_SUMMARY"
 
   typecheck:
@@ -271,11 +271,8 @@ jobs:
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: 🔍 Prepare Nuxt types
-        run: npx nuxi prepare
-
       - name: 🔍 Typecheck
-        run: npx vue-tsc --noEmit
+        run: pnpm typecheck
 
       - name: 📝 Summary
         if: always()
@@ -391,13 +388,12 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ─────────────────────────────────────────────────────────────────────────
-  # 3️⃣ E2E (parallel with everything; non-blocking)
+  # 3️⃣ E2E (parallel with everything; blocking)
   # ─────────────────────────────────────────────────────────────────────────
   playwright:
     name: '🎭 Playwright E2E'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
 
@@ -434,13 +430,13 @@ jobs:
           fi
 
       - name: 🎭 Playwright E2E tests
-        run: npx playwright test --config=playwright.config.ts tests/map-rendering.spec.ts
+        run: pnpm test:e2e
         env:
           CI: true
+          PLAYWRIGHT_REPORT_DIR: ${{ runner.temp }}/playwright-report
+          PLAYWRIGHT_RESULTS_DIR: ${{ runner.temp }}/playwright-results
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
 
       - name: 📤 Upload Playwright report
@@ -448,7 +444,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: playwright-report
-          path: playwright-report/
+          path: ${{ runner.temp }}/playwright-report/
           retention-days: 7
           if-no-files-found: ignore
 
@@ -459,7 +455,7 @@ jobs:
           {
             echo "## 🎭 Playwright E2E"
             echo ""
-            echo "- Result: **${{ job.status }}** (non-blocking)"
+            echo "- Result: **${{ job.status }}** (blocking)"
             echo "- Browsers: **${HIT}**"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -537,13 +533,16 @@ jobs:
         run: node scripts/compute-overlaps.mjs
         working-directory: _src_main
 
-      - name: 🔍 Verify secrets
+      - name: 🔍 Validate public Supabase configuration
         run: |
-          echo "SUPABASE_URL=${SUPABASE_URL:0:30}..."
-          echo "SUPABASE_KEY length=${#SUPABASE_KEY}"
+          missing=0
+          if [ -z "$NUXT_PUBLIC_SUPABASE_URL" ]; then echo "::error::NUXT_PUBLIC_SUPABASE_URL is missing"; missing=1; fi
+          if [ -z "$NUXT_PUBLIC_SUPABASE_KEY" ]; then echo "::error::NUXT_PUBLIC_SUPABASE_KEY is missing"; missing=1; fi
+          if [ "$missing" -ne 0 ]; then exit 1; fi
+          echo "Public Supabase configuration is present (values not displayed)."
         env:
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
 
       - name: 🏗️ Build main (production)
         run: pnpm generate
@@ -551,8 +550,6 @@ jobs:
         env:
           NUXT_APP_BASE_URL: /EG-Maps/
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
 
@@ -652,14 +649,23 @@ jobs:
         run: node scripts/compute-overlaps.mjs
         working-directory: _src_develop
 
+      - name: 🔍 Validate public Supabase configuration
+        run: |
+          missing=0
+          if [ -z "$NUXT_PUBLIC_SUPABASE_URL" ]; then echo "::error::NUXT_PUBLIC_SUPABASE_URL is missing"; missing=1; fi
+          if [ -z "$NUXT_PUBLIC_SUPABASE_KEY" ]; then echo "::error::NUXT_PUBLIC_SUPABASE_KEY is missing"; missing=1; fi
+          if [ "$missing" -ne 0 ]; then exit 1; fi
+          echo "Public Supabase configuration is present (values not displayed)."
+        env:
+          NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
+          NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
+
       - name: 🧪 Build develop (test)
         run: pnpm generate
         working-directory: _src_develop
         env:
           NUXT_APP_BASE_URL: /EG-Maps/test/
           NUXT_PUBLIC_MAPTILER_API_KEY: ${{ secrets.NUXT_PUBLIC_MAPTILER_API_KEY }}
-          SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
           NUXT_PUBLIC_SUPABASE_URL: ${{ secrets.NUXT_PUBLIC_SUPABASE_URL }}
           NUXT_PUBLIC_SUPABASE_KEY: ${{ secrets.NUXT_PUBLIC_SUPABASE_KEY }}
 
@@ -852,7 +858,7 @@ jobs:
             echo "| ⚙️ Unit tests | \`${{ needs.unit-tests.result }}\` |"
             echo "| 🔍 Typecheck | \`${{ needs.typecheck.result }}\` |"
             echo "| 🛡️ Grants gates | \`${{ needs.grants-gates.result }}\` |"
-            echo "| 🎭 Playwright E2E (non-blocking) | \`${{ needs.playwright.result }}\` |"
+            echo "| 🎭 Playwright E2E (blocking) | \`${{ needs.playwright.result }}\` |"
             echo ""
             echo "_Data sync (grants scrape, cultural agents, Supabase push) now runs in the separate \`🔄 Data sync\` workflow — see its run summary._"
             echo ""

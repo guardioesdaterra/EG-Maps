@@ -1,54 +1,30 @@
 # Earth Guardians — Squarespace Embed
 
-This guide shows how to drop the **active-crews** map into any Squarespace 7.x site
-(or any third-party host that strips injected scripts — Webflow, Wix, Ghost, etc.) as a
-**dynamic**, *transparent* component, not a flat, scrollable iframe.
+This guide shows how to add the **Active Crews** map to a Squarespace 7.x site or another host.
+The launcher creates an iframe for the app's real `/active-crews` route, with `embed=true`
+and `hideAll=true`. `/iframe/squarespace` is the integration guide page, not the map; the old
+`/squarespace/active-crews` path is not a route in this repository.
 
-> TL;DR — drop one container + one `<script>` tag. The map floats over your Squarespace
-> background; click a crew to see a modern glass-popup with stats and history.
+> Add a container and one script tag. The map remains inside a regular iframe so browser
+> same-origin protections stay in force.
 
 ---
-## What the embed actually renders
+## What the embed renders
 
-Two modes, picked automatically based on whether a MapTiler API key is configured.
-
-### Mode 1 — Satellite on land, transparent water (Recommended)
-
-When `NUXT_PUBLIC_MAPTILER_API_KEY` (or `MAPTILER_API_KEY`) is set, the embed
-loads MapTiler's **vector** `hybrid-v4` style. After `style.load`, every layer
-whose id or `source-layer` contains `water` / `ocean` is force-painted to
-`fill-color: rgba(0,0,0,0)` and `fill-opacity: 0`. The satellite imagery stays
-on land; the host page's brand/gradient bleeds through every ocean pixel.
-
-| Layer | Visual | Source |
-|-------|--------|--------|
-| Water (ocean / lakes / rivers) | **transparent** — Squarespace background shows through | MapTiler water vector layer, override-painted to alpha 0 |
-| Country land borders | thin white strokes over the satellite imagery | Natural Earth 110m countries GeoJSON |
-| Crew regions | cyan pulsing dot + accent halo | `composables/useCrewEmbedMarkers.ts` |
-| Crew locations | small cyan/amber dots, halo | same |
-| Popup | glass card with stats, growth %, history sparkline | `components/map/CrewPopup.vue` |
-| Pill | bottom-left "131 active crews" counter with pulse | inline `<style>` in the page |
-
-### Mode 2 — Borders only (fallback)
-
-If no MapTiler key is configured, the embed falls back to a transparent
-background with **only** country borders drawn. Markers + popups behave the
-same. A console info line (`[eg-embed] No MAPTILER_API_KEY — falling back to
-borders-only basemap.`) is emitted for diagnostics.
-
-The bundle is rendered by a single Nuxt route: **`/squarespace/active-crews`** which
-prerenders into `dist/` and is mounted inside the host via a transparent iframe.
-
-That's it. The iframe auto-resizes to fit the data, supports pan/zoom/touch, and
-inherits your page's background.
+The iframe loads the existing Active Crews 2D map page. The launcher sets a 480 px minimum
+height by default, hides the map controls, and accepts the map's readiness and 3D resize
+messages. This launcher does not promise a transparent basemap or host-driven theme/accent
+changes; those are not implemented by the active map route.
 
 ### Multiple instances per page
 
 ```html
 <div data-eg-embed="active-crews" style="min-height:480px"></div>
-<div data-eg-embed="active-crews" style="min-height:320px"></div>
-<script src="…/squarespace-embed.js" data-origin="…" defer></script>
+<div data-eg-embed="active-crews" data-min-height="320" style="min-height:320px"></div>
+<script src="https://YOUR-DOMAIN/squarespace-embed.js" data-origin="https://YOUR-DOMAIN" defer></script>
 ```
+
+For a GitHub Pages deployment with a repository subpath, include that subpath in the script URL (for example `https://YOUR-DOMAIN/EG-Maps/squarespace-embed.js`); the launcher infers `/EG-Maps/` for the map route.
 
 ---
 
@@ -56,95 +32,68 @@ inherits your page's background.
 
 | Attribute | Default | Purpose |
 |-----------|---------|---------|
-| `data-origin` | script origin | Absolute URL of the Nuxt `dist/` host. |
-| `data-path` | `/squarespace/active-crews` | Page route to iframe. |
-| `data-theme` | `auto` | `auto`/`light`/`dark`. |
-| `data-min-height` | `480` | Clamp (px). Embed never reports below this. |
-| `data-accent` | `#22d3ee` | Marker & halo color (any CSS color). |
+| `data-origin` | script origin | Absolute URL of the static Nuxt host (include the origin only). |
+| `data-path` | `/active-crews` | Existing map route to iframe. |
+| `data-base-url` | script directory | App subpath inferred from the launcher URL; override with `/EG-Maps/test` if needed. |
+| `data-min-height` | `480` | Initial/minimum iframe height in pixels. |
+| `data-label` | `Active Crews map` | Accessible iframe title suffix. |
 | `data-target` | `[data-eg-embed="active-crews"], #eg-active-crews` | CSS selector for the container(s). |
+| `data-loading` | `lazy` for maps; `eager` for `/` | Use `eager` for the first visible map when a nested WebView delays native lazy loading. |
+| `data-scrolling` | `no` for maps; `auto` for `/` | Keep map canvases fixed; allow the long home page to scroll inside its iframe. |
+
+For example, a home embed can use `<div data-eg-embed="active-crews" data-path="/" data-label="EG-Maps home"></div>`. The launcher starts the home eagerly and enables iframe scrolling; map routes keep the existing lazy default to avoid starting every map on a long Squarespace page. Set `data-loading="eager"` on a map container only when it is meant to appear immediately and the host WebView is delaying it.
+
+The launcher now mounts matching containers that Squarespace inserts after the script runs, and cleans up its iframe/listeners if the host removes a container. While the iframe document loads, the host shows a small accessible loading state. The container exposes `data-eg-loading`, `data-eg-loaded`, `data-eg-ready`, or `data-eg-error`/`data-eg-timeout` for inspection; `data-eg-ready` remains specific to the existing Active Crews readiness message.
 
 ---
 
 ## 3. Cross-origin protocol (postMessage)
 
-Both directions use the same envelope:
+The launcher accepts messages only when both `event.origin` matches the configured map host
+and `event.source` is that exact iframe window. The app also accepts host messages only from
+its parent window and configured origins.
 
-```ts
-{
-  source: 'squarespace-embed',
-  version: 1,
-  type: 'host:resize' | 'host:theme' | 'host:focus' | 'host:open' | 'host:data'
-       | 'embed:ready' | 'embed:height' | 'embed:click' | 'embed:error',
-  payload?: unknown
-}
-```
-
-### Host → Embed
+### Host → Map
 
 | Message | Effect |
 |---------|--------|
-| `host:ready` { theme } | embed paints with given theme |
-| `host:resize` { height } | embed respects the new min-height |
-| `host:theme` { theme: 'light'\|'dark'\|'auto' } | toggle dark/light styles |
-| `host:focus` { lng, lat, zoom } | fly map to coordinates |
-| `host:open` { kind: 'region'\|'location', id } | open popup |
-| `host:data` { regions?, locations? } | hot-swap datasets |
+| `crew-filter-update` `{ payload: { region?: string, hideAll?: 'true', zoom?: string } }` | Update the displayed crew filter; `region` is a supported slug such as `south-america`, and `zoom` is a string from `0` to `1`. |
+| `crew-view-switch` `{ payload: { view: '2d'\|'3d' } }` | Switch between the 2D and 3D routes. |
+| `crew-request-state` | Ask the map to reply with its current filter state. |
 
-### Embed → Host
+### Map → Host
 
 | Message | Effect |
 |---------|--------|
-| `embed:ready` | signals readiness; host should reply with `host:ready` |
-| `embed:height` { height } | iframe auto-resizes to this pixel height |
-| `embed:click` { kind, id } | a marker was clicked — re-emitted as `eg-embed:click` DOM event |
-| `embed:error` { … } | a MapLibre/asset error — re-emitted as `eg-embed:error` DOM event |
+| `crew-map-ready` | Signals that the map can receive host messages. |
+| `crew-map-state` `{ payload: { region?, hideAll?, zoom? } }` | Reply to `crew-request-state`. |
+| `crew-resize` `{ payload: { width, height } }` | Suggests dimensions; currently emitted by the 3D map. |
 
-### Listening from Squarespace (custom code)
+### Sending a host message (custom code)
 
 ```js
-document.getElementById('eg-active-crews').addEventListener('eg-embed:click', (e) => {
-  console.log('crew opened', e.detail);
-  // Plausible, GA, etc.
-});
+const iframe = document.querySelector('#eg-active-crews iframe');
+const mapOrigin = 'https://YOUR-DOMAIN';
+iframe?.contentWindow?.postMessage(
+  { type: 'crew-filter-update', payload: { region: 'south-america', hideAll: 'true' } },
+  mapOrigin
+);
 ```
 
 ---
 
-## 4. Same-origin deployment (advanced, non-Squarespace)
+## 4. Direct mounting without an iframe
 
-If your host allows inline `<script>` tags (a static site you own, Ghost Pro with
-Code Injection, etc.), skip the iframe entirely:
-
-```html
-<link rel="stylesheet" href="https://earth-guardians.example.com/_nuxt/maplibre-gl.css" />
-<div id="eg-active-crews" style="min-height:520px"></div>
-<script type="module" src="https://earth-guardians.example.com/_nuxt/entry.js"></script>
-```
-
-The composables (`useSquarespaceEmbed`, `useEmbedBasemap`, `useCrewEmbedMarkers`)
-all run client-only — same `onMounted` guards, no SSR hydration issues.
+The launcher supports iframe embeds only. Do not include internal Nuxt bundle files such as
+`_nuxt/entry.js` directly in the host page; they are not a standalone map widget.
 
 ---
 
-## 5. Theming your embed to your Squarespace brand
+## 5. Appearance and cross-origin limits
 
-1. Edit the host's CSS so the section **behind** the embed uses your brand gradient.
-2. Override `--embed-land-stroke` and `--embed-land-stroke-dark` in the iframe by
-   appending `<style>` after the script:
-
-```html
-<script>
-  // Wait for embed:ready, then push overrides into the iframe.
-  window.addEventListener('message', (e) => {
-    if (e.data?.source !== 'squarespace-embed' || e.data.type !== 'embed:ready') return;
-    const iframe = document.getElementById('eg-active-crews').querySelector('iframe');
-    iframe.contentDocument.documentElement.style.setProperty('--embed-land-stroke', '#0f172a');
-    iframe.contentDocument.documentElement.style.setProperty('--embed-accent', '#a855f7');
-  });
-</script>
-```
-
-3. Pass `data-accent="#a855f7"` to the launcher to recolor markers + halos.
+The iframe is cross-origin in a normal Squarespace deployment, so the host cannot access
+`iframe.contentDocument` or set CSS variables inside the map. The current Active Crews embed
+does not implement theme or accent messages; do not rely on `data-theme` or `data-accent`.
 
 ---
 
@@ -152,9 +101,9 @@ all run client-only — same `onMounted` guards, no SSR hydration issues.
 
 ```bash
 pnpm build           # → .output/
-pnpm generate        # → dist/   (GitHub Pages / Cloudflare Pages)
-# Then upload dist/ to your host. The embed is at:
-#   https://<host>/squarespace/active-crews
+pnpm generate        # → .output/public (static site)
+# Publish .output/public to your host. The map and launcher are at:
+#   https://<host>/active-crews?embed=true&hideAll=true
 #   https://<host>/squarespace-embed.js
 #   https://<host>/data/embed/land-110m.geojson
 #   https://<host>/data/crews-locations.json
@@ -169,27 +118,19 @@ No build step required for it.
 
 | File | Purpose |
 |------|---------|
-| `composables/useSquarespaceEmbed.ts` | Cross-origin bridge, theme probe, auto-resize, postMessage protocol. |
-| `composables/useEmbedBasemap.ts` | MapLibre style loader — MapTiler hybrid-v4 vector style with water layers force-painted to alpha 0; falls back to borders-only when no MapTiler key. |
-| `pages/squarespace/active-crews.vue` | Transparent viewport, mounts the three composables, renders popups + stats pill. |
+| `pages/active-crews/index.vue` | Active Crews 2D route used by the launcher. |
+| `composables/useCrewPostMessage.ts` | Parent-window filter/view protocol and readiness signal. |
 | `public/squarespace-embed.js` | Vanilla JS launcher Squarespace users paste once. |
 | `public/data/embed/land-110m.geojson` | Natural Earth low-res countries (public domain). |
 | `public/data/crews-locations.json` | Crew locations source-of-truth (already shipped). |
 
 ---
 
-## 8. Extending to other datasets
+## 8. Other datasets
 
-The same pattern works for endangered species, project grants, vulcan-observatory.
-To add another embed page:
-
-1. Copy `pages/squarespace/active-crews.vue` → `pages/squarespace/<dataset>.vue`.
-2. Swap `allCrewRegionsData` for the matching dataset import.
-3. Re-use `useEmbedBasemap` (already dataset-agnostic).
-4. Add a new markers composable (or generalize `useCrewEmbedMarkers` into `useEmbedMarkers({ regions, locations })` if more datasets adopt the same point shape).
-5. Add the route to `nitro.prerender.routes` in `nuxt.config.ts`.
-
-The launcher JS does not need changes; pass `data-path="/squarespace/species"` etc.
+Only Active Crews has the documented Squarespace launcher protocol. `data-path` can point
+to another existing route, but the launcher does not add dataset-specific data, filters, or
+postMessage handling; verify or implement those separately before embedding another map.
 
 ---
 
@@ -221,10 +162,10 @@ while the user stays on the host page, via an auth tab + session relay:
    opener is the same-origin iframe, so **no host-side relay script is
    needed**. It then tries `window.close()` and otherwise shows a
    "you can close this tab" screen (`isPostbackTab`/`postbackDone`).
-4. The iframe's `useSupabase` listener accepts same-origin relay messages and
-   persists them via `setSession()` — the normal flow (manager check, grants
-   load) picks up from there. Refresh token persists in the iframe partition,
-   so the embed stays logged in across reloads on the same host.
+4. The iframe's `useSupabase` listener accepts the message only when the origin
+   matches and `event.source` is the exact auth popup opened by that iframe; it
+   then persists the session via `setSession()`. Refresh token persists in the
+   iframe partition, so the embed stays logged in across reloads on the same host.
 
 ### Host requirements (Squarespace code block)
 
@@ -271,9 +212,10 @@ while the user stays on the host page, via an auth tab + session relay:
 4. Failure signatures: Google frame-refusal console error = pre-fix code or a
    sandboxed iframe; `code verifier could not be found` on callback = flow
    started framed (verifier in the wrong partition); iframe still gated after
-   the tab closes = relay rejected (check `event.origin` vs page origin in
-   the console) or a non-`@earthguardians.org` account (domain rule).
+   the tab closes = relay rejected (check both `event.origin` and
+   `event.source` against the popup opened by the iframe) or a
+   non-`@earthguardians.org` account (domain rule).
 
 ---
 
-*Last updated 2026-09-04.*
+*Last updated 2026-10-27.*

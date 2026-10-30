@@ -12,13 +12,13 @@
         class="kbd-overlay"
         role="dialog"
         aria-modal="true"
-        :aria-label="t('shortcuts.title')"
+        aria-labelledby="global-shortcuts-title"
         @click.self="close"
         @keydown.esc="close"
       >
-        <div class="kbd-panel">
+        <div ref="panelRef" class="kbd-panel" tabindex="-1">
           <header class="kbd-panel__head">
-            <h2 class="kbd-panel__title">{{ t('shortcuts.title') }}</h2>
+            <h2 id="global-shortcuts-title" class="kbd-panel__title">{{ t('shortcuts.title') }}</h2>
             <button type="button" class="kbd-panel__close" :aria-label="t('general.close')" @click="close">
               <Icon name="lucide:x" class="h-4 w-4" />
             </button>
@@ -40,9 +40,12 @@
 <script setup lang="ts">
 
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const { t } = useI18n()
 const open = ref(false)
+const panelRef = ref<HTMLElement | null>(null)
+useFocusTrap(panelRef, { active: open })
 
 const SHORTCUT_DEFS = [
   { id: 'palette', keys: ['K'], labelKey: 'shortcuts.openPalette' },
@@ -141,6 +144,10 @@ onUnmounted(() => {
   line-height: 1;
 }
 .kbd-panel__close:hover { color: var(--text-primary); }
+.kbd-panel__close:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
 .kbd-list {
   list-style: none;
   margin: 0;

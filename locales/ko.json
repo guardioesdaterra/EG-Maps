@@ -5,7 +5,7 @@
     "projectGrants": "프로젝트 보조금",
     "endangeredSpecies": "멸종 위기 종",
     "observatoryOfVulcan": "불칸 천문대",
-    "activeCrews": "활성 크루",
+    "activeCrews": "크루 지도",
     "egGrants": "EG 보조금",
     "crews": "크루",
     "joinEarthGuardians": "Earth Guardians 가입",
@@ -25,11 +25,11 @@
     "speciesDesc": "전 세계의 심각한 멸종 위기 종과 그 서식지를 발견하세요.",
     "observatoryTitle": "불칸 천문대",
     "observatoryDesc": "브라질 희토류 채굴 청구 — 자본 침투, 기업 네트워크, 군사적 이해관계 및 사회환경적 영향.",
-    "activeCrewsTitle": "활성 크루",
-    "activeCrewsDesc": "7개 지역에 걸친 Earth Guardians 활성 크루 탐색 — 131개 크루, 1,241명 회원, 47개국.",
+    "activeCrewsTitle": "크루 지도",
+    "activeCrewsDesc": "7개 지역의 Earth Guardians 크루 네트워크를 살펴보세요 — 활성 크루 131개, 회원 1,241명, 47개국.",
     "projectsCount": "프로젝트",
     "beneficiariesCount": "수혜자",
-    "speciesCount": "종 기록",
+    "speciesCount": "기록된 종",
     "groupsCount": "그룹",
     "allValue": "전체",
     "activeCrewsCount": "활성 크루",
@@ -62,8 +62,8 @@
     "campaignsTitle": "캠페인",
     "campaignsDesc": "EG 캠페인과 그 배경의 지도 — 생물다양성의 날을 위해 제작된 멸종 위기종 지도를 포함합니다.",
     "campaignsKicker": "생물다양성의 날 · 종 지도 수록",
-    "crewProjectsTitle": "크루 프로젝트",
-    "crewProjectsDesc": "Sierra Leone와 Togo의 크루 주도 복원 — 지역사회가 관리하는 맹그로브, 산림, 농장.",
+    "crewProjectsTitle": "대규모",
+    "crewProjectsDesc": "생태계 복원과 재생 농업부터 기후 교육, 아티비즘, 지역사회 회복력 강화까지 크루의 다양한 활동을 살펴보세요.",
     "vulcanTitle": "불칸 천문대",
     "vulcanDesc": "브라질 Poços de Caldas 주변 희토류 채굴권의 커뮤니티 지도 — 채굴권, 물, 보호 지역, 문화적 삶.",
     "vulcanFocusValue": "Planalto Vulcânico",
@@ -180,7 +180,7 @@
     "close": "닫기",
     "markerLegend": "마커 색상",
     "markerSize": "마커 크기",
-    "activeCrewsTitle": "활성 크루",
+    "activeCrewsTitle": "크루 지도",
     "regions": "지역",
     "crews": "크루",
     "members": "회원",
@@ -701,13 +701,13 @@
   "loading": {
     "projectGrantsMap": "프로젝트 보조금 지도 로딩 중",
     "projectGrantsGlobe": "프로젝트 보조금 지구본 로딩 중",
-    "endangeredSpeciesMap": "멸종 위기 종 지도 로딩 중",
+    "endangeredSpeciesMap": "멸종 위기 종 로딩 중",
     "endangeredSpeciesGlobe": "멸종 위기 종 지구본 로딩 중",
     "observatoryOfVulcan": "불칸 천문대 로딩 중",
     "observatoryOfVulcanGlobe": "불칸 천문대 지구본 로딩 중",
-    "activeCrewsMap": "활성 크루 지도 로딩 중",
+    "activeCrewsMap": "크루 지도 로딩 중",
     "initializingVisualization": "대화형 시각화 초기화 중...",
-    "activeCrewsGlobe": "활성 크루 지구본"
+    "activeCrewsGlobe": "3D 크루 지도 로딩 중"
   },
   "error": {
     "pageNotFound": "페이지를 찾을 수 없음",
@@ -813,10 +813,11 @@
     "crewActionDesc": "EG 크루는 건강하고 공정하며 지속가능한 미래를 위해 행동하는 청년 주도 그룹입니다. 크루는 지역사회에 영향을 미치는 기후 문제에 대응해 자신의 프로젝트와 이니셔티브를 추진할 힘을 가지고 있습니다.",
     "ctaJoinTitle": "무브먼트에 가입하기",
     "ctaJoinDesc": "지구의 미래를 위해 행동하는 청년 리더 글로벌 네트워크의 일원이 되세요.",
-    "joinCrew": "크루 시작하기"
+    "joinCrew": "크루 시작하기",
+    "openSpeciesMap": "멸종 위기종 둘러보기"
   },
   "crewProjects": {
-    "title": "크루 프로젝트",
+    "title": "대규모",
     "description": "전 세계 EG 크루가 이끄는 대규모·소규모 프로젝트로, 청년 주도 기후 행동의 임팩트를 보여줍니다.",
     "largeScaleTitle": "대규모 크루 임팩트",
     "largeScaleDesc": "여러 국가에서 큰 환경·지역사회 임팩트를 만든 주요 크루 활동.",
@@ -1240,7 +1241,7 @@
     "crewSignupError": "문제가 발생했습니다. 다시 시도하세요.",
     "crewSignupAlreadyRegistered": "이미 등록되어 있습니다!",
     "crewSignupContactCrews": "양식에 문제가 있나요? 문의하세요",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "개인정보처리방침",
     "crewSignupRequired": "필수",
     "crewSignupBackToPortal": "대시보드로 돌아가기",
@@ -1404,7 +1405,7 @@
       "description": "심각한 멸종 위기종 서식지의 3D 지구본 보기."
     },
     "endangeredSpecies2d": {
-      "title": "멸종 위기종 — 2D 지도",
+      "title": "멸종 위기종 — 2D",
       "description": "전 세계 멸종 위기종 분포의 2D 지도 보기."
     },
     "observatory3d": {

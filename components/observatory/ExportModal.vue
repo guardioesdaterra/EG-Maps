@@ -9,12 +9,12 @@
  */
 <template>
   <Teleport to="body">
-    <div v-if="visible" class="fixed inset-0 flex items-center justify-center p-4 export-modal-backdrop" role="dialog" :aria-modal="true" :aria-label="t('observatory.export.title')">
+    <div v-if="visible" class="fixed inset-0 flex items-center justify-center p-4 export-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="export-modal-title" tabindex="-1" @keydown.escape="$emit('close')">
       <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="$emit('close')" />
       <div class="export-modal-panel w-full max-w-sm" ref="modalRef">
         <div class="p-5">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-bold text-zinc-100 uppercase tracking-wider">{{ t('observatory.export.title') }}</h2>
+            <h2 id="export-modal-title" class="text-sm font-bold text-zinc-100 uppercase tracking-wider">{{ t('observatory.export.title') }}</h2>
             <button type="button" class="text-zinc-500 hover:text-zinc-300 text-lg leading-none" :aria-label="t('observatory.export.close')" @click="$emit('close')">×</button>
           </div>
 

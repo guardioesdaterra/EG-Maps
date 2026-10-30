@@ -13,6 +13,7 @@ import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
 import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
+import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
 import { buildProjectPreviewHTML, buildSpeciesPreviewHTML, buildCrewPreviewHTML } from '@/lib/map-utils'
 import { useI18n } from '@/composables/useI18n'
 
@@ -107,14 +108,14 @@ export function usePreviewCard(baseURL?: string) {
   ) {
     if (popup) popup.remove()
 
-    const instance = new maplibregl.Popup({
+    const instance = new maplibregl.Popup(withMapPopupSafeArea({
       closeButton: false,
       closeOnClick: true,
       closeOnMove: true,
       offset: 16,
       maxWidth: '380px',
-      anchor: 'bottom',
-    })
+      // Leave the anchor dynamic so MapLibre can keep the card outside safe areas.
+    }, map.getContainer()))
       .setLngLat(lngLat)
       .setHTML(html)
       .addTo(map)

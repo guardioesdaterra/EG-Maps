@@ -1,7 +1,8 @@
 /**
  * lib/parsers/csv.ts
- * @why CSV parser with auto-delimiter detection (comma, semicolon, tab) and auto-column mapping for lat/lng, name, title, description, and image_url fields. Returns GeoJSON FeatureCollection of Point features.
+ * @why CSV parser with auto-delimiter detection and bounded import size/count.
  */
+import { MAX_FEATURES, MAX_IMPORT_TEXT_BYTES, emptyImportResult, tooManyFeatures, utf8ByteLength } from './limits'
 export interface CSVParseResult {
   features: GeoJSON.Feature[]
   name: string
@@ -74,6 +75,7 @@ function parseCSVLine(line: string, delimiter: string): string[] {
 }
 
 export function parseCSV(text: string, fileName: string): CSVParseResult {
+  if (utf8ByteLength(text) > MAX_IMPORT_TEXT_BYTES) return emptyImportResult<CSVParseResult>(fileName, `Import text exceeds the ${MAX_IMPORT_TEXT_BYTES / 1024 / 1024} MiB limit`)
   const errors: string[] = []
   const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0)
   if (lines.length < 2) {
@@ -87,6 +89,7 @@ export function parseCSV(text: string, fileName: string): CSVParseResult {
     errors.push(`Could not detect latitude/longitude columns. Found: ${headers.join(', ')}`)
     return { features: [], name: fileName, count: 0, properties: headers, errors }
   }
+  if (lines.length - 1 > MAX_FEATURES) return emptyImportResult<CSVParseResult>(fileName, tooManyFeatures(lines.length - 1))
   const features: GeoJSON.Feature[] = []
   for (let i = 1; i < lines.length; i++) {
     const values = parseCSVLine(lines[i], delimiter).map(v => v.replace(/^["']|["']$/g, ''))

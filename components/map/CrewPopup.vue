@@ -216,7 +216,7 @@ function tx(key: string, fallback: string, params?: Record<string, string>): str
 }
 
 const ownProjectsTitle = computed(() => !props.isLocation
-  ? tx('crews.ownProjectsRegionTitle', 'On-site crew projects')
+  ? tx('crews.ownProjectsRegionTitle', 'On-site Crew projects')
   : tx('crews.ownProjectsTitle', 'Near Crew Project'))
 
 const crewProjectBadge = computed(() => tx('crews.crewProjectBadge', 'Crew project'))
@@ -224,7 +224,7 @@ const flyToLabel = computed(() => tx('crews.flyToProject', 'Fly to'))
 const moreProjectsTitle = computed(() => tx('crews.moreProjects', 'More linked projects'))
 const grantsPageLabel = computed(() => tx('crews.pageOf', `Page ${safeGrantPage.value} of ${totalGrantPages.value}`, { page: String(safeGrantPage.value), pages: String(totalGrantPages.value) }))
 const crewsInRegionTitle = computed(() => tx('crews.crewsInRegion', `Crews in ${regionName.value}`, { region: regionName.value }))
-const crewsInRegionHint = computed(() => tx('crews.crewsInRegionHint', 'All crews of this region — select one for details'))
+const crewsInRegionHint = computed(() => tx('crews.crewsInRegionHint', 'All Crews of this region — select one for details'))
 const crewsPageLabel = computed(() => tx('crews.pageOf', `Page ${safeCrewPage.value} of ${totalCrewPages.value}`, { page: String(safeCrewPage.value), pages: String(totalCrewPages.value) }))
 
 // Explicit scope labeling: a region popup aggregates the grants of ALL crews
@@ -235,18 +235,18 @@ const grantsTitle = computed(() => {
     const translated = t('crews.projectsOfRegion', { region: regionName.value })
     return translated === 'crews.projectsOfRegion' ? fallback : translated
   }
-  const fallback = 'Project grants of this crew'
+  const fallback = 'Project grants of this Crew'
   const translated = t('crews.projectsOfCrew')
   return translated === 'crews.projectsOfCrew' ? fallback : translated
 })
 
 const grantsHint = computed(() => {
   if (!props.isLocation) {
-    const fallback = 'Linked to crews across the whole region'
+    const fallback = 'Linked to Crews across the whole region'
     const translated = t('crews.projectsOfRegionHint')
     return translated === 'crews.projectsOfRegionHint' ? fallback : translated
   }
-  const fallback = 'Linked to this crew by place, name or proximity'
+  const fallback = 'Linked to this Crew by place, name or proximity'
   const translated = t('crews.projectsOfCrewHint')
   return translated === 'crews.projectsOfCrewHint' ? fallback : translated
 })
@@ -352,7 +352,7 @@ const grantsHint = computed(() => {
               v-for="entry in historyData"
               :key="entry.year"
               class="cp__chart-bar"
-              :title="`${entry.year}: ${entry.active} active, ${entry.inactive} inactive crews, ${entry.members} members`"
+              :title="`${entry.year}: ${entry.active} active, ${entry.inactive} inactive Crews, ${entry.members} members`"
             >
               <div class="cp__chart-stack">
                 <div

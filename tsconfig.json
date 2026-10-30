@@ -1,4 +1,25 @@
 {
   "extends": "./.nuxt/tsconfig.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    ".nuxt/**/*.d.ts",
+    "*.ts",
+    "*.vue",
+    "components/**/*.vue",
+    "composables/**/*.ts",
+    "i18n/**/*.ts",
+    "layouts/**/*.vue",
+    "lib/**/*.ts",
+    "pages/**/*.vue",
+    "plugins/**/*.ts",
+    "scripts/**/*.ts",
+    "server/**/*.ts",
+    "squarespaces-composables/**/*.ts",
+    "stores/**/*.ts",
+    "tests/**/*.ts",
+    "types/**/*.ts"
+  ],
   "exclude": ["supabase/functions/**"]
 }

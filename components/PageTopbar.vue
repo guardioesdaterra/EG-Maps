@@ -39,15 +39,11 @@ const baseURL = useRuntimeConfig().app.baseURL
 
 <style scoped>
 .pt {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--glass-bg);
   backdrop-filter: blur(20px) saturate(1.5);
   -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-:global(.dark) .pt {
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom-color: rgba(255, 255, 255, 0.06);
+  box-shadow: var(--glass-shadow);
 }
 .pt-inner {
   width: min(100% - 2rem, 80rem);

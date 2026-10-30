@@ -14,11 +14,12 @@
 <template>
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="visible" ref="overlayRef" class="claim-overlay-fixed" role="dialog" aria-modal="true" aria-label="Claim details" tabindex="-1" @click.self="close" @keydown.escape="close">
-        <button ref="closeBtnRef" class="claim-overlay-close-btn" @click="close" aria-label="Close claim details">
+      <div v-if="visible" ref="overlayRef" class="claim-overlay-fixed" role="dialog" aria-modal="true" aria-labelledby="claim-detail-title" tabindex="-1" @click.self="close" @keydown.escape="close">
+        <button ref="closeBtnRef" type="button" class="claim-overlay-close-btn" @click="close" aria-label="Close claim details">
           <Icon name="lucide:x" class="h-5 w-5" />
         </button>
         <div class="claim-overlay-content">
+          <h2 id="claim-detail-title" class="sr-only">Claim details</h2>
           <div v-html="html" />
           <!-- ── Holder intelligence ─────────────────────────── -->
           <div v-if="context" class="claim-intel">
@@ -182,6 +183,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 .claim-overlay-close-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
+}
+.claim-overlay-close-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
 }
 .claim-overlay-content {
   max-width: 34rem;

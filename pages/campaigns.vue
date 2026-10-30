@@ -38,7 +38,7 @@
             <div class="flow-icon flow-icon--discover"><Icon name="lucide:bird" /></div>
             <h3 class="flow-title">{{ t('campaigns.discover') }}</h3>
             <p class="flow-desc">{{ t('campaigns.discoverDesc') }}</p>
-            <NuxtLink to="/endangered-species" class="flow-link">Open Species Map <Icon name="lucide:arrow-right" class="h-3 w-3" /></NuxtLink>
+            <NuxtLink to="/endangered-species" class="flow-link">{{ t('campaigns.openSpeciesMap') }} <Icon name="lucide:arrow-right" class="h-3 w-3" /></NuxtLink>
           </div>
           <div class="flow-arrow"><Icon name="lucide:arrow-right" class="h-4 w-4" /></div>
           <div class="flow-step">
@@ -67,6 +67,7 @@
         </div>
         <div class="campaign-grid">
           <article v-for="c in campaigns" :key="c.title" class="campaign-card">
+            <img v-if="c.image" :src="`${baseURL}${c.image}`" alt="" loading="lazy" decoding="async" class="campaign-image" />
             <div class="card-top">
               <span class="card-kicker">{{ c.kicker }}</span>
               <Icon :name="c.icon" class="h-5 w-5" />
@@ -78,9 +79,49 @@
             </ul>
             <div class="card-tags"><span>{{ c.tags }}</span></div>
             <div class="card-actions">
-              <a class="btn btn--primary" :href="c.learnUrl" target="_blank" rel="noopener noreferrer">{{ t('campaigns.learnMore') }} <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" /></a>
-              <a class="text-link" :href="c.actionUrl" target="_blank" rel="noopener noreferrer">{{ c.actionLabel }} <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" /></a>
+              <a v-if="c.learnUrl" class="btn btn--primary" :href="c.learnUrl" target="_blank" rel="noopener noreferrer">{{ c.learnLabel || t('campaigns.learnMore') }} <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" /></a>
+              <NuxtLink v-if="c.actionRoute && c.actionLabel" class="text-link" :to="c.actionRoute">{{ c.actionLabel }} <Icon name="lucide:arrow-right" class="h-3.5 w-3.5" /></NuxtLink>
+              <a v-else-if="c.actionUrl && c.actionLabel" class="text-link" :href="c.actionUrl" target="_blank" rel="noopener noreferrer">{{ c.actionLabel }} <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" /></a>
             </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- World Cleanup Day field guide -->
+      <section class="section" aria-labelledby="cleanup-guide-title">
+        <div class="section-head">
+          <div>
+            <h2 id="cleanup-guide-title" class="section-title">{{ t('campaigns.cleanupGuideTitle') }}</h2>
+          </div>
+          <p class="section-side">{{ t('campaigns.cleanupGuideDesc') }}</p>
+        </div>
+        <div class="cleanup-guide-grid">
+          <article class="cleanup-guide-card">
+            <h3>{{ t('campaigns.cleanupBeforeTitle') }}</h3>
+            <ul>
+              <li>{{ t('campaigns.cleanupBefore1') }}</li>
+              <li>{{ t('campaigns.cleanupBefore2') }}</li>
+              <li>{{ t('campaigns.cleanupBefore3') }}</li>
+              <li>{{ t('campaigns.cleanupBefore4') }}</li>
+            </ul>
+          </article>
+          <article class="cleanup-guide-card">
+            <h3>{{ t('campaigns.cleanupDuringTitle') }}</h3>
+            <ul>
+              <li>{{ t('campaigns.cleanupDuring1') }}</li>
+              <li>{{ t('campaigns.cleanupDuring2') }}</li>
+              <li>{{ t('campaigns.cleanupDuring3') }}</li>
+              <li>{{ t('campaigns.cleanupDuring4') }}</li>
+            </ul>
+          </article>
+          <article class="cleanup-guide-card">
+            <h3>{{ t('campaigns.cleanupAfterTitle') }}</h3>
+            <ul>
+              <li>{{ t('campaigns.cleanupAfter1') }}</li>
+              <li>{{ t('campaigns.cleanupAfter2') }}</li>
+              <li>{{ t('campaigns.cleanupAfter3') }}</li>
+              <li><a href="https://forms.gle/z9xcyuZhk23TnRs19" target="_blank" rel="noopener noreferrer">{{ t('campaigns.cleanupAfter4') }} <Icon name="lucide:arrow-up-right" class="inline h-3 w-3" /></a></li>
+            </ul>
           </article>
         </div>
       </section>
@@ -130,13 +171,14 @@
         </div>
       </section>
 
-      <p class="source-note">Campaign content from Earth Guardians' official <a href="https://www.earthguardians.org/campaigns-2" target="_blank" rel="noopener noreferrer">campaigns</a>, <a href="https://www.earthguardians.org/can" target="_blank" rel="noopener noreferrer">Choose Action Now</a>, <a href="https://www.earthguardians.org/stmp" target="_blank" rel="noopener noreferrer">Stop the Money Pipeline</a>, <a href="https://www.earthguardians.org/civic-engagement" target="_blank" rel="noopener noreferrer">Civic Engagement</a> and <a href="https://www.earthguardians.org/divest-defund" target="_blank" rel="noopener noreferrer">Divest &amp; Defund</a> pages.</p>
+      <p class="source-note">Campaign highlights draw on Earth Guardians' official <a href="https://www.earthguardians.org/campaigns-2" target="_blank" rel="noopener noreferrer">campaigns</a>, <a href="https://www.earthguardians.org/can" target="_blank" rel="noopener noreferrer">Choose Action Now</a>, <a href="https://www.earthguardians.org/stmp" target="_blank" rel="noopener noreferrer">Stop the Money Pipeline</a>, <a href="https://www.earthguardians.org/civic-engagement" target="_blank" rel="noopener noreferrer">Civic Engagement</a>, <a href="https://www.earthguardians.org/divest-defund" target="_blank" rel="noopener noreferrer">Divest &amp; Defund</a> and <a href="https://www.earthguardians.org/project-grants" target="_blank" rel="noopener noreferrer">Project Grants</a> pages, plus the supplied 2026 Campaign Plan and World Cleanup Day Guide.</p>
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
 const { t } = useI18n()
+const baseURL = useRuntimeConfig().app.baseURL
 
 interface Campaign {
   icon: string
@@ -145,9 +187,12 @@ interface Campaign {
   desc: string
   stats: string[]
   tags: string
-  learnUrl: string
-  actionLabel: string
-  actionUrl: string
+  learnUrl?: string
+  learnLabel?: string
+  actionLabel?: string
+  actionUrl?: string
+  actionRoute?: string
+  image?: string
 }
 
 const campaigns = computed<Campaign[]>(() => [
@@ -194,6 +239,72 @@ const campaigns = computed<Campaign[]>(() => [
     learnUrl: 'https://www.earthguardians.org/divest-defund',
     actionLabel: t('campaigns.divestActionLabel'),
     actionUrl: 'https://www.notmydirtymoney.com/',
+  },
+  {
+    icon: 'lucide:hand-heart',
+    kicker: t('campaigns.projectGrantsKicker'),
+    title: t('campaigns.projectGrantsTitle'),
+    desc: t('campaigns.projectGrantsDesc'),
+    stats: [t('campaigns.projectGrantsStat1'), t('campaigns.projectGrantsStat2'), t('campaigns.projectGrantsStat3')],
+    tags: t('campaigns.projectGrantsTags'),
+    learnUrl: 'https://www.earthguardians.org/project-grants',
+    actionLabel: t('campaigns.openProjectGrantsMap'),
+    actionRoute: '/project-grants',
+  },
+  {
+    icon: 'lucide:waves',
+    kicker: t('campaigns.waterKicker'),
+    title: t('campaigns.waterTitle'),
+    desc: t('campaigns.waterDesc'),
+    stats: [t('campaigns.waterStat1'), t('campaigns.waterStat2'), t('campaigns.waterStat3')],
+    tags: t('campaigns.waterTags'),
+    learnUrl: 'https://www.earthguardians.org/campaigns-2',
+    image: 'campaigns/2026-water-day.webp',
+  },
+  {
+    icon: 'lucide:recycle',
+    kicker: t('campaigns.zeroWasteKicker'),
+    title: t('campaigns.zeroWasteTitle'),
+    desc: t('campaigns.zeroWasteDesc'),
+    stats: [t('campaigns.zeroWasteStat1'), t('campaigns.zeroWasteStat2'), t('campaigns.zeroWasteStat3')],
+    tags: t('campaigns.zeroWasteTags'),
+    learnUrl: 'https://www.earthguardians.org/campaigns-2',
+    image: 'campaigns/2026-zero-waste-day.webp',
+  },
+  {
+    icon: 'lucide:palette',
+    kicker: t('campaigns.earthDayKicker'),
+    title: t('campaigns.earthDayTitle'),
+    desc: t('campaigns.earthDayDesc'),
+    stats: [t('campaigns.earthDayStat1'), t('campaigns.earthDayStat2'), t('campaigns.earthDayStat3')],
+    tags: t('campaigns.earthDayTags'),
+    learnUrl: 'https://www.earthguardians.org/campaigns-2',
+    image: 'campaigns/2026-earth-day.webp',
+  },
+  {
+    icon: 'lucide:map',
+    kicker: t('campaigns.biodiversityKicker'),
+    title: t('campaigns.biodiversityTitle'),
+    desc: t('campaigns.biodiversityDesc'),
+    stats: [t('campaigns.biodiversityStat1'), t('campaigns.biodiversityStat2'), t('campaigns.biodiversityStat3')],
+    tags: t('campaigns.biodiversityTags'),
+    learnUrl: 'https://www.earthguardians.org/campaigns-2',
+    actionLabel: t('campaigns.openSpeciesMap'),
+    actionRoute: '/endangered-species',
+    image: 'campaigns/2026-biodiversity-day.webp',
+  },
+  {
+    icon: 'lucide:trash-2',
+    kicker: t('campaigns.cleanupKicker'),
+    title: t('campaigns.cleanupTitle'),
+    desc: t('campaigns.cleanupDesc'),
+    stats: [t('campaigns.cleanupStat1'), t('campaigns.cleanupStat2'), t('campaigns.cleanupStat3')],
+    tags: t('campaigns.cleanupTags'),
+    learnUrl: `${baseURL}campaigns/2026-world-cleanup-day-guide.pdf`,
+    learnLabel: t('campaigns.downloadCleanupGuide'),
+    actionLabel: t('campaigns.findCleanupCrew'),
+    actionRoute: '/active-crews',
+    image: 'campaigns/2026-world-cleanup-day.webp',
   },
 ])
 
@@ -404,7 +515,7 @@ useHead({
 /* ── Campaign Grid ── */
 .campaign-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
   gap: 0.75rem;
 }
 .campaign-card {
@@ -432,6 +543,14 @@ useHead({
   border-color: var(--primary);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
+.campaign-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 8;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  object-fit: cover;
+}
 :global(.dark) .campaign-card:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
@@ -447,7 +566,7 @@ useHead({
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: auto;
+  margin-bottom: 0.75rem;
 }
 .card-top > svg { color: var(--primary); }
 .card-kicker {
@@ -458,7 +577,7 @@ useHead({
   text-transform: uppercase;
 }
 .campaign-card h3 {
-  margin: 1.5rem 0 0.5rem;
+  margin: 0.25rem 0 0.5rem;
   font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif;
   font-size: clamp(1.1rem, 2vw, 1.5rem);
   font-weight: 900;
@@ -523,6 +642,36 @@ useHead({
   gap: 0.6rem;
   margin-top: 1rem;
 }
+
+/* ── World Cleanup Day field guide ── */
+.cleanup-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.75rem;
+}
+.cleanup-guide-card {
+  padding: 1.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+:global(.dark) .cleanup-guide-card { background: rgba(255, 255, 255, 0.025); }
+.cleanup-guide-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+.cleanup-guide-card ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0;
+  padding-left: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+.cleanup-guide-card a { color: var(--primary); text-decoration: underline; }
 
 /* ── Pathway ── */
 .pathway-grid {
@@ -620,6 +769,7 @@ useHead({
   .hero-note { margin-top: 2rem; padding-top: 1rem; padding-left: 1rem; }
   .section-side { margin-top: 0.75rem; }
   .campaign-grid,
+  .cleanup-guide-grid,
   .pathway-grid { grid-template-columns: 1fr; }
   .connection-flow { flex-direction: column; gap: 0.5rem; }
   .flow-arrow { transform: rotate(90deg); padding: 0.25rem 0; justify-content: center; }

@@ -10,12 +10,12 @@
 <template>
   <Teleport to="body">
     <Transition name="geo-modal">
-      <div v-if="visible" class="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-md geo-locate-backdrop" @click.self="onDismiss">
-        <div class="obs-geo-modal" role="dialog" :aria-label="t('observatory.geoLocate.title')" ref="geoModalRef">
+      <div v-if="visible" class="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-md geo-locate-backdrop" role="dialog" aria-modal="true" aria-labelledby="geo-locate-modal-title" tabindex="-1" @click.self="onDismiss" @keydown.escape="onDismiss">
+        <div class="obs-geo-modal" ref="geoModalRef">
           
           <template v-if="step === 'prompt'">
             <Icon name="lucide:globe" class="obs-geo-modal__icon w-9 h-9" />
-            <h2 class="obs-geo-modal__title">{{ t('observatory.geoLocate.title') }}</h2>
+            <h2 id="geo-locate-modal-title" class="obs-geo-modal__title">{{ t('observatory.geoLocate.title') }}</h2>
             <p class="obs-geo-modal__desc">{{ t('observatory.geoLocate.description') }}</p>
 
             <button
@@ -85,7 +85,7 @@
           
           <template v-else-if="step === 'confirm'">
             <Icon name="lucide:map-pin" class="obs-geo-modal__icon w-9 h-9" />
-            <h2 class="obs-geo-modal__title">{{ t('observatory.geoLocate.foundTitle') }}</h2>
+            <h2 id="geo-locate-modal-title" class="obs-geo-modal__title">{{ t('observatory.geoLocate.foundTitle') }}</h2>
             <div class="obs-geo-modal__location-card">
               <div class="obs-geo-modal__location-city">{{ detectedCity }}</div>
               <div class="obs-geo-modal__location-detail">{{ detectedDetail }}</div>

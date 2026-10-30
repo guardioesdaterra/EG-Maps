@@ -13,6 +13,7 @@ import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { GROUP_COLORS } from '@/lib/map-utils'
 import { useI18n } from '@/composables/useI18n'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const { t } = useI18n()
 const { isOpen, speciesList, coordinate, closePanel } = useSpeciesPanel()
@@ -21,6 +22,11 @@ const panelRef = ref<HTMLElement | null>(null)
 const listRef = ref<HTMLElement | null>(null)
 const backdropRef = ref<HTMLElement | null>(null)
 let panelAnim: gsap.core.Timeline | null = null
+function handleAnimationVisibility() {
+  if (document.hidden) gsap.ticker.sleep()
+  else gsap.ticker.wake()
+}
+useFocusTrap(panelRef, { active: isOpen })
 
 watch(isOpen, (open) => {
   if (open) {
@@ -77,11 +83,14 @@ function selectSpecies(species: SpeciesIndexItem) {
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown)
+  document.addEventListener('visibilitychange', handleAnimationVisibility)
+  if (document.hidden) gsap.ticker.sleep()
 })
 
 onBeforeUnmount(() => {
   panelAnim?.kill()
   document.removeEventListener('keydown', handleKeydown)
+  document.removeEventListener('visibilitychange', handleAnimationVisibility)
 })
 
 </script>
@@ -93,6 +102,7 @@ onBeforeUnmount(() => {
         v-if="isOpen"
         ref="backdropRef"
         class="fixed inset-0 z-[9998] bg-black/50"
+        aria-hidden="true"
         @click="handleBackdropClick"
       />
     </Transition>
@@ -104,12 +114,12 @@ onBeforeUnmount(() => {
         style="padding-left: env(safe-area-inset-left, 0px)"
         role="dialog"
         aria-modal="true"
-        :aria-label="t('species.panelTitle')"
+        aria-labelledby="species-panel-title"
       >
         
         <div class="flex items-center justify-between px-fluid-md py-fluid-sm border-b border-[var(--border-color)] shrink-0">
           <div class="min-w-0 flex-1">
-            <h2 class="text-fluid-sm font-semibold text-[var(--text-primary)] truncate">
+            <h2 id="species-panel-title" class="text-fluid-sm font-semibold text-[var(--text-primary)] truncate">
               {{ speciesList.length }} {{ t('species.panelTitle') }}
             </h2>
             <p v-if="coordinate" class="text-fluid-xs text-[var(--text-muted)] mt-0.5">
@@ -128,6 +138,7 @@ onBeforeUnmount(() => {
         
         <div ref="listRef" class="flex-1 overflow-y-auto px-fluid-sm py-fluid-sm space-y-1.5 scrollbar-thin">
           <button
+            type="button"
             v-for="s in speciesList"
             :key="s.id"
             class="species-card w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[var(--input-bg)] hover:bg-[var(--tool-btn-active-bg)] transition-colors text-left cursor-pointer border border-transparent hover:border-[var(--border-color)]"
@@ -208,5 +219,10 @@ onBeforeUnmount(() => {
 .panel-slide-leave-to {
   transform: translateX(-100%);
   opacity: 0;
+}
+.species-card:focus-visible,
+[role="dialog"] button:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
 }
 </style>

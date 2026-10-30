@@ -8,7 +8,7 @@
  *  Run manually after editing lib/crew-grants.ts, lib/project-data.ts or
  *  public/data/crews-locations.json — or via the "Regenerate crew grants map"
  *  GitHub Action (workflow_dispatch).
- * @usage node scripts/generate-crew-grants.ts [--check]
+ * @usage node --experimental-strip-types scripts/generate-crew-grants.ts [--check]
  *  --check: exit 1 if the checked-in map differs (CI drift guard)
  * @deps node:fs, node:path, node:url; ../lib/crew-grants.ts; ../lib/crew-data.ts; ../lib/project-data.ts
  */
@@ -22,10 +22,10 @@ import {
   crewRegionKey,
   projectGrantKey,
   CREW_GRANT_MAX_DISTANCE_KM,
-} from '../lib/crew-grants'
-import { allCrewRegionsData } from '../lib/crew-data'
-import { allProjectsData } from '../lib/project-data'
-import type { CrewLocation } from '../lib/crew-data'
+} from '../lib/crew-grants.ts'
+import { allCrewRegionsData } from '../lib/crew-data.ts'
+import { allProjectsData } from '../lib/project-data.ts'
+import type { CrewLocation } from '../lib/crew-data.ts'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = join(ROOT, 'lib', 'crew-grants-map.ts')

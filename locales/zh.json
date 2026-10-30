@@ -5,13 +5,15 @@
     "projectGrants": "项目资助",
     "endangeredSpecies": "濒危物种",
     "observatoryOfVulcan": "火山观测站",
-    "activeCrews": "活跃团队",
+    "activeCrews": "团队地图",
     "egGrants": "EG资助",
     "crews": "团队",
     "joinEarthGuardians": "加入地球守护者",
     "switchToLight": "切换到浅色模式",
     "switchToDark": "切换到深色模式",
-    "language": "语言"
+    "language": "语言",
+    "privacy": "隐私",
+    "terms": "条款"
   },
   "home": {
     "title": "地球守护者",
@@ -25,11 +27,11 @@
     "speciesDesc": "发现世界各地极危物种及其栖息地。",
     "observatoryTitle": "火山观测站",
     "observatoryDesc": "巴西稀土采矿权 — 资本入侵、企业网络、军事利益与社会环境影响。",
-    "activeCrewsTitle": "活跃团队",
-    "activeCrewsDesc": "探索地球守护者在7个地区的活跃团队 — 131个团队，1,241名成员，覆盖47个国家。",
+    "activeCrewsTitle": "团队地图",
+    "activeCrewsDesc": "探索 Earth Guardians 覆盖 7 个地区的团队网络——131 支活跃团队、1,241 名成员，遍及 47 个国家。",
     "projectsCount": "项目",
     "beneficiariesCount": "受益人",
-    "speciesCount": "物种记录",
+    "speciesCount": "已记录的物种",
     "groupsCount": "群组",
     "allValue": "全部",
     "activeCrewsCount": "活跃团队",
@@ -62,8 +64,8 @@
     "campaignsTitle": "行动",
     "campaignsDesc": "EG的行动及其背后的地图 — 包括为生物多样性日打造的濒危物种地图。",
     "campaignsKicker": "生物多样性日 · 内含物种地图",
-    "crewProjectsTitle": "团队项目",
-    "crewProjectsDesc": "Sierra Leone和Togo的团队主导修复 — 社区管理下的红树林、森林和农场。",
+    "crewProjectsTitle": "大型项目",
+    "crewProjectsDesc": "了解各个 Crew 的多元工作：从生态系统修复和再生农业，到气候教育、艺术行动与社区韧性建设。",
     "vulcanTitle": "火山观测站",
     "vulcanDesc": "巴西Poços de Caldas周边稀土采矿权的社区地图 — 申请、水源、受保护领地与文化生活。",
     "vulcanFocusValue": "Planalto Vulcânico",
@@ -94,13 +96,15 @@
     "skillBuilding": "技能提升",
     "joinGlobal": "加入全球网络",
     "youthLed": "青年主导行动",
-    "observatoryOfVulcan": "火山观测站"
+    "observatoryOfVulcan": "火山观测站",
+    "sections": "部分"
   },
   "mapControls": {
     "search": "搜索",
     "searchProjects": "搜索项目",
     "searchSpecies": "搜索物种",
     "searchCrews": "搜索团队",
+    "searchCities": "搜索城市",
     "searchPlaceholder": "按名称或位置搜索...",
     "searchSpeciesPlaceholder": "按名称或地区搜索...",
     "showAll": "显示全部",
@@ -123,7 +127,53 @@
     "of": "/",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "或打开列表浏览全部",
-    "searchResults": "搜索结果"
+    "searchResults": "搜索结果",
+    "nearby": "附近",
+    "nearbyLabel": "查找附近的团队、项目和活动",
+    "offlineCachedData": "离线模式 — 缓存数据仍可用",
+    "nearbyPanel": {
+      "eyebrow": "探索附近",
+      "title": "查找你附近的行动",
+      "consentTitle": "使用你的位置？",
+      "consentDescription": "我们仅在此浏览器中使用你的位置，为附近的团队和项目排序。位置信息不会发送给 Earth Guardians，也不会由此应用存储。",
+      "consentLabel": "我同意在本次会话中与此地图分享我的大致位置。",
+      "locating": "正在定位…",
+      "findAction": "查找附近的行动",
+      "locationError": "未获得位置权限。你可以在浏览器设置中启用权限后重试。",
+      "locationActive": "位置已启用 · 仅为大致位置",
+      "clearLocation": "清除当前位置",
+      "categories": "附近类别",
+      "crews": "团队",
+      "projects": "项目",
+      "campaigns": "活动",
+      "noCrews": "目前还没有可用的带坐标团队位置。",
+      "noProjects": "目前还没有可用的项目位置。",
+      "biodiversity": "濒危物种",
+      "biodiversityDesc": "全球生物多样性与栖息地行动。",
+      "chooseAction": "立即选择行动",
+      "chooseActionDesc": "由青年领导的气候正义与直接行动。",
+      "solutions": "可持续解决方案",
+      "solutionsDesc": "社区层面的废弃物与韧性解决方案。"
+    },
+    "imported": "已导入",
+    "populationUnit": "居民",
+    "clusterPanel": {
+      "title": "聚类结果",
+      "count": "聚类结果：{count}",
+      "copyLink": "复制聚类链接",
+      "linkCopied": "聚类链接已复制",
+      "close": "关闭聚类结果",
+      "searchLabel": "搜索聚类结果",
+      "searchPlaceholder": "搜索此聚类…",
+      "visibleResults": "{count} 个可见聚类结果",
+      "empty": "没有结果匹配此搜索。",
+      "activeCrewsSubtitle": "{crews} 个活跃团队 · {countries} 个国家"
+    },
+    "shareMap": "分享地图",
+    "linkCopied": "链接已复制",
+    "exportMap": "导出地图图片",
+    "exportData": "导出可见数据为 GeoJSON",
+    "legend": "图例"
   },
   "mapTiles": {
     "maptiler": "卫星",
@@ -180,7 +230,7 @@
     "close": "关闭",
     "markerLegend": "标记颜色",
     "markerSize": "标记大小",
-    "activeCrewsTitle": "活跃团队",
+    "activeCrewsTitle": "团队地图",
     "regions": "地区",
     "crews": "团队",
     "members": "成员",
@@ -204,7 +254,9 @@
     "switchTo2D": "切换到2D地图视图",
     "switchTo3D": "切换到3D地球仪视图",
     "view2D": "2D地图",
-    "view3D": "3D地球仪"
+    "view3D": "3D地球仪",
+    "reloadPage": "重新加载页面",
+    "allSpeciesLoaded": "所有物种数据已加载"
   },
   "project": {
     "directBeneficiaries": "直接受益人",
@@ -241,7 +293,9 @@
     "ownProjectsRegionTitle": "在地团队项目",
     "crewProjectBadge": "团队项目",
     "moreProjects": "更多关联项目",
-    "pageOf": "第{page}页，共{pages}页"
+    "pageOf": "第{page}页，共{pages}页",
+    "crewsInRegion": "{region}的团队",
+    "crewsInRegionHint": "该地区的所有团队 — 选择一个查看详情"
   },
   "taxonomy": {
     "Mammal": "哺乳动物",
@@ -268,7 +322,10 @@
       "illegal": "非法",
       "env": "环境风险",
       "network": "网络",
-      "timeline": "时间线"
+      "timeline": "时间线",
+      "power": "势力",
+      "territory": "领地",
+      "culture": "文化"
     },
     "dangerPanel": {
       "title": "最危险的企业",
@@ -310,7 +367,11 @@
       "chinaBanTitle": "中国出口禁令（2025年10月）",
       "chinaBanBody": "中国禁止向美国出口12/17种REE元素。美国78%的武器依赖中国REE。DFARS 2027指令：美国国防承包商必须使用非中国REE。",
       "title": "title",
-      "empty": "empty"
+      "empty": "empty",
+      "liveTitle": "实时：本地区",
+      "liveClaims": "关键采矿权",
+      "liveArea": "关键面积",
+      "liveUs": "与美国相关"
     },
     "illegal": {
       "landSpec": "土地投机",
@@ -371,7 +432,16 @@
       "title": "申请时间线（2000–2026）",
       "claims": "{count}个申请",
       "cumulative": "累计 {count}",
-      "empty": "empty"
+      "empty": "empty",
+      "total": "总计",
+      "readStory": "阅读故事",
+      "hideStory": "隐藏故事",
+      "footer": "年ly new 采矿权 from ANM public records; the running 总计 compounds each year.",
+      "narrativeStart": "baseline: a few dozen 采矿权 a year — rare earths not yet strategic.",
+      "narrative2010": "China bans rare-earth exports to Japan, the first warning shot — 采矿权 jump past 500.",
+      "narrative2017": "the US declares rare earths critical (EO 13817); China threatens a US ban 和 the Pentagon starts investing.",
+      "narrative2021": "supercycle 和 Brazil rush — lithium 和 ASX juniors invade; 2023 peaks at 4,213 采矿权 as the US DFC funds Serra Verde.",
+      "narrative2024": "backlash: prosecutors challenge licensing 和 Operação Rejeito arrests an ANM director, while China bans 7 rare-earth elements."
     },
     "actions": {
       "verify": "在ANM上验证",
@@ -391,7 +461,14 @@
       "heatmap": "密度热力图",
       "cultural": "文化与社区",
       "waterBodies": "水体",
-      "protectedAreas": "保护区"
+      "protectedAreas": "保护区",
+      "conservationUnits": "保护单元",
+      "bufferZones": "缓冲区",
+      "protectedSearch": "保护区和缓冲区",
+      "noProtectedSearch": "没有匹配的保护区。",
+      "statusTitle": "图层状态",
+      "statusFailed": "失败",
+      "foreignHeld": "外国持有的采矿权"
     },
     "search": "搜索企业、物质、州...",
     "legend": {
@@ -429,7 +506,13 @@
       "year": "年份",
       "unknown": "未知",
       "lastEventActive": "活跃",
-      "overlaps": "重叠"
+      "overlaps": "重叠",
+      "stackedLayers": "重叠图层",
+      "tabClaim": "采矿权",
+      "tabBoundary": "边界",
+      "tabWater": "水域",
+      "tabConflict": "冲突",
+      "tabTerrain": "地形"
     },
     "myTerritory": {
       "title": "我的领地",
@@ -674,7 +757,15 @@
         "unnamed": "未命名条目",
         "unknownSource": "未知",
         "pagePrev": "上一页",
-        "pageNext": "下一页"
+        "pageNext": "下一页",
+        "agentsLoading": "正在加载文化代理…",
+        "agentsRetry": "重试",
+        "families": "标记类别",
+        "familyAgents": "文化代理",
+        "familySpaces": "文化空间",
+        "familyIndigenous": "原住民与原始民族",
+        "sortFamily": "类别",
+        "clearFilters": "清除"
       },
       "community": {
         "eyebrow": "鲜活的观测站",
@@ -690,24 +781,82 @@
         "methodologyText": "数据汇编自公开记录与面向社区的来源。请将其视为调查邀请，而非社区同意或法律认定的替代。",
         "monitor": "打开实地监测",
         "sources": "查看数据来源"
+      },
+      "tabs": {
+        "label": "观测站情报",
+        "territory": "领地",
+        "culture": "文化",
+        "power": "势力",
+        "timeline": "时间线"
       }
     },
     "error": {
       "loadFailed": "观测站数据加载失败",
       "retry": "重试"
     },
-    "clearSearch": "清除搜索"
+    "clearSearch": "清除搜索",
+    "territory": {
+      "headline": "实地采矿权",
+      "claims": "采矿权",
+      "boundaries": "边界",
+      "area": "采矿权面积",
+      "withOverlaps": "含重叠",
+      "synced": "ANM同步",
+      "noBoundaries": "未加载采矿权边界 — 仅显示点。请查看下方图层状态。",
+      "bySubstance": "按物质划分的采矿权",
+      "overlapsTitle": "采矿 × 领地重叠",
+      "noOverlaps": "已加载的采矿权没有记录领地重叠。",
+      "overlappedBy": "{count} 重叠采矿权",
+      "overlappingClaims": "重叠采矿权",
+      "protectedTitle": "受保护领地",
+      "source": "来源",
+      "noProtected": "已加载数据集中没有受保护领地。",
+      "watersTitle": "面临压力的水域",
+      "noWaters": "尚未评估有名称的水域 — 水图层仍在加载。",
+      "watersLegend": "采矿权s 与in 2km press directly (drawdown, runoff); 与in 5km share aquifer or sub-basin.",
+      "pressure": "压力",
+      "watch": "关注",
+      "claims2km": "采矿权 ≤2km",
+      "claims5km": "采矿权 ≤5km",
+      "flyToWater": "Fly to {name}",
+      "dossierDownload": "导出证据档案",
+      "dossierCopy": "复制档案",
+      "dossierCopied": "已复制！",
+      "searchPlaceholder": "Search 采矿权, holders, processos…",
+      "sobDemanda": "Sob Dem和a only",
+      "filtersActive": "{count} 个筛选条件已启用",
+      "pinTitle": "关注：你的位置",
+      "pinBody": "{count} 采矿权 与in 10km of {label}.",
+      "pinNearest": "最近： {processo} · {holder} · {km}km"
+    },
+    "claimIntel": {
+      "holderTitle": "持有者记录",
+      "claims": "采矿权",
+      "territoryTitle": "领地重叠"
+    },
+    "power": {
+      "noData": "深度分析尚未加载。",
+      "militaryTitle": "军事关键影响范围",
+      "criticalClaims": "关键采矿权",
+      "criticalArea": "关键面积",
+      "usConnected": "与美国相关",
+      "foreignTitle": "外国资本占比",
+      "sigiloTitle": "保密（sigilo）采矿权",
+      "sigiloBody": "{total}个保密采矿权（{pct}%），覆盖{area} ha — 持有者和物质均隐藏。",
+      "topTitle": "最可疑持有者",
+      "claims": "采矿权"
+    }
   },
   "loading": {
     "projectGrantsMap": "正在加载项目资助地图",
     "projectGrantsGlobe": "正在加载项目资助地球仪",
-    "endangeredSpeciesMap": "正在加载濒危物种地图",
+    "endangeredSpeciesMap": "正在加载濒危物种",
     "endangeredSpeciesGlobe": "正在加载濒危物种地球仪",
     "observatoryOfVulcan": "正在加载火山观测站",
     "observatoryOfVulcanGlobe": "正在加载火山观测站地球仪",
-    "activeCrewsMap": "加载活跃团队地图",
+    "activeCrewsMap": "正在加载团队地图",
     "initializingVisualization": "正在初始化交互式可视化...",
-    "activeCrewsGlobe": "活跃团队地球仪"
+    "activeCrewsGlobe": "正在加载团队 3D 地图"
   },
   "error": {
     "pageNotFound": "页面未找到",
@@ -764,10 +913,21 @@
       "grants": "资助",
       "species": "物种",
       "mains": "主要成员",
-      "feedback": "反馈"
+      "feedback": "反馈",
+      "sources": "来源"
     },
     "shareCorrections": "分享纠错、缺失数据或互动想法，帮我们改进地图。",
-    "homeLink": "首页"
+    "homeLink": "首页",
+    "sources": {
+      "title": "数据来源与许可证",
+      "intro": "Every layer on EG-Maps comes from a named publisher. This tab lists them all — who publishes each dataset, under which license, 和 how you may reuse it for research 和 community work.",
+      "observatory": "Vulcan Observatory — mining & territory",
+      "species": "濒危物种",
+      "grants": "项目资助",
+      "basemap": "底图、影像与地图引擎",
+      "reuseTitle": "研究和社区工具的许可证与再利用",
+      "openSource": "开源"
+    }
   },
   "campaigns": {
     "title": "行动",
@@ -813,10 +973,11 @@
     "crewActionDesc": "EG团队是为健康、公正、可持续未来而行动的青年主导小组。团队有自主权推进自己的项目和倡议，以回应影响其社区的气候问题。",
     "ctaJoinTitle": "加入运动",
     "ctaJoinDesc": "成为全球青年领袖网络的一员，为地球的未来而行动。",
-    "joinCrew": "创建团队"
+    "joinCrew": "创建团队",
+    "openSpeciesMap": "探索濒危物种"
   },
   "crewProjects": {
-    "title": "团队项目",
+    "title": "大型项目",
     "description": "世界各地EG团队主导的大规模与小规模项目，展现青年主导气候行动的影响力。",
     "largeScaleTitle": "大规模团队影响力",
     "largeScaleDesc": "在多个国家产生重大环境与社区影响的主要团队倡议。",
@@ -925,7 +1086,34 @@
     "joinCrew": "创建或加入团队",
     "moreTitle": "2023年以来的课程",
     "moreDesc": "资助申请写作、COP筹备、数据可视化、气候正义等。关注精彩片段、短视频与近期日程。",
-    "viewOnInstagram": "在Instagram上查看"
+    "viewOnInstagram": "在Instagram上查看",
+    "ep5Title": "变革型领导力",
+    "ep5Speaker": "与 Rejoice — Africa RCC",
+    "ep5Desc": "What it takes to inspire change, foster resilient community leadership, 和 transform local action into lasting movement power.",
+    "ep5Time": "Sunday, September 20, 2026 · 12:00 PM EST | 4:00 PM UTC (GMT)",
+    "flyer": "传单",
+    "series2025Title": "全球 Masterclass Series · 2025 season",
+    "series2025Desc": "Five sessions from the 2025 season — empathy, volunteer leadership, volunteerism in action, biodiversity governance, 和 digital tools. Recordings, slide decks 和 flyers below.",
+    "gm5Date": "2025",
+    "gm5Title": "Google Workspace Essentials: Mastering Gmail, Docs, Sheets, Drive, 和 Calendar",
+    "gm5Speaker": "与 Emmy Scott · hosted 由 Moudjiba",
+    "gm5Desc": "A practical walkthrough of the Google Workspace essentials for Crew work — Gmail, Docs, Sheets, Drive, 和 Calendar — 与 live Q&A.",
+    "gm4Date": "September 28, 2025",
+    "gm4Title": "Rio, the CBD & Beyond: A Masterclass on 全球 Biodiversity Governance",
+    "gm4Speaker": "与 GYBN USA · hosted 由 Moudjiba",
+    "gm4Desc": "How global biodiversity governance works — from the Rio Earth Summit to the Convention on Biological Diversity 和 beyond — 与 live Q&A.",
+    "gm3Date": "July 13, 2025",
+    "gm3Title": "Volunteerism 和 Social Change: How to Use Your Time 和 Talents to Make a Difference in the World",
+    "gm3Speaker": "与 Meg Ferrigno — EG Board Director, founder of Purel和 Project 和 Moonpads · hosted 由 Moudjiba",
+    "gm3Desc": "How to use your time 和 talents to make a difference — volunteerism as a driver of social change — 与 live Q&A.",
+    "gm2Date": "2025",
+    "gm2Title": "Leading 和 Managing a Team of Volunteers",
+    "gm2Speaker": "与 Ms Rejoice A. Sosu-Ketek",
+    "gm2Desc": "没有two volunteers are the same — how to build a strong volunteer team, meet the challenges of managing volunteers, 和 lead 与 the right approaches 和 values.",
+    "gm1Date": "2025",
+    "gm1Title": "Unlock Deeper Connections — Master the Art of Empathy",
+    "gm1Speaker": "与 Louka",
+    "gm1Desc": "Master the art of empathy to unlock deeper connections in your community 和 Crew work."
   },
   "a11y": {
     "skipToContent": "跳到主要内容"
@@ -1240,7 +1428,7 @@
     "crewSignupError": "出了点问题，请重试。",
     "crewSignupAlreadyRegistered": "你已注册！",
     "crewSignupContactCrews": "表单遇到问题？请联系",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "隐私政策",
     "crewSignupRequired": "必填",
     "crewSignupBackToPortal": "返回仪表板",
@@ -1404,7 +1592,7 @@
       "description": "极危物种栖息地的3D地球仪视图。"
     },
     "endangeredSpecies2d": {
-      "title": "濒危物种 — 2D地图",
+      "title": "濒危物种 — 2D",
       "description": "世界各地濒危物种分布的2D地图视图。"
     },
     "observatory3d": {

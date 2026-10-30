@@ -1,23 +1,23 @@
 <template>
-  <aside class="cluster-results-panel" aria-label="Cluster results">
+  <aside ref="panelRef" class="cluster-results-panel" role="dialog" aria-modal="false" aria-labelledby="cluster-results-title" aria-describedby="cluster-results-status" tabindex="-1">
     <header class="cluster-results-header">
       <div>
         <p class="cluster-results-eyebrow">{{ datasetLabel }}</p>
-        <h2>{{ count }} {{ count === 1 ? 'result' : 'results' }}</h2>
+        <h2 id="cluster-results-title">{{ t('mapControls.clusterPanel.count', { count }) }}</h2>
       </div>
       <div class="cluster-results-header-actions">
-        <button type="button" class="cluster-results-copy" :aria-label="copied ? 'Cluster link copied' : 'Copy cluster link'" @click="copyClusterLink">{{ copied ? '✓' : '↗' }}</button>
-        <button type="button" class="cluster-results-close" aria-label="Close cluster results" @click="$emit('close')">×</button>
+        <button type="button" class="cluster-results-copy" :aria-label="copied ? t('mapControls.clusterPanel.linkCopied') : t('mapControls.clusterPanel.copyLink')" @click="copyClusterLink"><span aria-hidden="true">{{ copied ? '✓' : '↗' }}</span></button>
+        <button type="button" class="cluster-results-close" :aria-label="t('mapControls.clusterPanel.close')" @click="$emit('close')">×</button>
       </div>
     </header>
 
     <label class="cluster-results-search">
-      <span class="sr-only">Search cluster results</span>
-      <input v-model="query" type="search" placeholder="Search this cluster…" />
+      <span class="sr-only">{{ t('mapControls.clusterPanel.searchLabel') }}</span>
+      <input id="cluster-results-search" v-model="query" type="search" :placeholder="t('mapControls.clusterPanel.searchPlaceholder')" />
     </label>
 
-    <p class="sr-only" aria-live="polite">{{ filteredItems.length }} visible cluster results</p>
-    <p v-if="!filteredItems.length" class="cluster-results-empty">No results match this search.</p>
+    <p id="cluster-results-status" class="sr-only" aria-live="polite">{{ t('mapControls.clusterPanel.visibleResults', { count: filteredItems.length }) }}</p>
+    <p v-if="!filteredItems.length" class="cluster-results-empty" role="status" aria-live="polite">{{ t('mapControls.clusterPanel.empty') }}</p>
     <ul v-else class="cluster-results-list">
       <li v-for="item in filteredItems" :key="item.id">
         <button type="button" class="cluster-results-item" @click="$emit('select', item)">
@@ -34,8 +34,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useClipboard } from '@vueuse/core'
+import { useI18n } from '@/composables/useI18n'
 
 export interface ClusterResultItem {
   id: string
@@ -56,6 +57,9 @@ defineEmits<{
 }>()
 
 const query = ref('')
+const panelRef = ref<HTMLElement | null>(null)
+const returnFocusTarget = ref<HTMLElement | null>(null)
+const { t } = useI18n()
 const { copy, copied } = useClipboard()
 const count = computed(() => props.items.length)
 const filteredItems = computed(() => {
@@ -65,6 +69,17 @@ const filteredItems = computed(() => {
 })
 
 watch(() => props.items, () => { query.value = '' })
+
+onMounted(() => {
+  returnFocusTarget.value = document.activeElement instanceof HTMLElement ? document.activeElement : null
+  panelRef.value?.focus()
+})
+
+onUnmounted(() => {
+  nextTick(() => {
+    if (returnFocusTarget.value?.isConnected) returnFocusTarget.value.focus()
+  })
+})
 
 async function copyClusterLink() {
   if (typeof window !== 'undefined') await copy(window.location.href)
@@ -85,7 +100,9 @@ async function copyClusterLink() {
 .cluster-results-search input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent); }
 .cluster-results-list { flex: 1; overflow-y: auto; list-style: none; margin: 0; padding: .4rem .55rem 1rem; }
 .cluster-results-item { width: 100%; min-height: 58px; display: flex; align-items: center; gap: .7rem; padding: .7rem .55rem; border: 0; border-radius: .7rem; background: transparent; color: inherit; text-align: left; cursor: pointer; }
-.cluster-results-item:hover, .cluster-results-item:focus-visible { background: rgba(148,163,184,.12); outline: none; }
+.cluster-results-item:hover, .cluster-results-item:focus-visible { background: rgba(148,163,184,.12); }
+.cluster-results-copy:focus-visible, .cluster-results-close:focus-visible, .cluster-results-search input:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+.cluster-results-item:focus-visible, .cluster-results-panel:focus { outline: 3px solid var(--primary); outline-offset: 2px; }
 .cluster-results-dot { width: 9px; height: 9px; flex: 0 0 auto; border-radius: 999px; box-shadow: 0 0 0 5px rgba(34,211,238,.1); }
 .cluster-results-item-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: .22rem; }
 .cluster-results-item-copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .85rem; }

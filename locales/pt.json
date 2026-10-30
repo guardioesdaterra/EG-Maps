@@ -5,13 +5,15 @@
     "projectGrants": "Subvenções",
     "endangeredSpecies": "Espécies ameaçadas",
     "observatoryOfVulcan": "Observatório Vulcan",
-    "activeCrews": "Equipes Ativas",
+    "activeCrews": "Mapa de equipes",
     "egGrants": "Subvenções EG",
     "crews": "Equipes",
     "joinEarthGuardians": "Junte-se ao Earth Guardians",
     "switchToLight": "Mudar para modo claro",
     "switchToDark": "Mudar para modo escuro",
-    "language": "Idioma"
+    "language": "Idioma",
+    "privacy": "Privacidade",
+    "terms": "Termos"
   },
   "home": {
     "title": "Earth Guardians",
@@ -25,12 +27,12 @@
     "speciesDesc": "Descubra espécies criticamente ameaçadas e seus habitats ao redor do mundo.",
     "observatoryTitle": "Observatório Vulcan",
     "observatoryDesc": "Reivindicações de mineração de terras raras no Brasil — invasão de capital, redes corporativas, interesses militares e impacto socioambiental.",
-    "activeCrewsTitle": "Equipes Ativas",
-    "activeCrewsDesc": "Explore as equipes ativas da Earth Guardians em 7 regiões — 131 equipes, 1.241 membros, 47 países.",
+    "activeCrewsTitle": "Mapa de equipes",
+    "activeCrewsDesc": "Explore a rede de equipes da Earth Guardians em 7 regiões — 131 equipes ativas, 1.241 membros e 47 países.",
     "crewsCount": "Equipes",
     "projectsCount": "Projetos",
     "beneficiariesCount": "Beneficiários",
-    "speciesCount": "Espécies",
+    "speciesCount": "Espécies documentadas",
     "groupsCount": "Grupos",
     "allValue": "Todos",
     "activeCrewsCount": "Equipes Ativas",
@@ -62,8 +64,8 @@
     "campaignsTitle": "Campanhas",
     "campaignsDesc": "Campanhas de EG e os mapas por trás delas, incluindo o mapa de espécies ameaçadas criado para o Dia da Biodiversidade.",
     "campaignsKicker": "Dia da Biodiversidade · mapa de espécies incluído",
-    "crewProjectsTitle": "Projetos das Equipes",
-    "crewProjectsDesc": "Restauração liderada por equipes em Sierra Leone e Togo — manguezais, florestas e fazendas sob gestão comunitária.",
+    "crewProjectsTitle": "Grande Escala",
+    "crewProjectsDesc": "Conheça a diversidade do trabalho das Crews: restauração de ecossistemas, agricultura regenerativa, educação climática, artivismo e fortalecimento das comunidades.",
     "vulcanTitle": "Observatório Vulcan",
     "vulcanDesc": "Mapa comunitário de requerimentos de mineração de terras raras em torno de Poços de Caldas, Brasil — requerimentos, água, territórios protegidos e vida cultural.",
     "vulcanFocusValue": "Planalto Vulcânico",
@@ -94,13 +96,15 @@
     "skillBuilding": "Desenvolvimento de habilidades",
     "joinGlobal": "Junte-se à rede global",
     "youthLed": "Ação liderada por jovens",
-    "observatoryOfVulcan": "Observatório Vulcan"
+    "observatoryOfVulcan": "Observatório Vulcan",
+    "sections": "Seções"
   },
   "mapControls": {
     "search": "Buscar",
     "searchProjects": "Buscar projetos",
     "searchSpecies": "Buscar espécies",
     "searchCrews": "Buscar Equipes",
+    "searchCities": "Buscar cidades",
     "searchPlaceholder": "Buscar por nome ou localização...",
     "searchSpeciesPlaceholder": "Buscar por nome ou região...",
     "showAll": "Mostrar tudo",
@@ -123,7 +127,53 @@
     "of": "de",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "ou abra a lista para ver tudo",
-    "searchResults": "Resultados da busca"
+    "searchResults": "Resultados da busca",
+    "shareMap": "Compartilhar mapa",
+    "linkCopied": "Link copiado",
+    "exportMap": "Exportar imagem do mapa",
+    "exportData": "Exportar dados visíveis em GeoJSON",
+    "legend": "Legenda",
+    "nearby": "Perto",
+    "nearbyLabel": "Encontre equipes, projetos e campanhas próximos",
+    "offlineCachedData": "Modo offline — os dados em cache continuam disponíveis",
+    "nearbyPanel": {
+      "eyebrow": "Explore o que está por perto",
+      "title": "Encontre uma ação perto de você",
+      "consentTitle": "Usar sua localização?",
+      "consentDescription": "Usamos sua localização apenas neste navegador para ordenar equipes e projetos próximos. Ela não é enviada à Earth Guardians nem armazenada por este aplicativo.",
+      "consentLabel": "Concordo em compartilhar minha localização aproximada com este mapa nesta sessão.",
+      "locating": "Localizando…",
+      "findAction": "Encontrar ação próxima",
+      "locationError": "A permissão de localização não foi concedida. Você pode ativá-la nas configurações do navegador e tentar novamente.",
+      "locationActive": "Localização ativa · apenas aproximada",
+      "clearLocation": "Limpar localização atual",
+      "categories": "Categorias próximas",
+      "crews": "Equipes",
+      "projects": "Projetos",
+      "campaigns": "Campanhas",
+      "noCrews": "Ainda não há localizações de equipes com coordenadas disponíveis.",
+      "noProjects": "Ainda não há localizações de projetos disponíveis.",
+      "biodiversity": "Espécies ameaçadas",
+      "biodiversityDesc": "Ação global pela biodiversidade e pelos habitats.",
+      "chooseAction": "Escolha a ação agora",
+      "chooseActionDesc": "Justiça climática e ação direta lideradas por jovens.",
+      "solutions": "Soluções sustentáveis",
+      "solutionsDesc": "Soluções comunitárias para resíduos e resiliência."
+    },
+    "imported": "Importado",
+    "populationUnit": "habitantes",
+    "clusterPanel": {
+      "title": "Resultados agrupados",
+      "count": "Resultados agrupados: {count}",
+      "copyLink": "Copiar link do grupo",
+      "linkCopied": "Link do grupo copiado",
+      "close": "Fechar resultados agrupados",
+      "searchLabel": "Pesquisar nos resultados agrupados",
+      "searchPlaceholder": "Pesquisar neste grupo…",
+      "visibleResults": "{count} resultados agrupados visíveis",
+      "empty": "Nenhum resultado corresponde a esta pesquisa.",
+      "activeCrewsSubtitle": "{crews} equipes ativas · {countries} países"
+    }
   },
   "mapTiles": {
     "maptiler": "Satélite",
@@ -175,7 +225,7 @@
     "close": "Fechar",
     "markerLegend": "Cores dos Marcadores",
     "markerSize": "Tamanho do Marcador",
-    "activeCrewsTitle": "Equipes Ativas",
+    "activeCrewsTitle": "Mapa de equipes",
     "regions": "Regiões",
     "crews": "Equipes",
     "members": "Membros",
@@ -204,7 +254,9 @@
     "switchTo2D": "Mudar para mapa 2D",
     "switchTo3D": "Mudar para globo 3D",
     "view2D": "Mapa 2D",
-    "view3D": "Globo 3D"
+    "view3D": "Globo 3D",
+    "reloadPage": "Recarregar página",
+    "allSpeciesLoaded": "Todos os dados de espécies carregados"
   },
   "project": {
     "directBeneficiaries": "Beneficiários diretos",
@@ -270,7 +322,10 @@
       "illegal": "Ilegal",
       "env": "Risco Amb.",
       "network": "Rede",
-      "timeline": "Cronologia"
+      "timeline": "Cronologia",
+      "power": "Poder",
+      "territory": "Território",
+      "culture": "Cultura"
     },
     "dangerPanel": {
       "title": "Empresas mais perigosas",
@@ -312,7 +367,11 @@
       "chinaBanTitle": "Proibição de exportação da China (out 2025)",
       "chinaBanBody": "A China proibiu a exportação de 12/17 elementos REE para os EUA. 78% das armas dos EUA dependem de REE chinês. Mandato DFARS 2027: contratantes de defesa dos EUA devem obter REE fora da China.",
       "title": "title",
-      "empty": "empty"
+      "empty": "empty",
+      "liveTitle": "Ao vivo: esta região",
+      "liveClaims": "requerimentos críticos",
+      "liveArea": "área crítica",
+      "liveUs": "ligado aos EUA"
     },
     "illegal": {
       "landSpec": "Especulação de terras",
@@ -406,7 +465,10 @@
       "heatmap": "Mapa de calor",
       "cultural": "Cultural & Comunidade",
       "waterBodies": "Corpos d'água",
-      "protectedAreas": "Áreas Protegidas"
+      "protectedAreas": "Áreas Protegidas",
+      "statusTitle": "Status da camada",
+      "statusFailed": "falhou",
+      "foreignHeld": "Requerimentos em mãos estrangeiras"
     },
     "culturalLayers": {
       "filterTitle": "Filtros Culturais",
@@ -712,25 +774,89 @@
         "unnamed": "Entrada sem nome",
         "unknownSource": "Desconhecida",
         "pagePrev": "Página anterior",
-        "pageNext": "Próxima página"
+        "pageNext": "Próxima página",
+        "families": "Famílias de marcadores",
+        "familyAgents": "Agentes culturais",
+        "familySpaces": "Espaços culturais",
+        "familyIndigenous": "Povos indígenas e originários",
+        "sortFamily": "Família",
+        "clearFilters": "Limpar"
+      },
+      "tabs": {
+        "label": "Inteligência do observatório",
+        "territory": "Território",
+        "culture": "Cultura",
+        "power": "Poderes",
+        "timeline": "Linha do tempo"
       }
     },
     "error": {
       "loadFailed": "Falha ao carregar dados do observatório",
       "retry": "Tentar novamente"
     },
-    "clearSearch": "Limpar pesquisa"
+    "clearSearch": "Limpar pesquisa",
+    "territory": {
+      "headline": "Requerimentos no território",
+      "claims": "requerimentos",
+      "boundaries": "limites",
+      "area": "área dos requerimentos",
+      "withOverlaps": "c/ sobreposições",
+      "synced": "sincronização ANM",
+      "noBoundaries": "Nenhum limite de requerimento carregado — apenas pontos. Verifique o status da camada abaixo.",
+      "bySubstance": "Requerimentos por substância",
+      "overlapsTitle": "Sobreposições mineração × território",
+      "noOverlaps": "Nenhuma sobreposição territorial registrada para os requerimentos carregados.",
+      "overlappedBy": "{count} overlapping claims",
+      "overlappingClaims": "overlapping claims",
+      "protectedTitle": "Territórios protegidos",
+      "source": "Fonte",
+      "noProtected": "Nenhum território protegido no conjunto de dados carregado.",
+      "watersTitle": "Águas sob pressão",
+      "noWaters": "Nenhuma água nomeada avaliada ainda — a camada de água continua carregando.",
+      "watersLegend": "Claims within 2km press directly (drawdown, runoff); within 5km share aquifer or sub-basin.",
+      "pressure": "PRESSÃO",
+      "watch": "OBSERVAR",
+      "claims2km": "claims ≤2km",
+      "claims5km": "claims ≤5km",
+      "flyToWater": "Fly to {name}",
+      "dossierDownload": "Exportar dossiê de evidências",
+      "dossierCopy": "Copiar dossiê",
+      "dossierCopied": "Copiado!",
+      "searchPlaceholder": "Buscar claims, holders, processos…",
+      "sobDemanda": "Somente Sob Demanda",
+      "filtersActive": "{count} filters active",
+      "pinTitle": "Observar: sua localização",
+      "pinBody": "{count} claims within 10km of {label}.",
+      "pinNearest": "Nearest: {processo} · {holder} · {km}km"
+    },
+    "claimIntel": {
+      "holderTitle": "Histórico do titular",
+      "claims": "requerimentos",
+      "territoryTitle": "Sobreposições territoriais"
+    },
+    "power": {
+      "noData": "A análise aprofundada ainda não foi carregada.",
+      "militaryTitle": "Presença crítica para fins militares",
+      "criticalClaims": "requerimentos críticos",
+      "criticalArea": "área crítica",
+      "usConnected": "ligado aos EUA",
+      "foreignTitle": "Participação de capital estrangeiro",
+      "sigiloTitle": "Requerimentos sob sigilo",
+      "sigiloBody": "{total} claims under secrecy ({pct}%) covering {area} ha — hidden holders, hidden substances.",
+      "topTitle": "Principais titulares suspeitos",
+      "claims": "requerimentos"
+    }
   },
   "loading": {
     "projectGrantsMap": "Carregando mapa de subvenções",
     "projectGrantsGlobe": "Carregando globo de subvenções",
-    "endangeredSpeciesMap": "Carregando mapa de espécies ameaçadas",
+    "endangeredSpeciesMap": "Carregando espécies ameaçadas",
     "endangeredSpeciesGlobe": "Carregando globo de espécies ameaçadas",
     "observatoryOfVulcan": "Carregando Observatório Vulcan",
     "observatoryOfVulcanGlobe": "Carregando Globo do Observatório Vulcan",
-    "activeCrewsMap": "Carregando Mapa de Equipes Ativas",
+    "activeCrewsMap": "Carregando mapa de equipes",
     "initializingVisualization": "Inicializando visualização interativa...",
-    "activeCrewsGlobe": "Carregando globo de equipes ativas"
+    "activeCrewsGlobe": "Carregando mapa 3D de equipes"
   },
   "error": {
     "pageNotFound": "Página não encontrada",
@@ -847,10 +973,11 @@
     "crewActionDesc": "Equipes de EG são grupos liderados por jovens agindo por um futuro saudável, justo e sustentável. As equipes têm agência para levar adiante seus próprios projetos e iniciativas em resposta às questões climáticas que afetam suas comunidades.",
     "ctaJoinTitle": "Junte-se ao Movimento",
     "ctaJoinDesc": "Faça parte de uma rede global de jovens líderes agindo pelo futuro do nosso planeta.",
-    "joinCrew": "Crie uma Equipe"
+    "joinCrew": "Crie uma Equipe",
+    "openSpeciesMap": "Explorar espécies ameaçadas"
   },
   "crewProjects": {
-    "title": "Projetos das Equipes",
+    "title": "Grande Escala",
     "description": "Projetos de grande e pequena escala liderados por equipes de EG no mundo todo, mostrando o impacto da ação climática liderada por jovens.",
     "largeScaleTitle": "Impacto de Equipes em Grande Escala",
     "largeScaleDesc": "Grandes iniciativas de equipes que criaram impacto ambiental e comunitário significativo em vários países.",
@@ -963,7 +1090,30 @@
     "joinCrew": "Crie ou entre para uma equipe",
     "moreTitle": "Sessões desde 2023",
     "moreDesc": "Escrita de propostas, preparação para a COP, visualização de dados, justiça climática e mais. Acompanhe destaques, clipes e próximas datas.",
-    "viewOnInstagram": "Ver no Instagram"
+    "viewOnInstagram": "Ver no Instagram",
+    "flyer": "Folheto",
+    "series2025Title": "Série global de masterclasses · temporada 2025",
+    "series2025Desc": "Five sessions from the 2025 season — empathy, volunteer leadership, volunteerism in action, biodiversity governance, and digital tools. Recordings, slide decks and flyers below.",
+    "gm5Date": "2025",
+    "gm5Title": "Google Workspace Essentials: Mastering Gmail, Docs, Sheets, Drive, and Calendar",
+    "gm5Speaker": "com Emmy Scott · apresentada por Moudjiba",
+    "gm5Desc": "Uma apresentação prática of the Google Workspace essentials for Crew work — Gmail, Docs, Sheets, Drive, and Calendar — with live Q&A.",
+    "gm4Date": "setembro 28, 2025",
+    "gm4Title": "Rio, the CBD & Beyond: A Masterclass on Global Biodiversity Governance",
+    "gm4Speaker": "com GYBN USA · apresentada por Moudjiba",
+    "gm4Desc": "How global biodiversity governance works — from the Rio Earth Summit to the Convention on Biological Diversity and beyond — with live Q&A.",
+    "gm3Date": "julho 13, 2025",
+    "gm3Title": "Volunteerism and Social Change: Como Use Seu Time and Talents to Make a Difference in the World",
+    "gm3Speaker": "with Meg Ferrigno — EG Board Director, founder of Pureland Project and Moonpads · hosted by Moudjiba",
+    "gm3Desc": "Como use your time and talents to make a difference — volunteerism as a driver of social change — with live Q&A.",
+    "gm2Date": "2025",
+    "gm2Title": "Liderança e gestão a Team of Volunteers",
+    "gm2Speaker": "com a Sra. Rejoice A. Sosu-Ketek",
+    "gm2Desc": "Nenhum two volunteers are the same — how to build a strong volunteer team, meet the challenges of managing volunteers, and lead with the right approaches and values.",
+    "gm1Date": "2025",
+    "gm1Title": "Unlock Deeper Connections — Master the Art of Empathy",
+    "gm1Speaker": "com Louka",
+    "gm1Desc": "Domine a arte of empathy to unlock deeper connections in your community and Crew work."
   },
   "a11y": {
     "skipToContent": "Pular para o conteúdo principal"
@@ -1278,7 +1428,7 @@
     "crewSignupError": "Algo deu errado. Tente novamente.",
     "crewSignupAlreadyRegistered": "Você já está registrado!",
     "crewSignupContactCrews": "Problemas com o formulário? Fale com",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "Política de Privacidade",
     "crewSignupRequired": "obrigatório",
     "crewSignupBackToPortal": "Voltar ao Painel",
@@ -1442,7 +1592,7 @@
       "description": "Globo 3D de habitats de espécies criticamente ameaçadas."
     },
     "endangeredSpecies2d": {
-      "title": "Espécies Ameaçadas — Mapa 2D",
+      "title": "Espécies Ameaçadas — 2D",
       "description": "Mapa 2D de espécies ameaçadas no mundo todo."
     },
     "observatory3d": {

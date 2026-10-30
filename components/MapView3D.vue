@@ -6,9 +6,9 @@
  * @deps vue (ref, watch, computed, defineAsyncComponent); @/composables/useMapBase (useMapBase); ~/composables/useSpeciesData (useSpeciesIndex)
  */
 <template>
-  <div id="main-content" tabindex="-1" class="w-full h-[100svh] relative overflow-hidden bg-black focus:outline-none" role="main" aria-label="3D Globe Visualization">
+  <div id="main-content" tabindex="-1" class="w-full h-[100svh] relative overflow-hidden bg-black focus:outline-none" role="main" :aria-label="t('globe.view3D')">
     <Transition name="fade">
-      <div v-if="isLoading" class="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center">
+      <div v-if="isLoading" class="absolute inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center" role="status" aria-live="polite" aria-busy="true">
         <div class="relative mb-5 xs:mb-6">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-16 xs:w-20 h-16 xs:h-20 text-white" viewBox="0 0 24 24">
             <path d="M0 0h24v24H0z" fill="none" />
@@ -21,7 +21,7 @@
           </div>
         </div>
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('globe.loading') }}</p>
-        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews').toLowerCase() : activeDataset === 'vulcan-observatory' ? t('home.observatoryOfVulcan').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
+        <p class="text-gray-500 text-xs xs:text-sm">{{ t('globe.preparingData', { dataset: activeDataset === 'project-grants' ? t('home.projectGrants').toLowerCase() : activeDataset === 'active-crews' ? t('nav.activeCrews') : activeDataset === 'vulcan-observatory' ? t('home.observatoryOfVulcan').toLowerCase() : t('home.species').toLowerCase() }) }}</p>
         <div class="mt-3 xs:mt-4 flex gap-1">
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-1" />
           <div class="w-2 h-2 rounded-full bg-white/50 animate-bounce stagger-2" />
@@ -52,13 +52,12 @@
     </div>
     <div class="absolute inset-0 pointer-events-none z-20" :style="{ boxShadow: `inset 0 0 clamp(40px, 12vw, 150px) clamp(8px, 3vw, 30px) rgba(0,0,0,0.7)` }"></div>
 
-    <div class="absolute inset-0 pointer-events-none opacity-[0.03]" :style="{ zIndex: 'calc(var(--z-map-effects) + 1)', backgroundImage: `image-set(url(${baseURL}grid-overlay.png) 1x, url(${baseURL}grid-overlay.png) 2x)`, backgroundRepeat: 'repeat' }" />
-    <div class="absolute -inset-3 pointer-events-none opacity-[0.02] animate-noise-bg" :style="{ zIndex: 'calc(var(--z-map-effects) + 2)', backgroundImage: `image-set(url(${baseURL}noise.png) 1x, url(${baseURL}noise.png) 2x)`, backgroundRepeat: 'repeat' }" />
+    <div class="absolute inset-0 pointer-events-none opacity-[0.03]" :style="{ zIndex: 'calc(var(--z-map-effects) + 1)', backgroundImage: `image-set(url(${baseURL}grid-overlay.webp) type('image/webp') 1x, url(${baseURL}grid-overlay.webp) type('image/webp') 2x, url(${baseURL}grid-overlay.png) type('image/png') 1x, url(${baseURL}grid-overlay.png) type('image/png') 2x)`, backgroundRepeat: 'repeat' }" />
     <div aria-hidden="true" class="absolute inset-0 pointer-events-none opacity-[0.02]" :style="{ zIndex: 'calc(var(--z-map-effects) + 3)', backgroundImage: `image-set(url(${baseURL}scanline.gif) 1x, url(${baseURL}scanline.gif) 2x)`, backgroundRepeat: 'repeat' }" />
 
     <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-15" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
 
-    <div ref="mapContainerRef" class="absolute inset-0 w-full h-full" :style="{ zIndex: 'var(--z-map-base)' }" />
+    <div ref="mapContainerRef" tabindex="0" role="region" :aria-label="t('globe.view3D')" :aria-busy="isLoading" class="absolute inset-0 w-full h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400" :style="{ zIndex: 'var(--z-map-base)' }" />
     <ClusterResultsPanel
       v-if="clusterPanelOpen"
       :items="clusterPanelItems"
@@ -66,8 +65,8 @@
       @close="closeClusterPanel"
       @select="selectClusterItem"
     />
-    <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-[clamp(4.25rem,11vh,6rem)] z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/70 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm sm:left-auto sm:top-[max(1rem,env(safe-area-inset-top))] sm:right-[max(1rem,env(safe-area-inset-right))]" aria-label="Find nearby crews, projects and campaigns" @click="nearbyOpen = true">⌖ Nearby</button>
-    <NearbyPanel v-if="nearbyOpen" :projects="projectsData" :crew-locations="crewLocationsData" @close="nearbyOpen = false" @navigate="navigateToLocation" />
+    <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-[clamp(4.25rem,11vh,6rem)] z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/90 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm sm:left-auto sm:top-[max(1rem,env(safe-area-inset-top))] sm:right-[max(1rem,env(safe-area-inset-right))]" aria-haspopup="dialog" :aria-label="t('mapControls.nearbyLabel')" @click="nearbyOpen = true"><span aria-hidden="true">⌖</span> {{ t('mapControls.nearby') }}</button>
+    <NearbyPanel v-if="nearbyOpen" :projects="projectsData" :crew-locations="visibleCrewLocations" @close="nearbyOpen = false" @navigate="navigateToLocation" />
     <slot name="overlays" />
 
     <div v-if="isMobile && !hideAll" class="absolute top-[clamp(5rem,13vh,6.5rem)] xs:top-[clamp(5rem,13vh,6.5rem)] left-1/2 -translate-x-1/2 pointer-events-none px-2" :style="{ zIndex: 'var(--z-map-banner)' }">
@@ -80,19 +79,19 @@
     <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" />
     <SpeciesFilterPanel v-if="activeDataset === 'endangered-species' && showFilterPanel" ref="speciesFilterPanelRef" :species="speciesIndexData" @filter-change="handleFilterChange" @group-selection-change="handleSpeciesGroupSelection" @close="showFilterPanel = false" />
 
-    <DataBubble v-if="!hideAll && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" :position-bottom="isMobile ? 'clamp(5.5rem,12vh,7rem)' : 'clamp(1rem, 4vh, 2rem)'" @toggle-group="toggleLegendGroup" />
+    <DataBubble v-if="!hideAll && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :selected-crew-statuses="selectedCrewStatuses" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" :position-bottom="isMobile ? 'clamp(5.5rem,12vh,7rem)' : 'clamp(1rem, 4vh, 2rem)'" @toggle-group="toggleLegendGroup" @toggle-crew-status="toggleCrewStatus" />
 
-    <MapControls v-if="activeDataset !== 'vulcan-observatory' && !hideAll" :is-globe-view="true" :show-hex-grid="showHexGrid" :show-connections="showConnections" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :crews="activeDataset === 'active-crews' ? crewsData : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" :style="{ zIndex: 'var(--z-map-ui-controls)' }" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" />
+    <MapControls v-if="activeDataset !== 'vulcan-observatory' && !hideAll" :is-globe-view="true" :show-hex-grid="showHexGrid" :show-connections="showConnections" :share-copied="shareCopied" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :crews="activeDataset === 'active-crews' ? crewsData : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" :style="{ zIndex: 'var(--z-map-ui-controls)' }" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" @share="shareMap" @export="exportMapImage" @export-data="exportVisibleData" />
 
     <Transition name="fade">
-      <div v-if="hasError" class="absolute inset-0 bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center text-white z-[2000]">
+      <div v-if="hasError" class="absolute inset-0 bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center text-white z-[2000]" role="alert" aria-live="assertive">
         <div class="relative mb-5 xs:mb-6">
           <div class="w-14 h-14 xs:w-16 xs:h-16 rounded-full bg-[var(--text-primary)]/10 animate-pulse" />
           <Icon name="lucide:alert-triangle" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-7 w-7 xs:h-8 xs:w-8 text-[var(--text-primary)]" />
         </div>
         <h2 class="text-lg xs:text-xl font-bold mb-1.5 xs:mb-2">{{ t('globe.unableToLoad') }}</h2>
         <p class="text-gray-400 mb-4 text-center px-4 xs:px-4 max-w-xs xs:max-w-md text-sm xs:text-base">{{ errorMessage || t('globe.connectionError') }}</p>
-        <button v-if="!noWebglSupport" @click="() => { hasError = false; initMap() }" class="px-5 xs:px-6 py-2 xs:py-2.5 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg font-medium hover:opacity-80 transition-all duration-300 flex items-center gap-2 text-sm xs:text-base">
+        <button v-if="!noWebglSupport" type="button" @click="() => { hasError = false; initMap() }" class="px-5 xs:px-6 py-2 xs:py-2.5 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg font-medium hover:opacity-80 transition-all duration-300 flex items-center gap-2 text-sm xs:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black">
           <Icon name="lucide:refresh-cw" class="h-4 w-4" />
           {{ t('globe.tryAgain') }}
         </button>
@@ -101,10 +100,10 @@
 
     
     <Transition name="scale-fade">
-      <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Species details" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
-        <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" aria-label="Close species details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+      <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="speciesData?.commonName || t('nav.endangeredSpecies')" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
+        <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div v-if="availablePopupLocales.length > 0" class="species-popup-lang-bar">
-          <button v-for="loc in availablePopupLocales" :key="loc" class="species-popup-lang-btn" :class="{ active: popupLocale === loc }" @click="popupLocale = loc" :aria-label="`Show in ${(localeNames as Record<string, string>)[loc] || loc}`">{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
+          <button v-for="loc in availablePopupLocales" :key="loc" :lang="loc" class="species-popup-lang-btn" :class="{ active: popupLocale === loc }" @click="popupLocale = loc">{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
         </div>
         <div class="species-popup-content-fixed">
           <MapSpeciesPopup :species="speciesData" />
@@ -114,8 +113,8 @@
 
     
     <Transition name="scale-fade">
-      <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Project details" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
-        <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" aria-label="Close project details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+      <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="projectData?.project_title || t('home.projectGrants')" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
+        <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="project-popup-content-fixed">
           <MapProjectPopup :project="projectData" />
         </div>
@@ -124,10 +123,10 @@
 
     
     <Transition name="scale-fade">
-      <div v-if="showCrewOverlay" ref="crewOverlayRef" class="crew-popup-overlay-fixed" role="dialog" aria-modal="true" aria-label="Crew details" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
-        <button ref="crewCloseBtnRef" class="crew-popup-close-btn-fixed" @click="closeCrewOverlay" aria-label="Close crew details"><Icon name="lucide:x" class="h-6 w-6" /></button>
+      <div v-if="showCrewOverlay" ref="crewOverlayRef" class="crew-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="crewOverlayLabel" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
+        <button ref="crewCloseBtnRef" class="crew-popup-close-btn-fixed" @click="closeCrewOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
         <div class="crew-popup-content-fixed">
-          <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" :projects="visibleProjects" :crew-locations="crewLocationsData" @select-crew="openCrewLocationOverlay" @fly-to-project="(lat, lng) => navigateToLocation(lat, lng)" />
+          <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" :projects="visibleProjects" :crew-locations="visibleCrewLocations" @select-crew="openCrewLocationOverlay" @fly-to-project="(lat, lng) => navigateToLocation(lat, lng)" />
         </div>
       </div>
     </Transition>
@@ -175,8 +174,12 @@ let isUserInteracting = false
 let interactionTimeout: ReturnType<typeof setTimeout> | null = null
 let visibilityHandler: (() => void) | null = null
 let starResizeCleanup: (() => void) | null = null
+let activeMap: maplibregl.Map | null = null
+let starInitTimeout: ReturnType<typeof setTimeout> | null = null
+let drawStars: (() => void) | null = null
 
 function initStarCanvas() {
+  stopStarCanvas()
   const canvasRef = starCanvasRef.value
   if (!canvasRef) return
   const ctxRef = canvasRef.getContext('2d')
@@ -223,7 +226,7 @@ function initStarCanvas() {
 
   function draw() {
     if (!ctx || !canvas) return
-    if (document.hidden) { starAnimationId = requestAnimationFrame(draw); return }
+    if (document.hidden) { starAnimationId = null; return }
     ctx.clearRect(0, 0, w, h)
     for (const s of stars) {
       s.a += s.da; if (s.a > 1) s.a = 1; if (s.a < 0.2) s.a = 0.2
@@ -232,19 +235,29 @@ function initStarCanvas() {
     }
     starAnimationId = requestAnimationFrame(draw)
   }
-  draw()
+  drawStars = draw
+  if (!document.hidden) draw()
+}
+
+function pauseStarCanvas() {
+  if (starAnimationId !== null) { cancelAnimationFrame(starAnimationId); starAnimationId = null }
+}
+
+function resumeStarCanvas() {
+  if (!document.hidden && starAnimationId === null && drawStars) drawStars()
 }
 
 function stopStarCanvas() {
-  if (starAnimationId !== null) { cancelAnimationFrame(starAnimationId); starAnimationId = null }
+  pauseStarCanvas()
   if (starResizeCleanup) { starResizeCleanup(); starResizeCleanup = null }
+  drawStars = null
 }
 
 function startAutoRotate(map: maplibregl.Map) {
-  if (rotationAnimationId !== null) return
+  if (document.hidden || rotationAnimationId !== null) return
   function rotate() {
-    if (!map || !base.isMounted || isUserInteracting) { rotationAnimationId = null; return }
-    if (document.hidden) { rotationAnimationId = requestAnimationFrame(rotate); return }
+    if (!map || activeMap !== map || !base.isMounted || isUserInteracting) { rotationAnimationId = null; return }
+    if (document.hidden) { rotationAnimationId = null; return }
     const center = map.getCenter()
     // Use jumpTo (instant) instead of easeTo to avoid creating an internal
     // MapLibre animation that conflicts with user drag interactions.
@@ -268,12 +281,31 @@ const base = useMapBase({
   },
   onMapReady: (map) => {
     emit('mapInit', map)
+    activeMap = map
+    if (!visibilityHandler) {
+      visibilityHandler = () => {
+        if (document.hidden) {
+          pauseStarCanvas()
+          stopAutoRotate()
+          return
+        }
+        resumeStarCanvas()
+        if (activeMap && base.quality.settings.value.autoRotate && !isUserInteracting) {
+          startAutoRotate(activeMap)
+        }
+      }
+      document.addEventListener('visibilitychange', visibilityHandler)
+    }
     customLayerCtx.syncNow()
     // Focus the map canvas so it can receive keyboard and pointer events
     // immediately — avoids the "must zoom before drag" issue on some browsers.
     try { map.getCanvas().focus() } catch { /* ignore */ }
     if (base.quality.settings.value.starCount > 0) {
-      setTimeout(() => initStarCanvas(), 500)
+      if (starInitTimeout) clearTimeout(starInitTimeout)
+      starInitTimeout = setTimeout(() => {
+        starInitTimeout = null
+        if (activeMap === map && base.isMounted) initStarCanvas()
+      }, 500)
     }
     if (base.quality.settings.value.autoRotate) {
       startAutoRotate(map)
@@ -296,9 +328,11 @@ const base = useMapBase({
     map.on('touchcancel', resumeAutoRotate)
   },
   onBeforeCleanup: () => {
+    activeMap = null
+    if (starInitTimeout) { clearTimeout(starInitTimeout); starInitTimeout = null }
     stopAutoRotate()
     stopStarCanvas()
-    if (interactionTimeout) clearTimeout(interactionTimeout)
+    if (interactionTimeout) { clearTimeout(interactionTimeout); interactionTimeout = null }
     if (visibilityHandler) { document.removeEventListener('visibilitychange', visibilityHandler); visibilityHandler = null }
   },
 })
@@ -320,7 +354,7 @@ if (props.defaultDataset === 'endangered-species') {
         dataPushed = true
         base.speciesIndexData.value = speciesIdx.value
       }
-      dataStatusText.value = 'All species data loaded ✓'
+      dataStatusText.value = t('globe.allSpeciesLoaded')
       setTimeout(() => { showDataLoading.value = false }, 2500)
     } else {
       showDataLoading.value = true
@@ -343,9 +377,9 @@ function initMap() {
 
 const {
   t, localeNames, baseURL, isMobile, isEmbed, hideControls, noControl, hideAll,
-  activeDataset, projectsData, speciesIndexData, visibleProjects, crewsData, crewLocationsData,
-  selectedSpeciesGroups,
-  hasError, errorMessage, noWebglSupport,
+  activeDataset, projectsData, speciesIndexData, visibleProjects, crewsData, crewLocationsData, visibleCrewLocations,
+  selectedSpeciesGroups, selectedCrewStatuses, toggleCrewStatus,
+  hasError, errorMessage, noWebglSupport, shareCopied, shareMap, exportMapImage, exportVisibleData,
   showHexGrid, showFilterPanel, speciesFilterPanelRef,
   showConnections, toggleConnections,
   showSpeciesOverlay, showProjectOverlay, showCrewOverlay,
@@ -363,6 +397,12 @@ const {
   toggleLegendGroup, navigateToLocation,
   clusterPanelItems, clusterPanelDataset, clusterPanelOpen, closeClusterPanel,
 } = base
+
+const crewOverlayLabel = computed(() => {
+  const crew = crewData.value
+  if (!crew) return t('nav.activeCrews')
+  return ('name' in crew ? crew.name : crew.region) || t('nav.activeCrews')
+})
 
 function selectClusterItem(item: ClusterResultItem) {
   // Disambiguation choice → open its details popup (navigating alone would be

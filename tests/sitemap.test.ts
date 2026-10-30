@@ -14,19 +14,29 @@ import {
 } from '../lib/site-routes'
 
 const NON_CONTENT_PATHS = ['/globe', '/auth/callback', '/iframe', '/iframe/squarespace']
+const NON_CANONICAL_ALIASES = ['/crews']
+const SITEMAP_EXCLUSIONS = [...NON_CONTENT_PATHS, ...NON_CANONICAL_ALIASES]
 
 describe('sitemap entries', () => {
   it('covers every prerendered content route', () => {
     const sitemapPaths = new Set(SITEMAP_ENTRIES.map((e) => e.path))
     for (const route of PRERENDER_ROUTES) {
-      if (NON_CONTENT_PATHS.includes(route)) continue
+      if (SITEMAP_EXCLUSIONS.includes(route)) continue
       expect(sitemapPaths.has(route), `sitemap missing prerender route ${route}`).toBe(true)
     }
   })
 
-  it('excludes redirects, embeds and auth callbacks', () => {
+  it('prerenders the crews alias but keeps the legacy path canonical', () => {
     const sitemapPaths = SITEMAP_ENTRIES.map((e) => e.path)
-    for (const excluded of NON_CONTENT_PATHS) {
+    expect(PRERENDER_ROUTES).toContain('/crews')
+    expect(PRERENDER_ROUTES).toContain('/active-crews')
+    expect(sitemapPaths).toContain('/active-crews')
+    expect(sitemapPaths).not.toContain('/crews')
+  })
+
+  it('excludes redirects, embeds, auth callbacks and non-canonical aliases', () => {
+    const sitemapPaths = SITEMAP_ENTRIES.map((e) => e.path)
+    for (const excluded of SITEMAP_EXCLUSIONS) {
       expect(sitemapPaths).not.toContain(excluded)
     }
   })

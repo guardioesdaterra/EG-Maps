@@ -5,7 +5,7 @@
     "projectGrants": "Proje Hibeleri",
     "endangeredSpecies": "Nesli Tükenmekte Olan Türler",
     "observatoryOfVulcan": "Vulcan Gözlemevi",
-    "activeCrews": "Aktif Ekipler",
+    "activeCrews": "Ekip Haritası",
     "egGrants": "EG Grants",
     "crews": "Ekipler",
     "joinEarthGuardians": "Earth Guardians'a Katıl",
@@ -25,11 +25,11 @@
     "speciesDesc": "Kritik derecede tehlike altındaki türleri ve dünya genelindeki yaşam alanlarını keşfedin.",
     "observatoryTitle": "Vulcan Gözlemevi",
     "observatoryDesc": "Brezilya nadir toprak madenciliği talepleri — sermaye istilası, kurumsal ağlar, askeri çıkarlar ve sosyo-çevresel etki.",
-    "activeCrewsTitle": "Aktif Ekipler",
-    "activeCrewsDesc": "Earth Guardians'ın 7 bölgedeki aktif ekiplerini keşfedin — 131 ekip, 1.241 üye, 47 ülke.",
+    "activeCrewsTitle": "Ekip Haritası",
+    "activeCrewsDesc": "Earth Guardians'ın 7 bölgedeki ekip ağını keşfedin — 131 aktif ekip, 1.241 üye ve 47 ülke.",
     "projectsCount": "Projeler",
     "beneficiariesCount": "Yararlanıcılar",
-    "speciesCount": "Tür Kayıtları",
+    "speciesCount": "Kaydedilen Türler",
     "groupsCount": "Gruplar",
     "allValue": "Tümü",
     "activeCrewsCount": "Aktif Ekipler",
@@ -62,8 +62,8 @@
     "campaignsTitle": "Kampanyalar",
     "campaignsDesc": "EG kampanyaları ve arkalarındaki haritalar — Biyoçeşitlilik Günü için hazırlanan tehlikedeki türler haritası dahil.",
     "campaignsKicker": "Biyoçeşitlilik Günü · tür haritası içeride",
-    "crewProjectsTitle": "Ekip Projeleri",
-    "crewProjectsDesc": "Sierra Leone ve Togo'da ekip öncülüğünde restorasyon — topluluk yönetiminde mangrovlar, ormanlar ve çiftlikler.",
+    "crewProjectsTitle": "Büyük ölçekli",
+    "crewProjectsDesc": "Ekiplerin ekosistem restorasyonu ve yenileyici tarımdan iklim eğitimine, artivizme ve toplumsal dayanıklılığa uzanan çalışmalarını keşfedin.",
     "vulcanTitle": "Vulcan Gözlemevi",
     "vulcanDesc": "Brezilya'da Poços de Caldas çevresindeki nadir toprak madenciliği taleplerinin topluluk haritası — talepler, su, korunan bölgeler ve kültürel yaşam.",
     "vulcanFocusValue": "Planalto Vulcânico",
@@ -180,7 +180,7 @@
     "close": "Kapat",
     "markerLegend": "İşaretçi Renkleri",
     "markerSize": "İşaretçi Boyutu",
-    "activeCrewsTitle": "Aktif Ekipler",
+    "activeCrewsTitle": "Ekip Haritası",
     "regions": "Bölgeler",
     "crews": "Ekipler",
     "members": "Üyeler",
@@ -701,13 +701,13 @@
   "loading": {
     "projectGrantsMap": "Proje Hibeleri Haritası Yükleniyor",
     "projectGrantsGlobe": "Proje Hibeleri Küresi Yükleniyor",
-    "endangeredSpeciesMap": "Nesli Tükenmekte Olan Türler Haritası Yükleniyor",
+    "endangeredSpeciesMap": "Nesli tükenmekte olan türler yükleniyor",
     "endangeredSpeciesGlobe": "Nesli Tükenmekte Olan Türler Küresi Yükleniyor",
     "observatoryOfVulcan": "Vulcan Gözlemevi Yükleniyor",
     "observatoryOfVulcanGlobe": "Vulcan Gözlemevi Küresi Yükleniyor",
-    "activeCrewsMap": "Aktif Ekipler Haritası Yükleniyor",
+    "activeCrewsMap": "Ekip haritası yükleniyor",
     "initializingVisualization": "Etkileşimli görselleştirme başlatılıyor...",
-    "activeCrewsGlobe": "Aktif Ekipler Küresi"
+    "activeCrewsGlobe": "3D ekip haritası yükleniyor"
   },
   "error": {
     "pageNotFound": "Sayfa bulunamadı",
@@ -813,10 +813,11 @@
     "crewActionDesc": "EG Ekipleri; sağlıklı, adil ve sürdürülebilir bir gelecek için eyleme geçen gençlik öncülüğünde gruplardır. Ekipler, topluluklarını etkileyen iklim sorunlarına yanıt olarak kendi projelerini ve girişimlerini ilerletme yetkisine sahiptir.",
     "ctaJoinTitle": "Harekete Katıl",
     "ctaJoinDesc": "Gezegenimizin geleceği için eyleme geçen genç liderlerden oluşan küresel bir ağın parçası olun.",
-    "joinCrew": "Bir Ekip Kur"
+    "joinCrew": "Bir Ekip Kur",
+    "openSpeciesMap": "Tehlikedeki türleri keşfet"
   },
   "crewProjects": {
-    "title": "Ekip Projeleri",
+    "title": "Büyük ölçekli",
     "description": "Dünya çapında EG Ekipleri öncülüğünde büyük ve küçük ölçekli projeler; gençlik öncülüğünde iklim eyleminin etkisini gösterir.",
     "largeScaleTitle": "Büyük Ölçekli Ekip Etkisi",
     "largeScaleDesc": "Birden fazla ülkede önemli çevresel ve toplumsal etki yaratan büyük ekip girişimleri.",
@@ -1240,7 +1241,7 @@
     "crewSignupError": "Bir şeyler yanlış gitti. Lütfen tekrar deneyin.",
     "crewSignupAlreadyRegistered": "Zaten kayıtlısınız!",
     "crewSignupContactCrews": "Formda sorun mu yaşıyorsunuz? Şurayla iletişime geçin:",
-    "crewSignupContactEmail": "crews{'@'}earthguardians.org",
+    "crewSignupContactEmail": "Crews{'@'}earthguardians.org",
     "crewSignupPrivacyPolicy": "Gizlilik Politikası",
     "crewSignupRequired": "zorunlu",
     "crewSignupBackToPortal": "Panoya Dön",
@@ -1404,7 +1405,7 @@
       "description": "Kritik tehlikedeki tür habitatlarının 3D küre görünümü."
     },
     "endangeredSpecies2d": {
-      "title": "Tehlikedeki Türler — 2D Harita",
+      "title": "Tehlikedeki Türler — 2D",
       "description": "Dünya çapında tehlikedeki tür konumlarının 2D harita görünümü."
     },
     "observatory3d": {

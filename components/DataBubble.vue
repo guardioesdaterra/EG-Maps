@@ -24,7 +24,7 @@
       :aria-label="isExpanded ? t('stats.collapse') : label"
       :aria-expanded="isExpanded"
     >
-      <span class="bubble-icon">G</span>
+      <span class="bubble-icon">Stats</span>
     </button>
 
     <Transition name="bubble-expand">
@@ -124,6 +124,21 @@
                 <span class="legend-label">{{ item.label }}</span>
               </div>
             </div>
+            <div class="crew-status-filters" role="group" :aria-label="t('stats.markerLegend')">
+              <button
+                v-for="item in crewStatusItems"
+                :key="item.status"
+                type="button"
+                class="crew-status-filter"
+                :class="{ 'is-selected': selectedCrewStatuses.includes(item.status) }"
+                :aria-pressed="selectedCrewStatuses.includes(item.status)"
+                :aria-label="item.label"
+                @click="toggleCrewStatus(item.status)"
+              >
+                <span class="legend-dot" :style="{ backgroundColor: item.color }" aria-hidden="true" />
+                <span>{{ item.label }}</span>
+              </button>
+            </div>
           </div>
         </template>
 
@@ -152,7 +167,7 @@ import Icon from './Icon.vue'
 import { GROUP_COLORS } from '@/lib/map-utils'
 import { formatCompact } from '@/lib/utils'
 import type { ProjectData } from '@/lib/types'
-import type { CrewRegionData, CrewLocation } from '@/lib/crew-data'
+import type { CrewRegionData, CrewLocation, CrewStatus } from '@/lib/crew-data'
 
 const props = withDefaults(defineProps<{
   mode: 'species' | 'projects' | 'crews'
@@ -160,6 +175,7 @@ const props = withDefaults(defineProps<{
   projects?: ProjectData[]
   crews?: CrewRegionData[]
   crewLocations?: CrewLocation[]
+  selectedCrewStatuses?: CrewStatus[]
   positionTop?: string
   positionBottom?: string
 }>(), {
@@ -167,12 +183,14 @@ const props = withDefaults(defineProps<{
   projects: () => [],
   crews: () => [],
   crewLocations: () => [],
+  selectedCrewStatuses: () => ['active', 'inactive'],
   positionTop: undefined,
   positionBottom: undefined,
 })
 
 const emit = defineEmits<{
   'toggle-group': [group: string]
+  'toggle-crew-status': [status: CrewStatus]
 }>()
 
 const { t } = useI18n()
@@ -197,6 +215,11 @@ function close() {
 
 function toggleGroup(group: string) {
   emit('toggle-group', group)
+}
+
+function toggleCrewStatus(status: CrewStatus) {
+  if (props.selectedCrewStatuses.length === 1 && props.selectedCrewStatuses.includes(status)) return
+  emit('toggle-crew-status', status)
 }
 
 function groupLabel(group: string) {
@@ -254,6 +277,11 @@ const crewLegendItems = computed(() => [
   { color: 'var(--warning)', label: t('stats.crewsInactive') },
 ])
 
+const crewStatusItems = computed<Array<{ status: CrewStatus; color: string; label: string }>>(() => [
+  { status: 'active', color: '#22c55e', label: t('filter.active') },
+  { status: 'inactive', color: '#f59e0b', label: t('stats.crewsInactive') },
+])
+
 const speciesLegendItems = computed(() => [
   { color: 'var(--danger)', label: t('taxonomy.Mammal'), size: 11 },
   { color: 'var(--warning)', label: t('taxonomy.Bird'), size: 9 },
@@ -277,7 +305,9 @@ const speciesLegendItems = computed(() => [
 
 @media (max-width: 480px) {
   .data-bubble {
-    right: 0.375rem;
+    left: max(0.375rem, env(safe-area-inset-left));
+    right: auto;
+    align-items: flex-start;
   }
 }
 
@@ -314,11 +344,14 @@ const speciesLegendItems = computed(() => [
 }
 
 .bubble-icon {
-  font-size: clamp(1.1rem, 3.5vw, 1.4rem);
+  font-size: clamp(0.625rem, 2vw, 0.75rem);
   font-weight: 900;
   color: var(--text-primary);
   line-height: 1;
   font-family: 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
   user-select: none;
 }
 
@@ -344,9 +377,11 @@ const speciesLegendItems = computed(() => [
 @media (max-width: 480px) {
   .bubble-panel {
     min-width: 11rem;
-    max-width: calc(100vw - 1.5rem);
+    max-width: min(20rem, calc(100vw - 5rem));
     margin-bottom: 0.375rem;
-    max-height: min(55dvh, 24rem);
+    max-height: min(55dvh, 24rem, max(6rem, calc(100dvh - 10rem)));
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 }
 
@@ -534,6 +569,38 @@ const speciesLegendItems = computed(() => [
   display: flex;
   flex-wrap: wrap;
   gap: clamp(0.25rem, 0.6vw, 0.375rem);
+}
+
+.crew-status-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.25rem, 0.6vw, 0.375rem);
+  margin-top: clamp(0.35rem, 0.8vw, 0.5rem);
+}
+
+.crew-status-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(0.2rem, 0.5vw, 0.3rem);
+  min-height: 2rem;
+  padding: 0 clamp(0.4rem, 1vw, 0.6rem);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: clamp(0.55rem, 1.4vw, 0.65rem);
+  cursor: pointer;
+}
+
+.crew-status-filter.is-selected {
+  border-color: color-mix(in srgb, var(--accent-cyan) 55%, var(--panel-border));
+  background: color-mix(in srgb, var(--accent-cyan) 12%, transparent);
+  color: var(--text-primary);
+}
+
+.crew-status-filter:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
 
 .legend-item {

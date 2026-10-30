@@ -8,6 +8,7 @@
  * @connections components/DataBubble.vue, components/SpeciesPanel.vue, components/map/SpeciesPopup.vue, components/observatory/ClaimDetailModal.vue, components/observatory/ClaimPopup.vue, components/observatory/ClaimsDataTable.vue, components/observatory/PhaseFilter.vue, composables/useCulturalLayers.ts, composables/useDataDownload.ts, composables/useGeoJSONMarkers.ts, composables/useMapBase.ts, composables/useMapMarker.ts, composables/useMapPopup/previewCard.ts, composables/useObservatoryControls.ts, composables/useObservatoryPopup.ts, composables/useRareEarthLayers.ts
  */
 import maplibregl from 'maplibre-gl'
+import { withMapPopupSafeArea } from './map-popup-safe-area'
 import { getProjectColorByBeneficiaries, COLOR_MAMMAL, MAP_COLORS } from './colors'
 import type { ProjectData, Species } from './types'
 import type { CrewRegionData, CrewLocation } from './crew-data'
@@ -743,10 +744,9 @@ export function openRareEarthOverlayPopup(map: maplibregl.Map, feature: GeoJSON.
   const html = buildRareEarthPopupHTML(featureProps as { c?: string; ds?: number; a?: number; [key: string]: unknown })
   const coords = (feature.geometry as GeoJSON.Point).coordinates
   if (!Array.isArray(coords) || typeof coords[0] !== 'number' || typeof coords[1] !== 'number') return
-  reeOverlayPopup = new maplibregl.Popup({ offset: 10, closeButton: true, className: 'cyberpunk-popup' })
+  reeOverlayPopup = new maplibregl.Popup(withMapPopupSafeArea({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer()))
     .setLngLat([coords[0], coords[1]])
     .setHTML(html)
     .setMaxWidth('none')
     .addTo(map)
 }
-

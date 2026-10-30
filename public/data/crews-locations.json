@@ -11,7 +11,7 @@
         ]
       },
       "properties": {
-        "name": "Manhattan, NY",
+        "name": "EG Manhattan, NY",
         "country": "USA",
         "city": "New York",
         "state": "New York",
@@ -29,7 +29,7 @@
         ]
       },
       "properties": {
-        "name": "UNCO (University of Northern Colorado)",
+        "name": "EG UNCO (University of Northern Colorado)",
         "country": "USA",
         "city": "Greeley",
         "state": "Colorado",
@@ -47,7 +47,7 @@
         ]
       },
       "properties": {
-        "name": "Bell Windy City \"Legacy Crew\"",
+        "name": "EG Bell Windy City \"Legacy Crew\"",
         "country": "USA",
         "city": "Chicago",
         "state": "Illinois",
@@ -65,7 +65,7 @@
         ]
       },
       "properties": {
-        "name": "Bridgewater, New Jersey",
+        "name": "EG Bridgewater, New Jersey",
         "country": "USA",
         "city": "Bridgewater",
         "state": "New Jersey",
@@ -83,7 +83,7 @@
         ]
       },
       "properties": {
-        "name": "Aberdeen, South Dakota",
+        "name": "EG Aberdeen, South Dakota",
         "country": "USA",
         "city": "Aberdeen",
         "state": "South Dakota",
@@ -101,7 +101,7 @@
         ]
       },
       "properties": {
-        "name": "Virginia Youth",
+        "name": "EG Virginia Youth",
         "country": "USA",
         "city": "Arlington",
         "state": "Virginia",
@@ -119,7 +119,7 @@
         ]
       },
       "properties": {
-        "name": "Pachamami Protectors",
+        "name": "EG Pachamami Protectors",
         "country": "USA",
         "city": "Los Angeles",
         "state": "CA",
@@ -137,7 +137,7 @@
         ]
       },
       "properties": {
-        "name": "Nease",
+        "name": "EG Nease",
         "country": "USA",
         "city": "Ponte Vedra",
         "state": "Florida",
@@ -155,7 +155,7 @@
         ]
       },
       "properties": {
-        "name": "350VT Youth Fellowship",
+        "name": "EG 350VT Youth Fellowship",
         "country": "USA",
         "city": "Sharon",
         "state": "Vermont",
@@ -173,7 +173,7 @@
         ]
       },
       "properties": {
-        "name": "Mexico",
+        "name": "EG Mexico",
         "country": "Mexico",
         "city": "Monterrey",
         "state": "",
@@ -191,7 +191,7 @@
         ]
       },
       "properties": {
-        "name": "CC JAM (Campion College Jamaica)",
+        "name": "EG CC JAM (Campion College Jamaica)",
         "country": "Jamaica",
         "city": "Kingston",
         "state": "St. Andrew",
@@ -209,7 +209,7 @@
         ]
       },
       "properties": {
-        "name": "Maple Grove",
+        "name": "EG Maple Grove",
         "country": "USA",
         "city": "Maple Grove",
         "state": "Minnesota",
@@ -227,7 +227,7 @@
         ]
       },
       "properties": {
-        "name": "Frederick County",
+        "name": "EG Frederick County",
         "country": "USA",
         "city": "Burkittsville",
         "state": "Maryland",
@@ -250,7 +250,7 @@
         "city": "Monterrey",
         "state": "",
         "region": "North America",
-        "status": "active"
+        "status": "inactive"
       }
     },
     {
@@ -268,7 +268,7 @@
         "city": "Cuernavaca",
         "state": "",
         "region": "North America",
-        "status": "active"
+        "status": "inactive"
       }
     },
     {
@@ -281,7 +281,7 @@
         ]
       },
       "properties": {
-        "name": "Santa Fe, NM",
+        "name": "EG Santa Fe, NM",
         "country": "USA",
         "city": "Santa Fe",
         "state": "New Mexico",
@@ -299,7 +299,7 @@
         ]
       },
       "properties": {
-        "name": "Rangers",
+        "name": "EG Rangers",
         "country": "USA",
         "city": "Beaverton",
         "state": "Oregon",
@@ -317,7 +317,7 @@
         ]
       },
       "properties": {
-        "name": "O'ahu",
+        "name": "EG O'ahu",
         "country": "USA",
         "city": "",
         "state": "",
@@ -335,7 +335,7 @@
         ]
       },
       "properties": {
-        "name": "Charlotter NC: Tetra",
+        "name": "EG Charlotter NC: Tetra",
         "country": "USA",
         "city": "Charlotte nc",
         "state": "",
@@ -353,7 +353,7 @@
         ]
       },
       "properties": {
-        "name": "Hayti",
+        "name": "EG Hayti",
         "country": "Haiti",
         "city": "Sourcailles",
         "state": "Kenscoff",
@@ -371,12 +371,12 @@
         ]
       },
       "properties": {
-        "name": "Santa Fe",
+        "name": "EG Santa Fe",
         "country": "USA",
         "city": "Santa Fe",
         "state": "NM",
         "region": "North America",
-        "status": "inactive"
+        "status": "active"
       }
     },
     {
@@ -389,7 +389,7 @@
         ]
       },
       "properties": {
-        "name": "Missoula",
+        "name": "EG Missoula",
         "country": "USA",
         "city": "Missoula",
         "state": "MT",
@@ -407,7 +407,7 @@
         ]
       },
       "properties": {
-        "name": "Mboi Nxuni",
+        "name": "EG Mboi Nxuni",
         "country": "USA",
         "city": "Chicago",
         "state": "Illinois",
@@ -425,7 +425,7 @@
         ]
       },
       "properties": {
-        "name": "Kumeyaay Ma'at",
+        "name": "EG Kumeyaay Ma'at",
         "country": "USA",
         "city": "San Diego",
         "state": "CA",
@@ -443,7 +443,7 @@
         ]
       },
       "properties": {
-        "name": "Kitikiti'sh Kanza",
+        "name": "EG Kitikiti'sh Kanza",
         "country": "USA - Turtle Island",
         "city": "Wichita",
         "state": "Kansas",
@@ -461,7 +461,7 @@
         ]
       },
       "properties": {
-        "name": "Tahlequah",
+        "name": "EG Tahlequah",
         "country": "USA",
         "city": "Tahlequah",
         "state": "Oklahoma",
@@ -479,7 +479,7 @@
         ]
       },
       "properties": {
-        "name": "Poços de Caldas",
+        "name": "EG Poços de Caldas",
         "country": "Brazil",
         "city": "Poços de Caldas",
         "state": "Minas Gerais",
@@ -497,7 +497,7 @@
         ]
       },
       "properties": {
-        "name": "Águas da Prata",
+        "name": "EG Águas da Prata",
         "country": "Brazil",
         "city": "Águas da Prata",
         "state": "São Paulo",
@@ -515,7 +515,7 @@
         ]
       },
       "properties": {
-        "name": "Cascata",
+        "name": "EG Cascata",
         "country": "Brazil",
         "city": "Águas da Prata",
         "state": "São Paulo",
@@ -533,7 +533,7 @@
         ]
       },
       "properties": {
-        "name": "São Paulo",
+        "name": "EG São Paulo",
         "country": "Brazil",
         "city": "São Paulo",
         "state": "São Paulo",
@@ -551,7 +551,7 @@
         ]
       },
       "properties": {
-        "name": "Puyo",
+        "name": "EG Puyo",
         "country": "Ecuador",
         "city": "Puyo",
         "state": "Pastaza",
@@ -569,7 +569,7 @@
         ]
       },
       "properties": {
-        "name": "Yapuchiris",
+        "name": "EG Yapuchiris",
         "country": "Bolivia",
         "city": "Cohana",
         "state": "Los Andes",
@@ -587,7 +587,7 @@
         ]
       },
       "properties": {
-        "name": "Guatemala",
+        "name": "EG Guatemala",
         "country": "Guatemala",
         "city": "Guatemala",
         "state": "",
@@ -623,7 +623,7 @@
         ]
       },
       "properties": {
-        "name": "São Roque da Fartura",
+        "name": "EG São Roque da Fartura",
         "country": "Brazil",
         "city": "Águas da Prata",
         "state": "São Paulo",
@@ -641,7 +641,7 @@
         ]
       },
       "properties": {
-        "name": "Turkey",
+        "name": "EG Turkey",
         "country": "Turkey",
         "city": "Konya",
         "state": "",
@@ -659,7 +659,7 @@
         ]
       },
       "properties": {
-        "name": "Diyarbakir",
+        "name": "EG Diyarbakir",
         "country": "Turkey",
         "city": "Diyarbakır",
         "state": "Diyarbakır",
@@ -677,7 +677,7 @@
         ]
       },
       "properties": {
-        "name": "Ecovoyagers",
+        "name": "EG Ecovoyagers",
         "country": "Turkey",
         "city": "Izmir",
         "state": "Karsıyaka",
@@ -695,7 +695,7 @@
         ]
       },
       "properties": {
-        "name": "İzmir",
+        "name": "EG İzmir",
         "country": "Turkey",
         "city": "İzmir",
         "state": "İzmir",
@@ -713,7 +713,7 @@
         ]
       },
       "properties": {
-        "name": "Sormland",
+        "name": "EG Sormland",
         "country": "Sweden",
         "city": "Nyköping",
         "state": "",
@@ -731,7 +731,7 @@
         ]
       },
       "properties": {
-        "name": "Earth Allies PNG",
+        "name": "EG Earth Allies PNG",
         "country": "Papua New Guinea",
         "city": "Port Moresby",
         "state": "National Capital District",
@@ -749,7 +749,7 @@
         ]
       },
       "properties": {
-        "name": "Azerbaijan",
+        "name": "EG Azerbaijan",
         "country": "Azerbaijan",
         "city": "Baku",
         "state": "Yasamal",
@@ -767,7 +767,7 @@
         ]
       },
       "properties": {
-        "name": "Silk Road",
+        "name": "EG Silk Road",
         "country": "Uzbekistan",
         "city": "Termez",
         "state": "Surkhandarya",
@@ -785,7 +785,7 @@
         ]
       },
       "properties": {
-        "name": "Malta",
+        "name": "EG Malta",
         "country": "Malta",
         "city": "",
         "state": "",
@@ -803,7 +803,7 @@
         ]
       },
       "properties": {
-        "name": "Botswana",
+        "name": "EG Botswana",
         "country": "Botswana",
         "city": "gaborone",
         "state": "gaborone",
@@ -821,7 +821,7 @@
         ]
       },
       "properties": {
-        "name": "Green Equity",
+        "name": "EG Green Equity",
         "country": "Burundi",
         "city": "Cankuzo",
         "state": "Cankuzo",
@@ -839,7 +839,7 @@
         ]
       },
       "properties": {
-        "name": "Alliance pour l'Equite EnvironnementalE(AEE-BURUNDI)",
+        "name": "EG Alliance pour l'Equite EnvironnementalE(AEE-BURUNDI)",
         "country": "Burundi",
         "city": "Gatumba",
         "state": "Bujumbura Rural",
@@ -857,7 +857,7 @@
         ]
       },
       "properties": {
-        "name": "Trans_Eco",
+        "name": "EG Trans_Eco",
         "country": "Burundi",
         "city": "Cibitoke",
         "state": "Cibitoke",
@@ -875,7 +875,7 @@
         ]
       },
       "properties": {
-        "name": "Buea",
+        "name": "EG Buea",
         "country": "Cameroun",
         "city": "Buea",
         "state": "South West",
@@ -893,7 +893,7 @@
         ]
       },
       "properties": {
-        "name": "Bamenda",
+        "name": "EG Bamenda",
         "country": "Cameroun",
         "city": "Bamenda",
         "state": "Northwest",
@@ -911,7 +911,7 @@
         ]
       },
       "properties": {
-        "name": "CEMASUD (Community Empowerment Agency for Sustainable Development)",
+        "name": "EG CEMASUD (Community Empowerment Agency for Sustainable Development)",
         "country": "Cameroun",
         "city": "Bamenda",
         "state": "North West Region",
@@ -929,7 +929,7 @@
         ]
       },
       "properties": {
-        "name": "CYGI (Cameroon Youth Green Initiative)",
+        "name": "EG CYGI (Cameroon Youth Green Initiative)",
         "country": "Cameroun",
         "city": "Yaoundé",
         "state": "",
@@ -947,7 +947,7 @@
         ]
       },
       "properties": {
-        "name": "SWC Green Advocates",
+        "name": "EG SWC Green Advocates",
         "country": "Cameroun",
         "city": "Buea",
         "state": "South West",
@@ -965,7 +965,7 @@
         ]
       },
       "properties": {
-        "name": "Bungoma",
+        "name": "EG Bungoma",
         "country": "Kenya",
         "city": "Bungoma",
         "state": "",
@@ -983,7 +983,7 @@
         ]
       },
       "properties": {
-        "name": "Trailblazers",
+        "name": "EG Trailblazers",
         "country": "Kenya",
         "city": "Bungoma",
         "state": "",
@@ -1001,7 +1001,7 @@
         ]
       },
       "properties": {
-        "name": "Mviringo",
+        "name": "EG Mviringo",
         "country": "Kenya",
         "city": "Nairobi",
         "state": "",
@@ -1019,7 +1019,7 @@
         ]
       },
       "properties": {
-        "name": "FutureForce",
+        "name": "EG FutureForce",
         "country": "Kenya",
         "city": "Nairobi/Busia",
         "state": "Central",
@@ -1037,7 +1037,7 @@
         ]
       },
       "properties": {
-        "name": "Pastoralist Goals Earth Crew",
+        "name": "EG Pastoralist Goals Earth Crew",
         "country": "Kenya",
         "city": "Nanyuki",
         "state": "",
@@ -1055,7 +1055,7 @@
         ]
       },
       "properties": {
-        "name": "Mauritius",
+        "name": "EG Mauritius",
         "country": "Mauritius",
         "city": "Port Louis",
         "state": "",
@@ -1073,7 +1073,7 @@
         ]
       },
       "properties": {
-        "name": "Nkhotakota",
+        "name": "EG Nkhotakota",
         "country": "Malawi",
         "city": "Nkhotakota",
         "state": "Nkhotakota",
@@ -1091,7 +1091,7 @@
         ]
       },
       "properties": {
-        "name": "Lilongwe",
+        "name": "EG Lilongwe",
         "country": "Malawi",
         "city": "Lilongwe",
         "state": "Chilinde",
@@ -1109,7 +1109,7 @@
         ]
       },
       "properties": {
-        "name": "Agadir",
+        "name": "EG Agadir",
         "country": "Morocco",
         "city": "Agadir",
         "state": "Souss Massa",
@@ -1127,7 +1127,7 @@
         ]
       },
       "properties": {
-        "name": "Nigeria",
+        "name": "EG Nigeria",
         "country": "Nigeria",
         "city": "Owerri",
         "state": "Imo State",
@@ -1145,7 +1145,7 @@
         ]
       },
       "properties": {
-        "name": "Sustainable Guardians",
+        "name": "EG Sustainable Guardians",
         "country": "Nigeria",
         "city": "Jos",
         "state": "Plateau",
@@ -1163,7 +1163,7 @@
         ]
       },
       "properties": {
-        "name": "SOFA Green Guardians",
+        "name": "EG SOFA Green Guardians",
         "country": "Nigeria",
         "city": "Lagos",
         "state": "Lagos",
@@ -1181,7 +1181,7 @@
         ]
       },
       "properties": {
-        "name": "Climate Champions",
+        "name": "EG Climate Champions",
         "country": "Nigeria",
         "city": "Kano",
         "state": "Kano",
@@ -1199,7 +1199,7 @@
         ]
       },
       "properties": {
-        "name": "Rwanda",
+        "name": "EG Rwanda",
         "country": "Rwanda",
         "city": "Kigali",
         "state": "Kigali City",
@@ -1217,7 +1217,7 @@
         ]
       },
       "properties": {
-        "name": "Uganda",
+        "name": "EG Uganda",
         "country": "Uganda",
         "city": "Kampala",
         "state": "Kyotera- Central",
@@ -1235,7 +1235,7 @@
         ]
       },
       "properties": {
-        "name": "U-RCA (Uganda-Rwenzori Climate Action)",
+        "name": "EG U-RCA (Uganda-Rwenzori Climate Action)",
         "country": "Uganda",
         "city": "Kasese",
         "state": "Rwenzori region, Uganda",
@@ -1253,7 +1253,7 @@
         ]
       },
       "properties": {
-        "name": "AFODE",
+        "name": "EG AFODE",
         "country": "Uganda",
         "city": "Kasese Municipality",
         "state": "Western Uganda",
@@ -1271,7 +1271,7 @@
         ]
       },
       "properties": {
-        "name": "Eco Warriors",
+        "name": "EG Eco Warriors",
         "country": "Uganda",
         "city": "Kasese",
         "state": "kasese",
@@ -1289,7 +1289,7 @@
         ]
       },
       "properties": {
-        "name": "KCC (Kibale Conservation Club)",
+        "name": "EG KCC (Kibale Conservation Club)",
         "country": "Uganda",
         "city": "Fort portal",
         "state": "Western Uganda",
@@ -1307,7 +1307,7 @@
         ]
       },
       "properties": {
-        "name": "FWCC (Foundation for Women And Children Conservation)",
+        "name": "EG FWCC (Foundation for Women And Children Conservation)",
         "country": "Uganda",
         "city": "Kasese",
         "state": "Western Uganda",
@@ -1325,7 +1325,7 @@
         ]
       },
       "properties": {
-        "name": "Rwenzori Conservation",
+        "name": "EG Rwenzori Conservation",
         "country": "Uganda",
         "city": "Kasese",
         "state": "Western Uganda",
@@ -1343,7 +1343,7 @@
         ]
       },
       "properties": {
-        "name": "Sierra Leone",
+        "name": "EG Sierra Leone",
         "country": "Sierra Leone",
         "city": "Freetown",
         "state": "",
@@ -1361,7 +1361,7 @@
         ]
       },
       "properties": {
-        "name": "Green Leone",
+        "name": "EG Green Leone",
         "country": "Sierra Leone",
         "city": "Bo",
         "state": "Southern",
@@ -1379,7 +1379,7 @@
         ]
       },
       "properties": {
-        "name": "SD-SL",
+        "name": "EG SD-SL",
         "country": "Sierra Leone",
         "city": "Freetown",
         "state": "Western Area",
@@ -1397,7 +1397,7 @@
         ]
       },
       "properties": {
-        "name": "Eco-Revo",
+        "name": "EG Eco-Revo",
         "country": "Sierra Leone",
         "city": "Bo",
         "state": "",
@@ -1415,7 +1415,7 @@
         ]
       },
       "properties": {
-        "name": "SiCa Africa",
+        "name": "EG SiCa Africa",
         "country": "Tanzania",
         "city": "Dar ea salaam",
         "state": "",
@@ -1433,7 +1433,7 @@
         ]
       },
       "properties": {
-        "name": "Blue Planet Protectors",
+        "name": "EG Blue Planet Protectors",
         "country": "Tanzania",
         "city": "Nyamagana",
         "state": "Mwanza",
@@ -1451,7 +1451,7 @@
         ]
       },
       "properties": {
-        "name": "ELIZ",
+        "name": "EG ELIZ",
         "country": "Zambia",
         "city": "Lusaka",
         "state": "",
@@ -1469,7 +1469,7 @@
         ]
       },
       "properties": {
-        "name": "Eliz Mfuwe",
+        "name": "EG Eliz Mfuwe",
         "country": "Zambia",
         "city": "Mambwe",
         "state": "Eastern",
@@ -1487,7 +1487,7 @@
         ]
       },
       "properties": {
-        "name": "Zimbabwe",
+        "name": "EG Zimbabwe",
         "country": "Zimbabwe",
         "city": "Mutare",
         "state": "Manicaland",
@@ -1505,7 +1505,7 @@
         ]
       },
       "properties": {
-        "name": "Karoi, Zimbabwe",
+        "name": "EG Karoi, Zimbabwe",
         "country": "Zimbabwe",
         "city": "Karoi",
         "state": "Mashonaland West",
@@ -1523,7 +1523,7 @@
         ]
       },
       "properties": {
-        "name": "KENYA",
+        "name": "EG KENYA",
         "country": "Kenya",
         "city": "Kisumu",
         "state": "Kisumu,Nyanza",
@@ -1541,7 +1541,7 @@
         ]
       },
       "properties": {
-        "name": "Daresalaam (Tanzania)",
+        "name": "EG Daresalaam (Tanzania)",
         "country": "Tanzania",
         "city": "Dar es Salaam",
         "state": "",
@@ -1559,7 +1559,7 @@
         ]
       },
       "properties": {
-        "name": "Benin (main crew)",
+        "name": "EG Benin (main crew)",
         "country": "Benin",
         "city": "Cotonou",
         "state": "",
@@ -1577,7 +1577,7 @@
         ]
       },
       "properties": {
-        "name": "So-Ava",
+        "name": "EG So-Ava",
         "country": "Benin",
         "city": "So Ava",
         "state": "",
@@ -1595,7 +1595,7 @@
         ]
       },
       "properties": {
-        "name": "Abomey Calavi",
+        "name": "EG Abomey Calavi",
         "country": "Benin",
         "city": "Abomey-Calavi",
         "state": "",
@@ -1613,7 +1613,7 @@
         ]
       },
       "properties": {
-        "name": "Yili Yele Energy",
+        "name": "EG Yili Yele Energy",
         "country": "Benin",
         "city": "Abomey-Calavi",
         "state": "Atlantic",
@@ -1631,7 +1631,7 @@
         ]
       },
       "properties": {
-        "name": "GLAZFABA24",
+        "name": "EG GLAZFABA24",
         "country": "Benin",
         "city": "Glazoué",
         "state": "Kabolé",
@@ -1649,7 +1649,7 @@
         ]
       },
       "properties": {
-        "name": "Ecological Squads",
+        "name": "EG Ecological Squads",
         "country": "Benin",
         "city": "Cotonou",
         "state": "Coastline",
@@ -1667,7 +1667,7 @@
         ]
       },
       "properties": {
-        "name": "Savè",
+        "name": "EG Savè",
         "country": "Benin",
         "city": "Savè",
         "state": "",
@@ -1685,7 +1685,7 @@
         ]
       },
       "properties": {
-        "name": "Les Lauriers, Abomey-Calavi",
+        "name": "EG Les Lauriers, Abomey-Calavi",
         "country": "Benin",
         "city": "Abomey-Calavi",
         "state": "Atlantic",
@@ -1703,7 +1703,7 @@
         ]
       },
       "properties": {
-        "name": "Zou-Bénin",
+        "name": "EG Zou-Bénin",
         "country": "Benin",
         "city": "Bohicon",
         "state": "Zou",
@@ -1721,7 +1721,7 @@
         ]
       },
       "properties": {
-        "name": "Vallée de l'Ouémé",
+        "name": "EG Vallée de l'Ouémé",
         "country": "Benin",
         "city": "Dangbo",
         "state": "Calavi",
@@ -1739,7 +1739,7 @@
         ]
       },
       "properties": {
-        "name": "Burkine Faso",
+        "name": "EG Burkine Faso",
         "country": "BURKINA FASO",
         "city": "BOBODIOULASSO",
         "state": "BOBODIOULASSO",
@@ -1757,7 +1757,7 @@
         ]
       },
       "properties": {
-        "name": "Koudougou",
+        "name": "EG Koudougou",
         "country": "BURKINA FASO",
         "city": "Koudougou",
         "state": "Boulkiemdé",
@@ -1775,7 +1775,7 @@
         ]
       },
       "properties": {
-        "name": "Legueme Tolotama",
+        "name": "EG Legueme Tolotama",
         "country": "BURKINA FASO",
         "city": "Léguéma",
         "state": "Houet",
@@ -1793,7 +1793,7 @@
         ]
       },
       "properties": {
-        "name": "Ouagadougou",
+        "name": "EG Ouagadougou",
         "country": "BURKINA FASO",
         "city": "Ouagadougou",
         "state": "Kadiogo",
@@ -1811,7 +1811,7 @@
         ]
       },
       "properties": {
-        "name": "E-DEV (Éduquer pour Développer)",
+        "name": "EG E-DEV (Éduquer pour Développer)",
         "country": "BURKINA FASO",
         "city": "Fada N'Gourma",
         "state": "Gourma",
@@ -1829,7 +1829,7 @@
         ]
       },
       "properties": {
-        "name": "RCA",
+        "name": "EG RCA",
         "country": "Central Africa Republic",
         "city": "Bangui",
         "state": "",
@@ -1847,7 +1847,7 @@
         ]
       },
       "properties": {
-        "name": "GOMA",
+        "name": "EG GOMA",
         "country": "DR Congo",
         "city": "Goma",
         "state": "Nord Kivu",
@@ -1865,7 +1865,7 @@
         ]
       },
       "properties": {
-        "name": "Arbre de Vie",
+        "name": "EG Arbre de Vie",
         "country": "DR Congo",
         "city": "Uvira",
         "state": "South-Kivu",
@@ -1883,7 +1883,7 @@
         ]
       },
       "properties": {
-        "name": "UVIRA",
+        "name": "EG UVIRA",
         "country": "DR Congo",
         "city": "Uvira",
         "state": "South-Kivu",
@@ -1901,7 +1901,7 @@
         ]
       },
       "properties": {
-        "name": "Bukavu, DRC",
+        "name": "EG Bukavu, DRC",
         "country": "DR Congo",
         "city": "Bukavu",
         "state": "",
@@ -1919,7 +1919,7 @@
         ]
       },
       "properties": {
-        "name": "Les Semoirs d'Espoir-GOMA",
+        "name": "EG Les Semoirs d'Espoir-GOMA",
         "country": "DR Congo",
         "city": "GOMA",
         "state": "NORD-KIVU",
@@ -1937,7 +1937,7 @@
         ]
       },
       "properties": {
-        "name": "Côte d'Ivoire",
+        "name": "EG Côte d'Ivoire",
         "country": "Côte d'Ivoire",
         "city": "Adiaké",
         "state": "",
@@ -1955,7 +1955,7 @@
         ]
       },
       "properties": {
-        "name": "RANE (Réseau des Ambassadeurs de la Nature à l'Ecole)",
+        "name": "EG RANE (Réseau des Ambassadeurs de la Nature à l'Ecole)",
         "country": "Côte d'Ivoire",
         "city": "Yamoussoukro",
         "state": "Yamoussoukro",
@@ -1973,7 +1973,7 @@
         ]
       },
       "properties": {
-        "name": "Lexème",
+        "name": "EG Lexème",
         "country": "Mauritania",
         "city": "Nouakchott",
         "state": "Mauritania",
@@ -1991,7 +1991,7 @@
         ]
       },
       "properties": {
-        "name": "Green Mali",
+        "name": "EG Green Mali",
         "country": "Mali",
         "city": "Bamako",
         "state": "",
@@ -2009,7 +2009,7 @@
         ]
       },
       "properties": {
-        "name": "GAO, Mali",
+        "name": "EG GAO, Mali",
         "country": "Mali",
         "city": "Gao",
         "state": "",
@@ -2027,7 +2027,7 @@
         ]
       },
       "properties": {
-        "name": "AJDS Sangarébougou",
+        "name": "EG AJDS Sangarébougou",
         "country": "Mali",
         "city": "Bamako",
         "state": "Sangarabougou",
@@ -2045,7 +2045,7 @@
         ]
       },
       "properties": {
-        "name": "Dakar",
+        "name": "EG Dakar",
         "country": "Senegal",
         "city": "Dakar",
         "state": "Dakar",
@@ -2063,7 +2063,7 @@
         ]
       },
       "properties": {
-        "name": "PIKINE",
+        "name": "EG PIKINE",
         "country": "Senegal",
         "city": "Pikine",
         "state": "Dakar",
@@ -2081,7 +2081,7 @@
         ]
       },
       "properties": {
-        "name": "LaPHOENIX Int.",
+        "name": "EG LaPHOENIX Int.",
         "country": "Togo",
         "city": "Kpalime",
         "state": "Region des plateaux",
@@ -2099,7 +2099,7 @@
         ]
       },
       "properties": {
-        "name": "Club Environment Lycee 30 A.",
+        "name": "EG Club Environment Lycee 30 A.",
         "country": "Togo",
         "city": "Kpalime",
         "state": "Region des plateaux",
@@ -2117,7 +2117,7 @@
         ]
       },
       "properties": {
-        "name": "AMD (Association Main du Developement)",
+        "name": "EG AMD (Association Main du Developement)",
         "country": "Togo",
         "city": "LOME",
         "state": "Region Maritime",
@@ -2135,7 +2135,7 @@
         ]
       },
       "properties": {
-        "name": "Action Environnement",
+        "name": "EG Action Environnement",
         "country": "Togo",
         "city": "LOME",
         "state": "Region Maritime",
@@ -2153,7 +2153,7 @@
         ]
       },
       "properties": {
-        "name": "EcoChange",
+        "name": "EG EcoChange",
         "country": "Togo",
         "city": "LOME",
         "state": "Region Maritime",
@@ -2171,7 +2171,7 @@
         ]
       },
       "properties": {
-        "name": "CJFAT (Climate Justice For All in Togo)",
+        "name": "EG CJFAT (Climate Justice For All in Togo)",
         "country": "Togo",
         "city": "LOME",
         "state": "Region Maritime",
@@ -2189,7 +2189,7 @@
         ]
       },
       "properties": {
-        "name": "CPR (Climate Policy & Research) Center Togo",
+        "name": "EG CPR (Climate Policy & Research) Center Togo",
         "country": "Togo",
         "city": "LOME",
         "state": "Region Maritime",
@@ -2207,7 +2207,7 @@
         ]
       },
       "properties": {
-        "name": "FTVA, Madagascar",
+        "name": "EG FTVA, Madagascar",
         "country": "Madagascar",
         "city": "Ankaramalaza",
         "state": "Fianarantsoa",
@@ -2225,7 +2225,7 @@
         ]
       },
       "properties": {
-        "name": "Niger",
+        "name": "EG Niger",
         "country": "Niger",
         "city": "Niamey",
         "state": "Naimey",
@@ -2243,7 +2243,7 @@
         ]
       },
       "properties": {
-        "name": "CNHDP",
+        "name": "EG CNHDP",
         "country": "DR Congo",
         "city": "Bukavu",
         "state": "Bukavu/Sud-Kiv",
@@ -2261,7 +2261,7 @@
         ]
       },
       "properties": {
-        "name": "Japan",
+        "name": "EG Japan",
         "country": "Japan",
         "city": "Osaka",
         "state": "",
@@ -2279,7 +2279,7 @@
         ]
       },
       "properties": {
-        "name": "Green Generation",
+        "name": "EG Green Generation",
         "country": "South Korea",
         "city": "Gumi",
         "state": "Gumi",
@@ -2297,7 +2297,7 @@
         ]
       },
       "properties": {
-        "name": "Juvenearth",
+        "name": "EG Juvenearth",
         "country": "South Korea",
         "city": "Sejong",
         "state": "",
@@ -2315,7 +2315,7 @@
         ]
       },
       "properties": {
-        "name": "Nature Corner",
+        "name": "EG Nature Corner",
         "country": "China",
         "city": "Beijing",
         "state": "Beijing",
@@ -2333,7 +2333,7 @@
         ]
       },
       "properties": {
-        "name": "Odisha",
+        "name": "EG Odisha",
         "country": "India",
         "city": "Odisha",
         "state": "Odisha",
@@ -2351,7 +2351,7 @@
         ]
       },
       "properties": {
-        "name": "New Delhi",
+        "name": "EG New Delhi",
         "country": "India",
         "city": "Delhi",
         "state": "Delhi",
@@ -2369,7 +2369,7 @@
         ]
       },
       "properties": {
-        "name": "Behrampur",
+        "name": "EG Behrampur",
         "country": "India",
         "city": "Behrampur",
         "state": "Odisha",
@@ -2387,7 +2387,7 @@
         ]
       },
       "properties": {
-        "name": "Pine States",
+        "name": "EG Pine States",
         "country": "India",
         "city": "New Delhi",
         "state": "New Delhi",
@@ -2405,7 +2405,7 @@
         ]
       },
       "properties": {
-        "name": "Aravalli Saviours",
+        "name": "EG Aravalli Saviours",
         "country": "India",
         "city": "Faridabad",
         "state": "Haryana",
@@ -2423,7 +2423,7 @@
         ]
       },
       "properties": {
-        "name": "Hyderabad",
+        "name": "EG Hyderabad",
         "country": "India",
         "city": "Hyderabad",
         "state": "Telangana",
@@ -2441,7 +2441,7 @@
         ]
       },
       "properties": {
-        "name": "Indonesia",
+        "name": "EG Indonesia",
         "country": "Indonesia",
         "city": "Yogyakarta",
         "state": "Special Region of Yogyakarta",
@@ -2459,7 +2459,7 @@
         ]
       },
       "properties": {
-        "name": "Sri Lanka",
+        "name": "EG Sri Lanka",
         "country": "Sri Lanka",
         "city": "Colombo",
         "state": "",
@@ -2477,7 +2477,7 @@
         ]
       },
       "properties": {
-        "name": "Everest",
+        "name": "EG Everest",
         "country": "Nepal",
         "city": "Pokhara",
         "state": "Gandaki",
@@ -2495,7 +2495,7 @@
         ]
       },
       "properties": {
-        "name": "IWL, Nepal",
+        "name": "EG IWL, Nepal",
         "country": "Nepal",
         "city": "Sunsari",
         "state": "Koshi",
@@ -2513,7 +2513,7 @@
         ]
       },
       "properties": {
-        "name": "Islamabad",
+        "name": "EG Islamabad",
         "country": "Pakistan",
         "city": "Islamabad",
         "state": "Islamabad Capital Territory",
@@ -2531,7 +2531,7 @@
         ]
       },
       "properties": {
-        "name": "Chalanbeel",
+        "name": "EG Chalanbeel",
         "country": "Bangladesh",
         "city": "Tarash",
         "state": "Sirajganj",
@@ -2549,7 +2549,7 @@
         ]
       },
       "properties": {
-        "name": "Greenova",
+        "name": "EG Greenova",
         "country": "Uzbekistan",
         "city": "Sariasia",
         "state": "Surkhandarya",
@@ -2567,7 +2567,7 @@
         ]
       },
       "properties": {
-        "name": "Banglore",
+        "name": "EG Banglore",
         "country": "India",
         "city": "Bangalore",
         "state": "",
@@ -2585,12 +2585,1012 @@
         ]
       },
       "properties": {
-        "name": "SSS Foundation",
+        "name": "EG SSS Foundation",
         "country": "India",
         "city": "Kanpur",
         "state": "Uttar pradesh",
         "region": "South Asia",
         "status": "inactive"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -105.607716,
+          38.7251776
+        ]
+      },
+      "properties": {
+        "name": "EG Colorado",
+        "country": "USA",
+        "city": "",
+        "state": "Colorado",
+        "region": "North America",
+        "status": "active",
+        "geocoding": {
+          "precision": "approximate_region",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Colorado%2C+USA&format=jsonv2&limit=1&addressdetails=1&featuretype=state",
+          "matchedPlace": "Colorado, United States",
+          "matchedPlaceType": "state",
+          "osmObject": {
+            "type": "relation",
+            "id": 161961
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "North & Cent America",
+            "row": 6,
+            "Crew Name": "EG Colorado",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country from the USA section heading at row 3; state inferred from the crew name."
+          },
+          "precisionNote": "State-level representative point only; the spreadsheet contains no city or street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -118.755997,
+          36.7014631
+        ]
+      },
+      "properties": {
+        "name": "EG California",
+        "country": "USA",
+        "city": "",
+        "state": "California",
+        "region": "North America",
+        "status": "active",
+        "geocoding": {
+          "precision": "approximate_region",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=California%2C+USA&format=jsonv2&limit=1&addressdetails=1&featuretype=state",
+          "matchedPlace": "California, United States",
+          "matchedPlaceType": "state",
+          "osmObject": {
+            "type": "relation",
+            "id": 165475
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "North & Cent America",
+            "row": 7,
+            "Crew Name": "EG California",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country from the USA section heading at row 3; state inferred from the crew name."
+          },
+          "precisionNote": "State-level representative point only; the spreadsheet contains no city or street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -75.9760751,
+          36.8496579
+        ]
+      },
+      "properties": {
+        "name": "EG Hampton Roads",
+        "country": "USA",
+        "city": "Virginia Beach",
+        "state": "Virginia",
+        "region": "North America",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Virginia+Beach%2C+Virginia%2C+USA&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Virginia Beach, Virginia, United States",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 206670
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "North & Cent America",
+            "row": 15,
+            "Crew Name": "Hampton Roads",
+            "Country": "USA",
+            "State/Province": "Virginia",
+            "City": "Virginia Beach",
+            "locationInference": "Country, state and city are populated in the spreadsheet."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.2421403,
+          34.9940654
+        ]
+      },
+      "properties": {
+        "name": "EG SEED (Students for Environmental Education and Defense)",
+        "country": "USA",
+        "city": "York",
+        "state": "South Carolina",
+        "region": "North America",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?city=York&state=South+Carolina&country=USA&format=jsonv2&limit=3&addressdetails=1",
+          "matchedPlace": "York, York County, South Carolina, United States",
+          "matchedPlaceType": "town",
+          "osmObject": {
+            "type": "relation",
+            "id": 194079
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "North & Cent America",
+            "row": 16,
+            "Crew Name": "SEED (Students for Environmental Education and Defense)",
+            "Country": "USA",
+            "State/Province": "SC",
+            "City": "York",
+            "locationInference": "Country and city are populated; SC was expanded to South Carolina. Selected the York town result, not the county result."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -85.1091173,
+          34.91591
+        ]
+      },
+      "properties": {
+        "name": "EG Ringgold Environmental Club",
+        "country": "USA",
+        "city": "Ringgold",
+        "state": "Georgia",
+        "region": "North America",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Ringgold%2C+Georgia%2C+USA&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Ringgold, Catoosa County, Georgia, United States",
+          "matchedPlaceType": "village",
+          "osmObject": {
+            "type": "relation",
+            "id": 119549
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "North & Cent America",
+            "row": 17,
+            "Crew Name": "Ringgold Environmental Club",
+            "Country": "USA",
+            "State/Province": "GA",
+            "City": "Ringgold",
+            "locationInference": "Country, state abbreviation GA and city are populated; GA was expanded to Georgia."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.6390989,
+          35.7803977
+        ]
+      },
+      "properties": {
+        "name": "EG Raleigh",
+        "country": "USA",
+        "city": "Raleigh",
+        "state": "North Carolina",
+        "region": "North America",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Raleigh%2C+USA&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Raleigh, Wake County, North Carolina, United States",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 179052
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "North & Cent America",
+            "row": 31,
+            "Crew Name": "Raleigh",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country from the USA section heading at row 28; city inferred from the crew name. North Carolina is the matching locality returned by Nominatim."
+          },
+          "precisionNote": "City-level point; location was inferred from the name and USA section, not from address fields."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          69.2787079,
+          41.3123363
+        ]
+      },
+      "properties": {
+        "name": "EG Ecoeducation.uz",
+        "country": "Uzbekistan",
+        "city": "Tashkent",
+        "state": "Tashkent",
+        "region": "Europe",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Tashkent%2C+Uzbekistan&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Toshkent, 100000, Oʻzbekiston",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 2216724
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Europe",
+            "row": 20,
+            "Crew Name": "Ecoeducation.uz",
+            "Country": "Uzbekistan",
+            "State/Province": "Tashkent",
+            "City": "Tashkent",
+            "locationInference": "Country, state and city are populated in the spreadsheet."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.2315915,
+          4.1567895
+        ]
+      },
+      "properties": {
+        "name": "EG Cameroon",
+        "country": "Cameroon",
+        "city": "Buea",
+        "state": "South West",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Buea%2C+Cameroon&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Buea, Fako, Southwest, Cameroun",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 3834929
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 13,
+            "Crew Name": "Cameroon",
+            "Country": null,
+            "State/Province": "Buea",
+            "City": null,
+            "locationInference": "Country inferred from the CAMEROON section heading at row 12; the spreadsheet puts Buea in State/Province and leaves City blank, so Buea was treated as the city."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.1140089,
+          -1.9534357
+        ]
+      },
+      "properties": {
+        "name": "EG Kigali",
+        "country": "Rwanda",
+        "city": "Kigali",
+        "state": "Kigali",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Kigali%2C+Rwanda&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "City of Kigali, Rwanda",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 1708283
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 46,
+            "Crew Name": "Kigali",
+            "Country": "Rwanda",
+            "State/Province": "Kigali",
+            "City": "Kigali",
+            "locationInference": "Country, state and city are populated in the spreadsheet."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.1140089,
+          -1.9534357
+        ]
+      },
+      "properties": {
+        "name": "EG Impact",
+        "country": "Rwanda",
+        "city": "Kigali",
+        "state": "Kigali",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Kigali%2C+Rwanda&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "City of Kigali, Rwanda",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 1708283
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 47,
+            "Crew Name": "Impact",
+            "Country": "Rwanda",
+            "State/Province": "Kigali",
+            "City": null,
+            "locationInference": "Country and State/Province=Kigali are populated; City is blank, so Kigali from the state field was used as the city-level anchor."
+          },
+          "precisionNote": "City-level point derived from State/Province=Kigali because City is blank."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.085695,
+          0.1723828
+        ]
+      },
+      "properties": {
+        "name": "EG SAUF Conservation",
+        "country": "Uganda",
+        "city": "Kasese",
+        "state": "Western Uganda",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Kasese%2C+Western+Region%2C+Uganda&format=jsonv2&limit=5&addressdetails=1",
+          "matchedPlace": "Kasese, Western Region, Uganda",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "node",
+            "id": 2685125666
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 57,
+            "Crew Name": "SAUF Conservation",
+            "Country": "Uganda",
+            "State/Province": "Western Uganda",
+            "City": "Kasese",
+            "locationInference": "Country, state and city are populated; selected the city match, not the separate district/region result."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -13.26795,
+          8.479004
+        ]
+      },
+      "properties": {
+        "name": "EG Canopy AI Vanguard",
+        "country": "Sierra Leone",
+        "city": "Freetown",
+        "state": "Central urban-rural",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Freetown%2C+Sierra+Leone&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Freetown, Western Area Urban, Western Area, Sierra Leone",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "node",
+            "id": 27565056
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 64,
+            "Crew Name": "Canopy AI Vanguard",
+            "Country": "Sierra Leone",
+            "State/Province": "Central urban-rural",
+            "City": "Freetown",
+            "locationInference": "Country, State/Province and City are populated; the coordinate uses the Freetown city result."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.5589884,
+          -14.5189121
+        ]
+      },
+      "properties": {
+        "name": "EG Zambia",
+        "country": "Zambia",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Zambia&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Zambia",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 195271
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 71,
+            "Crew Name": "Zambia",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name and Zambia section heading; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.1535811,
+          4.6125522
+        ]
+      },
+      "properties": {
+        "name": "EG Girls for Climate Action",
+        "country": "Cameroon",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Cameroon&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Cameroun",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 192830
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 85,
+            "Crew Name": "Girls for Climate Action",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country from the CAMEROON subsection heading at row 84; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -4.2961436,
+          11.1765796
+        ]
+      },
+      "properties": {
+        "name": "EG Bindougousso",
+        "country": "Burkina Faso",
+        "city": "Bobo-Dioulasso",
+        "state": "Hauts-Bassins",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "approximate_region",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Bobo-Dioulasso%2C+Burkina+Faso&format=jsonv2&limit=3&addressdetails=1",
+          "matchedPlace": "Bobo-Dioulasso, Houet, Hauts-Bassins, Burkina Faso",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "node",
+            "id": 257506849
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 87,
+            "Crew Name": "Bindougousso",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country from the BURKINA FASO subsection heading at row 86; the crew name is Bindougousso. Nominatim found the name on a market/POI within Bobo-Dioulasso, so the parent-city point is used instead."
+          },
+          "precisionNote": "Approximate parent-city point (Bobo-Dioulasso), not the market/POI returned for Bindougousso."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.2675469,
+          26.2540493
+        ]
+      },
+      "properties": {
+        "name": "EG EGYPT R.",
+        "country": "Egypt",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Egypt&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "مصر",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 1473947
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 92,
+            "Crew Name": "EGYPT R.",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name EGYPT R.; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -15.4900464,
+          13.470062
+        ]
+      },
+      "properties": {
+        "name": "EG GAMBIA",
+        "country": "Gambia",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Gambia&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Gambia",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 192774
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 93,
+            "Crew Name": "GAMBIA",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name GAMBIA; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.0800271,
+          8.0300284
+        ]
+      },
+      "properties": {
+        "name": "EG GHANA",
+        "country": "Ghana",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Ghana&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Ghana",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 192781
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 94,
+            "Crew Name": "GHANA",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name GHANA; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.3350193,
+          -29.6039267
+        ]
+      },
+      "properties": {
+        "name": "EG LESOTHO A.",
+        "country": "Lesotho",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Lesotho&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Lesotho",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 2093234
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 110,
+            "Crew Name": "LESOTHO A.",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name LESOTHO A.; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4416422,
+          -18.9249604
+        ]
+      },
+      "properties": {
+        "name": "EG MADAGASCAR",
+        "country": "Madagascar",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Madagascar&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Madagasikara / Madagascar",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 447325
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 111,
+            "Crew Name": "MADAGASCAR",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name MADAGASCAR; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.9301963,
+          -13.2687204
+        ]
+      },
+      "properties": {
+        "name": "EG MALAWI A.",
+        "country": "Malawi",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Malawi&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Malawi",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 195290
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, English Crews",
+            "row": 112,
+            "Crew Name": "MALAWI A.",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Country inferred from the crew name MALAWI A.; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.0199765,
+          8.7800265
+        ]
+      },
+      "properties": {
+        "name": "EG Togo",
+        "country": "Togo",
+        "city": "",
+        "state": "",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "country_centroid",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Togo&format=jsonv2&limit=1&addressdetails=1&featuretype=country",
+          "matchedPlace": "Togo",
+          "matchedPlaceType": "country",
+          "osmObject": {
+            "type": "relation",
+            "id": 192782
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, French Crews",
+            "row": 49,
+            "Crew Name": "Togo",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Crew name and Togo subsection identify the country; no city or state is supplied."
+          },
+          "precisionNote": "Country-boundary representative point; not the capital and not an exact crew location."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.215829,
+          6.130419
+        ]
+      },
+      "properties": {
+        "name": "EG Climate Elite",
+        "country": "Togo",
+        "city": "Lomé",
+        "state": "Region Maritime",
+        "region": "Africa",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Lom%C3%A9%2C+Togo&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Lomé, Région Maritime, Togo",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "relation",
+            "id": 6607308
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "Africa, French Crews",
+            "row": 57,
+            "Crew Name": "Climate Elite",
+            "Country": "Togo",
+            "State/Province": "Region Maritime",
+            "City": "LOME",
+            "locationInference": "Country, region and city are populated; LOME was normalized to Lomé."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          64.1818037,
+          39.740839
+        ]
+      },
+      "properties": {
+        "name": "EG Phoenix",
+        "country": "Uzbekistan",
+        "city": "Jondor",
+        "state": "Bukhara",
+        "region": "South Asia",
+        "status": "active",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Jondor%2C+Bukhara%2C+Uzbekistan&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Jondor, Jondor tumani, Buxoro Viloyati, 200600, Oʻzbekiston",
+          "matchedPlaceType": "town",
+          "osmObject": {
+            "type": "way",
+            "id": 45589943
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "South Asia",
+            "row": 29,
+            "Crew Name": "Phoenix",
+            "Country": "Uzbekistan",
+            "State/Province": "Bukhara",
+            "City": "Jondor",
+            "locationInference": "Country, state and city are populated in the spreadsheet; Nominatim classifies Jondor as a town."
+          },
+          "precisionNote": "City/town-level representative point; not an exact crew street address."
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          73.8545071,
+          18.5213738
+        ]
+      },
+      "properties": {
+        "name": "EG Pune",
+        "country": "India",
+        "city": "Pune",
+        "state": "Maharashtra",
+        "region": "South Asia",
+        "status": "inactive",
+        "geocoding": {
+          "precision": "city",
+          "source": "OpenStreetMap Nominatim",
+          "sourceUrl": "https://nominatim.openstreetmap.org/search?q=Pune%2C+India&format=jsonv2&limit=1&addressdetails=1",
+          "matchedPlace": "Pune, Pune City Subdistrict, Pune, Maharashtra, 411001, India",
+          "matchedPlaceType": "city",
+          "osmObject": {
+            "type": "node",
+            "id": 16174445
+          },
+          "attribution": "Data © OpenStreetMap contributors, ODbL 1.0",
+          "sourceFields": {
+            "worksheet": "South Asia",
+            "row": 34,
+            "Crew Name": "Pune",
+            "Country": null,
+            "State/Province": null,
+            "City": null,
+            "locationInference": "Only the crew name Pune is present; the South Asia tab plus the unique Pune, India geocoder match support this city-level inference. State Maharashtra is from the geocoder result."
+          },
+          "precisionNote": "City-level point inferred from the crew name and South Asia context; no City/Country column values are supplied."
+        }
       }
     }
   ]

@@ -37,7 +37,7 @@ export const embedCodes = {
           '<div id="eg-active-crews" style="min-height:480px"></div>',
           `${L}script src="https://YOUR-DOMAIN/squarespace-embed.js"`,
           '        data-origin="https://YOUR-DOMAIN"',
-          '        data-theme="auto"',
+          '        data-min-height="480"',
           `        defer${L}/script>`,
         ].join('\n'),
       },

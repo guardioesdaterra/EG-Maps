@@ -43,6 +43,7 @@ export const PRERENDER_ROUTES: string[] = [
   '/endangered-species',
   '/endangered-species/3d',
   '/active-crews',
+  '/crews', // Alias of /active-crews; intentionally excluded from the sitemap below.
   '/active-crews/3d',
   '/vulcan-observatory',
   '/vulcan-observatory/3d',

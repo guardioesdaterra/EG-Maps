@@ -24,7 +24,7 @@
       :aria-label="isExpanded ? t('stats.collapse') : label"
       :aria-expanded="isExpanded"
     >
-      <span class="bubble-icon">G</span>
+      <span class="bubble-icon">Stats</span>
     </button>
 
     <Transition name="bubble-expand">
@@ -344,11 +344,14 @@ const speciesLegendItems = computed(() => [
 }
 
 .bubble-icon {
-  font-size: clamp(1.1rem, 3.5vw, 1.4rem);
+  font-size: clamp(0.625rem, 2vw, 0.75rem);
   font-weight: 900;
   color: var(--text-primary);
   line-height: 1;
   font-family: 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
   user-select: none;
 }
 

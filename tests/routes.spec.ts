@@ -60,7 +60,6 @@ test.describe('Static asset availability', () => {
   const assets = [
     '/eg-logo.png',
     '/icon-192x140.png',
-    '/noise.png',
     '/white-banner.png',
     '/grid-overlay.png',
     '/grid-overlay.webp',
@@ -187,6 +186,9 @@ test.describe('Page content rendering', () => {
 test.describe('Navigation', () => {
   test('homepage exposes Crew Projects and 2D/3D routes for key maps', async ({ page }) => {
     await loadPage(page, '/')
+
+    const speciesStat = page.locator('.bento-stat').filter({ hasText: 'Species Documented' })
+    await expect(speciesStat).toContainText('4815', { timeout: 15_000 })
 
     const heroSpeciesLink = page.locator('.home-hero').getByRole('link', { name: 'Endangered Species', exact: true })
     await expect(heroSpeciesLink).toBeVisible()

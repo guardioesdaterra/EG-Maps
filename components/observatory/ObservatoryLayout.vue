@@ -408,7 +408,7 @@ function updatePhases(value: Set<string>) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.9);
   border: 1px solid var(--obs-panel-border);
   border-radius: 8px;
   color: var(--obs-text-body);
@@ -419,8 +419,8 @@ function updatePhases(value: Set<string>) {
   flex-shrink: 0;
 }
 .obs-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.97);
+  border-color: rgba(255, 255, 255, 0.22);
   color: #fff;
   transform: translateY(-1px);
 }
@@ -432,7 +432,7 @@ function updatePhases(value: Set<string>) {
   outline-offset: 2px;
 }
 .obs-icon-btn--active {
-  background: color-mix(in srgb, var(--obs-red) 20%, transparent);
+  background: color-mix(in srgb, var(--obs-red) 25%, rgba(0, 0, 0, 0.9));
   border-color: color-mix(in srgb, var(--obs-red) 40%, transparent);
   color: var(--obs-red);
 }

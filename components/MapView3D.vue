@@ -53,7 +53,6 @@
     <div class="absolute inset-0 pointer-events-none z-20" :style="{ boxShadow: `inset 0 0 clamp(40px, 12vw, 150px) clamp(8px, 3vw, 30px) rgba(0,0,0,0.7)` }"></div>
 
     <div class="absolute inset-0 pointer-events-none opacity-[0.03]" :style="{ zIndex: 'calc(var(--z-map-effects) + 1)', backgroundImage: `image-set(url(${baseURL}grid-overlay.webp) type('image/webp') 1x, url(${baseURL}grid-overlay.webp) type('image/webp') 2x, url(${baseURL}grid-overlay.png) type('image/png') 1x, url(${baseURL}grid-overlay.png) type('image/png') 2x)`, backgroundRepeat: 'repeat' }" />
-    <div class="absolute -inset-3 pointer-events-none opacity-[0.02] animate-noise-bg" :style="{ zIndex: 'calc(var(--z-map-effects) + 2)', backgroundImage: `image-set(url(${baseURL}noise.png) 1x, url(${baseURL}noise.png) 2x)`, backgroundRepeat: 'repeat' }" />
     <div aria-hidden="true" class="absolute inset-0 pointer-events-none opacity-[0.02]" :style="{ zIndex: 'calc(var(--z-map-effects) + 3)', backgroundImage: `image-set(url(${baseURL}scanline.gif) 1x, url(${baseURL}scanline.gif) 2x)`, backgroundRepeat: 'repeat' }" />
 
     <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-15" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
@@ -66,7 +65,7 @@
       @close="closeClusterPanel"
       @select="selectClusterItem"
     />
-    <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-[clamp(4.25rem,11vh,6rem)] z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/70 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm sm:left-auto sm:top-[max(1rem,env(safe-area-inset-top))] sm:right-[max(1rem,env(safe-area-inset-right))]" aria-haspopup="dialog" :aria-label="t('mapControls.nearbyLabel')" @click="nearbyOpen = true"><span aria-hidden="true">⌖</span> {{ t('mapControls.nearby') }}</button>
+    <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-[clamp(4.25rem,11vh,6rem)] z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/90 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm sm:left-auto sm:top-[max(1rem,env(safe-area-inset-top))] sm:right-[max(1rem,env(safe-area-inset-right))]" aria-haspopup="dialog" :aria-label="t('mapControls.nearbyLabel')" @click="nearbyOpen = true"><span aria-hidden="true">⌖</span> {{ t('mapControls.nearby') }}</button>
     <NearbyPanel v-if="nearbyOpen" :projects="projectsData" :crew-locations="visibleCrewLocations" @close="nearbyOpen = false" @navigate="navigateToLocation" />
     <slot name="overlays" />
 

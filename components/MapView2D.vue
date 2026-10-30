@@ -10,7 +10,7 @@
     <div v-if="!runtime.online && !hideAll" class="absolute top-3 left-1/2 -translate-x-1/2 z-[var(--z-map-banner)] rounded-full border border-amber-400/40 bg-black/80 px-3 py-1.5 text-xs text-amber-200 backdrop-blur-sm" role="status">
       {{ t('mapControls.offlineCachedData') }}
     </div>
-    <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-[clamp(4.25rem,11vh,6rem)] z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/70 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm sm:left-auto sm:top-[max(1rem,env(safe-area-inset-top))] sm:right-[max(1rem,env(safe-area-inset-right))]" aria-haspopup="dialog" :aria-label="t('mapControls.nearbyLabel')" @click="nearbyOpen = true"><span aria-hidden="true">⌖</span> {{ t('mapControls.nearby') }}</button>
+    <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-[clamp(4.25rem,11vh,6rem)] z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/90 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm sm:left-auto sm:top-[max(1rem,env(safe-area-inset-top))] sm:right-[max(1rem,env(safe-area-inset-right))]" aria-haspopup="dialog" :aria-label="t('mapControls.nearbyLabel')" @click="nearbyOpen = true"><span aria-hidden="true">⌖</span> {{ t('mapControls.nearby') }}</button>
     <NearbyPanel v-if="nearbyOpen" :projects="projectsData" :crew-locations="visibleCrewLocations" @close="nearbyOpen = false" @navigate="navigateToLocation" />
     
     <Transition name="fade">
@@ -48,7 +48,6 @@
 
     <div class="absolute inset-0 bg-black/5 dark:bg-white/5 pointer-events-none" :style="{ zIndex: 'var(--z-map-effects)' }" />
     <div class="absolute inset-0 pointer-events-none opacity-[0.03]" :style="{ zIndex: 'calc(var(--z-map-effects) + 1)', backgroundImage: `image-set(url(${baseURL}grid-overlay.webp) type('image/webp') 1x, url(${baseURL}grid-overlay.webp) type('image/webp') 2x, url(${baseURL}grid-overlay.png) type('image/png') 1x, url(${baseURL}grid-overlay.png) type('image/png') 2x)`, backgroundRepeat: 'repeat' }" />
-    <div class="absolute -inset-3 pointer-events-none opacity-[0.02] animate-noise-bg" :style="{ zIndex: 'calc(var(--z-map-effects) + 2)', backgroundImage: `image-set(url(${baseURL}noise.png) 1x, url(${baseURL}noise.png) 2x)`, backgroundRepeat: 'repeat' }" />
     <div aria-hidden="true" class="absolute inset-0 pointer-events-none opacity-[0.015]" :style="{ zIndex: 'calc(var(--z-map-effects) + 3)', backgroundImage: `image-set(url(${baseURL}scanline.gif) 1x, url(${baseURL}scanline.gif) 2x)`, backgroundRepeat: 'repeat' }" />
     <div aria-hidden="true" class="absolute inset-0 pointer-events-none" :style="{ zIndex: 'var(--z-map-overlays)', boxShadow: 'inset 0 0 clamp(30px, 8vw, 100px) clamp(5px, 2vw, 15px) rgba(0,0,0,0.5)' }" />
 

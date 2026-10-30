@@ -64,7 +64,7 @@
     "campaignsTitle": "Campanhas",
     "campaignsDesc": "Campanhas de EG e os mapas por trás delas, incluindo o mapa de espécies ameaçadas criado para o Dia da Biodiversidade.",
     "campaignsKicker": "Dia da Biodiversidade · mapa de espécies incluído",
-    "crewProjectsTitle": "Grande Escala",
+    "crewProjectsTitle": "Projetos em Grande Escala",
     "crewProjectsDesc": "Conheça a diversidade do trabalho das Crews: restauração de ecossistemas, agricultura regenerativa, educação climática, artivismo e fortalecimento das comunidades.",
     "vulcanTitle": "Observatório Vulcan",
     "vulcanDesc": "Mapa comunitário de requerimentos de mineração de terras raras em torno de Poços de Caldas, Brasil — requerimentos, água, territórios protegidos e vida cultural.",
@@ -172,8 +172,12 @@
       "searchPlaceholder": "Pesquisar neste grupo…",
       "visibleResults": "{count} resultados agrupados visíveis",
       "empty": "Nenhum resultado corresponde a esta pesquisa.",
-      "activeCrewsSubtitle": "{crews} equipes ativas · {countries} países"
-    }
+      "activeCrewsSubtitle": "{crews} equipes ativas · {countries} países",
+      "expand": "Expandir resultados",
+      "collapse": "Fechar resultados"
+    },
+    "moreTools": "Mais controles do mapa",
+    "hideTools": "Ocultar controles do mapa"
   },
   "mapTiles": {
     "maptiler": "Satélite",

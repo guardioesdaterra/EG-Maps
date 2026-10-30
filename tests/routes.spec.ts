@@ -195,23 +195,18 @@ test.describe('Navigation', () => {
     await expect(heroSpeciesLink).toHaveAttribute('href', '/endangered-species')
     await expect(page.locator('.home-hero')).toContainText('Explore the range of Crew-led work, from ecosystem restoration and regenerative agriculture to climate education, artivism and community resilience.')
 
-    const links = [
-      ['home-crew-projects-link', '/crew-projects'],
-      ['home-project-grants-2d', '/project-grants'],
-      ['home-project-grants-3d', '/project-grants/3d'],
-      ['home-species-2d', '/endangered-species'],
-      ['home-species-3d', '/endangered-species/3d'],
-      ['home-active-crews-2d', '/active-crews'],
-      ['home-active-crews-3d', '/active-crews/3d'],
-      ['home-vulcan-2d', '/vulcan-observatory'],
-      ['home-vulcan-3d', '/vulcan-observatory/3d'],
-    ] as const
-
-    for (const [testId, href] of links) {
-      const link = page.getByTestId(testId)
-      await expect(link).toBeVisible()
-      await expect(link).toHaveAttribute('href', href)
-    }
+    const hero = page.locator('.home-hero')
+    await expect(hero.locator('.bento-card')).toHaveCount(6)
+    await expect(hero.locator('a[href="/project-grants"]')).toBeVisible()
+    await expect(hero.locator('a[href="/project-grants/3d"]')).toBeVisible()
+    await expect(hero.locator('a[href="/endangered-species"]')).toBeVisible()
+    await expect(hero.locator('a[href="/campaigns"]')).toBeVisible()
+    await expect(hero.locator('a[href="/active-crews"]')).toBeVisible()
+    await expect(hero.locator('a[href="/crew-projects"]')).toBeVisible()
+    await expect(hero.locator('a[href="/vulcan-observatory"]')).toBeVisible()
+    await expect(hero.locator('a[href="/vulcan-observatory/3d"]')).toBeVisible()
+    await expect(hero).toContainText('Large Scale Projects')
+    await expect(page.locator('.pathways-section')).toHaveCount(0)
   })
 
   test('navigates between main pages', async ({ page }) => {

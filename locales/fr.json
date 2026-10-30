@@ -172,8 +172,12 @@
       "searchPlaceholder": "Rechercher dans ce groupe…",
       "visibleResults": "{count} résultats groupés visibles",
       "empty": "Aucun résultat ne correspond à cette recherche.",
-      "activeCrewsSubtitle": "{crews} équipes actives · {countries} pays"
-    }
+      "activeCrewsSubtitle": "{crews} équipes actives · {countries} pays",
+      "expand": "Développer la liste",
+      "collapse": "Fermer les résultats"
+    },
+    "moreTools": "Plus d’outils de carte",
+    "hideTools": "Masquer les outils de carte"
   },
   "mapTiles": {
     "maptiler": "Satellite",

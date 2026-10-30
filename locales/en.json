@@ -35,7 +35,7 @@
     "campaignsTitle": "Campaigns",
     "campaignsDesc": "EG campaigns and the maps behind them — including the Endangered Species data built for Biodiversity Day.",
     "campaignsKicker": "Biodiversity Day · Endangered Species",
-    "crewProjectsTitle": "Large Scale",
+    "crewProjectsTitle": "Large Scale Projects",
     "crewProjectsDesc": "Explore the range of Crew-led work, from ecosystem restoration and regenerative agriculture to climate education, artivism and community resilience.",
     "vulcanTitle": "Vulcan Observatory",
     "vulcanDesc": "Community map of rare-earth mining claims around Poços de Caldas, Brazil — claims, water, protected territories and cultural life.",
@@ -172,8 +172,12 @@
       "searchPlaceholder": "Search this cluster…",
       "visibleResults": "{count} visible cluster results",
       "empty": "No results match this search.",
-      "activeCrewsSubtitle": "{crews} active Crews · {countries} countries"
-    }
+      "activeCrewsSubtitle": "{crews} active Crews · {countries} countries",
+      "expand": "Expand results",
+      "collapse": "Close results"
+    },
+    "moreTools": "More map tools",
+    "hideTools": "Hide map tools"
   },
   "mapTiles": {
     "maptiler": "Satellite",
@@ -1072,7 +1076,7 @@
     "joinCrew": "Start a Crew"
   },
   "crewProjects": {
-    "title": "Large Scale",
+    "title": "Large Scale Projects",
     "description": "Large-scale and small-scale projects led by EG Crews around the world, demonstrating the impact of youth-led climate action.",
     "largeScaleTitle": "Large-Scale Crew Impact",
     "largeScaleDesc": "Major Crew initiatives that have created significant environmental and community impact across multiple countries.",

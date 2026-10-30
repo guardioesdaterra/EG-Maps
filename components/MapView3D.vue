@@ -58,13 +58,15 @@
     <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-15" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
 
     <div ref="mapContainerRef" tabindex="0" role="region" :aria-label="t('globe.view3D')" :aria-busy="isLoading" class="absolute inset-0 w-full h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400" :style="{ zIndex: 'var(--z-map-base)' }" />
-    <ClusterResultsPanel
-      v-if="clusterPanelOpen"
-      :items="clusterPanelItems"
-      :dataset-label="clusterPanelDataset"
-      @close="closeClusterPanel"
-      @select="selectClusterItem"
-    />
+    <Teleport to="body">
+      <ClusterResultsPanel
+        v-if="clusterPanelOpen"
+        :items="clusterPanelItems"
+        :dataset-label="clusterPanelDataset"
+        @close="closeClusterPanel"
+        @select="selectClusterItem"
+      />
+    </Teleport>
     <button v-if="!hideControls && !hideAll && !nearbyOpen" type="button" class="absolute left-[max(0.5rem,env(safe-area-inset-left))] top-[clamp(4.25rem,11vh,6rem)] z-[var(--z-map-ui-controls)] min-h-11 rounded-full border border-cyan-300/30 bg-black/90 px-3 text-xs font-bold text-cyan-100 shadow-lg backdrop-blur-sm sm:left-auto sm:top-[max(1rem,env(safe-area-inset-top))] sm:right-[max(1rem,env(safe-area-inset-right))]" aria-haspopup="dialog" :aria-label="t('mapControls.nearbyLabel')" @click="nearbyOpen = true"><span aria-hidden="true">⌖</span> {{ t('mapControls.nearby') }}</button>
     <NearbyPanel v-if="nearbyOpen" :projects="projectsData" :crew-locations="visibleCrewLocations" @close="nearbyOpen = false" @navigate="navigateToLocation" />
     <slot name="overlays" />
@@ -76,7 +78,7 @@
       <img :src="`${baseURL}white-banner.png`" alt="Earth Guardians" class="h-auto w-auto max-h-[15vh] max-w-[clamp(10rem,24vw,16rem)] -rotate-90 origin-center" loading="lazy" />
     </div>
 
-    <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" />
+    <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" @close="showFilterPanel = false" />
     <SpeciesFilterPanel v-if="activeDataset === 'endangered-species' && showFilterPanel" ref="speciesFilterPanelRef" :species="speciesIndexData" @filter-change="handleFilterChange" @group-selection-change="handleSpeciesGroupSelection" @close="showFilterPanel = false" />
 
     <DataBubble v-if="!hideAll && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :selected-crew-statuses="selectedCrewStatuses" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" :position-bottom="isMobile ? 'clamp(5.5rem,12vh,7rem)' : 'clamp(1rem, 4vh, 2rem)'" @toggle-group="toggleLegendGroup" @toggle-crew-status="toggleCrewStatus" />
@@ -99,6 +101,7 @@
     </Transition>
 
     
+    <Teleport to="body">
     <Transition name="scale-fade">
       <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="speciesData?.commonName || t('nav.endangeredSpecies')" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
         <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
@@ -130,6 +133,8 @@
         </div>
       </div>
     </Transition>
+
+    </Teleport>
 
     <SpeciesPanel @species-selected="handleSpeciesSelected" />
     <ImportDataWidget v-if="!hideAll" />

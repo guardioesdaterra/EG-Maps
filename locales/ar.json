@@ -167,13 +167,17 @@
       "searchPlaceholder": "البحث في هذا التجميع…",
       "visibleResults": "{count} من نتائج التجميع الظاهرة",
       "empty": "لا توجد نتائج تطابق هذا البحث.",
-      "activeCrewsSubtitle": "{crews} فرق نشطة · {countries} دولة"
+      "activeCrewsSubtitle": "{crews} فرق نشطة · {countries} دولة",
+      "expand": "توسيع النتائج",
+      "collapse": "إغلاق النتائج"
     },
     "shareMap": "مشاركة الخريطة",
     "linkCopied": "تم نسخ الرابط",
     "exportMap": "تصدير صورة الخريطة",
     "exportData": "تصدير البيانات الظاهرة بصيغة GeoJSON",
-    "legend": "مفتاح الخريطة"
+    "legend": "مفتاح الخريطة",
+    "moreTools": "المزيد من أدوات الخريطة",
+    "hideTools": "إخفاء أدوات الخريطة"
   },
   "mapTiles": {
     "maptiler": "قمر صناعي",

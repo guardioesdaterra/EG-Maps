@@ -167,13 +167,17 @@
       "searchPlaceholder": "このクラスターを検索…",
       "visibleResults": "{count}件の表示中のクラスター結果",
       "empty": "この検索に一致する結果はありません。",
-      "activeCrewsSubtitle": "活動中のクルー{crews}組 · {countries}か国"
+      "activeCrewsSubtitle": "活動中のクルー{crews}組 · {countries}か国",
+      "expand": "結果リストを全画面表示",
+      "collapse": "結果を閉じる"
     },
     "shareMap": "地図を共有",
     "linkCopied": "リンクをコピーしました",
     "exportMap": "地図画像をエクスポート",
     "exportData": "表示中のデータをGeoJSONとしてエクスポート",
-    "legend": "凡例"
+    "legend": "凡例",
+    "moreTools": "その他の地図ツール",
+    "hideTools": "地図ツールを非表示"
   },
   "mapTiles": {
     "maptiler": "衛星",

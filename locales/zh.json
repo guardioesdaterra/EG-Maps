@@ -167,13 +167,17 @@
       "searchPlaceholder": "搜索此聚类…",
       "visibleResults": "{count} 个可见聚类结果",
       "empty": "没有结果匹配此搜索。",
-      "activeCrewsSubtitle": "{crews} 个活跃团队 · {countries} 个国家"
+      "activeCrewsSubtitle": "{crews} 个活跃团队 · {countries} 个国家",
+      "expand": "展开结果列表",
+      "collapse": "关闭结果"
     },
     "shareMap": "分享地图",
     "linkCopied": "链接已复制",
     "exportMap": "导出地图图片",
     "exportData": "导出可见数据为 GeoJSON",
-    "legend": "图例"
+    "legend": "图例",
+    "moreTools": "更多地图工具",
+    "hideTools": "隐藏地图工具"
   },
   "mapTiles": {
     "maptiler": "卫星",

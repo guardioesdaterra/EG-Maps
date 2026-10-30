@@ -1,3 +1,5 @@
+import type { Map as MapLibreMap, Popup as MapLibrePopup } from 'maplibre-gl'
+
 export interface MapPopupPadding {
   top: number
   right: number
@@ -46,4 +48,19 @@ export function withMapPopupSafeArea<T extends object>(
   mapContainer?: MapContainerLike,
 ): T & { padding: MapPopupPadding } {
   return { ...options, padding: getMapPopupPadding(mapContainer) }
+}
+
+/** Mount a MapLibre popup and lift its mobile DOM out of the map stacking context. */
+export function mountMapPopup(popup: MapLibrePopup, map: MapLibreMap): MapLibrePopup {
+  popup.addTo(map)
+  if (typeof window === 'undefined' || window.innerWidth > MOBILE_BREAKPOINT) return popup
+
+  const element = popup.getElement()
+  if (!element) return popup
+  element.classList.add('map-popup-mobile-fullscreen')
+  if (element.parentElement !== document.body) document.body.appendChild(element)
+  element.addEventListener('click', (event) => {
+    if (event.target === element) popup.remove()
+  })
+  return popup
 }

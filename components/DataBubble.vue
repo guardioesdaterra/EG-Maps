@@ -145,10 +145,10 @@
         
         <template v-if="mode === 'species'">
           <div class="legend-section">
-            <span class="legend-title">{{ t('stats.markerSize') }}</span>
+            <span class="legend-title">{{ t('stats.markerLegend') }}</span>
             <div class="legend-items">
               <div class="legend-item" v-for="item in speciesLegendItems" :key="item.label">
-                <span class="legend-dot" :style="{ backgroundColor: item.color, width: item.size + 'px', height: item.size + 'px' }" />
+                <span class="legend-dot" :style="{ backgroundColor: item.color }" />
                 <span class="legend-label">{{ item.label }}</span>
               </div>
             </div>
@@ -283,13 +283,13 @@ const crewStatusItems = computed<Array<{ status: CrewStatus; color: string; labe
 ])
 
 const speciesLegendItems = computed(() => [
-  { color: 'var(--danger)', label: t('taxonomy.Mammal'), size: 11 },
-  { color: 'var(--warning)', label: t('taxonomy.Bird'), size: 9 },
-  { color: 'var(--success)', label: t('taxonomy.Amphibian'), size: 9 },
-  { color: 'var(--purple)', label: t('taxonomy.Reptile'), size: 9 },
-  { color: 'var(--info)', label: t('taxonomy.Fish'), size: 9 },
-  { color: 'var(--success)', label: t('taxonomy.Plant'), size: 7 },
-  { color: 'var(--purple)', label: t('taxonomy.Invertebrate'), size: 7 },
+  { color: 'var(--danger)', label: t('taxonomy.Mammal') },
+  { color: 'var(--warning)', label: t('taxonomy.Bird') },
+  { color: 'var(--success)', label: t('taxonomy.Amphibian') },
+  { color: 'var(--purple)', label: t('taxonomy.Reptile') },
+  { color: 'var(--info)', label: t('taxonomy.Fish') },
+  { color: 'var(--success)', label: t('taxonomy.Plant') },
+  { color: 'var(--purple)', label: t('taxonomy.Invertebrate') },
 ])
 
 </script>

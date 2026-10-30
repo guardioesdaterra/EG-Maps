@@ -85,6 +85,8 @@
     --z-map-global-stats: 800;
     --z-map-error-overlay: 900;
     --z-navigation: 1000;
+    --z-map-sheet: 2147482000;
+    --z-map-dialog: 2147483000;
 
     /* Status / semantic colors - light (darkened so colored text AND
        white-on-color fills both clear 4.5:1 on light surfaces) */
@@ -444,6 +446,46 @@ body.cmd-open { overflow: hidden; }
 
   .map-tool-stack {
     filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.35));
+  }
+
+  @media (max-width: 768px) {
+    .map-tools-mobile {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.5rem;
+      filter: none;
+    }
+
+    .map-mobile-tools-toggle {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0 0.8rem;
+      border: 1px solid var(--tool-btn-border);
+      border-radius: 999px;
+      background: var(--tool-btn-bg);
+      color: var(--tool-btn-text);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, .25);
+      font-size: 0.75rem;
+      font-weight: 700;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      touch-action: manipulation;
+    }
+
+    .map-tool-list {
+      align-items: flex-end;
+      padding: 0.5rem;
+      border: 1px solid var(--glass-border);
+      border-radius: 1rem;
+      background: var(--glass-bg);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, .32);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
   }
 
   .map-tool-button {
@@ -1231,6 +1273,68 @@ select option {
   min-width: clamp(26rem, 84vw, 36rem);
   max-width: min(42rem, 95vw);
 }
+
+@media (max-width: 768px) {
+  .map-popup-mobile-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: var(--z-map-dialog) !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    background: rgba(0, 0, 0, .76);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    pointer-events: auto !important;
+    overflow: hidden !important;
+  }
+
+  .map-popup-mobile-fullscreen .maplibregl-popup-content {
+    position: relative;
+    z-index: 1;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: calc(env(safe-area-inset-top) + 3.75rem) 1rem env(safe-area-inset-bottom) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    pointer-events: auto !important;
+  }
+
+  .map-popup-mobile-fullscreen .maplibregl-popup-tip { display: none !important; }
+  .map-popup-mobile-fullscreen .maplibregl-popup-close-button {
+    position: fixed !important;
+    z-index: calc(var(--z-map-dialog) + 2) !important;
+    top: calc(env(safe-area-inset-top) + .5rem) !important;
+    right: calc(env(safe-area-inset-right) + .5rem) !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 999px !important;
+    background: rgba(20, 24, 30, .92) !important;
+    color: #fff !important;
+    font-size: 26px !important;
+    pointer-events: auto !important;
+  }
+  .map-popup-mobile-fullscreen .ree-popup,
+  .map-popup-mobile-fullscreen .ree-popup--stacked {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
 /* ── Stacked overlapping-layers popup ── */
 .ree-popup-wrap--stacked .maplibregl-popup-close-button {
   width: 38px;
@@ -1785,7 +1889,8 @@ select option {
 .project-popup-overlay-fixed {
   position: fixed;
   inset: 0;
-  z-index: var(--z-navigation, 1000);
+  z-index: var(--z-map-dialog) !important;
+  isolation: isolate;
   background: var(--shadow-color);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -1845,7 +1950,7 @@ select option {
   position: fixed;
   top: 1rem;
   right: 1rem;
-  z-index: calc(var(--z-navigation, 1000) + 2);
+  z-index: calc(var(--z-map-dialog) + 2);
   width: 2.75rem;
   height: 2.75rem;
   display: flex;
@@ -1906,7 +2011,8 @@ select option {
 .crew-popup-overlay-fixed {
   position: fixed;
   inset: 0;
-  z-index: var(--z-navigation, 1000);
+  z-index: var(--z-map-dialog) !important;
+  isolation: isolate;
   background: var(--shadow-color);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -1947,7 +2053,7 @@ select option {
   position: fixed;
   top: 1rem;
   right: 1rem;
-  z-index: calc(var(--z-navigation, 1000) + 2);
+  z-index: calc(var(--z-map-dialog) + 2);
   width: 2.75rem;
   height: 2.75rem;
   display: flex;
@@ -2145,21 +2251,46 @@ select option {
   .species-popup-overlay-fixed,
   .project-popup-overlay-fixed,
   .crew-popup-overlay-fixed {
-    padding: 0.5rem;
-    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-    align-items: flex-end;
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+    overflow: hidden;
+    overscroll-behavior: contain;
   }
   .species-popup-content-fixed,
   .project-popup-content-fixed,
   .crew-popup-content-fixed {
-    max-height: min(94dvh, 50rem);
-    border-radius: 14px 14px 12px 12px;
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    padding: calc(env(safe-area-inset-top) + 4rem) 1rem env(safe-area-inset-bottom);
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .species-popup-close-btn-fixed,
   .project-popup-close-btn-fixed,
   .crew-popup-close-btn-fixed {
-    top: 0.75rem;
-    right: 0.75rem;
+    top: calc(env(safe-area-inset-top) + 0.75rem);
+    right: calc(env(safe-area-inset-right) + 0.75rem);
+  }
+  .species-popup-lang-bar {
+    position: absolute;
+    top: calc(env(safe-area-inset-top) + 0.75rem);
+    left: max(0.75rem, env(safe-area-inset-left));
+    right: 4rem;
+    z-index: 2;
+    margin: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .species-popup-lang-bar::-webkit-scrollbar {
+    display: none;
   }
 }
 

@@ -18,10 +18,11 @@ test.describe('keyboard accessibility', () => {
     await page.goto('/')
     await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {})
 
-    const speciesMapLink = page.getByTestId('home-species-2d')
+    const speciesMapLink = page.locator('.home-hero a[href="/endangered-species"]')
     await expect(speciesMapLink).toHaveAttribute('href', '/endangered-species')
     await expect(speciesMapLink).toHaveAccessibleName(/Endangered Species/)
-    await expect(page.getByTestId('home-project-grants-2d')).toBeVisible()
+    await expect(page.locator('.home-hero a[href="/project-grants"]')).toBeVisible()
+    await expect(page.locator('.pathways-section')).toHaveCount(0)
     const languageButton = page.getByRole('button', { name: 'Language' })
     await expect(languageButton).toHaveAttribute('aria-expanded', 'false')
 

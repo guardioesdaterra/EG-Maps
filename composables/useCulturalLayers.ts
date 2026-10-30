@@ -9,7 +9,7 @@
  */
 import type { Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
-import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
+import { mountMapPopup, withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
 import { escapeHtml } from '@/lib/map-utils'
 import {
   CULTURAL_FAMILY_LEGEND,
@@ -672,11 +672,11 @@ export function setupCulturalLayers(
     closeActivePopup(map)
     const html = getPopupContent(p)
 
-    activePopups.set(map, new maplibregl.Popup(withMapPopupSafeArea({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer()))
+    const popup = new maplibregl.Popup(withMapPopupSafeArea({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer()))
       .setLngLat(e.lngLat)
       .setHTML(html)
       .setMaxWidth('none')
-      .addTo(map))
+    activePopups.set(map, mountMapPopup(popup, map))
   }
 
   const onCulturalEnter = (e: MapLayerMouseEvent) => {

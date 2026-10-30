@@ -58,7 +58,7 @@ const LAYER_SUFFIXES = ['_cg', '_c', '_cc', '_cn', '_pg', '_p', '_pc', '_pl', '_
 
 const CLUSTER_PALETTES: Record<MarkerDataset, readonly [string, string, string, string]> = {
   'project-grants':       ['#06b6d4', '#22c55e', '#eab308', '#ef4444'],
-  'endangered-species':   ['#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'],
+  'endangered-species':   ['#22c55e', '#3b82f6', '#a855f7', '#ec4899'],
   'active-crews':         ['#22c55e', '#3b82f6', '#a855f7', '#ec4899'],
   'vulcan-observatory':   ['#22c55e', '#f59e0b', '#ef4444', '#dc2626'],
 }
@@ -342,59 +342,38 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   function addCrewLocationLayers(id: string) {
     if (!map) return
     const locationFilter = ['all', ['!has', 'point_count'], ['==', '_type', 'crewLocation']] as FilterSpecification
-    const locOpacity = (max: number) => ['interpolate', ['linear'], ['zoom'],
-      CREW_MOSAIC_ZOOM_MIN, 0,
-      CREW_MOSAIC_ZOOM_MAX, max] as unknown as ExpressionSpecification
-
-    map.addLayer({ id: `${id}_pg`, type: 'circle', source: id, filter: locationFilter, paint: {
-      'circle-color': ['get', 'color'],
-      'circle-radius': ['*', ['coalesce', ['get', 'size'], 6], 1.8],
-      'circle-blur': 0.6, 'circle-opacity': locOpacity(0.30) } })
-    map.addLayer({ id: `${id}_p`, type: 'circle', source: id, filter: locationFilter, paint: {
-      'circle-color': 'rgba(5, 12, 20, 0.96)',
-      'circle-radius': ['coalesce', ['get', 'size'], 6],
-      'circle-stroke-color': ['get', 'color'],
-      'circle-stroke-width': 2.25, 'circle-opacity': locOpacity(0.98) } })
-    map.addLayer({ id: `${id}_pc`, type: 'circle', source: id, filter: locationFilter, paint: {
-      'circle-color': ['get', 'color'],
-      'circle-radius': ['*', ['coalesce', ['get', 'size'], 6], 0.38],
-      'circle-opacity': locOpacity(1) } })
-    map.addLayer({ id: `${id}_pl`, type: 'symbol', source: id, filter: locationFilter, minzoom: 8, layout: {
-      'text-field': ['coalesce', ['get', 'label'], ''],
-      'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
-      'text-size': ['interpolate', ['linear'], ['zoom'], 8, 7, 14, 10],
-      'text-allow-overlap': false, 'text-ignore-placement': false }, paint: {
-      'text-color': '#fff', 'text-halo-color': 'rgba(0,0,0,0.65)', 'text-halo-width': 1.5,
-      'text-opacity': locOpacity(1) } })
+    // Species, project and crew-location points share one circle-marker recipe;
+    // only their data color/label varies by dataset.
+    addPointLayers(id, locationFilter, 8)
   }
 
-  function addPointLayers(id: string, filter?: FilterSpecification) {
+  function addPointLayers(id: string, filter?: FilterSpecification, labelMinZoom = 12) {
     if (!map) return
     const opts = filter ? { filter } : {}
     map.addLayer({ id: `${id}_pg`, type: 'circle', source: id, ...opts, paint: {
       'circle-color': ['get', 'color'],
-      'circle-radius': ['*', ['coalesce', ['get', 'size'], 7], 1.8],
+      'circle-radius': ['*', ['coalesce', ['get', 'size'], 6], 1.8],
       'circle-blur': 0.6, 'circle-opacity': 0.30 } })
     map.addLayer({ id: `${id}_p`, type: 'circle', source: id, ...opts, paint: {
       'circle-color': 'rgba(5, 12, 20, 0.96)',
-      'circle-radius': ['coalesce', ['get', 'size'], 7],
+      'circle-radius': ['coalesce', ['get', 'size'], 6],
       'circle-stroke-color': ['get', 'color'],
       'circle-stroke-width': 2.25, 'circle-opacity': 0.98 } })
     map.addLayer({ id: `${id}_pc`, type: 'circle', source: id, ...opts, paint: {
       'circle-color': ['get', 'color'],
-      'circle-radius': ['*', ['coalesce', ['get', 'size'], 7], 0.38],
+      'circle-radius': ['*', ['coalesce', ['get', 'size'], 6], 0.38],
       'circle-opacity': 1 } })
     map.addLayer({ id: `${id}_pl`, type: 'symbol', source: id, ...opts,
       // Point labels are the dominant symbol cost with thousands of markers:
       // collide-detect them only at street zoom where they are readable.
-      minzoom: 12, layout: {
+      minzoom: labelMinZoom, layout: {
       'text-field': ['coalesce', ['get', 'label'], ''],
       'text-font': ['Arial Unicode MS Bold', 'DejaVu Sans Bold'],
-      'text-size': ['interpolate', ['linear'], ['zoom'], 12, 7, 14, 10],
+      'text-size': ['interpolate', ['linear'], ['zoom'], labelMinZoom, 7, 14, 10],
       'text-offset': [0, 1.75],
       'text-allow-overlap': false, 'text-ignore-placement': false }, paint: {
       'text-color': '#f8fafc', 'text-halo-color': 'rgba(0,0,0,0.88)', 'text-halo-width': 2,
-      'text-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0, 12.5, 1] } })
+      'text-opacity': ['interpolate', ['linear'], ['zoom'], labelMinZoom, 0, labelMinZoom + 0.5, 1] } })
   }
 
   /* ── 🏠 SWARM 5 · EVENTS (7) ─────────────────────────────────────── */

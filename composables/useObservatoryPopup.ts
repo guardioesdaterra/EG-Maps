@@ -8,7 +8,7 @@
  */
 import type { Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
-import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
+import { mountMapPopup, withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
 import { isMilitaryInterest, isHighEnvRisk, isSuspiciousBasic, buildAnmVerifyUrl, buildClaimReportMailtoUrl } from '@/lib/observatory-analysis'
 import { RARE_EARTH_CATEGORIES } from '@/lib/map-utils'
 import { useObservatorySelection } from '@/composables/useObservatorySelection'
@@ -350,8 +350,7 @@ export function openRareEarthPopup(
   }, map.getContainer()))
     .setLngLat(lngLat)
     .setDOMContent(node)
-    .addTo(map)
-  return popup
+  return mountMapPopup(popup, map)
 }
 
 export interface StackedHit {
@@ -627,8 +626,7 @@ export function openStackedObservatoryPopup(
   }, map.getContainer()))
     .setLngLat(lngLat)
     .setDOMContent(root)
-    .addTo(map)
-  return popup
+  return mountMapPopup(popup, map)
 }
 
 /**

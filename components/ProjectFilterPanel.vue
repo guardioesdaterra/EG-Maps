@@ -36,9 +36,11 @@
         <UiButton
           variant="ghost"
           size="icon"
-          class="h-6 w-6 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--search-result-hover-bg)] rounded"
+          class="h-11 w-11 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--search-result-hover-bg)] rounded"
+          type="button"
           @click="closePanel"
           :title="t('filter.close')"
+          :aria-label="t('filter.close')"
         >
           <iconify-icon icon="streamline-freehand:remove-delete-sign-bold" class="h-4 w-4" />
         </UiButton>

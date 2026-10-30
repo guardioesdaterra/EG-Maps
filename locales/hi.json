@@ -167,13 +167,17 @@
       "searchPlaceholder": "इस क्लस्टर में खोजें…",
       "visibleResults": "{count} दृश्यमान क्लस्टर परिणाम",
       "empty": "इस खोज से कोई परिणाम मेल नहीं खाता।",
-      "activeCrewsSubtitle": "{crews} सक्रिय दल · {countries} देश"
+      "activeCrewsSubtitle": "{crews} सक्रिय दल · {countries} देश",
+      "expand": "परिणाम सूची बढ़ाएँ",
+      "collapse": "परिणाम बंद करें"
     },
     "shareMap": "मानचित्र साझा करें",
     "linkCopied": "लिंक कॉपी किया गया",
     "exportMap": "मानचित्र छवि निर्यात करें",
     "exportData": "दिखाई देने वाला डेटा GeoJSON के रूप में निर्यात करें",
-    "legend": "मानचित्र संकेत"
+    "legend": "मानचित्र संकेत",
+    "moreTools": "और मानचित्र उपकरण",
+    "hideTools": "मानचित्र उपकरण छिपाएँ"
   },
   "mapTiles": {
     "maptiler": "सैटेलाइट",

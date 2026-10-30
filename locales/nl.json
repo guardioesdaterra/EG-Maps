@@ -167,13 +167,17 @@
       "searchPlaceholder": "Dit cluster doorzoeken…",
       "visibleResults": "{count} zichtbare clusterresultaten",
       "empty": "Geen resultaten komen overeen met deze zoekopdracht.",
-      "activeCrewsSubtitle": "{crews} actieve teams · {countries} landen"
+      "activeCrewsSubtitle": "{crews} actieve teams · {countries} landen",
+      "expand": "Resultaten uitklappen",
+      "collapse": "Resultaten sluiten"
     },
     "shareMap": "Kaart delen",
     "linkCopied": "Link gekopieerd",
     "exportMap": "Kaartafbeelding exporteren",
     "exportData": "Zichtbare gegevens exporteren als GeoJSON",
-    "legend": "Legenda"
+    "legend": "Legenda",
+    "moreTools": "Meer kaarttools",
+    "hideTools": "Kaarttools verbergen"
   },
   "mapTiles": {
     "maptiler": "Satelliet",

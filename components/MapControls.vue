@@ -12,8 +12,12 @@
 <template>
   <div>
     
-    <div v-if="!isEmbed" :class="`absolute ${isMobile ? 'top-[clamp(4.75rem,12vh,7rem)] right-[max(0.5rem,env(safe-area-inset-right))]' : 'top-20 right-4'} z-[700] flex flex-col gap-1.5 xs:gap-2 map-tool-stack`">
-      
+    <div v-if="!isEmbed" :class="`absolute ${isMobile ? 'top-[clamp(4.75rem,12vh,7rem)] right-[max(0.5rem,env(safe-area-inset-right))]' : 'top-20 right-4'} z-[700] ${isMobile ? 'map-tools-mobile' : 'map-tool-stack'}`">
+      <button v-if="isMobile" type="button" class="map-mobile-tools-toggle" :aria-expanded="mobileToolsOpen" :aria-label="t(mobileToolsOpen ? 'mapControls.hideTools' : 'mapControls.moreTools')" @click="mobileToolsOpen = !mobileToolsOpen">
+        <iconify-icon icon="lucide:sliders-horizontal" class="h-4 w-4" aria-hidden="true" />
+        <span>{{ t(mobileToolsOpen ? 'mapControls.hideTools' : 'mapControls.moreTools') }}</span>
+      </button>
+      <div v-if="!isMobile || mobileToolsOpen" class="map-tool-list flex flex-col gap-1.5 xs:gap-2" @click="isMobile && (mobileToolsOpen = false)">
       <UiTooltip :side="isMobile ? 'right' : 'left'">
         <template #trigger>
 <UiButton
@@ -145,6 +149,7 @@
         </template>
         <p>{{ t('mapControls.exportData') }}</p>
       </UiTooltip>
+      </div>
     </div>
 
     
@@ -483,6 +488,7 @@ function searchCustomItems(query: string): CustomSearchItem[] {
 }
 
 const fullscreen = ref(false)
+const mobileToolsOpen = ref(false)
 const showSearch = ref(false)
 const showAllItems = ref(false)
 const searchQuery = ref('')

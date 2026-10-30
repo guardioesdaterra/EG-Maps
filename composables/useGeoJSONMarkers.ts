@@ -22,6 +22,8 @@ export interface SpeciesIndexItem {
   threatTypes?: string[]
 }
 
+export const STANDARD_MAP_MARKER_SIZE = 6
+
 const speciesGeoCache = new Map<string, GeoJSON.FeatureCollection>()
 const projectsGeoCache = new Map<string, GeoJSON.FeatureCollection>()
 const MAX_CACHE_SIZE = 20
@@ -78,6 +80,7 @@ export function speciesIndexToGeoJSON(species: SpeciesIndexItem[]): GeoJSON.Feat
           taxonomicGroup: s.taxonomicGroup,
           category: s.category,
           color: getGroupMapColor(s.taxonomicGroup),
+          size: STANDARD_MAP_MARKER_SIZE,
           hasImage: !!s.imageUrl,
           threatCount: s.threatTypes?.length ?? 0,
         }

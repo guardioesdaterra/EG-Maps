@@ -227,83 +227,6 @@
       </ul>
     </section>
 
-    <section class="pathways-section" aria-labelledby="pathways-title" data-reveal>
-      <header class="pathways-heading">
-        <div>
-          <p class="eyebrow"><span class="eyebrow-mark" aria-hidden="true" />{{ t('home.exploreTitle') }}</p>
-          <h2 id="pathways-title">{{ t('home.ourWork') }}</h2>
-        </div>
-        <p class="pathways-intro">{{ t('home.subtitle') }}</p>
-      </header>
-
-      <div class="pathway-list">
-        <article class="pathway-row">
-          <div class="pathway-icon pathway-icon--grants"><Icon name="lucide:hand-heart" aria-hidden="true" /></div>
-          <div class="pathway-copy">
-            <h3>{{ t('home.projectGrantsTitle') }}</h3>
-            <p>{{ t('home.projectGrantsDesc') }}</p>
-          </div>
-          <nav class="pathway-actions" :aria-label="`${t('home.projectGrantsTitle')} — ${t('home.dataMaps')}`">
-            <NuxtLink data-testid="home-project-grants-2d" to="/project-grants" class="pathway-view-link" :aria-label="`${t('home.projectGrantsTitle')} — ${t('home.view2d')}`">{{ t('home.view2d') }}</NuxtLink>
-            <NuxtLink data-testid="home-project-grants-3d" to="/project-grants/3d" class="pathway-view-link" :aria-label="`${t('home.projectGrantsTitle')} — ${t('home.view3d')}`">{{ t('home.view3d') }}</NuxtLink>
-          </nav>
-        </article>
-        <article class="pathway-row">
-          <div class="pathway-icon pathway-icon--species"><Icon name="lucide:bird" aria-hidden="true" /></div>
-          <div class="pathway-copy">
-            <h3>{{ t('home.speciesTitle') }}</h3>
-            <p>{{ t('home.speciesDesc') }}</p>
-          </div>
-          <nav class="pathway-actions" :aria-label="`${t('home.speciesTitle')} — ${t('home.dataMaps')}`">
-            <NuxtLink data-testid="home-species-2d" to="/endangered-species" class="pathway-view-link" :aria-label="`${t('home.speciesTitle')} — ${t('home.view2d')}`">{{ t('home.view2d') }}</NuxtLink>
-            <NuxtLink data-testid="home-species-3d" to="/endangered-species/3d" class="pathway-view-link" :aria-label="`${t('home.speciesTitle')} — ${t('home.view3d')}`">{{ t('home.view3d') }}</NuxtLink>
-          </nav>
-        </article>
-        <article class="pathway-row">
-          <div class="pathway-icon pathway-icon--campaigns"><Icon name="lucide:megaphone" aria-hidden="true" /></div>
-          <div class="pathway-copy">
-            <h3>{{ t('home.campaignsTitle') }}</h3>
-            <p>{{ t('home.campaignsDesc') }}</p>
-          </div>
-          <NuxtLink data-testid="home-campaigns-link" to="/campaigns" class="pathway-link" :aria-label="`${t('home.campaignsTitle')} — ${t('home.exploreTitle')}`">
-            <Icon name="lucide:arrow-up-right" aria-hidden="true" />
-          </NuxtLink>
-        </article>
-        <article class="pathway-row">
-          <div class="pathway-icon pathway-icon--crews"><Icon name="lucide:users-round" aria-hidden="true" /></div>
-          <div class="pathway-copy">
-            <h3>{{ t('home.activeCrewsTitle') }}</h3>
-            <p>{{ t('home.activeCrewsDesc') }}</p>
-          </div>
-          <nav class="pathway-actions" :aria-label="`${t('home.activeCrewsTitle')} — ${t('home.dataMaps')}`">
-            <NuxtLink data-testid="home-active-crews-2d" to="/active-crews" class="pathway-view-link" :aria-label="`${t('home.activeCrewsTitle')} — ${t('home.view2d')}`">{{ t('home.view2d') }}</NuxtLink>
-            <NuxtLink data-testid="home-active-crews-3d" to="/active-crews/3d" class="pathway-view-link" :aria-label="`${t('home.activeCrewsTitle')} — ${t('home.view3d')}`">{{ t('home.view3d') }}</NuxtLink>
-          </nav>
-        </article>
-        <article class="pathway-row">
-          <div class="pathway-icon pathway-icon--projects"><Icon name="lucide:mountain" aria-hidden="true" /></div>
-          <div class="pathway-copy">
-            <h3>{{ t('home.crewProjectsTitle') }}</h3>
-            <p>{{ t('home.crewProjectsDesc') }}</p>
-          </div>
-          <NuxtLink data-testid="home-crew-projects-link" to="/crew-projects" class="pathway-link" :aria-label="`${t('home.crewProjectsTitle')} — ${t('home.exploreTitle')}`">
-            <Icon name="lucide:arrow-up-right" aria-hidden="true" />
-          </NuxtLink>
-        </article>
-        <article class="pathway-row">
-          <div class="pathway-icon pathway-icon--vulcan"><Icon name="lucide:microscope" aria-hidden="true" /></div>
-          <div class="pathway-copy">
-            <h3>{{ t('home.vulcanTitle') }}</h3>
-            <p>{{ t('home.vulcanDesc') }}</p>
-          </div>
-          <nav class="pathway-actions" :aria-label="`${t('home.vulcanTitle')} — ${t('home.dataMaps')}`">
-            <NuxtLink data-testid="home-vulcan-2d" to="/vulcan-observatory" class="pathway-view-link" :aria-label="`${t('home.vulcanTitle')} — ${t('home.view2d')}`">{{ t('home.view2d') }}</NuxtLink>
-            <NuxtLink data-testid="home-vulcan-3d" to="/vulcan-observatory/3d" class="pathway-view-link" :aria-label="`${t('home.vulcanTitle')} — ${t('home.view3d')}`">{{ t('home.view3d') }}</NuxtLink>
-          </nav>
-        </article>
-      </div>
-    </section>
-
     <section class="join-section" aria-labelledby="join-title" data-reveal>
       <div class="join-mark" aria-hidden="true"><Icon name="lucide:heart-handshake" /></div>
       <div class="join-copy">
@@ -626,14 +549,12 @@ function clearGlow(event: MouseEvent) {
 .bento-link:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
 .story-section,
-.pathways-section,
 .join-section { width: min(100% - 3rem, 76rem); margin-inline: auto; }
 .story-section { padding: clamp(3.5rem, 8vw, 7rem) 0 clamp(4rem, 8vw, 7.5rem); border-top: 1px solid var(--border-color); }
 .section-index { display: flex; align-items: center; gap: 0.7rem; color: var(--text-muted); font-size: 0.68rem; font-weight: 850; letter-spacing: 0.13em; text-transform: uppercase; }
 .section-index span:first-child { display: grid; width: 1.75rem; aspect-ratio: 1; place-items: center; border: 1px solid var(--border-color); border-radius: 50%; color: var(--primary); letter-spacing: 0; }
 .story-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.7fr); align-items: start; gap: clamp(2rem, 7vw, 7rem); margin-top: 1.5rem; }
 .story-split h2,
-.pathways-heading h2,
 .join-copy h2 { margin: 0; font-family: Montserrat, Inter, ui-sans-serif, system-ui, sans-serif; font-size: clamp(1.8rem, 3.5vw, 3.4rem); font-weight: 900; letter-spacing: -0.055em; line-height: 1.08; text-wrap: balance; }
 .story-copy p { margin: 0; color: var(--text-secondary); font-size: clamp(0.95rem, 1.35vw, 1.1rem); line-height: 1.8; }
 .text-link { display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 1.2rem; color: var(--primary); font-size: 0.82rem; font-weight: 850; text-decoration: none; }
@@ -642,61 +563,8 @@ function clearGlow(event: MouseEvent) {
 .story-principles { display: flex; flex-wrap: wrap; gap: 0.65rem; margin: clamp(2rem, 5vw, 3.5rem) 0 0; padding: 0; list-style: none; }
 .story-principles li { display: inline-flex; min-height: 2.65rem; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color); border-radius: 999px; background: var(--card); color: var(--text-secondary); font-size: 0.72rem; font-weight: 750; }
 .story-principles :deep(svg) { width: 0.95rem; height: 0.95rem; color: var(--primary); }
-
-.pathways-section { padding: clamp(3.5rem, 8vw, 7rem) 0; }
-.pathways-heading { display: flex; align-items: end; justify-content: space-between; gap: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); }
-.pathways-heading .eyebrow { margin: 0 0 0.6rem; }
 .eyebrow { display: flex; align-items: center; gap: 0.55rem; color: var(--text-secondary); font-size: 0.7rem; font-weight: 850; letter-spacing: 0.13em; line-height: 1.4; text-transform: uppercase; }
 .eyebrow-mark { width: 0.55rem; height: 0.55rem; flex: 0 0 auto; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 0.28rem color-mix(in srgb, var(--success) 16%, transparent); }
-.pathways-heading h2 { font-size: clamp(2rem, 4vw, 3.8rem); }
-.pathways-intro { max-width: 26rem; margin: 0 0 0.2rem; color: var(--text-secondary); font-size: 0.85rem; line-height: 1.7; }
-.pathway-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.85rem; margin-top: 1.4rem; }
-.pathway-row {
-  display: flex;
-  min-width: 0;
-  min-height: 15rem;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 1.15rem;
-  border: 1px solid var(--border-color);
-  border-radius: 0.9rem;
-  background: var(--card);
-  box-shadow: 0 2px 10px color-mix(in srgb, var(--shadow-color) 24%, transparent);
-  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-}
-.pathway-row:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--primary) 70%, var(--border-color)); box-shadow: 0 12px 24px color-mix(in srgb, var(--shadow-color) 26%, transparent); }
-.pathway-icon { display: grid; width: 2.8rem; flex: 0 0 auto; aspect-ratio: 1; place-items: center; border-radius: 0.85rem; background: var(--bg-secondary); color: var(--primary); }
-.pathway-icon :deep(svg) { width: 1.25rem; height: 1.25rem; }
-.pathway-icon--species { color: var(--success); }
-.pathway-icon--campaigns { color: var(--accent); }
-.pathway-icon--crews { color: var(--warning); }
-.pathway-icon--projects { color: #0d966b; }
-.pathway-icon--vulcan { color: #96600a; }
-.pathway-copy h3 { margin: 0; color: var(--text-primary); font-size: 0.96rem; font-weight: 850; line-height: 1.3; }
-.pathway-copy p { margin: 0.35rem 0 0; color: var(--text-secondary); font-size: 0.75rem; line-height: 1.55; }
-.pathway-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: auto; padding-top: 0.55rem; }
-.pathway-view-link {
-  display: inline-flex;
-  min-height: 2.55rem;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 0.7rem;
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-size: 0.65rem;
-  font-weight: 850;
-  line-height: 1.1;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color 160ms ease, background 160ms ease, border-color 160ms ease, transform 160ms ease;
-}
-.pathway-view-link:hover { transform: translateY(-1px); border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); }
-.pathway-link { display: grid; width: 2.65rem; min-height: 2.65rem; place-items: center; align-self: flex-end; margin-top: auto; border: 1px solid var(--border-color); border-radius: 50%; color: var(--text-primary); transition: color 160ms ease, background 160ms ease, border-color 160ms ease, transform 160ms ease; }
-.pathway-link :deep(svg) { width: 1rem; height: 1rem; }
-.pathway-link:hover { transform: translate(2px, -2px); border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); }
 
 .join-section { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: clamp(1rem, 3vw, 2.5rem); margin-top: clamp(2rem, 5vw, 4rem); margin-bottom: clamp(3rem, 7vw, 6rem); padding: clamp(1.5rem, 4vw, 3rem); border: 1px solid color-mix(in srgb, var(--primary) 55%, var(--border-color)); border-radius: 1.2rem; background: linear-gradient(115deg, color-mix(in srgb, var(--primary) 14%, var(--bg-secondary)), var(--card) 72%); }
 .join-mark { display: grid; width: clamp(3rem, 6vw, 4.5rem); aspect-ratio: 1; place-items: center; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); }
@@ -723,8 +591,6 @@ function clearGlow(event: MouseEvent) {
   .home-right { padding: clamp(1rem, 2vh, 2rem) clamp(1rem, 2.5vw, 2rem); }
   .home-left-inner { max-width: 42rem; }
   .home-logo { margin-inline: 0; }
-  .pathways-heading { align-items: flex-start; flex-direction: column; gap: 0.85rem; }
-  .pathway-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
   .home-left { padding: 2rem 1rem; }
@@ -735,11 +601,8 @@ function clearGlow(event: MouseEvent) {
   .bento-tall { grid-row: span 1; }
   .bento-card { min-height: 11rem; }
   .story-section,
-  .pathways-section,
   .join-section { width: min(100% - 2rem, 76rem); }
   .story-split { grid-template-columns: 1fr; gap: 1.2rem; }
-  .pathway-list { grid-template-columns: 1fr; }
-  .pathway-row { min-height: 12rem; }
   .join-section { grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 1rem; }
   .join-mark { width: 2.8rem; }
   .join-link { grid-column: 2; justify-self: start; }
@@ -752,14 +615,8 @@ function clearGlow(event: MouseEvent) {
   .bento-glow,
   .bento-link,
   .home-orglink,
-  .pathway-row,
-  .pathway-link,
-  .pathway-view-link,
   .join-link { transition: none; }
   .bento-card:hover,
-  .pathway-row:hover,
-  .pathway-link:hover,
-  .pathway-view-link:hover,
   .join-link:hover { transform: none; }
   .bento-glow { display: none; }
   .reveal-ready [data-reveal] { opacity: 1; transform: none; transition: none; }

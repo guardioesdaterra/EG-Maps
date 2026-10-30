@@ -55,11 +55,13 @@ const emit = defineEmits<{
 }>()
 
 const visible = ref(props.modelValue)
+const isMobileViewport = ref(false)
 const tooltipRef = ref<HTMLElement | null>(null)
 const tooltipStyle = ref({})
 const triggerEl = ref<HTMLElement | null>(null)
 const triggerWrapperRef = ref<HTMLElement | null>(null)
 const tooltipId = `tooltip-${Math.random().toString(36).slice(2, 9)}`
+let mobileViewportQuery: MediaQueryList | null = null
 
 const tooltipClasses = computed(() => {
   return cn(
@@ -69,6 +71,7 @@ const tooltipClasses = computed(() => {
 })
 
 function show() {
+  if (isMobileViewport.value) return
   visible.value = true
   emit('update:modelValue', true)
   nextTick(() => {
@@ -82,7 +85,7 @@ function hide() {
 }
 
 function onTriggerFocus() {
-  show()
+  if (!isMobileViewport.value) show()
 }
 
 function onTriggerBlur() {
@@ -90,7 +93,7 @@ function onTriggerBlur() {
 }
 
 function updatePosition() {
-  if (!tooltipRef.value || !triggerEl.value) return
+  if (isMobileViewport.value || !tooltipRef.value || !triggerEl.value) return
 
   const tooltipRect = tooltipRef.value.getBoundingClientRect()
   const triggerRect = triggerEl.value.getBoundingClientRect()
@@ -128,6 +131,7 @@ function updatePosition() {
     position: 'fixed',
     top: `${top}px`,
     left: `${left}px`,
+    pointerEvents: 'none',
   }
 }
 
@@ -136,11 +140,12 @@ function findTriggerEl() {
   const el = triggerWrapperRef.value.querySelector('button, [role="button"], a, input, [tabindex]') as HTMLElement | null
   if (el) {
     triggerEl.value = el
-    el.setAttribute('aria-describedby', tooltipId)
+    if (isMobileViewport.value) el.removeAttribute('aria-describedby')
+    else el.setAttribute('aria-describedby', tooltipId)
   }
 }
 
-watch(() => props.modelValue, (val) => { visible.value = val })
+watch(() => props.modelValue, (val) => { visible.value = val && !isMobileViewport.value })
 
 watch(() => visible.value, () => {
   if (visible.value) {
@@ -152,12 +157,17 @@ watch(() => visible.value, () => {
 })
 
 onMounted(() => {
+  mobileViewportQuery = window.matchMedia('(max-width: 768px)')
+  isMobileViewport.value = mobileViewportQuery.matches
+  if (isMobileViewport.value) hide()
+  mobileViewportQuery.addEventListener('change', onMobileViewportChange)
   findTriggerEl()
   window.addEventListener('resize', updatePosition)
   window.addEventListener('scroll', updatePosition)
 })
 
 onUnmounted(() => {
+  mobileViewportQuery?.removeEventListener('change', onMobileViewportChange)
   window.removeEventListener('resize', updatePosition)
   window.removeEventListener('scroll', updatePosition)
 })
@@ -172,6 +182,16 @@ onActivated(() => {
   window.addEventListener('resize', updatePosition)
   window.addEventListener('scroll', updatePosition)
 })
+
+function onMobileViewportChange(event: MediaQueryListEvent) {
+  isMobileViewport.value = event.matches
+  if (event.matches) {
+    hide()
+    triggerEl.value?.removeAttribute('aria-describedby')
+  } else {
+    nextTick(findTriggerEl)
+  }
+}
 
 defineExpose({ show, hide })
 

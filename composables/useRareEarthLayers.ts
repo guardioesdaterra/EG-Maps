@@ -10,7 +10,7 @@
  */
 import type { Map as MapLibreMap, MapLayerMouseEvent, DataDrivenPropertyValueSpecification } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
-import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
+import { mountMapPopup, withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
 import { buildRareEarthPopupHTML } from '@/lib/map-utils'
 import { openRareEarthPopup, openStackedObservatoryPopup, type StackedHit } from '@/composables/useObservatoryPopup'
 import { citiesToGeoJSON } from '@/lib/brazilian-cities'
@@ -390,7 +390,8 @@ function addUnifiedObservatoryClick(map: MapLibreMap, options: RareEarthLayerOpt
             return
           }
           const html = buildRareEarthPopupHTML(adapted)
-          activePopups.set(map, new maplibregl.Popup(withMapPopupSafeArea({ offset: 12, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer())).setLngLat(e.lngLat).setHTML(html).setMaxWidth('640px').addTo(map))
+          const popup = new maplibregl.Popup(withMapPopupSafeArea({ offset: 12, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer())).setLngLat(e.lngLat).setHTML(html).setMaxWidth('640px')
+          activePopups.set(map, mountMapPopup(popup, map))
           return
         }
       }
@@ -408,7 +409,8 @@ function addUnifiedObservatoryClick(map: MapLibreMap, options: RareEarthLayerOpt
       const first = hits[0]
       const adapted = first.kind === 'boundary' ? adaptPolygonProps(first.props) : first.props
       const html = buildRareEarthPopupHTML(adapted)
-      activePopups.set(map, new maplibregl.Popup(withMapPopupSafeArea({ offset: 12, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer())).setLngLat(e.lngLat).setHTML(html).setMaxWidth('640px').addTo(map))
+      const popup = new maplibregl.Popup(withMapPopupSafeArea({ offset: 12, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer())).setLngLat(e.lngLat).setHTML(html).setMaxWidth('640px')
+      activePopups.set(map, mountMapPopup(popup, map))
     } catch {
       /* fail-soft: a bad query must never break map clicks */
     }

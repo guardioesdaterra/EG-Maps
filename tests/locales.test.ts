@@ -52,6 +52,12 @@ describe('loaded locale catalogs', () => {
     }
   })
 
+  it('keeps the English home and crew-projects title explicit', () => {
+    const catalog = readLocale('en')
+    expect((catalog.home as JsonRecord).crewProjectsTitle).toBe('Large Scale Projects')
+    expect((catalog.crewProjects as JsonRecord).title).toBe('Large Scale Projects')
+  })
+
   it.each(loadedLocales)('%s has a documented-species label for the home count', (locale) => {
     const home = readLocale(locale).home as { speciesCount?: unknown }
     expect(typeof home.speciesCount, `${locale}.home.speciesCount`).toBe('string')

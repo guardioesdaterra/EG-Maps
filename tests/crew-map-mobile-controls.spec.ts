@@ -19,6 +19,14 @@ test('short mobile viewport keeps the stats panel clear of tappable export contr
   })
   await expect(mapRegion).toHaveAttribute('aria-busy', 'false', { timeout: 15_000 })
 
+  const mapTools = page.getByRole('button', { name: 'More map tools', exact: true })
+  const exportDataButton = page.getByRole('button', { name: 'Export visible data as GeoJSON', exact: true })
+  await expect(mapTools).toBeVisible()
+  await expect(exportDataButton).toBeHidden()
+  await mapTools.click()
+  await expect(exportDataButton).toBeVisible()
+  await expect(page.getByRole('tooltip')).toHaveCount(0)
+
   const openStats = page.getByRole('button', { name: 'Crews Map', exact: true })
   await expect(openStats).toBeVisible()
   await expect(openStats).toHaveText('Stats')
@@ -28,7 +36,6 @@ test('short mobile viewport keeps the stats panel clear of tappable export contr
   await expect(panel).toBeVisible()
   const panelBox = await panel.boundingBox()
   const exportMapButton = page.getByRole('button', { name: 'Export map image', exact: true })
-  const exportDataButton = page.getByRole('button', { name: 'Export visible data as GeoJSON', exact: true })
   const shareMapButton = page.getByRole('button', { name: /share map/i })
   const nearbyButton = page.getByRole('button', { name: /nearby/i })
   await expect(exportMapButton).toBeVisible()
@@ -93,4 +100,21 @@ test('short mobile viewport keeps the stats panel clear of tappable export contr
   await exportDataButton.click()
   const download = await downloadPromise
   expect(download.suggestedFilename()).toMatch(/\.geojson$/i)
+})
+
+test('mobile project filter closes from its X button', async ({ page }) => {
+  const response = await page.goto('/project-grants/', { waitUntil: 'domcontentloaded' })
+  expect(response?.status()).toBe(200)
+
+  const mapRegion = page.locator('[role="region"][aria-busy]').filter({
+    has: page.locator('canvas.maplibregl-canvas'),
+  })
+  await expect(mapRegion).toHaveAttribute('aria-busy', 'false', { timeout: 15_000 })
+
+  await page.getByRole('button', { name: 'More map tools', exact: true }).click()
+  await page.getByRole('button', { name: 'Show Filters', exact: true }).click()
+  const panel = page.locator('.project-filter-panel')
+  await expect(panel).toBeVisible()
+  await panel.getByRole('button', { name: 'Close', exact: true }).click()
+  await expect(panel).toHaveCount(0)
 })

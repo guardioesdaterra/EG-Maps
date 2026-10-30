@@ -71,18 +71,20 @@
     </div>
 
     <div ref="mapContainerRef" tabindex="0" role="region" :aria-label="t('globe.view2D')" :aria-busy="isLoading" class="absolute top-0 right-0 bottom-0 w-auto transition-[left] duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400" :style="{ left: clusterPanelOpen ? 'min(360px, 88vw)' : '0', zIndex: 'var(--z-map-base)' }" />
-    <ClusterResultsPanel
-      v-if="clusterPanelOpen"
-      :items="clusterPanelItems"
-      :dataset-label="clusterPanelDataset"
-      @close="closeClusterPanel"
-      @select="selectClusterItem"
-    />
+    <Teleport to="body">
+      <ClusterResultsPanel
+        v-if="clusterPanelOpen"
+        :items="clusterPanelItems"
+        :dataset-label="clusterPanelDataset"
+        @close="closeClusterPanel"
+        @select="selectClusterItem"
+      />
+    </Teleport>
     <slot name="overlays" />
 
     
 
-    <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" />
+    <ProjectFilterPanel v-if="activeDataset === 'project-grants' && showFilterPanel" :projects="projectsData" @filter-change="handleProjectFilterChange" @close="showFilterPanel = false" />
     <SpeciesFilterPanel v-if="activeDataset === 'endangered-species' && showFilterPanel" ref="speciesFilterPanelRef" :species="speciesIndexData" @filter-change="handleFilterChange" @group-selection-change="handleSpeciesGroupSelection" @close="showFilterPanel = false" />
 
     <DataBubble v-if="!hideAll && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :selected-crew-statuses="selectedCrewStatuses" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" :position-bottom="isMobile ? 'clamp(5.5rem,12vh,7rem)' : 'clamp(1rem, 4vh, 2rem)'" @toggle-group="toggleLegendGroup" @toggle-crew-status="toggleCrewStatus" />
@@ -104,6 +106,7 @@
     </Transition>
 
     
+    <Teleport to="body">
     <Transition name="scale-fade">
       <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="speciesData?.commonName || t('nav.endangeredSpecies')" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
         <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
@@ -135,6 +138,8 @@
         </div>
       </div>
     </Transition>
+
+    </Teleport>
 
     <SpeciesPanel @species-selected="handleSpeciesSelected" />
     <ImportDataWidget v-if="!hideAll" />

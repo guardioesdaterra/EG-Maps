@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest'
-import { getMapPopupPadding, withMapPopupSafeArea } from '../lib/map-popup-safe-area'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { getMapPopupPadding, mountMapPopup, withMapPopupSafeArea } from '../lib/map-popup-safe-area'
 
 function setBounds(element: HTMLElement, top: number, bottom: number) {
   element.getBoundingClientRect = () => ({ top, bottom } as DOMRect)
@@ -35,5 +35,25 @@ describe('map popup safe areas', () => {
     const padding = { top: 8, right: 8, bottom: 8, left: 8 }
     expect(withMapPopupSafeArea({ offset: 10 }, { getBoundingClientRect: () => ({ top: 0, bottom: 800 } as DOMRect) }))
       .toEqual({ offset: 10, padding })
+  })
+
+  it('promotes mobile details popups above map stacking contexts and closes on backdrop tap', () => {
+    const container = document.createElement('div')
+    document.body.append(container)
+    const element = document.createElement('div')
+    const popup = {
+      addTo: vi.fn(() => { container.append(element); return popup }),
+      getElement: () => element,
+      remove: vi.fn(),
+    }
+    const map = { getContainer: () => container }
+
+    mountMapPopup(popup as never, map as never)
+
+    expect(popup.addTo).toHaveBeenCalledOnce()
+    expect(element.parentElement).toBe(document.body)
+    expect(element.classList.contains('map-popup-mobile-fullscreen')).toBe(true)
+    element.click()
+    expect(popup.remove).toHaveBeenCalledOnce()
   })
 })

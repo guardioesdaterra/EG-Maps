@@ -167,13 +167,17 @@
       "searchPlaceholder": "Dieses Cluster durchsuchen…",
       "visibleResults": "{count} sichtbare Clusterergebnisse",
       "empty": "Keine Ergebnisse entsprechen dieser Suche.",
-      "activeCrewsSubtitle": "{crews} aktive Teams · {countries} Länder"
+      "activeCrewsSubtitle": "{crews} aktive Teams · {countries} Länder",
+      "expand": "Ergebnisse erweitern",
+      "collapse": "Ergebnisse schließen"
     },
     "shareMap": "Karte teilen",
     "linkCopied": "Link kopiert",
     "exportMap": "Kartenbild exportieren",
     "exportData": "Sichtbare Daten als GeoJSON exportieren",
-    "legend": "Legende"
+    "legend": "Legende",
+    "moreTools": "Weitere Kartenwerkzeuge",
+    "hideTools": "Kartenwerkzeuge ausblenden"
   },
   "mapTiles": {
     "maptiler": "Satellit",

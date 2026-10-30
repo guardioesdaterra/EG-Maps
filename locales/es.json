@@ -172,8 +172,12 @@
       "searchPlaceholder": "Buscar en este grupo…",
       "visibleResults": "{count} resultados agrupados visibles",
       "empty": "Ningún resultado coincide con esta búsqueda.",
-      "activeCrewsSubtitle": "{crews} cuadrillas activas · {countries} países"
-    }
+      "activeCrewsSubtitle": "{crews} cuadrillas activas · {countries} países",
+      "expand": "Ampliar resultados",
+      "collapse": "Cerrar resultados"
+    },
+    "moreTools": "Más herramientas del mapa",
+    "hideTools": "Ocultar herramientas del mapa"
   },
   "mapTiles": {
     "maptiler": "Satélite",

@@ -25,7 +25,7 @@ import { useOfflineTiles, isSafeTileUrl, MAX_TILE_BYTES } from '@/composables/us
 import { usePerformance } from '@/composables/usePerformance'
 import { allProjectsData } from '@/lib/project-data'
 import { openRareEarthOverlayPopup, MAP_GROUP_COLORS, type Species } from '@/lib/map-utils'
-import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
+import { mountMapPopup, withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
 import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
 import { HEX_GRID } from '@/lib/constants'
 import { VULCAN_CENTER } from '@/composables/useVulcanCircles'
@@ -591,6 +591,10 @@ export function useMapBase(config: MapBaseConfig) {
 
   function openProjectPreview(project: ProjectData) {
     if (!map) return
+    if (isMobile.value) {
+      openProjectOverlay(project)
+      return
+    }
     previewCard.openProject(project, map, {
       expandProject: (p) => openProjectOverlay(p),
       expandSpecies: () => {},
@@ -600,6 +604,10 @@ export function useMapBase(config: MapBaseConfig) {
   function openSpeciesPreview(species: Species | SpeciesIndexItem) {
     if (!map) return
     const full = 'content' in species ? species : speciesData.value.find(s => s.id === species.id) ?? species
+    if (isMobile.value) {
+      openSpeciesOverlay(full)
+      return
+    }
     previewCard.openSpecies(full, map, {
       expandProject: () => {},
       expandSpecies: (s) => openSpeciesOverlay(s),
@@ -608,6 +616,10 @@ export function useMapBase(config: MapBaseConfig) {
   }
   function openCrewPreview(crew: CrewRegionData | CrewLocation) {
     if (!map) return
+    if (isMobile.value) {
+      openCrewOverlay(crew)
+      return
+    }
     previewCard.openCrew(crew, map, {
       expandProject: () => {},
       expandSpecies: () => {},
@@ -625,11 +637,11 @@ export function useMapBase(config: MapBaseConfig) {
     const p = (feature.properties ?? {}) as Record<string, unknown>
     const html = getPopupContent(p)
     const coords = (feature.geometry as GeoJSON.Point).coordinates
-    culturalPopup = new maplibregl.Popup(withMapPopupSafeArea({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer()))
+    const popup = new maplibregl.Popup(withMapPopupSafeArea({ offset: 10, closeButton: true, className: 'cyberpunk-popup' }, map.getContainer()))
       .setLngLat([coords[0] as number, coords[1] as number])
       .setHTML(html)
       .setMaxWidth('none')
-      .addTo(map)
+    culturalPopup = mountMapPopup(popup, map)
   }
 
   const marker = useMapMarker({

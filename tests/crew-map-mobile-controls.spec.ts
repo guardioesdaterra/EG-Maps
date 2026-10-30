@@ -21,6 +21,7 @@ test('short mobile viewport keeps the stats panel clear of tappable export contr
 
   const openStats = page.getByRole('button', { name: 'Crews Map', exact: true })
   await expect(openStats).toBeVisible()
+  await expect(openStats).toHaveText('Stats')
   await openStats.click()
 
   const panel = page.getByRole('region', { name: 'Crews Map', exact: true })
@@ -28,8 +29,22 @@ test('short mobile viewport keeps the stats panel clear of tappable export contr
   const panelBox = await panel.boundingBox()
   const exportMapButton = page.getByRole('button', { name: 'Export map image', exact: true })
   const exportDataButton = page.getByRole('button', { name: 'Export visible data as GeoJSON', exact: true })
+  const shareMapButton = page.getByRole('button', { name: /share map/i })
+  const nearbyButton = page.getByRole('button', { name: /nearby/i })
   await expect(exportMapButton).toBeVisible()
   await expect(exportDataButton).toBeVisible()
+  await expect(shareMapButton).toBeVisible()
+  await expect(nearbyButton).toBeVisible()
+  for (const button of [exportMapButton, exportDataButton, shareMapButton, nearbyButton]) {
+    const surface = await button.evaluate((element) => {
+      const color = getComputedStyle(element).backgroundColor
+      const channels = color.match(/rgba?\((.*)\)/)?.[1]?.split(/,\s*/)
+      const alpha = channels?.length === 4 ? Number(channels[3]) : 1
+      return { alpha, color }
+    })
+    const name = await button.getAttribute('aria-label')
+    expect(surface.alpha, `${name} computed background ${surface.color}`).toBeGreaterThanOrEqual(0.9)
+  }
   const exportMapBox = await exportMapButton.boundingBox()
   const exportDataBox = await exportDataButton.boundingBox()
   expect(panelBox).not.toBeNull()

@@ -52,9 +52,13 @@ describe('loaded locale catalogs', () => {
     }
   })
 
-  it.each(loadedLocales)('%s uses the endangered-species name for the home count', (locale) => {
-    const home = readLocale(locale).home as { species?: unknown; speciesCount?: unknown }
-    expect(home.speciesCount, `${locale}.home.speciesCount`).toBe(home.species)
+  it.each(loadedLocales)('%s has a documented-species label for the home count', (locale) => {
+    const home = readLocale(locale).home as { speciesCount?: unknown }
+    expect(typeof home.speciesCount, `${locale}.home.speciesCount`).toBe('string')
+    expect(home.speciesCount, `${locale}.home.speciesCount`).not.toBe('')
+    if (locale === 'en') {
+      expect(home.speciesCount, 'en.home.speciesCount').toBe('Species Documented')
+    }
   })
 
   it.each(allLocales)('%s uses the map title for stats and preserves Active/Inactive labels', (locale) => {

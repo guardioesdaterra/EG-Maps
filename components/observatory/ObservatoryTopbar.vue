@@ -315,8 +315,8 @@ const statsSummary = computed(() => {
   align-items: center;
   gap: 2px;
   padding: 2px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 9px;
 }
 .obs-view-tab {
@@ -344,8 +344,8 @@ const statsSummary = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: 1px solid transparent;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.75);
   cursor: pointer;
@@ -354,9 +354,9 @@ const statsSummary = computed(() => {
   flex-shrink: 0;
 }
 .obs-menu-btn svg { width: 1rem; height: 1rem; }
-.obs-menu-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.08); }
+.obs-menu-btn:hover { background: rgba(0, 0, 0, 0.97); color: #fff; border-color: rgba(255, 255, 255, 0.22); }
 .obs-menu-btn.is-active {
-  background: color-mix(in srgb, var(--obs-emerald, #10b981) 20%, transparent);
+  background: color-mix(in srgb, var(--obs-emerald, #10b981) 25%, rgba(0, 0, 0, 0.9));
   border-color: color-mix(in srgb, var(--obs-emerald, #10b981) 45%, transparent);
   color: var(--obs-emerald, #10b981);
 }
@@ -389,6 +389,10 @@ const statsSummary = computed(() => {
 :global(html:not(.dark)) .obs-stat__total,
 :global(html:not(.dark)) .obs-view-tab,
 :global(html:not(.dark)) .obs-menu-btn { color: var(--text-secondary); }
+:global(html:not(.dark)) .obs-menu-btn {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
 :global(html:not(.dark)) .obs-stat {
   background: var(--bg-secondary);
   border-color: var(--border-color);
@@ -413,7 +417,7 @@ const statsSummary = computed(() => {
 }
 :global(html:not(.dark)) .obs-menu-btn.is-active {
   color: var(--success);
-  background: color-mix(in srgb, var(--success) 14%, transparent);
+  background: color-mix(in srgb, var(--success) 20%, var(--bg-secondary));
   border-color: color-mix(in srgb, var(--success) 35%, transparent);
 }
 :global(html:not(.dark)) .obs-menu-btn__dot {

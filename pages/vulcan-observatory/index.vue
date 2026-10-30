@@ -872,8 +872,8 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
@@ -887,22 +887,22 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
   height: 60%;
 }
 .vulc-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.97);
+  border-color: rgba(255, 255, 255, 0.24);
   color: #fff;
 }
 .vulc-icon-btn.is-active {
-  background: color-mix(in srgb, var(--obs-red, #e74c3c) 22%, transparent);
+  background: color-mix(in srgb, var(--obs-red, #e74c3c) 30%, rgba(0, 0, 0, 0.9));
   border-color: color-mix(in srgb, var(--obs-red, #e74c3c) 45%, transparent);
   color: var(--obs-red, #e74c3c);
 }
 .vulc-icon-btn--accent {
-  background: color-mix(in srgb, var(--obs-amber, #f39c12) 14%, transparent);
+  background: color-mix(in srgb, var(--obs-amber, #f39c12) 20%, rgba(0, 0, 0, 0.9));
   border-color: color-mix(in srgb, var(--obs-amber, #f39c12) 35%, transparent);
   color: var(--obs-amber, #f39c12);
 }
 .vulc-icon-btn--primary {
-  background: color-mix(in srgb, var(--obs-emerald, #10b981) 18%, transparent);
+  background: color-mix(in srgb, var(--obs-emerald, #10b981) 24%, rgba(0, 0, 0, 0.9));
   border-color: color-mix(in srgb, var(--obs-emerald, #10b981) 45%, transparent);
   color: var(--obs-emerald, #10b981);
 }

@@ -2247,7 +2247,7 @@ select option {
 }
 
 /* Full-screen detail overlays become edge-to-edge sheets on phones */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .species-popup-overlay-fixed,
   .project-popup-overlay-fixed,
   .crew-popup-overlay-fixed {

@@ -69,6 +69,7 @@ export default defineNuxtConfig({
         // after a grace period if the tag is removed.
         { name: 'google-site-verification', content: 'nczdgqSJuJZkiAa-Bf5u-pumBA8M0YVJ0llDjoCzQSU' },
         { name: 'theme-color', content: '#0a0a0a' },
+        { name: 'eg-maptiler-api-key', content: process.env.NUXT_PUBLIC_MAPTILER_API_KEY || process.env.MAPTILER_API_KEY || '' },
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Earth Guardians' },
       ],

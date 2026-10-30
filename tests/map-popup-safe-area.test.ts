@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { getMapPopupPadding, mountMapPopup, withMapPopupSafeArea } from '../lib/map-popup-safe-area'
+
+const mainCss = readFileSync('assets/css/main.css', 'utf8')
 
 function setBounds(element: HTMLElement, top: number, bottom: number) {
   element.getBoundingClientRect = () => ({ top, bottom } as DOMRect)
@@ -35,6 +38,10 @@ describe('map popup safe areas', () => {
     const padding = { top: 8, right: 8, bottom: 8, left: 8 }
     expect(withMapPopupSafeArea({ offset: 10 }, { getBoundingClientRect: () => ({ top: 0, bottom: 800 } as DOMRect) }))
       .toEqual({ offset: 10, padding })
+  })
+
+  it('applies full-screen detail overlay styles through the 768 px mobile breakpoint', () => {
+    expect(mainCss).toContain('@media (max-width: 768px) {\n  .species-popup-overlay-fixed,\n  .project-popup-overlay-fixed,\n  .crew-popup-overlay-fixed')
   })
 
   it('promotes mobile details popups above map stacking contexts and closes on backdrop tap', () => {

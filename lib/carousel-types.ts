@@ -24,5 +24,5 @@ export const DEFAULT_ITEMS: CarouselItem[] = [
   { title: 'Endangered Species', description: 'Discover critically endangered species and their habitats around the world.', id: 2, icon: 'lucide:bird', path2d: '/endangered-species', path3d: '/endangered-species/3d', color: '#22c55e' },
   { title: 'Vulcan Observatory', description: 'Brazil rare earth mining claims — capital invasion, corporate networks, military interests & socio-environmental impact.', id: 3, icon: 'lucide:microscope', path2d: '/vulcan-observatory', path3d: '/vulcan-observatory/3d', color: '#f59e0b' },
   { title: 'Crews Map', description: 'Explore Earth Guardians crews across 7 regions worldwide.', id: 4, icon: 'lucide:users-round', path: '/active-crews', color: '#38bdf8' },
-  { title: 'Large Scale', description: 'Large-scale and small-scale projects led by EG Crews around the world.', id: 5, icon: 'lucide:rocket', path: '/crew-projects', color: '#a78bfa' },
+  { title: 'Large Scale Projects', description: 'Large-scale and small-scale projects led by EG Crews around the world.', id: 5, icon: 'lucide:rocket', path: '/crew-projects', color: '#a78bfa' },
 ];

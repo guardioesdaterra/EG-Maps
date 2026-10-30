@@ -18,6 +18,7 @@ import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation, CrewStatus } from '@/lib/crew-data'
 import { resolveCrewRegion } from '@/lib/crew-grants'
 import type { Species } from '@/lib/map-utils'
+import { STANDARD_MAP_MARKER_SIZE } from '@/composables/useGeoJSONMarkers'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -736,7 +737,7 @@ function speciesCacheKey(index: SpeciesIndexItem[], raw: Species[], groups: stri
   return `${index.length}:${raw.length}:${sample(index)}:${sample(raw)}:${[...groups].sort().join(',')}`
 }
 
-function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: string[]): GeoJSON.FeatureCollection {
+export function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: string[]): GeoJSON.FeatureCollection {
   const cacheKey = speciesCacheKey(index, raw, groups)
   const cached = speciesGeoCache.get(cacheKey)
   if (cached) return cached
@@ -745,15 +746,13 @@ function toSpeciesGeoJSON(index: SpeciesIndexItem[], raw: Species[], groups: str
   const features: GeoJSON.Feature[] = new Array(validCoords.length)
   for (let i = 0; i < validCoords.length; i++) {
     const s = validCoords[i]
-    const cat = (s.category ?? '').toUpperCase()
-    const cf = cat === 'CR' ? 5 : cat === 'EN' ? 3.5 : cat === 'VU' ? 2 : 1
     features[i] = {
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [s.lng, s.lat] },
       properties: {
         id: s.id,
         color: getGroupMapColor(s.taxonomicGroup ?? ''),
-        size: 5 + cf * 2,
+        size: STANDARD_MAP_MARKER_SIZE,
         label: '1',
       },
     }
@@ -864,7 +863,7 @@ function buildCrewLocationPoints(locations: CrewLocation[], statuses: readonly C
           _crewGroup: isMulti ? groupKey : undefined,
           _origLat: loc.lat, _origLng: loc.lng,
           color: status === 'active' ? '#22c55e' : '#f59e0b',
-          size: 6, label: '',
+          size: STANDARD_MAP_MARKER_SIZE, label: '',
           name: loc.name, country: loc.country, city: loc.city,
           state: loc.state, region: loc.region, status,
           lat: loc.lat, lng: loc.lng,

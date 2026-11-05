@@ -269,8 +269,9 @@ test.describe('Console errors', () => {
 
       const irrelevant = ['favicon.ico', 'message port closed']
       const filtered = errors.filter(e => !irrelevant.some(i => e.includes(i)))
-      // The no-key fallback style references this optional demo font, which
-      // returns 404 outside the app; keep every app-local and other HTTP error blocking.
+      // The no-key fallback style previously referenced this demo font which
+      // returned 404. The fallback now omits glyphs entirely so no external
+      // font requests should occur.
       const expectedExternalFont404 = failedResponses.filter(response =>
         response.startsWith('404: https://demotiles.maplibre.org/font/'),
       )

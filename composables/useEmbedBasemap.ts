@@ -33,7 +33,8 @@ const BORDER_LAYER = 'eg-embed-country-border'
 function buildBordersOnlyStyle(): StyleSpecification {
   return {
     version: 8,
-    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+    // No text/symbol layers in this style, so no glyphs endpoint needed.
+    // Omitting glyphs prevents 404 errors from missing font endpoints.
     sources: {},
     layers: [
       {

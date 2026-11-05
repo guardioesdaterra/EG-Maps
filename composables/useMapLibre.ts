@@ -11,12 +11,8 @@ export function getMapStyle(apiKey: string, tileResolution?: 'low' | 'medium' | 
   }
   return {
     version: 8,
-    // Symbol layers (city / claim / protected / cultural labels, cluster
-    // counts) need a glyphs endpoint. Without it every text layer errors
-    // after a fallback switch — the errors pile up in the map error handler
-    // and feed the tile-error auto-fallback trigger. Same public endpoint
-    // already used by useEmbedBasemap's borders-only style.
-    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+    // Fallback style has no text/symbol layers, so no glyphs endpoint needed.
+    // Omitting glyphs prevents 404 errors from missing font endpoints.
     sources: {
       earthGuardiansLand: {
         type: 'geojson',

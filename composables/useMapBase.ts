@@ -1021,6 +1021,11 @@ export function useMapBase(config: MapBaseConfig) {
         // the current provider — swapping now would restart the load and
         // read as a provider flap.
         if (isInitializing && !created.loaded()) return
+        // Auto-fallback engaged during initial load: never restyle a map
+        // that hasn't finished its first load. The health state applies on
+        // next init; only explicit user toggle (preference !== 'auto')
+        // restyles a loaded map.
+        if (isInitializing && tileProvider.autoFallback.value && tileProvider.autoReason.value !== 'manual') return
         if (next === lastAppliedProvider) return
         // Posterior health-based flips must NEVER restyle a live map. A
         // setStyle wipes every data source and flashes the loading overlay,

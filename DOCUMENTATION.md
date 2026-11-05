@@ -241,7 +241,7 @@ pages/endangered-species/index.vue
 MapLibre style
 ├── MapTiler `streets-v2` (light) / `satellite` (default), keyed by `NUXT_PUBLIC_MAPTILER_API_KEY`
 │     ├─ auth baked into URL: `?key=…`
-│     └─ fallback: `https://demotiles.maplibre.org/style.json` after 2 errors
+│     └─ fallback: local inline style (land polygons + background) — no external glyphs
 ├── Tile cache config from `useAdaptiveQuality` (`maxTileCacheSize`, `maxTileCacheZoomLevels`)
 ├── Vector overlay layers:
 │     ├─ `markers` source (clustered) — `useMapMarker.rebuild()` per dataset

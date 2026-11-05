@@ -199,6 +199,9 @@ test.describe('Map console errors', () => {
       await page.waitForTimeout(3000)
 
       const filtered = errors.filter(e => !IRRELEVANT_ERRORS.some(i => e.includes(i)))
+      // The no-key fallback style previously referenced this demo font which
+      // returned 404. The fallback now omits glyphs entirely so no external
+      // font requests should occur.
       const expectedExternalFont404 = failedResponses.filter(response =>
         response.startsWith('404: https://demotiles.maplibre.org/font/'),
       )

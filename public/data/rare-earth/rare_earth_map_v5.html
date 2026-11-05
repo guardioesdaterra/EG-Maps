@@ -217,7 +217,7 @@ function shouldUseMapTiler(apiKey){
 
 function getSharedMapStyle(apiKey){
   if(shouldUseMapTiler(apiKey))return `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${encodeURIComponent(apiKey)}`;
-  return {version:8,glyphs:'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',sources:{earthGuardiansLand:{type:'geojson',data:new URL('../embed/land-110m.geojson',window.location.href).href,attribution:'© OpenStreetMap contributors'}},layers:[{id:'local-background',type:'background',paint:{'background-color':'#07110d'}},{id:'local-land',type:'fill',source:'earthGuardiansLand',paint:{'fill-color':'#193b2a','fill-opacity':0.92}},{id:'local-land-outline',type:'line',source:'earthGuardiansLand',paint:{'line-color':'#5b8f63','line-opacity':0.45,'line-width':0.7}}]};
+  return {version:8,sources:{earthGuardiansLand:{type:'geojson',data:new URL('../embed/land-110m.geojson',window.location.href).href,attribution:'© OpenStreetMap contributors'}},layers:[{id:'local-background',type:'background',paint:{'background-color':'#07110d'}},{id:'local-land',type:'fill',source:'earthGuardiansLand',paint:{'fill-color':'#193b2a','fill-opacity':0.92}},{id:'local-land-outline',type:'line',source:'earthGuardiansLand',paint:{'line-color':'#5b8f63','line-opacity':0.45,'line-width':0.7}}]};
 }
 
 async function resolveMapTilerApiKey(){

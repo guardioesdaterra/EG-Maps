@@ -203,6 +203,36 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
     }
   }
 
+  /**
+   * Read a response body while reporting byte progress, so the loading bar
+   * advances during the multi-MB points download instead of jumping only
+   * during normalization. Falls back to text() when the stream is absent.
+   */
+  async function readWithByteProgress(res: Response, onBytes: (loaded: number, total: number | null) => void): Promise<string> {
+    if (!res.body) return res.text()
+    const reader = res.body.getReader()
+    const totalHeader = Number(res.headers.get('content-length') ?? '')
+    const total = Number.isFinite(totalHeader) && totalHeader > 0 ? totalHeader : null
+    const chunks: Uint8Array[] = []
+    let loaded = 0
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      if (value) {
+        chunks.push(value)
+        loaded += value.byteLength
+        onBytes(loaded, total)
+      }
+    }
+    const buf = new Uint8Array(loaded)
+    let off = 0
+    for (const c of chunks) {
+      buf.set(c, off)
+      off += c.byteLength
+    }
+    return new TextDecoder().decode(buf)
+  }
+
   async function loadResource<T>(name: string, url: string, setter: (_data: T) => void): Promise<T | null> {
     try {
       const res = await fetchWithTimeout(url)
@@ -258,7 +288,16 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
         return
       }
       delete resourceErrors.value.points
-      const pointsGJ = (await pointsRes.json()) as RareEarthFeatureCollection
+      // Stream the points file with byte-level progress: the download is the
+      // slowest step, so surface it on the bar (0→30%) before normalize (30→40%).
+      const text = await readWithByteProgress(pointsRes, (loaded, total) => {
+        if (token !== loadToken || region.value !== startingRegion) return
+        const cap = total ?? 3_500_000 // fallback estimate when no content-length (gzip)
+        const pct = Math.min(1, loaded / cap)
+        loadProgress.value = Math.round(pct * 30)
+      })
+      if (token !== loadToken || region.value !== startingRegion) return
+      const pointsGJ = JSON.parse(text) as RareEarthFeatureCollection
       if (token !== loadToken || region.value !== startingRegion) return
       // Fresh region → drop stale overlap index before transform. Inline
       // overlaps are indexed in one cheap pass (no second download).
@@ -273,7 +312,7 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
       const holderIndex = dangerByHolder(pointsGJ)
       const normalized = await normalizeAll(pointsGJ, overlapsByProcesso, holderIndex, (done, total) => {
         if (token === loadToken && region.value === startingRegion) {
-          loadProgress.value = Math.round(5 + (30 * done) / Math.max(1, total))
+          loadProgress.value = Math.round(30 + (10 * done) / Math.max(1, total))
         }
       })
       if (token !== loadToken || region.value !== startingRegion) return

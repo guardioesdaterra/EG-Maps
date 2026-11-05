@@ -72,6 +72,29 @@ const PUBLIC = join(import.meta.dirname, '..', 'public', 'data', 'rare-earth')
 const OUTPUT = join(PUBLIC, 'pococaldas')
 if (!existsSync(OUTPUT)) mkdirSync(OUTPUT, { recursive: true })
 
+// 6-decimal quantization ≈ 11cm precision — far below visible map precision,
+// but it cuts ~40% off payload vs raw 17-digit ANM coordinates. Compact
+// serialization (no indent) on top of that.
+const QUANT = 1e6
+const q = (n: number) => Math.round(n * QUANT) / QUANT
+
+function quantizeCoords(coords: any): any {
+  if (typeof coords === 'number') return q(coords)
+  return coords.map(quantizeCoords)
+}
+
+function quantizeFeature(f: any) {
+  if (f.geometry?.coordinates) f.geometry.coordinates = quantizeCoords(f.geometry.coordinates)
+  for (const k of ['lat', 'lon', 'la', 'lo']) {
+    if (typeof f.properties?.[k] === 'number') f.properties[k] = q(f.properties[k])
+  }
+  return f
+}
+
+function writeGeoJSON(name: string, features: any[]) {
+  writeFileSync(join(OUTPUT, name), JSON.stringify({ type: 'FeatureCollection', features: features.map(quantizeFeature) }))
+}
+
 console.log(`Center: ${CENTER.lat}, ${CENTER.lng}`)
 
 console.log('\n--- Points ---')
@@ -80,7 +103,7 @@ console.log(`Total features: ${pointsRaw.features.length}`)
 
 const points100 = filterByRadius(pointsRaw.features, 100)
 console.log(`Within 100km: ${points100.length}`)
-writeFileSync(join(OUTPUT, 'points.geojson'), JSON.stringify({ type: 'FeatureCollection', features: points100 }, null, 2))
+writeGeoJSON('points.geojson', points100)
 
 const points50 = filterByRadius(pointsRaw.features, 50)
 const points25 = filterByRadius(pointsRaw.features, 25)
@@ -93,7 +116,7 @@ if (existsSync(overlapsPath)) {
   const overlapsRaw = JSON.parse(readFileSync(overlapsPath, 'utf8'))
   const overlaps100 = filterByRadius(overlapsRaw.features, 100)
   console.log(`Overlaps within 100km: ${overlaps100.length}`)
-  writeFileSync(join(OUTPUT, 'points_overlaps.geojson'), JSON.stringify({ type: 'FeatureCollection', features: overlaps100 }, null, 2))
+  writeGeoJSON('points_overlaps.geojson', overlaps100)
 } else {
   console.log('Skipping overlaps (file not found)')
 }
@@ -105,7 +128,7 @@ if (existsSync(polysPath)) {
   console.log(`Total polygons: ${polysRaw.features.length}`)
   const polys100 = filterByRadius(polysRaw.features, 100)
   console.log(`Polygons within 100km: ${polys100.length}`)
-  writeFileSync(join(OUTPUT, 'polygons.geojson'), JSON.stringify({ type: 'FeatureCollection', features: polys100 }, null, 2))
+  writeGeoJSON('polygons.geojson', polys100)
 } else {
   console.log('Skipping polygons (file not found)')
 }
@@ -117,7 +140,7 @@ if (existsSync(protectedPath)) {
   console.log(`Total protected: ${protectedRaw.features.length}`)
   const protected100 = filterByRadius(protectedRaw.features, 100)
   console.log(`Protected within 100km: ${protected100.length}`)
-  writeFileSync(join(OUTPUT, 'protected-areas.geojson'), JSON.stringify({ type: 'FeatureCollection', features: protected100 }, null, 2))
+  writeGeoJSON('protected-areas.geojson', protected100)
 } else {
   console.log('Skipping protected areas (file not found)')
 }
@@ -138,7 +161,7 @@ if (existsSync(analysisPath)) {
     },
     generated: new Date().toISOString(),
   }
-  writeFileSync(join(OUTPUT, 'deep_analysis.json'), JSON.stringify(regionalAnalysis, null, 2))
+  writeFileSync(join(OUTPUT, 'deep_analysis.json'), JSON.stringify(regionalAnalysis))
   console.log(`Regional analysis written`)
 }
 

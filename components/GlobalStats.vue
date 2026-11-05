@@ -49,7 +49,7 @@
 
     <div v-if="isExpanded" :class="`grid ${isMobile ? 'grid-cols-2 gap-2.5' : 'grid-cols-3 gap-3'} mt-3`">
       <UiStatCard
-        name="tabler:power"
+        icon="tabler:power"
         :value="stats.activeInitiatives"
         :display-value="formatNumber(stats.activeInitiatives)"
         :label="t('stats.projectGrantees')"
@@ -58,7 +58,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        name="gis:globe"
+        icon="gis:globe"
         :value="stats.countriesCount"
         :display-value="formatNumber(stats.countriesCount)"
         :label="t('stats.countries')"
@@ -67,7 +67,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        name="tabler:user"
+        icon="tabler:user"
         :value="stats.totalBeneficiaries"
         :display-value="formatNumber(stats.totalBeneficiaries)"
         :label="t('stats.totalBeneficiaries')"
@@ -78,7 +78,7 @@
     </div>
     <div v-if="isExpanded" :class="`grid ${isMobile ? 'grid-cols-2 gap-2.5' : 'grid-cols-3 gap-3'} mt-3`">
       <UiStatCard
-        name="tabler:tree"
+        icon="tabler:tree"
         :value="300000"
         :display-value="'300K+'"
         :label="t('stats.treesPlanted')"
@@ -87,7 +87,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        name="tabler:cash"
+        icon="tabler:cash"
         :value="190000"
         :display-value="'$190K+'"
         :label="t('stats.dispersed')"
@@ -96,7 +96,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        name="tabler:users"
+        icon="tabler:users"
         :value="131"
         :display-value="'131'"
         :label="t('stats.activeCrews')"

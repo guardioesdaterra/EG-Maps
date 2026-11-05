@@ -167,7 +167,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
   watch(() => obsSel.selection.value.processo, (processo) => {
     if (processo) {
       const sel = obsSel.selection.value
-      const features = allFeatures.value as Array<Record<string, unknown>>
+      const features = allFeatures.value as unknown as Array<Record<string, unknown>>
       const feature = features.find(f => f.p === processo) ?? { p: processo, n: sel.nome }
       claimDetailProps.value = {
         ...feature,

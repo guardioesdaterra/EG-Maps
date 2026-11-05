@@ -39,7 +39,9 @@ jobs:
 
   e2e:
     name: Playwright E2E
-    runs-on: ubuntu-latest
+    # Pinned: Playwright 1.60 has no chromium build for the Ubuntu 26 image
+    # that ubuntu-latest migrated to (Oct 2026). Bump with a Playwright upgrade.
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v6

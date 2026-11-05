@@ -113,9 +113,16 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
   }
   let loadToken = 0
 
+  // Keyed by points FeatureCollection identity: the same dataset is indexed
+  // once for point normalization and again for polygon normalization (20.7k
+  // national claims — recomputing the grouping per pass is pure waste).
+  const holderIndexCache = new WeakMap<object, Map<string, SpeculatorIndexEntry>>()
   function dangerByHolder(pointsGJ: RareEarthFeatureCollection): Map<string, SpeculatorIndexEntry> {
+    const cached = holderIndexCache.get(pointsGJ)
+    if (cached) return cached
     const out = new Map<string, SpeculatorIndexEntry>()
     for (const e of computeSpeculatorIndex(pointsGJ)) out.set(e.normalizedName, e)
+    holderIndexCache.set(pointsGJ, out)
     return out
   }
 

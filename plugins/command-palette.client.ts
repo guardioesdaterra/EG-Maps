@@ -18,7 +18,7 @@ export default defineNuxtPlugin(() => {
     id: 'nav:home',
     group: t('palette.groupNavigation'),
     label: t('nav.home'),
-    icon: 'mdi:home',
+    icon: 'tabler:home',
     keywords: ['home', 'index', 'landing'],
     onSelect: () => { void navigateTo('/') },
   })
@@ -26,7 +26,7 @@ export default defineNuxtPlugin(() => {
     id: 'nav:info',
     group: t('palette.groupNavigation'),
     label: t('nav.info'),
-    icon: 'mdi:information',
+    icon: 'tabler:info-circle',
     keywords: ['about', 'info', 'feedback'],
     onSelect: () => { void navigateTo('/info') },
   })
@@ -34,7 +34,7 @@ export default defineNuxtPlugin(() => {
     id: 'nav:project-grants',
     group: t('palette.groupNavigation'),
     label: t('nav.projectGrants'),
-    icon: 'mdi:chart-line',
+    icon: 'tabler:chart-line',
     keywords: ['grants', 'projects', 'funding'],
     onSelect: () => { void navigateTo('/project-grants') },
   })
@@ -42,7 +42,7 @@ export default defineNuxtPlugin(() => {
     id: 'nav:endangered-species',
     group: t('palette.groupNavigation'),
     label: t('nav.endangeredSpecies'),
-    icon: 'mdi:paw',
+    icon: 'tabler:paw',
     keywords: ['species', 'wildlife', 'endangered'],
     onSelect: () => { void navigateTo('/endangered-species') },
   })
@@ -50,7 +50,7 @@ export default defineNuxtPlugin(() => {
     id: 'nav:observatory',
     group: t('palette.groupNavigation'),
     label: t('nav.observatoryOfVulcan'),
-    icon: 'mdi:volcano',
+    icon: 'tabler:volcano',
     keywords: ['observatory', 'vulcan', 'ree', 'mining'],
     onSelect: () => { void navigateTo('/vulcan-observatory') },
   })
@@ -60,7 +60,7 @@ export default defineNuxtPlugin(() => {
     id: 'theme:toggle',
     group: t('palette.groupSettings'),
     label: dark.isDark.value ? t('nav.switchToLight') : t('nav.switchToDark'),
-    icon: dark.isDark.value ? 'mdi:weather-sunny' : 'mdi:weather-night',
+    icon: dark.isDark.value ? 'tabler:brightness-half' : 'tabler:moon-2',
     shortcut: 'Ctrl+Shift+D',
     keywords: ['theme', 'dark', 'light', 'mode'],
     onSelect: () => { dark.toggle() },
@@ -76,7 +76,7 @@ export default defineNuxtPlugin(() => {
       id: `lang:${code}`,
       group: t('palette.groupLanguage'),
       label: LOCALE_NAMES[code],
-      icon: 'mdi:translate',
+      icon: 'tabler:language',
       keywords: ['language', 'locale', code, LOCALE_NAMES[code].toLowerCase()],
       onSelect: () => {
         locale.value = code

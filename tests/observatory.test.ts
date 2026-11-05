@@ -149,7 +149,7 @@ describe('buildRareEarthPopupHTML', () => {
       c: 'direct_ree', n: 'X', p: '820001/2023', y: 2023,
     })
     expect(html).toContain('Verify on ANM')
-    expect(html).toContain('anm.gov.br')
+    expect(html).toContain('geo.anm.gov.br/arcgis/rest/services/SIGMINE/dados_anm/FeatureServer')
   })
 
   it('always embeds report mailto link', () => {
@@ -391,11 +391,13 @@ describe('normalizeName', () => {
 })
 
 describe('buildAnmVerifyUrl', () => {
-  it('builds a SIGMINE URL for a valid processo', () => {
+  it('builds FeatureServer query URL for a valid processo', () => {
     const url = buildAnmVerifyUrl('820001/2023', 2023)
-    expect(url).toContain('anm.gov.br')
-    expect(url).toContain('8200012023')
-    expect(url).toContain('ano=2023')
+    expect(url).toContain('geo.anm.gov.br/arcgis/rest/services/SIGMINE/dados_anm/FeatureServer/0/query')
+    expect(url).toContain('PROCESSO')
+    expect(url).toContain('820001')
+    expect(url).toContain('2023')
+    expect(url).toContain('f=geojson')
   })
 
   it('returns null for empty processo', () => {

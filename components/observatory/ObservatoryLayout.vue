@@ -87,43 +87,43 @@ function updatePhases(value: Set<string>) {
         </div>
 
         <button type="button" class="obs-icon-btn" :aria-label="t('observatory.tabs.timeline')" @click="controls.showTimeline.value = !controls.showTimeline.value">
-          <Icon name="lucide:clock" class="w-3.5 h-3.5" />
+          <Icon name="tabler:clock" class="w-3.5 h-3.5" />
           <span class="obs-icon-btn__tooltip" role="tooltip">{{ t('observatory.tabs.timeline') }}</span>
         </button>
         <button v-if="onRedeCorporativa" type="button" class="obs-icon-btn" aria-label="Corporate Network" @click="onRedeCorporativa()">
-          <Icon name="lucide:share-2" class="w-3.5 h-3.5" />
+          <Icon name="tabler:share" class="w-3.5 h-3.5" />
           <span class="obs-icon-btn__tooltip" role="tooltip">Corporate Network</span>
         </button>
         <button v-if="onDataDownload" type="button" class="obs-icon-btn" aria-label="Download Data" @click="onDataDownload()">
-          <Icon name="lucide:download" class="w-3.5 h-3.5" />
+          <Icon name="tabler:download" class="w-3.5 h-3.5" />
           <span class="obs-icon-btn__tooltip" role="tooltip">Download Data</span>
         </button>
         <button type="button" class="obs-icon-btn" :class="{ 'obs-icon-btn--active': controls.enterpriseLayerVisible.value }" aria-label="Enterprise HQ" @click="controls.toggleEnterpriseLayer()">
-          <Icon name="lucide:building-2" class="w-3.5 h-3.5" />
+          <Icon name="tabler:building" class="w-3.5 h-3.5" />
           <span class="obs-icon-btn__tooltip" role="tooltip">Enterprise HQ</span>
         </button>
         <button type="button" class="obs-icon-btn" aria-label="Export" @click="controls.showExport.value = !controls.showExport.value">
-          <Icon name="lucide:file-down" class="w-3.5 h-3.5" />
+          <Icon name="tabler:download" class="w-3.5 h-3.5" />
           <span class="obs-icon-btn__tooltip" role="tooltip">Export</span>
         </button>
         <button type="button" class="obs-icon-btn" aria-label="Shortcuts" @click="controls.showShortcuts.value = !controls.showShortcuts.value">
-          <Icon name="lucide:keyboard" class="w-3.5 h-3.5" />
+          <Icon name="tabler:keyboard" class="w-3.5 h-3.5" />
           <span class="obs-icon-btn__tooltip" role="tooltip">Shortcuts</span>
         </button>
         <button type="button" class="obs-icon-btn" aria-label="Data Table" @click="controls.showDataTable.value = !controls.showDataTable.value">
-          <Icon name="lucide:table" class="w-3.5 h-3.5" />
+          <Icon name="tabler:file" class="w-3.5 h-3.5" />
           <span class="obs-icon-btn__tooltip" role="tooltip">Data Table</span>
         </button>
         <button type="button" class="obs-icon-btn" aria-label="Near Me" @click="controls.showGeoLocate.value = !controls.showGeoLocate.value">
-          <Icon name="lucide:map-pin" class="w-3.5 h-3.5" />
+          <Icon name="gis:pin" class="w-3.5 h-3.5" />
           <span class="obs-icon-btn__tooltip" role="tooltip">Near Me</span>
         </button>
         <button v-if="isRegional && onExpandToFullBrazil" type="button" class="obs-icon-btn" aria-label="Full Brazil" @click="onExpandToFullBrazil()">
-          <Icon name="lucide:earth" class="w-3.5 h-3.5" />
+          <Icon name="gis:earth" class="w-3.5 h-3.5" />
           <span class="obs-icon-btn__tooltip" role="tooltip">Full Brazil</span>
         </button>
         <button v-if="onUserContribution" type="button" class="obs-icon-btn" aria-label="Monitor" @click="onUserContribution()">
-          <Icon name="lucide:notebook-pen" class="w-3.5 h-3.5" />
+          <Icon name="tabler:notes" class="w-3.5 h-3.5" />
           <span class="obs-icon-btn__tooltip" role="tooltip">Monitor</span>
         </button>
       </div>
@@ -132,13 +132,13 @@ function updatePhases(value: Set<string>) {
     
     <aside class="obs-leftbar" :class="{ 'obs-leftbar--collapsed': !leftSidebarOpen }" :aria-label="t('observatory.layers.title')">
       <button v-if="!leftSidebarOpen" type="button" class="obs-leftbar__toggle" :aria-label="t('observatory.layers.title')" @click="leftSidebarOpen = true">
-        <Icon name="lucide:settings-2" class="w-4 h-4" />
+        <Icon name="tabler:settings" class="w-4 h-4" />
       </button>
 
       <template v-if="leftSidebarOpen">
         <div class="obs-leftbar__scroll">
           <div class="obs-search" role="search">
-            <Icon name="lucide:search" class="obs-search__icon w-3 h-3" />
+            <Icon name="tabler:search" class="obs-search__icon w-3 h-3" />
             <input v-model="controls.searchTerm.value" :placeholder="t('observatory.search')" class="obs-search__input" :aria-label="t('observatory.search')" @input="controls.debouncedFilter()">
             <button v-if="controls.searchTerm.value" type="button" class="obs-search__clear" :aria-label="t('observatory.clearSearch')" @click="controls.searchTerm.value = ''; controls.debouncedFilter()">×</button>
           </div>
@@ -162,7 +162,7 @@ function updatePhases(value: Set<string>) {
             @keydown.space.prevent="controls.toggleLayer(c.key)"
           >
             <div :class="['obs-filter-checkbox__box', controls.layerVis.value[c.key] ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': c.color }">
-              <Icon v-if="controls.layerVis.value[c.key]" name="lucide:check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
+              <Icon v-if="controls.layerVis.value[c.key]" name="tabler:square-check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
             </div>
             <span class="obs-filter-checkbox__label">{{ c.label }}</span>
           </div>
@@ -181,7 +181,7 @@ function updatePhases(value: Set<string>) {
             @keydown.space.prevent="controls.toggleLayer(ex.key)"
           >
             <div :class="['obs-filter-checkbox__box', controls.layerVis.value[ex.key] ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': ex.color }">
-              <Icon v-if="controls.layerVis.value[ex.key]" name="lucide:check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
+              <Icon v-if="controls.layerVis.value[ex.key]" name="tabler:square-check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
             </div>
             <span class="obs-filter-checkbox__label">{{ t(ex.labelKey) }}</span>
           </div>
@@ -200,7 +200,7 @@ function updatePhases(value: Set<string>) {
             @keydown.space.prevent="controls.toggleLayer('protected_ti')"
           >
             <div :class="['obs-filter-checkbox__box', controls.layerVis.value['protected_ti'] !== false ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': 'var(--obs-red-dark)' }">
-              <Icon v-if="controls.layerVis.value['protected_ti'] !== false" name="lucide:check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
+              <Icon v-if="controls.layerVis.value['protected_ti'] !== false" name="tabler:square-check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
             </div>
             <span class="obs-filter-checkbox__label">{{ t('observatory.layers.indigenousLands') }}</span>
           </div>
@@ -215,7 +215,7 @@ function updatePhases(value: Set<string>) {
             @keydown.space.prevent="controls.toggleLayer('protected_quilombo')"
           >
             <div :class="['obs-filter-checkbox__box', controls.layerVis.value['protected_quilombo'] !== false ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': 'var(--obs-amber)' }">
-              <Icon v-if="controls.layerVis.value['protected_quilombo'] !== false" name="lucide:check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
+              <Icon v-if="controls.layerVis.value['protected_quilombo'] !== false" name="tabler:square-check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
             </div>
             <span class="obs-filter-checkbox__label">{{ t('observatory.layers.quilombolaTerritories') }}</span>
           </div>
@@ -230,7 +230,7 @@ function updatePhases(value: Set<string>) {
             @keydown.space.prevent="controls.toggleLayer('overlaps')"
           >
             <div :class="['obs-filter-checkbox__box', controls.layerVis.value['overlaps'] !== false ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': 'var(--obs-magenta)' }">
-              <Icon v-if="controls.layerVis.value['overlaps'] !== false" name="lucide:check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
+              <Icon v-if="controls.layerVis.value['overlaps'] !== false" name="tabler:square-check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
             </div>
             <span class="obs-filter-checkbox__label">{{ t('observatory.layers.overlaps') }}</span>
           </div>
@@ -245,7 +245,7 @@ function updatePhases(value: Set<string>) {
             @keydown.space.prevent="controls.toggleLayer('enterprise_hq')"
           >
             <div :class="['obs-filter-checkbox__box', controls.layerVis.value['enterprise_hq'] !== false ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': 'var(--obs-purple-light)' }">
-              <Icon v-if="controls.layerVis.value['enterprise_hq'] !== false" name="lucide:check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
+              <Icon v-if="controls.layerVis.value['enterprise_hq'] !== false" name="tabler:square-check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
             </div>
             <span class="obs-filter-checkbox__label">{{ t('observatory.layers.enterpriseHq') }}</span>
           </div>
@@ -257,7 +257,7 @@ function updatePhases(value: Set<string>) {
             @click.stop="controls.sobDemandaOnly.value = !controls.sobDemandaOnly.value; controls.debouncedFilter()"
           >
             <div :class="['obs-filter-checkbox__box', controls.sobDemandaOnly.value ? '' : 'obs-filter-checkbox__box--off']" :style="{ '--cb-color': 'var(--obs-purple-deep)' }">
-              <Icon v-if="controls.sobDemandaOnly.value" name="lucide:check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
+              <Icon v-if="controls.sobDemandaOnly.value" name="tabler:square-check" class="obs-filter-checkbox__check w-2.5 h-2.5" />
             </div>
             <span class="obs-filter-checkbox__label">Sob Demanda</span>
           </label>
@@ -271,7 +271,7 @@ function updatePhases(value: Set<string>) {
         </div>
 
         <button type="button" class="obs-leftbar__collapse" :aria-label="t('observatory.sidebarCollapse')" @click="leftSidebarOpen = false">
-          <Icon name="lucide:chevron-left" class="w-3.5 h-3.5" />
+          <Icon name="tabler:arrow-move-left" class="w-3.5 h-3.5" />
         </button>
       </template>
     </aside>
@@ -290,7 +290,7 @@ function updatePhases(value: Set<string>) {
         :aria-label="pinPickerMode ? t('observatory.myTerritory.cancel') : t('observatory.myTerritory.dropPin')"
         @click="togglePinPicker"
       >
-        <Icon name="lucide:map-pin" class="w-3 h-3" />
+        <Icon name="gis:pin" class="w-3 h-3" />
         <span>{{ pinPickerMode ? t('observatory.myTerritory.cancel') : t('observatory.myTerritory.dropPin') }}</span>
       </button>
 
@@ -304,7 +304,7 @@ function updatePhases(value: Set<string>) {
           <button type="button" class="obs-bottombar__pin-btn obs-bottombar__pin-btn--emerald" :aria-label="t('observatory.myTerritory.flyTo')" @click="flyToUserPin">{{ t('observatory.myTerritory.flyTo') }}</button>
           <button type="button" class="obs-bottombar__pin-btn" :aria-label="t('observatory.myTerritory.share')" @click="copyPinUrl">{{ shareCopied ? t('observatory.myTerritory.copied') : t('observatory.myTerritory.share') }}</button>
           <button type="button" class="obs-bottombar__pin-btn obs-bottombar__pin-btn--danger" :aria-label="t('observatory.myTerritory.clear')" @click="clearPin">
-            <Icon name="lucide:x" class="w-2.5 h-2.5" />
+            <Icon name="tabler:trash-x" class="w-2.5 h-2.5" />
           </button>
         </div>
       </div>
@@ -312,7 +312,7 @@ function updatePhases(value: Set<string>) {
       <div class="obs-bottombar__spacer" />
 
       <div class="sm:hidden obs-search" style="width: auto; flex: 1; max-width: 160px;" role="search">
-        <Icon name="lucide:search" class="obs-search__icon w-3 h-3" />
+        <Icon name="tabler:search" class="obs-search__icon w-3 h-3" />
         <input v-model="controls.searchTerm.value" :placeholder="t('observatory.search')" class="obs-search__input" :aria-label="t('observatory.search')" @input="controls.debouncedFilter()">
       </div>
     </div>

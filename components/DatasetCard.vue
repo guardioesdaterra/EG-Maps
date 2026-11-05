@@ -21,7 +21,7 @@
         </span>
       </div>
       <Icon
-        name="lucide:arrow-up-right"
+        name="tabler:share"
         class="h-3.5 w-3.5 text-white/20 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-white/50"
       />
     </div>
@@ -58,7 +58,7 @@
         :class="!dataset.single && 'flex-1'"
         :aria-label="dataset.ariaLabel"
       >
-        <Icon :name="dataset.single ? 'lucide:arrow-right' : 'lucide:map'" class="h-3.5 w-3.5" />
+        <Icon :name="dataset.single ? 'tabler:share' : 'gis:map'" class="h-3.5 w-3.5" />
         <span>{{ dataset.single ? (dataset.external ? 'Visit' : 'Open') : t('home.2d') }}</span>
       </NuxtLink>
       <NuxtLink
@@ -67,7 +67,7 @@
         class="dataset-btn dataset-btn--secondary flex-1"
         :aria-label="`${t('home.3d')} — ${dataset.title}`"
       >
-        <Icon name="lucide:globe" class="h-3.5 w-3.5" />
+        <Icon name="gis:globe" class="h-3.5 w-3.5" />
         <span>{{ t('home.3d') }}</span>
       </NuxtLink>
       <NuxtLink
@@ -76,7 +76,7 @@
         class="dataset-btn dataset-btn--secondary flex-1"
         :aria-label="`Explore — ${dataset.title}`"
       >
-        <Icon name="lucide:compass" class="h-3.5 w-3.5" />
+        <Icon name="gis:compass" class="h-3.5 w-3.5" />
         <span>Explore</span>
       </NuxtLink>
     </div>

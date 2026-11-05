@@ -29,7 +29,7 @@
           :aria-label="t('observatory.v2.hero.close')"
           @click="$emit('close')"
         >
-          <Icon name="lucide:x" />
+          <Icon name="tabler:trash-x" />
         </button>
       </div>
 

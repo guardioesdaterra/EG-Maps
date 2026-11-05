@@ -32,8 +32,8 @@
           @click="isExpanded = !isExpanded"
           :title="isExpanded ? t('stats.collapse') : t('stats.expand')"
         >
-          <iconify-icon v-if="isExpanded" icon="streamline-freehand:move-cross-over" :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
-          <iconify-icon v-else icon="streamline-freehand:move-cross-over" :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
+          <Icon v-if="isExpanded" name="tabler:arrows-move" :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
+          <Icon v-else name="tabler:arrows-move" :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
         </UiButton>
         <UiButton
           variant="ghost"
@@ -42,14 +42,14 @@
           @click="closePanel"
           :title="t('stats.close')"
         >
-          <iconify-icon icon="streamline-freehand:remove-delete-sign-bold" :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
+          <Icon name="tabler:trash-x" :class="isMobile ? 'h-5 w-5' : 'h-4 w-4'" />
         </UiButton>
       </div>
     </div>
 
     <div v-if="isExpanded" :class="`grid ${isMobile ? 'grid-cols-2 gap-2.5' : 'grid-cols-3 gap-3'} mt-3`">
       <UiStatCard
-        icon="streamline-freehand:power-button"
+        name="tabler:power"
         :value="stats.activeInitiatives"
         :display-value="formatNumber(stats.activeInitiatives)"
         :label="t('stats.projectGrantees')"
@@ -58,7 +58,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        icon="gis:globe"
+        name="gis:globe"
         :value="stats.countriesCount"
         :display-value="formatNumber(stats.countriesCount)"
         :label="t('stats.countries')"
@@ -67,7 +67,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        icon="streamline-freehand:human-resources-businessman"
+        name="tabler:user"
         :value="stats.totalBeneficiaries"
         :display-value="formatNumber(stats.totalBeneficiaries)"
         :label="t('stats.totalBeneficiaries')"
@@ -78,7 +78,7 @@
     </div>
     <div v-if="isExpanded" :class="`grid ${isMobile ? 'grid-cols-2 gap-2.5' : 'grid-cols-3 gap-3'} mt-3`">
       <UiStatCard
-        icon="lucide:tree-pine"
+        name="tabler:tree"
         :value="300000"
         :display-value="'300K+'"
         :label="t('stats.treesPlanted')"
@@ -87,7 +87,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        icon="streamline-freehand:money-bill-fly"
+        name="tabler:cash"
         :value="190000"
         :display-value="'$190K+'"
         :label="t('stats.dispersed')"
@@ -96,7 +96,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        icon="streamline-freehand:presentation-audience"
+        name="tabler:users"
         :value="131"
         :display-value="'131'"
         :label="t('stats.activeCrews')"
@@ -110,7 +110,7 @@
 
 <script setup lang="ts">
 
-import { computed, ref, watch } from 'vue'
+import Icon from './Icon.vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import type { ProjectData } from '@/lib/types'

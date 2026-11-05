@@ -68,7 +68,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.570,
+          -46.57,
           -21.782
         ]
       }
@@ -86,8 +86,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.580,
-          -21.790
+          -46.58,
+          -21.79
         ]
       }
     },
@@ -105,7 +105,7 @@
         "type": "Point",
         "coordinates": [
           -46.553,
-          -21.790
+          -21.79
         ]
       }
     },
@@ -122,7 +122,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.560,
+          -46.56,
           -21.795
         ]
       }
@@ -141,7 +141,7 @@
         "type": "Point",
         "coordinates": [
           -46.575,
-          -21.800
+          -21.8
         ]
       }
     },
@@ -212,7 +212,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.550,
+          -46.55,
           -21.788
         ]
       }
@@ -248,8 +248,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.530,
-          -21.810
+          -46.53,
+          -21.81
         ]
       }
     },
@@ -284,8 +284,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.510,
-          -21.860
+          -46.51,
+          -21.86
         ]
       }
     },
@@ -303,25 +303,7 @@
         "type": "Point",
         "coordinates": [
           -46.535,
-          -21.820
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Comunidade Quilombola da Favela",
-        "type": "community",
-        "description": "Quilombola community with ongoing land rights struggle",
-        "community": "Quilombo da Favela",
-        "municipality": "Poços de Caldas",
-        "status": "at_risk"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -46.550,
-          -21.650
+          -21.82
         ]
       }
     },
@@ -338,8 +320,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.480,
-          -21.850
+          -46.48,
+          -21.85
         ]
       }
     },
@@ -356,8 +338,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.500,
-          -21.840
+          -46.5,
+          -21.84
         ]
       }
     },
@@ -485,8 +467,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.370,
-          -21.910
+          -46.37,
+          -21.91
         ]
       }
     },
@@ -540,7 +522,7 @@
         "type": "Point",
         "coordinates": [
           -46.735,
-          -21.930
+          -21.93
         ]
       }
     },
@@ -575,8 +557,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.720,
-          -21.940
+          -46.72,
+          -21.94
         ]
       }
     },
@@ -593,8 +575,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.760,
-          -21.960
+          -46.76,
+          -21.96
         ]
       }
     },
@@ -647,7 +629,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.570,
+          -46.57,
           -22.072
         ]
       }
@@ -666,7 +648,7 @@
         "type": "Point",
         "coordinates": [
           -46.558,
-          -22.060
+          -22.06
         ]
       }
     },
@@ -720,8 +702,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.540,
-          -22.090
+          -46.54,
+          -22.09
         ]
       }
     },
@@ -828,7 +810,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.320,
+          -46.32,
           -22.015
         ]
       }
@@ -864,8 +846,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.690,
-          -21.530
+          -46.69,
+          -21.53
         ]
       }
     },
@@ -937,7 +919,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.670,
+          -46.67,
           -21.515
         ]
       }
@@ -955,8 +937,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.710,
-          -21.540
+          -46.71,
+          -21.54
         ]
       }
     },
@@ -1027,8 +1009,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.720,
-          -21.670
+          -46.72,
+          -21.67
         ]
       }
     },
@@ -1045,8 +1027,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.750,
-          -21.680
+          -46.75,
+          -21.68
         ]
       }
     },
@@ -1121,8 +1103,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5720,
-          -21.7950
+          -46.572,
+          -21.795
         ]
       }
     },
@@ -1140,8 +1122,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5650,
-          -21.7880
+          -46.565,
+          -21.788
         ]
       }
     },
@@ -1179,7 +1161,7 @@
         "type": "Point",
         "coordinates": [
           -46.5727,
-          -21.7850
+          -21.785
         ]
       }
     },
@@ -1198,7 +1180,7 @@
         "type": "Point",
         "coordinates": [
           -46.5722,
-          -21.7850
+          -21.785
         ]
       }
     },
@@ -1216,8 +1198,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5600,
-          -21.7870
+          -46.56,
+          -21.787
         ]
       }
     },
@@ -1235,8 +1217,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5600,
-          -21.7850
+          -46.56,
+          -21.785
         ]
       }
     },
@@ -1254,8 +1236,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5650,
-          -21.7930
+          -46.565,
+          -21.793
         ]
       }
     },
@@ -1273,8 +1255,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5750,
-          -21.8000
+          -46.575,
+          -21.8
         ]
       }
     },
@@ -1292,8 +1274,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5680,
-          -21.7980
+          -46.568,
+          -21.798
         ]
       }
     },
@@ -1311,8 +1293,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5550,
-          -21.7820
+          -46.555,
+          -21.782
         ]
       }
     },
@@ -1330,8 +1312,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5670,
-          -21.7860
+          -46.567,
+          -21.786
         ]
       }
     },
@@ -1349,8 +1331,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5650,
-          -21.7880
+          -46.565,
+          -21.788
         ]
       }
     },
@@ -1368,8 +1350,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5700,
-          -21.7900
+          -46.57,
+          -21.79
         ]
       }
     },
@@ -1387,8 +1369,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5600,
-          -21.7860
+          -46.56,
+          -21.786
         ]
       }
     },
@@ -1406,8 +1388,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5640,
-          -21.7870
+          -46.564,
+          -21.787
         ]
       }
     },
@@ -1425,8 +1407,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5650,
-          -21.7920
+          -46.565,
+          -21.792
         ]
       }
     },
@@ -1444,8 +1426,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5600,
-          -21.8020
+          -46.56,
+          -21.802
         ]
       }
     },
@@ -1463,8 +1445,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5620,
-          -21.7880
+          -46.562,
+          -21.788
         ]
       }
     },
@@ -1482,8 +1464,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5570,
-          -21.7860
+          -46.557,
+          -21.786
         ]
       }
     },
@@ -1539,7 +1521,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5770,
+          -46.577,
           -21.8416
         ]
       }
@@ -1577,8 +1559,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5480,
-          -21.7930
+          -46.548,
+          -21.793
         ]
       }
     },
@@ -1653,8 +1635,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.540,
-          -22.090
+          -46.54,
+          -22.09
         ]
       }
     },
@@ -1672,8 +1654,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.710,
-          -21.540
+          -46.71,
+          -21.54
         ]
       }
     },
@@ -1733,7 +1715,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.4100,
+          -46.41,
           -21.8924
         ]
       }
@@ -1853,7 +1835,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.6830,
+          -46.683,
           -21.9465
         ]
       }
@@ -1952,8 +1934,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.8130,
-          -21.9680
+          -46.813,
+          -21.968
         ]
       }
     },
@@ -1971,7 +1953,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5590,
+          -46.559,
           -21.7931
         ]
       }
@@ -2066,7 +2048,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5690,
+          -46.569,
           -22.0716
         ]
       }
@@ -2124,7 +2106,7 @@
         "type": "Point",
         "coordinates": [
           -46.5722,
-          -22.0610
+          -22.061
         ]
       }
     },
@@ -2181,7 +2163,7 @@
         "type": "Point",
         "coordinates": [
           -46.5645,
-          -22.0640
+          -22.064
         ]
       }
     },
@@ -2237,8 +2219,94 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -46.5690,
+          -46.569,
           -22.0613
+        ]
+      }
+    },
+    {
+      "name": "Aldeia Ibiramã Kiriri do Acre",
+      "type": "aldeia",
+      "funai_aldeia_cod": 4779,
+      "description": "Aldeia FUNAI-registered (cod 4779) inside TI Kiriri de Caldas (Encaminhada RI, 38.9 ha).",
+      "community": "Kiriri",
+      "municipality": "Caldas",
+      "state": "MG",
+      "status": "active",
+      "funai_ti_code": 73799,
+      "funai_ti_name": "Kiriri de Caldas",
+      "source": "FUNAI Aldeias 2026 (via geo.ambientare.com.br mirror), retrieved 2026-11-05",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.41,
+          -21.89222
+        ]
+      },
+      "properties": {
+        "name": "Aldeia Ibiramã Kiriri do Acre",
+        "type": "aldeia",
+        "funai_aldeia_cod": 4779,
+        "description": "Aldeia FUNAI-registered (cod 4779) inside TI Kiriri de Caldas (Encaminhada RI, 38.9 ha).",
+        "community": "Kiriri",
+        "municipality": "Caldas",
+        "state": "MG",
+        "status": "active",
+        "funai_ti_code": 73799,
+        "funai_ti_name": "Kiriri de Caldas",
+        "source": "FUNAI Aldeias 2026 (via geo.ambientare.com.br mirror), retrieved 2026-11-05"
+      }
+    },
+    {
+      "name": "Aldeia Xucuru Kariri",
+      "type": "aldeia",
+      "funai_aldeia_cod": 4451,
+      "description": "Aldeia FUNAI-registered (cod 4451) inside TI Fazenda Boa Vista - MG (Regularizada, 101 ha).",
+      "community": "Xucuru-Kariri",
+      "municipality": "Caldas",
+      "state": "MG",
+      "status": "active",
+      "funai_ti_code": 73711,
+      "funai_ti_name": "Fazenda Boa Vista - MG",
+      "source": "FUNAI Aldeias 2026, retrieved 2026-11-05",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.33155,
+          -21.94427
+        ]
+      },
+      "properties": {
+        "name": "Aldeia Xucuru Kariri",
+        "type": "aldeia",
+        "funai_aldeia_cod": 4451,
+        "description": "Aldeia FUNAI-registered (cod 4451) inside TI Fazenda Boa Vista - MG (Regularizada, 101 ha).",
+        "community": "Xucuru-Kariri",
+        "municipality": "Caldas",
+        "state": "MG",
+        "status": "active",
+        "funai_ti_code": 73711,
+        "funai_ti_name": "Fazenda Boa Vista - MG",
+        "source": "FUNAI Aldeias 2026, retrieved 2026-11-05"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Aldeia Kariri Wakonã — Taquari",
+        "type": "aldeia",
+        "description": "Comunidade local sem registro no cadastro FUNAI 2026; posição indicativa. TI oficial mais próxima: Kiriri de Caldas (~2,5 km).",
+        "community": "Kariri Wakonã",
+        "municipality": "Caldas",
+        "state": "MG",
+        "status": "pending_regularization",
+        "source": "local/indicative"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -46.39,
+          -21.87
         ]
       }
     }

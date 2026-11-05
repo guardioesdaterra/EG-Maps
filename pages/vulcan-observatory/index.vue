@@ -30,7 +30,7 @@
       >
         <template v-if="error && !isLoading">
           <div class="text-center">
-            <Icon name="lucide:alert-triangle" class="text-5xl mb-4 mx-auto text-red-400" />
+            <Icon name="tabler:alert-triangle" class="text-5xl mb-4 mx-auto text-red-400" />
             <h2 class="text-lg font-bold text-red-400 uppercase tracking-wider mb-2">
               {{ t('observatory.error.loadFailed') }}
             </h2>
@@ -53,7 +53,7 @@
               </path>
             </svg>
             <div class="absolute inset-0 flex items-center justify-center">
-              <Icon name="lucide:mountain" class="text-3xl text-red-500" />
+              <Icon name="tabler:mountain" class="text-3xl text-red-500" />
             </div>
           </div>
           <div class="text-center">
@@ -83,11 +83,14 @@
         :rare-earth-points="pointsData"
         :rare-earth-filtered="filteredPoints"
         :rare-earth-polygons="visiblePolygons"
+        :rare-earth-polygons-full="polygonsData"
         :rare-earth-protected="protectedData"
         :rare-earth-water="waterData"
         :rare-earth-cultural="culturalData"
         :layer-visibility="layerVis"
+        :rare-earth-filter-expr="controls.mapFilterExpression.value"
         :fly-to-target="flyToTarget"
+        :on-popup-show-all="openDataTable"
         @map-init="onMapInit"
       >
         <template #overlays>
@@ -105,11 +108,11 @@
             <button
               type="button"
               class="vulc-actions-bubble__toggle"
-              :aria-label="actionsExpanded ? 'Collapse actions' : 'Expand actions'"
+              :aria-label="t(actionsExpanded ? 'observatory.v2.actionsCollapse' : 'observatory.v2.actionsExpand')"
               :aria-expanded="actionsExpanded"
               @click="actionsExpanded = !actionsExpanded"
             >
-              <Icon :name="actionsExpanded ? 'lucide:x' : 'lucide:settings-2'" />
+              <Icon :name="actionsExpanded ? 'tabler:x' : 'tabler:settings'" />
             </button>
             <Transition name="vulc-actions-expand">
               <nav v-show="actionsExpanded" class="vulc-actions-bubble__menu" :aria-label="t('observatory.v2.actions')">
@@ -121,7 +124,7 @@
                   :aria-pressed="rightPanelOpen && rightPanelTab === 'timeline'"
                   @click="toggleTimeline"
                 >
-                  <Icon name="lucide:clock" />
+                  <Icon name="tabler:clock" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.tabs.timeline') }}</span>
                 </button>
                 <button
@@ -130,7 +133,7 @@
                   :aria-label="t('observatory.v2.corporateNetwork')"
                   @click="onRedeCorporativa()"
                 >
-                  <Icon name="lucide:share-2" />
+                  <Icon name="tabler:share" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.corporateNetwork') }}</span>
                 </button>
                 <button
@@ -139,7 +142,7 @@
                   :aria-label="t('observatory.v2.downloadData')"
                   @click="onDataDownload()"
                 >
-                  <Icon name="lucide:download" />
+                  <Icon name="tabler:download" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.downloadData') }}</span>
                 </button>
                 <button
@@ -150,7 +153,7 @@
                   :aria-pressed="controls.enterpriseLayerVisible.value"
                   @click="controls.toggleEnterpriseLayer()"
                 >
-                  <Icon name="lucide:building-2" />
+                  <Icon name="tabler:building" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.enterpriseHq') }}</span>
                 </button>
                 <button
@@ -161,7 +164,7 @@
                   :aria-pressed="controls.showDataTable.value"
                   @click="controls.showDataTable.value = !controls.showDataTable.value"
                 >
-                  <Icon name="lucide:table" />
+                  <Icon name="tabler:file" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.dataTable') }}</span>
                 </button>
                 <button
@@ -170,7 +173,7 @@
                   :aria-label="t('observatory.v2.export')"
                   @click="controls.showExport.value = !controls.showExport.value"
                 >
-                  <Icon name="lucide:file-down" />
+                  <Icon name="tabler:file-export" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.export') }}</span>
                 </button>
                 <button
@@ -179,7 +182,7 @@
                   :aria-label="t('observatory.v2.shortcuts')"
                   @click="controls.showShortcuts.value = !controls.showShortcuts.value"
                 >
-                  <Icon name="lucide:keyboard" />
+                  <Icon name="tabler:keyboard" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.shortcuts') }}</span>
                 </button>
                 <button
@@ -188,7 +191,7 @@
                   :aria-label="t('observatory.v2.nearMe')"
                   @click="controls.showGeoLocate.value = !controls.showGeoLocate.value"
                 >
-                  <Icon name="lucide:map-pin" />
+                  <Icon name="gis:pin" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.nearMe') }}</span>
                 </button>
                 <button
@@ -198,7 +201,7 @@
                   :aria-label="t('observatory.v2.fullBrazil')"
                   @click="onExpandToFullBrazil()"
                 >
-                  <Icon name="lucide:earth" />
+                  <Icon name="gis:earth" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.fullBrazil') }}</span>
                 </button>
                 <button
@@ -207,7 +210,7 @@
                   :aria-label="t('observatory.v2.monitor')"
                   @click="onUserContribution()"
                 >
-                  <Icon name="lucide:notebook-pen" />
+                  <Icon name="tabler:notes" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.monitor') }}</span>
                 </button>
                 <button
@@ -216,7 +219,7 @@
                   :aria-label="t('observatory.v2.viewGlobe')"
                   @click="navigateTo('/vulcan-observatory/3d')"
                 >
-                  <Icon name="lucide:globe" />
+                  <Icon name="gis:globe" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.viewGlobe') }}</span>
                 </button>
               </nav>
@@ -229,11 +232,11 @@
               type="button"
               class="vulc-icon-btn vulc-icon-btn--primary"
               :class="{ 'is-active': rightPanelOpen }"
-              :aria-label="t('observatory.v2.panel.expand')"
+              :aria-label="rightPanelOpen ? t('observatory.v2.panel.collapse') : t('observatory.v2.panel.expand')"
               :aria-pressed="rightPanelOpen"
               @click="rightPanelOpen = !rightPanelOpen"
             >
-              <Icon :name="rightPanelOpen ? 'lucide:panel-right-close' : 'lucide:panel-right-open'" />
+              <Icon :name="rightPanelOpen ? 'tabler:layout-sidebar-right-collapse' : 'tabler:layout-sidebar-right'" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.panel.expand') }}</span>
             </button>
             <button
@@ -244,7 +247,7 @@
               :aria-pressed="rightPanelOpen && rightPanelTab === 'timeline'"
               @click="toggleTimeline"
             >
-              <Icon name="lucide:clock" />
+              <Icon name="tabler:clock" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.tabs.timeline') }}</span>
             </button>
             <button
@@ -253,7 +256,7 @@
               :aria-label="t('observatory.v2.corporateNetwork')"
               @click="onRedeCorporativa()"
             >
-              <Icon name="lucide:share-2" />
+              <Icon name="tabler:share" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.corporateNetwork') }}</span>
             </button>
             <button
@@ -262,7 +265,7 @@
               :aria-label="t('observatory.v2.downloadData')"
               @click="onDataDownload()"
             >
-              <Icon name="lucide:download" />
+              <Icon name="tabler:download" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.downloadData') }}</span>
             </button>
             <button
@@ -273,7 +276,7 @@
               :aria-pressed="controls.enterpriseLayerVisible.value"
               @click="controls.toggleEnterpriseLayer()"
             >
-              <Icon name="lucide:building-2" />
+              <Icon name="tabler:building" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.enterpriseHq') }}</span>
             </button>
             <button
@@ -284,7 +287,7 @@
               :aria-pressed="controls.showDataTable.value"
               @click="controls.showDataTable.value = !controls.showDataTable.value"
             >
-              <Icon name="lucide:table" />
+              <Icon name="tabler:file" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.dataTable') }}</span>
             </button>
             <button
@@ -293,7 +296,7 @@
               :aria-label="t('observatory.v2.export')"
               @click="controls.showExport.value = !controls.showExport.value"
             >
-              <Icon name="lucide:file-down" />
+              <Icon name="tabler:file-export" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.export') }}</span>
             </button>
             <button
@@ -302,7 +305,7 @@
               :aria-label="t('observatory.v2.shortcuts')"
               @click="controls.showShortcuts.value = !controls.showShortcuts.value"
             >
-              <Icon name="lucide:keyboard" />
+              <Icon name="tabler:keyboard" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.shortcuts') }}</span>
             </button>
             <button
@@ -311,7 +314,7 @@
               :aria-label="t('observatory.v2.nearMe')"
               @click="controls.showGeoLocate.value = !controls.showGeoLocate.value"
             >
-              <Icon name="lucide:map-pin" />
+              <Icon name="gis:pin" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.nearMe') }}</span>
             </button>
             <button
@@ -321,7 +324,7 @@
               :aria-label="t('observatory.v2.fullBrazil')"
               @click="onExpandToFullBrazil()"
             >
-              <Icon name="lucide:earth" />
+              <Icon name="gis:earth" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.fullBrazil') }}</span>
             </button>
             <button
@@ -330,7 +333,7 @@
               :aria-label="t('observatory.v2.monitor')"
               @click="onUserContribution()"
             >
-              <Icon name="lucide:notebook-pen" />
+              <Icon name="tabler:notes" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.monitor') }}</span>
             </button>
             <button
@@ -339,25 +342,27 @@
               :aria-label="t('observatory.v2.viewGlobe')"
               @click="navigateTo('/vulcan-observatory/3d')"
             >
-              <Icon name="lucide:globe" />
+              <Icon name="gis:globe" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.viewGlobe') }}</span>
             </button>
           </nav>
 
           <!-- ── Left-side: Mining claim filters ──────────────────── -->
-          <aside v-show="leftSidebarOpen" class="vulc-leftpanel" aria-label="Mining claim filters">
+          <aside v-show="leftSidebarOpen" class="vulc-leftpanel" :aria-label="t('observatory.v2.filtersTitle')">
             <div class="vulc-leftpanel__scroll">
               <!-- Claim text search -->
               <div class="vulc-leftpanel__section" role="search">
                 <div class="vulc-searchbox">
-                  <Icon name="lucide:search" class="vulc-searchbox__icon" />
+                  <Icon name="tabler:search" class="vulc-searchbox__icon" />
                   <input
                     :value="controls.searchTerm.value"
                     type="search"
                     class="vulc-searchbox__input"
                     :placeholder="t('observatory.territory.searchPlaceholder')"
                     :aria-label="t('observatory.territory.searchPlaceholder')"
+                    autocomplete="off"
                     @input="onUpdateSearchTerm(($event.target as HTMLInputElement).value)"
+                    @keydown.enter.prevent="onSearchEnter"
                   >
                   <button
                     v-if="controls.searchTerm.value"
@@ -366,7 +371,23 @@
                     :aria-label="t('observatory.v2.panel.searchClear')"
                     @click="onUpdateSearchTerm('')"
                   >
-                    <Icon name="lucide:x" />
+                    <Icon name="tabler:trash-x" />
+                  </button>
+                </div>
+                <!-- Claim suggestions (fly on click / Enter) -->
+                <div v-if="controls.claimSuggestions.value.length" class="vulc-claimmatches" role="listbox" :aria-label="t('observatory.v2.claimSuggestions')">
+                  <button
+                    v-for="(s, i) in controls.claimSuggestions.value"
+                    :key="`claim-${s.p || s.n}-${i}`"
+                    type="button"
+                    role="option"
+                    :aria-selected="i === 0"
+                    class="vulc-claimmatch"
+                    @click="flyToClaim(s)"
+                  >
+                    <Icon name="tabler:map-pin" class="vulc-claimmatch__icon" />
+                    <span class="vulc-claimmatch__name">{{ s.n || s.p }}</span>
+                    <span class="vulc-claimmatch__kind">{{ s.u }}</span>
                   </button>
                 </div>
                 <span v-if="activeFilterCount > 0" class="vulc-filtercount" :title="activeFilterSummary">
@@ -383,7 +404,7 @@
                     :title="hit.municipality ? `${hit.municipality}${hit.state ? ` · ${hit.state}` : ''}` : hit.kind"
                     @click="controls.flyToProtectedArea(hit)"
                   >
-                    <Icon name="lucide:shield-check" class="vulc-protmatch__icon" />
+                    <Icon name="tabler:shield-check" class="vulc-protmatch__icon" />
                     <span class="vulc-protmatch__name">{{ hit.name }}</span>
                     <span class="vulc-protmatch__kind">{{ hit.kind === 'buffer' ? 'ZA' : hit.kind === 'uc' ? 'UC' : hit.kind === 'ti' ? 'TI' : hit.kind === 'quilombo' ? 'QUILOMBO' : hit.kind }}</span>
                   </button>
@@ -398,7 +419,7 @@
                 <PhaseFilter :selected="controls.selectedPhases.value" @update:selected="updatePhases" />
                 <label class="vulc-leftpanel__check" @click.stop="onUpdateSobDemanda(!controls.sobDemandaOnly.value)">
                   <div :class="['vulc-leftpanel__box', !controls.sobDemandaOnly.value && 'is-off']" style="--cb-c: #9b59b6">
-                    <Icon v-if="controls.sobDemandaOnly.value" name="lucide:check" class="w-2.5 h-2.5" />
+                    <Icon v-if="controls.sobDemandaOnly.value" name="tabler:square-check" class="w-2.5 h-2.5" />
                   </div>
                   <span class="vulc-leftpanel__label">{{ t('observatory.territory.sobDemanda') }}</span>
                 </label>
@@ -420,7 +441,7 @@
                   @keydown.space.prevent="controls.toggleLayer(c.key)"
                 >
                   <div :class="['vulc-leftpanel__box', !controls.layerVis.value[c.key] && 'is-off']" :style="{ '--cb-c': c.color }">
-                    <Icon v-if="controls.layerVis.value[c.key]" name="lucide:check" class="w-2.5 h-2.5" />
+                    <Icon v-if="controls.layerVis.value[c.key]" name="tabler:square-check" class="w-2.5 h-2.5" />
                   </div>
                   <span class="vulc-leftpanel__label">{{ c.label }}</span>
                 </div>
@@ -441,7 +462,7 @@
                   @keydown.space.prevent="controls.toggleLayer(ex.key)"
                 >
                   <div :class="['vulc-leftpanel__box', !controls.layerVis.value[ex.key] && 'is-off']" :style="{ '--cb-c': ex.color }">
-                    <Icon v-if="controls.layerVis.value[ex.key]" name="lucide:check" class="w-2.5 h-2.5" />
+                    <Icon v-if="controls.layerVis.value[ex.key]" name="tabler:square-check" class="w-2.5 h-2.5" />
                   </div>
                   <span class="vulc-leftpanel__label">{{ t(ex.labelKey) }}</span>
                 </div>
@@ -462,7 +483,7 @@
                   @keydown.space.prevent="controls.toggleLayer('protected_ti')"
                 >
                   <div :class="['vulc-leftpanel__box', controls.layerVis.value['protected_ti'] === false && 'is-off']" style="--cb-c: #c0392b">
-                    <Icon v-if="controls.layerVis.value['protected_ti'] !== false" name="lucide:check" class="w-2.5 h-2.5" />
+                    <Icon v-if="controls.layerVis.value['protected_ti'] !== false" name="tabler:square-check" class="w-2.5 h-2.5" />
                   </div>
                   <span class="vulc-leftpanel__label">{{ t('observatory.layers.indigenousLands') }}</span>
                 </div>
@@ -477,7 +498,7 @@
                   @keydown.space.prevent="controls.toggleLayer('protected_quilombo')"
                 >
                   <div :class="['vulc-leftpanel__box', controls.layerVis.value['protected_quilombo'] === false && 'is-off']" style="--cb-c: #f39c12">
-                    <Icon v-if="controls.layerVis.value['protected_quilombo'] !== false" name="lucide:check" class="w-2.5 h-2.5" />
+                    <Icon v-if="controls.layerVis.value['protected_quilombo'] !== false" name="tabler:square-check" class="w-2.5 h-2.5" />
                   </div>
                   <span class="vulc-leftpanel__label">{{ t('observatory.layers.quilombolaTerritories') }}</span>
                 </div>
@@ -492,7 +513,7 @@
                   @keydown.space.prevent="controls.toggleLayer('protected_uc')"
                 >
                   <div :class="['vulc-leftpanel__box', controls.layerVis.value['protected_uc'] === false && 'is-off']" style="--cb-c: #27ae60">
-                    <Icon v-if="controls.layerVis.value['protected_uc'] !== false" name="lucide:check" class="w-2.5 h-2.5" />
+                    <Icon v-if="controls.layerVis.value['protected_uc'] !== false" name="tabler:square-check" class="w-2.5 h-2.5" />
                   </div>
                   <span class="vulc-leftpanel__label">{{ t('observatory.layers.conservationUnits') }}</span>
                 </div>
@@ -507,7 +528,7 @@
                   @keydown.space.prevent="controls.toggleLayer('protected_buffer')"
                 >
                   <div :class="['vulc-leftpanel__box', controls.layerVis.value['protected_buffer'] === false && 'is-off']" style="--cb-c: #2dd4bf">
-                    <Icon v-if="controls.layerVis.value['protected_buffer'] !== false" name="lucide:check" class="w-2.5 h-2.5" />
+                    <Icon v-if="controls.layerVis.value['protected_buffer'] !== false" name="tabler:square-check" class="w-2.5 h-2.5" />
                   </div>
                   <span class="vulc-leftpanel__label">{{ t('observatory.layers.bufferZones') }}</span>
                 </div>
@@ -522,7 +543,7 @@
                   @keydown.space.prevent="controls.toggleLayer('overlaps')"
                 >
                   <div :class="['vulc-leftpanel__box', controls.layerVis.value['overlaps'] === false && 'is-off']" style="--cb-c: #ff00ff">
-                    <Icon v-if="controls.layerVis.value['overlaps'] !== false" name="lucide:check" class="w-2.5 h-2.5" />
+                    <Icon v-if="controls.layerVis.value['overlaps'] !== false" name="tabler:square-check" class="w-2.5 h-2.5" />
                   </div>
                   <span class="vulc-leftpanel__label">{{ t('observatory.layers.overlaps') }}</span>
                 </div>
@@ -553,12 +574,12 @@
                 </div>
               </div>
             </div>
-            <button type="button" class="vulc-leftpanel__toggle" :aria-label="leftSidebarOpen ? 'Collapse layers' : 'Expand layers'" @click="leftSidebarOpen = false">
-              <Icon name="lucide:chevron-left" class="w-3.5 h-3.5" />
+            <button type="button" class="vulc-leftpanel__toggle" :aria-label="t('observatory.v2.layersHide')" @click="leftSidebarOpen = false">
+              <Icon name="tabler:arrow-move-left" class="w-3.5 h-3.5" />
             </button>
           </aside>
-          <button v-if="!leftSidebarOpen" type="button" class="vulc-leftpanel__show" aria-label="Show layers" @click="leftSidebarOpen = true">
-            <Icon name="lucide:layers" class="w-4 h-4" />
+          <button v-if="!leftSidebarOpen" type="button" class="vulc-leftpanel__show" :aria-label="t('observatory.v2.layersShow')" @click="leftSidebarOpen = true">
+            <Icon name="gis:layers" class="w-4 h-4" />
           </button>
 
           <!-- ── Right-side: Territory / Culture / Powers / Timeline intel ── -->
@@ -619,7 +640,8 @@
       <UserContributionModal :visible="showUserContribution" @close="showUserContribution = false" />
       <ClaimsDataTable
         :visible="showDataTable"
-        :data="allFeatures"
+        :data="filteredFeatures"
+        :total="allFeatures.length"
         @close="showDataTable = false"
         @fly-to="(coords: [number, number]) => (flyToTarget = { lng: coords[0], lat: coords[1], zoom: 8 })"
       />
@@ -744,6 +766,31 @@ const visiblePolygons = computed(() => {
   return raw
 })
 
+// The data table mirrors the active map filters (search/phase/year/
+// category/sob-demanda) instead of always listing every claim. Counts are
+// matched by processo against the authoritative JS-filtered point set.
+const filteredFeatures = computed(() => {
+  const all = allFeatures.value as Array<{ p?: string }>
+  const fp = filteredPoints.value as unknown as GeoJSON.FeatureCollection | undefined
+  if (!fp?.features) return allFeatures.value
+  const kept = new Set(fp.features.map(f => String((f.properties as Record<string, unknown> | undefined)?.p ?? '')))
+  if (!kept.size) return allFeatures.value
+  return all.filter(f => kept.has(String(f.p ?? ''))) as typeof allFeatures.value
+})
+
+function openDataTable() {
+  controls.showDataTable.value = true
+}
+
+function flyToClaim(s: { coord: [number, number] }) {
+  flyToTarget.value = { lng: s.coord[0], lat: s.coord[1], zoom: 9 }
+}
+
+function onSearchEnter() {
+  const first = controls.claimSuggestions.value[0]
+  if (first) flyToClaim(first)
+}
+
 const leftSidebarOpen = ref(false)
 const actionsExpanded = ref(false)
 
@@ -843,7 +890,7 @@ function onUpdateSobDemanda(v: boolean) {
 /** Geolocate + drop a watch pin so the Territory tab reports nearby claims. */
 function onGeoLocateWithPin(lat: number, lng: number, city: string) {
   onGeoLocate(lat, lng, city)
-  setUserPin({ lng, lat }, city || 'My location')
+  setUserPin({ lng, lat }, city || t('observatory.v2.myLocation'))
 }
 </script>
 
@@ -1236,6 +1283,51 @@ function onGeoLocateWithPin(lat: number, lng: number, city: string) {
   color: rgba(255, 255, 255, 0.75);
 }
 .vulc-protmatch__empty { font-size: 10px; color: rgba(255, 255, 255, 0.72); padding: 0.2rem 0; }
+
+/* ── Claim suggestions under the search box ─────────────────────── */
+.vulc-claimmatches {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.45rem;
+}
+.vulc-claimmatch {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  background: rgba(231, 76, 60, 0.07);
+  border: 1px solid rgba(231, 76, 60, 0.25);
+  border-radius: 6px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+.vulc-claimmatch:hover { background: rgba(231, 76, 60, 0.16); border-color: rgba(231, 76, 60, 0.5); }
+.vulc-claimmatch:focus-visible { outline: 2px solid var(--obs-red, #e74c3c); outline-offset: 1px; }
+.vulc-claimmatch__icon { width: 0.75rem; height: 0.75rem; color: var(--obs-red, #e74c3c); flex-shrink: 0; }
+.vulc-claimmatch__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.vulc-claimmatch__kind {
+  flex-shrink: 0;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+}
 
 /* ── Layer status readout ─────────────────────────────────────── */
 .vulc-status { display: flex; flex-direction: column; gap: 0.2rem; }

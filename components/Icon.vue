@@ -1,21 +1,23 @@
 /**
  * components/Icon.vue
- * @why SVG icon wrapper — renders Iconify icons with configurable size, color, and aria-label
+ * @why Offline SVG icon wrapper — renders Tabler / GIS icons from the local
+ *   registry (lib/icons.ts). Zero network: no Iconify, no CDN, no icon mapper.
  * @component Icon
- * @deps vue (computed)
+ * @deps vue (computed), ~/lib/icons
  */
 <template>
-  <iconify-icon
-    :icon="resolvedIcon"
-    :class="iconClasses"
-    :style="iconStyles"
+  <span
+    ref="iconRef"
+    :class="['icon', iconClasses]"
+    aria-hidden="true"
+    v-html="resolvedSvg"
   />
 </template>
 
 <script setup lang="ts">
 
 import { computed } from 'vue'
-import { resolveIcon } from '~/lib/icon-map'
+import { resolveIconSvg } from '~/lib/icons'
 
 interface Props {
   name: string
@@ -32,30 +34,39 @@ const props = withDefaults(defineProps<Props>(), {
 
 const iconClasses = computed(() => props.class)
 
-const resolvedIcon = computed(() => resolveIcon(props.name))
-
-const iconStyles = computed(() => {
+const wrapperStyles = computed(() => {
   const styles: Record<string, string> = {}
-
   if (props.size) {
-    styles['--icon-size'] = typeof props.size === 'number' ? `${props.size}px` : props.size
+    styles.fontSize = typeof props.size === 'number' ? `${props.size}px` : props.size
   }
-
   if (props.color) {
-    styles['--icon-color'] = props.color
+    styles.color = props.color
   }
-
   return styles
+})
+
+const resolvedSvg = computed(() => {
+  const svg = resolveIconSvg(props.name)
+  if (!svg) return ''
+  const size = typeof props.size === 'number' ? `${props.size}px` : (props.size || '1em')
+  const color = props.color ? `color:${props.color};` : ''
+  // inject width/height/color into the <svg> opening tag so size/color props apply
+  return svg.replace(/<svg([^>]*)>/, (_match, attrs) => {
+    const clean = attrs.replace(/\b(width|height)="[^"]*"/g, '').trim()
+    return `<svg style="width:${size};height:${size};${color}"${clean ? ' ' + clean : ''}>`
+  })
 })
 
 </script>
 
 <style scoped>
-iconify-icon {
-  width: var(--icon-size, 1em);
-  height: var(--icon-size, 1em);
-  color: var(--icon-color, inherit);
-  display: inline-block;
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   vertical-align: middle;
+}
+.icon svg {
+  display: block;
 }
 </style>

@@ -14,7 +14,7 @@
     <!-- ── Live regional numbers (deep_analysis) ──────────── -->
     <div v-if="live" class="obs-callout obs-callout--danger">
       <div class="obs-callout__head">
-        <Icon name="lucide:radar" class="obs-callout__icon" />
+        <Icon name="gis:globe" class="obs-callout__icon" />
         <h3 class="obs-callout__title">{{ t('observatory.military.liveTitle') }}</h3>
       </div>
       <div class="obs-live-grid" role="list">
@@ -40,14 +40,14 @@
         :aria-expanded="infoOpen"
         @click="infoOpen = !infoOpen"
       >
-        <Icon :name="infoOpen ? 'lucide:chevron-down' : 'lucide:shield-question'" class="obs-expand__icon" />
+        <Icon :name="infoOpen ? 'tabler:arrows-move' : 'tabler:shield-question'" class="obs-expand__icon" />
         {{ infoOpen ? t('observatory.military.hideInfo') : t('observatory.military.whatIsThis') }}
       </button>
       <Transition name="obs-fade">
         <div v-if="infoOpen" class="obs-expand__body">
           <p>{{ t('observatory.military.infoText') }}</p>
           <div class="obs-expand__tags">
-            <span class="obs-expand__tag"><Icon name="lucide:map-pin" class="obs-expand__tag-icon" /> AM, AP, PA, RR, RO, MT</span>
+            <span class="obs-expand__tag"><Icon name="gis:pin" class="obs-expand__tag-icon" /> AM, AP, PA, RR, RO, MT</span>
           </div>
         </div>
       </Transition>
@@ -56,7 +56,7 @@
     
     <div class="obs-callout obs-callout--danger">
       <div class="obs-callout__head">
-        <Icon name="lucide:shield" class="obs-callout__icon" />
+        <Icon name="tabler:shield" class="obs-callout__icon" />
         <h3 class="obs-callout__title">{{ t('observatory.military.headline') }}</h3>
       </div>
       <p class="obs-callout__body">{{ t('observatory.military.headlineBody') }}</p>
@@ -64,7 +64,7 @@
 
     
     <h4 class="obs-section-title">
-      <Icon name="lucide:building-2" class="obs-section-title__icon" />
+      <Icon name="tabler:building" class="obs-section-title__icon" />
       {{ t('observatory.military.dodTitle') }}
     </h4>
     <ul class="obs-card-list" role="list">
@@ -82,7 +82,7 @@
             <span class="obs-card__flag" aria-hidden="true">{{ m.flag }}</span>
             <span class="obs-card__name">{{ m.name }}</span>
             <span v-if="m.kgPerUnit" class="obs-card__tag obs-card__tag--red">
-              <Icon name="lucide:weight" class="obs-card__tag-icon" />
+              <Icon name="tabler:wallet" class="obs-card__tag-icon" />
               {{ m.kgPerUnit.toLocaleString() }} kg
             </span>
           </div>
@@ -95,7 +95,7 @@
             :title="t('observatory.military.showZones')"
             @click="onHighlight(m.name)"
           >
-            <Icon name="lucide:map-pin" class="obs-card__action-icon" />
+            <Icon name="gis:pin" class="obs-card__action-icon" />
           </button>
         </div>
       </li>
@@ -103,7 +103,7 @@
 
     
     <h4 class="obs-section-title">
-      <Icon name="lucide:dollar-sign" class="obs-section-title__icon" />
+      <Icon name="tabler:cash" class="obs-section-title__icon" />
       {{ t('observatory.military.stateDeptTitle') }}
     </h4>
     <ul class="obs-card-list" role="list">
@@ -115,9 +115,9 @@
         <div class="obs-card__accent" style="background: var(--obs-amber)" />
         <div class="obs-card__body">
           <div class="obs-card__head">
-            <span class="obs-card__name">{{ i.from }} <Icon name="lucide:arrow-right" class="obs-card__arrow" /> {{ i.to }}</span>
+            <span class="obs-card__name">{{ i.from }} <Icon name="tabler:share" class="obs-card__arrow" /> {{ i.to }}</span>
             <span class="obs-card__tag obs-card__tag--amber">
-              <Icon name="lucide:dollar-sign" class="obs-card__tag-icon" />
+              <Icon name="tabler:cash" class="obs-card__tag-icon" />
               {{ i.amount }}
             </span>
           </div>
@@ -129,14 +129,14 @@
     
     <div class="obs-callout obs-callout--warn">
       <div class="obs-callout__head">
-        <Icon name="lucide:ban" class="obs-callout__icon" />
+        <Icon name="tabler:trash-x" class="obs-callout__icon" />
         <h3 class="obs-callout__title">{{ t('observatory.military.chinaBanTitle') }}</h3>
       </div>
       <p class="obs-callout__body">{{ t('observatory.military.chinaBanBody') }}</p>
     </div>
 
     <div class="obs-tab__footnote">
-      <Icon name="lucide:info" class="obs-tab__footnote-icon" />
+      <Icon name="tabler:info-circle" class="obs-tab__footnote-icon" />
       {{ t('observatory.military.learnMore') }}
     </div>
   </div>

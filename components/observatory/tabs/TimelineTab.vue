@@ -10,7 +10,7 @@
 <template>
   <div class="obs-tab">
     <h3 class="obs-tab__title">
-      <Icon name="lucide:bar-chart-3" class="obs-tab__title-icon" />
+      <Icon name="tabler:chart-bar" class="obs-tab__title-icon" />
       {{ t('observatory.timelinePanel.title') }}
     </h3>
 
@@ -22,7 +22,7 @@
         :aria-expanded="narrativeOpen"
         @click="narrativeOpen = !narrativeOpen"
       >
-        <Icon :name="narrativeOpen ? 'lucide:chevron-down' : 'lucide:book-open'" class="obs-expand__icon" />
+        <Icon :name="narrativeOpen ? 'tabler:arrows-move' : 'tabler:bookmark'" class="obs-expand__icon" />
         {{ narrativeOpen ? t('observatory.timelinePanel.hideStory') : t('observatory.timelinePanel.readStory') }}
       </button>
       <Transition name="obs-fade">
@@ -63,13 +63,13 @@
               <span class="obs-timeline__count-label">{{ t('observatory.timelinePanel.claims') }}</span>
             </span>
             <span class="obs-timeline__cumulative">
-              <Icon name="lucide:trending-up" class="obs-timeline__cumulative-icon" />
+              <Icon name="tabler:chart-line" class="obs-timeline__cumulative-icon" />
               {{ cumulative(entry.year).toLocaleString() }}
               <span class="obs-timeline__cumulative-label">{{ t('observatory.timelinePanel.total') }}</span>
             </span>
           </div>
           <div v-if="entry.event" class="obs-timeline__event-badge">
-            <Icon name="lucide:sparkles" class="obs-timeline__event-icon" />
+            <Icon name="tabler:bulb" class="obs-timeline__event-icon" />
             <span>{{ entry.event }}</span>
           </div>
         </div>
@@ -77,7 +77,7 @@
     </ol>
 
     <div class="obs-timeline__footer">
-      <Icon name="lucide:info" class="obs-timeline__footer-icon" />
+      <Icon name="tabler:info-circle" class="obs-timeline__footer-icon" />
       {{ t('observatory.timelinePanel.footer') }}
     </div>
   </div>

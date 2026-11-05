@@ -19,11 +19,19 @@ export interface RareEarthControllerProps {
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthFiltered?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
+  /** Full (unfiltered) polygon set — used as source data with filterExpr. */
+  rareEarthPolygonsFull?: GeoJSON.FeatureCollection | null
   rareEarthProtected?: GeoJSON.FeatureCollection
   rareEarthWater?: GeoJSON.FeatureCollection | null
   /** Cultural agents overlay (Mapa Cultura + Floresta Ativista) rendered via useCulturalLayers. */
   rareEarthCultural?: GeoJSON.FeatureCollection | null
   layerVisibility?: Record<string, boolean>
+  /**
+   * MapLibre expression mirror of the JS claim filter. When set, sources
+   * receive the FULL datasets (one setData) and layers filter via setFilter
+   * — keystrokes stop re-uploading 20k features.
+   */
+  rareEarthFilterExpr?: unknown[] | null
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null
 }
 
@@ -31,6 +39,8 @@ export interface RareEarthPopupConfig {
   t: (_key: string, _params?: Record<string, unknown>) => string
   locale: { value: string }
   onSidebarOpen?: (_payload: { processo: string; nome: string; tab: string; coords: [number, number] }) => void
+  /** "+N more" overflow action of the stacked popup. */
+  onShowAll?: () => void
 }
 
 export interface RareEarthControllerOptions {
@@ -128,6 +138,15 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
     // An explicitly empty filtered set means "no matches" (render empty),
     // while undefined means "not filtered" (render raw).
     const effectivePoints = p.rareEarthFiltered ?? p.rareEarthPoints
+    // setFilter rendering path: with an expression available, the sources
+    // carry the FULL datasets (stable identity, no per-keystroke setData)
+    // and the layers do the filtering on the GPU side.
+    const filterExpr = Array.isArray(p.rareEarthFilterExpr) ? p.rareEarthFilterExpr : null
+    const useExprFilter = filterExpr !== null && Boolean(p.rareEarthPoints?.features?.length)
+    const sourcePoints = useExprFilter ? (p.rareEarthPoints ?? effectivePoints) : effectivePoints
+    const sourcePolys = useExprFilter
+      ? (p.rareEarthPolygonsFull ?? p.rareEarthPolygons ?? null)
+      : (p.rareEarthPolygons ?? null)
     let networkFeatures: GeoJSON.FeatureCollection | null | undefined
     if (!effectivePoints?.features?.length) {
       // Genuine empty (no matches yet / filtered out): clear lines.
@@ -149,13 +168,14 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       }
     }
     const ok = syncObservatoryLayers(m, {
-      points: effectivePoints ?? null,
-      polys: p.rareEarthPolygons ?? null,
+      points: sourcePoints ?? null,
+      polys: sourcePolys,
       protected: p.rareEarthProtected ?? null,
       water: p.rareEarthWater ?? null,
       cultural: p.rareEarthCultural ?? null,
       networkFeatures,
       visibility: p.layerVisibility,
+      filterExpr: useExprFilter ? filterExpr : undefined,
       popup: options.popup,
     })
     if (ok) {
@@ -204,9 +224,11 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       getProps().rareEarthPoints,
       getProps().rareEarthFiltered,
       getProps().rareEarthPolygons,
+      getProps().rareEarthPolygonsFull,
       getProps().rareEarthProtected,
       getProps().rareEarthWater,
       getProps().rareEarthCultural,
+      getProps().rareEarthFilterExpr,
     ] as const,
     () => {
       if (!isActiveGetter() || !map.value) return

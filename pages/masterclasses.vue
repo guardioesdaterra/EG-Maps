@@ -135,7 +135,7 @@
                   rel="noopener noreferrer"
                   class="episode-cta"
                 >
-                  <Icon name="lucide:instagram" class="h-3.5 w-3.5" />
+                  <Icon name="tabler:share" class="h-3.5 w-3.5" />
                   {{ t('masterclasses.viewOnInstagram') }}
                 </a>
               </div>
@@ -319,7 +319,7 @@
             rel="noopener noreferrer"
             class="cta-btn"
           >
-            <Icon name="lucide:graduation-cap" class="h-4 w-4" />
+            <Icon name="tabler:book" class="h-4 w-4" />
             {{ t('masterclasses.joinCrew') }}
           </a>
         </div>

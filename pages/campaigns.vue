@@ -11,11 +11,11 @@
           <div class="hero-actions">
             <a class="btn btn--primary" href="https://www.earthguardians.org/eg-resources" target="_blank" rel="noopener noreferrer">
               {{ t('campaigns.exploreResources') }}
-              <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" />
+              <Icon name="tabler:share" class="h-3.5 w-3.5" />
             </a>
             <NuxtLink class="btn btn--secondary" to="/active-crews">
               {{ t('campaigns.seeCrewNetwork') }}
-              <Icon name="lucide:map" class="h-3.5 w-3.5" />
+              <Icon name="gis:map" class="h-3.5 w-3.5" />
             </NuxtLink>
           </div>
         </div>
@@ -35,24 +35,24 @@
         </div>
         <div class="connection-flow">
           <div class="flow-step">
-            <div class="flow-icon flow-icon--discover"><Icon name="lucide:bird" /></div>
+            <div class="flow-icon flow-icon--discover"><Icon name="tabler:feather" /></div>
             <h3 class="flow-title">{{ t('campaigns.discover') }}</h3>
             <p class="flow-desc">{{ t('campaigns.discoverDesc') }}</p>
-            <NuxtLink to="/endangered-species" class="flow-link">{{ t('campaigns.openSpeciesMap') }} <Icon name="lucide:arrow-right" class="h-3 w-3" /></NuxtLink>
+            <NuxtLink to="/endangered-species" class="flow-link">{{ t('campaigns.openSpeciesMap') }} <Icon name="tabler:share" class="h-3 w-3" /></NuxtLink>
           </div>
-          <div class="flow-arrow"><Icon name="lucide:arrow-right" class="h-4 w-4" /></div>
+          <div class="flow-arrow"><Icon name="tabler:share" class="h-4 w-4" /></div>
           <div class="flow-step">
-            <div class="flow-icon flow-icon--organize"><Icon name="lucide:users-round" /></div>
+            <div class="flow-icon flow-icon--organize"><Icon name="tabler:user" /></div>
             <h3 class="flow-title">{{ t('campaigns.organize') }}</h3>
             <p class="flow-desc">{{ t('campaigns.organizeDesc') }}</p>
-            <NuxtLink to="/active-crews" class="flow-link">Find a Crew <Icon name="lucide:arrow-right" class="h-3 w-3" /></NuxtLink>
+            <NuxtLink to="/active-crews" class="flow-link">Find a Crew <Icon name="tabler:share" class="h-3 w-3" /></NuxtLink>
           </div>
-          <div class="flow-arrow"><Icon name="lucide:arrow-right" class="h-4 w-4" /></div>
+          <div class="flow-arrow"><Icon name="tabler:share" class="h-4 w-4" /></div>
           <div class="flow-step">
-            <div class="flow-icon flow-icon--act"><Icon name="lucide:rocket" /></div>
+            <div class="flow-icon flow-icon--act"><Icon name="tabler:rocket" /></div>
             <h3 class="flow-title">{{ t('campaigns.act') }}</h3>
             <p class="flow-desc">{{ t('campaigns.actDesc') }}</p>
-            <NuxtLink to="/crew-projects" class="flow-link">See Projects <Icon name="lucide:arrow-right" class="h-3 w-3" /></NuxtLink>
+            <NuxtLink to="/crew-projects" class="flow-link">See Projects <Icon name="tabler:share" class="h-3 w-3" /></NuxtLink>
           </div>
         </div>
       </section>
@@ -79,9 +79,9 @@
             </ul>
             <div class="card-tags"><span>{{ c.tags }}</span></div>
             <div class="card-actions">
-              <a v-if="c.learnUrl" class="btn btn--primary" :href="c.learnUrl" target="_blank" rel="noopener noreferrer">{{ c.learnLabel || t('campaigns.learnMore') }} <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" /></a>
-              <NuxtLink v-if="c.actionRoute && c.actionLabel" class="text-link" :to="c.actionRoute">{{ c.actionLabel }} <Icon name="lucide:arrow-right" class="h-3.5 w-3.5" /></NuxtLink>
-              <a v-else-if="c.actionUrl && c.actionLabel" class="text-link" :href="c.actionUrl" target="_blank" rel="noopener noreferrer">{{ c.actionLabel }} <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" /></a>
+              <a v-if="c.learnUrl" class="btn btn--primary" :href="c.learnUrl" target="_blank" rel="noopener noreferrer">{{ c.learnLabel || t('campaigns.learnMore') }} <Icon name="tabler:share" class="h-3.5 w-3.5" /></a>
+              <NuxtLink v-if="c.actionRoute && c.actionLabel" class="text-link" :to="c.actionRoute">{{ c.actionLabel }} <Icon name="tabler:share" class="h-3.5 w-3.5" /></NuxtLink>
+              <a v-else-if="c.actionUrl && c.actionLabel" class="text-link" :href="c.actionUrl" target="_blank" rel="noopener noreferrer">{{ c.actionLabel }} <Icon name="tabler:share" class="h-3.5 w-3.5" /></a>
             </div>
           </article>
         </div>
@@ -120,7 +120,7 @@
               <li>{{ t('campaigns.cleanupAfter1') }}</li>
               <li>{{ t('campaigns.cleanupAfter2') }}</li>
               <li>{{ t('campaigns.cleanupAfter3') }}</li>
-              <li><a href="https://forms.gle/z9xcyuZhk23TnRs19" target="_blank" rel="noopener noreferrer">{{ t('campaigns.cleanupAfter4') }} <Icon name="lucide:arrow-up-right" class="inline h-3 w-3" /></a></li>
+              <li><a href="https://forms.gle/z9xcyuZhk23TnRs19" target="_blank" rel="noopener noreferrer">{{ t('campaigns.cleanupAfter4') }} <Icon name="tabler:share" class="inline h-3 w-3" /></a></li>
             </ul>
           </article>
         </div>
@@ -137,24 +137,24 @@
         <div class="pathway-grid">
           <div class="pathway-step">
             <span class="pathway-num">01</span>
-            <Icon name="lucide:book-open" class="h-6 w-6" />
+            <Icon name="tabler:bookmark" class="h-6 w-6" />
             <h3>Learn</h3>
             <p>{{ t('campaigns.pathwayLearn') }}</p>
-            <a href="https://www.earthguardians.org/eg-resources" target="_blank" rel="noopener noreferrer" class="text-link">{{ t('campaigns.browseResources') }} <Icon name="lucide:arrow-up-right" class="h-3 w-3" /></a>
+            <a href="https://www.earthguardians.org/eg-resources" target="_blank" rel="noopener noreferrer" class="text-link">{{ t('campaigns.browseResources') }} <Icon name="tabler:share" class="h-3 w-3" /></a>
           </div>
           <div class="pathway-step">
             <span class="pathway-num">02</span>
-            <Icon name="lucide:handshake" class="h-6 w-6" />
+            <Icon name="tabler:heart-handshake" class="h-6 w-6" />
             <h3>Organize</h3>
             <p>{{ t('campaigns.pathwayOrganize') }}</p>
-            <a href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer" class="text-link">{{ t('campaigns.joinACrew') }} <Icon name="lucide:arrow-up-right" class="h-3 w-3" /></a>
+            <a href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer" class="text-link">{{ t('campaigns.joinACrew') }} <Icon name="tabler:share" class="h-3 w-3" /></a>
           </div>
           <div class="pathway-step">
             <span class="pathway-num">03</span>
-            <Icon name="lucide:sparkles" class="h-6 w-6" />
+            <Icon name="tabler:bulb" class="h-6 w-6" />
             <h3>Fund</h3>
             <p>{{ t('campaigns.pathwayFund') }}</p>
-            <NuxtLink to="/project-grants" class="text-link">{{ t('campaigns.seeGrants') }} <Icon name="lucide:arrow-right" class="h-3 w-3" /></NuxtLink>
+            <NuxtLink to="/project-grants" class="text-link">{{ t('campaigns.seeGrants') }} <Icon name="tabler:share" class="h-3 w-3" /></NuxtLink>
           </div>
         </div>
       </section>
@@ -166,7 +166,7 @@
           <p class="cta-desc">{{ t('campaigns.ctaDesc') }}</p>
           <a class="btn btn--light" href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer">
             {{ t('campaigns.becomeGuardian') }}
-            <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" />
+            <Icon name="tabler:share" class="h-3.5 w-3.5" />
           </a>
         </div>
       </section>
@@ -197,7 +197,7 @@ interface Campaign {
 
 const campaigns = computed<Campaign[]>(() => [
   {
-    icon: 'lucide:megaphone',
+    icon: 'tabler:share',
     kicker: t('campaigns.canKicker'),
     title: t('campaigns.canTitle'),
     desc: t('campaigns.canDesc'),
@@ -208,7 +208,7 @@ const campaigns = computed<Campaign[]>(() => [
     actionUrl: 'https://docs.google.com/document/d/1QgnCMJ-3dH_KHGWu4_VNhtGv49QdgkevWvGXxrCjZco/edit?usp=sharing',
   },
   {
-    icon: 'lucide:landmark',
+    icon: 'tabler:building',
     kicker: t('campaigns.stmpKicker'),
     title: t('campaigns.stmpTitle'),
     desc: t('campaigns.stmpDesc'),
@@ -219,7 +219,7 @@ const campaigns = computed<Campaign[]>(() => [
     actionUrl: 'https://www.notmydirtymoney.com/',
   },
   {
-    icon: 'lucide:vote',
+    icon: 'tabler:check',
     kicker: t('campaigns.civicKicker'),
     title: t('campaigns.civicTitle'),
     desc: t('campaigns.civicDesc'),
@@ -230,7 +230,7 @@ const campaigns = computed<Campaign[]>(() => [
     actionUrl: 'https://www.earthguardians.org/register-to-vote',
   },
   {
-    icon: 'lucide:hand-coins',
+    icon: 'tabler:cash',
     kicker: t('campaigns.divestKicker'),
     title: t('campaigns.divestTitle'),
     desc: t('campaigns.divestDesc'),
@@ -241,7 +241,7 @@ const campaigns = computed<Campaign[]>(() => [
     actionUrl: 'https://www.notmydirtymoney.com/',
   },
   {
-    icon: 'lucide:hand-heart',
+    icon: 'tabler:heart',
     kicker: t('campaigns.projectGrantsKicker'),
     title: t('campaigns.projectGrantsTitle'),
     desc: t('campaigns.projectGrantsDesc'),
@@ -252,7 +252,7 @@ const campaigns = computed<Campaign[]>(() => [
     actionRoute: '/project-grants',
   },
   {
-    icon: 'lucide:waves',
+    icon: 'tabler:waves-electricity',
     kicker: t('campaigns.waterKicker'),
     title: t('campaigns.waterTitle'),
     desc: t('campaigns.waterDesc'),
@@ -262,7 +262,7 @@ const campaigns = computed<Campaign[]>(() => [
     image: 'campaigns/2026-water-day.webp',
   },
   {
-    icon: 'lucide:recycle',
+    icon: 'tabler:recycle',
     kicker: t('campaigns.zeroWasteKicker'),
     title: t('campaigns.zeroWasteTitle'),
     desc: t('campaigns.zeroWasteDesc'),
@@ -272,7 +272,7 @@ const campaigns = computed<Campaign[]>(() => [
     image: 'campaigns/2026-zero-waste-day.webp',
   },
   {
-    icon: 'lucide:palette',
+    icon: 'tabler:palette',
     kicker: t('campaigns.earthDayKicker'),
     title: t('campaigns.earthDayTitle'),
     desc: t('campaigns.earthDayDesc'),
@@ -282,7 +282,7 @@ const campaigns = computed<Campaign[]>(() => [
     image: 'campaigns/2026-earth-day.webp',
   },
   {
-    icon: 'lucide:map',
+    icon: 'gis:map',
     kicker: t('campaigns.biodiversityKicker'),
     title: t('campaigns.biodiversityTitle'),
     desc: t('campaigns.biodiversityDesc'),
@@ -294,7 +294,7 @@ const campaigns = computed<Campaign[]>(() => [
     image: 'campaigns/2026-biodiversity-day.webp',
   },
   {
-    icon: 'lucide:trash-2',
+    icon: 'tabler:trash',
     kicker: t('campaigns.cleanupKicker'),
     title: t('campaigns.cleanupTitle'),
     desc: t('campaigns.cleanupDesc'),

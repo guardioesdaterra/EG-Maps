@@ -14,7 +14,7 @@
         <div class="obs-geo-modal" ref="geoModalRef">
           
           <template v-if="step === 'prompt'">
-            <Icon name="lucide:globe" class="obs-geo-modal__icon w-9 h-9" />
+            <Icon name="gis:globe" class="obs-geo-modal__icon w-9 h-9" />
             <h2 id="geo-locate-modal-title" class="obs-geo-modal__title">{{ t('observatory.geoLocate.title') }}</h2>
             <p class="obs-geo-modal__desc">{{ t('observatory.geoLocate.description') }}</p>
 
@@ -30,7 +30,7 @@
                   <animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12" />
                 </path>
               </svg>
-              <Icon v-else name="lucide:map-pin" class="w-3.5 h-3.5" />
+              <Icon v-else name="gis:pin" class="w-3.5 h-3.5" />
               {{ isLocating ? t('observatory.geoLocate.locating') : t('observatory.geoLocate.useLocation') }}
             </button>
 
@@ -84,7 +84,7 @@
 
           
           <template v-else-if="step === 'confirm'">
-            <Icon name="lucide:map-pin" class="obs-geo-modal__icon w-9 h-9" />
+            <Icon name="gis:pin" class="obs-geo-modal__icon w-9 h-9" />
             <h2 id="geo-locate-modal-title" class="obs-geo-modal__title">{{ t('observatory.geoLocate.foundTitle') }}</h2>
             <div class="obs-geo-modal__location-card">
               <div class="obs-geo-modal__location-city">{{ detectedCity }}</div>

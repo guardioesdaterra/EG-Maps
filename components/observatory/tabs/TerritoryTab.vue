@@ -15,7 +15,7 @@
     <!-- ── Pin proximity alert ("watch my territory") ──────── -->
     <div v-if="pinThreats" class="obs-callout obs-callout--warn" role="status">
       <div class="obs-callout__head">
-        <Icon name="lucide:map-pin" class="obs-callout__icon" />
+        <Icon name="gis:pin" class="obs-callout__icon" />
         <h3 class="obs-callout__title">{{ t('observatory.territory.pinTitle') }}</h3>
       </div>
       <p class="obs-callout__body">
@@ -28,7 +28,7 @@
 
     <!-- ── Claim search ────────────────────────────────────── -->
     <div class="obs-search">
-      <Icon name="lucide:search" class="obs-search__icon" />
+      <Icon name="tabler:search" class="obs-search__icon" />
       <input
         :value="searchTerm"
         type="search"
@@ -44,18 +44,18 @@
         :aria-label="t('observatory.v2.panel.searchClear')"
         @click="emit('update:searchTerm', '')"
       >
-        <Icon name="lucide:x" />
+        <Icon name="tabler:trash-x" />
       </button>
     </div>
 
     <!-- ── Dossier actions ─────────────────────────────────── -->
     <div class="obs-dossier-row">
       <button type="button" class="obs-dossier-btn" :aria-label="t('observatory.territory.dossierDownload')" @click="onDownloadDossier">
-        <Icon name="lucide:file-down" class="obs-dossier-btn__icon" />
+        <Icon name="tabler:download" class="obs-dossier-btn__icon" />
         {{ t('observatory.territory.dossierDownload') }}
       </button>
       <button type="button" class="obs-dossier-btn obs-dossier-btn--ghost" :aria-label="t('observatory.territory.dossierCopy')" @click="onCopyDossier">
-        <Icon :name="copied ? 'lucide:check' : 'lucide:copy'" class="obs-dossier-btn__icon" />
+        <Icon :name="copied ? 'tabler:square-check' : 'tabler:clipboard-copy'" class="obs-dossier-btn__icon" />
         {{ copied ? t('observatory.territory.dossierCopied') : t('observatory.territory.dossierCopy') }}
       </button>
     </div>
@@ -63,7 +63,7 @@
     <!-- ── Claims & boundaries ─────────────────────────────── -->
     <div class="obs-callout">
       <div class="obs-callout__head">
-        <Icon name="lucide:hexagon" class="obs-callout__icon" />
+        <Icon name="gis:polygon" class="obs-callout__icon" />
         <h3 class="obs-callout__title">{{ t('observatory.territory.headline') }}</h3>
       </div>
       <div class="obs-kpis" role="list">
@@ -86,14 +86,14 @@
       </div>
       <p v-if="lastSync" class="obs-callout__sync">{{ t('observatory.territory.synced') }} · {{ lastSync }}</p>
       <p v-else-if="polygonsCount === 0" class="obs-callout__warn">
-        <Icon name="lucide:alert-triangle" class="obs-callout__warn-icon" />
+        <Icon name="tabler:alert-triangle" class="obs-callout__warn-icon" />
         {{ t('observatory.territory.noBoundaries') }}
       </p>
     </div>
 
     <!-- ── Category breakdown ──────────────────────────────── -->
     <h4 v-if="categoryStats?.length" class="obs-section-title">
-      <Icon name="lucide:layers" class="obs-section-title__icon" />
+      <Icon name="gis:layers" class="obs-section-title__icon" />
       {{ t('observatory.territory.bySubstance') }}
     </h4>
     <ul v-if="categoryStats?.length" class="obs-bars" role="list">
@@ -111,14 +111,14 @@
          left panel — rendering it here too duplicated it) ─────── -->
     <label class="obs-check" @click.stop="emit('update:sobDemandaOnly', !sobDemandaOnly)">
       <span :class="['obs-check__box', sobDemandaOnly && 'is-on']" aria-hidden="true">
-        <Icon v-if="sobDemandaOnly" name="lucide:check" />
+        <Icon v-if="sobDemandaOnly" name="tabler:square-check" />
       </span>
       <span class="obs-check__label">{{ t('observatory.territory.sobDemanda') }}</span>
     </label>
 
     <!-- ── Overlaps ────────────────────────────────────────── -->
     <h4 class="obs-section-title">
-      <Icon name="lucide:alert-triangle" class="obs-section-title__icon" />
+      <Icon name="tabler:alert-triangle" class="obs-section-title__icon" />
       {{ t('observatory.territory.overlapsTitle') }}
       <span v-if="overlapSummary" class="obs-section-title__count">{{ overlapSummary.totalLinks }}</span>
     </h4>
@@ -150,7 +150,7 @@
 
     <!-- ── Waters under pressure ───────────────────────────── -->
     <h4 class="obs-section-title">
-      <Icon name="lucide:droplets" class="obs-section-title__icon" />
+      <Icon name="tabler:fountain" class="obs-section-title__icon" />
       {{ t('observatory.territory.watersTitle') }}
       <span v-if="waterSummary" class="obs-section-title__count">
         {{ waterSummary.watersUnderPressure }}/{{ waterSummary.watersAssessed }}
@@ -193,7 +193,7 @@
             :aria-label="t('observatory.territory.flyToWater', { name: w.name })"
             @click="onFlyToWater(w)"
           >
-            <Icon name="lucide:map-pin" class="obs-card__go-icon" />
+            <Icon name="gis:pin" class="obs-card__go-icon" />
           </button>
         </li>
       </ul>
@@ -201,7 +201,7 @@
 
     <!-- ── Protected territories ───────────────────────────── -->
     <h4 class="obs-section-title">
-      <Icon name="lucide:shield-check" class="obs-section-title__icon" />
+      <Icon name="tabler:shield-check" class="obs-section-title__icon" />
       {{ t('observatory.territory.protectedTitle') }}
     </h4>
     <!-- Search hits across protected areas + buffer zones (e.g. "Pedra Branca") -->
@@ -217,13 +217,13 @@
               :aria-label="t('observatory.territory.flyTo', { name: hit.name })"
               @click="emit('fly-to-coord', hit.coord)"
             >
-              <Icon name="lucide:map-pin" class="obs-card__go-icon" />
+              <Icon name="gis:pin" class="obs-card__go-icon" />
             </button>
           </div>
           <div class="obs-card__meta">
             <span class="obs-card__kind" :style="{ color: matchColor(hit.kind) }">{{ matchKindLabel(hit.kind) }}</span>
-            <span v-if="hit.municipality"><Icon name="lucide:map-pin" class="obs-card__meta-icon" />{{ hit.municipality }}{{ hit.state ? ` · ${hit.state}` : '' }}</span>
-            <span v-if="hit.area_ha"><Icon name="lucide:maximize-2" class="obs-card__meta-icon" />{{ formatHa(hit.area_ha) }} ha</span>
+            <span v-if="hit.municipality"><Icon name="gis:pin" class="obs-card__meta-icon" />{{ hit.municipality }}{{ hit.state ? ` · ${hit.state}` : '' }}</span>
+            <span v-if="hit.area_ha"><Icon name="tabler:maximize" class="obs-card__meta-icon" />{{ formatHa(hit.area_ha) }} ha</span>
           </div>
         </div>
       </li>
@@ -244,13 +244,13 @@
             </div>
             <p v-if="area.people" class="obs-card__desc">{{ truncate(area.people, 160) }}</p>
             <div class="obs-card__meta">
-              <span v-if="area.municipality"><Icon name="lucide:map-pin" class="obs-card__meta-icon" />{{ area.municipality }}{{ area.state ? ` · ${area.state}` : '' }}</span>
-              <span v-if="area.area_ha"><Icon name="lucide:maximize-2" class="obs-card__meta-icon" />{{ formatHa(area.area_ha) }} ha</span>
-              <span v-if="area.population"><Icon name="lucide:users" class="obs-card__meta-icon" />{{ area.population }}</span>
+              <span v-if="area.municipality"><Icon name="gis:pin" class="obs-card__meta-icon" />{{ area.municipality }}{{ area.state ? ` · ${area.state}` : '' }}</span>
+              <span v-if="area.area_ha"><Icon name="tabler:maximize" class="obs-card__meta-icon" />{{ formatHa(area.area_ha) }} ha</span>
+              <span v-if="area.population"><Icon name="tabler:user" class="obs-card__meta-icon" />{{ area.population }}</span>
               <span v-if="area.status" class="obs-card__status">{{ area.status }}</span>
             </div>
             <a v-if="area.source_url" :href="area.source_url" target="_blank" rel="noopener" class="obs-card__link">
-              {{ t('observatory.territory.source') }} <Icon name="lucide:external-link" class="obs-card__link-icon" />
+              {{ t('observatory.territory.source') }} <Icon name="tabler:share" class="obs-card__link-icon" />
             </a>
           </div>
         </li>

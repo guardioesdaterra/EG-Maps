@@ -18,7 +18,7 @@
             to="/"
             class="inline-flex h-10 xs:h-11 shrink-0 items-center justify-center gap-1.5 xs:gap-2 rounded-fluid border-2 border-[var(--border-color)] px-3 xs:px-4 text-xs xs:text-sm font-black transition-colors hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)]"
           >
-            <Icon name="lucide:arrow-left" class="h-4 w-4" />
+            <Icon name="tabler:arrow-move-left" class="h-4 w-4" />
             <span class="hidden xs:inline">{{ t('info.homeLink') }}</span>
           </NuxtLink>
         </div>
@@ -86,11 +86,11 @@
           </div>
           <div class="flex w-full flex-col gap-2 xs:gap-3 sm:min-w-44 lg:w-auto">
             <NuxtLink to="/project-grants" class="inline-flex items-center justify-center gap-1.5 xs:gap-2 rounded-fluid bg-[var(--text-primary)] px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black text-[var(--bg-primary)]">
-              <Icon name="lucide:map" class="h-4 w-4" />
+              <Icon name="gis:map" class="h-4 w-4" />
               {{ t('info.view2dMap') }}
             </NuxtLink>
             <NuxtLink to="/project-grants/3d" class="inline-flex items-center justify-center gap-1.5 xs:gap-2 rounded-fluid border-2 border-[var(--border-color)] px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black text-[var(--text-primary)] hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)]">
-              <Icon name="lucide:globe" class="h-4 w-4" />
+              <Icon name="gis:globe" class="h-4 w-4" />
               {{ t('info.view3dGlobe') }}
             </NuxtLink>
           </div>
@@ -114,11 +114,11 @@
           </div>
           <div class="flex w-full flex-col gap-2 xs:gap-3 sm:min-w-44 lg:w-auto">
             <NuxtLink to="/endangered-species" class="inline-flex items-center justify-center gap-1.5 xs:gap-2 rounded-fluid bg-[var(--text-primary)] px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black text-[var(--bg-primary)]">
-              <Icon name="lucide:map" class="h-4 w-4" />
+              <Icon name="gis:map" class="h-4 w-4" />
               {{ t('info.view2dMap') }}
             </NuxtLink>
             <NuxtLink to="/endangered-species/3d" class="inline-flex items-center justify-center gap-1.5 xs:gap-2 rounded-fluid border-2 border-[var(--border-color)] px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black text-[var(--text-primary)] hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)]">
-              <Icon name="lucide:globe" class="h-4 w-4" />
+              <Icon name="gis:globe" class="h-4 w-4" />
               {{ t('info.view3dGlobe') }}
             </NuxtLink>
           </div>
@@ -154,7 +154,7 @@
                   class="mt-auto inline-flex w-fit items-center gap-1 text-[clamp(10px,1.5vw,13px)] xs:text-xs font-black underline underline-offset-2 hover:opacity-80"
                 >
                   {{ t('info.sources.openSource') }}
-                  <Icon name="lucide:external-link" class="h-3 w-3" />
+                  <Icon name="tabler:share" class="h-3 w-3" />
                 </a>
               </li>
             </ul>
@@ -162,7 +162,7 @@
 
           <div class="rounded-fluid-lg border-2 border-[var(--border-color)] bg-[var(--bg-tertiary)] p-3 xs:p-4">
             <h3 class="flex items-center gap-1.5 xs:gap-2 text-xs xs:text-sm font-black">
-              <Icon name="lucide:scale" class="h-4 w-4" />
+              <Icon name="tabler:scale" class="h-4 w-4" />
               {{ t('info.sources.reuseTitle') }}
             </h3>
             <ul class="mt-2 xs:mt-3 grid gap-1.5 xs:gap-2 text-[clamp(11px,1.6vw,14px)] xs:text-sm leading-6 text-[var(--text-secondary)]">
@@ -187,7 +187,7 @@
               rel="noopener noreferrer"
               class="mt-4 xs:mt-5 inline-flex items-center gap-1.5 xs:gap-2 rounded-fluid border-2 border-[var(--border-color)] px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black transition-colors hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)]"
             >
-              <Icon name="lucide:users" class="h-4 w-4" />
+              <Icon name="tabler:user" class="h-4 w-4" />
               {{ t('info.joinUs') }}
             </a>
           </div>
@@ -262,11 +262,11 @@ type InfoTab = 'overview' | 'grants' | 'species' | 'sources' | 'feedback'
 
 const activeTab = ref<InfoTab>('overview')
 const tabs = computed<Array<{ id: InfoTab; label: string; icon: string }>>(() => [
-  { id: 'overview', label: t('info.tabs.overview'), icon: 'lucide:layout-dashboard' },
-  { id: 'grants', label: t('info.tabs.grants'), icon: 'lucide:hand-heart' },
-  { id: 'species', label: t('info.tabs.species'), icon: 'lucide:bird' },
-  { id: 'sources', label: t('info.tabs.sources'), icon: 'lucide:database' },
-  { id: 'feedback', label: t('info.tabs.feedback'), icon: 'lucide:message-square' },
+  { id: 'overview', label: t('info.tabs.overview'), icon: 'tabler:list' },
+  { id: 'grants', label: t('info.tabs.grants'), icon: 'tabler:heart' },
+  { id: 'species', label: t('info.tabs.species'), icon: 'tabler:feather' },
+  { id: 'sources', label: t('info.tabs.sources'), icon: 'tabler:database' },
+  { id: 'feedback', label: t('info.tabs.feedback'), icon: 'tabler:message' },
 ])
 
 interface SourceItem {

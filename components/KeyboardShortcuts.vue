@@ -20,7 +20,7 @@
           <header class="kbd-panel__head">
             <h2 id="global-shortcuts-title" class="kbd-panel__title">{{ t('shortcuts.title') }}</h2>
             <button type="button" class="kbd-panel__close" :aria-label="t('general.close')" @click="close">
-              <Icon name="lucide:x" class="h-4 w-4" />
+              <Icon name="tabler:trash-x" class="h-4 w-4" />
             </button>
           </header>
           <ul class="kbd-list">

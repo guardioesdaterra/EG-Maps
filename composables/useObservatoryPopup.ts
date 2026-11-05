@@ -364,6 +364,10 @@ interface StackedPopupConfig {
   t: (_key: string, _params?: Record<string, unknown>) => string
   locale: { value: string }
   onSidebarOpen?: (_payload: { processo: string; nome: string; tab: string; coords: [number, number] }) => void
+  /** Features at this point that exceeded the per-kind caps and were dropped. */
+  overflowCount?: number
+  /** "+N more" action — opens the full claims data table. */
+  onShowAll?: () => void
 }
 
 function adaptBoundaryProps(p: Record<string, unknown>): Record<string, unknown> {
@@ -493,8 +497,8 @@ function cleanTabLabel(label: string): string {
   return cleaned || label
 }
 
-function tr(t: StackedPopupConfig['t'], key: string, fallback: string): string {
-  const v = t(key)
+function tr(t: StackedPopupConfig['t'], key: string, fallback: string, params?: Record<string, unknown>): string {
+  const v = params ? t(key, params) : t(key)
   return v && v !== key ? v : fallback
 }
 
@@ -569,7 +573,12 @@ export function openStackedObservatoryPopup(
     return `<section role="tabpanel" id="ree-panel-${uid}-${i}" aria-labelledby="ree-tab-${uid}-${i}" class="ree-popup__panel${i === 0 ? ' is-active' : ''}" data-index="${i}" tabindex="0"${i === 0 ? '' : ' hidden'}>${inner}</section>`
   }).join('')
 
-  root.innerHTML = `<div class="ree-popup__stack-head"><span class="ree-popup__stack-title">${escapeText(stackTitle)}</span><span class="ree-popup__stack-count">${list.length}</span></div><div class="ree-popup__tabs" role="tablist" aria-label="${escapeAttr(stackTitle)}">${tabsHTML}</div><div class="ree-popup__panels">${panelsHTML}</div>`
+  const overflow = config.overflowCount ?? 0
+  const moreHTML = overflow > 0 && config.onShowAll
+    ? `<div class="ree-popup__stack-more"><button type="button" class="ree-popup__action ree-popup__action--primary" data-stack-showall="1">${escapeText(tr(t, 'observatory.popups.stackedMore', `+${overflow} more`, { count: overflow }))} · ${escapeText(tr(t, 'observatory.popups.stackedShowAll', 'Open data table'))} →</button></div>`
+    : ''
+
+  root.innerHTML = `<div class="ree-popup__stack-head"><span class="ree-popup__stack-title">${escapeText(stackTitle)}</span><span class="ree-popup__stack-count">${list.length}</span></div><div class="ree-popup__tabs" role="tablist" aria-label="${escapeAttr(stackTitle)}">${tabsHTML}</div><div class="ree-popup__panels">${panelsHTML}</div>${moreHTML}`
 
   const tabs = [...root.querySelectorAll<HTMLButtonElement>('.ree-popup__tab')]
   const panels = [...root.querySelectorAll<HTMLElement>('.ree-popup__panel')]
@@ -626,6 +635,10 @@ export function openStackedObservatoryPopup(
   }, map.getContainer()))
     .setLngLat(lngLat)
     .setDOMContent(root)
+  root.querySelector<HTMLButtonElement>('[data-stack-showall]')?.addEventListener('click', () => {
+    popup.remove()
+    config.onShowAll?.()
+  })
   return mountMapPopup(popup, map)
 }
 

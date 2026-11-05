@@ -94,6 +94,8 @@ export interface RareEarthLayerOptions {
     t: (_key: string, _params?: Record<string, unknown>) => string
     locale: { value: string }
     onSidebarOpen?: (_payload: { processo: string; nome: string; tab: string; coords: [number, number] }) => void
+    /** "+N more" overflow action in the stacked popup (opens the data table). */
+    onShowAll?: () => void
   }
 }
 
@@ -196,6 +198,20 @@ function addPointLayers(map: MapLibreMap, source: string) {
       'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 2],
       'circle-stroke-opacity': 0.65,
     },
+  })
+
+  // Territory-overlap halo. Reads the precomputed numeric `overlaps_count`
+  // scalar — MapLibre expressions cannot evaluate object values, so the raw
+  // `ov` overlap array is never embedded in layer properties (the old
+  // `['length', ['get', 'ov']]` branch errored and blanked this layer).
+  // Lives on the POINTS bootstrap (not the protected-area builder) so a
+  // failed protected-areas fetch can no longer kill the overlaps toggle.
+  map.addLayer({
+    id: 'ree-overlap-glow',
+    type: 'circle',
+    source,
+    filter: ['all', ['!has', 'point_count'], ['>', 'overlaps_count', 0]] as unknown as maplibregl.FilterSpecification,
+    paint: { 'circle-color': '#f59e0b', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 10, 10, 14, 14, 18], 'circle-opacity': 0.25, 'circle-blur': 0.9, 'circle-stroke-color': '#f59e0b', 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 2], 'circle-stroke-opacity': 0.5 },
   })
 }
 
@@ -328,20 +344,22 @@ function addUnifiedObservatoryClick(map: MapLibreMap, options: RareEarthLayerOpt
 
       let claimCount = 0
       let boundaryCount = 0
-      for (const f of rendered) {
+      let overflow = 0
+      for (let ri = 0; ri < rendered.length; ri++) {
+        const f = rendered[ri]!
         const layerId = (f.layer as { id?: string } | undefined)?.id ?? String(f.layer ?? '')
         const group = QUERY_GROUPS.find(g => g.layers.includes(layerId))
         if (!group) continue
         const props = (f.properties ?? {}) as Record<string, unknown>
         if (group.kind === 'claim') {
-          if (claimCount >= 8) continue
+          if (claimCount >= 8) { overflow++; continue }
           const proc = String(props.processo ?? props.p ?? props.id ?? '')
           const nome = shortName(props.nome ?? props.n ?? props.NOME)
           const label = nome ? `⛏ ${nome}` : `⛏ ${proc.slice(-6) || 'claim'}`
           push('claim', label, props, layerId, `claim::${proc || JSON.stringify(props).slice(0, 80)}`)
           claimCount++
         } else if (group.kind === 'boundary') {
-          if (boundaryCount >= 4) continue
+          if (boundaryCount >= 4) { overflow++; continue }
           const proc = String(props.PROCESSO ?? props.processo ?? props.p ?? '')
           const nome = shortName(props.NOME ?? props.nome ?? props.n ?? props.enterprise)
           const label = nome ? `◈ ${nome}` : `◈ ${proc.slice(-6) || 'boundary'}`
@@ -360,7 +378,7 @@ function addUnifiedObservatoryClick(map: MapLibreMap, options: RareEarthLayerOpt
           const name = String(props.name ?? 'Geological area')
           push('geo', `🌍 ${shortName(name)}`, props, layerId, `geo::${String(props.type ?? '')}::${name}`)
         }
-        if (hits.length >= 12) break
+        if (hits.length >= 12) { overflow += rendered.length - ri - 1; break }
       }
 
       if (!hits.length) {
@@ -401,6 +419,8 @@ function addUnifiedObservatoryClick(map: MapLibreMap, options: RareEarthLayerOpt
           t: options.popup.t,
           locale: options.popup.locale,
           onSidebarOpen: options.popup.onSidebarOpen,
+          overflowCount: overflow,
+          onShowAll: options.popup.onShowAll,
         })
         if (popup) activePopups.set(map, popup)
         return
@@ -431,18 +451,56 @@ export interface ObservatorySyncInput {
   cultural?: GeoJSON.FeatureCollection | null
   networkFeatures?: GeoJSON.FeatureCollection | null
   visibility?: Record<string, boolean>
+  /**
+   * Modern-form MapLibre filter mirroring the JS claim filter. When present,
+   * claim/boundary layers receive it via setFilter and the sources keep the
+   * FULL dataset (stable identity → no per-keystroke setData). null = keep
+   * creation-time filters (legacy path), undefined = don't touch.
+   */
+  filterExpr?: unknown[] | null
   popup?: RareEarthLayerOptions['popup']
   onClaimClick?: RareEarthLayerOptions['onClaimClick']
+}
+
+/**
+ * Apply (or clear) the expression claim filter on every layer that reads
+ * claim data. Modern-form only: the legacy `['!has','point_count']` guards
+ * are dropped because `ree-points` is cluster:false, and `is_foreign` /
+ * `overlaps_count` get `['get', ...]` equivalents.
+ */
+export function applyObservatoryFilterExpr(map: MapLibreMap, expr: unknown[] | null): void {
+  const user = expr as maplibregl.FilterSpecification | null
+  const setF = (id: string, f: maplibregl.FilterSpecification | undefined) => {
+    try { if (map.getLayer(id)) map.setFilter(id, f) } catch { /* invalid expr → leave layer filter untouched */ }
+  }
+  if (!user) {
+    // Back to creation-time semantics (all features visible).
+    for (const id of ['ree-point-glow', 'ree-point-circle', 'ree-heat-layer', 'ree-point-hover',
+      'ree-poly-fill', 'ree-poly-glow', 'ree-poly-line', 'ree-poly-label']) setF(id, undefined)
+    setF('ree-foreign-glow', ['all', ['==', ['get', 'is_foreign'], 1]] as unknown as maplibregl.FilterSpecification)
+    setF('ree-overlap-glow', ['all', ['>', ['get', 'overlaps_count'], 0]] as unknown as maplibregl.FilterSpecification)
+    return
+  }
+  for (const id of ['ree-point-glow', 'ree-point-circle', 'ree-heat-layer', 'ree-point-hover',
+    'ree-poly-fill', 'ree-poly-glow', 'ree-poly-line', 'ree-poly-label']) setF(id, user)
+  setF('ree-foreign-glow', ['all', ['==', ['get', 'is_foreign'], 1], user] as unknown as maplibregl.FilterSpecification)
+  setF('ree-overlap-glow', ['all', ['>', ['get', 'overlaps_count'], 0], user] as unknown as maplibregl.FilterSpecification)
 }
 
 function setSourceData(map: MapLibreMap, sourceId: string, data: GeoJSON.FeatureCollection): boolean {
   try {
     const src = map.getSource(sourceId) as maplibregl.GeoJSONSource | undefined
     if (!src || typeof (src as { setData?: unknown }).setData !== 'function') return false
+    // Identity guard: with the setFilter rendering path the raw collections
+    // are stable objects, and every 32ms reconcile would otherwise re-upload
+    // + re-tessellate the full dataset. Same reference → already on the map.
+    if (lastSourceData.get(src) === data) return true
     ;(src as maplibregl.GeoJSONSource).setData(data)
+    lastSourceData.set(src, data)
     return true
   } catch { return false }
 }
+const lastSourceData = new WeakMap<maplibregl.GeoJSONSource, unknown>()
 
 /**
  * Reconcile every observatory source with the latest data WITHOUT tearing
@@ -455,7 +513,7 @@ function setSourceData(map: MapLibreMap, sourceId: string, data: GeoJSON.Feature
  */
 export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncInput): boolean {
   if (!map || !map.isStyleLoaded()) return false
-  const { points, polys, protected: protectedAreas, water, cultural, networkFeatures, visibility, popup, onClaimClick } = input
+  const { points, polys, protected: protectedAreas, water, cultural, networkFeatures, visibility, filterExpr, popup, onClaimClick } = input
   // Proceed when ANY layer has data. Gating everything on filtered points
   // alone left the map permanently blank whenever the point set was momentarily
   // empty (initial empty FC, strict filters) while polygons/protected/water
@@ -530,6 +588,10 @@ export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncIn
   if (cultural?.features?.length && !map.getSource('ree-cultural')) {
     setupCulturalLayers(map, cultural)
   }
+
+  // Expression claim filter (setFilter rendering path): applied AFTER data
+  // reconcile so freshly created layers immediately honour live filters.
+  if (filterExpr !== undefined) applyObservatoryFilterExpr(map, filterExpr)
 
   syncRareEarthLayerVisibility(map, visibility || {})
   return true
@@ -831,16 +893,8 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
     layout: { 'text-field': ['get', 'name'], 'text-font': ['Open Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 5, 0, 7, 9, 10, 11], 'text-allow-overlap': false },
     paint: { 'text-color': '#2dd4bf', 'text-halo-color': 'rgba(0,0,0,0.9)', 'text-halo-width': 1.5 },
   })
-
-  // Territory-overlap halo. Reads the precomputed numeric `overlaps_count`
-  // scalar — MapLibre expressions cannot evaluate object values, so the raw
-  // `ov` overlap array is never embedded in layer properties (the old
-  // `['length', ['get', 'ov']]` branch errored and blanked this layer).
-  map.addLayer({
-    id: 'ree-overlap-glow', type: 'circle', source: REE_SOURCE_POINTS,
-    filter: ['all', ['!has', 'point_count'], ['>', 'overlaps_count', 0]] as unknown as maplibregl.FilterSpecification,
-    paint: { 'circle-color': '#f59e0b', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 10, 10, 14, 14, 18], 'circle-opacity': 0.25, 'circle-blur': 0.9, 'circle-stroke-color': '#f59e0b', 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 2], 'circle-stroke-opacity': 0.5 },
-  })
+  // NOTE: ree-overlap-glow lives on the points bootstrap (addPointLayers) so
+  // the overlaps toggle never depends on the protected-areas fetch.
 }
 
 const polyHandlerMap = new WeakMap<MapLibreMap, boolean>()

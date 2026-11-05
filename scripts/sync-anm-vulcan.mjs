@@ -56,14 +56,37 @@ const SUBS_TABLE = {
   'TINGUAÍTO': ['carbonatite_associated', 'Tinguaito (alkaline complex)'],
   'TITÂNIO': ['heavy_mineral_associated', 'Titânio (heavy mineral sand)'],
   'ZIRCÔNIO': ['heavy_mineral_associated', 'Zircônio (heavy mineral, REE assoc.)'],
+  // Pegmatite minerals (Li-Be-Cs-Ta-Nb-REE associations)
+  'BERILO': ['pegmatite_associated', 'Berilo (pegmatite, REE assoc.)'],
+  'MINÉRIO DE BERÍLIO': ['pegmatite_associated', 'Minério de Berílio (pegmatite, REE assoc.)'],
+  'ESPODUMÊNIO': ['pegmatite_associated', 'Espodumênio (pegmatite, Li-REE assoc.)'],
+  'PETALITA': ['pegmatite_associated', 'Petalita (pegmatite, Li-REE assoc.)'],
+  'LEPIDOLITA': ['pegmatite_associated', 'Lepidolita (pegmatite, Li-REE assoc.)'],
+  'AMBLIGONITA': ['pegmatite_associated', 'Ambligonita (pegmatite, Li-REE assoc.)'],
+  'POLUCITA': ['pegmatite_associated', 'Polucita (pegmatite, Cs-REE assoc.)'],
+  // Direct REE minerals
+  'CÉRIO': ['direct_ree', 'Cério (REE)'],
+  'MINÉRIO DE CÉRIO': ['direct_ree', 'Minério de Cério (REE)'],
+  // Nb-Ta minerals (carbonatite/pegmatite)
+  'COLUMBITA': ['carbonatite_associated', 'Columbita (Nb-Ta, carbonatite/pegmatite assoc.)'],
+  'TANTALITA': ['carbonatite_associated', 'Tantalita (Nb-Ta, carbonatite/pegmatite assoc.)'],
+  'TANTALITA-COLUMBITA': ['carbonatite_associated', 'Tantalita-Columbita (Nb-Ta assoc.)'],
+  'MINÉRIO DE TÂNTALO': ['carbonatite_associated', 'Minério de Tântalo (Nb-Ta assoc.)'],
+  'PIROCLORO': ['carbonatite_associated', 'Pirocloro (Nb, carbonatite assoc.)'],
+  // Heavy mineral / Ti-Zr
+  'ZIRCÃO': ['heavy_mineral_associated', 'Zircão (heavy mineral, REE assoc.)'],
+  'TITANITA': ['heavy_mineral_associated', 'Titanita (heavy mineral, REE assoc.)'],
+  'RUTILO': ['heavy_mineral_associated', 'Rutilo (heavy mineral, REE assoc.)'],
 }
 const SUBS_KEYWORDS = [
   [/FOSFAT|APATIT/, ['phosphate_associated', null]],
-  [/LITIO|LÍTIO|SPODUM/, ['pegmatite_associated', null]],
+  [/LITIO|LÍTIO|SPODUM|ESPODUM|PETALIT|LEPIDOLIT|AMBLIGON|POLUCIT/, ['pegmatite_associated', null]],
   [/URANIO|URÂNIO|TORIO|TÓRIO/, ['strategic_associated', null]],
-  [/NIÓBIO|NIOBIO|CARBONATIT|PIROCLORO|FONOLIT|TINGUA/, ['carbonatite_associated', null]],
-  [/ZIRC|TITAN|ILMEN|RUTIL|MONAZIT|XENOTIM/, ['heavy_mineral_associated', null]],
-  [/TERRAS?\s*RARAS|RARE\s*EARTH/, ['direct_ree', null]],
+  [/NIÓBIO|NIOBIO|CARBONATIT|PIROCLORO|FONOLIT|TINGUA|COLUMBIT|TANTALIT|TÂNTALO/, ['carbonatite_associated', null]],
+  [/ZIRC|TITAN|ILMEN|RUTIL|MONAZIT|XENOTIM|ZIRCÃO|TITANITA/, ['heavy_mineral_associated', null]],
+  [/TERRAS?\s*RARAS|RARE\s*EARTH|C[EÉ]RIO/, ['direct_ree', null]],
+  // Pegmatite indicator minerals (Be, Li, Cs, Ta)
+  [/BER[IÍ]LIO|BERILO/, ['pegmatite_associated', null]],
 ]
 function classifySubs(subs) {
   const s = String(subs || '').trim().toUpperCase()

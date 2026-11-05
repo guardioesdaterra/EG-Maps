@@ -72,7 +72,9 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
   const waterData = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
   const culturalData = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
   const waterThreats = shallowRef<WaterThreat[]>([])
-  const features = ref<RareEarthFeatureSummary[]>([])
+  // shallowRef: summary rows are only ever replaced wholesale (normalize
+  // pass). Deep ref() proxied all 20k national objects on every read.
+  const features = shallowRef<RareEarthFeatureSummary[]>([])
   const deepAnalysis = shallowRef<DeepAnalysis | undefined>(undefined)
   const isLoading = ref(false)
   const loadPhase = ref<LoadPhase>('idle')

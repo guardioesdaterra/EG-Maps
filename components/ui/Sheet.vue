@@ -101,7 +101,7 @@ function handlePointerDownOutside(e: Event) {
             aria-label="Close"
             @click="isOpen = false; emit('close')"
           >
-            <Icon name="lucide:x" class="h-4 w-4" />
+            <Icon name="tabler:trash-x" class="h-4 w-4" />
           </button>
 
           <slot />

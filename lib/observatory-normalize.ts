@@ -48,6 +48,11 @@ export interface NormalizedClaimProps {
   holder_enterprise: string
   holder_country: string
   is_foreign: number
+  /** Lowercase join of the searchable fields — mirrors the JS filter's
+   *  haystack so MapLibre `setFilter` expressions can search by one `get`. */
+  search_blob: string
+  /** Trimmed UPPERCASE phase — mirrors matchMiningPhase's normalization. */
+  fase_norm: string
   // Short aliases (popup / filter / legacy layer compat)
   p: string
   n: string
@@ -225,6 +230,11 @@ export function normalizeClaimProps(
     ultimo_evento, network_id, danger_score,
     overlaps_count, overlap_names, overlap_kinds,
     holder_enterprise, holder_country, is_foreign,
+    // Filter-parallel fields: the JS predicate searches this exact lowercase
+    // join and uppercases/trims the phase for matchMiningPhase — the
+    // MapLibre expression path reads them with a single `get`.
+    search_blob: `${nome} ${subs} ${uf} ${processo} ${fase} ${network_id} ${dsprocesso}`.toLowerCase(),
+    fase_norm: fase.trim().toUpperCase(),
     p: processo, n: nome, s: subs, c: category, f: fase, u: uf,
     a: area_ha, ds: danger_score, net: network_id, y: ano, ev: ultimo_evento,
     hc: holder_country, he: holder_enterprise, fr: is_foreign,

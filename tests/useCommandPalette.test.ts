@@ -7,8 +7,8 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { filterPaletteItems, groupPaletteItems, type CommandPaletteItem } from '../composables/useCommandPalette'
 
 const sampleItems: CommandPaletteItem[] = [
-  { id: 'nav:home', group: 'Navigation', label: 'Home', icon: 'mdi:home', onSelect: () => {} },
-  { id: 'nav:info', group: 'Navigation', label: 'Info', icon: 'mdi:info', keywords: ['about'], onSelect: () => {} },
+  { id: 'nav:home', group: 'Navigation', label: 'Home', icon: 'tabler:home', onSelect: () => {} },
+  { id: 'nav:info', group: 'Navigation', label: 'Info', icon: 'tabler:info-circle', keywords: ['about'], onSelect: () => {} },
   { id: 'theme:dark', group: 'Settings', label: 'Switch to dark', hint: 'Toggle theme', onSelect: () => {} },
   { id: 'lang:fr', group: 'Language', label: 'Français', hint: 'Switch language to French', onSelect: () => {} },
 ]

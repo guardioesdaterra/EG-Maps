@@ -34,7 +34,7 @@
       aria-label="Learn More about former Earth Guardians Project Grants"
     >
       <span>Former EG Project Grants</span>
-      <strong>Learn More <Icon name="lucide:arrow-up-right" class="h-3.5 w-3.5" /></strong>
+      <strong>Learn More <Icon name="tabler:share" class="h-3.5 w-3.5" /></strong>
     </a>
   </div>
 </template>
@@ -59,7 +59,7 @@ useHead({
 <style scoped>
 .former-eg-link {
   position: fixed;
-  top: max(4.5rem, calc(env(safe-area-inset-top) + 3.75rem));
+  top: max(1rem, env(safe-area-inset-top));
   left: max(1rem, env(safe-area-inset-left));
   z-index: 760;
   display: flex;

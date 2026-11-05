@@ -681,7 +681,7 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
     : ''
 
   return `
-    <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;min-width:400px;position:relative">
+    <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;max-width:100%;position:relative">
       <!-- Corner accents -->
       <div style="position:absolute;top:12px;left:12px;width:14px;height:14px;border-top:2px solid ${cat.color}60;border-left:2px solid ${cat.color}60;pointer-events:none;z-index:1" />
       <div style="position:absolute;top:12px;right:12px;width:14px;height:14px;border-top:2px solid ${cat.color}60;border-right:2px solid ${cat.color}60;pointer-events:none;z-index:1" />

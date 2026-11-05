@@ -11,7 +11,7 @@
     <div v-if="selectedCustomFeature" ref="popupOverlayRef" class="custom-popup-overlay-fixed" role="dialog" aria-modal="true" aria-labelledby="custom-feature-title" @click.self="selectFeature(null)" @keydown.esc="selectFeature(null)">
       <div ref="popupContentRef" class="custom-popup-content" tabindex="-1">
         <button type="button" class="custom-popup-close-btn" @click="selectFeature(null)" :aria-label="t('general.close')">
-          <Icon name="lucide:x" class="h-5 w-5" />
+          <Icon name="tabler:trash-x" class="h-5 w-5" />
         </button>
         <img v-if="featureImage" :src="featureImage" :alt="featureTitle" class="mb-3 w-full rounded-lg object-cover" style="max-height: 200px" @error="onImageError">
         <h2 id="custom-feature-title" class="text-lg font-semibold text-[var(--text-primary)]">{{ featureTitle }}</h2>

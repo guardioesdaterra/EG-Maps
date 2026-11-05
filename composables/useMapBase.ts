@@ -129,11 +129,16 @@ export interface MapBaseProps {
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthFiltered?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
+  rareEarthPolygonsFull?: GeoJSON.FeatureCollection | null
   rareEarthProtected?: GeoJSON.FeatureCollection
   rareEarthWater?: GeoJSON.FeatureCollection | null
   rareEarthCultural?: GeoJSON.FeatureCollection | null
   rareEarthAnalysis?: Record<string, unknown>
   layerVisibility?: Record<string, boolean>
+  /** MapLibre expression mirror of the claim filter (setFilter render path). */
+  rareEarthFilterExpr?: unknown[] | null
+  /** Stacked-popup "+N more" action (opens the data table). */
+  onPopupShowAll?: () => void
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null
 }
 
@@ -353,7 +358,7 @@ export function useMapBase(config: MapBaseConfig) {
       next.flyTo({
         center: [target.lng, target.lat],
         zoom: target.zoom ?? 5,
-        duration: 1500,
+        duration: runtime.reducedMotion.value ? 0 : 1500,
         essential: true,
       })
     }
@@ -664,13 +669,15 @@ export function useMapBase(config: MapBaseConfig) {
       rareEarthPoints: props.rareEarthPoints,
       rareEarthFiltered: props.rareEarthFiltered,
       rareEarthPolygons: props.rareEarthPolygons,
+      rareEarthPolygonsFull: props.rareEarthPolygonsFull,
       rareEarthProtected: props.rareEarthProtected,
       rareEarthWater: props.rareEarthWater ?? undefined,
       rareEarthCultural: props.rareEarthCultural ?? undefined,
       layerVisibility: props.layerVisibility,
+      rareEarthFilterExpr: props.rareEarthFilterExpr,
       flyToTarget: props.flyToTarget,
     }),
-    popup: { t, locale },
+    popup: { t, locale, onShowAll: props.onPopupShowAll },
   })
 
   function setupRareEarthLayers() {
@@ -874,6 +881,7 @@ export function useMapBase(config: MapBaseConfig) {
       setupRareEarthLayers()
       return
     }
+    rebuildMarkers()
     const qNow = quality.settings.value
     if (qNow.showConnections && connections.showConnections.value) {
       if (activeDataset.value === 'active-crews') {
@@ -1285,7 +1293,9 @@ export function useMapBase(config: MapBaseConfig) {
     map.flyTo({
       center: [target.lng, target.lat],
       zoom: target.zoom ?? 5,
-      duration: 1500,
+      // Same reduced-motion respect as navigateToLocation — the observatory
+      // sidebar/search jumps previously always animated 1.5s.
+      duration: runtime.reducedMotion.value ? 0 : 1500,
       essential: true,
     })
   })

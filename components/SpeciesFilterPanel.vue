@@ -15,7 +15,7 @@
     
     <div class="flex justify-between items-center mb-3">
       <div class="flex items-center gap-2">
-        <iconify-icon icon="lucide:filter" class="h-4 w-4 text-cyan-400" />
+        <Icon name="tabler:mail" class="h-4 w-4 text-cyan-400" />
         <h2 class="text-xs font-heading font-bold text-[var(--text-primary)] tracking-wider uppercase">
           {{ t('filter.filterSpecies') }}
         </h2>
@@ -30,7 +30,7 @@
         class="h-6 px-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20 rounded text-xs gap-1"
         @click="resetFilters"
       >
-        <iconify-icon icon="lucide:x" class="h-3 w-3" />
+        <Icon name="tabler:trash-x" class="h-3 w-3" />
         <span>{{ t('filter.reset') }}</span>
       </UiButton>
     </div>
@@ -39,7 +39,7 @@
     
     <div :class="isMobile ? 'mb-2' : 'mb-3'">
       <div class="relative">
-        <iconify-icon icon="lucide:search" class="absolute left-2.5 top-2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
+        <Icon name="tabler:search" class="absolute left-2.5 top-2 h-4 w-4 text-[var(--text-muted)] pointer-events-none" />
         <input
           v-model="searchQuery"
           type="text"
@@ -52,7 +52,7 @@
           @click="searchQuery = ''"
           class="absolute right-2.5 top-1.5 h-5 w-5 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border-color)] transition-colors"
         >
-          <iconify-icon icon="lucide:x" class="h-3 w-3" />
+          <Icon name="tabler:trash-x" class="h-3 w-3" />
         </button>
       </div>
     </div>
@@ -113,8 +113,8 @@
         @click="taxonomicGroupCollapsed = !taxonomicGroupCollapsed"
         class="flex items-center gap-1.5 w-full text-left mb-1"
       >
-        <iconify-icon
-          :icon="taxonomicGroupCollapsed ? 'lucide:chevron-right' : 'lucide:chevron-down'"
+        <Icon
+          :name="taxonomicGroupCollapsed ? 'tabler:share' : 'tabler:arrows-move'"
           class="h-4 w-4 text-[var(--text-muted)] transition-transform"
         />
         <span class="text-[clamp(10px,1.5vw,13px)] font-heading font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
@@ -147,7 +147,7 @@
             @click="toggleTaxonomicGroup(group)"
           >
             {{ groupLabel(group) }}
-            <iconify-icon icon="lucide:x" class="h-3 w-3" />
+            <Icon name="tabler:trash-x" class="h-3 w-3" />
           </button>
         </div>
       </div>
@@ -224,7 +224,7 @@
         class="w-full py-2 rounded text-xs font-medium transition-all duration-200 border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-cyan-500/50 hover:bg-cyan-500/10 flex items-center justify-center gap-1.5"
         @click="emit('close')"
       >
-        <iconify-icon icon="lucide:x" class="h-3.5 w-3.5" />
+        <Icon name="tabler:trash-x" class="h-3.5 w-3.5" />
         {{ t('filter.close') }}
       </button>
     </div>
@@ -233,7 +233,7 @@
 
 <script setup lang="ts">
 
-import { ref, reactive, computed, watch } from 'vue'
+import Icon from './Icon.vue'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'

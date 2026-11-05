@@ -5,7 +5,8 @@
  * @deps vue (ref, computed, onMounted, onUnmounted); @/composables/useI18n (useI18n)
  */
 <template>
-  <div :class="[isMapRoute ? 'h-[100svh]' : 'min-h-viewport', 'bg-transparent']">
+  <div>
+    <div :class="[isMapRoute ? 'h-[100svh]' : 'min-h-viewport', 'bg-transparent']">
     <slot />
 
     
@@ -22,7 +23,7 @@
               !is3DRoute ? 'map-view-tab-active' : 'map-view-tab-idle'
             ]"
           >
-            <Icon name="lucide:map" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            <Icon name="gis:map" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span class="hidden sm:inline text-xs">{{ t('globe.view2D') }}</span>
           </NuxtLink>
           <NuxtLink
@@ -34,7 +35,7 @@
               is3DRoute ? 'map-view-tab-active' : 'map-view-tab-idle'
             ]"
           >
-            <Icon name="lucide:globe" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            <Icon name="gis:globe" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span class="hidden sm:inline text-xs">{{ t('globe.view3D') }}</span>
           </NuxtLink>
         </div>
@@ -62,7 +63,7 @@
             :class="headerUtilityClass"
             :aria-label="t('nav.crews')"
           >
-            <Icon name="lucide:users" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            <Icon name="tabler:user" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span class="hidden sm:inline text-xs">{{ t('nav.crews') }}</span>
           </a>
 
@@ -78,7 +79,7 @@
             :title="tileProviderTitle"
           >
             <span class="relative inline-flex">
-              <Icon :name="tileProvider.isFallback.value ? 'lucide:mountain' : 'lucide:satellite'" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <Icon :name="tileProvider.isFallback.value ? 'tabler:mountain' : 'gis:satellite'" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span v-if="tileProvider.autoFallback.value" class="tile-provider-auto-dot" aria-hidden="true" />
             </span>
             <span class="hidden sm:inline text-xs">{{ tileProvider.isFallback.value ? t('mapTiles.fallback') : t('mapTiles.maptiler') }}</span>
@@ -90,7 +91,7 @@
             :class="headerUtilityClass"
             :aria-label="isDark ? t('nav.switchToLight') : t('nav.switchToDark')"
           >
-            <Icon :name="isDark ? 'lucide:sun' : 'lucide:moon'" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            <Icon :name="isDark ? 'tabler:brightness-half' : 'tabler:moon-2'" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           </button>
         </div>
       </div>
@@ -100,7 +101,7 @@
     <div v-if="layoutControlsReady && showDock && !hideAll && !isEgGrantsRoute" data-map-popup-safe-area="bottom" class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] xs:bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
       <div :class="dockShellClass">
         <div class="flex items-center gap-1">
-          <GooeyNav :items="navItems" />
+          <GooeyNav :items="navItems" @action="handleNavAction" />
 
           
           <div :class="separatorClass" />
@@ -124,7 +125,7 @@
               </div>
 
               <div :class="utilityIconClass">
-                <Icon name="lucide:languages" class="h-4 w-4" />
+                <Icon name="gis:globe" class="h-4 w-4" />
               </div>
             </button>
 
@@ -147,7 +148,7 @@
                   :aria-pressed="locale === loc"
                 >
                   <span>{{ localeNames[loc] }}</span>
-                  <Icon v-if="locale === loc" name="lucide:check" class="h-3.5 w-3.5" aria-hidden="true" />
+                  <Icon v-if="locale === loc" name="tabler:square-check" class="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               </div>
             </Transition>
@@ -168,7 +169,7 @@
               <div :class="tooltipArrowClass" />
             </div>
             <div :class="utilityIconClass">
-              <Icon :name="isDark ? 'lucide:sun' : 'lucide:moon'" class="h-4 w-4" />
+              <Icon :name="isDark ? 'tabler:brightness-half' : 'tabler:moon-2'" class="h-4 w-4" />
             </div>
           </button>
 
@@ -191,13 +192,25 @@
               </div>
 
               <div :class="utilityIconClass">
-                <Icon name="lucide:plus" class="h-4 w-4" />
+                <Icon name="tabler:plus" class="h-4 w-4" />
               </div>
             </button>
           </div>
         </div>
       </div>
     </div>
+  </div>
+
+  <ToolsSheet
+    v-model:open="showToolsSheet"
+    :title="t('tools.title')"
+    side="center"
+    :width="'100vw'"
+    :height="'100vh'"
+    @close="closeToolsSheet"
+  >
+    <AgroecologicalGardenTool @close="closeToolsSheet" />
+  </ToolsSheet>
   </div>
 </template>
 
@@ -208,6 +221,8 @@ import { useI18n as useAppI18n, type Locale } from '@/composables/useI18n'
 import { useCustomData } from '@/composables/useCustomData'
 import { useMapTileProvider } from '@/composables/useMapTileProvider'
 import { canonicalizeMapLayoutPath, isMapLayoutRoute } from '@/lib/map-routes'
+import AgroecologicalGardenTool from '@/components/tools/garden/AgroecologicalGardenTool.vue'
+import ToolsSheet from '@/components/ui/ToolsSheet.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -215,11 +230,26 @@ const router = useRouter()
 const { t, locale, availableLocales, localeNames, setLocale } = useAppI18n()
 
 const showDock = ref(true)
+const showToolsSheet = ref(false)
 const layoutControlsReady = ref(false)
 
 function updateDockFromHash() {
   if (typeof window !== 'undefined') {
     showDock.value = !window.location.hash.includes('no-dock')
+  }
+}
+
+function openToolsSheet() {
+  showToolsSheet.value = true
+}
+
+function closeToolsSheet() {
+  showToolsSheet.value = false
+}
+
+function handleNavAction(action: string) {
+  if (action === 'openTools') {
+    openToolsSheet()
   }
 }
 
@@ -255,19 +285,21 @@ interface NavItem {
   icon: string
   variant?: 'cyan' | 'green' | 'purple' | 'orange'
   external?: boolean
+  action?: string
 }
 
 const navItems: NavItem[] = [
-  { path: '/project-grants', labelKey: 'nav.projectGrants', icon: 'lucide:hand-heart', variant: 'purple' },
-  { path: '/endangered-species', labelKey: 'nav.endangeredSpecies', icon: 'lucide:bird', variant: 'green' },
-  { path: '/vulcan-observatory', labelKey: 'nav.observatoryOfVulcan', icon: 'lucide:microscope', variant: 'orange' },
-  { path: '/active-crews', labelKey: 'nav.activeCrews', icon: 'lucide:users-round', variant: 'cyan' },
-  { path: 'https://www.earthguardians.org/crews', labelKey: 'nav.joinEarthGuardians', icon: 'lucide:users', variant: 'cyan', external: true },
+  { path: '/project-grants', labelKey: 'nav.projectGrants', icon: 'tabler:heart', variant: 'purple' },
+  { path: '/endangered-species', labelKey: 'nav.endangeredSpecies', icon: 'tabler:feather', variant: 'green' },
+  { path: '/vulcan-observatory', labelKey: 'nav.observatoryOfVulcan', icon: 'tabler:volcano', variant: 'orange' },
+  { path: '/active-crews', labelKey: 'nav.activeCrews', icon: 'tabler:user', variant: 'cyan' },
+  { path: 'https://www.earthguardians.org/crews', labelKey: 'nav.joinEarthGuardians', icon: 'tabler:user-plus', variant: 'cyan', external: true },
+  { path: '#tools', labelKey: 'nav.tools', icon: 'tabler:tools', variant: 'cyan', action: 'openTools' },
 ]
 
 const headerItems: NavItem[] = [
-  { path: '/', labelKey: 'nav.home', icon: 'lucide:home', variant: 'cyan' },
-  { path: '/info', labelKey: 'nav.info', icon: 'lucide:info', variant: 'cyan' },
+  { path: '/', labelKey: 'nav.home', icon: 'tabler:home', variant: 'cyan' },
+  { path: '/info', labelKey: 'nav.info', icon: 'tabler:info-circle', variant: 'cyan' },
 ]
 
 const { isDark, toggle: toggleDarkMode } = useDarkMode()

@@ -73,11 +73,11 @@ const endangermentLevel = computed(() => {
 })
 
 const endangermentStyles: Record<string, { bg: string; color: string; border: string; icon: string }> = {
-  critical: { bg: 'color-mix(in srgb, var(--danger) 10%, transparent)', color: 'var(--danger)', border: 'color-mix(in srgb, var(--danger) 30%, transparent)', icon: 'lucide:alert-triangle' },
-  endangered: { bg: 'color-mix(in srgb, var(--warning) 10%, transparent)', color: 'var(--warning)', border: 'color-mix(in srgb, var(--warning) 30%, transparent)', icon: 'lucide:alert-circle' },
-  vulnerable: { bg: 'color-mix(in srgb, var(--warning) 10%, transparent)', color: 'var(--warning)', border: 'color-mix(in srgb, var(--warning) 30%, transparent)', icon: 'lucide:shield-alert' },
-  near: { bg: 'var(--stat-card-bg)', color: 'var(--text-muted)', border: 'var(--stat-card-border)', icon: 'lucide:info' },
-  default: { bg: 'var(--stat-card-bg)', color: 'var(--text-muted)', border: 'var(--stat-card-border)', icon: 'lucide:info' },
+  critical: { bg: 'color-mix(in srgb, var(--danger) 10%, transparent)', color: 'var(--danger)', border: 'color-mix(in srgb, var(--danger) 30%, transparent)', icon: 'tabler:alert-triangle' },
+  endangered: { bg: 'color-mix(in srgb, var(--warning) 10%, transparent)', color: 'var(--warning)', border: 'color-mix(in srgb, var(--warning) 30%, transparent)', icon: 'tabler:alert-triangle' },
+  vulnerable: { bg: 'color-mix(in srgb, var(--warning) 10%, transparent)', color: 'var(--warning)', border: 'color-mix(in srgb, var(--warning) 30%, transparent)', icon: 'tabler:shield-exclamation' },
+  near: { bg: 'var(--stat-card-bg)', color: 'var(--text-muted)', border: 'var(--stat-card-border)', icon: 'tabler:info-circle' },
+  default: { bg: 'var(--stat-card-bg)', color: 'var(--text-muted)', border: 'var(--stat-card-border)', icon: 'tabler:info-circle' },
 }
 
 const endangermentStyle = computed(() => endangermentStyles[endangermentLevel.value] ?? endangermentStyles.default)
@@ -133,15 +133,15 @@ const coords = computed(() => {
         <!-- Quick info chips -->
         <div class="sp__chips">
           <div v-if="region" class="sp__chip">
-            <Icon name="lucide:map-pin" size="0.75rem" />
+            <Icon name="gis:pin" size="0.75rem" />
             <span>{{ region }}</span>
           </div>
           <div v-if="species.ecosystem" class="sp__chip">
-            <Icon name="lucide:leaf" size="0.75rem" />
+            <Icon name="tabler:leaf" size="0.75rem" />
             <span>{{ species.ecosystem }}</span>
           </div>
           <div class="sp__chip">
-            <Icon name="lucide:crosshair" size="0.75rem" />
+            <Icon name="tabler:target" size="0.75rem" />
             <span>{{ coords }}</span>
           </div>
         </div>
@@ -206,7 +206,7 @@ const coords = computed(() => {
             class="sp__link"
             :style="{ '--link-clr': ink }"
           >
-            <Icon name="lucide:external-link" size="0.8rem" />
+            <Icon name="tabler:share" size="0.8rem" />
             <span>{{ t('species.iucnProfile') }}</span>
           </a>
         </footer>

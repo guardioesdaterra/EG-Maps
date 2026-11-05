@@ -11,7 +11,7 @@
 <template>
   <div class="obs-tab">
     <h3 class="obs-tab__title">
-      <Icon name="lucide:globe" class="obs-tab__title-icon" />
+      <Icon name="gis:globe" class="obs-tab__title-icon" />
       {{ t('observatory.envPanel.title') }}
     </h3>
 
@@ -23,7 +23,7 @@
         :aria-expanded="legendOpen"
         @click="legendOpen = !legendOpen"
       >
-        <Icon :name="legendOpen ? 'lucide:chevron-down' : 'lucide:layout-list'" class="obs-expand__icon" />
+        <Icon :name="legendOpen ? 'tabler:arrows-move' : 'tabler:layout-list'" class="obs-expand__icon" />
         {{ legendOpen ? t('observatory.envPanel.hideLegend') : t('observatory.envPanel.showLegend') }}
       </button>
       <Transition name="obs-fade">
@@ -63,13 +63,13 @@
             </div>
             <ul v-if="r.companies.length" class="obs-card__tags" role="list">
               <li v-for="c in r.companies" :key="c" class="obs-card__tag">
-                <Icon name="lucide:building" class="obs-card__tag-icon" />
+                <Icon name="tabler:building" class="obs-card__tag-icon" />
                 {{ c }}
               </li>
             </ul>
             <ul v-if="r.risks.length" class="obs-card__risks" role="list">
               <li v-for="(risk, i) in r.risks.slice(0, 3)" :key="i" class="obs-card__risk">
-                <Icon name="lucide:alert-triangle" class="obs-card__risk-icon" />
+                <Icon name="tabler:alert-triangle" class="obs-card__risk-icon" />
                 {{ risk }}
               </li>
               <li v-if="r.risks.length > 3" class="obs-card__risk obs-card__risk--more">+{{ r.risks.length - 3 }} {{ t('observatory.envPanel.moreRisks') }}</li>
@@ -84,7 +84,7 @@
             :disabled="!r.coord"
             @click="r.coord && onFlyTo(r)"
           >
-            <Icon name="lucide:map-pin" class="obs-card__action-icon" />
+            <Icon name="gis:pin" class="obs-card__action-icon" />
           </button>
           <button
             type="button"
@@ -93,7 +93,7 @@
             :aria-label="t('observatory.envPanel.addObservation')"
             @click="openObservation(r)"
           >
-            <Icon name="lucide:message-square-plus" class="obs-card__action-icon" />
+            <Icon name="tabler:message" class="obs-card__action-icon" />
           </button>
         </div>
       </li>

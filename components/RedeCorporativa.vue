@@ -16,7 +16,7 @@
             <h2 id="rede-modal-title" class="rede-title">Rede Corporativa</h2>
             <p class="rede-subtitle">Enterprise connections in the Brazilian REE sector</p>
           </div>
-          <button class="rede-close" @click="close" aria-label="Close"><Icon name="lucide:x" class="w-4 h-4" /></button>
+          <button class="rede-close" @click="close" aria-label="Close"><Icon name="tabler:trash-x" class="w-4 h-4" /></button>
         </div>
 
         <div class="rede-canvas-wrap">

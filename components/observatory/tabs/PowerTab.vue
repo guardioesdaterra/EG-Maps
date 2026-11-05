@@ -17,7 +17,7 @@
       <!-- ── Military-critical ─────────────────────────────── -->
       <div class="obs-callout obs-callout--danger">
         <div class="obs-callout__head">
-          <Icon name="lucide:shield" class="obs-callout__icon" />
+          <Icon name="tabler:shield" class="obs-callout__icon" />
           <h3 class="obs-callout__title">{{ t('observatory.power.militaryTitle') }}</h3>
         </div>
         <div class="obs-kpis" role="list">
@@ -38,7 +38,7 @@
 
       <!-- ── Foreign capital ───────────────────────────────── -->
       <h4 v-if="foreignEntries.length || liveForeign.length" class="obs-section-title">
-        <Icon name="lucide:globe" class="obs-section-title__icon" />
+        <Icon name="gis:globe" class="obs-section-title__icon" />
         {{ t('observatory.power.foreignTitle') }}
       </h4>
       <ul v-if="foreignEntries.length" class="obs-bars" role="list">
@@ -81,7 +81,7 @@
       <!-- ── Secrecy ───────────────────────────────────────── -->
       <div v-if="analysis.sigilo_stats" class="obs-callout obs-callout--warn">
         <div class="obs-callout__head">
-          <Icon name="lucide:eye-off" class="obs-callout__icon" />
+          <Icon name="tabler:eye-off" class="obs-callout__icon" />
           <h3 class="obs-callout__title">{{ t('observatory.power.sigiloTitle') }}</h3>
         </div>
         <p class="obs-callout__body">
@@ -95,7 +95,7 @@
 
       <!-- ── Top suspicious ────────────────────────────────── -->
       <h4 v-if="topSuspicious.length" class="obs-section-title">
-        <Icon name="lucide:radar" class="obs-section-title__icon" />
+        <Icon name="gis:globe" class="obs-section-title__icon" />
         {{ t('observatory.power.topTitle') }}
       </h4>
       <ul v-if="topSuspicious.length" class="obs-card-list" role="list">

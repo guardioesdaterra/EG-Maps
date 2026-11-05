@@ -53,7 +53,7 @@
           type="button"
           class="garden-tool__btn ghost"
           :aria-label="t('tools.agroecologicalGarden.toolbar.select')"
-          @click="toggleDrawingMode('select')"
+          @click="setMode('select')"
           :class="{ 'text-cyan-400': drawingMode === 'select' }"
         >
           <Icon name="tabler:pointer" class="h-4 w-4" />
@@ -68,8 +68,6 @@
       <div
         ref="mapContainerRef"
         class="garden-tool__map w-full h-full relative bg-black"
-        @mousemove="onMapMouseMove"
-        @click="onMapClick"
         @contextmenu.prevent
       >
         <!-- Coordinate crosshair -->
@@ -142,7 +140,7 @@
                     type="checkbox"
                     class="rounded border-white/20 text-cyan-400 focus:ring-cyan-400"
                     :checked="layer.visible"
-                    @change="(e) => setLayerVisibility(layer.id, e.target.checked)"
+                    @change="(e) => setLayerVisibility(layer.id, (e.target as HTMLInputElement).checked)"
                   />
                   <span
                     class="text-xs truncate"
@@ -166,7 +164,7 @@
                     min="0" max="1" step="0.1"
                     class="w-16 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-cyan-400"
                     :value="layer.opacity"
-                    @input="(e) => setLayerOpacity(layer.id, parseFloat(e.target.value))"
+                    @input="(e) => setLayerOpacity(layer.id, parseFloat((e.target as HTMLInputElement).value))"
                   />
                   <button
                     type="button"
@@ -314,8 +312,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, type Ref } from 'vue'
-import type maplibregl from 'maplibre-gl'
+import { ref, shallowRef, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl'
+import maplibregl from 'maplibre-gl'
 import { useI18n } from '@/composables/useI18n'
 import { useToast } from '@/composables/useToast'
 import { useGardenProject } from '@/composables/useGardenProject'
@@ -335,8 +334,8 @@ const garden = useGardenProject()
 
 // ── Refs ─────────────────────────────────────────────────────────────────────
 
-const mapContainerRef = Ref<HTMLDivElement | null>(null)
-const mapRef = ref<maplibregl.Map | null>(null)
+const mapContainerRef = ref<HTMLDivElement | null>(null)
+const mapRef = shallowRef<MapLibreMap | null>(null)
 const isMapReady = ref(false)
 
 // Drawing state
@@ -357,16 +356,17 @@ let activeDraw: {
   featureId: string
 } | null = null
 
-let drawLineLayer: maplibregl.Layer | null = null
-let drawPolygonLayer: maplibregl.Layer | null = null
-let drawPointLayer: maplibregl.Layer | null = null
-
 // ── Computed ─────────────────────────────────────────────────────────────────
 
+const activeProject = computed(() => garden.activeProject)
 const activeLayer = computed(() => garden.activeLayer)
 const activeLayerId = computed(() => garden.activeLayerId)
 const visibleFeatures = computed(() => garden.visibleFeatures)
 const unitSystem = computed(() => garden.unitSystem)
+const plantLibraryOpen = computed({
+  get: () => garden.plantLibraryOpen,
+  set: (v: boolean) => garden.setPlantLibraryOpen(v),
+})
 
 const drawingModes = computed(() => ({
   select: { label: t('tools.agroecologicalGarden.toolbar.select'), icon: 'tabler:pointer', short: 'Sel' },
@@ -441,15 +441,16 @@ function initMap() {
 
   map.on('moveend', () => {
     if (mapRef.value) {
-      const project = garden.activeProject.value
+      const project = garden.activeProject
       if (project) {
+        const c = mapRef.value.getCenter()
         project.location = { lat: c.lat, lng: c.lng, zoom: mapRef.value.getZoom() }
       }
     }
   })
 }
 
-function setupMapLayers(map: maplibregl.Map) {
+function setupMapLayers(map: MapLibreMap) {
   // Add satellite-optimized draw layers
   // These are empty GeoJSON sources that get populated as user draws
   map.addSource('garden-draw-points', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
@@ -506,7 +507,7 @@ function setupMapLayers(map: maplibregl.Map) {
   })
 }
 
-function renderFeatures(map: maplibregl.Map) {
+function renderFeatures(map: MapLibreMap) {
   if (!isMapReady.value) return
 
   const pointFeatures: GeoJSON.Feature[] = []
@@ -537,7 +538,7 @@ function renderFeatures(map: maplibregl.Map) {
         properties: { color, width: style.lineWidth ?? 2, label: f.properties.label, id: f.id },
       })
     } else if (f.type === 'polygon') {
-      const coords = (f.geometry as GeoJSON.Polygon).coordinates as [number, number][]
+      const coords = (f.geometry as GeoJSON.Polygon).coordinates as unknown as [number, number][]
       polygonFeatures.push({
         type: 'Feature',
         geometry: { type: 'Polygon', coordinates: [coords] },
@@ -546,36 +547,36 @@ function renderFeatures(map: maplibregl.Map) {
     }
   }
 
-  ;(map.getSource('garden-draw-points') as maplibregl.GeoJSONSource).setData({
+  ;(map.getSource('garden-draw-points') as GeoJSONSource).setData({
     type: 'FeatureCollection',
     features: pointFeatures,
   })
-  ;(map.getSource('garden-draw-lines') as maplibregl.GeoJSONSource).setData({
+  ;(map.getSource('garden-draw-lines') as GeoJSONSource).setData({
     type: 'FeatureCollection',
     features: lineFeatures,
   })
-  ;(map.getSource('garden-draw-polygons') as maplibregl.GeoJSONSource).setData({
+  ;(map.getSource('garden-draw-polygons') as GeoJSONSource).setData({
     type: 'FeatureCollection',
     features: polygonFeatures,
   })
 }
 
-function addDrawLayers(map: maplibregl.Map) {
+function addDrawLayers(map: MapLibreMap) {
   // In-progress drawing layers (separate sources for real-time feedback)
   map.addSource('garden-active-draw', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
-  drawLineLayer = map.addLayer({
+  map.addLayer({
     id: 'garden-active-line',
     type: 'line',
     source: 'garden-active-draw',
     paint: { 'line-color': '#0ea5e9', 'line-width': 3, 'line-opacity': 0.8, 'line-dasharray': [4, 2] },
   })
-  drawPolygonLayer = map.addLayer({
+  map.addLayer({
     id: 'garden-active-polygon',
     type: 'fill',
     source: 'garden-active-draw',
     paint: { 'fill-color': '#0ea5e9', 'fill-opacity': 0.2 },
   })
-  drawPointLayer = map.addLayer({
+  map.addLayer({
     id: 'garden-active-point',
     type: 'circle',
     source: 'garden-active-draw',
@@ -583,7 +584,7 @@ function addDrawLayers(map: maplibregl.Map) {
   })
 }
 
-function fitMapToFeatures(map: maplibregl.Map) {
+function fitMapToFeatures(map: MapLibreMap) {
   const features = visibleFeatures.value
   if (features.length === 0) return
   const bounds = computeBounds(features)
@@ -684,12 +685,7 @@ function handleMapClick(lng: number, lat: number) {
   }
 }
 
-function onMapMouseMove(e: maplibregl.MapMouseEvent) {
-  if (!isMapReady.value) return
-  coordinate.value = { lat: e.lngLat.lat, lng: e.lngLat.lng }
-}
-
-function updateDrawPreview(map: maplibregl.Map, lng: number, lat: number) {
+function updateDrawPreview(map: MapLibreMap, lng: number, lat: number) {
   if (!activeDraw) return
   const coords = [...activeDraw.coords, [lng, lat]]
   let feature: GeoJSON.Feature
@@ -698,7 +694,7 @@ function updateDrawPreview(map: maplibregl.Map, lng: number, lat: number) {
   } else {
     feature = { type: 'Feature', geometry: { type: 'Polygon', coordinates: [coords] }, properties: {} }
   }
-  ;(map.getSource('garden-active-draw') as maplibregl.GeoJSONSource).setData({
+  ;(map.getSource('garden-active-draw') as GeoJSONSource).setData({
     type: 'FeatureCollection',
     features: [feature],
   })
@@ -706,7 +702,7 @@ function updateDrawPreview(map: maplibregl.Map, lng: number, lat: number) {
 
 function clearDrawPreview() {
   if (!mapRef.value) return
-  ;(mapRef.value.getSource('garden-active-draw') as maplibregl.GeoJSONSource).setData({
+  ;(mapRef.value.getSource('garden-active-draw') as GeoJSONSource).setData({
     type: 'FeatureCollection',
     features: [],
   })
@@ -759,7 +755,7 @@ function selectFeatureAt(lng: number, lat: number) {
         ? [(f.geometry as GeoJSON.Point).coordinates as [number, number]]
         : f.type === 'line'
         ? ((f.geometry as GeoJSON.LineString).coordinates as [number, number][])
-        : ((f.geometry as GeoJSON.Polygon).coordinates as [number, number][])[0]
+        : ((f.geometry as GeoJSON.Polygon).coordinates as unknown as [number, number][][])[0]
     for (const c of coords) {
       const d = haversineDistance([lng, lat], c)
       if (d < 30 && (!nearest || d < nearest.dist)) {

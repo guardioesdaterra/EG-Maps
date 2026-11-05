@@ -42,6 +42,7 @@ interface Props {
   title?: string
   side?: 'right' | 'left' | 'center'
   dismissible?: boolean
+  width?: string
   height?: string
 }
 

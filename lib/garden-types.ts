@@ -83,9 +83,9 @@ export type PlantCategory = 'vegetable' | 'native-tree' | 'rhizome' | 'cover-cro
 
 export type GuildRole =
   | 'nitrogen-fixer' | 'dynamic-accumulator' | 'ground-cover'
-  | 'pest-repellent' | 'pollinator-attractor' | 'support' | 'root-breaker' | 'biomass'
+  | 'pest-repellent' | 'pollinator-attractor' | 'support' | 'root-breaker' | 'biomass' | 'fruit'
 
-export type HarvestablePart = 'leaf' | 'fruit' | 'root' | 'flower' | 'seed' | 'stem'
+export type HarvestablePart = 'leaf' | 'fruit' | 'root' | 'flower' | 'seed' | 'stem' | 'pod' | 'bulb' | 'biomass'
 
 export type SunRequirement = 'full' | 'partial' | 'shade'
 export type WaterRequirement = 'low' | 'medium' | 'high'

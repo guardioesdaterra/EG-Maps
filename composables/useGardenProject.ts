@@ -7,7 +7,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { GardenProject, GardenLayer, GardenFeature, GardenLocation, GardenLayerType, LayerStyle, DrawingMode, MeasurementResult } from '~/lib/garden-types'
-import { GARDEN_STORAGE_KEY, GARDEN_PROJECT_VERSION, LAYER_DEFAULTS, DEFAULT_LAYERS, DEFAULT_LOCATION, DEFAULT_HEMISPHERE, DEFAULT_LOCALE } from '~/lib/garden-constants'
+import { GARDEN_STORAGE_KEY, GARDEN_PROJECT_VERSION, LAYER_DEFAULTS, DEFAULT_LAYERS, DEFAULT_LOCATION, DEFAULT_HEMISPHERE, DEFAULT_LOCALE, DEFAULT_GARDEN_NAME } from '~/lib/garden-constants'
 import { generateId, validateProject, cloneProject, getHemisphere, defaultLocationForHemisphere } from '~/lib/garden-utils'
 
 export const useGardenProject = defineStore('garden-project', () => {

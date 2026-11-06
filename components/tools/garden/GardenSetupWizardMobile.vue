@@ -1,6 +1,6 @@
 <!--
   components/tools/garden/GardenSetupWizardMobile.vue
-  @why Mobile-first setup wizard for garden: address search + metric X/Y grid.
+  @why Flat, theme-aware mobile setup wizard — address search + metric X/Y grid.
   @component GardenSetupWizardMobile
   @emits confirm, cancel, fit-grid
 -->
@@ -21,7 +21,7 @@
         <button
           v-if="canCancel"
           class="wizard-close"
-          @click="$emit('cancel')"
+          @click="close"
           :aria-label="t('general.close')"
         >
           <Icon name="tabler:x" class="w-6 h-6" />
@@ -87,10 +87,7 @@
 
           <!-- Use My Location -->
           <button class="btn btn-secondary btn-full" :disabled="locating" @click="useMyLocation">
-            <Icon
-              :name="locating ? 'tabler:loader-2' : 'tabler:current-location'"
-              :class="locating ? 'w-5 h-5 animate-spin' : 'w-5 h-5'"
-            />
+            <Icon :name="locating ? 'tabler:loader-2' : 'tabler:current-location'" :class="locating ? 'w-5 h-5 animate-spin' : 'w-5 h-5'" />
             {{ locating ? t('tools.agroecologicalGarden.onboarding.locating') : t('tools.agroecologicalGarden.onboarding.useLocation') }}
           </button>
           <p v-if="locationError" class="field-error">{{ t('tools.agroecologicalGarden.onboarding.locationError') }}</p>
@@ -312,10 +309,6 @@ function goToGridStep() {
   emit('fit-grid')
 }
 
-function close() {
-  emit('close')
-}
-
 function setLocation(next: GardenLocation, reverseAddress = false) {
   location.value = next
   emit('fit-grid')
@@ -386,6 +379,10 @@ function setLocationFromMap(lng: number, lat: number) {
   setLocation({ lng, lat, zoom: Math.max(location.value.zoom, 19) }, true)
 }
 
+function close() {
+  emit('close')
+}
+
 onMounted(() => {
   if (address.value && !query.value) query.value = address.value
 })
@@ -394,456 +391,589 @@ defineExpose({ setLocationFromMap })
 </script>
 
 <style scoped>
-/* ── CSS Variables ───────────────────────────────────────────────────────── */
+/* ── CSS Variables (Theme-Aware) ─────────────────────────────────────────── */
 :root {
-  --wizard-w: min(92vw, 380px);
-  --wizard-max-h: calc(100vh - 4rem);
-  --header-h: 72px;
-  --progress-h: 48px;
-  --footer-h: 72px;
+  /* Light theme (default) */
+  --garden-space-xs: 4px;
+  --garden-space-sm: 8px;
+  --garden-space-md: 12px;
+  --garden-space-lg: 16px;
+  --garden-space-xl: 24px;
+  --garden-space-xxl: 32px;
+
+  --garden-radius-sm: 6px;
+  --garden-radius-md: 10px;
+  --garden-radius-lg: 14px;
+  --garden-radius-xl: 18px;
+  --garden-radius-full: 999px;
+
+  --garden-transition-fast: 120ms ease-out;
+  --garden-transition-base: 180ms ease-out;
+  --garden-transition-slow: 250ms ease-out;
+  --garden-transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --garden-color-neutral-50: #f8fafc;
+  --garden-color-neutral-100: #f1f5f9;
+  --garden-color-neutral-200: #e2e8f0;
+  --garden-color-neutral-300: #cbd5e1;
+  --garden-color-neutral-400: #94a3b8;
+  --garden-color-neutral-500: #64748b;
+  --garden-color-neutral-600: #475569;
+  --garden-color-neutral-700: #334155;
+  --garden-color-neutral-800: #1e293b;
+  --garden-color-neutral-900: #0f172a;
+  --garden-color-neutral-950: #020617;
+
+  --garden-color-brand-50: #f0f9ff;
+  --garden-color-brand-100: #e0f2fe;
+  --garden-color-brand-200: #bae6fd;
+  --garden-color-brand-300: #7dd3fc;
+  --garden-color-brand-400: #38bdf8;
+  --garden-color-brand-500: #0ea5e9;
+  --garden-color-brand-600: #0284c7;
+  --garden-color-brand-700: #0369a1;
+  --garden-color-brand-800: #075985;
+  --garden-color-brand-900: #0c4a6e;
+
+  --garden-color-success-50: #f0fdf4;
+  --garden-color-success-100: #dcfce7;
+  --garden-color-success-500: #22c55e;
+  --garden-color-success-600: #16a34a;
+  --garden-color-success-700: #15803d;
+
+  --garden-color-warning-50: #fffbeb;
+  --garden-color-warning-100: #fef3c7;
+  --garden-color-warning-500: #f59e0b;
+  --garden-color-warning-600: #d97706;
+
+  --garden-color-danger-50: #fef2f2;
+  --garden-color-danger-100: #fee2e2;
+  --garden-color-danger-500: #ef4444;
+  --garden-color-danger-600: #dc2626;
+
+  --garden-color-bg-primary: #f8fafc;
+  --garden-color-bg-secondary: #f1f5f9;
+  --garden-color-bg-tertiary: #e2e8f0;
+  --garden-color-bg-inverse: #0f172a;
+
+  --garden-color-surface-primary: #ffffff;
+  --garden-color-surface-secondary: #f1f5f9;
+  --garden-color-surface-tertiary: #e2e8f0;
+  --garden-color-surface-hover: #f1f5f9;
+  --garden-color-surface-active: #e2e8f0;
+
+  --garden-color-border-primary: #cbd5e1;
+  --garden-color-border-secondary: #e2e8f0;
+  --garden-color-border-focus: #0ea5e9;
+  --garden-color-border-error: #ef4444;
+
+  --garden-color-text-primary: #020617;
+  --garden-color-text-secondary: #64748b;
+  --garden-color-text-muted: #64748b;
+  --garden-color-text-inverse: #f8fafc;
+  --garden-color-text-link: #38bdf8;
+
+  --garden-color-brand-primary: #0ea5e9;
+  --garden-color-brand-hover: #0284c7;
+  --garden-color-brand-light: #f0f9ff;
+  --garden-color-brand-dark: #0369a1;
+
+  --garden-color-success-primary: #22c55e;
+  --garden-color-success-hover: #16a34a;
+  --garden-color-success-light: #f0fdf4;
+
+  --garden-color-warning-primary: #f59e0b;
+  --garden-color-warning-hover: #d97706;
+  --garden-color-warning-light: #fffbeb.
+
+  --garden-color-danger-primary: #ef4444.
+  --garden-color-danger-hover: #dc2626.
+  --garden-color-danger-light: #fef2f2.
+}
+
+/* Dark theme overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --garden-color-bg-primary: #020617;
+    --garden-color-bg-secondary: #0f172a;
+    --garden-color-bg-tertiary: #1e293b;
+    --garden-color-bg-inverse: #f8fafc.
+
+    --garden-color-surface-primary: #0f172a.
+    --garden-color-surface-secondary: #1e293b.
+    --garden-color-surface-tertiary: #334155.
+    --garden-color-surface-hover: #1e293b.
+    --garden-color-surface-active: #334155.
+
+    --garden-color-border-primary: #334155.
+    --garden-color-border-secondary: #1e293b.
+    --garden-color-border-focus: #38bdf8.
+    --garden-color-border-error: #f87171.
+
+    --garden-color-text-primary: #f8fafc.
+    --garden-color-text-secondary: #94a3b8.
+    --garden-color-text-muted: #64748b.
+    --garden-color-text-inverse: #020617.
+    --garden-color-text-link: #7dd3fc.
+
+    --garden-color-brand-primary: #38bdf8.
+    --garden-color-brand-hover: #0ea5e9.
+    --garden-color-brand-light: #0c4a6e.
+    --garden-color-brand-dark: #0369a1.
+
+    --garden-color-success-primary: #4ade80.
+    --garden-color-success-hover: #22c55e.
+    --garden-color-success-light: #052e16.
+
+    --garden-color-warning-primary: #fbbf24.
+    --garden-color-warning-hover: #f59e0b.
+    --garden-color-warning-light: #422006.
+
+    --garden-color-danger-primary: #f87171.
+    --garden-color-danger-hover: #ef4444.
+    --garden-color-danger-light: #450a0a.
+  }
 }
 
 /* ── Overlay ─────────────────────────────────────────────────────────────── */
 .wizard-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  animation: fade-in 0.2s var(--ease-out);
+  position: fixed.
+  inset: 0.
+  z-index: 1000.
+  display: flex.
+  align-items: center.
+  justify-content: center.
+  padding: var(--garden-space-xl).
+  background: rgba(0, 0, 0, 0.4).
+  animation: fade-in var(--garden-transition-fast) ease-out.
 }
 
 /* ── Wizard Card ─────────────────────────────────────────────────────────── */
 .wizard {
-  width: var(--wizard-w);
-  max-height: var(--wizard-max-h);
-  display: flex;
-  flex-direction: column;
-  border-radius: 20px;
-  border: 1px solid var(--glass-border);
-  background: var(--panel-bg);
-  color: var(--text-primary);
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-  animation: slide-up 0.35s var(--ease-spring);
+  width: min(92vw, 380px).
+  max-height: calc(100vh - 4rem).
+  display: flex.
+  flex-direction: column.
+  border-radius: var(--garden-radius-xl).
+  border: 1px solid var(--garden-color-border-primary).
+  background: var(--garden-color-surface-primary).
+  color: var(--garden-color-text-primary).
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--garden-color-border-primary).
+  overflow: hidden.
+  animation: slide-up var(--garden-transition-slow) var(--garden-transition-spring).
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
 .wizard-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  height: var(--header-h);
-  padding: 0 1.25rem;
-  border-bottom: 1px solid var(--glass-border);
-  flex-shrink: 0;
+  display: flex.
+  align-items: center.
+  gap: var(--garden-space-lg).
+  height: 64px.
+  padding: 0 var(--garden-space-xl).
+  border-bottom: 1px solid var(--garden-color-border-primary).
+  flex-shrink: 0.
 }
 
 .wizard-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border-radius: 12px;
-  border: 1px solid rgba(6, 182, 212, 0.35);
-  background: rgba(6, 182, 212, 0.12);
-  color: #06b6d4;
-  animation: pulse-ring 2s ease-out infinite;
+  display: inline-flex.
+  align-items: center.
+  justify-content: center.
+  width: 40px.
+  height: 40px.
+  flex-shrink: 0.
+  border-radius: var(--garden-radius-lg).
+  border: 1px solid var(--garden-color-brand-primary).
+  background: var(--garden-color-brand-light).
+  color: var(--garden-color-brand-primary).
+  animation: pulse-ring 2s ease-out infinite.
 }
 
 .wizard-title-group {
-  flex: 1;
-  min-width: 0;
+  flex: 1.
+  min-width: 0.
 }
 
 .wizard-step {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  font-size: 11px.
+  font-weight: 700.
+  letter-spacing: 0.08em.
+  text-transform: uppercase.
+  color: var(--garden-color-text-muted).
 }
 
 .wizard-title {
-  margin-top: 0.125rem;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
+  margin-top: 0.125rem.
+  font-size: 16px.
+  font-weight: 700.
+  color: var(--garden-color-text-primary).
 }
 
 .wizard-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  border: none;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: background 0.15s var(--ease-out), color 0.15s var(--ease-out), transform 0.1s var(--ease-out);
+  display: inline-flex.
+  align-items: center.
+  justify-content: center.
+  width: 40px.
+  height: 40px.
+  flex-shrink: 0.
+  border: none.
+  border-radius: var(--garden-radius-md).
+  background: transparent.
+  color: var(--garden-color-text-secondary).
+  cursor: pointer.
+  transition: background var(--garden-transition-fast) ease-out, color var(--garden-transition-fast) ease-out, transform var(--garden-transition-fast) ease-out.
 }
-.wizard-close:hover { background: var(--bg-secondary); color: var(--text-primary); transform: scale(1.05); }
+.wizard-close:hover { background: var(--garden-color-surface-hover); color: var(--garden-color-text-primary); transform: scale(1.05); }
 .wizard-close:active { transform: scale(0.95); }
 
 /* ── Progress ────────────────────────────────────────────────────────────── */
 .wizard-progress {
-  display: flex;
-  align-items: center;
-  height: var(--progress-h);
-  padding: 0 1.25rem;
-  border-bottom: 1px solid var(--glass-border);
-  flex-shrink: 0;
+  display: flex.
+  align-items: center.
+  height: 48px.
+  padding: 0 var(--garden-space-xl).
+  border-bottom: 1px solid var(--garden-color-border-primary).
+  flex-shrink: 0.
 }
 
 .progress-step {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1;
-  min-width: 0;
-  position: relative;
+  display: flex.
+  align-items: center.
+  gap: var(--garden-space-md).
+  flex: 1.
+  min-width: 0.
+  position: relative.
 }
 
 .step-dot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  font-size: 11px;
-  font-weight: 800;
-  transition: all 0.2s var(--ease-spring);
-  background: var(--input-bg);
-  color: var(--text-muted);
+  display: inline-flex.
+  align-items: center.
+  justify-content: center.
+  width: 28px.
+  height: 28px.
+  flex-shrink: 0.
+  border-radius: 50%.
+  font-size: 11px.
+  font-weight: 800.
+  transition: all var(--garden-transition-base) var(--garden-transition-spring).
+  background: var(--garden-color-surface-secondary).
+  color: var(--garden-color-text-muted).
 }
 .step-dot.active {
-  background: #06b6d4;
-  color: #fff;
-  transform: scale(1.15);
-  box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.2);
+  background: var(--garden-color-brand-primary).
+  color: var(--garden-color-text-inverse).
+  transform: scale(1.15).
+  box-shadow: 0 0 0 4px var(--garden-color-brand-100).
 }
 .step-dot.done {
-  background: #27ae60;
-  color: #fff;
+  background: var(--garden-color-success-primary).
+  color: var(--garden-color-text-inverse).
 }
 
 .step-label {
-  flex: 1;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: color 0.2s var(--ease-out);
+  flex: 1.
+  font-size: 10px.
+  font-weight: 600.
+  color: var(--garden-color-text-muted).
+  white-space: nowrap.
+  overflow: hidden.
+  text-overflow: ellipsis.
+  transition: color var(--garden-transition-base) ease-out.
 }
-.progress-step.active .step-label { color: #06b6d4; }
-.progress-step.done .step-label { color: #27ae60; }
+.progress-step.active .step-label { color: var(--garden-color-brand-primary); }
+.progress-step.done .step-label { color: var(--garden-color-success-primary); }
 
 .progress-line {
-  position: absolute;
-  top: 13px;
-  left: 50%;
-  right: -50%;
-  height: 2px;
-  background: var(--glass-border);
-  transition: background 0.2s var(--ease-out);
+  position: absolute.
+  top: 13px.
+  left: 50%.
+  right: -50%.
+  height: 2px.
+  background: var(--garden-color-border-primary).
+  transition: background var(--garden-transition-base) ease-out.
 }
-.progress-line.active { background: #06b6d4; }
+.progress-line.active { background: var(--garden-color-brand-primary); }
 
 /* ── Body ────────────────────────────────────────────────────────────────── */
 .wizard-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.25rem;
+  flex: 1.
+  overflow-y: auto.
+  padding: var(--garden-space-xl).
 }
 
 .wizard-step-content {
-  animation: fade-in-up 0.3s var(--ease-out-expo);
+  animation: fade-in-up var(--garden-transition-base) var(--garden-transition-spring).
 }
 
 .wizard-hint {
-  margin-bottom: 1rem;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-secondary);
+  margin-bottom: var(--garden-space-lg).
+  font-size: 13px.
+  line-height: 1.5.
+  color: var(--garden-color-text-secondary).
 }
 
 .field-group {
-  margin-bottom: 1rem;
+  margin-bottom: var(--garden-space-lg).
 }
 
 .field-label {
-  display: block;
-  margin-bottom: 0.375rem;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  display: block.
+  margin-bottom: var(--garden-space-sm).
+  font-size: 10px.
+  font-weight: 700.
+  letter-spacing: 0.04em.
+  text-transform: uppercase.
+  color: var(--garden-color-text-muted).
 }
 
 .field-input {
-  width: 100%;
-  padding: 0.75rem 0.875rem;
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  background: var(--input-bg);
-  color: var(--text-primary);
-  font-size: 15px;
-  outline: none;
-  transition: border-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out), background 0.15s var(--ease-out);
+  width: 100%.
+  padding: var(--garden-space-md) var(--garden-space-md).
+  border: 1px solid var(--garden-color-border-primary).
+  border-radius: var(--garden-radius-md).
+  background: var(--garden-color-surface-secondary).
+  color: var(--garden-color-text-primary).
+  font-size: 15px.
+  outline: none.
+  transition: border-color var(--garden-transition-fast) ease-out, box-shadow var(--garden-transition-fast) ease-out, background var(--garden-transition-fast) ease-out.
 }
 .field-input:focus {
-  border-color: var(--ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 20%, transparent);
-  background: var(--bg-tertiary);
+  border-color: var(--garden-color-border-focus).
+  box-shadow: 0 0 0 3px var(--garden-color-brand-100).
+  background: var(--garden-color-surface-primary).
 }
-.field-input:hover:not(:focus) { border-color: color-mix(in srgb, var(--glass-border) 70%, var(--ring)); }
+.field-input:hover:not(:focus) { border-color: var(--garden-color-border-secondary); }
 
 .input-with-suffix {
-  position: relative;
+  position: relative.
 }
 .input-suffix {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 12px;
-  color: var(--text-muted);
-  pointer-events: none;
+  position: absolute.
+  right: var(--garden-space-lg).
+  top: 50%.
+  transform: translateY(-50%).
+  font-size: 12px.
+  color: var(--garden-color-text-muted).
+  pointer-events: none.
 }
-.field-input + .input-suffix { padding-right: 2.5rem; }
+.field-input + .input-suffix { padding-right: 44px; }
 
 .search-wrapper {
-  position: relative;
+  position: relative.
 }
 .search-wrapper .icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  color: var(--text-muted);
-  pointer-events: none;
+  position: absolute.
+  left: var(--garden-space-lg).
+  top: 50%.
+  transform: translateY(-50%).
+  width: 20px.
+  height: 20px.
+  color: var(--garden-color-text-muted).
+  pointer-events: none.
 }
-.search-wrapper .field-input { padding-left: 2.75rem; }
+.search-wrapper .field-input { padding-left: 44px; }
 
 .search-spinner {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--ring);
+  position: absolute.
+  right: var(--garden-space-lg).
+  top: 50%.
+  transform: translateY(-50%).
+  color: var(--garden-color-brand-primary).
 }
 
 .results-list {
-  margin-top: 0.5rem;
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid var(--glass-border);
-  border-radius: 10px;
-  background: var(--bg-tertiary);
-  list-style: none;
-  padding: 0.375rem;
+  margin-top: var(--garden-space-sm).
+  max-height: 200px.
+  overflow-y: auto.
+  border: 1px solid var(--garden-color-border-primary).
+  border-radius: var(--garden-radius-lg).
+  background: var(--garden-color-surface-tertiary).
+  list-style: none.
+  padding: var(--garden-space-sm).
 }
 .result-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.625rem;
-  padding: 0.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.12s var(--ease-out);
+  display: flex.
+  align-items: flex-start.
+  gap: var(--garden-space-md).
+  padding: var(--garden-space-sm).
+  border-radius: var(--garden-radius-md).
+  cursor: pointer.
+  transition: background var(--garden-transition-fast) ease-out.
 }
-.result-item:hover { background: var(--bg-secondary); }
-.result-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.125rem; }
-.result-name { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.result-label { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.result-item:hover { background: var(--garden-color-surface-hover); }
+.result-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--garden-space-xs); }
+.result-name { font-size: 13px; font-weight: 600; color: var(--garden-color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.result-label { font-size: 11px; color: var(--garden-color-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.field-error { margin-top: 0.375rem; font-size: 11px; color: #ef4444; }
-.field-hint { margin-top: 0.375rem; font-size: 11px; color: var(--text-muted); }
+.field-error { margin-top: var(--garden-space-sm); font-size: 11px; color: var(--garden-color-danger-primary); }
+.field-hint { margin-top: var(--garden-space-sm); font-size: 11px; color: var(--garden-color-text-muted); }
 
 .coords-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  display: grid.
+  grid-template-columns: 1fr 1fr.
+  gap: var(--garden-space-lg).
+  margin-bottom: var(--garden-space-lg).
 }
 
 .map-hint {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.625rem 0.75rem;
-  border-radius: 10px;
-  border: 1px dashed var(--glass-border);
-  background: rgba(6, 182, 212, 0.04);
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--text-secondary);
+  display: flex.
+  align-items: flex-start.
+  gap: var(--garden-space-sm).
+  padding: var(--garden-space-sm) var(--garden-space-md).
+  border-radius: var(--garden-radius-md).
+  border: 1px dashed var(--garden-color-border-primary).
+  background: var(--garden-color-brand-light).
+  font-size: 11px.
+  line-height: 1.4.
+  color: var(--garden-color-text-secondary).
 }
 
 .selection-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.75rem;
-  border-radius: 10px;
-  border: 1px solid rgba(6, 182, 212, 0.3);
-  background: rgba(6, 182, 212, 0.06);
+  display: flex.
+  flex-direction: column.
+  gap: var(--garden-space-xs).
+  padding: var(--garden-space-md).
+  border-radius: var(--garden-radius-lg).
+  border: 1px solid var(--garden-color-brand-primary).
+  background: var(--garden-color-brand-light).
 }
 
 .summary-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  font-size: 9px.
+  font-weight: 700.
+  letter-spacing: 0.08em.
+  text-transform: uppercase.
+  color: var(--garden-color-text-muted).
 }
 
 .summary-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.4;
+  font-size: 13px.
+  font-weight: 600.
+  color: var(--garden-color-text-primary).
+  line-height: 1.4.
 }
 
 /* ── Grid Fields ─────────────────────────────────────────────────────────── */
 .grid-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  display: grid.
+  grid-template-columns: 1fr 1fr.
+  gap: var(--garden-space-lg).
 }
 
 .presets-group {
-  margin-top: 1rem;
+  margin-top: var(--garden-space-xl).
 }
 .presets-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  display: block.
+  margin-bottom: var(--garden-space-sm).
+  font-size: 9px.
+  font-weight: 700.
+  letter-spacing: 0.08em.
+  text-transform: uppercase.
+  color: var(--garden-color-text-muted).
 }
 .preset-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
+  display: flex.
+  flex-wrap: wrap.
+  gap: var(--garden-space-sm).
 }
 .preset-chip {
-  padding: 0.375rem 0.875rem;
-  border: 1px solid var(--glass-border);
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.15s var(--ease-out);
+  padding: var(--garden-space-xs) var(--garden-space-lg).
+  border: 1px solid var(--garden-color-border-primary).
+  border-radius: var(--garden-radius-full).
+  font-size: 11px.
+  font-weight: 600.
+  color: var(--garden-color-text-secondary).
+  background: transparent.
+  cursor: pointer.
+  transition: all var(--garden-transition-fast) ease-out.
 }
-.preset-chip:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.preset-chip:hover { background: var(--garden-color-surface-hover); color: var(--garden-color-text-primary); }
 
 .summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  margin-top: 1rem;
-  padding: 0.75rem;
-  border-radius: 12px;
-  border: 1px solid var(--glass-border);
-  background: var(--input-bg);
+  display: grid.
+  grid-template-columns: repeat(3, 1fr).
+  gap: var(--garden-space-md).
+  margin-top: var(--garden-space-xl).
+  padding: var(--garden-space-lg).
+  border-radius: var(--garden-radius-lg).
+  border: 1px solid var(--garden-color-border-primary).
+  background: var(--garden-color-surface-secondary).
 }
 .summary-item { text-align: center; }
 .summary-item dt {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  font-size: 9px.
+  font-weight: 700.
+  letter-spacing: 0.04em.
+  text-transform: uppercase.
+  color: var(--garden-color-text-muted).
 }
 .summary-item dd {
-  margin: 0.125rem 0 0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
+  margin: var(--garden-space-xs) 0 0.
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace.
+  font-size: 15px.
+  font-weight: 700.
+  color: var(--garden-color-text-primary).
 }
 
 .field-warning {
-  margin-top: 0.75rem;
-  padding: 0.625rem 0.75rem;
-  border-radius: 8px;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  font-size: 11px;
-  color: #f59e0b;
+  margin-top: var(--garden-space-lg).
+  padding: var(--garden-space-md) var(--garden-space-md).
+  border-radius: var(--garden-radius-md).
+  background: var(--garden-color-warning-light).
+  border: 1px solid var(--garden-color-warning-primary).
+  font-size: 11px.
+  color: var(--garden-color-warning-primary).
 }
 
 /* ── Footer ──────────────────────────────────────────────────────────────── */
 .wizard-footer {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  height: var(--footer-h);
-  padding: 0 1.25rem;
-  border-top: 1px solid var(--glass-border);
-  flex-shrink: 0;
+  display: flex.
+  align-items: center.
+  gap: var(--garden-space-md).
+  height: 72px.
+  padding: 0 var(--garden-space-xl).
+  border-top: 1px solid var(--garden-color-border-primary).
+  flex-shrink: 0.
 }
 
 .spacer { flex: 1; }
 
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  border: none;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s var(--ease-out);
+  display: inline-flex.
+  align-items: center.
+  justify-content: center.
+  gap: var(--garden-space-sm).
+  padding: var(--garden-space-md) var(--garden-space-xl).
+  border: none.
+  border-radius: var(--garden-radius-md).
+  font-size: 13px.
+  font-weight: 600.
+  cursor: pointer.
+  transition: all var(--garden-transition-fast) ease-out.
 }
 .btn:active { transform: scale(0.98); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .btn-primary {
-  background: #06b6d4;
-  color: #fff;
+  background: var(--garden-color-brand-primary).
+  color: var(--garden-color-text-inverse).
 }
-.btn-primary:hover:not(:disabled) { background: #0891b2; }
-.btn-primary:focus-visible { outline: 2px solid #06b6d4; outline-offset: 2px; }
+.btn-primary:hover:not(:disabled) { background: var(--garden-color-brand-hover); }
+.btn-primary:focus-visible { outline: 2px solid var(--garden-color-border-focus); outline-offset: 2px; }
 
 .btn-secondary {
-  border: 1px solid var(--glass-border);
-  background: transparent;
-  color: var(--text-secondary);
+  border: 1px solid var(--garden-color-border-primary).
+  background: transparent.
+  color: var(--garden-color-text-secondary).
 }
-.btn-secondary:hover:not(:disabled) { background: var(--bg-secondary); color: var(--text-primary); border-color: var(--ring); }
+.btn-secondary:hover:not(:disabled) { background: var(--garden-color-surface-hover); color: var(--garden-color-text-primary); border-color: var(--garden-color-border-focus); }
 
 .btn-ghost {
-  border: 1px solid var(--glass-border);
-  background: transparent;
-  color: var(--text-secondary);
+  border: 1px solid var(--garden-color-border-primary).
+  background: transparent.
+  color: var(--garden-color-text-secondary).
 }
-.btn-ghost:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.btn-ghost:hover { background: var(--garden-color-surface-hover); color: var(--garden-color-text-primary); }
 .btn-full { width: 100%; }
 
 /* ── Animations ──────────────────────────────────────────────────────────── */
@@ -876,18 +1006,15 @@ defineExpose({ setLocationFromMap })
     animation: none !important;
     transition-duration: 0.01ms !important;
   }
+  .wizard-badge { animation: none !important; }
 }
 
 /* ── Mobile Adjustments ──────────────────────────────────────────────────── */
 @media (max-width: 480px) {
-  :root {
-    --wizard-w: 100vw;
-    --wizard-max-h: 100vh;
-  }
-  .wizard { border-radius: 0; }
-  .wizard-body { padding: 1rem; }
+  .wizard { width: 100vw; max-height: 100vh; border-radius: 0; }
+  .wizard-body { padding: var(--garden-space-lg); }
   .wizard-header,
   .wizard-progress,
-  .wizard-footer { padding-left: 1rem; padding-right: 1rem; }
+  .wizard-footer { padding-left: var(--garden-space-lg); padding-right: var(--garden-space-lg); }
 }
 </style>

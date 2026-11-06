@@ -60,6 +60,21 @@ export interface GardenLocation {
   zoom: number
 }
 
+/** Metric working surface for the garden: X/Y dimensions, cell size, rotation. */
+export interface GardenGrid {
+  /** X — east/west side before rotation, metres. */
+  widthM: number
+  /** Y — north/south side before rotation, metres. */
+  heightM: number
+  /** Cell side, metres. */
+  cellM: number
+  /** Rotation around the centre, degrees (positive = counter-clockwise). */
+  rotationDeg: number
+  /** Derived count of columns/rows. */
+  cols: number
+  rows: number
+}
+
 export interface GardenMetadata {
   createdAt: number
   updatedAt: number
@@ -75,6 +90,10 @@ export interface GardenProject {
   description: string
   location: GardenLocation
   bounds: [[number, number], [number, number]] // [[swLng, swLat], [neLng, neLat]]
+  /** Working surface chosen in the first-run setup (address + metric grid). */
+  grid?: GardenGrid
+  /** Human-readable address captured by the setup wizard. */
+  address?: string
   layers: GardenLayer[]
   metadata: GardenMetadata
 }

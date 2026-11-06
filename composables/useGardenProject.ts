@@ -6,7 +6,7 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
-import type { GardenProject, GardenLayer, GardenFeature, GardenLocation, GardenLayerType, LayerStyle, DrawingMode, MeasurementResult } from '~/lib/garden-types'
+import type { GardenProject, GardenLayer, GardenFeature, GardenLocation, GardenLayerType, LayerStyle, DrawingMode, MeasurementResult, GardenGrid } from '~/lib/garden-types'
 import { GARDEN_STORAGE_KEY, GARDEN_PROJECT_VERSION, LAYER_DEFAULTS, DEFAULT_LAYERS, DEFAULT_LOCATION, DEFAULT_HEMISPHERE, DEFAULT_LOCALE, DEFAULT_GARDEN_NAME } from '~/lib/garden-constants'
 import { generateId, validateProject, cloneProject, getHemisphere, defaultLocationForHemisphere } from '~/lib/garden-utils'
 
@@ -167,6 +167,35 @@ export const useGardenProject = defineStore('garden-project', () => {
     return project
   }
 
+  interface GardenSetup {
+    name?: string
+    address?: string
+    location: GardenLocation
+    grid: GardenGrid
+  }
+
+  /**
+   * First-run setup: apply the address + metric grid to the active project,
+   * creating it when this is a brand-new workspace. Existing layers/features
+   * are never discarded when the area is edited again.
+   */
+  function configureProject(setup: GardenSetup): GardenProject {
+    const project = activeProject.value ?? createProject(setup.name || DEFAULT_GARDEN_NAME, setup.location)
+    snapshot()
+    project.name = (setup.name || '').trim() || project.name || DEFAULT_GARDEN_NAME
+    project.address = (setup.address || '').trim()
+    project.location = { ...setup.location }
+    project.grid = { ...setup.grid }
+    project.metadata.hemisphere = getHemisphere(setup.location.lat)
+    project.metadata.updatedAt = Date.now()
+    resetHistory()
+    touchProject()
+    // The area setup is an explicit, deliberate action — persist it right away
+    // so closing the tab before the debounce does not lose the chosen grid.
+    saveToStorage()
+    return project
+  }
+
   function createLayer(type: GardenLayerType): GardenLayer {
     const defaults = LAYER_DEFAULTS[type]
     return {
@@ -181,8 +210,7 @@ export const useGardenProject = defineStore('garden-project', () => {
     }
   }
 
-  function addLayer(type: GardenLayerType): GardenLayer {
-    if (!activeProject.value) return createProject().layers[0]
+  function addLayer(type: GardenLayerType): GardenLayer {    if (!activeProject.value) return createProject().layers[0]
     snapshot()
     const layer = createLayer(type)
     activeProject.value.layers.push(layer)
@@ -487,12 +515,19 @@ export const useGardenProject = defineStore('garden-project', () => {
     if (autoSaveTimer) clearTimeout(autoSaveTimer)
     autoSaveTimer = setTimeout(() => {
       if (isDirty.value) saveToStorage()
-    }, 5000)
+    }, 1200)
   }
 
   // Watch for changes to auto-save
   // Note: In Pinia, we can't easily watch nested reactive state.
   // Components should call scheduleAutoSave() after mutations.
+  watch(
+    () => activeProject.value,
+    () => {
+      if (isDirty.value) scheduleAutoSave()
+    },
+    { deep: true },
+  )
 
   // ── Initialize ─────────────────────────────────────────────────────────────
 
@@ -530,6 +565,7 @@ export const useGardenProject = defineStore('garden-project', () => {
 
     // Actions
     createProject,
+    configureProject,
     addLayer,
     deleteLayer,
     setLayerVisibility,

@@ -98,10 +98,10 @@
     </header>
 
     
-    <div v-if="layoutControlsReady && showDock && !hideAll && !isEgGrantsRoute" data-map-popup-safe-area="bottom" class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] xs:bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
+    <div v-if="layoutControlsReady && showDock && !hideAll && !isEgGrantsRoute && !isToolsRoute" data-map-popup-safe-area="bottom" class="fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] xs:bottom-[calc(env(safe-area-inset-bottom)+1rem)] left-1/2 z-[9999] max-w-[calc(100vw-1rem)] xs:max-w-[calc(100vw-1.5rem)] -translate-x-1/2">
       <div :class="dockShellClass">
         <div class="flex items-center gap-1">
-          <GooeyNav :items="navItems" @action="handleNavAction" />
+          <GooeyNav :items="navItems" />
 
           
           <div :class="separatorClass" />
@@ -201,21 +201,6 @@
     </div>
   </div>
 
-  <ToolsSheet
-    v-model:open="showToolsSheet"
-    :title="activeToolLabel"
-    :content-padded="!activeTool"
-    :show-back="Boolean(activeTool)"
-    side="center"
-    :width="'100vw'"
-    :height="'100vh'"
-    @close="closeToolsSheet"
-    @back="backToToolsHub"
-  >
-    <AgroecologicalGardenTool v-if="activeTool === 'agroecological-garden'" @close="backToToolsHub" />
-    <OfflineSatelliteTool v-else-if="activeTool === 'satellite-downloader'" @close="backToToolsHub" />
-    <ToolsHub v-else @select="openTool" />
-  </ToolsSheet>
   </div>
 </template>
 
@@ -226,11 +211,7 @@ import { useI18n as useAppI18n, type Locale } from '@/composables/useI18n'
 import { useCustomData } from '@/composables/useCustomData'
 import { useMapTileProvider } from '@/composables/useMapTileProvider'
 import { canonicalizeMapLayoutPath, isMapLayoutRoute } from '@/lib/map-routes'
-import AgroecologicalGardenTool from '@/components/tools/garden/AgroecologicalGardenTool.vue'
-import OfflineSatelliteTool from '@/components/tools/satellite/OfflineSatelliteTool.vue'
-import ToolsHub from '@/components/tools/ToolsHub.vue'
-import ToolsSheet from '@/components/ui/ToolsSheet.vue'
-import { getTool, toolHash, toolIdFromHash, type ToolId } from '@/lib/tools'
+import { getTool, toolIdFromHash, toolRoute } from '@/lib/tools'
 
 const route = useRoute()
 const router = useRouter()
@@ -238,64 +219,26 @@ const router = useRouter()
 const { t, locale, availableLocales, localeNames, setLocale } = useAppI18n()
 
 const showDock = ref(true)
-const showToolsSheet = ref(false)
-const activeTool = ref<ToolId | null>(null)
 const layoutControlsReady = ref(false)
 
 function updateDockFromHash() {
   if (typeof window !== 'undefined') {
     showDock.value = !window.location.hash.includes('no-dock')
-    const hashedTool = toolIdFromHash(window.location.hash)
-    if (window.location.hash.startsWith('#tools')) {
-      // A tool hash arriving after mount (pasted link, in-app anchor) opens the sheet.
-      showToolsSheet.value = true
-      activeTool.value = hashedTool
-    } else if (showToolsSheet.value) {
-      activeTool.value = hashedTool
-    }
   }
 }
 
-/** Header label: the hub says "Tools", an open tool names itself first. */
-const activeToolLabel = computed(() => {
-  const tool = getTool(activeTool.value)
-  if (!tool || tool.status !== 'ready') return t('tools.title')
-  return `${t(tool.nameKey)} · ${t('tools.title')}`
-})
-
-function syncToolsHash(hash: string | null) {
+/**
+ * Legacy `#tools/<hash>` deep links predate the `/tools/<id>` routes. Rewrite
+ * them on arrival so shared links keep working.
+ */
+function migrateToolsHash() {
   if (typeof window === 'undefined') return
-  const base = window.location.pathname + window.location.search
-  const next = hash ? `${base}#${hash}` : base
-  if (`${window.location.pathname}${window.location.search}${window.location.hash}` === next) return
-  window.history.replaceState(window.history.state, '', next)
-}
-
-function openToolsSheet() {
-  showToolsSheet.value = true
-  syncToolsHash(activeTool.value ? `tools/${toolHash(activeTool.value)}` : 'tools')
-}
-
-function closeToolsSheet() {
-  showToolsSheet.value = false
-  activeTool.value = null
-  syncToolsHash(null)
-}
-
-function backToToolsHub() {
-  activeTool.value = null
-  syncToolsHash('tools')
-}
-
-function openTool(id: ToolId) {
-  activeTool.value = id
-  syncToolsHash(`tools/${toolHash(id)}`)
-}
-
-function handleNavAction(action: string) {
-  if (action === 'openTools') {
-    openToolsSheet()
-  }
+  const hash = window.location.hash
+  if (!hash.startsWith('#tools')) return
+  const tool = getTool(toolIdFromHash(hash))
+  const target = tool ? toolRoute(tool.id) : '/tools'
+  if (route.path === target) return
+  router.replace({ path: target, query: route.query })
 }
 
 onMounted(async () => {
@@ -315,19 +258,20 @@ onMounted(async () => {
     if (queryRestored) delete document.documentElement.dataset.egInitialMapSearch
   }
   updateDockFromHash()
-  // Deep link: reloading or sharing #tools/<tool> reopens that tool directly.
-  if (window.location.hash.startsWith('#tools')) {
-    activeTool.value = toolIdFromHash(window.location.hash)
-    showToolsSheet.value = true
-  }
+  migrateToolsHash()
   layoutControlsReady.value = true
-  window.addEventListener('hashchange', updateDockFromHash)
+  window.addEventListener('hashchange', handleHashChange)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
-  window.removeEventListener('hashchange', updateDockFromHash)
+  window.removeEventListener('hashchange', handleHashChange)
 })
+
+function handleHashChange() {
+  updateDockFromHash()
+  migrateToolsHash()
+}
 
 interface NavItem {
   path: string
@@ -344,7 +288,7 @@ const navItems: NavItem[] = [
   { path: '/vulcan-observatory', labelKey: 'nav.observatoryOfVulcan', icon: 'tabler:volcano', variant: 'orange' },
   { path: '/active-crews', labelKey: 'nav.activeCrews', icon: 'tabler:user', variant: 'cyan' },
   { path: 'https://www.earthguardians.org/crews', labelKey: 'nav.joinEarthGuardians', icon: 'tabler:user-plus', variant: 'cyan', external: true },
-  { path: '#tools', labelKey: 'nav.tools', icon: 'tabler:tools', variant: 'cyan', action: 'openTools' },
+  { path: '/tools', labelKey: 'nav.tools', icon: 'tabler:tools', variant: 'cyan' },
 ]
 
 const headerItems: NavItem[] = [
@@ -383,6 +327,7 @@ const hideAll = computed(() => queryFlagIsTrue('hideAll'))
 const controlsForced = computed(() => queryFlagIsTrue('controls'))
 const isVulcanRoute = computed(() => route.path.startsWith('/vulcan-observatory'))
 const isEgGrantsRoute = computed(() => route.path.startsWith('/eg-grants'))
+const isToolsRoute = computed(() => route.path === '/tools' || route.path.startsWith('/tools/'))
 const showUnifiedHeader = computed(() => layoutControlsReady.value && (isMapRoute.value || route.path === '/info') && !noControl.value && !hideAll.value && !controlsForced.value && !isVulcanRoute.value)
 const showViewToggle = computed(() => isMapRoute.value && !noControl.value && !hideAll.value && !controlsForced.value)
 

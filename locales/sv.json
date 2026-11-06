@@ -124,7 +124,14 @@
     "of": "av",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "eller öppna listan för att bläddra bland alla",
-    "searchResults": "Sökresultat"
+    "searchResults": "Sökresultat",
+    "basemapStyle": "Baskartstil",
+    "gridDensity": {
+      "title": "Gridtäthet",
+      "cells": "{cells} celler · {points} kartade punkter",
+      "cellSize": "≈ {km} km per cell",
+      "on": "Geografisk grid: på"
+    }
   },
   "mapTiles": {
     "maptiler": "Satellit",
@@ -1551,7 +1558,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "Typ",
+        "value": "Resultat"
       },
       "project": {
         "title": "Garden Project",
@@ -1623,7 +1632,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "Rita"
+    },
+    "readyBadge": "Klar",
+    "comingSoonBadge": "Kommer snart",
+    "tipsTitle": "Så fungerar verktygen",
+    "tipGarden": "Trädgårdsdesigner sparas på den här enheten — exportera GeoJSON för att dela med din Crew.",
+    "tipSatellite": "Nedladdade satellitplattor stannar på enheten, så kartan fungerar utan uppkoppling.",
+    "tipStorage": "Lagret fylls snabbt vid hög zoom. Håll områden små och zoomintervall korta.",
+    "satelliteDownloader": {
+      "title": "Satellit offline",
+      "description": "Ladda ner satellitbilder för ett område så kartan fungerar utan uppkoppling.",
+      "area": "Område",
+      "useView": "Använd aktuell vy",
+      "manual": "Ange gränser",
+      "north": "Norr",
+      "south": "Söder",
+      "east": "Öster",
+      "west": "Väster",
+      "invalidBounds": "Gränserna ser fel ut — norr måste ligga ovanför söder, öster till höger om väster och området vara under 60°.",
+      "zoomLevels": "Zoomnivåer",
+      "minZoom": "Från zoom",
+      "maxZoom": "Till zoom",
+      "estimate": "Ungefär {tiles} plattor att ladda ner",
+      "largeAreaWarning": "Det är en stor nedladdning och kan fylla offlinecacheminnet.",
+      "download": "Ladda ner område",
+      "cancel": "Avbryt",
+      "progress": "{done} av {total} plattor",
+      "failed": "{count} misslyckades",
+      "needsConnection": "En uppkoppling krävs för att ladda ner plattor.",
+      "cache": "Offlinecache",
+      "cachedTiles": "Cachade plattor",
+      "cacheSize": "Cachestorlek",
+      "connection": "Anslutning",
+      "online": "Online",
+      "offline": "Offline",
+      "clearCache": "Rensa cache",
+      "cacheNote": "Sparade plattor är privata i den här webbläsaren och tas bort om du rensar webbplatsdata.",
+      "done": "Laddade ner {count} plattor för offlinebruk",
+      "doneWithErrors": "{failed} plattor kunde inte laddas ner",
+      "cancelled": "Nedladdningen avbruten",
+      "cacheCleared": "Offlinecachen rensad"
+    },
+    "speciesWatchlist": {
+      "title": "Artlista",
+      "description": "Följ hotade arter nära din Crew och få en checklista för fältundersökningar."
+    },
+    "crewOutreach": {
+      "title": "Crew-besöksplanerare",
+      "description": "Planera besök och kampanjer mellan Crew med rutter och kontaktlistor."
     }
+  },
+  "mapStyles": {
+    "hybrid": "Satellit + etiketter",
+    "satellite": "Endast satellit",
+    "streets": "Gator",
+    "outdoors": "Utomhus"
   }
 }

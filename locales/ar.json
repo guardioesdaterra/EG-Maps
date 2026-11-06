@@ -180,7 +180,14 @@
     "exportData": "تصدير البيانات الظاهرة بصيغة GeoJSON",
     "legend": "مفتاح الخريطة",
     "moreTools": "المزيد من أدوات الخريطة",
-    "hideTools": "إخفاء أدوات الخريطة"
+    "hideTools": "إخفاء أدوات الخريطة",
+    "basemapStyle": "أسلوب الخريطة الأساسية",
+    "gridDensity": {
+      "title": "كثافة الشبكة",
+      "cells": "{cells} خلية · {points} نقطة على الخريطة",
+      "cellSize": "≈ {km} كم لكل خلية",
+      "on": "الشبكة الجغرافية: مفعّلة"
+    }
   },
   "mapTiles": {
     "maptiler": "قمر صناعي",
@@ -1766,7 +1773,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "النوع",
+        "value": "النتيجة"
       },
       "project": {
         "title": "Garden Project",
@@ -1838,7 +1847,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "رسم"
+    },
+    "readyBadge": "جاهز",
+    "comingSoonBadge": "قريبًا",
+    "tipsTitle": "كيف تعمل الأدوات",
+    "tipGarden": "تُحفظ تصاميم الحدائق على هذا الجهاز — صدّر GeoJSON لمشاركتها مع Crew.",
+    "tipSatellite": "تبقى بلاطات القمر الصناعي المحمّلة على هذا الجهاز، فتعمل الخريطة دون اتصال.",
+    "tipStorage": "يمتلئ التخزين بسرعة عند التكبير العالي، لذا اجعل المساحة ونطاق التكبير صغيرين.",
+    "satelliteDownloader": {
+      "title": "قمر صناعي دون اتصال",
+      "description": "حمّل صور القمر الصناعي لمنطقة لتعمل الخريطة دون اتصال.",
+      "area": "المنطقة",
+      "useView": "استخدم العرض الحالي",
+      "manual": "أدخل الحدود",
+      "north": "شمال",
+      "south": "جنوب",
+      "east": "شرق",
+      "west": "غرب",
+      "invalidBounds": "الحدود غير صحيحة: يجب أن يكون الشمال فوق الجنوب والشرق يمين الغرب، وألا تتجاوز المساحة 60°.",
+      "zoomLevels": "مستويات التكبير",
+      "minZoom": "من تكبير",
+      "maxZoom": "إلى تكبير",
+      "estimate": "نحو {tiles} بلاطة للتحميل",
+      "largeAreaWarning": "هذا تحميل كبير وقد يملأ ذاكرة التخزين المؤقت.",
+      "download": "تحميل المنطقة",
+      "cancel": "إلغاء",
+      "progress": "{done} من {total} بلاطة",
+      "failed": "فشل {count}",
+      "needsConnection": "التحميل يحتاج إلى اتصال.",
+      "cache": "الذاكرة المؤقتة",
+      "cachedTiles": "البلاطات المخزنة",
+      "cacheSize": "حجم الذاكرة",
+      "connection": "الاتصال",
+      "online": "متصل",
+      "offline": "غير متصل",
+      "clearCache": "مسح الذاكرة",
+      "cacheNote": "البلاطات المخزنة خاصة بهذا المتصفح وتُحذف عند مسح بيانات الموقع.",
+      "done": "تم تحميل {count} بلاطة للاستخدام دون اتصال",
+      "doneWithErrors": "تعذّر تحميل {failed} بلاطة",
+      "cancelled": "أُلغي التحميل",
+      "cacheCleared": "مُسحت الذاكرة المؤقتة"
+    },
+    "speciesWatchlist": {
+      "title": "قائمة الأنواع",
+      "description": "تابع الأنواع المهددة قرب Crew واحصل على قائمة للرحلات الميدانية."
+    },
+    "crewOutreach": {
+      "title": "منظم الزيارات",
+      "description": "خطط الزيارات والحملات بين مجموعات Crew مع مسارات وقوائم اتصال."
     }
+  },
+  "mapStyles": {
+    "hybrid": "قمر صناعي مع تسميات",
+    "satellite": "قمر صناعي فقط",
+    "streets": "الشارع",
+    "outdoors": "الطبيعة"
   }
 }

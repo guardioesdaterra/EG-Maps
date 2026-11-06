@@ -124,7 +124,14 @@
     "of": "/",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "또는 목록을 열어 모두 탐색",
-    "searchResults": "검색 결과"
+    "searchResults": "검색 결과",
+    "basemapStyle": "기본 지도 스타일",
+    "gridDensity": {
+      "title": "그리드 밀도",
+      "cells": "{cells} 셀 · 지도 포인트 {points}개",
+      "cellSize": "셀당 약 {km}km",
+      "on": "지리 그리드: 켜짐"
+    }
   },
   "mapTiles": {
     "maptiler": "위성",
@@ -1551,7 +1558,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "유형",
+        "value": "결과"
       },
       "project": {
         "title": "Garden Project",
@@ -1623,7 +1632,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "묘사"
+    },
+    "readyBadge": "사용 가능",
+    "comingSoonBadge": "곧 추가 예정",
+    "tipsTitle": "도구 동작 방식",
+    "tipGarden": "정원 설계는 이 기기에 저장됩니다. Crew와 공유하려면 GeoJSON으로 내보내세요.",
+    "tipSatellite": "다운로드한 위성 타일은 이 기기에 남아 연결 없이도 지도를 볼 수 있습니다.",
+    "tipStorage": "줌을 크게 하면 저장 공간이 금방 찹니다. 범위와 줌 구간을 좁게 유지하세요.",
+    "satelliteDownloader": {
+      "title": "위성 오프라인",
+      "description": "해당 지역의 위성 이미지를 다운로드해 연결 없이 지도를 사용합니다.",
+      "area": "지역",
+      "useView": "현재 보기 사용",
+      "manual": "범위 입력",
+      "north": "북",
+      "south": "남",
+      "east": "동",
+      "west": "서",
+      "invalidBounds": "범위가 올바르지 않습니다. 북이 남보다 위, 동이 서보다 오른쪽이어야 하며 범위는 60° 이내여야 합니다.",
+      "zoomLevels": "줌 레벨",
+      "minZoom": "시작 줌",
+      "maxZoom": "끝 줌",
+      "estimate": "다운로드할 타일 약 {tiles}개",
+      "largeAreaWarning": "용량이 커서 오프라인 캐시를 가득 채울 수 있습니다.",
+      "download": "지역 다운로드",
+      "cancel": "취소",
+      "progress": "{total}개 중 {done}개 타일",
+      "failed": "{count}개 실패",
+      "needsConnection": "타일 다운로드에는 연결이 필요합니다.",
+      "cache": "오프라인 캐시",
+      "cachedTiles": "캐시된 타일",
+      "cacheSize": "캐시 크기",
+      "connection": "연결 상태",
+      "online": "온라인",
+      "offline": "오프라인",
+      "clearCache": "캐시 비우기",
+      "cacheNote": "저장된 타일은 이 브라우저 전용이며 사이트 데이터를 삭제하면 사라집니다.",
+      "done": "오프라인용으로 {count}개 타일을 다운로드했습니다",
+      "doneWithErrors": "{failed}개 타일을 다운로드하지 못했습니다",
+      "cancelled": "다운로드가 취소되었습니다",
+      "cacheCleared": "오프라인 캐시를 비웠습니다"
+    },
+    "speciesWatchlist": {
+      "title": "종 모니터링 목록",
+      "description": "Crew 주변의 멸종 위기 종을 추적하고 현장 조사용 체크리스트를 받으세요."
+    },
+    "crewOutreach": {
+      "title": "Crew 아웃리치 계획",
+      "description": "Crew 간 방문과 캠페인을 경유지와 연락처 목록과 함께 계획합니다."
     }
+  },
+  "mapStyles": {
+    "hybrid": "위성 + 라벨",
+    "satellite": "위성만",
+    "streets": "도로",
+    "outdoors": "야외"
   }
 }

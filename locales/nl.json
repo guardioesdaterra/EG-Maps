@@ -180,7 +180,14 @@
     "exportData": "Zichtbare gegevens exporteren als GeoJSON",
     "legend": "Legenda",
     "moreTools": "Meer kaarttools",
-    "hideTools": "Kaarttools verbergen"
+    "hideTools": "Kaarttools verbergen",
+    "basemapStyle": "Basiskaartstijl",
+    "gridDensity": {
+      "title": "Roosterdichtheid",
+      "cells": "{cells} cellen · {points} gekaarte punten",
+      "cellSize": "≈ {km} km per cel",
+      "on": "Geo-rooster: aan"
+    }
   },
   "mapTiles": {
     "maptiler": "Satelliet",
@@ -1766,7 +1773,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "Type",
+        "value": "Resultaat"
       },
       "project": {
         "title": "Garden Project",
@@ -1838,7 +1847,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "Tekenen"
+    },
+    "readyBadge": "Klaar",
+    "comingSoonBadge": "Binnenkort",
+    "tipsTitle": "Hoe de tools werken",
+    "tipGarden": "Tuinontwerpen worden op dit apparaat opgeslagen — exporteer GeoJSON om ze met je Crew te delen.",
+    "tipSatellite": "Gedownloade satelliettegels blijven op dit apparaat, dus de kaart werkt zonder verbinding.",
+    "tipStorage": "Opspace raakt snel vol bij hoog zoom. Houd gebieden klein en zoomreeksen kort.",
+    "satelliteDownloader": {
+      "title": "Satelliet offline",
+      "description": "Download satellietbeelden voor een gebied zodat de kaart werkt zonder verbinding.",
+      "area": "Gebied",
+      "useView": "Huidige weergave gebruiken",
+      "manual": "Grenzen invoeren",
+      "north": "Noord",
+      "south": "Zuid",
+      "east": "Oost",
+      "west": "West",
+      "invalidBounds": "Grenzen kloppen niet — noord moet boven zuid liggen, oost rechts van west, en het gebied onder 60°.",
+      "zoomLevels": "Zoomniveaus",
+      "minZoom": "Van zoom",
+      "maxZoom": "Tot zoom",
+      "estimate": "Ongeveer {tiles} tegels om te downloaden",
+      "largeAreaWarning": "Dit is een grote download en kan de offline cache vullen.",
+      "download": "Gebied downloaden",
+      "cancel": "Annuleren",
+      "progress": "{done} van {total} tegels",
+      "failed": "{count} mislukt",
+      "needsConnection": "Er is een verbinding nodig om tegels te downloaden.",
+      "cache": "Offline cache",
+      "cachedTiles": "Cachetegels",
+      "cacheSize": "Cachegrootte",
+      "connection": "Verbinding",
+      "online": "Online",
+      "offline": "Offline",
+      "clearCache": "Cache wissen",
+      "cacheNote": "Opgeslagen tegels zijn privé voor deze browser en verdwijnen als je sitégegevens wist.",
+      "done": "{count} tegels gedownload voor offline gebruik",
+      "doneWithErrors": "{failed} tegels konden niet worden gedownload",
+      "cancelled": "Download geannuleerd",
+      "cacheCleared": "Offline cache gewist"
+    },
+    "speciesWatchlist": {
+      "title": "Soortenlijst",
+      "description": "Volg bedreigde soorten bij jouw Crew en krijg een checklist voor veldwerkdagen."
+    },
+    "crewOutreach": {
+      "title": "Crew-bezoeksplanner",
+      "description": "Plan bezoeken en campagnes over Crews heen met routes en contactlijsten."
     }
+  },
+  "mapStyles": {
+    "hybrid": "Satelliet + labels",
+    "satellite": "Alleen satelliet",
+    "streets": "Straten",
+    "outdoors": "Buitenshuis"
   }
 }

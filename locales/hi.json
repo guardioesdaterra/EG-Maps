@@ -180,7 +180,14 @@
     "exportData": "दिखाई देने वाला डेटा GeoJSON के रूप में निर्यात करें",
     "legend": "मानचित्र संकेत",
     "moreTools": "और मानचित्र उपकरण",
-    "hideTools": "मानचित्र उपकरण छिपाएँ"
+    "hideTools": "मानचित्र उपकरण छिपाएँ",
+    "basemapStyle": "बेसमैप शैली",
+    "gridDensity": {
+      "title": "ग्रिड घनत्व",
+      "cells": "{cells} सेल · {points} मानचित्रित बिंदु",
+      "cellSize": "प्रति सेल ≈ {km} किमी",
+      "on": "भौगोलिक ग्रिड: चालू"
+    }
   },
   "mapTiles": {
     "maptiler": "सैटेलाइट",
@@ -1766,7 +1773,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "प्रकार",
+        "value": "परिणाम"
       },
       "project": {
         "title": "Garden Project",
@@ -1838,7 +1847,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "बनाएँ"
+    },
+    "readyBadge": "तैयार",
+    "comingSoonBadge": "जल्द आ रहा है",
+    "tipsTitle": "उपकरण कैसे काम करते हैं",
+    "tipGarden": "बगीचे के नक्शे इसी डिवाइस पर सहेजे जाते हैं — Crew के साथ साझा करने के लिए GeoJSON निर्यात करें।",
+    "tipSatellite": "डाउनलोड किए गए उपग्रह टाइल इसी डिवाइस पर रहते हैं, इसलिए बिना कनेक्शन भी नक्शा चलता है।",
+    "tipStorage": "ज़्यादा ज़ूम में स्टोरेज जल्दी भरती है। क्षेत्र छोटा और ज़ूम सीमा कम रखें।",
+    "satelliteDownloader": {
+      "title": "ऑफ़लाइन उपग्रह",
+      "description": "किसी क्षेत्र की उपग्रह छवि डाउनलोड करें ताकि बिना कनेक्शन नक्शा चले।",
+      "area": "क्षेत्र",
+      "useView": "वर्तमान दृश्य उपयोग करें",
+      "manual": "सीमाएँ दर्ज करें",
+      "north": "उत्तर",
+      "south": "दक्षिण",
+      "east": "पूर्व",
+      "west": "पश्चिम",
+      "invalidBounds": "सीमाएँ गलत लग रही हैं — उत्तर दक्षिण के ऊपर, पूर्व पश्चिम के दाएँ, और क्षेत्र 60° से कम हो।",
+      "zoomLevels": "ज़ूम स्तर",
+      "minZoom": "ज़ूम से",
+      "maxZoom": "ज़ूम तक",
+      "estimate": "लगभग {tiles} टाइल डाउनलोड होंगी",
+      "largeAreaWarning": "यह बड़ा डाउनलोड है और ऑफ़लाइन कैश भर सकता है।",
+      "download": "क्षेत्र डाउनलोड करें",
+      "cancel": "रद्द करें",
+      "progress": "{total} में से {done} टाइल",
+      "failed": "{count} विफल",
+      "needsConnection": "टाइल डाउनलोड हेतु कनेक्शन ज़रूरी है।",
+      "cache": "ऑफ़लाइन कैश",
+      "cachedTiles": "कैश टाइल",
+      "cacheSize": "कैश आकार",
+      "connection": "कनेक्शन",
+      "online": "ऑनलाइन",
+      "offline": "ऑफ़लाइन",
+      "clearCache": "कैश साफ़ करें",
+      "cacheNote": "सहेजी गई टाइल केवल इस ब्राउज़र के लिए निजी हैं और साइट डेटा हटाने पर मिट जाएँगी।",
+      "done": "ऑफ़लाइन उपयोग हेतु {count} टाइल डाउनलोड हुईं",
+      "doneWithErrors": "{failed} टाइल डाउनलोड नहीं हो सकीं",
+      "cancelled": "डाउनलोड रद्द किया गया",
+      "cacheCleared": "ऑफ़लाइन कैश साफ़ हुआ"
+    },
+    "speciesWatchlist": {
+      "title": "प्रजाति वॉचलिस्ट",
+      "description": "अपने Crew के निकट लुप्तप्राय प्रजातियाँ ट्रैक करें और फ़ील्ड सर्वे सूची पाएँ।"
+    },
+    "crewOutreach": {
+      "title": "Crew आउटरीच योजना",
+      "description": "Crew के बीच भेंट और अभियानों को मार्ग व संपर्क सूची के साथ योजनाबद्ध करें।"
     }
+  },
+  "mapStyles": {
+    "hybrid": "उपग्रह + लेबल",
+    "satellite": "केवल उपग्रह",
+    "streets": "सड़कें",
+    "outdoors": "बाहरी"
   }
 }

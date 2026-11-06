@@ -71,6 +71,7 @@ EG-Maps/
 │   ├── ui/                       # 8 reusable primitives (Button, Input, Sheet, Tooltip, Skeleton…)
 │   ├── map/                      # CrewPopup, ProjectPopup, SpeciesPopup (used inside MapLibre)
 │   ├── grants/                   # Grants dashboard + 10 modals
+│   ├── tools/                    # Tools hub catalog + per-tool panels (garden/, satellite/)
 │   └── observatory/              # 13 panels / modals / tabs / shortcuts
 ├── composables/                  # 32+ composables (see §3)
 ├── lib/                          # Pure modules, no Vue deps
@@ -81,6 +82,9 @@ EG-Maps/
 │   ├── map-utils.ts              # Popup HTML builders, GEO helpers, escape, groupColors
 │   ├── map-export.ts             # Image / data export helpers
 │   ├── map-effects.ts            # Particle/connection tuning
+│   ├── hexbin.ts                 # Web-Mercator hexagonal binning (density grid math, no Vue deps)
+│   ├── tile-styles.ts            # Basemap registry: hybrid / satellite / streets / outdoors
+│   ├── tools.ts                  # Tools-section registry (id, `#tools/<hash>`, status, i18n keys)
 │   ├── image-utils.ts            # Cache/queue for marker images + placeholder SVGs
 │   ├── utils.ts                  # formatCompact, debounce, throttle, escapeHtml, cn
 │   ├── species-utils.ts          # findSpeciesAtCoord, image-url builders
@@ -121,7 +125,8 @@ EG-Maps/
 | `useMapCore.ts` (alt) | Alternate map init path (smaller) | Less used |
 | `useMapMarker.ts` | Single source/layer CRUD + DOM/GeoJSON markers | Cluster/color palettes per dataset |
 | `useMapConnections.ts` | Bezier connection lines + particle system | Canvas overlay |
-| `useMapHexGrid.ts` | Hex grid canvas overlay | Debounced resize |
+| `useMapHexGrid.ts` | Decorative canvas hex overlay (screen-space) | Debounced resize, sizes to its parent element |
+| `useGeoHexGrid.ts` | Geography-anchored hexbin density grid on the basemap | Adds/removes `eg-geo-hex-*` layers, rebuilds on move/zoom/resize (RAF-coalesced) |
 | `useMapLibre.ts` | MapTiler style URL + WebGL detection |
 | `useMapPopup/{index,speciesPopup,projectPopup,crewPopup,previewCard,utils}.ts` | Popup registry + per-type overlay logic |
 | `useSpeciesData.ts` | IndexedDB-backed species loader (memCache → IDB → `/public/data/…/json`); region chunking | DB versioning, requestIdleCallback writes |
@@ -147,7 +152,9 @@ EG-Maps/
 | `useObservatorySelection.ts` | Selected claim/sidebar state |
 | `useVulcanObservatoryPage.ts` | Page wiring |
 | `usePerformance.ts` | FPS counter dev tool |
-| `useOfflineTiles.ts` | MBTiles fallback |
+| `useOfflineTiles.ts` | IndexedDB + in-memory MapTiler raster tile cache, `egoffline` prefetch (`prefetchRegion` runs 8 tiles in parallel) |
+| `useOfflineTileCache.ts` | Single shared `useOfflineTiles` instance for the map runtime and the satellite Tool |
+| `useMapTileStyle.ts` | Persisted basemap choice (`eg-map-tile-style`) shared by map, garden tool and controls |
 | `useDeviceCapabilities.ts` | Device-aware tuning |
 | `useToast.ts` | App-wide toast queue |
 | `useFocusTrap.ts` | Modal focus trap (Tab/Shift+Tab cycle) |
@@ -239,14 +246,18 @@ pages/endangered-species/index.vue
 
 ```
 MapLibre style
-├── MapTiler `streets-v2` (light) / `satellite` (default), keyed by `NUXT_PUBLIC_MAPTILER_API_KEY`
+├── MapTiler basemap, switchable via `lib/tile-styles.ts` + `useMapTileStyle`
+│     ├─ `hybrid-v4` (default: satellite + labels) / `satellite-v4` / `streets-v2` / `outdoors-v2`
 │     ├─ auth baked into URL: `?key=…`
+│     ├─ choice persisted in `eg-map-tile-style`, re-applied with `resyncLayersAfterStyle()`
 │     └─ fallback: local inline style (land polygons + background) — no external glyphs
 ├── Tile cache config from `useAdaptiveQuality` (`maxTileCacheSize`, `maxTileCacheZoomLevels`)
+├── Offline raster tiles: `useOfflineTiles` (IndexedDB) served through the `egoffline` protocol
 ├── Vector overlay layers:
 │     ├─ `markers` source (clustered) — `useMapMarker.rebuild()` per dataset
 │     ├─ `connections` canvas overlay — `useMapConnections`
-│     ├─ `hexGrid` canvas overlay — `useMapHexGrid`
+│     ├─ `hexGrid` canvas overlay (decorative) — `useMapHexGrid`
+│     ├─ `eg-geo-hex-fill` / `eg-geo-hex-line` (density) — `useGeoHexGrid` + `lib/hexbin`
 │     ├─ rare-earth points/polygons/water/cultural/protected — `useRareEarthController`
 │     └─ cultural-agents GeoJSON — `useCulturalLayers`
 └── popups (built as innerHTML strings — see Bugs §B1)
@@ -261,6 +272,28 @@ Quality auto-tuning (`useAdaptiveQuality` + `lib/constants.ts:65-135`):
 - **`medium`** — 20 particles @ 20 fps, hex visible, dprCap 1.5, 500 markers
 - **`high`** — 60 particles @ 30 fps, hex visible, dprCap 2, 2000 markers
 - **`ultra`** — 90 particles @ 36 fps, 5000 markers
+
+### Grid modes (tri-state toggle in `MapControls`)
+
+`off → decorative → density` cycles via `useMapBase.toggleHexGridMode()`. The mode is
+persisted (`eg-hex-grid-mode`) and shareable (`mapHexMode` query key, `lib/map-state.ts`).
+
+- **decorative** — screen-space canvas overlay (`useMapHexGrid`), unchanged legacy look.
+- **density** — MapLibre hexbins from `lib/hexbin`: the active dataset's points are binned
+  into a pointy-top lattice in Web-Mercator tile-pixel space, so hexes stay regular on
+  screen at any latitude and re-anchor on every camera move. `GEO_HEX_GRID` (`lib/constants.ts`)
+  sets cell size and the `maxCells` budget — `useGeoHexGrid` grows cells (×1.4, up to 400px)
+  until the render is bounded. `geoHexStats` feeds the legend card (cells, binned points,
+  km per cell).
+
+### Tools section
+
+`lib/tools.ts` is the registry (`id`, `#tools/<hash>` deep link, i18n keys, `ready`/`planned`
+status, accent). `layouts/default.vue` renders `components/tools/ToolsHub.vue` (catalog) and,
+behind it, the selected tool (`AgroecologicalGardenTool`, `OfflineSatelliteTool`) inside
+`components/ui/ToolsSheet.vue`. Planned tools show a "coming soon" badge and are not selectable.
+The satellite downloader drives `useOfflineTileCache()` — the same IndexedDB cache the map reads —
+so downloads are counted, cancelled (`AbortController`) and cleared from one place.
 
 ---
 

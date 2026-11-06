@@ -75,16 +75,32 @@
           <UiButton
             variant="outline"
             size="icon"
-            class="map-tool-button"
+            :class="`map-tool-button ${hexGridMode !== 'off' ? 'map-tool-button-active' : ''} map-tool-button-bg`"
             @click="emit('toggle-hex-grid')"
-            :aria-label="showHexGrid ? t('mapControls.hideHexGrid') : t('mapControls.showHexGrid')"
-            :aria-pressed="showHexGrid"
+            :aria-label="hexGridModeLabel"
+            :aria-pressed="hexGridMode !== 'off'"
           >
-            <Icon v-if="showHexGrid" name="tabler:layout-grid" class="h-4 w-4 xs:h-5 xs:w-5" />
-            <Icon v-else name="gis:layers" class="h-4 w-4 xs:h-5 xs:w-5" />
+            <Icon :name="hexGridModeIcon" class="h-4 w-4 xs:h-5 xs:w-5" />
           </UiButton>
         </template>
-        <p>{{ showHexGrid ? t('mapControls.hideHexGrid') : t('mapControls.showHexGrid') }}</p>
+        <p>{{ hexGridModeLabel }}</p>
+      </UiTooltip>
+
+      
+      <UiTooltip :side="isMobile ? 'right' : 'left'">
+        <template #trigger>
+          <UiButton
+            variant="outline"
+            size="icon"
+            :class="`map-tool-button ${showStylePanel ? 'map-tool-button-active' : ''} map-tool-button-bg`"
+            @click="showStylePanel = !showStylePanel"
+            :aria-label="`${t('mapControls.basemapStyle')}: ${t(currentStyleDef.labelKey)}`"
+            :aria-expanded="showStylePanel"
+          >
+            <Icon :name="currentStyleDef.icon" class="h-4 w-4 xs:h-5 xs:w-5" />
+          </UiButton>
+        </template>
+        <p>{{ t('mapControls.basemapStyle') }}: {{ t(currentStyleDef.labelKey) }}</p>
       </UiTooltip>
 
       
@@ -150,6 +166,47 @@
         <p>{{ t('mapControls.exportData') }}</p>
       </UiTooltip>
       </div>
+    </div>
+
+    
+    <Transition name="search-panel">
+      <div
+        v-if="showStylePanel && !isEmbed"
+        :class="`absolute ${isMobile ? 'top-[clamp(9.5rem,20vh,11rem)] left-[max(0.5rem,env(safe-area-inset-left))] w-[min(16rem,calc(100vw-1rem))]' : 'top-20 right-16 w-[min(15rem,calc(100vw-5rem))]'} z-[700] panel-cyber p-2.5 flex flex-col gap-1`"
+        role="group"
+        :aria-label="t('mapControls.basemapStyle')"
+      >
+        <h3 class="text-[11px] font-bold uppercase tracking-wide text-[var(--text-muted)] mb-0.5">{{ t('mapControls.basemapStyle') }}</h3>
+        <button
+          v-for="style in TILE_STYLES"
+          :key="style.id"
+          type="button"
+          @click="selectTileStyle(style.id)"
+          :class="`flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium transition-colors ${styleId === style.id ? 'bg-cyan-500/20 text-cyan-100' : 'text-[var(--text-secondary)] hover:bg-white/5'}`"
+          :aria-pressed="styleId === style.id"
+        >
+          <Icon :name="style.icon" class="h-4 w-4 shrink-0" :aria-label="t(style.labelKey)" />
+          <span class="flex-1">{{ t(style.labelKey) }}</span>
+          <Icon v-if="styleId === style.id" name="tabler:square-check" class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        </button>
+      </div>
+    </Transition>
+
+    
+    <div
+      v-if="hexGridMode === 'density' && geoHexStats && geoHexStats.cells > 0"
+      :class="`absolute ${isMobile ? 'bottom-24 left-2 right-2' : 'bottom-6 left-6'} z-[700] panel-cyber rounded-lg px-3 py-2 max-w-[min(20rem,60vw)]`"
+      role="status"
+      aria-live="polite"
+    >
+      <p class="text-[11px] font-bold uppercase tracking-wide text-cyan-200 flex items-center gap-1.5">
+        <Icon name="tabler:chart-dots-3" class="h-3.5 w-3.5" aria-hidden="true" />
+        {{ t('mapControls.gridDensity.title') }}
+      </p>
+      <p class="text-[11px] text-[var(--text-secondary)] mt-1">
+        {{ t('mapControls.gridDensity.cells', { cells: geoHexStats.cells, points: geoHexStats.binned }) }}
+        <span v-if="geoHexStats.cellKm"> · {{ t('mapControls.gridDensity.cellSize', { km: geoHexStats.cellKm }) }}</span>
+      </p>
     </div>
 
     
@@ -342,6 +399,8 @@ import type { Species } from '@/lib/map-utils'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import type { CrewRegionData } from '@/lib/crew-data'
 import { searchCities, BRAZILIAN_CITIES, type BrazilianCity } from '@/lib/brazilian-cities'
+import { TILE_STYLES, tileStyleDef } from '@/lib/tile-styles'
+import { useMapTileStyle } from '@/composables/useMapTileStyle'
 import { useCustomData } from '~/composables/useCustomData'
 
 interface CustomSearchItem {
@@ -359,6 +418,8 @@ interface CustomSearchItem {
 interface Props {
   isGlobeView?: boolean
   showHexGrid?: boolean
+  hexGridMode?: 'decorative' | 'density' | 'off'
+  geoHexStats?: { cells: number; binned: number; max: number; topCells: { lng: number; lat: number; count: number }[]; cellKm: number }
   showConnections?: boolean
   dataset?: 'project-grants' | 'endangered-species' | 'vulcan-observatory' | 'active-crews'
   projects?: ProjectData[]
@@ -372,6 +433,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   isGlobeView: false,
   showHexGrid: true,
+  hexGridMode: 'decorative',
   showConnections: true,
   dataset: 'project-grants',
   filterOpen: false,
@@ -393,6 +455,19 @@ const emit = defineEmits<{
 const isMobile = useMediaQuery('(max-width: 768px)')
 const { t } = useI18n()
 const { datasets: customDatasets } = useCustomData()
+const { styleId, setStyle: selectTileStyle } = useMapTileStyle()
+const showStylePanel = ref(false)
+const currentStyleDef = computed(() => tileStyleDef(styleId.value))
+const hexGridModeLabel = computed(() => {
+  if (props.hexGridMode === 'density') return t('mapControls.gridDensity.on')
+  if (props.hexGridMode === 'off') return t('mapControls.showHexGrid')
+  return t('mapControls.hideHexGrid')
+})
+const hexGridModeIcon = computed(() => {
+  if (props.hexGridMode === 'density') return 'tabler:chart-dots-3'
+  if (props.hexGridMode === 'off') return 'gis:layers'
+  return 'tabler:layout-grid'
+})
 const searchInstanceId = useId()
 const searchPanelId = `map-search-${searchInstanceId}`
 const searchTitleId = `${searchPanelId}-title`

@@ -180,7 +180,14 @@
       "collapse": "Cerrar resultados"
     },
     "moreTools": "Más herramientas del mapa",
-    "hideTools": "Ocultar herramientas del mapa"
+    "hideTools": "Ocultar herramientas del mapa",
+    "basemapStyle": "Estilo del mapa base",
+    "gridDensity": {
+      "title": "Densidad de la retícula",
+      "cells": "{cells} celdas · {points} puntos mapeados",
+      "cellSize": "≈ {km} km por celda",
+      "on": "Retícula geográfica: activa"
+    }
   },
   "mapTiles": {
     "maptiler": "Satélite",
@@ -1766,7 +1773,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "Tipo",
+        "value": "Resultado"
       },
       "project": {
         "title": "Garden Project",
@@ -1838,7 +1847,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "Dibujar"
+    },
+    "readyBadge": "Listo",
+    "comingSoonBadge": "Pronto",
+    "tipsTitle": "Cómo funcionan las herramientas",
+    "tipGarden": "Los diseños de huerto se guardan en este dispositivo; exporta GeoJSON para compartirlos con tu Crew.",
+    "tipSatellite": "Las teselas de satélite descargadas quedan en este dispositivo, así el mapa funciona sin conexión.",
+    "tipStorage": "El almacenamiento se llena rápido con mucho zoom. Mantén áreas pequeñas y rangos cortos.",
+    "satelliteDownloader": {
+      "title": "Satélite sin conexión",
+      "description": "Descarga imágenes de satélite de un área para usar el mapa sin conexión.",
+      "area": "Área",
+      "useView": "Usar la vista actual",
+      "manual": "Escribir límites",
+      "north": "Norte",
+      "south": "Sur",
+      "east": "Este",
+      "west": "Oeste",
+      "invalidBounds": "Los límites no son válidos: el norte debe estar sobre el sur, el este a la derecha del oeste y el área por debajo de 60°.",
+      "zoomLevels": "Niveles de zoom",
+      "minZoom": "Desde el zoom",
+      "maxZoom": "Hasta el zoom",
+      "estimate": "Aproximadamente {tiles} teselas por descargar",
+      "largeAreaWarning": "Es una descarga grande y puede llenar la caché sin conexión.",
+      "download": "Descargar área",
+      "cancel": "Cancelar",
+      "progress": "{done} de {total} teselas",
+      "failed": "{count} fallidas",
+      "needsConnection": "Se necesita conexión para descargar teselas.",
+      "cache": "Caché sin conexión",
+      "cachedTiles": "Teselas en caché",
+      "cacheSize": "Tamaño de la caché",
+      "connection": "Conexión",
+      "online": "En línea",
+      "offline": "Sin conexión",
+      "clearCache": "Vaciar caché",
+      "cacheNote": "Las teselas guardadas son privadas de este navegador y se eliminan al borrar los datos del sitio.",
+      "done": "Se descargaron {count} teselas para uso sin conexión",
+      "doneWithErrors": "No se pudieron descargar {failed} teselas",
+      "cancelled": "Descarga cancelada",
+      "cacheCleared": "Caché sin conexión vaciada"
+    },
+    "speciesWatchlist": {
+      "title": "Lista de especies",
+      "description": "Sigue especies en peligro cerca de tu Crew y obtén una lista para salidas de campo."
+    },
+    "crewOutreach": {
+      "title": "Planificador de extensión",
+      "description": "Planifica visitas y campañas entre Crews con rutas y contactos."
     }
+  },
+  "mapStyles": {
+    "hybrid": "Satélite + etiquetas",
+    "satellite": "Solo satélite",
+    "streets": "Calles",
+    "outdoors": "Exterior"
   }
 }

@@ -124,7 +124,14 @@
     "of": "/",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "veya tümünü görmek için listeyi açın",
-    "searchResults": "Arama sonuçları"
+    "searchResults": "Arama sonuçları",
+    "basemapStyle": "Ana harita biçimi",
+    "gridDensity": {
+      "title": "Izgara yoğunluğu",
+      "cells": "{cells} hücre · {points} haritaya işlenen nokta",
+      "cellSize": "hücre başına ≈ {km} km",
+      "on": "Coğrafi ızgara: açık"
+    }
   },
   "mapTiles": {
     "maptiler": "Uydu",
@@ -1551,7 +1558,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "Tür",
+        "value": "Sonuç"
       },
       "project": {
         "title": "Garden Project",
@@ -1623,7 +1632,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "Çiz"
+    },
+    "readyBadge": "Hazır",
+    "comingSoonBadge": "Yakında",
+    "tipsTitle": "Araçlar nasıl çalışır",
+    "tipGarden": "Bahçe tasarımları bu cihaza kaydedilir — Crew ile paylaşmak için GeoJSON dışa aktarın.",
+    "tipSatellite": "İndirilen uydu döşemeleri bu cihazda kalır, böylece harita bağlantı olmadan da çalışır.",
+    "tipStorage": "Yüksek zoomda depolama hızla dolar. Alanları ve zoom aralıklarını küçük tutun.",
+    "satelliteDownloader": {
+      "title": "Çevrimdışı uydu",
+      "description": "Haritanın bağlantı olmadan çalışması için bir bölgenin uydu görüntülerini indirin.",
+      "area": "Alan",
+      "useView": "Geçerli görünümü kullan",
+      "manual": "Sınırları gir",
+      "north": "Kuzey",
+      "south": "Güney",
+      "east": "Doğu",
+      "west": "Batı",
+      "invalidBounds": "Sınırlar hatalı görünüyor — kuzey güneyin üstünde, doğu batının sağında olmalı ve alan 60° altında kalmalı.",
+      "zoomLevels": "Zoom düzeyleri",
+      "minZoom": "Zoom başlangıcı",
+      "maxZoom": "Zoom sonu",
+      "estimate": "İndirilecek yaklaşık {tiles} döşeme",
+      "largeAreaWarning": "Bu büyük bir indirme ve çevrimdışı önbelleği doldurabilir.",
+      "download": "Bölgeyi indir",
+      "cancel": "İptal",
+      "progress": "{total} döşemeden {done} tamamlandı",
+      "failed": "{count} başarısız",
+      "needsConnection": "Döşeme indirmek için bağlantı gerekir.",
+      "cache": "Çevrimdışı önbellek",
+      "cachedTiles": "Önbellekteki döşemeler",
+      "cacheSize": "Önbellek boyutu",
+      "connection": "Bağlantı",
+      "online": "Çevrimiçi",
+      "offline": "Çevrimdışı",
+      "clearCache": "Önbelleği temizle",
+      "cacheNote": "Kaydedilen döşemeler yalnızca bu tarayıcıya özeldir ve site verileri silindiğinde kaldırılır.",
+      "done": "Çevrimdışı kullanım için {count} döşeme indirildi",
+      "doneWithErrors": "{failed} döşeme indirilemedi",
+      "cancelled": "İndirme iptal edildi",
+      "cacheCleared": "Çevrimdışı önbellek temizlendi"
+    },
+    "speciesWatchlist": {
+      "title": "Tür izleme listesi",
+      "description": "Crew yakınındaki tehlikeli türleri izleyin ve saha çalışması için bir kontrol listesi alın."
+    },
+    "crewOutreach": {
+      "title": "Crew erişim planlayıcı",
+      "description": "Crew arasındaki ziyaret ve kampanyaları rotalar ve iletişim listeleriyle planlayın."
     }
+  },
+  "mapStyles": {
+    "hybrid": "Uydu + etiketler",
+    "satellite": "Yalnızca uydu",
+    "streets": "Cadde",
+    "outdoors": "Doğa"
   }
 }

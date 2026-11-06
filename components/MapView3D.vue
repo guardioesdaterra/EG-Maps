@@ -55,7 +55,7 @@
     <div class="absolute inset-0 pointer-events-none opacity-[0.03]" :style="{ zIndex: 'calc(var(--z-map-effects) + 1)', backgroundImage: `image-set(url(${baseURL}grid-overlay.webp) type('image/webp') 1x, url(${baseURL}grid-overlay.webp) type('image/webp') 2x, url(${baseURL}grid-overlay.png) type('image/png') 1x, url(${baseURL}grid-overlay.png) type('image/png') 2x)`, backgroundRepeat: 'repeat' }" />
     <div aria-hidden="true" class="absolute inset-0 pointer-events-none opacity-[0.02]" :style="{ zIndex: 'calc(var(--z-map-effects) + 3)', backgroundImage: `image-set(url(${baseURL}scanline.gif) 1x, url(${baseURL}scanline.gif) 2x)`, backgroundRepeat: 'repeat' }" />
 
-    <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-15" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
+    <canvas v-if="showHexCanvas" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-15" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
 
     <div ref="mapContainerRef" tabindex="0" role="region" :aria-label="t('globe.view3D')" :aria-busy="isLoading" class="absolute inset-0 w-full h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400" :style="{ zIndex: 'var(--z-map-base)' }" />
     <Teleport to="body">
@@ -83,7 +83,7 @@
 
     <DataBubble v-if="!hideAll && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :selected-crew-statuses="selectedCrewStatuses" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" :position-bottom="isMobile ? 'clamp(5.5rem,12vh,7rem)' : 'clamp(1rem, 4vh, 2rem)'" @toggle-group="toggleLegendGroup" @toggle-crew-status="toggleCrewStatus" />
 
-    <MapControls v-if="activeDataset !== 'vulcan-observatory' && !hideAll" :is-globe-view="true" :show-hex-grid="showHexGrid" :show-connections="showConnections" :share-copied="shareCopied" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :crews="activeDataset === 'active-crews' ? crewsData : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" :style="{ zIndex: 'var(--z-map-ui-controls)' }" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" @share="shareMap" @export="exportMapImage" @export-data="exportVisibleData" />
+    <MapControls v-if="activeDataset !== 'vulcan-observatory' && !hideAll" :is-globe-view="true" :show-hex-grid="showHexGrid" :hex-grid-mode="hexGridMode" :geo-hex-stats="geoHexStats" :show-connections="showConnections" :share-copied="shareCopied" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :crews="activeDataset === 'active-crews' ? crewsData : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" :style="{ zIndex: 'var(--z-map-ui-controls)' }" @toggle-hex-grid="toggleHexGridMode" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" @share="shareMap" @export="exportMapImage" @export-data="exportVisibleData" />
 
     <Transition name="fade">
       <div v-if="hasError" class="absolute inset-0 bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center text-white z-[2000]" role="alert" aria-live="assertive">
@@ -385,7 +385,7 @@ const {
   activeDataset, projectsData, speciesIndexData, visibleProjects, crewsData, crewLocationsData, visibleCrewLocations,
   selectedSpeciesGroups, selectedCrewStatuses, toggleCrewStatus,
   hasError, errorMessage, noWebglSupport, shareCopied, shareMap, exportMapImage, exportVisibleData,
-  showHexGrid, showFilterPanel, speciesFilterPanelRef,
+  showHexGrid, showHexCanvas, hexGridMode, geoHexStats, toggleHexGridMode, showFilterPanel, speciesFilterPanelRef,
   showConnections, toggleConnections,
   showSpeciesOverlay, showProjectOverlay, showCrewOverlay,
   speciesData, projectData, crewData, isCrewLocationData,

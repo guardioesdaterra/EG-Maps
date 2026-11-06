@@ -5,7 +5,7 @@
  * @connections lib/garden-types.ts, lib/garden-constants.ts, lib/garden-plants.ts, lib/garden-utils.ts
  */
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { GardenProject, GardenLayer, GardenFeature, GardenLocation, GardenLayerType, LayerStyle, DrawingMode, MeasurementResult } from '~/lib/garden-types'
 import { GARDEN_STORAGE_KEY, GARDEN_PROJECT_VERSION, LAYER_DEFAULTS, DEFAULT_LAYERS, DEFAULT_LOCATION, DEFAULT_HEMISPHERE, DEFAULT_LOCALE, DEFAULT_GARDEN_NAME } from '~/lib/garden-constants'
 import { generateId, validateProject, cloneProject, getHemisphere, defaultLocationForHemisphere } from '~/lib/garden-utils'
@@ -58,6 +58,85 @@ export const useGardenProject = defineStore('garden-project', () => {
 
   const isSaving = ref(false)
 
+  // ── Undo / redo ─────────────────────────────────────────────────────────────
+  // Snapshots of the active project's editable state. Only what the tools can
+  // change is stored (layers incl. features, name, description) — camera and
+  // metadata stay out of the history so panning never pollutes it.
+  const HISTORY_LIMIT = 50
+  /** Mutations inside this window collapse into one undo step (map drags). */
+  const COALESCE_MS = 500
+  const history = ref<string[]>([])
+  const future = ref<string[]>([])
+  let lastSnapshotAt = 0
+
+  function snapshotOf(project: GardenProject | null): string {
+    if (!project) return ''
+    return JSON.stringify({ layers: project.layers, name: project.name, description: project.description })
+  }
+
+  /** Call before every user-driven mutation. */
+  function snapshot(coalesceKey?: string) {
+    const serialized = snapshotOf(activeProject.value)
+    if (!serialized) return
+    const coalesce = coalesceKey !== undefined
+      && coalesceKey === lastCoalesceKey
+      && Date.now() - lastSnapshotAt < COALESCE_MS
+    lastCoalesceKey = coalesceKey
+    if (coalesce) return
+    lastSnapshotAt = Date.now()
+    history.value.push(serialized)
+    if (history.value.length > HISTORY_LIMIT) history.value.shift()
+    future.value = []
+  }
+  let lastCoalesceKey: string | undefined
+
+  function applySnapshot(serialized: string) {
+    const project = activeProject.value
+    if (!project || !serialized) return
+    try {
+      const parsed = JSON.parse(serialized) as { layers: GardenLayer[]; name: string; description: string }
+      project.layers = parsed.layers
+      project.name = parsed.name
+      project.description = parsed.description
+      if (!project.layers.some(l => l.id === activeLayerId.value)) {
+        activeLayerId.value = project.layers[0]?.id || null
+      }
+      if (!project.layers.flatMap(l => l.features).some(f => f.id === selectedFeatureId.value)) {
+        selectedFeatureId.value = null
+      }
+      touchProject()
+    } catch (e) {
+      console.error('[Garden] Failed to apply history snapshot:', e)
+    }
+  }
+
+  function undo() {
+    const previous = history.value.pop()
+    if (previous === undefined) return false
+    future.value.push(snapshotOf(activeProject.value))
+    applySnapshot(previous)
+    lastCoalesceKey = undefined
+    return true
+  }
+
+  function redo() {
+    const next = future.value.pop()
+    if (next === undefined) return false
+    history.value.push(snapshotOf(activeProject.value))
+    applySnapshot(next)
+    lastCoalesceKey = undefined
+    return true
+  }
+
+  function resetHistory() {
+    history.value = []
+    future.value = []
+    lastCoalesceKey = undefined
+  }
+
+  const canUndo = computed(() => history.value.length > 0)
+  const canRedo = computed(() => future.value.length > 0)
+
   // ── Actions: Project Management ────────────────────────────────────────────
 
   function createProject(name = DEFAULT_GARDEN_NAME, location?: GardenLocation): GardenProject {
@@ -83,6 +162,7 @@ export const useGardenProject = defineStore('garden-project', () => {
     projects.value[id] = project
     activeProjectId.value = id
     activeLayerId.value = project.layers[0]?.id || null
+    resetHistory()
     isDirty.value = true
     return project
   }
@@ -103,6 +183,7 @@ export const useGardenProject = defineStore('garden-project', () => {
 
   function addLayer(type: GardenLayerType): GardenLayer {
     if (!activeProject.value) return createProject().layers[0]
+    snapshot()
     const layer = createLayer(type)
     activeProject.value.layers.push(layer)
     activeLayerId.value = layer.id
@@ -114,6 +195,7 @@ export const useGardenProject = defineStore('garden-project', () => {
     if (!activeProject.value) return
     const idx = activeProject.value.layers.findIndex(l => l.id === layerId)
     if (idx >= 0) {
+      snapshot()
       activeProject.value.layers.splice(idx, 1)
       if (activeLayerId.value === layerId) {
         activeLayerId.value = activeProject.value.layers[0]?.id || null
@@ -125,6 +207,7 @@ export const useGardenProject = defineStore('garden-project', () => {
   function setLayerVisibility(layerId: string, visible: boolean) {
     const layer = activeProject.value?.layers.find(l => l.id === layerId)
     if (layer) {
+      snapshot()
       layer.visible = visible
       touchProject()
     }
@@ -133,6 +216,7 @@ export const useGardenProject = defineStore('garden-project', () => {
   function setLayerOpacity(layerId: string, opacity: number) {
     const layer = activeProject.value?.layers.find(l => l.id === layerId)
     if (layer) {
+      snapshot('opacity:' + layerId)
       layer.opacity = Math.max(0, Math.min(1, opacity))
       touchProject()
     }
@@ -141,6 +225,7 @@ export const useGardenProject = defineStore('garden-project', () => {
   function setLayerLocked(layerId: string, locked: boolean) {
     const layer = activeProject.value?.layers.find(l => l.id === layerId)
     if (layer) {
+      snapshot()
       layer.locked = locked
       touchProject()
     }
@@ -148,6 +233,7 @@ export const useGardenProject = defineStore('garden-project', () => {
 
   function reorderLayers(fromIndex: number, toIndex: number) {
     if (!activeProject.value) return
+    snapshot()
     const layers = activeProject.value.layers
     const [removed] = layers.splice(fromIndex, 1)
     layers.splice(toIndex, 0, removed)
@@ -166,6 +252,7 @@ export const useGardenProject = defineStore('garden-project', () => {
     if (!targetLayerId) return
     const layer = activeProject.value.layers.find(l => l.id === targetLayerId)
     if (!layer || layer.locked) return
+    snapshot()
     layer.features.push(feature)
     updateBounds()
     touchProject()
@@ -176,6 +263,7 @@ export const useGardenProject = defineStore('garden-project', () => {
     for (const layer of activeProject.value.layers) {
       const idx = layer.features.findIndex(f => f.id === featureId)
       if (idx >= 0) {
+        snapshot()
         layer.features.splice(idx, 1)
         if (selectedFeatureId.value === featureId) selectedFeatureId.value = null
         updateBounds()
@@ -190,6 +278,7 @@ export const useGardenProject = defineStore('garden-project', () => {
     for (const layer of activeProject.value.layers) {
       const feature = layer.features.find(f => f.id === featureId)
       if (feature) {
+        snapshot('feature:' + featureId)
         Object.assign(feature, updates)
         updateBounds()
         touchProject()
@@ -203,6 +292,7 @@ export const useGardenProject = defineStore('garden-project', () => {
     for (const layer of activeProject.value.layers) {
       const feature = layer.features.find(f => f.id === featureId)
       if (feature) {
+        snapshot('properties:' + featureId)
         feature.properties = { ...feature.properties, ...properties }
         touchProject()
         return
@@ -215,6 +305,7 @@ export const useGardenProject = defineStore('garden-project', () => {
     for (const layer of activeProject.value.layers) {
       const feature = layer.features.find(f => f.id === featureId)
       if (feature) {
+        snapshot('move:' + featureId)
         feature.geometry = geometry
         updateBounds()
         touchProject()
@@ -378,6 +469,7 @@ export const useGardenProject = defineStore('garden-project', () => {
       projects.value[project.id] = project
       activeProjectId.value = project.id
       activeLayerId.value = project.layers[0]?.id || null
+      resetHistory()
       isDirty.value = true
       return project
     } catch {
@@ -386,6 +478,8 @@ export const useGardenProject = defineStore('garden-project', () => {
   }
 
   // ── Auto-save ──────────────────────────────────────────────────────────────
+
+  watch(activeProjectId, () => resetHistory())
 
   let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -423,6 +517,8 @@ export const useGardenProject = defineStore('garden-project', () => {
     isDirty,
     lastSaved,
     isSaving,
+    canUndo,
+    canRedo,
 
     // Getters
     activeProject,
@@ -450,6 +546,9 @@ export const useGardenProject = defineStore('garden-project', () => {
     clearSelection,
     setDrawingMode,
     setMeasurement,
+    undo,
+    redo,
+    resetHistory,
     setPlantLibraryOpen,
     setSelectedPlant,
     setUnitSystem,

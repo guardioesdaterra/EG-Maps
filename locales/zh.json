@@ -180,7 +180,14 @@
     "exportData": "导出可见数据为 GeoJSON",
     "legend": "图例",
     "moreTools": "更多地图工具",
-    "hideTools": "隐藏地图工具"
+    "hideTools": "隐藏地图工具",
+    "basemapStyle": "底图样式",
+    "gridDensity": {
+      "title": "网格密度",
+      "cells": "{cells} 个网格 · {points} 个已制图点位",
+      "cellSize": "每格约 {km} 公里",
+      "on": "地理网格：开启"
+    }
   },
   "mapTiles": {
     "maptiler": "卫星",
@@ -1766,7 +1773,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "类型",
+        "value": "结果"
       },
       "project": {
         "title": "Garden Project",
@@ -1838,7 +1847,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "绘制"
+    },
+    "readyBadge": "可用",
+    "comingSoonBadge": "即将推出",
+    "tipsTitle": "工具如何工作",
+    "tipGarden": "菜园设计保存在此设备上——导出 GeoJSON 才能与你的 Crew 分享。",
+    "tipSatellite": "下载的卫星瓦片会留在本设备上，因此没有网络也能显示地图。",
+    "tipStorage": "高缩放级别会很快占满存储。请缩小区域并缩短缩放范围。",
+    "satelliteDownloader": {
+      "title": "卫星离线包",
+      "description": "下载某区域的卫星影像，以便在无网络时使用地图。",
+      "area": "区域",
+      "useView": "使用当前视图",
+      "manual": "输入边界",
+      "north": "北",
+      "south": "南",
+      "east": "东",
+      "west": "西",
+      "invalidBounds": "边界不正确：北需大于南，东需大于西，且区域跨度需小于 60°。",
+      "zoomLevels": "缩放级别",
+      "minZoom": "起始缩放",
+      "maxZoom": "结束缩放",
+      "estimate": "约需下载 {tiles} 张瓦片",
+      "largeAreaWarning": "下载量较大，可能占满离线缓存。",
+      "download": "下载该区域",
+      "cancel": "取消",
+      "progress": "{total} 张瓦片已完成 {done}",
+      "failed": "{count} 张失败",
+      "needsConnection": "下载瓦片需要网络连接。",
+      "cache": "离线缓存",
+      "cachedTiles": "已缓存瓦片",
+      "cacheSize": "缓存大小",
+      "connection": "网络状态",
+      "online": "在线",
+      "offline": "离线",
+      "clearCache": "清除缓存",
+      "cacheNote": "缓存的瓦片仅存于本浏览器，清除站点数据时会一并删除。",
+      "done": "已下载 {count} 张瓦片供离线使用",
+      "doneWithErrors": "有 {failed} 张瓦片下载失败",
+      "cancelled": "下载已取消",
+      "cacheCleared": "离线缓存已清除"
+    },
+    "speciesWatchlist": {
+      "title": "物种关注清单",
+      "description": "跟踪你 Crew 周边的濒危物种，并生成野外调查清单。"
+    },
+    "crewOutreach": {
+      "title": "Crew 外联规划",
+      "description": "规划跨 Crew 的访问与行动，包含路线与联系人列表。"
     }
+  },
+  "mapStyles": {
+    "hybrid": "卫星影像＋注记",
+    "satellite": "仅卫星影像",
+    "streets": "街道图",
+    "outdoors": "野外图"
   }
 }

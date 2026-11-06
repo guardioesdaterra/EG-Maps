@@ -180,7 +180,14 @@
       "collapse": "Close results"
     },
     "moreTools": "More map tools",
-    "hideTools": "Hide map tools"
+    "hideTools": "Hide map tools",
+    "basemapStyle": "Basemap style",
+    "gridDensity": {
+      "title": "Grid density",
+      "cells": "{cells} cells · {points} mapped points",
+      "cellSize": "≈ {km} km per cell",
+      "on": "Geo grid: on"
+    }
   },
   "mapTiles": {
     "maptiler": "Satellite",
@@ -1929,7 +1936,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "Type",
+        "value": "Result"
       },
       "project": {
         "title": "Garden Project",
@@ -2001,7 +2010,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "Draw"
+    },
+    "readyBadge": "Ready",
+    "comingSoonBadge": "Coming soon",
+    "tipsTitle": "How the tools work",
+    "tipGarden": "Garden designs are saved on this device — export GeoJSON to share them with your Crew.",
+    "tipSatellite": "Downloaded satellite tiles stay on this device, so maps still render without a connection.",
+    "tipStorage": "Storage fills fast at high zoom. Keep areas small and zoom ranges short.",
+    "satelliteDownloader": {
+      "title": "Satellite Offline",
+      "description": "Download satellite imagery for an area so the map works without a connection.",
+      "area": "Area",
+      "useView": "Use current map view",
+      "manual": "Enter bounds",
+      "north": "North",
+      "south": "South",
+      "east": "East",
+      "west": "West",
+      "invalidBounds": "Bounds look wrong — north must be above south, east right of west, and the area under 60°.",
+      "zoomLevels": "Zoom levels",
+      "minZoom": "From zoom",
+      "maxZoom": "To zoom",
+      "estimate": "About {tiles} tiles to download",
+      "largeAreaWarning": "This is a large download and may fill the offline cache.",
+      "download": "Download area",
+      "cancel": "Cancel",
+      "progress": "{done} of {total} tiles",
+      "failed": "{count} failed",
+      "needsConnection": "A connection is required to download tiles.",
+      "cache": "Offline cache",
+      "cachedTiles": "Cached tiles",
+      "cacheSize": "Cache size",
+      "connection": "Connection",
+      "online": "Online",
+      "offline": "Offline",
+      "clearCache": "Clear cache",
+      "cacheNote": "Cached tiles are private to this browser and are removed when you clear site data.",
+      "done": "Downloaded {count} tiles for offline use",
+      "doneWithErrors": "{failed} tiles could not be downloaded",
+      "cancelled": "Download cancelled",
+      "cacheCleared": "Offline cache cleared"
+    },
+    "speciesWatchlist": {
+      "title": "Species Watchlist",
+      "description": "Track endangered species near your Crew and get a checklist for field surveys."
+    },
+    "crewOutreach": {
+      "title": "Crew Outreach Planner",
+      "description": "Plan visits and campaigns across Crews with routes and contact lists."
     }
+  },
+  "mapStyles": {
+    "hybrid": "Satellite + labels",
+    "satellite": "Satellite only",
+    "streets": "Streets",
+    "outdoors": "Outdoors"
   }
 }

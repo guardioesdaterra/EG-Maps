@@ -124,7 +124,14 @@
     "of": "di",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "o apri l'elenco per sfogliare tutto",
-    "searchResults": "Risultati di ricerca"
+    "searchResults": "Risultati di ricerca",
+    "basemapStyle": "Stile mappa base",
+    "gridDensity": {
+      "title": "Densità della griglia",
+      "cells": "{cells} celle · {points} punti mappati",
+      "cellSize": "≈ {km} km per cella",
+      "on": "Griglia geografica: attiva"
+    }
   },
   "mapTiles": {
     "maptiler": "Satellite",
@@ -1551,7 +1558,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "Tipo",
+        "value": "Risultato"
       },
       "project": {
         "title": "Garden Project",
@@ -1623,7 +1632,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "Disegna"
+    },
+    "readyBadge": "Pronto",
+    "comingSoonBadge": "In arrivo",
+    "tipsTitle": "Come funzionano gli strumenti",
+    "tipGarden": "I progetti degli orti sono salvati su questo dispositivo — esporta GeoJSON per condividerli con la tua Crew.",
+    "tipSatellite": "I tile satellitari scaricati restano su questo dispositivo, quindi la mappa funziona anche offline.",
+    "tipStorage": "L’archiviazione si riempie in fretta con zoom alti. Tieni aree brevi e intervalli di zoom corti.",
+    "satelliteDownloader": {
+      "title": "Satellite offline",
+      "description": "Scarica le immagini satellitari di un’area per usare la mappa senza connessione.",
+      "area": "Area",
+      "useView": "Usa la vista attuale",
+      "manual": "Inserisci i confini",
+      "north": "Nord",
+      "south": "Sud",
+      "east": "Est",
+      "west": "Ovest",
+      "invalidBounds": "Confini non validi: il nord deve essere sopra il sud, l’est a destra dell’ovest e l’area sotto i 60°.",
+      "zoomLevels": "Livelli di zoom",
+      "minZoom": "Da zoom",
+      "maxZoom": "A zoom",
+      "estimate": "Circa {tiles} tile da scaricare",
+      "largeAreaWarning": "È un download grande e potrebbe riempire la cache offline.",
+      "download": "Scarica area",
+      "cancel": "Annulla",
+      "progress": "{done} di {total} tile",
+      "failed": "{count} non riusciti",
+      "needsConnection": "Serve una connessione per scaricare i tile.",
+      "cache": "Cache offline",
+      "cachedTiles": "Tile in cache",
+      "cacheSize": "Dimensione cache",
+      "connection": "Connessione",
+      "online": "Online",
+      "offline": "Offline",
+      "clearCache": "Svuota cache",
+      "cacheNote": "I tile salvati sono privati di questo browser e rimossi cancellando i dati del sito.",
+      "done": "Scaricati {count} tile per l’uso offline",
+      "doneWithErrors": "{failed} tile non potevano essere scaricati",
+      "cancelled": "Download annullato",
+      "cacheCleared": "Cache offline svuotata"
+    },
+    "speciesWatchlist": {
+      "title": "Lista specie",
+      "description": "Segui le specie in pericolo vicino alla tua Crew e ottieni una checklist per i rilevamenti sul campo."
+    },
+    "crewOutreach": {
+      "title": "Pianificatore visite",
+      "description": "Pianifica visite e campagne tra le Crew con percorsi ed elenchi di contatti."
     }
+  },
+  "mapStyles": {
+    "hybrid": "Satellite + etichette",
+    "satellite": "Solo satellite",
+    "streets": "Strade",
+    "outdoors": "Aperto"
   }
 }

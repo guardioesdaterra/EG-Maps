@@ -62,6 +62,24 @@ export const HEX_GRID = {
   debounceMs: 150,
 } as const
 
+/**
+ * Geo-anchored hexbin density layer (the "grid view" over satellite imagery).
+ * Hexes are projected-space regular cells re-anchored to geography on every
+ * camera move, so each cell covers the same ground area at a given zoom.
+ */
+export const GEO_HEX_GRID = {
+  /** Hex edge length in projected pixels — ~90px keeps cells readable. */
+  cellPx: 90,
+  /** Cap on generated cells per redraw; over the cap, cells grow. */
+  maxCells: 900,
+  lineColor: 'rgba(6, 182, 212, 0.55)',
+  lineWidth: 1.2,
+  /** Fill ramp from sparse to dense cells (low → high count). */
+  fillRamp: ['#0e7490', '#06b6d4', '#22c55e', '#eab308', '#ef4444'] as readonly string[],
+  minFillOpacity: 0.12,
+  maxFillOpacity: 0.62,
+} as const
+
 /** Adaptive quality presets for old/low-end devices */
 export const QUALITY_PRESETS = {
   low: {

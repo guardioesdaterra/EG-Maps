@@ -51,7 +51,7 @@
     <div aria-hidden="true" class="absolute inset-0 pointer-events-none opacity-[0.015]" :style="{ zIndex: 'calc(var(--z-map-effects) + 3)', backgroundImage: `image-set(url(${baseURL}scanline.gif) 1x, url(${baseURL}scanline.gif) 2x)`, backgroundRepeat: 'repeat' }" />
     <div aria-hidden="true" class="absolute inset-0 pointer-events-none" :style="{ zIndex: 'var(--z-map-overlays)', boxShadow: 'inset 0 0 clamp(30px, 8vw, 100px) clamp(5px, 2vw, 15px) rgba(0,0,0,0.5)' }" />
 
-    <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-20" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
+    <canvas v-if="showHexCanvas" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-20" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
 
     <div aria-hidden="true" class="absolute inset-0 overflow-hidden pointer-events-none" :style="{ zIndex: 'var(--z-map-effects)' }">
       <div :class="`absolute top-0 left-0 w-full h-full ${isMobile ? 'opacity-5' : 'opacity-10'}`">
@@ -89,7 +89,7 @@
 
     <DataBubble v-if="!hideAll && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :selected-crew-statuses="selectedCrewStatuses" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" :position-bottom="isMobile ? 'clamp(5.5rem,12vh,7rem)' : 'clamp(1rem, 4vh, 2rem)'" @toggle-group="toggleLegendGroup" @toggle-crew-status="toggleCrewStatus" />
 
-    <MapControls v-if="activeDataset !== 'vulcan-observatory' && !hideAll" :is-globe-view="false" :show-hex-grid="showHexGrid" :show-connections="showConnections" :share-copied="shareCopied" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :crews="activeDataset === 'active-crews' ? crewsData : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" @share="shareMap" @export="exportMapImage" @export-data="exportVisibleData" :style="{ zIndex: 'var(--z-map-ui-controls)' }" />
+    <MapControls v-if="activeDataset !== 'vulcan-observatory' && !hideAll" :is-globe-view="false" :show-hex-grid="showHexGrid" :hex-grid-mode="hexGridMode" :geo-hex-stats="geoHexStats" :show-connections="showConnections" :share-copied="shareCopied" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :crews="activeDataset === 'active-crews' ? crewsData : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" @toggle-hex-grid="toggleHexGridMode" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" @share="shareMap" @export="exportMapImage" @export-data="exportVisibleData" :style="{ zIndex: 'var(--z-map-ui-controls)' }" />
 
     <Transition name="fade">
       <div v-if="hasError" class="absolute inset-0 bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center text-white z-[var(--z-map-error-overlay)]" role="alert" aria-live="assertive">
@@ -255,7 +255,7 @@ const {
   projectsData, speciesIndexData, visibleProjects, crewsData, crewLocationsData, visibleCrewLocations,
   activeDataset, selectedSpeciesGroups, selectedCrewStatuses, toggleCrewStatus,
   hasError, errorMessage, noWebglSupport, shareCopied, shareMap, exportMapImage, exportVisibleData,
-  showHexGrid, showFilterPanel, speciesFilterPanelRef,
+  showHexGrid, showHexCanvas, hexGridMode, geoHexStats, toggleHexGridMode, showFilterPanel, speciesFilterPanelRef,
   showConnections, toggleConnections,
   showSpeciesOverlay, showProjectOverlay, showCrewOverlay,
   speciesData, projectData, crewData, isCrewLocationData,

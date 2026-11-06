@@ -203,13 +203,18 @@
 
   <ToolsSheet
     v-model:open="showToolsSheet"
-    :title="t('tools.title')"
+    :title="activeToolLabel"
+    :content-padded="!activeTool"
+    :show-back="Boolean(activeTool)"
     side="center"
     :width="'100vw'"
     :height="'100vh'"
     @close="closeToolsSheet"
+    @back="backToToolsHub"
   >
-    <AgroecologicalGardenTool @close="closeToolsSheet" />
+    <AgroecologicalGardenTool v-if="activeTool === 'agroecological-garden'" @close="backToToolsHub" />
+    <OfflineSatelliteTool v-else-if="activeTool === 'satellite-downloader'" @close="backToToolsHub" />
+    <ToolsHub v-else @select="openTool" />
   </ToolsSheet>
   </div>
 </template>
@@ -222,7 +227,10 @@ import { useCustomData } from '@/composables/useCustomData'
 import { useMapTileProvider } from '@/composables/useMapTileProvider'
 import { canonicalizeMapLayoutPath, isMapLayoutRoute } from '@/lib/map-routes'
 import AgroecologicalGardenTool from '@/components/tools/garden/AgroecologicalGardenTool.vue'
+import OfflineSatelliteTool from '@/components/tools/satellite/OfflineSatelliteTool.vue'
+import ToolsHub from '@/components/tools/ToolsHub.vue'
 import ToolsSheet from '@/components/ui/ToolsSheet.vue'
+import { getTool, toolHash, toolIdFromHash, type ToolId } from '@/lib/tools'
 
 const route = useRoute()
 const router = useRouter()
@@ -231,20 +239,57 @@ const { t, locale, availableLocales, localeNames, setLocale } = useAppI18n()
 
 const showDock = ref(true)
 const showToolsSheet = ref(false)
+const activeTool = ref<ToolId | null>(null)
 const layoutControlsReady = ref(false)
 
 function updateDockFromHash() {
   if (typeof window !== 'undefined') {
     showDock.value = !window.location.hash.includes('no-dock')
+    const hashedTool = toolIdFromHash(window.location.hash)
+    if (window.location.hash.startsWith('#tools')) {
+      // A tool hash arriving after mount (pasted link, in-app anchor) opens the sheet.
+      showToolsSheet.value = true
+      activeTool.value = hashedTool
+    } else if (showToolsSheet.value) {
+      activeTool.value = hashedTool
+    }
   }
+}
+
+/** Header label: the hub says "Tools", an open tool names itself first. */
+const activeToolLabel = computed(() => {
+  const tool = getTool(activeTool.value)
+  if (!tool || tool.status !== 'ready') return t('tools.title')
+  return `${t(tool.nameKey)} · ${t('tools.title')}`
+})
+
+function syncToolsHash(hash: string | null) {
+  if (typeof window === 'undefined') return
+  const base = window.location.pathname + window.location.search
+  const next = hash ? `${base}#${hash}` : base
+  if (`${window.location.pathname}${window.location.search}${window.location.hash}` === next) return
+  window.history.replaceState(window.history.state, '', next)
 }
 
 function openToolsSheet() {
   showToolsSheet.value = true
+  syncToolsHash(activeTool.value ? `tools/${toolHash(activeTool.value)}` : 'tools')
 }
 
 function closeToolsSheet() {
   showToolsSheet.value = false
+  activeTool.value = null
+  syncToolsHash(null)
+}
+
+function backToToolsHub() {
+  activeTool.value = null
+  syncToolsHash('tools')
+}
+
+function openTool(id: ToolId) {
+  activeTool.value = id
+  syncToolsHash(`tools/${toolHash(id)}`)
 }
 
 function handleNavAction(action: string) {
@@ -270,6 +315,11 @@ onMounted(async () => {
     if (queryRestored) delete document.documentElement.dataset.egInitialMapSearch
   }
   updateDockFromHash()
+  // Deep link: reloading or sharing #tools/<tool> reopens that tool directly.
+  if (window.location.hash.startsWith('#tools')) {
+    activeTool.value = toolIdFromHash(window.location.hash)
+    showToolsSheet.value = true
+  }
   layoutControlsReady.value = true
   window.addEventListener('hashchange', updateDockFromHash)
 })

@@ -180,7 +180,14 @@
       "collapse": "Fermer les résultats"
     },
     "moreTools": "Plus d’outils de carte",
-    "hideTools": "Masquer les outils de carte"
+    "hideTools": "Masquer les outils de carte",
+    "basemapStyle": "Style de fond de carte",
+    "gridDensity": {
+      "title": "Densité de la grille",
+      "cells": "{cells} cellules · {points} points cartographiés",
+      "cellSize": "≈ {km} km par cellule",
+      "on": "Grille géographique : activée"
+    }
   },
   "mapTiles": {
     "maptiler": "Satellite",
@@ -1766,7 +1773,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "Type",
+        "value": "Résultat"
       },
       "project": {
         "title": "Garden Project",
@@ -1838,7 +1847,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "Dessiner"
+    },
+    "readyBadge": "Prêt",
+    "comingSoonBadge": "Bientôt",
+    "tipsTitle": "Comment fonctionnent les outils",
+    "tipGarden": "Les projets de jardin sont enregistrés sur cet appareil — exportez en GeoJSON pour les partager avec votre Crew.",
+    "tipSatellite": "Les dalles satellite téléchargées restent sur cet appareil, la carte fonctionne donc hors connexion.",
+    "tipStorage": "Le stockage se remplit vite à zoom élevé. Gardez des zones petites et des plages de zoom courtes.",
+    "satelliteDownloader": {
+      "title": "Satellite hors ligne",
+      "description": "Téléchargez l’imagerie satellite d’une zone pour utiliser la carte hors connexion.",
+      "area": "Zone",
+      "useView": "Utiliser la vue actuelle",
+      "manual": "Saisir les limites",
+      "north": "Nord",
+      "south": "Sud",
+      "east": "Est",
+      "west": "Ouest",
+      "invalidBounds": "Limites invalides : le nord doit être au-dessus du sud, l’est à droite de l’ouest, et la zone sous 60°.",
+      "zoomLevels": "Niveaux de zoom",
+      "minZoom": "À partir du zoom",
+      "maxZoom": "Jusqu’au zoom",
+      "estimate": "Environ {tiles} dalles à télécharger",
+      "largeAreaWarning": "Téléchargement volumineux, le cache hors ligne peut être saturé.",
+      "download": "Télécharger la zone",
+      "cancel": "Annuler",
+      "progress": "{done} sur {total} dalles",
+      "failed": "{count} échouées",
+      "needsConnection": "Une connexion est requise pour télécharger les dalles.",
+      "cache": "Cache hors ligne",
+      "cachedTiles": "Dalles en cache",
+      "cacheSize": "Taille du cache",
+      "connection": "Connexion",
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "clearCache": "Vider le cache",
+      "cacheNote": "Les dalles sont privées à ce navigateur et supprimées avec les données du site.",
+      "done": "{count} dalles téléchargées pour un usage hors ligne",
+      "doneWithErrors": "{failed} dalles n’ont pas pu être téléchargées",
+      "cancelled": "Téléchargement annulé",
+      "cacheCleared": "Cache hors ligne vidé"
+    },
+    "speciesWatchlist": {
+      "title": "Liste d’espèces",
+      "description": "Suivez les espèces menacées près de votre Crew et obtenez une liste pour les sorties terrain."
+    },
+    "crewOutreach": {
+      "title": "Planificateur de tournées",
+      "description": "Planifiez visites et campagnes entre Crews avec itinéraires et contacts."
     }
+  },
+  "mapStyles": {
+    "hybrid": "Satellite + labels",
+    "satellite": "Satellite seul",
+    "streets": "Plan de ville",
+    "outdoors": "Extérieur"
   }
 }

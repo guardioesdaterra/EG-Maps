@@ -1,29 +1,39 @@
 <template>
     <Transition name="tools-sheet">
       <div v-if="isOpen" class="tools-sheet-wrapper">
-        <div class="tools-sheet-overlay" @click="close" aria-hidden="true" />
+        <div class="tools-sheet-overlay" :aria-hidden="true" @click="handleOverlayClick" />
         <Transition :name="`tools-sheet-${side}`">
           <div
             v-if="isOpen"
-            :class="['tools-sheet', `tools-sheet-${side}`]"
+            ref="panelRef"
+            :class="['tools-sheet', `tools-sheet--${side}`]"
             :style="{ width: props.width, height: props.height }"
             @click.stop
             role="dialog"
             aria-modal="true"
-            :aria-labelledby="title ? 'tools-sheet-title' : undefined"
+            :aria-label="title || undefined"
           >
             <header class="tools-sheet__header">
-              <h2 v-if="title" id="tools-sheet-title" class="tools-sheet__title">{{ title }}</h2>
+              <button
+                v-if="showBack"
+                type="button"
+                class="tools-sheet__back"
+                :aria-label="t('general.back')"
+                @click="emit('back')"
+              >
+                <Icon name="tabler:arrow-left" class="h-5 w-5" />
+              </button>
+              <h2 class="tools-sheet__title">{{ title }}</h2>
               <button
                 type="button"
                 class="tools-sheet__close"
                 :aria-label="t('general.close')"
                 @click="close"
               >
-                <Icon name="tabler:trash-x" class="h-5 w-5" />
+                <Icon name="tabler:x" class="h-5 w-5" />
               </button>
             </header>
-            <div class="tools-sheet__content">
+            <div class="tools-sheet__content" :class="{ 'tools-sheet__content--flush': !contentPadded }">
               <slot />
             </div>
           </div>
@@ -33,8 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch, onScopeDispose } from 'vue'
 import { useI18n } from '@/composables/useI18n'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 import Icon from '@/components/Icon.vue'
 
 interface Props {
@@ -42,6 +53,10 @@ interface Props {
   title?: string
   side?: 'right' | 'left' | 'center'
   dismissible?: boolean
+  /** Renders the header back arrow (a tool is open on top of the hub). */
+  showBack?: boolean
+  /** false = the slotted tool owns the full viewport (map editors). */
+  contentPadded?: boolean
   width?: string
   height?: string
 }
@@ -51,6 +66,8 @@ const props = withDefaults(defineProps<Props>(), {
   title: '',
   side: 'center',
   dismissible: true,
+  showBack: false,
+  contentPadded: true,
   width: '50vw',
   height: '85vh',
 })
@@ -58,6 +75,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'update:open': [v: boolean]
   close: []
+  back: []
 }>()
 
 const { t } = useI18n()
@@ -67,29 +85,38 @@ const isOpen = computed({
   set: v => emit('update:open', v),
 })
 
+const panelRef = ref<HTMLElement | null>(null)
+useFocusTrap(panelRef, { active: isOpen })
+
 function close() {
   if (!props.dismissible) return
   isOpen.value = false
   emit('close')
 }
 
+function handleOverlayClick() {
+  if (!props.dismissible) return
+  // Inside a tool, the overlay first returns to the hub — closing straight
+  // from a map editor would discard the editing context on a stray click.
+  if (props.showBack) emit('back')
+  else close()
+}
+
 function handleEscapeKeyDown(e: KeyboardEvent) {
-  if (e.key === 'Escape' && props.dismissible) {
-    close()
-  }
+  if (e.key !== 'Escape' || !props.dismissible) return
+  if (props.showBack) emit('back')
+  else close()
 }
 
-function handleInteractOutside(e: Event) {
-  if (!props.dismissible) {
-    e.preventDefault()
-  }
-}
+watch(isOpen, (open) => {
+  if (typeof window === 'undefined') return
+  if (open) window.addEventListener('keydown', handleEscapeKeyDown)
+  else window.removeEventListener('keydown', handleEscapeKeyDown)
+}, { immediate: true })
 
-function handlePointerDownOutside(e: Event) {
-  if (!props.dismissible) {
-    e.preventDefault()
-  }
-}
+onScopeDispose(() => {
+  if (typeof window !== 'undefined') window.removeEventListener('keydown', handleEscapeKeyDown)
+})
 </script>
 
 <style scoped>
@@ -152,7 +179,7 @@ function handlePointerDownOutside(e: Event) {
 .tools-sheet__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.5rem;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--glass-border);
   flex-shrink: 0;
@@ -163,8 +190,14 @@ function handlePointerDownOutside(e: Event) {
   font-weight: 800;
   margin: 0;
   color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+.tools-sheet__back,
 .tools-sheet__close {
   width: 2.25rem;
   height: 2.25rem;
@@ -180,6 +213,7 @@ function handlePointerDownOutside(e: Event) {
   flex-shrink: 0;
 }
 
+.tools-sheet__back:hover,
 .tools-sheet__close:hover {
   background: var(--panel-border);
   color: var(--text-primary);
@@ -189,6 +223,12 @@ function handlePointerDownOutside(e: Event) {
   flex: 1;
   overflow: auto;
   padding: 1.25rem;
+}
+
+/* Full-viewport tools (map editors) manage their own chrome. */
+.tools-sheet__content--flush {
+  padding: 0;
+  overflow: hidden;
 }
 
 .tools-sheet-enter-active,

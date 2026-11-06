@@ -31,6 +31,8 @@ const STORE_NAME = 'tiles'
 const MAX_CACHE_ENTRIES = 10000
 export const MAX_TILE_BYTES = 10 * 1024 * 1024
 const MAX_ZOOM = 24
+/** Parallel tile fetches during a region download. */
+const PREFETCH_CONCURRENCY = 8
 const TILE_PATH_RE = /^\/tiles\/satellite(?:-[^/]+)?\/(\d+)\/(\d+)\/(\d+)\.(?:jpg|jpeg|png|webp)$/i
 
 let dbPromise: Promise<IDBDatabase> | null = null
@@ -120,6 +122,7 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
   const isPrefetching = ref(false)
   const prefetchProgress = ref(0)
   const prefetchTotal = ref(0)
+  const prefetchErrors = ref(0)
   const memCache = new Map<string, ArrayBuffer>()
   const memContentTypes = new Map<string, string>()
   const objectUrls = new Map<string, string>()
@@ -274,26 +277,63 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
     return localUrl ? { url: localUrl } : { url }
   }
 
+  /** Number of tiles needed to cover `bounds` between minZoom..maxZoom. */
+  function countRegionTiles(bounds: { north: number; south: number; east: number; west: number }, minZoom: number, maxZoom: number): number {
+    let total = 0
+    for (let z = minZoom; z <= maxZoom; z++) {
+      const x1 = lonToTileX(bounds.west, z); const x2 = lonToTileX(bounds.east, z)
+      const y1 = latToTileY(bounds.north, z); const y2 = latToTileY(bounds.south, z)
+      total += (Math.abs(x2 - x1) + 1) * (Math.abs(y2 - y1) + 1)
+    }
+    return total
+  }
+
+  /**
+   * Download satellite tiles for a region into the offline cache.
+   * Fetches run in a small parallel pool (sequential fetching made a modest
+   * area take minutes); `signal` cancels in-flight requests.
+   */
   async function prefetchRegion(bounds: { north: number; south: number; east: number; west: number }, minZoom: number, maxZoom: number, signal?: AbortSignal) {
     if (isPrefetching.value || minZoom < 0 || maxZoom < minZoom || maxZoom > MAX_ZOOM) return
-    isPrefetching.value = true; prefetchProgress.value = 0
-    let total = 0
-    for (let z = minZoom; z <= maxZoom; z++) { const x1 = lonToTileX(bounds.west, z); const x2 = lonToTileX(bounds.east, z); const y1 = latToTileY(bounds.north, z); const y2 = latToTileY(bounds.south, z); total += (Math.abs(x2 - x1) + 1) * (Math.abs(y2 - y1) + 1) }
-    prefetchTotal.value = total
-    let done = 0
+    isPrefetching.value = true; prefetchProgress.value = 0; prefetchErrors.value = 0
+    const jobs: [number, number, number][] = []
     for (let z = minZoom; z <= maxZoom; z++) {
-      const x1 = lonToTileX(bounds.west, z); const x2 = lonToTileX(bounds.east, z); const y1 = latToTileY(bounds.north, z); const y2 = latToTileY(bounds.south, z); const limit = 2 ** z
-      for (let x = Math.min(x1, x2); x <= Math.max(x1, x2) && !signal?.aborted; x++) {
+      const x1 = lonToTileX(bounds.west, z); const x2 = lonToTileX(bounds.east, z)
+      const y1 = latToTileY(bounds.north, z); const y2 = latToTileY(bounds.south, z)
+      const limit = 2 ** z
+      for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
         const clampedX = ((x % limit) + limit) % limit
-        for (let y = Math.min(y1, y2); y <= Math.max(y1, y2) && !signal?.aborted; y++) {
-          if (y < 0 || y >= limit) continue
-          if (!await hasTile(z, clampedX, y)) {
-            try { const resp = await fetch(`https://api.maptiler.com/tiles/satellite-v2/${z}/${clampedX}/${y}.jpg?key=${encodeURIComponent(apiKey || '')}`, { signal }); if (resp.ok) { const buf = await resp.arrayBuffer(); await setTile(z, clampedX, y, buf, resp.headers.get('content-type') || 'image/jpeg') } } catch (err: unknown) { if (/QuotaExceededError|FILE_ERROR_NO_SPACE/i.test(err instanceof Error ? err.message : String(err))) break }
-          }
-          done++; prefetchProgress.value = done
+        for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
+          if (y >= 0 && y < limit) jobs.push([z, clampedX, y])
         }
       }
     }
+    prefetchTotal.value = jobs.length
+
+    let cursor = 0
+    let done = 0
+    const worker = async () => {
+      while (cursor < jobs.length && !signal?.aborted) {
+        const job = jobs[cursor++]!
+        const [z, x, y] = job
+        if (!await hasTile(z, x, y)) {
+          try {
+            const resp = await fetch(`https://api.maptiler.com/tiles/satellite-v2/${z}/${x}/${y}.jpg?key=${encodeURIComponent(apiKey || '')}`, { signal })
+            if (resp.ok) {
+              const buf = await resp.arrayBuffer()
+              await setTile(z, x, y, buf, resp.headers.get('content-type') || 'image/jpeg')
+            }
+          } catch (err: unknown) {
+            if (signal?.aborted) break
+            if (/QuotaExceededError|FILE_ERROR_NO_SPACE/i.test(err instanceof Error ? err.message : String(err))) break
+            prefetchErrors.value++
+          }
+        }
+        done++; prefetchProgress.value = done
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(PREFETCH_CONCURRENCY, jobs.length) }, worker))
+
     isPrefetching.value = false; if (!signal?.aborted) await getStats()
   }
 
@@ -303,8 +343,11 @@ export function useOfflineTiles(apiKey?: string, _containerRef?: Ref<HTMLDivElem
     response.clone().arrayBuffer().then(buf => setTile(coords.z, coords.x, coords.y, buf, response.headers.get('content-type') || 'image/jpeg')).catch(() => {})
   }
 
-  return { isOnline, isInitialized, stats, isPrefetching, prefetchProgress, prefetchTotal, init, getTile, setTile, hasTile, clearCache, getStats, getTileUrl, transformRequest: transformRequestCached, prefetchRegion, onTileResponse }
+  return { isOnline, isInitialized, stats, isPrefetching, prefetchProgress, prefetchTotal, prefetchErrors, init, getTile, setTile, hasTile, clearCache, getStats, getTileUrl, transformRequest: transformRequestCached, prefetchRegion, countRegionTiles, onTileResponse }
 }
+
+/** Shared cache API surface (map runtime and the satellite Tools panel). */
+export type OfflineTileCache = ReturnType<typeof useOfflineTiles>
 
 function lonToTileX(lon: number, zoom: number): number { return Math.floor((lon + 180) / 360 * 2 ** zoom) }
 function latToTileY(lat: number, zoom: number): number { const bounded = Math.max(-85.051129, Math.min(85.051129, lat)); return Math.floor((1 - Math.log(Math.tan(bounded * Math.PI / 180) + 1 / Math.cos(bounded * Math.PI / 180)) / Math.PI) / 2 * 2 ** zoom) }

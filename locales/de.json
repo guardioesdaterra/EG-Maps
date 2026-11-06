@@ -180,7 +180,14 @@
     "exportData": "Sichtbare Daten als GeoJSON exportieren",
     "legend": "Legende",
     "moreTools": "Weitere Kartenwerkzeuge",
-    "hideTools": "Kartenwerkzeuge ausblenden"
+    "hideTools": "Kartenwerkzeuge ausblenden",
+    "basemapStyle": "Basiskartenstil",
+    "gridDensity": {
+      "title": "Rasterdichte",
+      "cells": "{cells} Zellen · {points} kartierte Punkte",
+      "cellSize": "≈ {km} km pro Zelle",
+      "on": "Geo-Raster: ein"
+    }
   },
   "mapTiles": {
     "maptiler": "Satellit",
@@ -1766,7 +1773,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "Typ",
+        "value": "Ergebnis"
       },
       "project": {
         "title": "Garden Project",
@@ -1838,7 +1847,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "Zeichnen"
+    },
+    "readyBadge": "Bereit",
+    "comingSoonBadge": "Demnächst",
+    "tipsTitle": "So funktionieren die Tools",
+    "tipGarden": "Gartenpläne werden auf diesem Gerät gespeichert — exportiere GeoJSON, um sie mit deiner Crew zu teilen.",
+    "tipSatellite": "Geladene Satellitenkacheln bleiben auf diesem Gerät, die Karte funktioniert also ohne Verbindung.",
+    "tipStorage": "Bei hohem Zoom füllt sich der Speicher schnell. Halte Flächen klein und Zoomspannen kurz.",
+    "satelliteDownloader": {
+      "title": "Satellit offline",
+      "description": "Satellitenbilder für ein Gebiet herunterladen, damit die Karte ohne Verbindung funktioniert.",
+      "area": "Gebiet",
+      "useView": "Aktuelle Ansicht nutzen",
+      "manual": "Grenzen eingeben",
+      "north": "Nord",
+      "south": "Süd",
+      "east": "Ost",
+      "west": "West",
+      "invalidBounds": "Grenzen sehen falsch aus — Nord muss über Süd liegen, Ost rechts von West, und das Gebiet unter 60°.",
+      "zoomLevels": "Zoomstufen",
+      "minZoom": "Ab Zoom",
+      "maxZoom": "Bis Zoom",
+      "estimate": "Etwa {tiles} Kacheln zum Herunterladen",
+      "largeAreaWarning": "Das ist ein großer Download und kann den Offline-Speicher füllen.",
+      "download": "Gebiet herunterladen",
+      "cancel": "Abbrechen",
+      "progress": "{done} von {total} Kacheln",
+      "failed": "{count} fehlgeschlagen",
+      "needsConnection": "Zum Herunterladen ist eine Verbindung nötig.",
+      "cache": "Offline-Speicher",
+      "cachedTiles": "Gespeicherte Kacheln",
+      "cacheSize": "Speichergröße",
+      "connection": "Verbindung",
+      "online": "Online",
+      "offline": "Offline",
+      "clearCache": "Speicher leeren",
+      "cacheNote": "Gespeicherte Kacheln sind nur für diesen Browser sichtbar und werden beim Löschen der Websitedaten entfernt.",
+      "done": "{count} Kacheln für die Offline-Nutzung geladen",
+      "doneWithErrors": "{failed} Kacheln konnten nicht geladen werden",
+      "cancelled": "Download abgebrochen",
+      "cacheCleared": "Offline-Speicher geleert"
+    },
+    "speciesWatchlist": {
+      "title": "Artenliste",
+      "description": "Verfolge gefährdete Arten in der Nähe deiner Crew und erhalte eine Checkliste für Geländearbeit."
+    },
+    "crewOutreach": {
+      "title": "Crew-Tourenplaner",
+      "description": "Plane Besuche und Kampagnen über Crews hinweg mit Routen und Kontaktlisten."
     }
+  },
+  "mapStyles": {
+    "hybrid": "Satellit + Beschriftung",
+    "satellite": "Nur Satellit",
+    "streets": "Straßen",
+    "outdoors": "Außenbereich"
   }
 }

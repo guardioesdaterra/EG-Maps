@@ -2,12 +2,12 @@
  * composables/useMapLibre.ts
  * @why MapLibre GL instance lifecycle — create, destroy, resize, load handlers
  * @functions getMapStyle, detectWebGLSupport
- * @connections composables/useMapBase.ts
+ * @connections composables/useMapBase.ts, lib/tile-styles.ts
  */
-export function getMapStyle(apiKey: string, tileResolution?: 'low' | 'medium' | 'high', baseURL = '/'): string | Record<string, unknown> {
+export function getMapStyle(apiKey: string, tileResolution?: 'low' | 'medium' | 'high', baseURL = '/', tilesetId = 'hybrid-v4'): string | Record<string, unknown> {
   const resParam = tileResolution && tileResolution !== 'high' ? `&res=${tileResolution}` : ''
   if (apiKey) {
-    return `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${apiKey}${resParam}`
+    return `https://api.maptiler.com/maps/${tilesetId}/style.json?key=${apiKey}${resParam}`
   }
   return {
     version: 8,

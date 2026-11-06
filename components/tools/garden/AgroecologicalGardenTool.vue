@@ -36,6 +36,40 @@
         <button
           type="button"
           class="garden-tool__btn ghost"
+          :aria-label="t('tools.agroecologicalGarden.toolbar.undo')"
+          :disabled="!garden.canUndo"
+          @click="undoEdit"
+        >
+          <Icon name="tabler:arrow-back-up" class="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          class="garden-tool__btn ghost"
+          :aria-label="t('tools.agroecologicalGarden.toolbar.redo')"
+          :disabled="!garden.canRedo"
+          @click="redoEdit"
+        >
+          <Icon name="tabler:arrow-forward-up" class="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          class="garden-tool__btn ghost"
+          :aria-label="t('tools.agroecologicalGarden.project.import')"
+          @click="openImportPicker"
+        >
+          <Icon name="tabler:file-import" class="h-4 w-4" />
+        </button>
+        <input
+          ref="importInputRef"
+          type="file"
+          accept="application/json,.json,.geojson"
+          class="hidden"
+          :aria-label="t('tools.agroecologicalGarden.project.import')"
+          @change="handleImportFile"
+        />
+        <button
+          type="button"
+          class="garden-tool__btn ghost"
           :aria-label="t('tools.agroecologicalGarden.project.save')"
           @click="saveProject"
         >
@@ -54,7 +88,7 @@
           class="garden-tool__btn ghost"
           :aria-label="t('tools.agroecologicalGarden.toolbar.select')"
           @click="setMode('select')"
-          :class="{ 'text-cyan-400': drawingMode === 'select' }"
+          :class="{ 'text-cyan-400': activeMode === 'select' }"
         >
           <Icon name="tabler:pointer" class="h-4 w-4" />
         </button>
@@ -321,6 +355,9 @@ import { useGardenProject } from '@/composables/useGardenProject'
 import type { GardenFeature, GardenLayerType, DrawingMode, LayerStyle, MeasurementResult } from '@/lib/garden-types'
 import { PLANTS, getPlant, searchPlants } from '@/lib/garden-plants'
 import { haversineDistance, polygonPerimeter, generateId, computeBounds } from '@/lib/garden-utils'
+import { getMapStyle } from '@/composables/useMapLibre'
+import { tileStyleDef } from '@/lib/tile-styles'
+import { useMapTileStyle } from '@/composables/useMapTileStyle'
 
 const exportFormats = ['GeoJSON', 'JSON']
 
@@ -331,6 +368,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const toast = useToast()
 const garden = useGardenProject()
+const mapStyle = useMapTileStyle()
 
 // ── Refs ─────────────────────────────────────────────────────────────────────
 
@@ -338,11 +376,16 @@ const mapContainerRef = ref<HTMLDivElement | null>(null)
 const mapRef = shallowRef<MapLibreMap | null>(null)
 const isMapReady = ref(false)
 
-// Drawing state
-const drawingMode = ref<DrawingMode>('select')
-const activeMode = ref<string>('select')
+// Drawing state — the store owns the mode/measurement, the component mirrors it
+const activeMode = computed({
+  get: () => garden.drawingMode,
+  set: (v: DrawingMode) => garden.setDrawingMode(v),
+})
 const coordinate = ref<{ lat: number; lng: number } | null>(null)
-const measurement = ref<MeasurementResult | null>(null)
+const measurement = computed({
+  get: () => garden.measurement,
+  set: (v: MeasurementResult | null) => garden.setMeasurement(v),
+})
 const pendingPlant = ref<{ plantId: string; name: string } | null>(null)
 const showExport = ref(false)
 const plantSearch = ref('')
@@ -386,23 +429,20 @@ const filteredPlants = computed(() => {
 
 onMounted(() => {
   nextTick(initMap)
+  window.addEventListener('keydown', handleShortcutKeyDown)
 })
 
 function initMap() {
   if (!mapContainerRef.value || isMapReady.value) return
 
   const apiKey = useRuntimeConfig().public.maptilerApiKey || ''
-  const styleUrl = apiKey
-    ? `https://api.maptiler.com/maps/satellite-v4/style.json?key=${apiKey}`
-    : undefined
+  // Follow the app-wide basemap choice (and the no-key fallback style) instead
+  // of hardcoding satellite — the editor must match what the rest of the app shows.
+  const style = getMapStyle(apiKey, undefined, '/', tileStyleDef(mapStyle.styleId.value).maptilerStyle)
 
   const map = new maplibregl.Map({
     container: mapContainerRef.value!,
-    style: styleUrl || {
-      version: 8,
-      sources: {},
-      layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#0b0b0c' } }],
-    },
+    style: style as maplibregl.StyleSpecification | string,
     center: activeProject.value?.location.lng
       ? [activeProject.value.location.lng, activeProject.value.location.lat]
       : [-47.9292, -15.7801],
@@ -596,7 +636,6 @@ function fitMapToFeatures(map: MapLibreMap) {
 
 function setMode(mode: string) {
   activeMode.value = mode as DrawingMode
-  drawingMode.value = mode as DrawingMode
   measurement.value = null
   activeDraw = null
   clearDrawPreview()
@@ -875,6 +914,72 @@ function plantIcon(category: string): string {
 
 // ── Project actions ──────────────────────────────────────────────────────────
 
+const importInputRef = ref<HTMLInputElement | null>(null)
+
+function undoEdit() {
+  if (!garden.undo()) return
+  if (mapRef.value) renderFeatures(mapRef.value)
+}
+
+function redoEdit() {
+  if (!garden.redo()) return
+  if (mapRef.value) renderFeatures(mapRef.value)
+}
+
+function openImportPicker() {
+  importInputRef.value?.click()
+}
+
+async function handleImportFile(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  try {
+    const imported = garden.importProject(await file.text())
+    if (!imported) {
+      toast.error(t('tools.agroecologicalGarden.toasts.error'))
+      return
+    }
+    if (mapRef.value) {
+      renderFeatures(mapRef.value)
+      fitMapToFeatures(mapRef.value)
+    }
+    toast.success(t('tools.agroecologicalGarden.toasts.imported'))
+  } catch {
+    toast.error(t('tools.agroecologicalGarden.toasts.error'))
+  }
+}
+
+/** Tool shortcuts advertised by the help panel (P/L/G/M/S, undo/redo, delete). */
+const MODE_SHORTCUTS: Record<string, DrawingMode> = { p: 'point', l: 'line', g: 'polygon', m: 'measure', s: 'select' }
+
+function handleShortcutKeyDown(event: KeyboardEvent) {
+  const target = event.target as HTMLElement | null
+  if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return
+  const key = event.key.toLowerCase()
+  if ((event.ctrlKey || event.metaKey) && key === 'z') {
+    event.preventDefault()
+    if (event.shiftKey) redoEdit()
+    else undoEdit()
+    return
+  }
+  if ((event.ctrlKey || event.metaKey) && key === 'y') {
+    event.preventDefault()
+    redoEdit()
+    return
+  }
+  if ((event.key === 'Delete' || event.key === 'Backspace') && garden.selectedFeatureId) {
+    event.preventDefault()
+    garden.deleteFeature(garden.selectedFeatureId)
+    if (mapRef.value) renderFeatures(mapRef.value)
+    return
+  }
+  if (event.ctrlKey || event.metaKey || event.altKey) return
+  const mode = MODE_SHORTCUTS[key]
+  if (mode) setMode(mode)
+}
+
 function saveProject() {
   garden.saveToStorage()
   toast.success(t('tools.agroecologicalGarden.toasts.saved'))
@@ -897,6 +1002,7 @@ function exportProject(fmt: string) {
 // ── Cleanup ──────────────────────────────────────────────────────────────────
 
 onUnmounted(() => {
+  window.removeEventListener('keydown', handleShortcutKeyDown)
   if (mapRef.value) {
     mapRef.value.remove()
     mapRef.value = null
@@ -910,7 +1016,6 @@ const toolApi = {
   activeProject,
   activeLayer,
   activeLayerId,
-  drawingMode,
   activeMode,
   coordinate,
   measurement,

@@ -180,7 +180,14 @@
     "exportData": "表示中のデータをGeoJSONとしてエクスポート",
     "legend": "凡例",
     "moreTools": "その他の地図ツール",
-    "hideTools": "地図ツールを非表示"
+    "hideTools": "地図ツールを非表示",
+    "basemapStyle": "ベースマップのスタイル",
+    "gridDensity": {
+      "title": "グリッド密度",
+      "cells": "{cells} セル · 地図上のポイント {points} 件",
+      "cellSize": "1セル ≈ {km} km",
+      "on": "ジオグリッド: オン"
+    }
   },
   "mapTiles": {
     "maptiler": "衛星",
@@ -1766,7 +1773,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "種類",
+        "value": "結果"
       },
       "project": {
         "title": "Garden Project",
@@ -1838,7 +1847,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "描画"
+    },
+    "readyBadge": "利用可能",
+    "comingSoonBadge": "近日公開",
+    "tipsTitle": "ツールの仕組み",
+    "tipGarden": "菜園デザインはこの端末に保存されます。Crew と共有するには GeoJSON で書き出してください。",
+    "tipSatellite": "ダウンロードした衛星タイルはこの端末に残るので、通信がない場所でも地図を表示できます。",
+    "tipStorage": "ズームを大きくすると保存領域をすぐ圧迫します。範囲とズーム幅は小さめにしてください。",
+    "satelliteDownloader": {
+      "title": "衛星オフライン地図",
+      "description": "指定範囲の衛星画像をダウンロードして、通信なしで地図を利用できるようにします。",
+      "area": "範囲",
+      "useView": "現在の表示を使う",
+      "manual": "境界を入力",
+      "north": "北",
+      "south": "南",
+      "east": "東",
+      "west": "西",
+      "invalidBounds": "境界が不正です。北は南より上、東は西より右、範囲は60°以内にしてください。",
+      "zoomLevels": "ズームレベル",
+      "minZoom": "開始ズーム",
+      "maxZoom": "終了ズーム",
+      "estimate": "ダウンロードは約 {tiles} タイル",
+      "largeAreaWarning": "サイズが大きいため、オフラインキャッシュが満杯になる可能性があります。",
+      "download": "範囲をダウンロード",
+      "cancel": "キャンセル",
+      "progress": "{total} タイル中 {done} 完了",
+      "failed": "{count} 件失敗",
+      "needsConnection": "タイルのダウンロードには通信が必要です。",
+      "cache": "オフラインキャッシュ",
+      "cachedTiles": "保存済みタイル",
+      "cacheSize": "キャッシュサイズ",
+      "connection": "接続状態",
+      "online": "オンライン",
+      "offline": "オフライン",
+      "clearCache": "キャッシュを削除",
+      "cacheNote": "保存されたタイルはこのブラウザー専用で、サイトデータの削除とともに消えます。",
+      "done": "オフライン用に {count} タイルを保存しました",
+      "doneWithErrors": "{failed} タイルをダウンロードできませんでした",
+      "cancelled": "ダウンロードを中止しました",
+      "cacheCleared": "オフラインキャッシュを削除しました"
+    },
+    "speciesWatchlist": {
+      "title": "種ウォッチリスト",
+      "description": "Crew の近くの絶滅危惧種を追跡し、現地調査用のチェックリストを得られます。"
+    },
+    "crewOutreach": {
+      "title": "Crew 連絡計画",
+      "description": "Crew 間の訪問やキャンペーンをルートと連絡先付きで計画します。"
     }
+  },
+  "mapStyles": {
+    "hybrid": "衛星＋ラベル",
+    "satellite": "衛星のみ",
+    "streets": "市街図",
+    "outdoors": "アウトドア"
   }
 }

@@ -124,7 +124,14 @@
     "of": "z",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "lub otwórz listę, aby przeglądać wszystkie",
-    "searchResults": "Wyniki wyszukiwania"
+    "searchResults": "Wyniki wyszukiwania",
+    "basemapStyle": "Styl mapy bazowej",
+    "gridDensity": {
+      "title": "Gęstość siatki",
+      "cells": "{cells} komórek · {points} punktów na mapie",
+      "cellSize": "≈ {km} km na komórkę",
+      "on": "Siatka geograficzna: włączona"
+    }
   },
   "mapTiles": {
     "maptiler": "Satelita",
@@ -1551,7 +1558,9 @@
         "perimeter": "Perimeter",
         "units": "Units",
         "metric": "Metric (m, ha)",
-        "imperial": "Imperial (ft, ac)"
+        "imperial": "Imperial (ft, ac)",
+        "type": "Typ",
+        "value": "Wynik"
       },
       "project": {
         "title": "Garden Project",
@@ -1623,7 +1632,62 @@
           "delete": "Delete — Remove selected",
           "escape": "Esc — Cancel tool / Close panel"
         }
-      }
+      },
+      "draw": "Rysuj"
+    },
+    "readyBadge": "Gotowe",
+    "comingSoonBadge": "Wkrótce",
+    "tipsTitle": "Jak działają narzędzia",
+    "tipGarden": "Projekty ogrodów zapisują się na tym urządzeniu — wyeksportuj GeoJSON, aby udostępnić je swojej Crew.",
+    "tipSatellite": "Pobrane kafle satelitarne zostają na tym urządzeniu, więc mapa działa bez połączenia.",
+    "tipStorage": "Przy dużym zoomie pamięć szybko się zapełnia. Trzymaj małe obszary i krótkie zakresy zoomu.",
+    "satelliteDownloader": {
+      "title": "Satelita offline",
+      "description": "Pobierz obrazy satelitarne dla obszaru, aby korzystać z mapy bez połączenia.",
+      "area": "Obszar",
+      "useView": "Użyj bieżącego widoku",
+      "manual": "Wprowadź granice",
+      "north": "Północ",
+      "south": "Południe",
+      "east": "Wschód",
+      "west": "Zachód",
+      "invalidBounds": "Granice wyglądają na błędne — północ musi być powyżej południa, wschód na prawo od zachodu, a obszar poniżej 60°.",
+      "zoomLevels": "Poziomy zoomu",
+      "minZoom": "Od zoomu",
+      "maxZoom": "Do zoomu",
+      "estimate": "Około {tiles} kafli do pobrania",
+      "largeAreaWarning": "To duże pobieranie i może wypełnić pamięć podręczną offline.",
+      "download": "Pobierz obszar",
+      "cancel": "Anuluj",
+      "progress": "{done} z {total} kafli",
+      "failed": "{count} nie powiodło się",
+      "needsConnection": "Do pobierania kafli potrzebne jest połączenie.",
+      "cache": "Pamięć offline",
+      "cachedTiles": "Kafle w pamięci",
+      "cacheSize": "Rozmiar pamięci",
+      "connection": "Połączenie",
+      "online": "Online",
+      "offline": "Offline",
+      "clearCache": "Wyczyść pamięć",
+      "cacheNote": "Zapisane kafle są prywatne dla tej przeglądarki i znikają po wyczyszczeniu danych witryny.",
+      "done": "Pobrano {count} kafli do użycia offline",
+      "doneWithErrors": "Nie udało się pobrać {failed} kafli",
+      "cancelled": "Pobieranie anulowane",
+      "cacheCleared": "Pamięć offline wyczyszczona"
+    },
+    "speciesWatchlist": {
+      "title": "Lista gatunków",
+      "description": "Śledź gatunki zagrożone w pobliżu Twojej Crew i zdobądź listę kontrolną do badań terenowych."
+    },
+    "crewOutreach": {
+      "title": "Planer działań Crew",
+      "description": "Planuj wizyty i kampanie między Crew z trasami i listami kontaktów."
     }
+  },
+  "mapStyles": {
+    "hybrid": "Satelita + opisy",
+    "satellite": "Tylko satelita",
+    "streets": "Ulice",
+    "outdoors": "Teren otwarty"
   }
 }

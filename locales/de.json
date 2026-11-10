@@ -940,7 +940,8 @@
       "species": "Arten",
       "mains": "Mains",
       "feedback": "Feedback",
-      "sources": "Sources"
+      "sources": "Sources",
+      "performance": "Leistung"
     },
     "shareCorrections": "Teilen Sie Korrekturen, fehlende Daten oder Interaktionsideen, um uns bei der Verbesserung der Karten zu helfen.",
     "homeLink": "Startseite",
@@ -953,6 +954,27 @@
       "basemap": "Basemap, imagery & map engine",
       "reuseTitle": "Licenses & reuse for research and community tools",
       "openSource": "Open source"
+    },
+    "performance": {
+      "title": "Leistung & Qualität",
+      "desc": "Steuern Sie Renderqualität und Partikeleffekte. Die App passt sich automatisch an Ihre Geräteleistung an, kann hier aber überschrieben werden.",
+      "qualitySection": "Qualitäts-Voreinstellung",
+      "qualityDesc": "Auto-Balance optimiert Bildqualität und Framerate. Deaktivieren für manuelle Auswahl.",
+      "autoAdjust": "Auto-Qualität anpassen (empfohlen)",
+      "qualityPreset": "Qualitäts-Voreinstellung",
+      "low": "Niedrig (Leistung)",
+      "medium": "Mittel (ausgewogen)",
+      "high": "Hoch (Qualität)",
+      "ultra": "Ultra (Maximum)",
+      "particleSettings": "Partikel-Einstellungen",
+      "particleDesc": "Feinjustierung der Partikelanimation. Erfordert Deaktivierung von Auto-Anpassen.",
+      "particleMaxCount": "Max. Partikel",
+      "particleFps": "Ziel-FPS",
+      "particleTrailLength": "Spur-Länge",
+      "particleSpawnRate": "Spawn-Rate",
+      "particleShadow": "Schatten-Weichzeichnung",
+      "apply": "Anwenden",
+      "currentSettings": "Aktuelle Einstellungen"
     }
   },
   "campaigns": {

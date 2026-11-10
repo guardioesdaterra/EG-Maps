@@ -25,6 +25,14 @@ export interface RareEarthControllerProps {
   rareEarthWater?: GeoJSON.FeatureCollection | null
   /** Cultural agents overlay (Mapa Cultura + Floresta Ativista) rendered via useCulturalLayers. */
   rareEarthCultural?: GeoJSON.FeatureCollection | null
+  // Water basins (nivel 2-6) for zoom-based rendering
+  rareEarthBasinsL2?: GeoJSON.FeatureCollection | null
+  rareEarthBasinsL3?: GeoJSON.FeatureCollection | null
+  rareEarthBasinsL4?: GeoJSON.FeatureCollection | null
+  rareEarthBasinsL5?: GeoJSON.FeatureCollection | null
+  rareEarthBasinsL6?: GeoJSON.FeatureCollection | null
+  // Proposed Mogiana territory (proposed by Earth Guardians Brazil)
+  rareEarthMogiana?: GeoJSON.FeatureCollection | null
   layerVisibility?: Record<string, boolean>
   /**
    * MapLibre expression mirror of the JS claim filter. When set, sources
@@ -173,6 +181,12 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       protected: p.rareEarthProtected ?? null,
       water: p.rareEarthWater ?? null,
       cultural: p.rareEarthCultural ?? null,
+      basinsL2: p.rareEarthBasinsL2 ?? null,
+      basinsL3: p.rareEarthBasinsL3 ?? null,
+      basinsL4: p.rareEarthBasinsL4 ?? null,
+      basinsL5: p.rareEarthBasinsL5 ?? null,
+      basinsL6: p.rareEarthBasinsL6 ?? null,
+      mogiana: p.rareEarthMogiana ?? null,
       networkFeatures,
       visibility: p.layerVisibility,
       filterExpr: useExprFilter ? filterExpr : undefined,
@@ -228,6 +242,12 @@ export function useRareEarthController(options: RareEarthControllerOptions) {
       getProps().rareEarthProtected,
       getProps().rareEarthWater,
       getProps().rareEarthCultural,
+      getProps().rareEarthBasinsL2,
+      getProps().rareEarthBasinsL3,
+      getProps().rareEarthBasinsL4,
+      getProps().rareEarthBasinsL5,
+      getProps().rareEarthBasinsL6,
+      getProps().rareEarthMogiana,
       getProps().rareEarthFilterExpr,
     ] as const,
     () => {

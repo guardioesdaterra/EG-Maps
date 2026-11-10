@@ -548,6 +548,9 @@ export function createMapParticleSystem({
     const computedPosition = window.getComputedStyle(container).position
     if (computedPosition === 'static') container.style.position = 'relative'
 
+    const rect = container.getBoundingClientRect()
+    if (rect.width === 0 || rect.height === 0) return
+
     particleCanvas = document.createElement('canvas')
     particleCanvas.className = 'map-particle-canvas'
     particleCanvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;will-change:transform'
@@ -633,6 +636,9 @@ export function createMapParticleSystem({
         } catch {
           continue
         }
+
+        // Skip invalid projections (e.g., [0,0] when map container has no size)
+        if (!point || !isFinite(point.x) || !isFinite(point.y)) continue
 
         const visible = point.x > -40 && point.x < lastRectW + 40 && point.y > -40 && point.y < lastRectH + 40
         if (!visible) continue

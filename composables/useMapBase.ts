@@ -147,6 +147,14 @@ export interface MapBaseProps {
   /** Stacked-popup "+N more" action (opens the data table). */
   onPopupShowAll?: () => void
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null
+  // Water basins (nivel 2-6) for zoom-based rendering
+  rareEarthBasinsL2?: GeoJSON.FeatureCollection | null
+  rareEarthBasinsL3?: GeoJSON.FeatureCollection | null
+  rareEarthBasinsL4?: GeoJSON.FeatureCollection | null
+  rareEarthBasinsL5?: GeoJSON.FeatureCollection | null
+  rareEarthBasinsL6?: GeoJSON.FeatureCollection | null
+  // Proposed Mogiana territory (proposed by Earth Guardians Brazil)
+  rareEarthMogiana?: GeoJSON.FeatureCollection | null
 }
 
 export interface MapBaseConfig {
@@ -739,6 +747,14 @@ export function useMapBase(config: MapBaseConfig) {
       rareEarthProtected: props.rareEarthProtected,
       rareEarthWater: props.rareEarthWater ?? undefined,
       rareEarthCultural: props.rareEarthCultural ?? undefined,
+      // Water basins (nivel 2-6) for zoom-based rendering
+      rareEarthBasinsL2: props.rareEarthBasinsL2 ?? undefined,
+      rareEarthBasinsL3: props.rareEarthBasinsL3 ?? undefined,
+      rareEarthBasinsL4: props.rareEarthBasinsL4 ?? undefined,
+      rareEarthBasinsL5: props.rareEarthBasinsL5 ?? undefined,
+      rareEarthBasinsL6: props.rareEarthBasinsL6 ?? undefined,
+      // Proposed Mogiana territory (proposed by Earth Guardians Brazil)
+      rareEarthMogiana: props.rareEarthMogiana ?? undefined,
       layerVisibility: props.layerVisibility,
       rareEarthFilterExpr: props.rareEarthFilterExpr,
       flyToTarget: props.flyToTarget,

@@ -940,7 +940,8 @@
       "species": "Especies",
       "mains": "Principales",
       "feedback": "Comentarios",
-      "sources": "Fuentes"
+      "sources": "Fuentes",
+      "performance": "Rendimiento"
     },
     "shareCorrections": "Comparte correcciones, datos faltantes o ideas de interacción para ayudarnos a mejorar los mapas.",
     "homeLink": "Inicio",
@@ -953,6 +954,27 @@
       "basemap": "Mapa base, imágenes y motor de mapas",
       "reuseTitle": "Licencias y reutilización para investigación y herramientas comunitarias",
       "openSource": "Abrir fuente"
+    },
+    "performance": {
+      "title": "Rendimiento y Calidad",
+      "desc": "Controla la calidad de renderizado y los efectos de partículas. La app se ajusta automáticamente según el rendimiento de tu dispositivo, pero puedes anularlo aquí.",
+      "qualitySection": "Preajuste de Calidad",
+      "qualityDesc": "El ajuste automático balancea calidad visual con tasa de frames. Desactívalo para seleccionar un preajuste manualmente.",
+      "autoAdjust": "Ajuste automático de calidad (recomendado)",
+      "qualityPreset": "Preajuste de Calidad",
+      "low": "Bajo (rendimiento)",
+      "medium": "Medio (balanceado)",
+      "high": "Alto (calidad)",
+      "ultra": "Ultra (máximo)",
+      "particleSettings": "Ajustes de Partículas",
+      "particleDesc": "Ajusta la animación de partículas. Requiere que el ajuste automático esté desactivado.",
+      "particleMaxCount": "Máx. Partículas",
+      "particleFps": "FPS Objetivo",
+      "particleTrailLength": "Longitud de Estela",
+      "particleSpawnRate": "Tasa de Generación",
+      "particleShadow": "Desenfoque de Sombra",
+      "apply": "Aplicar Ajustes",
+      "currentSettings": "Ajustes Activos Actuales"
     }
   },
   "campaigns": {

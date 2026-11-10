@@ -773,10 +773,43 @@
       "grants": "Hibeler",
       "species": "Türler",
       "mains": "Ana",
-      "feedback": "Geri Bildirim"
+      "feedback": "Geri Bildirim",
+      "sources": "Kaynaklar",
+      "performance": "Performans"
     },
     "shareCorrections": "Haritaları geliştirmemize yardımcı olmak için düzeltmeleri, eksik verileri veya etkileşim fikirlerini paylaşın.",
-    "homeLink": "Ana Sayfa"
+    "homeLink": "Ana Sayfa",
+    "sources": {
+      "title": "Veri Kaynakları ve Lisanslar",
+      "intro": "EG-Maps'teki her katman adlandırılmış bir yayıncıdan gelir. Bu sekme bunların tümünü listeler — kim her veri kümesini yayınlar, hangi lisans altında ve araştırma ve topluluk çalışmaları için nasıl yeniden kullanabilirsiniz.",
+      "observatory": "Vulcan Gözlemevi — madencilik ve toprak",
+      "species": "Nesli Tükenmekte Olan Türler",
+      "grants": "Proje Hibeleri",
+      "basemap": "Temel Harita, Görüntüler ve Harita Motoru",
+      "reuseTitle": "Araştırma ve Topluluk Araçları için Lisanslar ve Yeniden Kullanım",
+      "openSource": "Açık Kaynak"
+    },
+    "performance": {
+      "title": "Performans ve Kalite",
+      "desc": "İşleme kalitesini ve parçacık efektlerini kontrol edin. Uygulama cihazınızın performansına göre otomatik olarak ayarlanır, ancak bunu burada geçersiz kılabilirsiniz.",
+      "qualitySection": "Kalite Ön Ayarı",
+      "qualityDesc": "Otomatik ayar görsel kalite ve kare hızı arasında denge kurar. Bir ön ayarı manuel olarak seçmek için kapatın.",
+      "autoAdjust": "Kaliteyi otomatik ayarla (önerilen)",
+      "qualityPreset": "Kalite Ön Ayarı",
+      "low": "Düşük (performans)",
+      "medium": "Orta (dengeli)",
+      "high": "Yüksek (kalite)",
+      "ultra": "Ultra (maksimum)",
+      "particleSettings": "Parçacık Ayarları",
+      "particleDesc": "Parçacık animasyonunu ince ayarlayın. Otomatik ayar kapalı olmalıdır.",
+      "particleMaxCount": "Maks. Parçacık",
+      "particleFps": "Hedef FPS",
+      "particleTrailLength": "İz Uzunluğu",
+      "particleSpawnRate": "Oluşum Hızı",
+      "particleShadow": "Gölge Bulanıklığı",
+      "apply": "Ayarları Uygula",
+      "currentSettings": "Mevcut Etkin Ayarlar"
+    }
   },
   "campaigns": {
     "title": "Kampanyalar",

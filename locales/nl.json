@@ -940,7 +940,8 @@
       "species": "Soorten",
       "mains": "Mains",
       "feedback": "Feedback",
-      "sources": "Bronnen"
+      "sources": "Bronnen",
+      "performance": "Prestaties"
     },
     "shareCorrections": "Deel correcties, ontbrekende data of interactie-ideeën om ons te helpen de kaarten te verbeteren.",
     "homeLink": "Home",
@@ -953,6 +954,27 @@
       "basemap": "Basiskaart, beeldmateriaal en kaartengine",
       "reuseTitle": "Licenses & reuse for research en community tools",
       "openSource": "Open source"
+    },
+    "performance": {
+      "title": "Prestaties & Kwaliteit",
+      "desc": "Beheer renderkwaliteit en deeltjeseffecten. De app past zich automatisch aan op basis van uw apparaatprestaties, maar u kunt dit hier overschrijven.",
+      "qualitySection": "Kwaliteitsvoorafstelling",
+      "qualityDesc": "Auto-ajust balanseert visuele kwaliteit en framerate. Uitschakelen om handmatig een voorafstelling te selecteren.",
+      "autoAdjust": "Kwaliteit automatisch aanpassen (aanbevolen)",
+      "qualityPreset": "Kwaliteitsvoorafstelling",
+      "low": "Laag (prestaties)",
+      "medium": "Gemiddeld (gebalanceerd)",
+      "high": "Hoog (kwaliteit)",
+      "ultra": "Ultra (maximaal)",
+      "particleSettings": "Deeltjesinstellingen",
+      "particleDesc": "Stel deeltjesanimatie fijn in. Vereist dat auto-ajust uitstaat.",
+      "particleMaxCount": "Max. deeltjes",
+      "particleFps": "Doel-FPS",
+      "particleTrailLength": "Spoorlengte",
+      "particleSpawnRate": "Spawn-snelheid",
+      "particleShadow": "Schaduwverwarwing",
+      "apply": "Instellingen toepassen",
+      "currentSettings": "Huidige actieve instellingen"
     }
   },
   "campaigns": {

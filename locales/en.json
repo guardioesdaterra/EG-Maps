@@ -534,7 +534,9 @@
       "protectedAreas": "Protected Areas",
       "statusTitle": "Layer status",
       "statusFailed": "failed",
-      "foreignHeld": "Foreign-held claims"
+      "foreignHeld": "Foreign-held claims",
+      "waterBasins": "Water Basins (Official ANA)",
+      "mogianaTerritory": "Proposed Mogiana Territory (Earth Guardians Brazil)"
     },
     "culturalLayers": {
       "filterTitle": "Cultural Filters",
@@ -939,7 +941,8 @@
       "species": "Species",
       "mains": "Mains",
       "feedback": "Feedback",
-      "sources": "Sources"
+      "sources": "Sources",
+      "performance": "Performance"
     },
     "shareCorrections": "Share corrections, missing data, or interaction ideas to help us improve the maps.",
     "homeLink": "Home",
@@ -953,6 +956,27 @@
       "basemap": "Basemap, imagery & map engine",
       "reuseTitle": "Licenses & reuse for research and community tools",
       "openSource": "Open source"
+    },
+    "performance": {
+      "title": "Performance & Quality",
+      "desc": "Control rendering quality and particle effects. The app auto-adjusts based on your device performance, but you can override it here.",
+      "qualitySection": "Quality Preset",
+      "qualityDesc": "Auto-adjust balances visual quality with frame rate. Turn off to manually select a preset.",
+      "autoAdjust": "Auto-adjust quality (recommended)",
+      "qualityPreset": "Quality Preset",
+      "low": "Low (performance)",
+      "medium": "Medium (balanced)",
+      "high": "High (quality)",
+      "ultra": "Ultra (maximum)",
+      "particleSettings": "Particle Settings",
+      "particleDesc": "Fine-tune particle animation. Requires auto-adjust to be off.",
+      "particleMaxCount": "Max Particles",
+      "particleFps": "Target FPS",
+      "particleTrailLength": "Trail Length",
+      "particleSpawnRate": "Spawn Rate",
+      "particleShadow": "Shadow Blur",
+      "apply": "Apply Settings",
+      "currentSettings": "Current Active Settings"
     }
   },
   "campaigns": {
@@ -2028,7 +2052,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "Click the map to add the first point",
+        "pressEnterHint": "Press Enter to finish · Esc to cancel"
       },
       "map": {
         "loading": "Loading satellite imagery…",

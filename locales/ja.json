@@ -940,7 +940,8 @@
       "species": "種",
       "mains": "主要メンバー",
       "feedback": "フィードバック",
-      "sources": "出典"
+      "sources": "出典",
+      "performance": "パフォーマンス"
     },
     "shareCorrections": "マップ改善のため、修正、不足データ、操作のアイデアを共有してください。",
     "homeLink": "ホーム",
@@ -953,6 +954,27 @@
       "basemap": "ベースマップ、画像、地図エンジン",
       "reuseTitle": "研究・コミュニティツール向けライセンスと再利用",
       "openSource": "オープンソース"
+    },
+    "performance": {
+      "title": "パフォーマンスと品質",
+      "desc": "レンダリング品質とパーティクル効果を制御します。アプリはお使いのデバイスの性能に基づいて自動的に調整しますが、ここで上書きできます。",
+      "qualitySection": "品質プリセット",
+      "qualityDesc": "オートアジャストは視覚品質とフレームレートのバランスを取ります。手動でプリセットを選ぶにはオフにします。",
+      "autoAdjust": "品質を自動調整（推奨）",
+      "qualityPreset": "品質プリセット",
+      "low": "低（パフォーマンス）",
+      "medium": "中（バランス）",
+      "high": "高（品質）",
+      "ultra": "ウルトラ（最大）",
+      "particleSettings": "パーティクル設定",
+      "particleDesc": "パーティクルアニメーションを微調整します。オートアジャストをオフにする必要があります。",
+      "particleMaxCount": "最大パーティクル数",
+      "particleFps": "目標FPS",
+      "particleTrailLength": "トレイル長",
+      "particleSpawnRate": "スポーン率",
+      "particleShadow": "シャドウブラー",
+      "apply": "設定を適用",
+      "currentSettings": "現在のアクティブ設定"
     }
   },
   "campaigns": {

@@ -72,6 +72,14 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
   const waterData = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
   const culturalData = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
   const waterThreats = shallowRef<WaterThreat[]>([])
+  // Water basins (nivel 2-6) for zoom-based rendering
+  const basinsDataL2 = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  const basinsDataL3 = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  const basinsDataL4 = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  const basinsDataL5 = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  const basinsDataL6 = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  // Proposed Mogiana territory layer (proposed by Earth Guardians Brazil)
+  const mogianaData = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
   // shallowRef: summary rows are only ever replaced wholesale (normalize
   // pass). Deep ref() proxied all 20k national objects on every read.
   const features = shallowRef<RareEarthFeatureSummary[]>([])
@@ -374,9 +382,6 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
     await Promise.all([
       loadResource('protected', `${dir}protected-areas.geojson`, (data: RareEarthFeatureCollection) => {
         if (!alive()) return
-        // Canonicalize `kind` once (ti | quilombo | uc | buffer | other,
-        // original kept in `kind_raw`) so map-layer filters, counts,
-        // sidebar groups and search all match on the same values.
         for (const f of data.features ?? []) {
           const props = (f as GeoJSON.Feature).properties as Record<string, unknown> | null | undefined
           if (!props || typeof props !== 'object') continue
@@ -391,8 +396,13 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
         protectedData.value = data
       }),
       loadResource('analysis', `${dir}deep_analysis.json`, (data: DeepAnalysis) => { if (alive()) deepAnalysis.value = data }),
-      loadResource('water', `${dir}waterbodies.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) waterData.value = data }),
+      loadResource('water_basins_l2', `${dir}bacias_nivel_2.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) basinsDataL2.value = data }),
+      loadResource('water_basins_l3', `${dir}bacias_nivel_3.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) basinsDataL3.value = data }),
+      loadResource('water_basins_l4', `${dir}bacias_nivel_4.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) basinsDataL4.value = data }),
+      loadResource('water_basins_l5', `${dir}bacias_nivel_5.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) basinsDataL5.value = data }),
+      loadResource('water_basins_l6', `${dir}bacias_nivel_6.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) basinsDataL6.value = data }),
       loadResource('cultural', `${dir}cultural-features.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) culturalData.value = data }),
+      loadResource('mogiana', `${dir}mogiana_combined.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) mogianaData.value = data }),
     ])
     // Stamp mining-pressure context onto named waters (needs points ready).
     // Locals (not ref reads): the refs were reset to undefined at the top
@@ -452,6 +462,14 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
     protectedData,
     waterData,
     culturalData,
+    // Water basins (nivel 2-6) for zoom-based rendering
+    basinsDataL2,
+    basinsDataL3,
+    basinsDataL4,
+    basinsDataL5,
+    basinsDataL6,
+    // Proposed Mogiana territory (proposed by Earth Guardians Brazil)
+    mogianaData,
     features,
     speculatorIndex,
     deepAnalysis,

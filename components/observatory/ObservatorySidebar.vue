@@ -558,6 +558,8 @@ const TOGGLE_LAYER_KEYS = [
   'foreign',
   'enterprise_hq',
   'heatmap',
+  'basins',
+  'mogiana',
 ] as const
 const LAYER_LABELS: Record<string, string> = {
   cultural: 'observatory.layers.cultural',
@@ -567,6 +569,8 @@ const LAYER_LABELS: Record<string, string> = {
   foreign: 'observatory.layers.foreignHeld',
   enterprise_hq: 'observatory.layers.enterpriseHq',
   heatmap: 'observatory.layers.heatmap',
+  basins: 'observatory.layers.waterBasins',
+  mogiana: 'observatory.layers.mogianaTerritory',
 }
 const LAYER_COLORS: Record<string, string> = {
   cultural: '#a855f7',
@@ -576,6 +580,8 @@ const LAYER_COLORS: Record<string, string> = {
   foreign: '#e74c3c',
   enterprise_hq: '#9b59b6',
   heatmap: '#e74c3c',
+  basins: '#3b82f6',
+  mogiana: '#f39c12',
 }
 
 // ── State ───────────────────────────────────────────────────────────────

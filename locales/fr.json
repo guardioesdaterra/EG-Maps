@@ -940,7 +940,8 @@
       "species": "Espèces",
       "mains": "Principaux",
       "feedback": "Retours",
-      "sources": "Sources"
+      "sources": "Sources",
+      "performance": "Performance"
     },
     "shareCorrections": "Partagez corrections, données manquantes ou idées d'interaction pour nous aider à améliorer les cartes.",
     "homeLink": "Accueil",
@@ -953,6 +954,27 @@
       "basemap": "Fond de carte, imagerie et moteur cartographique",
       "reuseTitle": "Licences et réutilisation pour la recherche et les outils communautaires",
       "openSource": "Ouvrir la source"
+    },
+    "performance": {
+      "title": "Performance et Qualité",
+      "desc": "Contrôlez la qualité de rendu et les effets de particules. L'application s'ajuste automatiquement selon les performances de votre appareil, mais vous pouvez la modifier ici.",
+      "qualitySection": "Préréglage Qualité",
+      "qualityDesc": "L'ajustement auto balance qualité visuelle et taux de rafraîchissement. Désactivez-le pour choisir un préréglage manuellement.",
+      "autoAdjust": "Ajustement auto qualité (recommandé)",
+      "qualityPreset": "Préréglage Qualité",
+      "low": "Faible (performance)",
+      "medium": "Moyen (équilibré)",
+      "high": "Élevé (qualité)",
+      "ultra": "Ultra (maximum)",
+      "particleSettings": "Réglages Particules",
+      "particleDesc": "Ajustez finement l'animation des particules. Nécessite que l'ajustement auto soit désactivé.",
+      "particleMaxCount": "Particules Max",
+      "particleFps": "FPS Cible",
+      "particleTrailLength": "Longueur Traînée",
+      "particleSpawnRate": "Taux Apparition",
+      "particleShadow": "Flou Ombre",
+      "apply": "Appliquer",
+      "currentSettings": "Réglages Actuels"
     }
   },
   "campaigns": {

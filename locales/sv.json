@@ -773,10 +773,43 @@
       "grants": "Bidrag",
       "species": "Arter",
       "mains": "Mains",
-      "feedback": "Feedback"
+      "feedback": "Feedback",
+      "sources": "Källor",
+      "performance": "Prestanda"
     },
     "shareCorrections": "Dela rättelser, saknad data eller interaktionsidéer för att hjälpa oss förbättra kartorna.",
-    "homeLink": "Hem"
+    "homeLink": "Hem",
+    "sources": {
+      "title": "Datakällor och licenser",
+      "intro": "Varje lager i EG-Maps kommer från en namngiven utgivare. Denna flik listar dem alla — vem som publicerar varje dataset, under vilken licens och hur du får återanvända det för forskning och gemenskapligt arbete.",
+      "observatory": "Vulcan Observatory — gruvbrytning och territorium",
+      "species": "Hotade arter",
+      "grants": "Projektbidrag",
+      "basemap": "Basakrt, bilder och kartmotor",
+      "reuseTitle": "Licenser och återanvändning för forskning och gemenskapliga verktyg",
+      "openSource": "Öppen källkod"
+    },
+    "performance": {
+      "title": "Prestanda och Kvalitet",
+      "desc": "Kontrollera renderingskvalitet och partikeleffekter. Appen justeras automatiskt baserat på din enhets prestanda, men du kan åsidosätta det här.",
+      "qualitySection": "Kvalitetsförinställning",
+      "qualityDesc": "Auto-justering balanserar visuell kvalitet och bildfrekvens. Stäng av för att manuellt välja en förinställning.",
+      "autoAdjust": "Automatisk kvalitetsjustering (rekommenderas)",
+      "qualityPreset": "Kvalitetsförinställning",
+      "low": "Låg (prestanda)",
+      "medium": "Medium (balanserad)",
+      "high": "Hög (kvalitet)",
+      "ultra": "Ultra (maximal)",
+      "particleSettings": "Partikelinställningar",
+      "particleDesc": "Finjustera partikelanimation. Kräver att automatisk justering är avstängd.",
+      "particleMaxCount": "Max Partiklar",
+      "particleFps": "Mål FPS",
+      "particleTrailLength": "Spårlängd",
+      "particleSpawnRate": "Spawn-hastighet",
+      "particleShadow": "Skuggadiffusion",
+      "apply": "Applicera inställningar",
+      "currentSettings": "Nuvarande aktiva inställningar"
+    }
   },
   "campaigns": {
     "title": "Kampanjer",

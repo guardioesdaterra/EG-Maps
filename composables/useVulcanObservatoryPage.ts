@@ -35,7 +35,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     debouncedFilter, updateFilter,
   } = controls
 
-  const { pointsData: _rawPointsData, polygonsData: _rawPolygonsData, protectedData: _rawProtectedData, waterData: _rawWaterData, culturalData: _rawCulturalData, features: allFeatures, speculatorIndex, deepAnalysis, layerCounts, overlapSummary, protectedSummary, waterThreats, waterSummary, resourceErrors, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL, initialRegion)
+  const { pointsData: _rawPointsData, polygonsData: _rawPolygonsData, protectedData: _rawProtectedData, waterData: _rawWaterData, culturalData: _rawCulturalData, basinsDataL2, basinsDataL3, basinsDataL4, basinsDataL5, basinsDataL6, mogianaData, features: allFeatures, speculatorIndex, deepAnalysis, layerCounts, overlapSummary, protectedSummary, waterThreats, waterSummary, resourceErrors, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL, initialRegion)
 
   const { combinedData: culturalAgentsCombined, sourceCounts, load: loadCulturalAgents, isLoading: culturalLoading, error: culturalError, sourceErrors: culturalSourceErrors } = useCulturalAgentsData(baseURL)
 

@@ -41,32 +41,43 @@
 
       <!-- Main UI (when not in setup) -->
       <template v-else>
-        <!-- Top Bar -->
+        <!-- Top Header — flat OS-style shell: status row (title + clock) + tools row -->
         <header class="top-bar" :class="{ scrolled: mapScrolled }">
-          <button class="btn-icon" @click="close" :aria-label="t('general.back')">
-            <Icon name="tabler:arrow-left" class="w-5 h-5" />
-          </button>
-
-          <div class="title-section" :class="{ 'has-subtitle': activeProject?.address }">
-            <h1 class="title">{{ activeProject?.name || t('tools.agroecologicalGarden.title') }}</h1>
-            <p v-if="activeProject?.address" class="subtitle">{{ activeProject.address }}</p>
-            <p v-else-if="gridChip" class="subtitle">{{ gridChip }}</p>
-          </div>
-
-          <div class="top-actions">
-            <button
-              v-if="hasGrid"
-              class="btn-icon btn-grid-chip"
-              @click="openSetup"
-              :aria-label="t('tools.agroecologicalGarden.onboarding.editGrid')"
-            >
-              <Icon name="tabler:grid-dots" class="w-5 h-5" />
-              <span class="chip-text">{{ gridChip }}</span>
-              <Icon name="tabler:chevron-right" class="w-4 h-4" />
+          <div class="top-bar-status">
+            <button class="btn-icon btn-icon-sm" @click="close" :aria-label="t('general.back')">
+              <Icon name="tabler:arrow-left" class="w-5 h-5" />
             </button>
 
+            <div class="title-section" :class="{ 'has-subtitle': activeProject?.address }">
+              <h1 class="title">{{ activeProject?.name || t('tools.agroecologicalGarden.title') }}</h1>
+              <p v-if="activeProject?.address" class="subtitle">{{ activeProject.address }}</p>
+              <p v-else-if="gridChip" class="subtitle">{{ gridChip }}</p>
+            </div>
+
+            <div v-if="clockReady" class="clock" :title="clockDate">
+              <span class="clock-time">{{ clockTime }}</span>
+              <span class="clock-date">{{ clockDate }}</span>
+            </div>
+          </div>
+
+          <div class="top-bar-tools" role="toolbar" :aria-label="t('tools.agroecologicalGarden.draw')">
             <button
-              class="btn-icon"
+              v-for="mode in drawingModes"
+              :key="`top-${mode.key}`"
+              class="top-tool-btn"
+              :class="{ active: activeMode === mode.key }"
+              :aria-label="t(mode.labelKey)"
+              :aria-pressed="activeMode === mode.key"
+              :title="t(mode.labelKey)"
+              @click="setMode(mode.key)"
+            >
+              <Icon :name="mode.icon" class="w-4 h-4" />
+            </button>
+
+            <span class="action-divider" />
+
+            <button
+              class="btn-icon btn-icon-sm"
               :disabled="!garden.canUndo"
               @click="undoEdit"
               :aria-label="t('tools.agroecologicalGarden.toolbar.undo')"
@@ -74,7 +85,7 @@
               <Icon name="tabler:arrow-back-up" class="w-5 h-5" />
             </button>
             <button
-              class="btn-icon"
+              class="btn-icon btn-icon-sm"
               :disabled="!garden.canRedo"
               @click="redoEdit"
               :aria-label="t('tools.agroecologicalGarden.toolbar.redo')"
@@ -82,16 +93,26 @@
               <Icon name="tabler:arrow-forward-up" class="w-5 h-5" />
             </button>
 
-            <div class="action-divider" />
+            <span class="action-divider" />
 
-            <button class="btn-icon" @click="showImport = true" :aria-label="t('tools.agroecologicalGarden.project.import')">
+            <button
+              v-if="hasGrid"
+              class="btn-icon btn-icon-sm btn-grid-chip"
+              @click="openSetup"
+              :aria-label="t('tools.agroecologicalGarden.onboarding.editGrid')"
+            >
+              <Icon name="tabler:grid-dots" class="w-5 h-5" />
+              <span class="chip-text">{{ gridChip }}</span>
+              <Icon name="tabler:chevron-right" class="w-4 h-4" />
+            </button>
+            <button class="btn-icon btn-icon-sm" @click="showImport = true" :aria-label="t('tools.agroecologicalGarden.project.import')">
               <Icon name="tabler:file-import" class="w-5 h-5" />
             </button>
             <input ref="importInputRef" type="file" accept="application/json,.json,.geojson" class="hidden" @change="handleImportFile" />
-            <button class="btn-icon" @click="saveProject" :aria-label="t('tools.agroecologicalGarden.project.save')">
+            <button class="btn-icon btn-icon-sm" @click="saveProject" :aria-label="t('tools.agroecologicalGarden.project.save')">
               <Icon name="tabler:device-floppy" class="w-5 h-5" />
             </button>
-            <button class="btn-icon" @click="showExport = true" :aria-label="t('tools.agroecologicalGarden.project.export')">
+            <button class="btn-icon btn-icon-sm" @click="showExport = true" :aria-label="t('tools.agroecologicalGarden.project.export')">
               <Icon name="tabler:share" class="w-5 h-5" />
             </button>
           </div>
@@ -159,27 +180,10 @@
           </div>
         </footer>
 
-        <!-- Floating Action Buttons (Right Side) -->
+        <!-- Floating Action Button (planting shortcut) -->
         <div class="fab-column">
           <button
-            v-if="activeDraw"
-            class="fab fab-primary"
-            @click="finishDraw"
-            :aria-label="t('tools.agroecologicalGarden.drawActions.finish')"
-          >
-            <Icon name="tabler:check" class="w-5 h-5" />
-          </button>
-          <button
-            v-if="activeDraw"
-            class="fab fab-danger"
-            @click="cancelDraw"
-            :aria-label="t('tools.agroecologicalGarden.drawActions.cancel')"
-          >
-            <Icon name="tabler:x" class="w-5 h-5" />
-          </button>
-
-          <button
-            v-else-if="pendingPlant"
+            v-if="pendingPlant && !activeDraw"
             class="fab fab-plant"
             @click="clearPendingPlant"
             :aria-label="t('tools.agroecologicalGarden.panels.cancelPlant')"
@@ -196,24 +200,53 @@
           <span v-if="gridSummaryChip" class="readout-item grid-chip">{{ gridSummaryChip }}</span>
         </div>
 
-        <!-- Measurement Display -->
-        <div v-if="measurement" class="measurement-bar">
+        <!-- Measurement Display (kept after a measurement is finished) -->
+        <div v-if="measurement && !isDrawing" class="measurement-bar">
           <span class="measure-label">{{ measurement.label }}</span>
           <button class="btn btn-ghost btn-sm" @click="toggleUnit">
             {{ unitSystem === 'metric' ? t('tools.agroecologicalGarden.measurement.metric') : t('tools.agroecologicalGarden.measurement.imperial') }}
           </button>
         </div>
 
-        <!-- Drawing Actions -->
-        <div v-if="isDrawing" class="draw-actions">
-          <button class="btn btn-primary" @click="finishDraw">
-            <Icon name="tabler:check" class="w-4 h-4" />
-            {{ t('tools.agroecologicalGarden.drawActions.finish') }}
-          </button>
-          <button class="btn btn-secondary" @click="cancelDraw">
-            <Icon name="tabler:x" class="w-4 h-4" />
-            {{ t('tools.agroecologicalGarden.drawActions.cancel') }}
-          </button>
+        <!-- In-map draw popup: live measurement + Finish/Cancel + Enter hint -->
+        <div
+          v-if="isDrawing"
+          class="draw-popup"
+          :class="{ anchored: !!drawPopupPos }"
+          :style="drawPopupPos ? { left: `${drawPopupPos.x}px`, top: `${drawPopupPos.y}px` } : undefined"
+          role="dialog"
+          :aria-label="t('tools.agroecologicalGarden.draw')"
+        >
+          <div class="draw-popup-values">
+            <template v-if="drawLiveMeasurement?.kind === 'polygon'">
+              <span class="measure-k">{{ t('tools.agroecologicalGarden.measurement.perimeter') }}</span>
+              <span class="measure-v">{{ drawLiveMeasurement.perimeter }}</span>
+              <span class="measure-sep">·</span>
+              <span class="measure-k">{{ t('tools.agroecologicalGarden.measurement.area') }}</span>
+              <span class="measure-v">{{ drawLiveMeasurement.area }}</span>
+            </template>
+            <template v-else-if="drawLiveMeasurement">
+              <span class="measure-k">{{ t('tools.agroecologicalGarden.measurement.distance') }}</span>
+              <span class="measure-v">{{ drawLiveMeasurement.length }}</span>
+            </template>
+            <span v-else class="measure-empty">{{ t('tools.agroecologicalGarden.drawActions.clickToAdd') }}</span>
+          </div>
+
+          <div class="draw-popup-actions">
+            <button class="btn btn-primary btn-sm" :disabled="!canFinishDraw" @click="finishDraw">
+              <Icon name="tabler:check" class="w-4 h-4" />
+              {{ t('tools.agroecologicalGarden.drawActions.finish') }}
+            </button>
+            <button class="btn btn-secondary btn-sm" @click="cancelDraw">
+              <Icon name="tabler:x" class="w-4 h-4" />
+              {{ t('tools.agroecologicalGarden.drawActions.cancel') }}
+            </button>
+            <button class="btn btn-ghost btn-sm" @click="toggleUnit">
+              {{ unitSystem === 'metric' ? t('tools.agroecologicalGarden.measurement.metric') : t('tools.agroecologicalGarden.measurement.imperial') }}
+            </button>
+          </div>
+
+          <p class="draw-popup-hint">{{ t('tools.agroecologicalGarden.drawActions.pressEnterHint') }}</p>
         </div>
       </template>
     </div>
@@ -424,10 +457,20 @@ import { useMapTileStyle } from '@/composables/useMapTileStyle'
 import { tileStyleDef } from '@/lib/tile-styles'
 import { buildGardenStyle, satelliteStyle, streetsStyle } from '@/lib/garden-basemap'
 import { GRID_MAX_CELLS, buildGridGeometry, gridBounds, gridToGeoJSON, normalizeGrid } from '@/lib/garden-grid'
-import type { GardenFeature, GardenGrid, GardenLayerType, GardenLocation, LayerStyle, DrawingMode, PlantCategory } from '@/lib/garden-types'
+import type { GardenFeature, GardenGrid, GardenLayer, GardenLayerType, GardenLocation, LayerStyle, DrawingMode, PlantCategory } from '@/lib/garden-types'
 import { PLANTS, getPlant, searchPlants } from '@/lib/garden-plants'
-import { createDistanceMeasurement, computeBounds, formatDistance as formatMeters, generateId, haversineDistance } from '@/lib/garden-utils'
-import { DEFAULT_LOCATION } from '@/lib/garden-constants'
+import {
+  createDistanceMeasurement,
+  computeBounds,
+  formatArea,
+  formatDistance as formatMeters,
+  generateId,
+  haversineDistance,
+  lineStringLength,
+  polygonPerimeter,
+  sphericalPolygonArea,
+} from '@/lib/garden-utils'
+import { DEFAULT_LOCATION, LAYER_DEFAULTS } from '@/lib/garden-constants'
 import GardenSetupWizardMobile from '@/components/tools/garden/GardenSetupWizardMobile.vue'
 import GardenSheetMobile from '@/components/ui/GardenSheetMobile.vue'
 import Icon from '@/components/Icon.vue'
@@ -548,6 +591,20 @@ const filteredPlants = computed(() => {
 const isDrawing = computed(() => activeDraw.value !== null)
 const mapLoading = computed(() => !isMapReady.value)
 
+// ── Header clock (OS-style status readout) ──────────────────────────────────
+const now = ref(new Date())
+let clockTimer: ReturnType<typeof setTimeout> | null = null
+const clockTime = computed(() => now.value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+const clockDate = computed(() => now.value.toLocaleDateString([], { weekday: 'short', day: '2-digit', month: 'short' }))
+/** Clock text only renders after mount — avoids SSR/client time mismatch. */
+const clockReady = ref(false)
+
+/** Re-renders exactly on the minute boundary (one tick per minute, no drift). */
+function scheduleClockTick() {
+  now.value = new Date()
+  clockTimer = setTimeout(scheduleClockTick, 60_000 - (Date.now() % 60_000) + 30)
+}
+
 // ── Drawing state ───────────────────────────────────────────────────────────
 interface DrawState {
   type: 'line' | 'polygon'
@@ -557,6 +614,36 @@ interface DrawState {
   featureId: string
 }
 const activeDraw = ref<DrawState | null>(null)
+
+/** Cursor position while drawing — feeds the live preview measurement. */
+const cursorPos = ref<[number, number] | null>(null)
+/** Screen anchor (map container px) of the in-map draw popup. */
+const drawPopupPos = ref<{ x: number; y: number } | null>(null)
+
+/** Live measurement for the in-map popup: line/measure length or polygon perimeter × area. */
+const drawLiveMeasurement = computed(() => {
+  const draw = activeDraw.value
+  if (!draw) return null
+  const unit = unitSystem.value
+  const coords: [number, number][] = [...draw.coords]
+  if (cursorPos.value) coords.push(cursorPos.value)
+  if (coords.length < 2) return null
+  if (draw.type === 'polygon') {
+    return {
+      kind: 'polygon' as const,
+      perimeter: formatMeters(polygonPerimeter(coords), unit),
+      area: formatArea(sphericalPolygonArea(coords), unit),
+    }
+  }
+  return { kind: 'line' as const, length: formatMeters(lineStringLength(coords), unit) }
+})
+
+/** A polygon needs 3 vertices, a line (and a measurement) 2. */
+const canFinishDraw = computed(() => {
+  const draw = activeDraw.value
+  if (!draw) return false
+  return draw.type === 'polygon' ? draw.coords.length >= 3 : draw.coords.length >= 2
+})
 
 // ── Map lifecycle ───────────────────────────────────────────────────────────
 
@@ -591,6 +678,8 @@ function initMap() {
   map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right')
   map.addControl(new maplibregl.ScaleControl({ unit: 'metric', maxWidth: 90 }), 'bottom-left')
+  // TODO(debug): temporary — remove
+  if (import.meta.dev && typeof window !== 'undefined') (window as unknown as Record<string, unknown>).__gardenMap = map
 
   mapRef.value = map
   zoomLevel.value = map.getZoom()
@@ -633,7 +722,33 @@ function initMap() {
       wizardRef.value?.setLocationFromMap(event.lngLat.lng, event.lngLat.lat)
       return
     }
+    if (isClusterClick(map, event.point)) return
     handleMapClick(event.lngLat.lng, event.lngLat.lat)
+  })
+
+  // Cluster bubbles zoom into their group instead of being selected/drawn on.
+  map.on('click', 'garden-point-clusters', (event) => {
+    const feature = event.features?.[0]
+    const clusterId = feature?.properties?.cluster_id
+    const source = map.getSource('garden-draw-points') as GeoJSONSource | undefined
+    if (!feature || clusterId == null || !source) return
+    const center = (feature.geometry as GeoJSON.Point).coordinates as [number, number]
+    source.getClusterExpansionZoom(Number(clusterId))
+      .then(zoom => map.easeTo({ center, zoom, duration: 400 }))
+      .catch(() => undefined)
+  })
+
+  // Marker icons and cluster counts are canvas images registered on demand —
+  // MapLibre asks for them by id, so no glyph fontstack is required.
+  map.on('styleimagemissing', (event) => {
+    const id = event.id
+    const count = /^garden-count-(\d+)$/.exec(id)
+    if (count) {
+      if (!map.hasImage(id)) putImage(map, id, buildClusterCountImage(Number(count[1])))
+      return
+    }
+    const icon = /^garden-icon-(.+)$/.exec(id)
+    if (icon && !map.hasImage(id)) putImage(map, id, buildMarkerIconImage(decodeURIComponent(icon[1])))
   })
 
   map.on('dblclick', () => {
@@ -642,7 +757,12 @@ function initMap() {
 
   map.on('mousemove', (event) => {
     coordinate.value = { lat: event.lngLat.lat, lng: event.lngLat.lng }
-    if (activeDraw.value) updateDrawPreview(map, event.lngLat.lng, event.lngLat.lat)
+    if (activeDraw.value) {
+      cursorPos.value = [event.lngLat.lng, event.lngLat.lat]
+      updateDrawPreview(map, event.lngLat.lng, event.lngLat.lat)
+    } else if (cursorPos.value) {
+      cursorPos.value = null
+    }
   })
 
   map.on('zoom', () => {
@@ -651,6 +771,7 @@ function initMap() {
 
   map.on('move', () => {
     mapScrolled.value = true
+    if (activeDraw.value) updateDrawPopupAnchor()
   })
 
   styleTimer = setTimeout(() => {
@@ -710,10 +831,17 @@ let didInitialView = false
 
 // ── Map layers ──────────────────────────────────────────────────────────────
 
+/**
+ * Brand accents for MapLibre paint properties. The style engine cannot resolve
+ * CSS custom properties (`var(--garden-*)`), so these are literal hex/rgba.
+ */
+const MAP_BRAND = '#0ea5e9'
+const MAP_BRAND_SOFT = '#7dd3fc'
+
 function setupMapLayers(map: MapLibreMap) {
   ensureSource(map, 'garden-grid-area')
   ensureSource(map, 'garden-grid-lines')
-  ensureSource(map, 'garden-draw-points')
+  ensureSource(map, 'garden-draw-points', true)
   ensureSource(map, 'garden-draw-lines')
   ensureSource(map, 'garden-draw-polygons')
   ensureSource(map, 'garden-active-draw')
@@ -723,7 +851,7 @@ function setupMapLayers(map: MapLibreMap) {
       id: 'garden-grid-fill',
       type: 'fill',
       source: 'garden-grid-area',
-      paint: { 'fill-color': 'var(--garden-color-brand-primary)', 'fill-opacity': 0.08 },
+      paint: { 'fill-color': MAP_BRAND, 'fill-opacity': 0.08 },
     })
   }
   if (!map.getLayer('garden-grid-lines')) {
@@ -732,7 +860,7 @@ function setupMapLayers(map: MapLibreMap) {
       type: 'line',
       source: 'garden-grid-lines',
       paint: {
-        'line-color': ['case', ['==', ['get', 'kind'], 'boundary'], 'var(--garden-color-brand-primary)', 'var(--garden-color-brand-300)'],
+        'line-color': ['case', ['==', ['get', 'kind'], 'boundary'], MAP_BRAND, MAP_BRAND_SOFT],
         'line-width': ['case', ['==', ['get', 'kind'], 'boundary'], 2.5, 1],
         'line-opacity': ['case', ['==', ['get', 'kind'], 'boundary'], 0.9, 0.4],
       },
@@ -773,26 +901,81 @@ function setupMapLayers(map: MapLibreMap) {
       },
     })
   }
+
+  // ── Marker aggregation: translucent bubbles that expand on click ─────────
+  if (!map.getLayer('garden-point-clusters')) {
+    map.addLayer({
+      id: 'garden-point-clusters',
+      type: 'circle',
+      source: 'garden-draw-points',
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': ['case', ['==', ['get', 'selected'], true], 'rgba(2, 132, 199, 0.4)', 'rgba(14, 165, 233, 0.22)'],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'],
+          10, ['step', ['get', 'point_count'], 15, 10, 19, 40, 24],
+          16, ['step', ['get', 'point_count'], 22, 10, 27, 40, 33],
+          21, ['step', ['get', 'point_count'], 30, 10, 36, 40, 44]],
+        'circle-stroke-color': 'rgba(3, 105, 161, 0.6)',
+        'circle-stroke-width': 1.5,
+      },
+    })
+  }
+  if (!map.getLayer('garden-point-cluster-count')) {
+    map.addLayer({
+      id: 'garden-point-cluster-count',
+      type: 'symbol',
+      source: 'garden-draw-points',
+      filter: ['has', 'point_count'],
+      layout: {
+        'icon-image': ['concat', 'garden-count-', ['to-string', ['get', 'point_count']]],
+        'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.7, 16, 0.95, 21, 1.15],
+        'icon-anchor': 'center',
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
+    })
+  }
+
   if (!map.getLayer('garden-layer-points')) {
     map.addLayer({
       id: 'garden-layer-points',
       type: 'circle',
       source: 'garden-draw-points',
+      filter: ['!', ['has', 'point_count']],
       paint: {
-        'circle-radius': ['get', 'radius'],
+        // Zoom-dynamic halo sized from the layer's own radius (6px base).
+        'circle-radius': ['*', ['/', ['get', 'radius'], 6], ['interpolate', ['linear'], ['zoom'], 12, 11, 15, 13, 18, 16, 21, 19]],
         'circle-color': ['get', 'color'],
-        'circle-opacity': ['*', ['get', 'opacity'], ['get', 'layerOpacity']],
-        'circle-stroke-color': ['case', ['==', ['get', 'selected'], true], 'var(--garden-color-brand-primary)', 'var(--garden-color-neutral-100)'],
-        'circle-stroke-width': ['case', ['==', ['get', 'selected'], true], 3, 1],
+        'circle-opacity': ['*', ['get', 'opacity'], ['get', 'layerOpacity'], 0.85],
+        'circle-stroke-color': ['case', ['==', ['get', 'selected'], true], MAP_BRAND, '#ffffff'],
+        'circle-stroke-width': ['case', ['==', ['get', 'selected'], true], 3, 1.5],
       },
     })
   }
+  // Each marker renders its own icon (seed 🌱, seedling 🌿, tree 🌳 …).
+  if (!map.getLayer('garden-layer-point-icons')) {
+    map.addLayer({
+      id: 'garden-layer-point-icons',
+      type: 'symbol',
+      source: 'garden-draw-points',
+      filter: ['!', ['has', 'point_count']],
+      layout: {
+        'icon-image': ['get', 'iconKey'],
+        'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.5, 15, 0.66, 18, 0.85, 21, 1.05],
+        'icon-anchor': 'center',
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
+      paint: { 'icon-opacity': ['*', ['get', 'opacity'], ['get', 'layerOpacity']] },
+    })
+  }
+
   if (!map.getLayer('garden-active-line')) {
     map.addLayer({
       id: 'garden-active-line',
       type: 'line',
       source: 'garden-active-draw',
-      paint: { 'line-color': 'var(--garden-color-brand-primary)', 'line-width': 3, 'line-opacity': 0.9, 'line-dasharray': [4, 2] },
+      paint: { 'line-color': MAP_BRAND, 'line-width': 3, 'line-opacity': 0.9, 'line-dasharray': [4, 2] },
     })
   }
   if (!map.getLayer('garden-active-polygon')) {
@@ -801,7 +984,7 @@ function setupMapLayers(map: MapLibreMap) {
       type: 'fill',
       source: 'garden-active-draw',
       filter: ['==', ['geometry-type'], 'Polygon'],
-      paint: { 'fill-color': 'var(--garden-color-brand-primary)', 'fill-opacity': 0.15 },
+      paint: { 'fill-color': MAP_BRAND, 'fill-opacity': 0.15 },
     })
   }
   if (!map.getLayer('garden-active-point')) {
@@ -810,15 +993,146 @@ function setupMapLayers(map: MapLibreMap) {
       type: 'circle',
       source: 'garden-active-draw',
       filter: ['==', ['geometry-type'], 'Point'],
-      paint: { 'circle-color': 'var(--garden-color-brand-primary)', 'circle-radius': 5, 'circle-opacity': 0.9 },
+      paint: { 'circle-color': MAP_BRAND, 'circle-radius': 5, 'circle-opacity': 0.9 },
     })
   }
 }
 
-function ensureSource(map: MapLibreMap, id: string) {
-  if (!map.getSource(id)) {
-    map.addSource(id, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+function ensureSource(map: MapLibreMap, id: string, cluster = false) {
+  if (map.getSource(id)) return
+  const data: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] }
+  if (cluster) {
+    map.addSource(id, { type: 'geojson', data, cluster: true, clusterRadius: 52, clusterMaxZoom: 15 })
+  } else {
+    map.addSource(id, { type: 'geojson', data })
   }
+}
+
+/** True when the click landed on a cluster bubble (those zoom instead). */
+function isClusterClick(map: MapLibreMap, point: maplibregl.PointLike): boolean {
+  if (!map.getLayer('garden-point-clusters')) return false
+  try {
+    return map.queryRenderedFeatures(point, { layers: ['garden-point-clusters'] }).length > 0
+  } catch {
+    return false
+  }
+}
+
+type RgbaImage = { width: number; height: number; data: Uint8Array }
+
+/** Register a canvas image on the map (SSR-safe, idempotent). */
+function putImage(map: MapLibreMap, id: string, image: RgbaImage | undefined) {
+  if (!image || map.hasImage(id)) return
+  try { map.addImage(id, image, { pixelRatio: 2 }) } catch { /* image already present */ }
+}
+
+function canvasContext(size: number): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } | null {
+  if (typeof document === 'undefined') return null
+  try {
+    const canvas = document.createElement('canvas')
+    canvas.width = size
+    canvas.height = size
+    const ctx = canvas.getContext('2d')
+    return ctx ? { canvas, ctx } : null
+  } catch {
+    return null
+  }
+}
+
+/** Emoji badge for one marker — white disc + emoji, legible over satellite imagery. */
+function buildMarkerIconImage(emoji: string): RgbaImage | undefined {
+  const S = 96
+  const setup = canvasContext(S)
+  if (!setup) return undefined
+  try {
+    const { ctx } = setup
+    const c = S / 2
+    const r = 30
+    ctx.clearRect(0, 0, S, S)
+    ctx.save()
+    ctx.shadowColor = 'rgba(2, 6, 23, 0.35)'
+    ctx.shadowBlur = 8
+    ctx.shadowOffsetY = 3
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'
+    ctx.beginPath()
+    ctx.arc(c, c, r, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.18)'
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.arc(c, c, r - 1.5, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.font = '50px system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(emoji, c, c + 2)
+    const img = ctx.getImageData(0, 0, S, S)
+    return { width: S, height: S, data: new Uint8Array(img.data) }
+  } catch {
+    return undefined
+  }
+}
+
+/** Cluster count text — white with a dark halo so it reads on any basemap. */
+function buildClusterCountImage(count: number): RgbaImage | undefined {
+  const S = 64
+  const setup = canvasContext(S)
+  if (!setup) return undefined
+  try {
+    const { ctx } = setup
+    const label = count > 9999 ? `${Math.round(count / 1000)}k+` : String(count)
+    const size = label.length > 3 ? 24 : label.length > 2 ? 30 : 36
+    ctx.clearRect(0, 0, S, S)
+    ctx.font = `700 ${size}px ui-sans-serif, system-ui, sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.lineJoin = 'round'
+    ctx.lineWidth = 6
+    ctx.strokeStyle = 'rgba(2, 6, 23, 0.8)'
+    ctx.strokeText(label, S / 2, S / 2)
+    ctx.fillStyle = '#ffffff'
+    ctx.fillText(label, S / 2, S / 2)
+    const img = ctx.getImageData(0, 0, S, S)
+    return { width: S, height: S, data: new Uint8Array(img.data) }
+  } catch {
+    return undefined
+  }
+}
+
+/** Emoji per layer type — seeds and seedlings each render their own icon. */
+const LAYER_TYPE_ICONS: Record<string, string> = {
+  seeds: '🌱',
+  seedlings: '🌿',
+  transplants: '🪴',
+  vegetable: '🥬',
+  'native-tree': '🌳',
+  rhizome: '🥔',
+  'cover-crop': '🌾',
+  herb: '🌿',
+  bed: '🟫',
+  path: '👣',
+  compost: '♻️',
+  mulch: '🍂',
+  biochar: '⚫',
+  'fertile-earth': '🪱',
+  'water-way': '🌊',
+  spring: '💧',
+  'water-source-natural': '💧',
+  'water-source-tap': '🚰',
+  irrigation: '💦',
+  greenhouse: '🏠',
+  shed: '🏚️',
+  fence: '🚧',
+  trellis: '🎋',
+}
+
+/** MapLibre image id for a point feature (plant category wins over layer type). */
+function pointIconKey(feature: GardenFeature, layerType: GardenLayerType): string {
+  const plantId = feature.properties.plantId
+  const plant = plantId ? getPlant(plantId) : null
+  const emoji = plant ? plantIcon(plant.category) : (LAYER_TYPE_ICONS[layerType] ?? '📍')
+  return `garden-icon-${encodeURIComponent(emoji)}`
 }
 
 function renderAll() {
@@ -868,7 +1182,7 @@ function renderFeatures() {
     if (!layer || !layer.visible) continue
 
     const style = layer.style
-    const color = style.color ?? 'var(--garden-color-brand-primary)'
+    const color = style.color ?? MAP_BRAND
     const fillColor = style.fillColor ?? color
     const fillOpacity = style.fillOpacity ?? 0.3
     const layerOpacity = layer.opacity ?? 1
@@ -878,7 +1192,16 @@ function renderFeatures() {
       pointFeatures.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: feature.geometry.coordinates as [number, number] },
-        properties: { color, radius: style.radius ?? 6, opacity: 0.95, layerOpacity, selected, id: feature.id, label: feature.properties.label },
+        properties: {
+          color,
+          radius: style.radius ?? 6,
+          opacity: 0.95,
+          layerOpacity,
+          selected,
+          id: feature.id,
+          label: feature.properties.label,
+          iconKey: pointIconKey(feature, layer.type),
+        },
       })
     } else if (feature.type === 'line') {
       lineFeatures.push({
@@ -966,16 +1289,32 @@ function gridFromProject(project: ReturnType<typeof useGardenProject>['activePro
 // ── Drawing ─────────────────────────────────────────────────────────────────
 
 function setMode(mode: DrawingMode) {
+  // Re-tapping the active tool stops it (back to Select) — every tool is stoppable.
+  if (mode === activeMode.value && mode !== 'select' && mode !== 'pan') {
+    cancelDraw()
+    pendingPlant.value = null
+    garden.setDrawingMode('select')
+    garden.clearSelection()
+    const stopMap = mapRef.value
+    if (stopMap) {
+      stopMap.getCanvas().style.cursor = 'default'
+      stopMap.doubleClickZoom.enable()
+    }
+    return
+  }
   if (mode !== activeMode.value) {
     activeDraw.value = null
+    cursorPos.value = null
+    drawPopupPos.value = null
     clearDrawPreview()
+    garden.setMeasurement(null)
   }
   garden.setDrawingMode(mode)
   pendingPlant.value = null
   const map = mapRef.value
   if (map) {
     map.getCanvas().style.cursor = mode === 'pan' ? 'grab' : mode === 'select' ? 'default' : 'crosshair'
-    if (mode === 'line' || mode === 'polygon') map.doubleClickZoom.disable()
+    if (mode === 'line' || mode === 'polygon' || mode === 'measure') map.doubleClickZoom.disable()
     else map.doubleClickZoom.enable()
   }
   if (mode === 'select') garden.clearSelection()
@@ -990,15 +1329,20 @@ function handleMapClick(lng: number, lat: number) {
   }
   if (mode === 'pan') return
 
-  const layerId = resolveLayerForMode()
-  if (!layerId) {
-    toast.warning(t('tools.agroecologicalGarden.panels.noLayers'))
-    return
+  // Measuring must work even when every layer is locked or none exists yet.
+  let layerId: string | null = null
+  let layer: GardenLayer | null = null
+  if (mode !== 'measure') {
+    layerId = resolveLayerForMode()
+    if (!layerId) {
+      toast.warning(t('tools.agroecologicalGarden.panels.noLayers'))
+      return
+    }
+    layer = activeProject.value?.layers.find(l => l.id === layerId) ?? null
+    if (!layer || layer.locked) return
   }
-  const layer = activeProject.value?.layers.find(l => l.id === layerId)
-  if (!layer || layer.locked) return
 
-  if (mode === 'point') {
+  if (mode === 'point' && layer) {
     const plant = pendingPlant.value
     const feature: GardenFeature = {
       id: generateId('feat'),
@@ -1006,7 +1350,7 @@ function handleMapClick(lng: number, lat: number) {
       geometry: { type: 'Point', coordinates: [lng, lat] },
       properties: { label: plant?.name ?? layerTypeLabel(layer.type), plantId: plant?.plantId, variety: '' },
     }
-    garden.addFeature(feature, layerId)
+    garden.addFeature(feature, layer.id)
     renderFeatures()
     pendingPlant.value = null
     toast.success(t('tools.agroecologicalGarden.toasts.featureAdded'))
@@ -1018,8 +1362,8 @@ function handleMapClick(lng: number, lat: number) {
       activeDraw.value = {
         type: mode === 'polygon' ? 'polygon' : 'line',
         coords: [[lng, lat]],
-        layerId,
-        style: layer.style,
+        layerId: layerId ?? '',
+        style: layer?.style ?? LAYER_DEFAULTS.bed.style,
         featureId: generateId('feat'),
       }
     } else {
@@ -1028,10 +1372,10 @@ function handleMapClick(lng: number, lat: number) {
         garden.setMeasurement(createDistanceMeasurement(activeDraw.value.coords, unitSystem.value))
       }
     }
+    // The clicked vertex is authoritative — drop the cursor preview until it moves again.
+    cursorPos.value = null
     updateDrawPreview(mapRef.value, lng, lat)
-    if (mode === 'measure' && activeDraw.value.coords.length > 1) {
-      garden.setMeasurement(createDistanceMeasurement(activeDraw.value.coords, unitSystem.value))
-    }
+    updateDrawPopupAnchor()
   }
 }
 
@@ -1050,7 +1394,10 @@ function updateDrawPreview(map: MapLibreMap, lng: number, lat: number) {
   const draw = activeDraw.value
   const source = map.getSource('garden-active-draw') as GeoJSONSource | undefined
   if (!draw || !source) return
-  const coords: [number, number][] = [...draw.coords, [lng, lat]]
+  const coords: [number, number][] = [...draw.coords]
+  const last = coords[coords.length - 1]
+  // Never append a vertex identical to the one just clicked (double-click / hover-on-last-point).
+  if (!last || Math.abs(last[0] - lng) > 1e-9 || Math.abs(last[1] - lat) > 1e-9) coords.push([lng, lat])
   const feature: GeoJSON.Feature = draw.type === 'polygon'
     ? { type: 'Feature', geometry: { type: 'Polygon', coordinates: [coords] }, properties: {} }
     : { type: 'Feature', geometry: { type: 'LineString', coordinates: coords }, properties: {} }
@@ -1064,16 +1411,35 @@ function clearDrawPreview() {
   source?.setData({ type: 'FeatureCollection', features: [] })
 }
 
+/** Drops repeated identical trailing vertices (the double-click's final click). */
+function dedupeTail(coords: [number, number][]): [number, number][] {
+  const out = [...coords]
+  while (out.length > 1) {
+    const a = out[out.length - 1]!
+    const b = out[out.length - 2]!
+    if (Math.abs(a[0] - b[0]) < 1e-9 && Math.abs(a[1] - b[1]) < 1e-9) out.pop()
+    else break
+  }
+  return out
+}
+
 function finishDraw() {
   const map = mapRef.value
   const draw = activeDraw.value
   if (!map || !draw) return
+  const coords = dedupeTail(draw.coords)
+
   if (activeMode.value === 'measure') {
+    garden.setMeasurement(coords.length >= 2 ? createDistanceMeasurement(coords, unitSystem.value) : null)
     activeDraw.value = null
+    cursorPos.value = null
+    drawPopupPos.value = null
     clearDrawPreview()
     return
   }
-  if (draw.coords.length < 2) {
+
+  const minPoints = draw.type === 'polygon' ? 3 : 2
+  if (coords.length < minPoints) {
     cancelDraw()
     return
   }
@@ -1082,13 +1448,13 @@ function finishDraw() {
     garden.addFeature({
       id: draw.featureId,
       type: 'line',
-      geometry: { type: 'LineString', coordinates: draw.coords },
+      geometry: { type: 'LineString', coordinates: coords },
       properties: { label: layerTypeLabel(activeProject.value?.layers.find(l => l.id === draw.layerId)?.type ?? 'path') },
     }, draw.layerId)
   } else {
-    const first = draw.coords[0]!
-    const last = draw.coords[draw.coords.length - 1]!
-    const ring = first[0] === last[0] && first[1] === last[1] ? draw.coords : [...draw.coords, first]
+    const first = coords[0]!
+    const last = coords[coords.length - 1]!
+    const ring = first[0] === last[0] && first[1] === last[1] ? coords : [...coords, first]
     garden.addFeature({
       id: draw.featureId,
       type: 'polygon',
@@ -1098,6 +1464,8 @@ function finishDraw() {
   }
 
   activeDraw.value = null
+  cursorPos.value = null
+  drawPopupPos.value = null
   clearDrawPreview()
   renderFeatures()
   toast.success(t('tools.agroecologicalGarden.toasts.featureAdded'))
@@ -1105,8 +1473,37 @@ function finishDraw() {
 
 function cancelDraw() {
   activeDraw.value = null
+  cursorPos.value = null
+  drawPopupPos.value = null
   clearDrawPreview()
   garden.setMeasurement(null)
+}
+
+/** Keep the in-map draw popup inside the viewport, anchored to the last click. */
+function updateDrawPopupAnchor() {
+  const map = mapRef.value
+  const draw = activeDraw.value
+  if (!map || !draw) {
+    drawPopupPos.value = null
+    return
+  }
+  const last = draw.coords[draw.coords.length - 1]
+  if (!last) {
+    drawPopupPos.value = null
+    return
+  }
+  const point = map.project([last[0], last[1]])
+  const bounds = map.getContainer().getBoundingClientRect()
+  const width = bounds.width
+  const height = bounds.height
+  const minX = Math.min(140, width / 2)
+  const maxX = Math.max(minX, width - 140)
+  const minY = Math.min(160, height / 2)
+  const maxY = Math.max(minY, height - 150)
+  drawPopupPos.value = {
+    x: Math.round(Math.min(Math.max(point.x, minX), maxX)),
+    y: Math.round(Math.min(Math.max(point.y, minY), maxY)),
+  }
 }
 
 function selectFeatureAt(lng: number, lat: number) {
@@ -1369,6 +1766,12 @@ function trimNumber(value: number): string {
 // ── Lifecycle ───────────────────────────────────────────────────────────────
 
 onMounted(() => {
+  // SSR payload hydration: pinia re-applies the server's (empty) state AFTER the
+  // store's setup() ran, clobbering the setup-time localStorage load — restore it.
+  if (!garden.activeProject) {
+    garden.loadFromStorage()
+    if (!garden.activeProject) garden.createProject()
+  }
   const project = garden.activeProject
   setupLocation.value = { ...(project?.location ?? DEFAULT_LOCATION) }
   setupGrid.value = project?.grid ? { ...project.grid } : gridFromProject(project)
@@ -1384,6 +1787,8 @@ onMounted(() => {
     }
   })
   window.addEventListener('keydown', handleKeyDown)
+  scheduleClockTick()
+  clockReady.value = true
 })
 
 watch([setupLocation, setupGrid], () => {
@@ -1396,6 +1801,8 @@ watch(showSetup, (open) => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
+  if (clockTimer) clearTimeout(clockTimer)
+  clockTimer = null
   if (styleTimer) clearTimeout(styleTimer)
   resizeObserver?.disconnect()
   resizeObserver = null
@@ -1410,7 +1817,7 @@ function triggerFileInput() {
 }
 </script>
 
-<style scoped>
+<style>
 /* ── CSS Variables (Theme-Aware) ─────────────────────────────────────────── */
 :root {
   /* Light theme (default) */
@@ -1522,66 +1929,92 @@ function triggerFileInput() {
   --garden-color-danger-light: #fef2f2;
 
   --garden-color-neutral-100: #f1f5f9;
+
+  /* Floating OS-style shell (top header + bottom dock) */
+  --garden-shell-bg: rgba(255, 255, 255, 0.92);
+  --garden-shell-border: rgba(15, 23, 42, 0.12);
+  --garden-shell-shadow: none;
+  --garden-dock-h: 76px;
 }
 
-/* Dark theme overrides */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --garden-color-neutral-50: #f8fafc;
-    --garden-color-neutral-100: #f1f5f9;
-    --garden-color-neutral-200: #e2e8f0;
-    --garden-color-neutral-300: #cbd5e1;
-    --garden-color-neutral-400: #94a3b8;
-    --garden-color-neutral-500: #64748b;
-    --garden-color-neutral-600: #475569;
-    --garden-color-neutral-700: #334155;
-    --garden-color-neutral-800: #1e293b;
-    --garden-color-neutral-900: #0f172a;
-    --garden-color-neutral-950: #020617;
+/* Dark theme overrides — AMOLED surfaces when the app theme is dark (html.dark) */
+html.dark {
+  --garden-color-neutral-50: #f8fafc;
+  --garden-color-neutral-100: #f1f5f9;
+  --garden-color-neutral-200: #e2e8f0;
+  --garden-color-neutral-300: #cbd5e1;
+  --garden-color-neutral-400: #94a3b8;
+  --garden-color-neutral-500: #64748b;
+  --garden-color-neutral-600: #475569;
+  --garden-color-neutral-700: #334155;
+  --garden-color-neutral-800: #1e293b;
+  --garden-color-neutral-900: #0f172a;
+  --garden-color-neutral-950: #020617;
 
-    --garden-color-bg-primary: #020617;
-    --garden-color-bg-secondary: #0f172a;
-    --garden-color-bg-tertiary: #1e293b;
-    --garden-color-bg-inverse: #f8fafc;
+  --garden-color-bg-primary: #020617;
+  --garden-color-bg-secondary: #0f172a;
+  --garden-color-bg-tertiary: #1e293b;
+  --garden-color-bg-inverse: #f8fafc;
 
-    --garden-color-surface-primary: #0f172a;
-    --garden-color-surface-secondary: #1e293b;
-    --garden-color-surface-tertiary: #334155;
-    --garden-color-surface-hover: #1e293b;
-    --garden-color-surface-active: #334155;
+  --garden-color-surface-primary: #0f172a;
+  --garden-color-surface-secondary: #1e293b;
+  --garden-color-surface-tertiary: #334155;
+  --garden-color-surface-hover: #1e293b;
+  --garden-color-surface-active: #334155;
 
-    --garden-color-border-primary: #334155;
-    --garden-color-border-secondary: #1e293b;
-    --garden-color-border-focus: #38bdf8;
-    --garden-color-border-error: #f87171;
+  --garden-color-border-primary: #334155;
+  --garden-color-border-secondary: #1e293b;
+  --garden-color-border-focus: #38bdf8;
+  --garden-color-border-error: #f87171;
 
-    --garden-color-text-primary: #f8fafc;
-    --garden-color-text-secondary: #94a3b8;
-    --garden-color-text-muted: #64748b;
-    --garden-color-text-inverse: #020617;
-    --garden-color-text-link: #7dd3fc;
+  --garden-color-text-primary: #f8fafc;
+  --garden-color-text-secondary: #94a3b8;
+  --garden-color-text-muted: #64748b;
+  --garden-color-text-inverse: #020617;
+  --garden-color-text-link: #7dd3fc;
 
-    --garden-color-brand-primary: #38bdf8;
-    --garden-color-brand-hover: #0ea5e9;
-    --garden-color-brand-light: #0c4a6e;
-    --garden-color-brand-dark: #0369a1;
+  --garden-color-brand-primary: #38bdf8;
+  --garden-color-brand-hover: #0ea5e9;
+  --garden-color-brand-light: #0c4a6e;
+  --garden-color-brand-dark: #0369a1;
 
-    --garden-color-success-primary: #4ade80;
-    --garden-color-success-hover: #22c55e;
-    --garden-color-success-light: #052e16;
+  --garden-color-success-primary: #4ade80;
+  --garden-color-success-hover: #22c55e;
+  --garden-color-success-light: #052e16;
 
-    --garden-color-warning-primary: #fbbf24;
-    --garden-color-warning-hover: #f59e0b;
-    --garden-color-warning-light: #422006;
+  --garden-color-warning-primary: #fbbf24;
+  --garden-color-warning-hover: #f59e0b;
+  --garden-color-warning-light: #422006;
 
-    --garden-color-danger-primary: #f87171;
-    --garden-color-danger-hover: #ef4444;
-    --garden-color-danger-light: #450a0a;
+  --garden-color-danger-primary: #f87171;
+  --garden-color-danger-hover: #ef4444;
+  --garden-color-danger-light: #450a0a;
 
-    --garden-color-neutral-100: #1e293b;
-  }
+  --garden-color-neutral-100: #1e293b;
+
+  /* AMOLED: true-black surfaces, hairline light borders */
+  --garden-color-bg-primary: #000000;
+  --garden-color-bg-secondary: #050505;
+  --garden-color-bg-tertiary: #000000;
+  --garden-color-surface-primary: #000000;
+  --garden-color-surface-secondary: #0b0b0b;
+  --garden-color-surface-tertiary: #141414;
+  --garden-color-surface-hover: #171717;
+  --garden-color-surface-active: #1f1f1f;
+  --garden-color-border-primary: #262626;
+  --garden-color-border-secondary: #1a1a1a;
+  --garden-color-text-inverse: #000000;
+
+  /* Floating OS-style shell (top header + bottom dock) */
+  --garden-shell-bg: rgba(0, 0, 0, 0.88);
+  --garden-shell-border: rgba(255, 255, 255, 0.16);
+  --garden-shell-shadow: none;
+  --garden-dock-h: 76px;
 }
 
+</style>
+
+<style scoped>
 /* ── Main Layout ─────────────────────────────────────────────────────────── */
 .garden-mobile {
   position: relative;
@@ -1600,6 +2033,12 @@ function triggerFileInput() {
   flex: 1;
   overflow: hidden;
   background: var(--garden-color-bg-tertiary);
+}
+
+/* MapLibre controls are injected DOM — keep them clear of the floating dock */
+.garden-map-layer :deep(.maplibregl-ctrl-bottom-left),
+.garden-map-layer :deep(.maplibregl-ctrl-bottom-right) {
+  bottom: calc(var(--garden-dock-h) + var(--garden-space-md));
 }
 
 /* ── Map Loading/Error ───────────────────────────────────────────────────── */
@@ -1729,29 +2168,49 @@ function triggerFileInput() {
 }
 .btn-retry:hover { background: var(--garden-color-warning-primary); color: var(--garden-color-bg-primary); }
 
-/* ── Top Bar ──────────────────────────────────────────────────────────────── */
+/* ── Top Header (flat, AMOLED-ready, OS-style shell) ───────────────────────── */
 .top-bar {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: max(8px, env(safe-area-inset-top));
+  left: var(--garden-space-md);
+  right: var(--garden-space-md);
   z-index: 100;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--garden-space-md);
-  height: 64px;
-  padding: 0 var(--garden-space-lg);
-  background: var(--garden-color-surface-primary);
-  border-bottom: 1px solid var(--garden-color-border-primary);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
-  transition: box-shadow var(--garden-transition-base) ease-out, background var(--garden-transition-base) ease-out;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--garden-space-sm) var(--garden-space-md);
+  border: 1px solid var(--garden-shell-border);
+  border-radius: var(--garden-radius-xl);
+  background: var(--garden-shell-bg);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  box-shadow: var(--garden-shell-shadow);
+  transition: background var(--garden-transition-base) ease-out, border-color var(--garden-transition-base) ease-out;
 }
 
 .top-bar.scrolled {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
-  background: var(--garden-color-surface-primary);
+  background: var(--garden-shell-bg);
+  border-color: var(--garden-shell-border);
 }
+
+.top-bar-status {
+  display: flex;
+  align-items: center;
+  gap: var(--garden-space-sm);
+  min-width: 0;
+}
+
+.top-bar-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-top: 6px;
+  border-top: 1px solid var(--garden-shell-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.top-bar-tools::-webkit-scrollbar { display: none; }
 
 .title-section {
   flex: 1;
@@ -1762,8 +2221,9 @@ function triggerFileInput() {
 }
 
 .title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
+  line-height: 1.2;
   color: var(--garden-color-text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -1771,24 +2231,72 @@ function triggerFileInput() {
 }
 
 .subtitle {
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.2;
   color: var(--garden-color-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.top-actions {
+/* Clock — tabular OS status readout */
+.clock {
   display: flex;
-  align-items: center;
-  gap: var(--garden-space-sm);
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+  padding-left: var(--garden-space-sm);
+  border-left: 1px solid var(--garden-shell-border);
+  line-height: 1.1;
+}
+.clock-time {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--garden-color-text-primary);
+}
+.clock-date {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--garden-color-text-muted);
+}
+@media (max-width: 420px) {
+  .clock-date { display: none; }
 }
 
 .action-divider {
   width: 1px;
   height: 24px;
-  background: var(--garden-color-border-secondary);
-  margin: 0 var(--garden-space-sm);
+  flex-shrink: 0;
+  background: var(--garden-shell-border);
+  margin: 0 var(--garden-space-xs);
+}
+
+/* Compact tool button in the header tool row */
+.top-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: var(--garden-radius-sm);
+  background: transparent;
+  color: var(--garden-color-text-secondary);
+  cursor: pointer;
+  transition: background var(--garden-transition-fast) ease-out, color var(--garden-transition-fast) ease-out, border-color var(--garden-transition-fast) ease-out;
+}
+.top-tool-btn:hover { background: var(--garden-color-surface-hover); color: var(--garden-color-text-primary); }
+.top-tool-btn:active { transform: scale(0.96); }
+.top-tool-btn.active {
+  background: var(--garden-color-brand-light);
+  border-color: var(--garden-color-brand-primary);
+  color: var(--garden-color-brand-primary);
 }
 
 .btn-icon {
@@ -1825,45 +2333,57 @@ function triggerFileInput() {
   color: var(--garden-color-brand-primary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+/* Chip sizing must win over the compact icon-button size later in this file. */
+.btn-icon-sm.btn-grid-chip {
+  width: auto;
+  height: 32px;
+  padding: 0 var(--garden-space-sm);
 }
 
-/* ── Bottom Toolbar ──────────────────────────────────────────────────────── */
+/* ── Bottom Toolbar (EG-Maps app dock: rounded shell, hairline border, blur) ─ */
 .bottom-toolbar {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: max(var(--garden-space-md), env(safe-area-inset-bottom));
+  left: var(--garden-space-md);
+  right: var(--garden-space-md);
   z-index: 100;
-  padding: var(--garden-space-md) var(--garden-space-lg) max(var(--garden-space-md), env(safe-area-inset-bottom));
-  background: var(--garden-color-surface-primary);
-  border-top: 1px solid var(--garden-color-border-primary);
-  box-shadow: 0 -1px 3px rgba(0,0,0,0.05), 0 -1px 2px rgba(0,0,0,0.03);
+  padding: var(--garden-space-sm);
+  border: 1px solid var(--garden-shell-border);
+  border-radius: var(--garden-radius-xl);
+  background: var(--garden-shell-bg);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  box-shadow: var(--garden-shell-shadow);
   transition: transform var(--garden-transition-base) ease-out;
 }
 
 .toolbar-main {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--garden-space-md);
-  max-width: 600px;
-  margin: 0 auto;
+  gap: var(--garden-space-sm);
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
 }
+.toolbar-main::-webkit-scrollbar { display: none; }
 
 .mode-group {
   display: flex;
   align-items: center;
-  gap: var(--garden-space-xs);
-  padding: var(--garden-space-xs);
-  background: var(--garden-color-surface-secondary);
-  border: 1px solid var(--garden-color-border-primary);
-  border-radius: var(--garden-radius-lg);
+  gap: 2px;
+  flex-shrink: 0;
 }
 
 .toolbar-divider {
   width: 1px;
   height: 40px;
-  background: var(--garden-color-border-secondary);
+  flex-shrink: 0;
+  background: var(--garden-shell-border);
+  margin: 0 var(--garden-space-xs);
 }
 
 .mode-btn {
@@ -1873,16 +2393,17 @@ function triggerFileInput() {
   justify-content: center;
   gap: var(--garden-space-xs);
   width: 56px;
-  min-height: 56px;
+  min-height: 54px;
+  flex-shrink: 0;
   padding: var(--garden-space-sm) var(--garden-space-xs);
-  border: none;
+  border: 1px solid transparent;
   border-radius: var(--garden-radius-md);
   background: transparent;
   color: var(--garden-color-text-secondary);
   font-size: 10px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--garden-transition-fast) ease-out;
+  transition: background var(--garden-transition-fast) ease-out, color var(--garden-transition-fast) ease-out, border-color var(--garden-transition-fast) ease-out;
   white-space: nowrap;
 }
 .mode-btn:hover { background: var(--garden-color-surface-hover); color: var(--garden-color-text-primary); }
@@ -1890,7 +2411,7 @@ function triggerFileInput() {
 .mode-btn.active {
   background: var(--garden-color-brand-light);
   color: var(--garden-color-brand-primary);
-  border: 1px solid var(--garden-color-brand-primary);
+  border-color: var(--garden-color-brand-primary);
 }
 .mode-btn .icon { transition: transform var(--garden-transition-fast) ease-out; }
 .mode-btn:hover .icon { transform: scale(1.1); }
@@ -1898,22 +2419,16 @@ function triggerFileInput() {
 .btn-plant.active {
   background: var(--garden-color-success-light);
   color: var(--garden-color-success-primary);
-  border: 1px solid var(--garden-color-success-primary);
+  border-color: var(--garden-color-success-primary);
 }
 
 .mode-label {
   line-height: 1;
 }
 
-.toolbar-divider {
-  width: 1px;
-  height: 40px;
-  background: var(--garden-color-border-secondary);
-}
-
 .sheet-indicator {
   position: absolute;
-  bottom: calc(72px + var(--garden-space-md));
+  bottom: calc(var(--garden-dock-h) + var(--garden-space-md));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -1934,7 +2449,7 @@ function triggerFileInput() {
 .fab-column {
   position: absolute;
   right: var(--garden-space-lg);
-  bottom: calc(72px + var(--garden-space-xl));
+  bottom: calc(var(--garden-dock-h) + var(--garden-space-xl));
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -1960,20 +2475,6 @@ function triggerFileInput() {
 .fab:hover { transform: scale(1.08); box-shadow: 0 8px 24px rgba(0,0,0,0.16); }
 .fab:active { transform: scale(0.95); }
 
-.fab-primary {
-  background: var(--garden-color-brand-primary);
-  color: var(--garden-color-bg-primary);
-  animation-delay: 0ms;
-}
-.fab-primary:hover { background: var(--garden-color-brand-hover); }
-
-.fab-danger {
-  background: var(--garden-color-danger-primary);
-  color: var(--garden-color-text-inverse);
-  animation-delay: 60ms;
-}
-.fab-danger:hover { background: var(--garden-color-danger-hover); }
-
 .fab-plant {
   background: var(--garden-color-success-primary);
   color: var(--garden-color-text-inverse);
@@ -1992,7 +2493,7 @@ function triggerFileInput() {
 /* ── Map Readout ─────────────────────────────────────────────────────────── */
 .map-readout {
   position: absolute;
-  bottom: calc(72px + var(--garden-space-md));
+  bottom: calc(var(--garden-dock-h) + var(--garden-space-md));
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
@@ -2022,7 +2523,7 @@ function triggerFileInput() {
 /* ── Measurement Bar ─────────────────────────────────────────────────────── */
 .measurement-bar {
   position: absolute;
-  bottom: calc(72px + 60px);
+  bottom: calc(var(--garden-dock-h) + 60px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
@@ -2041,16 +2542,64 @@ function triggerFileInput() {
 
 .measure-label { font-weight: 500; }
 
-/* ── Draw Actions ────────────────────────────────────────────────────────── */
-.draw-actions {
+/* ── In-map Draw Popup (live measurement + finish/cancel) ─────────────────── */
+.draw-popup {
   position: absolute;
-  bottom: calc(72px + var(--garden-space-md));
   left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
+  bottom: calc(var(--garden-dock-h) + var(--garden-space-md));
+  z-index: 60;
   display: flex;
-  gap: var(--garden-space-md);
-  animation: slide-up var(--garden-transition-base) var(--garden-transition-spring);
+  flex-direction: column;
+  gap: var(--garden-space-sm);
+  width: min(320px, calc(100% - 24px));
+  padding: var(--garden-space-md);
+  border: 1px solid var(--garden-shell-border);
+  border-radius: var(--garden-radius-lg);
+  background: var(--garden-shell-bg);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  transform: translateX(-50%);
+  animation: fade-in var(--garden-transition-base) ease-out;
+}
+/* Anchored above the last clicked vertex, clamped inside the viewport. */
+.draw-popup.anchored {
+  bottom: auto;
+  transform: translate(-50%, calc(-100% - 14px));
+}
+
+.draw-popup-values {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--garden-space-xs) var(--garden-space-sm);
+}
+.measure-k {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--garden-color-text-muted);
+}
+.measure-v {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--garden-color-text-primary);
+}
+.measure-sep { color: var(--garden-color-text-muted); }
+.measure-empty { font-size: 13px; color: var(--garden-color-text-muted); }
+
+.draw-popup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--garden-space-sm);
+}
+.draw-popup-actions .btn { flex: 0 0 auto; }
+
+.draw-popup-hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--garden-color-text-muted);
 }
 
 /* ── Side Sheet (Mobile) ─────────────────────────────────────────────────── */
@@ -2207,7 +2756,7 @@ function triggerFileInput() {
   font-weight: 600;
   cursor: pointer;
   transition: all var(--garden-transition-fast) ease-out;
-  white-space: nowrap.
+  white-space: nowrap;
 }
 .category-chip:hover { background: var(--garden-color-surface-hover); color: var(--garden-color-text-primary); }
 .category-chip.active {
@@ -2218,219 +2767,219 @@ function triggerFileInput() {
 
 .plant-list {
   flex: 1;
-  overflow-y: auto.
-  padding: 0 var(--garden-space-lg) var(--garden-space-xl).
-  list-style: none.
-  margin: 0.
+  overflow-y: auto;
+  padding: 0 var(--garden-space-lg) var(--garden-space-xl);
+  list-style: none;
+  margin: 0;
 }
 
 .plant-item {
-  display: flex.
-  align-items: center.
-  gap: var(--garden-space-md).
-  padding: var(--garden-space-md).
-  border-radius: var(--garden-radius-md).
-  background: var(--garden-color-surface-secondary).
-  cursor: pointer.
-  transition: background var(--garden-transition-fast) ease-out, transform var(--garden-transition-fast) ease-out.
-  margin-bottom: var(--garden-space-sm).
+  display: flex;
+  align-items: center;
+  gap: var(--garden-space-md);
+  padding: var(--garden-space-md);
+  border-radius: var(--garden-radius-md);
+  background: var(--garden-color-surface-secondary);
+  cursor: pointer;
+  transition: background var(--garden-transition-fast) ease-out, transform var(--garden-transition-fast) ease-out;
+  margin-bottom: var(--garden-space-sm);
 }
 .plant-item:hover { background: var(--garden-color-surface-hover); transform: translateX(4px); }
 .plant-item:active { transform: translateX(0) scale(0.98); }
 .plant-item.selected {
-  background: var(--garden-color-brand-light).
-  border: 1px solid var(--garden-color-brand-primary).
+  background: var(--garden-color-brand-light);
+  border: 1px solid var(--garden-color-brand-primary);
 }
 
 .plant-emoji { font-size: 24px; line-height: 1; }
 
 .plant-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--garden-space-xs); }
 .plant-name {
-  font-size: 14px.
-  font-weight: 600.
-  color: var(--garden-color-text-primary).
-  white-space: nowrap.
-  overflow: hidden.
-  text-overflow: ellipsis.
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--garden-color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .plant-sci {
-  font-size: 11px.
-  color: var(--garden-color-text-muted).
-  font-style: italic.
-  white-space: nowrap.
-  overflow: hidden.
-  text-overflow: ellipsis.
+  font-size: 11px;
+  color: var(--garden-color-text-muted);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .plant-category {
-  font-size: 10px.
-  font-weight: 600.
-  color: var(--garden-color-text-muted).
-  text-transform: uppercase.
-  letter-spacing: 0.04em.
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--garden-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .layer-list {
-  flex: 1.
-  overflow-y: auto.
-  padding: 0 var(--garden-space-lg) var(--garden-space-xl).
-  list-style: none.
-  margin: 0.
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--garden-space-lg) var(--garden-space-xl);
+  list-style: none;
+  margin: 0;
 }
 
 .layer-item {
-  background: var(--garden-color-surface-secondary).
-  border-radius: var(--garden-radius-md).
-  margin-bottom: var(--garden-space-sm).
-  overflow: hidden.
-  transition: background var(--garden-transition-fast) ease-out.
+  background: var(--garden-color-surface-secondary);
+  border-radius: var(--garden-radius-md);
+  margin-bottom: var(--garden-space-sm);
+  overflow: hidden;
+  transition: background var(--garden-transition-fast) ease-out;
 }
 .layer-item.active { background: var(--garden-color-brand-light); }
 
 .layer-main {
-  display: flex.
-  align-items: center.
-  gap: var(--garden-space-md).
-  padding: var(--garden-space-md).
-  cursor: pointer.
+  display: flex;
+  align-items: center;
+  gap: var(--garden-space-md);
+  padding: var(--garden-space-md);
+  cursor: pointer;
 }
 
 .layer-visibility {
-  display: inline-flex.
-  align-items: center.
-  justify-content: center.
-  width: 40px.
-  height: 40px.
-  border: none.
-  border-radius: var(--garden-radius-md).
-  background: transparent.
-  color: var(--garden-color-text-secondary).
-  cursor: pointer.
-  transition: background var(--garden-transition-fast) ease-out, color var(--garden-transition-fast) ease-out.
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--garden-radius-md);
+  background: transparent;
+  color: var(--garden-color-text-secondary);
+  cursor: pointer;
+  transition: background var(--garden-transition-fast) ease-out, color var(--garden-transition-fast) ease-out;
 }
 .layer-visibility:hover { background: var(--garden-color-surface-hover); color: var(--garden-color-text-primary); }
 
 .layer-color {
-  width: 12px.
-  height: 12px.
-  border-radius: 3px.
-  flex-shrink: 0.
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
 }
 
 .layer-name {
-  flex: 1.
-  font-size: 13px.
-  font-weight: 600.
-  color: var(--garden-color-text-primary).
-  white-space: nowrap.
-  overflow: hidden.
-  text-overflow: ellipsis.
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--garden-color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .layer-count {
-  font-size: 11px.
-  color: var(--garden-color-text-muted).
-  font-variant-numeric: tabular-nums.
+  font-size: 11px;
+  color: var(--garden-color-text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .layer-details {
-  display: flex.
-  align-items: center.
-  justify-content: space-between.
-  gap: var(--garden-space-md).
-  padding: 0 var(--garden-space-lg) var(--garden-space-md).
-  border-top: 1px solid var(--garden-color-border-primary).
-  background: var(--garden-color-surface-tertiary).
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--garden-space-md);
+  padding: 0 var(--garden-space-lg) var(--garden-space-md);
+  border-top: 1px solid var(--garden-color-border-primary);
+  background: var(--garden-color-surface-tertiary);
 }
 
 .opacity-control {
-  display: flex.
-  align-items: center.
-  gap: var(--garden-space-md).
-  flex: 1.
-  min-width: 0.
+  display: flex;
+  align-items: center;
+  gap: var(--garden-space-md);
+  flex: 1;
+  min-width: 0;
 }
 .opacity-control label {
-  flex: 1.
-  display: flex.
-  align-items: center.
-  cursor: pointer.
+  flex: 1;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 .opacity-control input[type="range"] {
-  width: 100%.
-  accent-color: var(--garden-color-brand-primary).
+  width: 100%;
+  accent-color: var(--garden-color-brand-primary);
 }
 .opacity-value {
-  font-size: 11px.
-  color: var(--garden-color-text-muted).
-  font-variant-numeric: tabular-nums.
-  min-width: 40px.
-  text-align: right.
+  font-size: 11px;
+  color: var(--garden-color-text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: right;
 }
 
 .layer-actions {
-  display: flex.
-  gap: var(--garden-space-sm).
+  display: flex;
+  gap: var(--garden-space-sm);
 }
 .btn-icon-sm {
-  display: inline-flex.
-  align-items: center.
-  justify-content: center.
-  width: 36px.
-  height: 36px.
-  border: none.
-  border-radius: var(--garden-radius-sm).
-  background: transparent.
-  color: var(--garden-color-text-secondary).
-  cursor: pointer.
-  transition: background var(--garden-transition-fast) ease-out, color var(--garden-transition-fast) ease-out.
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--garden-radius-sm);
+  background: transparent;
+  color: var(--garden-color-text-secondary);
+  cursor: pointer;
+  transition: background var(--garden-transition-fast) ease-out, color var(--garden-transition-fast) ease-out;
 }
 .btn-icon-sm:hover { background: var(--garden-color-surface-hover); color: var(--garden-color-text-primary); }
 .btn-icon-sm.btn-danger:hover { color: var(--garden-color-danger-primary); }
 
 .add-layer-row {
-  display: flex.
-  gap: var(--garden-space-md).
-  padding: var(--garden-space-lg).
-  flex-shrink: 0.
+  display: flex;
+  gap: var(--garden-space-md);
+  padding: var(--garden-space-lg);
+  flex-shrink: 0;
 }
 .field-select {
-  flex: 1.
-  padding: var(--garden-space-md) var(--garden-space-md).
-  border: 1px solid var(--garden-color-border-primary).
-  border-radius: var(--garden-radius-md).
-  background: var(--garden-color-surface-secondary).
-  color: var(--garden-color-text-primary).
-  font-size: 13px.
-  outline: none.
-  appearance: none.
-  transition: border-color var(--garden-transition-fast) ease-out, box-shadow var(--garden-transition-fast) ease-out.
+  flex: 1;
+  padding: var(--garden-space-md) var(--garden-space-md);
+  border: 1px solid var(--garden-color-border-primary);
+  border-radius: var(--garden-radius-md);
+  background: var(--garden-color-surface-secondary);
+  color: var(--garden-color-text-primary);
+  font-size: 13px;
+  outline: none;
+  appearance: none;
+  transition: border-color var(--garden-transition-fast) ease-out, box-shadow var(--garden-transition-fast) ease-out;
 }
 .field-select:focus { border-color: var(--garden-color-border-focus); box-shadow: 0 0 0 3px var(--garden-color-brand-100); }
 
 .checkbox-label {
-  display: flex.
-  align-items: center.
-  gap: var(--garden-space-sm).
-  padding: 0 var(--garden-space-lg) var(--garden-space-lg).
-  font-size: 12px.
-  color: var(--garden-color-text-muted).
-  cursor: pointer.
+  display: flex;
+  align-items: center;
+  gap: var(--garden-space-sm);
+  padding: 0 var(--garden-space-lg) var(--garden-space-lg);
+  font-size: 12px;
+  color: var(--garden-color-text-muted);
+  cursor: pointer;
 }
 .checkbox-label input[type="checkbox"] {
-  width: 18px.
-  height: 18px.
-  accent-color: var(--garden-color-brand-primary).
+  width: 18px;
+  height: 18px;
+  accent-color: var(--garden-color-brand-primary);
 }
 
 .empty-state {
-  display: flex.
-  flex-direction: column.
-  align-items: center.
-  justify-content: center.
-  gap: var(--garden-space-sm).
-  padding: var(--garden-space-xl) var(--garden-space-lg).
-  color: var(--garden-color-text-muted).
-  text-align: center.
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--garden-space-sm);
+  padding: var(--garden-space-xl) var(--garden-space-lg);
+  color: var(--garden-color-text-muted);
+  text-align: center;
 }
 .empty-state .icon { width: 32px; height: 32px; color: var(--garden-color-text-muted); }
 .empty-state p { font-size: 13px; }
@@ -2500,7 +3049,7 @@ function triggerFileInput() {
   .fab,
   .map-readout,
   .measurement-bar,
-  .draw-actions,
+  .draw-popup,
   .modal,
   .sheet,
   .plant-item,

@@ -773,10 +773,43 @@
       "grants": "Granty",
       "species": "Gatunki",
       "mains": "Mains",
-      "feedback": "Feedback"
+      "feedback": "Feedback",
+      "sources": "Źródła",
+      "performance": "Wydajność"
     },
     "shareCorrections": "Zgłaszaj poprawki, brakujące dane lub pomysły na interakcje, aby pomóc nam ulepszać mapy.",
-    "homeLink": "Strona główna"
+    "homeLink": "Strona główna",
+    "sources": {
+      "title": "Źródła danych i licencje",
+      "intro": "Każda warstwa w EG-Maps pochodzi od nazwanej publicznej instytucji. Ta karta wymienia je wszystkie — kto publikuje każdy zbiór danych, pod jaką licencją i jak można go ponownie wykorzystać w badaniach i pracy społecznej.",
+      "observatory": "Obserwatorium Vulcan — górnictwo i terytorium",
+      "species": "Gatunki zagrożone",
+      "grants": "Granty projektowe",
+      "basemap": "Mapa bazowa, obrazy i silnik map",
+      "reuseTitle": "Licencje i ponowne wykorzystanie do badań i narzędzi społecznych",
+      "openSource": "Open source"
+    },
+    "performance": {
+      "title": "Wydajność i Jakość",
+      "desc": "Kontroluj jakość renderowania i efekty cząsteczek. Aplikacja automatycznie dostosowuje się do wydajności Twojego urządzenia, ale możesz to nadpisać tutaj.",
+      "qualitySection": "Preset Jakości",
+      "qualityDesc": "Automatyczne dostosowywanie balansuje jakość wizualną i klatkowość. Wyłącz, aby ręcznie wybrać preset.",
+      "autoAdjust": "Automatyczne dostosowywanie jakości (zalecane)",
+      "qualityPreset": "Preset Jakości",
+      "low": "Niska (wydajność)",
+      "medium": "Średnia (zbalansowana)",
+      "high": "Wysoka (jakość)",
+      "ultra": "Ultra (maksymalna)",
+      "particleSettings": "Ustawienia Cząsteczek",
+      "particleDesc": "Doprecyzuj animację cząsteczek. Wymaga wyłączenia automatycznego dostosowywania.",
+      "particleMaxCount": "Maks. Cząsteczki",
+      "particleFps": "Docelowe FPS",
+      "particleTrailLength": "Długość Smugi",
+      "particleSpawnRate": "Współczynnik Spawnu",
+      "particleShadow": "Rozmycie Cienia",
+      "apply": "Zastosuj Ustawienia",
+      "currentSettings": "Bieżące Ustawienia Aktywne"
+    }
   },
   "campaigns": {
     "title": "Kampanie",

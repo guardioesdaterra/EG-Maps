@@ -940,7 +940,8 @@
       "species": "物种",
       "mains": "主要成员",
       "feedback": "反馈",
-      "sources": "来源"
+      "sources": "来源",
+      "performance": "性能"
     },
     "shareCorrections": "分享纠错、缺失数据或互动想法，帮我们改进地图。",
     "homeLink": "首页",
@@ -953,6 +954,27 @@
       "basemap": "底图、影像与地图引擎",
       "reuseTitle": "研究和社区工具的许可证与再利用",
       "openSource": "开源"
+    },
+    "performance": {
+      "title": "性能与质量",
+      "desc": "控制渲染质量和粒子效果。应用程序会根据您设备的性能自动调整，但您可以在此处覆盖。",
+      "qualitySection": "质量预设",
+      "qualityDesc": "自动调整平衡视觉质量和帧率。关闭以手动选择预设。",
+      "autoAdjust": "自动调整质量 (推荐)",
+      "qualityPreset": "质量预设",
+      "low": "低 (性能)",
+      "medium": "中 (平衡)",
+      "high": "高 (质量)",
+      "ultra": "超高 (最大)",
+      "particleSettings": "粒子设置",
+      "particleDesc": "微调粒子动画。需要关闭自动调整。",
+      "particleMaxCount": "最大粒子数",
+      "particleFps": "目标 FPS",
+      "particleTrailLength": "拖尾长度",
+      "particleSpawnRate": "生成率",
+      "particleShadow": "阴影模糊",
+      "apply": "应用设置",
+      "currentSettings": "当前活动设置"
     }
   },
   "campaigns": {

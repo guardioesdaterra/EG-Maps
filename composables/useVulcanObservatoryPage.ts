@@ -412,6 +412,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     stats,
     data,
     pointsData, filteredPoints, filteredPolygons, polygonsData, protectedData, waterData, culturalData,
+    basinsDataL2, basinsDataL3, basinsDataL4, basinsDataL5, basinsDataL6, mogianaData,
     layerVis, flyToTarget, onMapInit: handleMapInit,
     allFeatures, speculatorIndex, deepAnalysis, layerCounts, overlapSummary,
     protectedSummary, waterThreats, waterSummary, foreignHolders, pinThreats,

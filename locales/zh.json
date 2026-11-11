@@ -483,7 +483,9 @@
       "noProtectedSearch": "没有匹配的保护区。",
       "statusTitle": "图层状态",
       "statusFailed": "失败",
-      "foreignHeld": "外国持有的采矿权"
+      "foreignHeld": "外国持有的采矿权",
+      "waterBasins": "流域 (ANA 官方)",
+      "mogianaTerritory": "拟议莫吉亚纳领土 (Earth Guardians 巴西)"
     },
     "search": "搜索企业、物质、州...",
     "legend": {
@@ -1887,7 +1889,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "点击地图添加第一个点",
+        "pressEnterHint": "按 Enter 完成 · 按 Esc 取消"
       },
       "map": {
         "loading": "Loading satellite imagery…",

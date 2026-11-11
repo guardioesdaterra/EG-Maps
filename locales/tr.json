@@ -400,7 +400,9 @@
       "heatmap": "Yoğunluk Isı Haritası",
       "cultural": "Kültür ve Topluluk",
       "waterBodies": "Su Kütleleri",
-      "protectedAreas": "Korunan Alanlar"
+      "protectedAreas": "Korunan Alanlar",
+      "waterBasins": "Havzalar (Resmi ANA)",
+      "mogianaTerritory": "Önerilen Mogiana Toprağı (Earth Guardians Brezilya)"
     },
     "myTerritory": {
       "title": "Benim bölgem",
@@ -1683,7 +1685,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "İlk noktayı eklemek için haritaya tıklayın",
+        "pressEnterHint": "Bitirmek için Enter'a basın · İptal için Esc"
       },
       "map": {
         "loading": "Loading satellite imagery…",

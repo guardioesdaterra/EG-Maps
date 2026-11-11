@@ -400,7 +400,9 @@
       "heatmap": "Тепловая карта плотности",
       "cultural": "Культура и сообщество",
       "waterBodies": "Водные объекты",
-      "protectedAreas": "Охраняемые территории"
+      "protectedAreas": "Охраняемые территории",
+      "waterBasins": "Водосборные бассейны (официальные ANA)",
+      "mogianaTerritory": "Предлагаемая территория Моджиана (Earth Guardians Бразилия)"
     },
     "myTerritory": {
       "title": "Моя территория",
@@ -1683,7 +1685,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "Нажмите на карту, чтобы добавить первую точку",
+        "pressEnterHint": "Нажмите Enter, чтобы завершить · Esc, чтобы отменить"
       },
       "map": {
         "loading": "Loading satellite imagery…",

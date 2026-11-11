@@ -483,7 +483,9 @@
       "protectedAreas": "Áreas protegidas",
       "statusTitle": "Estado de la capa",
       "statusFailed": "fallida",
-      "foreignHeld": "Reclamos en manos extranjeras"
+      "foreignHeld": "Reclamos en manos extranjeras",
+      "waterBasins": "Cuencas Hidrográficas (ANA Oficial)",
+      "mogianaTerritory": "Territorio Mogiana Propuesto (Earth Guardians Brasil)"
     },
     "culturalLayers": {
       "filterTitle": "Filtros Culturales",
@@ -1887,7 +1889,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "Haz clic en el mapa para agregar el primer punto",
+        "pressEnterHint": "Presiona Enter para terminar · Esc para cancelar"
       },
       "map": {
         "loading": "Loading satellite imagery…",

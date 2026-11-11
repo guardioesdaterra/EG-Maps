@@ -483,7 +483,9 @@
       "noProtectedSearch": "لا توجد مناطق محمية مطابقة.",
       "statusTitle": "حالة الطبقة",
       "statusFailed": "فشل",
-      "foreignHeld": "مطالبات مملوكة لأجانب"
+      "foreignHeld": "مطالبات مملوكة لأجانب",
+      "waterBasins": "الأحواض المائية (ANA الرسمية)",
+      "mogianaTerritory": "إقليم موجيانا المقترح (Earth Guardians البرازيل)"
     },
     "search": "البحث عن شركة أو مادة أو ولاية...",
     "legend": {
@@ -1887,7 +1889,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "انقر على الخريطة لإضافة النقطة الأولى",
+        "pressEnterHint": "اضغط Enter للإنهاء · Esc للإلغاء"
       },
       "map": {
         "loading": "Loading satellite imagery…",

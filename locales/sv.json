@@ -400,7 +400,9 @@
       "heatmap": "Densitetsvärmebild",
       "cultural": "Kultur & community",
       "waterBodies": "Vattenförekomster",
-      "protectedAreas": "Skyddade områden"
+      "protectedAreas": "Skyddade områden",
+      "waterBasins": "Vattendrag (officiella ANA)",
+      "mogianaTerritory": "Föreslaget Mogiana-territorium (Earth Guardians Brasilien)"
     },
     "myTerritory": {
       "title": "Mitt territorium",
@@ -1683,7 +1685,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "Klicka på kartan för att lägga till den första punkten",
+        "pressEnterHint": "Tryck Enter för att avsluta · Esc för att avbryta"
       },
       "map": {
         "loading": "Loading satellite imagery…",

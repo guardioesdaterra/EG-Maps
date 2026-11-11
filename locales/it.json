@@ -400,7 +400,9 @@
       "heatmap": "Mappa di calore della densità",
       "cultural": "Cultura e comunità",
       "waterBodies": "Corpi idrici",
-      "protectedAreas": "Aree protette"
+      "protectedAreas": "Aree protette",
+      "waterBasins": "Bacini idrografici (ANA ufficiale)",
+      "mogianaTerritory": "Territorio Mogiana proposto (Earth Guardians Brasile)"
     },
     "myTerritory": {
       "title": "Il mio territorio",
@@ -1650,7 +1652,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "Clicca sulla mappa per aggiungere il primo punto",
+        "pressEnterHint": "Premi Invio per terminare · Esc per annullare"
       },
       "map": {
         "loading": "Loading satellite imagery…",

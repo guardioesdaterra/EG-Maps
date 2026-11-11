@@ -400,7 +400,9 @@
       "heatmap": "Mapa ciepła gęstości",
       "cultural": "Kultura i społeczność",
       "waterBodies": "Zbiorniki wodne",
-      "protectedAreas": "Obszary chronione"
+      "protectedAreas": "Obszary chronione",
+      "waterBasins": "Dorzecza wodne (oficjalne ANA)",
+      "mogianaTerritory": "Proponowane Terytorium Mogiana (Earth Guardians Brazylia)"
     },
     "myTerritory": {
       "title": "Moje terytorium",
@@ -1683,7 +1685,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "Kliknij na mapę, aby dodać pierwszy punkt",
+        "pressEnterHint": "Naciśnij Enter, aby zakończyć · Esc, aby anulować"
       },
       "map": {
         "loading": "Loading satellite imagery…",

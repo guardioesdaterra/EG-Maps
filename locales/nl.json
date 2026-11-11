@@ -483,7 +483,9 @@
       "noProtectedSearch": "Geen beschermde gebieden gevonden.",
       "statusTitle": "Laagstatus",
       "statusFailed": "mislukt",
-      "foreignHeld": "Claims in buitenlens bezit"
+      "foreignHeld": "Claims in buitenlens bezit",
+      "waterBasins": "Watervanggebieden (officiële ANA)",
+      "mogianaTerritory": "Voorgesteld Mogiana-territorium (Earth Guardians Brazilië)"
     },
     "myTerritory": {
       "title": "Mijn territorium",
@@ -1887,7 +1889,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "Klik op de kaart om het eerste punt toe te voegen",
+        "pressEnterHint": "Druk op Enter om te voltooien · Esc om te annuleren"
       },
       "map": {
         "loading": "Loading satellite imagery…",

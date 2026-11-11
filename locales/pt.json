@@ -483,7 +483,9 @@
       "protectedAreas": "Áreas Protegidas",
       "statusTitle": "Status da camada",
       "statusFailed": "falhou",
-      "foreignHeld": "Requerimentos em mãos estrangeiras"
+      "foreignHeld": "Requerimentos em mãos estrangeiras",
+      "waterBasins": "Bacias Hidrográficas (ANA Oficial)",
+      "mogianaTerritory": "Território Mogiana Proposto (Earth Guardians Brasil)"
     },
     "culturalLayers": {
       "filterTitle": "Filtros Culturais",
@@ -1887,7 +1889,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "Clique no mapa para adicionar o primeiro ponto",
+        "pressEnterHint": "Pressione Enter para terminar · Esc para cancelar"
       },
       "map": {
         "loading": "Loading satellite imagery…",

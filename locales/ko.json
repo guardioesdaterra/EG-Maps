@@ -400,7 +400,9 @@
       "heatmap": "밀도 히트맵",
       "cultural": "문화·지역사회",
       "waterBodies": "수역",
-      "protectedAreas": "보호 지역"
+      "protectedAreas": "보호 지역",
+      "waterBasins": "수계 (ANA 공식)",
+      "mogianaTerritory": "제안된 모지아나 지역 (Earth Guardians 브라질)"
     },
     "myTerritory": {
       "title": "내 영토",
@@ -1683,7 +1685,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "지도를 클릭하여 첫 번째 지점 추가",
+        "pressEnterHint": "Enter 키를 눌러 완료 · Esc 키로 취소"
       },
       "map": {
         "loading": "Loading satellite imagery…",

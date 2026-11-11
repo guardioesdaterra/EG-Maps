@@ -483,7 +483,9 @@
       "noProtectedSearch": "一致する保護地域はありません。",
       "statusTitle": "レイヤー状態",
       "statusFailed": "失敗",
-      "foreignHeld": "外国保有の鉱業権"
+      "foreignHeld": "外国保有の鉱業権",
+      "waterBasins": "流域 (ANA公式)",
+      "mogianaTerritory": "提案されたモギアナ領土 (Earth Guardiansブラジル)"
     },
     "search": "企業、物質、州を検索...",
     "legend": {
@@ -1887,7 +1889,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "マップをクリックして最初のポイントを追加",
+        "pressEnterHint": "Enterキーで完了 · Escキーでキャンセル"
       },
       "map": {
         "loading": "Loading satellite imagery…",

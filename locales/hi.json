@@ -483,7 +483,9 @@
       "noProtectedSearch": "कोई मेल खाता संरक्षित क्षेत्र नहीं।",
       "statusTitle": "परत की स्थिति",
       "statusFailed": "विफल",
-      "foreignHeld": "विदेशी-धारित दावे"
+      "foreignHeld": "विदेशी-धारित दावे",
+      "waterBasins": "जल बेसिन (आधिकारिक ANA)",
+      "mogianaTerritory": "प्रस्तावित मोगियाना क्षेत्र (अर्थ गार्जियंस ब्राजील)"
     },
     "search": "उद्यम, पदार्थ, राज्य खोजें...",
     "legend": {
@@ -1887,7 +1889,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "पहला पॉइंट जोड़ने के लिए मानचित्र पर क्लिक करें",
+        "pressEnterHint": "समाप्त करने के लिए Enter दबाएँ · रद्द करने के लिए Esc"
       },
       "map": {
         "loading": "Loading satellite imagery…",

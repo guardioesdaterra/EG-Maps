@@ -483,7 +483,9 @@
       "protectedAreas": "Aires protégées",
       "statusTitle": "État de la couche",
       "statusFailed": "en échec",
-      "foreignHeld": "Titres détenus par des intérêts étrangers"
+      "foreignHeld": "Titres détenus par des intérêts étrangers",
+      "waterBasins": "Bassins versants (ANA officiel)",
+      "mogianaTerritory": "Territoire Mogiana proposé (Earth Guardians Brésil)"
     },
     "search": "Rechercher entreprise, substance, état...",
     "legend": {
@@ -1887,7 +1889,9 @@
       "drawActions": {
         "finish": "Finish",
         "cancel": "Cancel drawing",
-        "deleteSelected": "Delete selected feature"
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "Cliquez sur la carte pour ajouter le premier point",
+        "pressEnterHint": "Appuyez sur Entrée pour terminer · Échap pour annuler"
       },
       "map": {
         "loading": "Loading satellite imagery…",

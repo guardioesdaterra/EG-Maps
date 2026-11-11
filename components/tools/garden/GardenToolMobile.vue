@@ -678,8 +678,6 @@ function initMap() {
   map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right')
   map.addControl(new maplibregl.ScaleControl({ unit: 'metric', maxWidth: 90 }), 'bottom-left')
-  // TODO(debug): temporary — remove
-  if (import.meta.dev && typeof window !== 'undefined') (window as unknown as Record<string, unknown>).__gardenMap = map
 
   mapRef.value = map
   zoomLevel.value = map.getZoom()
@@ -862,7 +860,14 @@ function setupMapLayers(map: MapLibreMap) {
       paint: {
         'line-color': ['case', ['==', ['get', 'kind'], 'boundary'], MAP_BRAND, MAP_BRAND_SOFT],
         'line-width': ['case', ['==', ['get', 'kind'], 'boundary'], 2.5, 1],
-        'line-opacity': ['case', ['==', ['get', 'kind'], 'boundary'], 0.9, 0.4],
+        // Fade with zoom: the plot is sub-pixel when zoomed out, so a full-opacity
+        // boundary would read as a stray bright box instead of a plot marker.
+        'line-opacity': [
+          'interpolate', ['linear'], ['zoom'],
+          10, ['case', ['==', ['get', 'kind'], 'boundary'], 0.3, 0],
+          14, ['case', ['==', ['get', 'kind'], 'boundary'], 0.55, 0],
+          16, ['case', ['==', ['get', 'kind'], 'boundary'], 0.9, 0.4],
+        ],
       },
     })
   }

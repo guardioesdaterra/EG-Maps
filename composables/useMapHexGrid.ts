@@ -17,9 +17,9 @@ export interface HexGridOptions {
   lineWidth?: number
   /** Quality scale factor (0-1) — higher = coarser hexes = fewer = less work */
   qualityScale?: number
-  /** Cap for devicePixelRatio on the overlay canvas. The grid is a faint
-   * decorative overlay — DPR 1 is visually identical but uses 4x less
-   * backing memory and fill-rate than DPR 2 (e.g. 8MB vs 33MB at 1080p). */
+  /** Cap for devicePixelRatio on the overlay canvas. 2 keeps strokes crisp
+   * over sharp satellite imagery while bounding backing-store memory; low
+   * tiers pass 1 via the quality preset. */
   maxDpr?: number
 }
 
@@ -47,7 +47,7 @@ export function useMapHexGrid(
     strokeColor: options.strokeColor ?? HEX_GRID.strokeColor,
     lineWidth: options.lineWidth ?? HEX_GRID.lineWidth,
     qualityScale: options.qualityScale ?? 1,
-    maxDpr: options.maxDpr ?? 1,
+    maxDpr: options.maxDpr ?? 2,
   }
 
   function drawHexGrid() {
@@ -55,11 +55,12 @@ export function useMapHexGrid(
     const canvas = canvasRef.value
     if (!canvas) return
 
-    // DPR 1 is plenty for a faint line overlay — avoids 4x backing store
-    // and 4x fragment work versus DPR 2.
     const dpr = Math.min(window.devicePixelRatio || 1, cfg.maxDpr)
-    const w = window.innerWidth
-    const h = window.innerHeight
+    // Size to the canvas's own container — window dimensions are wrong in
+    // embeds, panels, and the Tools sheet where the map doesn't fill it.
+    const box = canvas.parentElement ?? canvas
+    const w = box.clientWidth || window.innerWidth
+    const h = box.clientHeight || window.innerHeight
     const qs = cfg.qualityScale
     const baseHexSize = isMobile.value ? cfg.mobileSize : cfg.desktopSize
     if (dpr === lastDpr && w === lastWidth && h === lastHeight && qs === lastQualityScale && baseHexSize === lastBaseSize) return

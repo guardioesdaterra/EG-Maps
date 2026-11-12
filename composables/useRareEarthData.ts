@@ -72,7 +72,17 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
   const waterData = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
   const culturalData = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
   const waterThreats = shallowRef<WaterThreat[]>([])
-  const features = ref<RareEarthFeatureSummary[]>([])
+  // Water basins (nivel 2-6) for zoom-based rendering
+  const basinsDataL2 = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  const basinsDataL3 = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  const basinsDataL4 = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  const basinsDataL5 = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  const basinsDataL6 = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  // Proposed Mogiana territory layer (proposed by Earth Guardians Brazil)
+  const mogianaData = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
+  // shallowRef: summary rows are only ever replaced wholesale (normalize
+  // pass). Deep ref() proxied all 20k national objects on every read.
+  const features = shallowRef<RareEarthFeatureSummary[]>([])
   const deepAnalysis = shallowRef<DeepAnalysis | undefined>(undefined)
   const isLoading = ref(false)
   const loadPhase = ref<LoadPhase>('idle')
@@ -111,9 +121,16 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
   }
   let loadToken = 0
 
+  // Keyed by points FeatureCollection identity: the same dataset is indexed
+  // once for point normalization and again for polygon normalization (20.7k
+  // national claims — recomputing the grouping per pass is pure waste).
+  const holderIndexCache = new WeakMap<object, Map<string, SpeculatorIndexEntry>>()
   function dangerByHolder(pointsGJ: RareEarthFeatureCollection): Map<string, SpeculatorIndexEntry> {
+    const cached = holderIndexCache.get(pointsGJ)
+    if (cached) return cached
     const out = new Map<string, SpeculatorIndexEntry>()
     for (const e of computeSpeculatorIndex(pointsGJ)) out.set(e.normalizedName, e)
+    holderIndexCache.set(pointsGJ, out)
     return out
   }
 
@@ -194,6 +211,36 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
     }
   }
 
+  /**
+   * Read a response body while reporting byte progress, so the loading bar
+   * advances during the multi-MB points download instead of jumping only
+   * during normalization. Falls back to text() when the stream is absent.
+   */
+  async function readWithByteProgress(res: Response, onBytes: (loaded: number, total: number | null) => void): Promise<string> {
+    if (!res.body) return res.text()
+    const reader = res.body.getReader()
+    const totalHeader = Number(res.headers.get('content-length') ?? '')
+    const total = Number.isFinite(totalHeader) && totalHeader > 0 ? totalHeader : null
+    const chunks: Uint8Array[] = []
+    let loaded = 0
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      if (value) {
+        chunks.push(value)
+        loaded += value.byteLength
+        onBytes(loaded, total)
+      }
+    }
+    const buf = new Uint8Array(loaded)
+    let off = 0
+    for (const c of chunks) {
+      buf.set(c, off)
+      off += c.byteLength
+    }
+    return new TextDecoder().decode(buf)
+  }
+
   async function loadResource<T>(name: string, url: string, setter: (_data: T) => void): Promise<T | null> {
     try {
       const res = await fetchWithTimeout(url)
@@ -249,7 +296,16 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
         return
       }
       delete resourceErrors.value.points
-      const pointsGJ = (await pointsRes.json()) as RareEarthFeatureCollection
+      // Stream the points file with byte-level progress: the download is the
+      // slowest step, so surface it on the bar (0→30%) before normalize (30→40%).
+      const text = await readWithByteProgress(pointsRes, (loaded, total) => {
+        if (token !== loadToken || region.value !== startingRegion) return
+        const cap = total ?? 3_500_000 // fallback estimate when no content-length (gzip)
+        const pct = Math.min(1, loaded / cap)
+        loadProgress.value = Math.round(pct * 30)
+      })
+      if (token !== loadToken || region.value !== startingRegion) return
+      const pointsGJ = JSON.parse(text) as RareEarthFeatureCollection
       if (token !== loadToken || region.value !== startingRegion) return
       // Fresh region → drop stale overlap index before transform. Inline
       // overlaps are indexed in one cheap pass (no second download).
@@ -264,7 +320,7 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
       const holderIndex = dangerByHolder(pointsGJ)
       const normalized = await normalizeAll(pointsGJ, overlapsByProcesso, holderIndex, (done, total) => {
         if (token === loadToken && region.value === startingRegion) {
-          loadProgress.value = Math.round(5 + (30 * done) / Math.max(1, total))
+          loadProgress.value = Math.round(30 + (10 * done) / Math.max(1, total))
         }
       })
       if (token !== loadToken || region.value !== startingRegion) return
@@ -326,9 +382,6 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
     await Promise.all([
       loadResource('protected', `${dir}protected-areas.geojson`, (data: RareEarthFeatureCollection) => {
         if (!alive()) return
-        // Canonicalize `kind` once (ti | quilombo | uc | buffer | other,
-        // original kept in `kind_raw`) so map-layer filters, counts,
-        // sidebar groups and search all match on the same values.
         for (const f of data.features ?? []) {
           const props = (f as GeoJSON.Feature).properties as Record<string, unknown> | null | undefined
           if (!props || typeof props !== 'object') continue
@@ -343,8 +396,13 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
         protectedData.value = data
       }),
       loadResource('analysis', `${dir}deep_analysis.json`, (data: DeepAnalysis) => { if (alive()) deepAnalysis.value = data }),
-      loadResource('water', `${dir}waterbodies.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) waterData.value = data }),
+      loadResource('water_basins_l2', `${dir}bacias_nivel_2.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) basinsDataL2.value = data }),
+      loadResource('water_basins_l3', `${dir}bacias_nivel_3.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) basinsDataL3.value = data }),
+      loadResource('water_basins_l4', `${dir}bacias_nivel_4.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) basinsDataL4.value = data }),
+      loadResource('water_basins_l5', `${dir}bacias_nivel_5.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) basinsDataL5.value = data }),
+      loadResource('water_basins_l6', `${dir}bacias_nivel_6.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) basinsDataL6.value = data }),
       loadResource('cultural', `${dir}cultural-features.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) culturalData.value = data }),
+      loadResource('mogiana', `${dir}mogiana_combined.geojson`, (data: GeoJSON.FeatureCollection) => { if (alive()) mogianaData.value = data }),
     ])
     // Stamp mining-pressure context onto named waters (needs points ready).
     // Locals (not ref reads): the refs were reset to undefined at the top
@@ -404,6 +462,14 @@ export function useRareEarthData(baseURL: string, initialRegion: DataRegion = 'p
     protectedData,
     waterData,
     culturalData,
+    // Water basins (nivel 2-6) for zoom-based rendering
+    basinsDataL2,
+    basinsDataL3,
+    basinsDataL4,
+    basinsDataL5,
+    basinsDataL6,
+    // Proposed Mogiana territory (proposed by Earth Guardians Brazil)
+    mogianaData,
     features,
     speculatorIndex,
     deepAnalysis,

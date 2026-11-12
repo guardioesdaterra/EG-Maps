@@ -7,7 +7,7 @@
  */
 <script setup lang="ts">
 
-import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import Icon from './Icon.vue'
 import { gsap } from 'gsap'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
@@ -131,7 +131,7 @@ onBeforeUnmount(() => {
             @click="closePanel"
             :aria-label="t('general.close')"
           >
-            <iconify-icon icon="streamline-freehand:remove-delete-sign-bold" class="h-4 w-4" />
+            <Icon name="tabler:trash-x" class="h-4 w-4" />
           </button>
         </div>
 

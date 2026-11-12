@@ -12,7 +12,7 @@
   <div class="obs-slider">
     <div class="obs-slider__header">
       <h3 class="obs-slider__title">
-        <Icon name="lucide:calendar" class="obs-slider__title-icon" />
+        <Icon name="tabler:calendar" class="obs-slider__title-icon" />
         {{ t('observatory.yearSlider.title') }}
       </h3>
       <div class="obs-slider__years">
@@ -58,7 +58,7 @@
         :aria-label="isPlaying ? t('observatory.yearSlider.pause') : t('observatory.yearSlider.play')"
         @click="togglePlay"
       >
-        <Icon :name="isPlaying ? 'lucide:square' : 'lucide:play'" class="obs-slider__btn-icon" />
+        <Icon :name="isPlaying ? 'gis:square' : 'tabler:player-skip-forward'" class="obs-slider__btn-icon" />
         {{ isPlaying ? t('observatory.yearSlider.pause') : t('observatory.yearSlider.play') }}
       </button>
       <button
@@ -67,7 +67,7 @@
         :aria-label="t('observatory.yearSlider.reset')"
         @click="resetRange"
       >
-        <Icon name="lucide:rotate-ccw" class="obs-slider__btn-icon" />
+        <Icon name="tabler:rotate" class="obs-slider__btn-icon" />
         {{ t('observatory.yearSlider.reset') }}
       </button>
       <span class="obs-slider__count" aria-live="polite">

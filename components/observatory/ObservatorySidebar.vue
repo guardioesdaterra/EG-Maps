@@ -41,7 +41,7 @@
           :aria-pressed="!open"
           @click="open = !open"
         >
-          <Icon :name="open ? 'lucide:panel-right-close' : 'lucide:panel-right-open'" />
+          <Icon :name="open ? 'tabler:layout-sidebar-right' : 'tabler:layout-sidebar-right'" />
         </button>
       </header>
 
@@ -87,7 +87,7 @@
             @update:sob-demanda-only="(v) => emit('update:sobDemandaOnly', v)"
           />
           <h4 class="vulc-subhead">
-            <Icon name="lucide:globe" class="vulc-subhead__icon" />
+            <Icon name="gis:globe" class="vulc-subhead__icon" />
             {{ t('observatory.tabs.env') }}
           </h4>
           <EnvironmentTab @fly-to-coord="(c) => emit('flyToCoord', c)" @add-observation="(r) => emit('addObservation', r)" />
@@ -134,7 +134,7 @@
 
         <!-- ── Search (debounced) ─────────────────────────────── -->
         <div class="vulc-search">
-          <Icon name="lucide:search" class="vulc-search__icon" />
+          <Icon name="tabler:search" class="vulc-search__icon" />
           <input
             v-model="searchInput"
             type="search"
@@ -149,7 +149,7 @@
             :aria-label="t('observatory.v2.panel.searchClear')"
             @click="searchInput = ''"
           >
-            <Icon name="lucide:x" />
+            <Icon name="tabler:trash-x" />
           </button>
         </div>
 
@@ -159,7 +159,7 @@
           <span>{{ t('observatory.v2.panel.agentsLoading') }}</span>
         </div>
         <div v-else-if="culturalError" class="vulc-loadstatus vulc-loadstatus--error" role="alert">
-          <Icon name="lucide:alert-triangle" class="vulc-loadstatus__icon" />
+          <Icon name="tabler:alert-triangle" class="vulc-loadstatus__icon" />
           <span>{{ culturalError }}</span>
           <button type="button" class="vulc-loadstatus__retry" @click="emit('retryCultural')">
             {{ t('observatory.v2.panel.agentsRetry') }}
@@ -169,9 +169,9 @@
         <!-- ── Layer toggles (mining + protected areas) ────────── -->
         <details class="vulc-details" :open="layerSectionOpen">
           <summary class="vulc-details__summary">
-            <Icon name="lucide:layers" />
+            <Icon name="gis:layers" />
             <span>{{ t('observatory.v2.panel.layersLabel') }}</span>
-            <Icon name="lucide:chevron-down" class="vulc-details__chev" />
+            <Icon name="tabler:arrows-move" class="vulc-details__chev" />
           </summary>
           <div class="vulc-details__body">
             <div
@@ -187,7 +187,7 @@
               @keydown.space.prevent="toggleLayer(key)"
             >
               <div :class="['vulc-toggle__box', layerVis[key] === false && 'is-off']" :style="{ '--cb-color': LAYER_COLORS[key] }">
-                <Icon v-if="layerVis[key] !== false" name="lucide:check" />
+                <Icon v-if="layerVis[key] !== false" name="tabler:square-check" />
               </div>
               <span class="vulc-toggle__label">{{ t(LAYER_LABELS[key]) }}</span>
             </div>
@@ -212,14 +212,14 @@
         <div v-if="hasActiveCultureFilters" class="vulc-filterbar">
           <span class="vulc-filterbar__summary">{{ activeCultureFilterSummary }}</span>
           <button type="button" class="vulc-filterbar__clear" @click="clearCultureFilters">
-            <Icon name="lucide:x" />
+            <Icon name="tabler:trash-x" />
             {{ t('observatory.v2.panel.clearFilters') }}
           </button>
         </div>
 
         <!-- ── List ────────────────────────────────────────────── -->
         <div v-if="filteredFeatures.length === 0" class="vulc-empty">
-          <Icon name="lucide:search-x" class="vulc-empty__icon" />
+          <Icon name="tabler:search-off" class="vulc-empty__icon" />
           <p>{{ t('observatory.v2.panel.empty') }}</p>
         </div>
         <ul v-else class="vulc-list" role="list">
@@ -255,7 +255,7 @@
               class="vulc-card__link"
               :aria-label="t('observatory.v2.panel.openOnSource')"
             >
-              <Icon name="lucide:external-link" />
+              <Icon name="tabler:share" />
             </a>
           </li>
         </ul>
@@ -269,7 +269,7 @@
             :aria-label="t('observatory.v2.panel.pagePrev')"
             @click="page = Math.max(1, page - 1)"
           >
-            <Icon name="lucide:chevron-left" />
+            <Icon name="tabler:arrow-move-left" />
           </button>
           <span class="vulc-pager__count">{{ page }} / {{ totalPages }}</span>
           <button
@@ -279,7 +279,7 @@
             :aria-label="t('observatory.v2.panel.pageNext')"
             @click="page = Math.min(totalPages, page + 1)"
           >
-            <Icon name="lucide:chevron-right" />
+            <Icon name="tabler:share" />
           </button>
         </div>
         </section>
@@ -287,7 +287,7 @@
         <!-- ══ POWERS ═══════════════════════════════════════════ -->
         <section v-else-if="activeTab === 'power'" role="tabpanel" aria-label="Powers">
           <h4 class="vulc-subhead">
-            <Icon name="lucide:radar" class="vulc-subhead__icon" />
+            <Icon name="gis:globe" class="vulc-subhead__icon" />
             {{ t('observatory.tabs.danger') }}
           </h4>
           <DangerTab
@@ -298,7 +298,7 @@
             @report-enterprise="(name, score, flags) => emit('reportEnterprise', name, score, flags)"
           />
           <h4 class="vulc-subhead">
-            <Icon name="lucide:landmark" class="vulc-subhead__icon" />
+            <Icon name="tabler:building" class="vulc-subhead__icon" />
             {{ t('observatory.tabs.power') }}
           </h4>
           <PowerTab
@@ -307,17 +307,17 @@
             @fly-to-enterprise="(name) => emit('flyToEnterprise', name)"
           />
           <h4 class="vulc-subhead">
-            <Icon name="lucide:shield" class="vulc-subhead__icon" />
+            <Icon name="tabler:shield" class="vulc-subhead__icon" />
             {{ t('observatory.tabs.military') }}
           </h4>
           <MilitaryTab :live="militaryLive" />
           <h4 class="vulc-subhead">
-            <Icon name="lucide:network" class="vulc-subhead__icon" />
+            <Icon name="gis:network-o" class="vulc-subhead__icon" />
             {{ t('observatory.tabs.network') }}
           </h4>
           <NetworkTab />
           <h4 class="vulc-subhead">
-            <Icon name="lucide:scale" class="vulc-subhead__icon" />
+            <Icon name="tabler:scale" class="vulc-subhead__icon" />
             {{ t('observatory.tabs.illegal') }}
           </h4>
           <IllegalTab @report-pattern="(key) => emit('reportPattern', key)" />
@@ -346,7 +346,7 @@
     :aria-label="t('observatory.v2.panel.expand')"
     @click="open = true"
   >
-    <Icon name="lucide:panel-right-open" />
+    <Icon name="tabler:layout-sidebar-right" />
   </button>
 </template>
 
@@ -464,10 +464,10 @@ const defaultPhases = new Set<string>()
 // ── Tabs ────────────────────────────────────────────────────────────────
 type PanelTabId = 'territory' | 'culture' | 'power' | 'timeline'
 const TABS: Array<{ id: PanelTabId; labelKey: string; icon: string }> = [
-  { id: 'territory', labelKey: 'observatory.v2.tabs.territory', icon: 'lucide:hexagon' },
-  { id: 'culture', labelKey: 'observatory.v2.tabs.culture', icon: 'lucide:palette' },
-  { id: 'power', labelKey: 'observatory.v2.tabs.power', icon: 'lucide:landmark' },
-  { id: 'timeline', labelKey: 'observatory.v2.tabs.timeline', icon: 'lucide:chart-line' },
+  { id: 'territory', labelKey: 'observatory.v2.tabs.territory', icon: 'gis:polygon' },
+  { id: 'culture', labelKey: 'observatory.v2.tabs.culture', icon: 'tabler:palette' },
+  { id: 'power', labelKey: 'observatory.v2.tabs.power', icon: 'tabler:building' },
+  { id: 'timeline', labelKey: 'observatory.v2.tabs.timeline', icon: 'tabler:chart-line' },
 ]
 const activeTabInternal = ref<PanelTabId>('territory')
 const activeTab = computed({
@@ -558,6 +558,8 @@ const TOGGLE_LAYER_KEYS = [
   'foreign',
   'enterprise_hq',
   'heatmap',
+  'basins',
+  'mogiana',
 ] as const
 const LAYER_LABELS: Record<string, string> = {
   cultural: 'observatory.layers.cultural',
@@ -567,6 +569,8 @@ const LAYER_LABELS: Record<string, string> = {
   foreign: 'observatory.layers.foreignHeld',
   enterprise_hq: 'observatory.layers.enterpriseHq',
   heatmap: 'observatory.layers.heatmap',
+  basins: 'observatory.layers.waterBasins',
+  mogiana: 'observatory.layers.mogianaTerritory',
 }
 const LAYER_COLORS: Record<string, string> = {
   cultural: '#a855f7',
@@ -576,6 +580,8 @@ const LAYER_COLORS: Record<string, string> = {
   foreign: '#e74c3c',
   enterprise_hq: '#9b59b6',
   heatmap: '#e74c3c',
+  basins: '#3b82f6',
+  mogiana: '#f39c12',
 }
 
 // ── State ───────────────────────────────────────────────────────────────

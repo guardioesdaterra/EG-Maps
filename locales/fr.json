@@ -13,7 +13,8 @@
     "switchToDark": "Passer au mode sombre",
     "language": "Langue",
     "privacy": "Confidentialité",
-    "terms": "Conditions"
+    "terms": "Conditions",
+    "tools": "Tools"
   },
   "home": {
     "title": "Earth Guardians",
@@ -179,7 +180,14 @@
       "collapse": "Fermer les résultats"
     },
     "moreTools": "Plus d’outils de carte",
-    "hideTools": "Masquer les outils de carte"
+    "hideTools": "Masquer les outils de carte",
+    "basemapStyle": "Style de fond de carte",
+    "gridDensity": {
+      "title": "Densité de la grille",
+      "cells": "{cells} cellules · {points} points cartographiés",
+      "cellSize": "≈ {km} km par cellule",
+      "on": "Grille géographique : activée"
+    }
   },
   "mapTiles": {
     "maptiler": "Satellite",
@@ -319,7 +327,8 @@
     "close": "Fermer",
     "save": "Enregistrer",
     "cancel": "Annuler",
-    "imageNotAvailable": "Image non disponible"
+    "imageNotAvailable": "Image non disponible",
+    "back": "Back"
   },
   "observatory": {
     "tabs": {
@@ -474,7 +483,9 @@
       "protectedAreas": "Aires protégées",
       "statusTitle": "État de la couche",
       "statusFailed": "en échec",
-      "foreignHeld": "Titres détenus par des intérêts étrangers"
+      "foreignHeld": "Titres détenus par des intérêts étrangers",
+      "waterBasins": "Bassins versants (ANA officiel)",
+      "mogianaTerritory": "Territoire Mogiana proposé (Earth Guardians Brésil)"
     },
     "search": "Rechercher entreprise, substance, état...",
     "legend": {
@@ -514,6 +525,8 @@
       "lastEventActive": "Actif",
       "overlaps": "Chevauchements",
       "stackedLayers": "Couches superposées",
+      "stackedMore": "+{count} couche(s) de plus ici",
+      "stackedShowAll": "Ouvrir le tableau de données",
       "tabClaim": "Demande",
       "tabBoundary": "Périmètre",
       "tabWater": "Eau",
@@ -724,6 +737,15 @@
       "monitor": "Suivi de Terrain",
       "viewGlobe": "Voir le Globe 3D",
       "viewFlat": "Voir la Carte Plane",
+      "actionsExpand": "Développer les actions",
+      "actionsCollapse": "Réduire les actions",
+      "layersShow": "Afficher les filtres",
+      "layersHide": "Masquer les filtres",
+      "filtersTitle": "Filtres des requêtes minières",
+      "claimSuggestions": "Requêtes correspondantes",
+      "myLocation": "Ma position",
+      "boundsHintTitle": "La vue Vulcan est verrouillée",
+      "boundsHintBody": "Vous avez atteint la limite de la zone de Poços de Caldas. Chargez « Brésil entier » pour parcourir tout le pays.",
       "hero": {
         "title": "Là où la mine rencontre la résistance",
         "lead": "Demandes minières de terres rares au Brésil superposées au tissu culturel du territoire — Mapa Cultura BR (centres culturels, groupes d'artistes) et Floresta Ativista (communautés rurales) réunis pour exposer la ligne de front.",
@@ -920,7 +942,8 @@
       "species": "Espèces",
       "mains": "Principaux",
       "feedback": "Retours",
-      "sources": "Sources"
+      "sources": "Sources",
+      "performance": "Performance"
     },
     "shareCorrections": "Partagez corrections, données manquantes ou idées d'interaction pour nous aider à améliorer les cartes.",
     "homeLink": "Accueil",
@@ -933,6 +956,27 @@
       "basemap": "Fond de carte, imagerie et moteur cartographique",
       "reuseTitle": "Licences et réutilisation pour la recherche et les outils communautaires",
       "openSource": "Ouvrir la source"
+    },
+    "performance": {
+      "title": "Performance et Qualité",
+      "desc": "Contrôlez la qualité de rendu et les effets de particules. L'application s'ajuste automatiquement selon les performances de votre appareil, mais vous pouvez la modifier ici.",
+      "qualitySection": "Préréglage Qualité",
+      "qualityDesc": "L'ajustement auto balance qualité visuelle et taux de rafraîchissement. Désactivez-le pour choisir un préréglage manuellement.",
+      "autoAdjust": "Ajustement auto qualité (recommandé)",
+      "qualityPreset": "Préréglage Qualité",
+      "low": "Faible (performance)",
+      "medium": "Moyen (équilibré)",
+      "high": "Élevé (qualité)",
+      "ultra": "Ultra (maximum)",
+      "particleSettings": "Réglages Particules",
+      "particleDesc": "Ajustez finement l'animation des particules. Nécessite que l'ajustement auto soit désactivé.",
+      "particleMaxCount": "Particules Max",
+      "particleFps": "FPS Cible",
+      "particleTrailLength": "Longueur Traînée",
+      "particleSpawnRate": "Taux Apparition",
+      "particleShadow": "Flou Ombre",
+      "apply": "Appliquer",
+      "currentSettings": "Réglages Actuels"
     }
   },
   "campaigns": {
@@ -1622,5 +1666,349 @@
   },
   "resources": {
     "title": "Ressources"
+  },
+  "tools": {
+    "title": "Tools",
+    "subtitle": "Practical tools for Earth Guardians Crews and communities",
+    "comingSoon": "More tools coming soon...",
+    "agroecologicalGarden": {
+      "title": "Agroecological Garden",
+      "description": "Design, plan, and manage regenerative agroecological gardens with satellite imagery, plant databases, water systems, and companion planting guilds.",
+      "createNew": "Create New Garden",
+      "openExisting": "Open Existing",
+      "myGardens": "My Gardens",
+      "templates": "Templates",
+      "toolbar": {
+        "select": "Select",
+        "pan": "Pan",
+        "point": "Add Point",
+        "line": "Draw Line",
+        "polygon": "Draw Polygon",
+        "measure": "Measure",
+        "undo": "Undo",
+        "redo": "Redo",
+        "clear": "Clear Selection",
+        "selectShort": "Select",
+        "panShort": "Pan",
+        "pointShort": "Point",
+        "lineShort": "Line",
+        "polygonShort": "Polygon",
+        "measureShort": "Measure"
+      },
+      "layers": {
+        "title": "Layers",
+        "addLayer": "Add Layer",
+        "layerTypes": {
+          "seeds": "Seeds",
+          "seedlings": "Seedlings",
+          "transplants": "Transplants",
+          "fertileEarth": "Fertile Earth",
+          "compost": "Compost",
+          "mulch": "Mulch",
+          "biochar": "Biochar",
+          "waterWay": "Water Way",
+          "spring": "Spring",
+          "waterSourceNatural": "Natural Water Source",
+          "waterSourceTap": "Tap / Torneira",
+          "irrigation": "Irrigation",
+          "greenhouse": "Greenhouse",
+          "shed": "Shed",
+          "fence": "Fence",
+          "trellis": "Trellis",
+          "bed": "Garden Bed",
+          "path": "Path",
+          "vegetable": "Vegetable",
+          "nativeTree": "Native Tree",
+          "rhizome": "Rhizome",
+          "coverCrop": "Cover Crop",
+          "herb": "Herb"
+        },
+        "visibility": "Visibility",
+        "lock": "Lock",
+        "opacity": "Opacity",
+        "rename": "Rename",
+        "duplicate": "Duplicate",
+        "delete": "Delete"
+      },
+      "plantLibrary": {
+        "title": "Plant Library",
+        "search": "Search plants...",
+        "categories": {
+          "all": "All",
+          "vegetable": "Vegetables (Hortaliças)",
+          "nativeTree": "Native Trees (Árvores Nativas)",
+          "rhizome": "Rhizomes (Rizomas)",
+          "coverCrop": "Cover Crops",
+          "herb": "Herbs",
+          "fruit": "Fruit",
+          "flower": "Flowers"
+        },
+        "filters": {
+          "sun": "Sun Requirement",
+          "water": "Water Need",
+          "perennial": "Perennial Only",
+          "native": "Native Only",
+          "companion": "Show Companions"
+        },
+        "details": {
+          "scientificName": "Scientific Name",
+          "family": "Family",
+          "spacing": "Spacing",
+          "depth": "Planting Depth",
+          "germination": "Days to Germination",
+          "harvest": "Days to Harvest",
+          "sun": "Sun",
+          "water": "Water",
+          "ph": "Soil pH",
+          "zone": "Hardiness Zone",
+          "companions": "Good Companions",
+          "antagonists": "Avoid Planting With",
+          "guildRole": "Guild Role",
+          "harvestable": "Harvestable Parts",
+          "description": "Description"
+        }
+      },
+      "waterDesign": {
+        "title": "Water Design",
+        "addSpring": "Add Spring / Nascente",
+        "addTap": "Add Tap / Torneira",
+        "drawSwale": "Draw Swale",
+        "drawIrrigation": "Draw Irrigation",
+        "addPond": "Add Pond / Tank",
+        "flowRate": "Flow Rate (L/min)",
+        "capacity": "Capacity (L)",
+        "elevationProfile": "Elevation Profile",
+        "keylineDesign": "Keyline Design"
+      },
+      "guildBuilder": {
+        "title": "Guild Builder",
+        "addPlant": "Add Plant to Guild",
+        "compatibility": "Compatibility",
+        "goodCompanions": "Good Companions",
+        "badCompanions": "Avoid",
+        "saveGuild": "Save as Template",
+        "loadGuild": "Load Template",
+        "guildTemplates": {
+          "threeSisters": "Three Sisters (Corn, Beans, Squash)",
+          "mediterranean": "Mediterranean Guild",
+          "tropical": "Tropical Fruit Guild",
+          "nitrogenFixers": "Nitrogen Fixer Guild",
+          "pollinator": "Pollinator Guild",
+          "pestRepellent": "Pest Repellent Guild"
+        }
+      },
+      "measurement": {
+        "title": "Measurements",
+        "distance": "Distance",
+        "area": "Area",
+        "perimeter": "Perimeter",
+        "units": "Units",
+        "metric": "Metric (m, ha)",
+        "imperial": "Imperial (ft, ac)",
+        "type": "Type",
+        "value": "Résultat",
+        "cells": "Cells"
+      },
+      "project": {
+        "title": "Garden Project",
+        "name": "Project Name",
+        "description": "Description",
+        "location": "Location",
+        "save": "Save Project",
+        "saveAs": "Save As...",
+        "export": "Export",
+        "import": "Import",
+        "share": "Share",
+        "delete": "Delete",
+        "exportFormats": {
+          "geojson": "GeoJSON",
+          "pdf": "PDF Plan",
+          "png": "Map Image (PNG)",
+          "csv": "Plant List (CSV)",
+          "ics": "Calendar (ICS)",
+          "shapefile": "Shapefile (ZIP)"
+        }
+      },
+      "seasonalCalendar": {
+        "title": "Seasonal Calendar",
+        "hemisphere": "Hemisphere",
+        "north": "Northern",
+        "south": "Southern",
+        "month": "Month",
+        "planting": "Planting Window",
+        "harvest": "Harvest Window",
+        "currentMonth": "Current Month",
+        "addToCalendar": "Add to Calendar"
+      },
+      "modals": {
+        "plantDetail": "Plant Details",
+        "exportOptions": "Export Options",
+        "importOptions": "Import Options",
+        "shareProject": "Share Project",
+        "deleteConfirm": "Delete this garden project? This cannot be undone."
+      },
+      "toasts": {
+        "saved": "Garden project saved",
+        "exported": "Export completed",
+        "imported": "Project imported",
+        "shared": "Share link copied",
+        "error": "An error occurred",
+        "layerAdded": "Layer added",
+        "featureAdded": "Feature added",
+        "measurementComplete": "Measurement complete",
+        "areaReady": "Garden area ready — start designing"
+      },
+      "emptyStates": {
+        "noGardens": "No gardens yet. Create your first agroecological garden!",
+        "noPlants": "No plants match your filters",
+        "noLayers": "Add a layer to start designing",
+        "noFeatures": "Draw on the map to add features"
+      },
+      "help": {
+        "title": "Help & Shortcuts",
+        "shortcuts": {
+          "pan": "Space + Drag — Pan map",
+          "zoom": "Scroll — Zoom",
+          "select": "Click — Select feature",
+          "multiSelect": "Shift + Click — Multi-select",
+          "drawPoint": "P — Point tool",
+          "drawLine": "L — Line tool",
+          "drawPolygon": "G — Polygon tool",
+          "measure": "M — Measure tool",
+          "undo": "Ctrl+Z — Undo",
+          "redo": "Ctrl+Shift+Z — Redo",
+          "delete": "Delete — Remove selected",
+          "escape": "Esc — Cancel tool / Close panel"
+        }
+      },
+      "draw": "Dessiner",
+      "placePlant": "Plant",
+      "grid": {
+        "title": "Grid"
+      },
+      "drawActions": {
+        "finish": "Finish",
+        "cancel": "Cancel drawing",
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "Cliquez sur la carte pour ajouter le premier point",
+        "pressEnterHint": "Appuyez sur Entrée pour terminer · Échap pour annuler"
+      },
+      "map": {
+        "loading": "Loading satellite imagery…",
+        "loadError": "The map imagery could not load.",
+        "retry": "Retry",
+        "fit": "Fit",
+        "zoomToGrid": "Zoom to the plot"
+      },
+      "onboarding": {
+        "title": "Set up the garden area",
+        "step": "Step {current} of {total}",
+        "locationTitle": "Area address",
+        "locationHint": "Start with the address of the area, its coordinates, or a tap on the map.",
+        "address": "Address",
+        "addressPlaceholder": "Street, neighbourhood, city…",
+        "addressNotSet": "No address selected yet",
+        "searchError": "Address search is unavailable right now. Tap the map or type the coordinates instead.",
+        "noResults": "No address found. Try a more specific search.",
+        "useLocation": "Use my location",
+        "locating": "Locating…",
+        "locationError": "We could not get your location. Tap the map instead.",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "mapHint": "Tip: tap the map to move the centre of the area.",
+        "selected": "Selected area",
+        "gridTitle": "X/Y grid",
+        "gridHint": "Set the plot size in metres, then choose the cell size for the planting grid.",
+        "name": "Garden name",
+        "namePlaceholder": "e.g. Community garden — north bed",
+        "widthX": "Width X",
+        "lengthY": "Length Y",
+        "cellSize": "Cell size",
+        "rotation": "Rotation",
+        "presets": "Presets",
+        "presetSmall": "5 × 5 m",
+        "presetBed": "10 × 10 m",
+        "presetPlot": "20 × 10 m",
+        "tooManyCells": "That is more than {limit} cells. Increase the cell size or shrink the plot.",
+        "editGrid": "Edit grid",
+        "gridChip": "{width} × {length} m · {cols}×{rows}",
+        "back": "Back",
+        "next": "Next",
+        "start": "Start designing"
+      },
+      "panels": {
+        "layers": "Layers",
+        "plants": "Plants",
+        "panel": "Show or hide the panel",
+        "addLayer": "Add layer",
+        "showEmpty": "Show empty layers",
+        "hideEmpty": "Hide empty layers",
+        "noLayers": "No layers yet — add one to start drawing.",
+        "planting": "Tap the map to place {name}",
+        "cancelPlant": "Cancel"
+      },
+      "layerGroups": {
+        "soil": "Soil and beds",
+        "water": "Water",
+        "structures": "Structures",
+        "planting": "Planting"
+      }
+    },
+    "readyBadge": "Prêt",
+    "comingSoonBadge": "Bientôt",
+    "tipsTitle": "Comment fonctionnent les outils",
+    "tipGarden": "Les projets de jardin sont enregistrés sur cet appareil — exportez en GeoJSON pour les partager avec votre Crew.",
+    "tipSatellite": "Les dalles satellite téléchargées restent sur cet appareil, la carte fonctionne donc hors connexion.",
+    "tipStorage": "Le stockage se remplit vite à zoom élevé. Gardez des zones petites et des plages de zoom courtes.",
+    "satelliteDownloader": {
+      "title": "Satellite hors ligne",
+      "description": "Téléchargez l’imagerie satellite d’une zone pour utiliser la carte hors connexion.",
+      "area": "Zone",
+      "useView": "Utiliser la vue actuelle",
+      "manual": "Saisir les limites",
+      "north": "Nord",
+      "south": "Sud",
+      "east": "Est",
+      "west": "Ouest",
+      "invalidBounds": "Limites invalides : le nord doit être au-dessus du sud, l’est à droite de l’ouest, et la zone sous 60°.",
+      "zoomLevels": "Niveaux de zoom",
+      "minZoom": "À partir du zoom",
+      "maxZoom": "Jusqu’au zoom",
+      "estimate": "Environ {tiles} dalles à télécharger",
+      "largeAreaWarning": "Téléchargement volumineux, le cache hors ligne peut être saturé.",
+      "download": "Télécharger la zone",
+      "cancel": "Annuler",
+      "progress": "{done} sur {total} dalles",
+      "failed": "{count} échouées",
+      "needsConnection": "Une connexion est requise pour télécharger les dalles.",
+      "cache": "Cache hors ligne",
+      "cachedTiles": "Dalles en cache",
+      "cacheSize": "Taille du cache",
+      "connection": "Connexion",
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "clearCache": "Vider le cache",
+      "cacheNote": "Les dalles sont privées à ce navigateur et supprimées avec les données du site.",
+      "done": "{count} dalles téléchargées pour un usage hors ligne",
+      "doneWithErrors": "{failed} dalles n’ont pas pu être téléchargées",
+      "cancelled": "Téléchargement annulé",
+      "cacheCleared": "Cache hors ligne vidé"
+    },
+    "speciesWatchlist": {
+      "title": "Liste d’espèces",
+      "description": "Suivez les espèces menacées près de votre Crew et obtenez une liste pour les sorties terrain."
+    },
+    "crewOutreach": {
+      "title": "Planificateur de tournées",
+      "description": "Planifiez visites et campagnes entre Crews avec itinéraires et contacts."
+    },
+    "openTool": "Open {name}",
+    "open": "Open tool"
+  },
+  "mapStyles": {
+    "hybrid": "Satellite + labels",
+    "satellite": "Satellite seul",
+    "streets": "Plan de ville",
+    "outdoors": "Extérieur"
   }
 }

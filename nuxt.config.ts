@@ -15,11 +15,12 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@nuxt/eslint',
     '@nuxtjs/i18n',
+    '@pinia/nuxt',
     '@vueuse/motion/nuxt',
     '@vueuse/nuxt',
   ],
 
-  plugins: ['~/plugins/iconify-icon.client.ts', '~/plugins/command-palette.client.ts', '~/plugins/ui-init.client.ts'],
+  plugins: ['~/plugins/command-palette.client.ts', '~/plugins/ui-init.client.ts'],
 
   vueuse: {
     ssrHandlers: true,
@@ -159,7 +160,6 @@ export default defineNuxtConfig({
         'maplibre-gl',
         'clsx',
         'tailwind-merge',
-        'iconify-icon',
       ],
     },
     server: {
@@ -178,8 +178,6 @@ export default defineNuxtConfig({
   },
 
   vue: {
-    compilerOptions: {
-      isCustomElement: (tag) => tag === 'iconify-icon',
-    },
+    compilerOptions: {},
   },
 });

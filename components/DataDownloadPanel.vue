@@ -16,7 +16,7 @@
             <h2 id="download-modal-title" class="download-title">Download All Data</h2>
             <p class="download-subtitle">JSON, GeoJSON & CSV formats — for research, analysis & verification</p>
           </div>
-          <button class="download-close" @click="close" aria-label="Close"><Icon name="lucide:x" class="w-4 h-4" /></button>
+          <button class="download-close" @click="close" aria-label="Close"><Icon name="tabler:trash-x" class="w-4 h-4" /></button>
         </div>
 
         <div class="download-body">

@@ -17,7 +17,7 @@
         :aria-expanded="infoOpen"
         @click="infoOpen = !infoOpen"
       >
-        <Icon :name="infoOpen ? 'lucide:chevron-down' : 'lucide:scale'" class="obs-expand__icon" />
+        <Icon :name="infoOpen ? 'tabler:arrows-move' : 'tabler:scale'" class="obs-expand__icon" />
         {{ infoOpen ? t('observatory.illegal.hideInfo') : t('observatory.illegal.whatIsThis') }}
       </button>
       <Transition name="obs-fade">
@@ -46,7 +46,7 @@
           <p class="obs-card__desc">{{ t(p.descKey) }}</p>
           <ul v-if="p.examples.length" class="obs-card__examples" role="list">
             <li v-for="(e, i) in p.examples" :key="i" class="obs-card__example">
-              <Icon name="lucide:circle" class="obs-card__example-dot" />
+              <Icon name="gis:circle" class="obs-card__example-dot" />
               {{ t(e.key) }}
             </li>
           </ul>
@@ -59,7 +59,7 @@
             :aria-label="t('observatory.illegal.showMatching')"
             @click="onHighlight(p.titleKey)"
           >
-            <Icon name="lucide:search" class="obs-card__action-icon" />
+            <Icon name="tabler:search" class="obs-card__action-icon" />
           </button>
           <button
             type="button"
@@ -68,14 +68,14 @@
             :aria-label="t('observatory.illegal.reportPattern')"
             @click="openReport(p.titleKey)"
           >
-            <Icon name="lucide:flag" class="obs-card__action-icon" />
+            <Icon name="gis:flag" class="obs-card__action-icon" />
           </button>
         </div>
       </li>
     </ul>
 
     <div class="obs-tab__footnote">
-      <Icon name="lucide:info" class="obs-tab__footnote-icon" />
+      <Icon name="tabler:info-circle" class="obs-tab__footnote-icon" />
       {{ t('observatory.illegal.learnMore') }}
     </div>
   </div>
@@ -116,14 +116,14 @@ function openReport(key: string) {
 
 function patternIcon(titleKey: string): string {
   const map: Record<string, string> = {
-    'observatory.illegal.landSpec': 'lucide:land-plot',
-    'observatory.illegal.rejeito': 'lucide:trash-2',
-    'observatory.illegal.secrecy': 'lucide:eye-off',
-    'observatory.illegal.foreign': 'lucide:globe',
-    'observatory.illegal.exclusion': 'lucide:circle-x',
-    'observatory.illegal.water': 'lucide:droplets',
+    'observatory.illegal.landSpec': 'tabler:map-pin',
+    'observatory.illegal.rejeito': 'tabler:trash',
+    'observatory.illegal.secrecy': 'tabler:eye-off',
+    'observatory.illegal.foreign': 'gis:globe',
+    'observatory.illegal.exclusion': 'tabler:trash-x',
+    'observatory.illegal.water': 'tabler:fountain',
   }
-  return map[titleKey] || 'lucide:ban'
+  return map[titleKey] || 'tabler:trash-x'
 }
 
 </script>

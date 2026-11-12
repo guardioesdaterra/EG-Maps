@@ -54,6 +54,7 @@ interface GooeyNavItem {
   icon: string
   variant?: 'cyan' | 'green' | 'purple' | 'orange'
   external?: boolean
+  action?: string
 }
 
 interface GooeyNavProps {
@@ -74,6 +75,10 @@ const props = withDefaults(defineProps<GooeyNavProps>(), {
   timeVariance: 300,
   colors: () => [1, 2, 3, 1, 2, 3, 1, 4],
 })
+
+const emit = defineEmits<{
+  action: [action: string, index: number]
+}>()
 
 const route = useRoute()
 const { t } = useI18n()
@@ -164,6 +169,11 @@ const makeParticles = (element: HTMLElement) => {
 const handleClick = (e: Event, index: number) => {
   const item = props.items[index]
   if (item?.external) return
+
+  if (item?.action) {
+    emit('action', item.action, index)
+    return
+  }
 
   const target = e.currentTarget as HTMLElement
   const liEl = target.parentElement as HTMLElement

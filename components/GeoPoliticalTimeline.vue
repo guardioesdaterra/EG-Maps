@@ -10,7 +10,7 @@
   <Transition name="fade-scale">
     <div v-if="visible" class="geotimeline-overlay" @click.self="close" @keydown.esc="close">
       <div ref="modalRef" class="geotimeline-modal" role="dialog" aria-modal="true" aria-labelledby="geotimeline-title">
-        <button class="geotimeline-close" @click="close" aria-label="Close timeline"><Icon name="lucide:x" class="w-4 h-4" /></button>
+        <button class="geotimeline-close" @click="close" aria-label="Close timeline"><Icon name="tabler:trash-x" class="w-4 h-4" /></button>
 
         
         <div class="geotimeline-hero">

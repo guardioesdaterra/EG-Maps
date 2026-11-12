@@ -21,7 +21,7 @@
       >
         <template v-if="error && !isLoading">
           <div class="text-center">
-            <Icon name="lucide:alert-triangle" class="text-5xl mb-4 mx-auto text-red-400" />
+            <Icon name="tabler:alert-triangle" class="text-5xl mb-4 mx-auto text-red-400" />
             <h2 class="text-lg font-bold text-red-400 uppercase tracking-wider mb-2">
               {{ t('observatory.error.loadFailed') }}
             </h2>
@@ -44,7 +44,7 @@
               </path>
             </svg>
             <div class="absolute inset-0 flex items-center justify-center">
-              <Icon name="lucide:mountain" class="text-3xl text-red-500" />
+              <Icon name="tabler:mountain" class="text-3xl text-red-500" />
             </div>
           </div>
           <div class="text-center">
@@ -101,7 +101,7 @@
               :aria-expanded="actionsExpanded"
               @click="actionsExpanded = !actionsExpanded"
             >
-              <Icon :name="actionsExpanded ? 'lucide:x' : 'lucide:settings-2'" />
+              <Icon :name="actionsExpanded ? 'tabler:trash-x' : 'tabler:settings'" />
             </button>
             <Transition name="vulc-actions-expand">
               <nav v-show="actionsExpanded" class="vulc-actions-bubble__menu" :aria-label="t('observatory.v2.actions')">
@@ -113,7 +113,7 @@
                   :aria-pressed="rightPanelOpen && rightPanelTab === 'timeline'"
                   @click="toggleTimeline"
                 >
-                  <Icon name="lucide:clock" />
+                  <Icon name="tabler:clock" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.tabs.timeline') }}</span>
                 </button>
                 <button
@@ -124,7 +124,7 @@
                   :aria-pressed="controls.enterpriseLayerVisible.value"
                   @click="controls.toggleEnterpriseLayer()"
                 >
-                  <Icon name="lucide:building-2" />
+                  <Icon name="tabler:building" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.enterpriseHq') }}</span>
                 </button>
                 <button
@@ -135,7 +135,7 @@
                   :aria-pressed="controls.showDataTable.value"
                   @click="controls.showDataTable.value = !controls.showDataTable.value"
                 >
-                  <Icon name="lucide:table" />
+                  <Icon name="tabler:file" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.dataTable') }}</span>
                 </button>
                 <button
@@ -144,7 +144,7 @@
                   :aria-label="t('observatory.v2.export')"
                   @click="controls.showExport.value = !controls.showExport.value"
                 >
-                  <Icon name="lucide:file-down" />
+                  <Icon name="tabler:download" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.export') }}</span>
                 </button>
                 <button
@@ -153,7 +153,7 @@
                   :aria-label="t('observatory.v2.shortcuts')"
                   @click="controls.showShortcuts.value = !controls.showShortcuts.value"
                 >
-                  <Icon name="lucide:keyboard" />
+                  <Icon name="tabler:keyboard" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.shortcuts') }}</span>
                 </button>
                 <button
@@ -162,7 +162,7 @@
                   :aria-label="t('observatory.v2.nearMe')"
                   @click="controls.showGeoLocate.value = !controls.showGeoLocate.value"
                 >
-                  <Icon name="lucide:map-pin" />
+                  <Icon name="gis:pin" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.nearMe') }}</span>
                 </button>
                 <button
@@ -171,7 +171,7 @@
                   :aria-label="t('observatory.v2.viewFlat')"
                   @click="navigateTo('/vulcan-observatory')"
                 >
-                  <Icon name="lucide:map" />
+                  <Icon name="gis:map" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.viewFlat') }}</span>
                 </button>
               </nav>
@@ -188,7 +188,7 @@
               :aria-pressed="rightPanelOpen"
               @click="rightPanelOpen = !rightPanelOpen"
             >
-              <Icon :name="rightPanelOpen ? 'lucide:panel-right-close' : 'lucide:panel-right-open'" />
+              <Icon :name="rightPanelOpen ? 'tabler:layout-sidebar-right' : 'tabler:layout-sidebar-right'" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.panel.expand') }}</span>
             </button>
             <button
@@ -199,7 +199,7 @@
               :aria-pressed="rightPanelOpen && rightPanelTab === 'timeline'"
               @click="toggleTimeline"
             >
-              <Icon name="lucide:clock" />
+              <Icon name="tabler:clock" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.tabs.timeline') }}</span>
             </button>
             <button
@@ -210,7 +210,7 @@
               :aria-pressed="controls.enterpriseLayerVisible.value"
               @click="controls.toggleEnterpriseLayer()"
             >
-              <Icon name="lucide:building-2" />
+              <Icon name="tabler:building" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.enterpriseHq') }}</span>
             </button>
             <button
@@ -221,7 +221,7 @@
               :aria-pressed="controls.showDataTable.value"
               @click="controls.showDataTable.value = !controls.showDataTable.value"
             >
-              <Icon name="lucide:table" />
+              <Icon name="tabler:file" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.dataTable') }}</span>
             </button>
             <button
@@ -230,7 +230,7 @@
               :aria-label="t('observatory.v2.export')"
               @click="controls.showExport.value = !controls.showExport.value"
             >
-              <Icon name="lucide:file-down" />
+              <Icon name="tabler:download" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.export') }}</span>
             </button>
             <button
@@ -239,7 +239,7 @@
               :aria-label="t('observatory.v2.shortcuts')"
               @click="controls.showShortcuts.value = !controls.showShortcuts.value"
             >
-              <Icon name="lucide:keyboard" />
+              <Icon name="tabler:keyboard" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.shortcuts') }}</span>
             </button>
             <button
@@ -248,7 +248,7 @@
               :aria-label="t('observatory.v2.nearMe')"
               @click="controls.showGeoLocate.value = !controls.showGeoLocate.value"
             >
-              <Icon name="lucide:map-pin" />
+              <Icon name="gis:pin" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.nearMe') }}</span>
             </button>
             <button
@@ -257,7 +257,7 @@
               :aria-label="t('observatory.v2.viewFlat')"
               @click="navigateTo('/vulcan-observatory')"
             >
-              <Icon name="lucide:map" />
+              <Icon name="gis:map" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.viewFlat') }}</span>
             </button>
           </nav>

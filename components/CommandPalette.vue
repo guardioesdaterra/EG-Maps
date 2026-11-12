@@ -6,7 +6,7 @@
  */
 <script setup lang="ts">
 
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import Icon from './Icon.vue'
 import {
   useCommandPalette,
   filterPaletteItems,
@@ -155,7 +155,7 @@ onUnmounted(() => {
           tabindex="-1"
         >
           <div class="cmd-input-wrap">
-            <Icon name="lucide:search" class="cmd-input-icon" />
+            <Icon name="tabler:search" class="cmd-input-icon" />
             <input
               ref="inputRef"
               v-model="query"
@@ -199,7 +199,7 @@ onUnmounted(() => {
                   @mouseenter="setActive(group.group, i)"
                 >
                   <span v-if="item.icon" class="cmd-item__icon" aria-hidden="true">
-                    <iconify-icon :icon="item.icon" />
+                    <Icon :name="item.icon" />
                   </span>
                   <span class="cmd-item__body">
                     <span class="cmd-item__label">{{ item.label }}</span>

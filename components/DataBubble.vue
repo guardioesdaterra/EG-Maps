@@ -37,7 +37,7 @@
             @click="close"
             :aria-label="t('stats.close')"
           >
-            <Icon name="lucide:x" class="h-3 w-3" />
+            <Icon name="tabler:trash-x" class="h-3 w-3" />
           </button>
         </div>
 

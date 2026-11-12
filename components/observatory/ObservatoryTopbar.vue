@@ -60,7 +60,7 @@
           :class="['obs-view-tab', !is3D && 'is-active']"
           :title="t('globe.view2D')"
         >
-          <Icon name="lucide:map" class="obs-view-tab__icon" />
+          <Icon name="gis:map" class="obs-view-tab__icon" />
           <span class="obs-view-tab__text">{{ t('globe.view2D') }}</span>
         </NuxtLink>
         <NuxtLink
@@ -70,7 +70,7 @@
           :class="['obs-view-tab', is3D && 'is-active']"
           :title="t('globe.view3D')"
         >
-          <Icon name="lucide:globe" class="obs-view-tab__icon" />
+          <Icon name="gis:globe" class="obs-view-tab__icon" />
           <span class="obs-view-tab__text">{{ t('globe.view3D') }}</span>
         </NuxtLink>
       </div>
@@ -78,10 +78,10 @@
       <span class="obs-topbar__sep" aria-hidden="true" />
 
       <NuxtLink to="/" class="obs-menu-btn obs-menu-btn--home" :aria-label="t('nav.home')" :title="t('nav.home')">
-        <Icon name="lucide:home" />
+        <Icon name="tabler:home" />
       </NuxtLink>
       <NuxtLink to="/info" class="obs-menu-btn obs-menu-btn--info" :aria-label="t('nav.info')" :title="t('nav.info')">
-        <Icon name="lucide:info" />
+        <Icon name="tabler:info-circle" />
       </NuxtLink>
       <button
         v-if="onNearMe"
@@ -93,7 +93,7 @@
         :title="t('observatory.v2.nearMe')"
         @click="onNearMe()"
       >
-        <Icon name="lucide:map-pin" />
+        <Icon name="gis:pin" />
       </button>
 
       <span class="obs-topbar__sep obs-topbar__sep--utility" aria-hidden="true" />
@@ -106,7 +106,7 @@
         @click="tileProvider.toggleProvider()"
       >
         <span class="obs-menu-btn__wrap">
-          <Icon :name="tileProvider.isFallback.value ? 'lucide:mountain' : 'lucide:satellite'" />
+          <Icon :name="tileProvider.isFallback.value ? 'tabler:mountain' : 'gis:satellite'" />
           <span v-if="tileProvider.autoFallback.value" class="obs-menu-btn__dot" aria-hidden="true" />
         </span>
       </button>
@@ -117,7 +117,7 @@
         :title="isDark ? t('nav.switchToLight') : t('nav.switchToDark')"
         @click="toggleDarkMode()"
       >
-        <Icon :name="isDark ? 'lucide:sun' : 'lucide:moon'" />
+        <Icon :name="isDark ? 'tabler:brightness-half' : 'tabler:moon-2'" />
       </button>
     </nav>
   </header>

@@ -71,6 +71,10 @@ export interface ObservatoryMap {
   /** Protected areas / buffer zones matching the search box (fly-to targets). */
   protectedMatches: Ref<ProtectedSearchHit[]>
   flyToProtectedArea: (hit: ProtectedSearchHit) => void
+  /** Top claim search matches for fly-to suggestions. */
+  claimSuggestions: Ref<Array<{ p: string; n: string; u: string; coord: [number, number] }>>
+  /** MapLibre expression mirror of the JS filter (setFilter rendering path). */
+  mapFilterExpression: Ref<unknown[] | null>
 }
 
 export interface ObservatoryAnimations {
@@ -305,6 +309,65 @@ export function useObservatoryControls(): ObservatoryControls {
     flyToTarget.value = { lng: hit.coord[0], lat: hit.coord[1], zoom: 11 }
   }
 
+  /**
+   * Top claim matches for the search box (name/processo/substance/UF), so
+   * typing a claim offers the same fly-to affordance as protected areas.
+   */
+  const claimSuggestions = computed<Array<{ p: string; n: string; u: string; coord: [number, number] }>>(() => {
+    const term = searchTerm.value.toLowerCase().trim()
+    if (term.length < 2) return []
+    const out: Array<{ p: string; n: string; u: string; coord: [number, number] }> = []
+    for (const f of allFeatures.value as Array<{ p: string; n: string; s?: string; u: string; lo: number; la: number }>) {
+      if (!Number.isFinite(f.lo) || !Number.isFinite(f.la)) continue
+      const hay = `${f.n} ${f.p} ${f.s ?? ''} ${f.u}`.toLowerCase()
+      if (!hay.includes(term)) continue
+      out.push({ p: f.p, n: f.n, u: f.u, coord: [f.lo, f.la] })
+      if (out.length >= 6) break
+    }
+    return out
+  })
+
+  /**
+   * MapLibre expression mirror of updateFilter()'s JS predicate (category,
+   * search, year, phase-contains, sob-demanda) over the stamped
+   * `search_blob`/`fase_norm` scalars. Modern-form ONLY (no legacy `!has`
+   * ops — the points source is cluster:false so the guard was vestigial).
+   * When provided, map layers render the full dataset once and keystrokes
+   * become setFilter instead of a 20k-feature setData + re-tessellation.
+   */
+  const mapFilterExpression = computed<unknown[] | null>(() => {
+    const term = searchTerm.value.toLowerCase().trim()
+    const catKeys = Object.keys(RARE_EARTH_CATEGORIES) as string[]
+    const visKeys = Object.entries(layerVis.value)
+      .filter(([k, v]) => v && catKeys.includes(k))
+      .map(([k]) => k)
+    if (!visKeys.length) return null
+    const clauses: unknown[] = [
+      // category visible?
+      ['in', ['get', 'c'], ['literal', visKeys]],
+      // year range (normalized `y` is always numeric; 0 = unknown → excluded
+      // like the JS predicate does when yearMin > 0)
+      ['>=', ['coalesce', ['get', 'y'], 0], yearMin.value],
+      ['<=', ['coalesce', ['get', 'y'], 0], yearMax.value],
+    ]
+    if (term) clauses.push(['in', term, ['coalesce', ['get', 'search_blob'], '']])
+    if (sobDemandaOnly.value) clauses.push(['in', 'DEMANDA', ['coalesce', ['get', 'dsprocesso'], '']])
+    // matchMiningPhase: f === key || f.includes(key) || key.includes(f),
+    // both sides trimmed+uppercased; empty phase never matches (JS returns
+    // false), so guard with fase_norm !== ''.
+    const keys = [...selectedPhases.value]
+      .map(k => String(k).trim().toUpperCase())
+      .filter(Boolean)
+    if (!keys.length) return null
+    const fNorm = ['coalesce', ['get', 'fase_norm'], '']
+    const phaseAny: unknown[] = ['any', ...keys.map(key => ['any', ['in', key, fNorm], ['in', fNorm, key]])]
+    // Empty phase never matches (JS matchMiningPhase returns false), so the
+    // guard ANDs against the per-key alternatives — inside the `any` an
+    // empty fase_norm would satisfy `key.includes(f)` and leak through.
+    clauses.push(['all', ['!=', fNorm, ''], phaseAny])
+    return ['all', ...clauses]
+  })
+
   function onGeoLocate(_lat: number, _lng: number, _city: string) {
     flyToTarget.value = { lng: _lng, lat: _lat, zoom: 7 }
     userLocationRadius.value = 1
@@ -533,8 +596,11 @@ export function useObservatoryControls(): ObservatoryControls {
   watch(activeTab, scheduleHashUpdate)
   watch(totalCount, () => { animateCounters() })
 
-  const filteredPoints = ref<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] })
-  const filteredPolygons = ref<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] })
+  // shallowRef: the FC wrapper is replaced wholesale on every filter pass and
+  // its features are shared by reference with the raw source. A deep ref
+  // proxied every feature before setData walked it (20k proxies/keystroke).
+  const filteredPoints = shallowRef<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] })
+  const filteredPolygons = shallowRef<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] })
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
   let lastFilterCriteria = ''
   let lastFilterResult: GeoJSON.FeatureCollection | null = null
@@ -732,6 +798,7 @@ export function useObservatoryControls(): ObservatoryControls {
     layerVis, enterpriseLayerVisible, extraLayers, toggleLayer, toggleEnterpriseLayer, onEnterpriseClick,
     flyToTarget, mapRef, onMapInit, flyToCoord, onGeoLocate, expandToFullBrazil, zoomToDanger, flyToEnterprise,
     protectedMatches, flyToProtectedArea,
+    claimSuggestions, mapFilterExpression,
     allFeatures, pointsData, filteredPoints, filteredPolygons, polygonsData, protectedData, waterData, culturalData,
     speculatorIndex, deepAnalysis, isLoading, loadPhase, loadProgress, error,
     loadRareEarthData, loadFullBrazil, isRegional, setupObservatory,

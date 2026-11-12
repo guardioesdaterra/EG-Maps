@@ -1,7 +1,14 @@
 import { createSharedComposable, useBroadcastChannel, useEventBus, useLocalStorage, usePreferredDark, usePreferredReducedMotion, useUrlSearchParams, useOnline, useBreakpoints, useSupported } from '@vueuse/core'
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 export type AppTheme = 'auto' | 'light' | 'dark'
+export interface MapViewportBounds {
+  west: number
+  south: number
+  east: number
+  north: number
+  zoom: number
+}
 export type MapEvent =
   | { type: 'map:ready'; dataset?: string }
   | { type: 'cluster:open'; dataset?: string; count?: number }
@@ -24,6 +31,10 @@ export const useAppRuntime = createSharedComposable(() => {
   const themePreference = useLocalStorage<AppTheme>('eg-theme', 'auto')
   const connectionsPreference = useLocalStorage('eg-show-connections', true)
   const hexGridPreference = useLocalStorage('eg-show-hex-grid', true)
+  const hexGridModePreference = useLocalStorage<'decorative' | 'density' | 'off'>('eg-hex-grid-mode', 'decorative')
+  // Live viewport of whichever map is mounted, so panels outside the map
+  // (the satellite downloader) can act on the area the user is looking at.
+  const mapBounds = ref<MapViewportBounds | null>(null)
 
   const isDark = computed(() => themePreference.value === 'dark' || (themePreference.value === 'auto' && preferredDark.value))
   const reducedMotion = computed(() => prefersReducedMotion.value || params.reducedMotion === 'true')
@@ -77,6 +88,8 @@ export const useAppRuntime = createSharedComposable(() => {
     supportsWorkers,
     connectionsPreference,
     hexGridPreference,
+    hexGridModePreference,
+    mapBounds,
     setTheme,
     setDataset,
     eventBus,

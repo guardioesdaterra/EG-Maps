@@ -243,6 +243,7 @@ pnpm test:watch     # Watch mode
 | **Fixed** | CI lint/unit-tests had `continue-on-error: true` — failures silently passed | deploy.yml:190,218 |
 | **Fixed** | Front-page stats audit (2026-10-30): countries 47→52 (deduped Burkina Faso/Cameroun/USA-Turtle Island), per-region active/inactive aggregates realigned with `public/data/crews-locations.json` (169 total, 142 active, 27 inactive) | crew-data.ts |
 | High | MapTiler API key exposed in client-side code | nuxt.config.ts |
+| Medium | `scripts/download-tiles.mjs` writes `public/tiles/{z}/{x}/{y}.jpg`, but no runtime code reads that directory — pre-baked tiles are dead weight; the browser IndexedDB cache (`useOfflineTiles`, driven by the Satellite downloader tool) is the only offline path the map uses | download-tiles.mjs |
 | Medium | `formatCompact()` duplicated | index.vue, info.vue |
 | Medium | Inline `<style>` injection in GlobeView | GlobeView.vue:783 |
 

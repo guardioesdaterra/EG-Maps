@@ -268,7 +268,7 @@ const grantsHint = computed(() => {
             {{ isActive ? 'Active' : 'Inactive' }}
           </span>
           <span v-else class="cp__status cp__status--region">
-            <Icon name="lucide:globe" size="0.7rem" />
+            <Icon name="gis:globe" size="0.7rem" />
             <span>{{ t('crews.region') || 'Region' }}</span>
           </span>
         </div>
@@ -277,7 +277,7 @@ const grantsHint = computed(() => {
           <span>{{ regionName }}</span>
         </h2>
         <p v-if="isLocation && locationParts" class="cp__location">
-          <Icon name="lucide:map-pin" size="0.85rem" />
+          <Icon name="gis:pin" size="0.85rem" />
           <span>{{ locationParts }}</span>
         </p>
         <p v-if="isLocation && coordsLabel" class="cp__coords">{{ coordsLabel }}</p>
@@ -291,7 +291,7 @@ const grantsHint = computed(() => {
         <div class="cp__stats">
           <div class="cp__stat" :style="{ borderColor: color + '25' }">
             <div class="cp__stat-icon" :style="{ background: color + '15', color }">
-              <Icon name="lucide:users" size="1rem" />
+              <Icon name="tabler:user" size="1rem" />
             </div>
             <div class="cp__stat-body">
               <span class="cp__stat-label">{{ t('crews.activeCrews') }}</span>
@@ -302,7 +302,7 @@ const grantsHint = computed(() => {
           </div>
           <div class="cp__stat">
             <div class="cp__stat-icon">
-              <Icon name="lucide:user-x" size="1rem" />
+              <Icon name="tabler:user-x" size="1rem" />
             </div>
             <div class="cp__stat-body">
               <span class="cp__stat-label">{{ t('crews.inactiveCrews') || 'Inactive' }}</span>
@@ -311,7 +311,7 @@ const grantsHint = computed(() => {
           </div>
           <div class="cp__stat">
             <div class="cp__stat-icon">
-              <Icon name="lucide:users-round" size="1rem" />
+              <Icon name="tabler:user" size="1rem" />
             </div>
             <div class="cp__stat-body">
               <span class="cp__stat-label">{{ t('crews.totalMembers') }}</span>
@@ -320,7 +320,7 @@ const grantsHint = computed(() => {
           </div>
           <div class="cp__stat">
             <div class="cp__stat-icon">
-              <Icon name="lucide:globe" size="1rem" />
+              <Icon name="gis:globe" size="1rem" />
             </div>
             <div class="cp__stat-body">
               <span class="cp__stat-label">{{ t('crews.countries') }}</span>
@@ -334,7 +334,7 @@ const grantsHint = computed(() => {
           v-if="growth !== null"
           class="cp__growth"
         >
-          <Icon name="lucide:trending-up" size="1rem" class="cp__growth-icon" />
+          <Icon name="tabler:chart-line" size="1rem" class="cp__growth-icon" />
           <div class="cp__growth-body">
             <span class="cp__growth-label">{{ t('crews.growthSince2022') }}</span>
             <span class="cp__growth-value">+{{ growth }}%</span>
@@ -344,7 +344,7 @@ const grantsHint = computed(() => {
         <!-- History bar chart -->
         <div v-if="historyData.length > 0" class="cp__history">
           <h3 class="cp__section-title">
-            <Icon name="lucide:bar-chart-3" size="0.75rem" />
+            <Icon name="tabler:chart-bar" size="0.75rem" />
             <span>Crew History</span>
           </h3>
           <div class="cp__chart">
@@ -373,7 +373,7 @@ const grantsHint = computed(() => {
         <!-- Crews in this region — paginated, tap for crew details -->
         <div v-if="regionCrews.length > 0" class="cp__crews">
           <h3 class="cp__section-title">
-            <Icon name="lucide:users" size="0.75rem" />
+            <Icon name="tabler:user" size="0.75rem" />
             <span>{{ crewsInRegionTitle }}</span>
             <span class="cp__grants-count">{{ regionCrews.length }}</span>
           </h3>
@@ -389,7 +389,7 @@ const grantsHint = computed(() => {
                 <span class="cp__grant-body">
                   <span class="cp__grant-title">{{ c.name }}</span>
                   <span v-if="crewPlace(c)" class="cp__grant-place">
-                    <Icon name="lucide:map-pin" size="0.7rem" />
+                    <Icon name="gis:pin" size="0.7rem" />
                     <span>{{ crewPlace(c) }}</span>
                   </span>
                 </span>
@@ -408,7 +408,7 @@ const grantsHint = computed(() => {
               :title="t('grantsPortal.paginationPrev')"
               @click="prevCrewsPage"
             >
-              <Icon name="lucide:chevron-left" size="0.9rem" />
+              <Icon name="tabler:arrow-move-left" size="0.9rem" />
             </button>
             <span class="cp__pager-label">{{ crewsPageLabel }}</span>
             <button
@@ -419,7 +419,7 @@ const grantsHint = computed(() => {
               :title="t('grantsPortal.paginationNext')"
               @click="nextCrewsPage"
             >
-              <Icon name="lucide:chevron-right" size="0.9rem" />
+              <Icon name="tabler:share" size="0.9rem" />
             </button>
           </div>
         </div>
@@ -430,7 +430,7 @@ const grantsHint = computed(() => {
     <template v-else-if="regionData">
       <div class="cp__content">
         <div class="cp__region-context">
-          <Icon name="lucide:layers" size="0.85rem" class="cp__region-icon" />
+          <Icon name="gis:layers" size="0.85rem" class="cp__region-icon" />
           <div class="cp__region-body">
             <span class="cp__region-label">{{ t('crews.region') || 'Region' }}</span>
             <span class="cp__region-value">{{ regionData }}</span>
@@ -442,7 +442,7 @@ const grantsHint = computed(() => {
     <!-- Related project grants (cross-dataset: project-grants ↔ active-crews) -->
     <div v-if="matchedGrants.length > 0" class="cp__content cp__grants">
       <h3 class="cp__section-title">
-        <Icon name="lucide:hand-coins" size="0.75rem" />
+        <Icon name="tabler:cash" size="0.75rem" />
         <span>{{ grantsTitle }}</span>
         <span class="cp__grants-count">{{ matchedGrants.length }}</span>
       </h3>
@@ -450,7 +450,7 @@ const grantsHint = computed(() => {
       <!-- This crew's own (on-site, <10 km) projects — highlighted, always fully shown -->
       <div v-if="specificGrants.length > 0" class="cp__own">
         <h4 v-if="relatedGrants.length > 0" class="cp__sub-title">
-          <Icon name="lucide:star" size="0.75rem" />
+          <Icon name="tabler:star" size="0.75rem" />
           <span>{{ ownProjectsTitle }}</span>
         </h4>
         <ul class="cp__grants-list">
@@ -461,12 +461,12 @@ const grantsHint = computed(() => {
           >
             <div class="cp__grant-body">
               <span class="cp__grant-badge">
-                <Icon name="lucide:star" size="0.65rem" />
+                <Icon name="tabler:star" size="0.65rem" />
                 <span>{{ crewProjectBadge }}</span>
               </span>
               <span class="cp__grant-title">{{ m.project.project_title }}</span>
               <span v-if="m.project.country_province" class="cp__grant-place">
-                <Icon name="lucide:map-pin" size="0.7rem" />
+                <Icon name="gis:pin" size="0.7rem" />
                 <span>{{ m.project.country_province }}</span>
               </span>
             </div>
@@ -481,7 +481,7 @@ const grantsHint = computed(() => {
                 :title="flyToLabel"
                 @click="flyToProject(m)"
               >
-                <Icon name="lucide:navigation" size="0.75rem" />
+                <Icon name="tabler:navigation" size="0.75rem" />
                 <span>{{ flyToLabel }}</span>
               </button>
             </div>
@@ -491,7 +491,7 @@ const grantsHint = computed(() => {
       <!-- Remaining linked projects — paginated for large regions -->
       <div v-if="relatedGrants.length > 0" class="cp__related">
         <h4 v-if="specificGrants.length > 0" class="cp__sub-title cp__sub-title--related">
-          <Icon name="lucide:link" size="0.75rem" />
+          <Icon name="tabler:link" size="0.75rem" />
           <span>{{ moreProjectsTitle }}</span>
         </h4>
         <ul class="cp__grants-list">
@@ -503,7 +503,7 @@ const grantsHint = computed(() => {
             <div class="cp__grant-body">
               <span class="cp__grant-title">{{ m.project.project_title }}</span>
               <span v-if="m.project.country_province" class="cp__grant-place">
-                <Icon name="lucide:map-pin" size="0.7rem" />
+                <Icon name="gis:pin" size="0.7rem" />
                 <span>{{ m.project.country_province }}</span>
               </span>
             </div>
@@ -518,7 +518,7 @@ const grantsHint = computed(() => {
                 :title="flyToLabel"
                 @click="flyToProject(m)"
               >
-                <Icon name="lucide:navigation" size="0.75rem" />
+                <Icon name="tabler:navigation" size="0.75rem" />
                 <span>{{ flyToLabel }}</span>
               </button>
             </div>
@@ -533,7 +533,7 @@ const grantsHint = computed(() => {
             :title="t('grantsPortal.paginationPrev')"
             @click="prevGrantsPage"
           >
-            <Icon name="lucide:chevron-left" size="0.9rem" />
+            <Icon name="tabler:arrow-move-left" size="0.9rem" />
           </button>
           <span class="cp__pager-label">{{ grantsPageLabel }}</span>
           <button
@@ -544,7 +544,7 @@ const grantsHint = computed(() => {
             :title="t('grantsPortal.paginationNext')"
             @click="nextGrantsPage"
           >
-            <Icon name="lucide:chevron-right" size="0.9rem" />
+            <Icon name="tabler:share" size="0.9rem" />
           </button>
         </div>
       </div>
@@ -559,7 +559,7 @@ const grantsHint = computed(() => {
         class="cp__action"
         :style="{ '--action-clr': color }"
       >
-        <Icon name="lucide:navigation" size="0.85rem" />
+        <Icon name="tabler:navigation" size="0.85rem" />
         <span>Open in Google Maps</span>
       </a>
     </footer>

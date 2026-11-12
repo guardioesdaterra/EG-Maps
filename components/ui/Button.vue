@@ -12,8 +12,13 @@
     :disabled="disabled"
     :type="type"
     @click="handleClick"
+    @mousedown="handleMouseDown"
+    @mouseup="handleMouseUp"
+    @mouseleave="handleMouseLeave"
   >
-    <slot />
+    <span class="button-content" :class="{ 'is-pressed': isPressed }">
+      <slot />
+    </span>
   </button>
 </template>
 
@@ -42,19 +47,20 @@ const emit = defineEmits<{
 }>()
 
 const buttonRef = ref<HTMLButtonElement | null>(null)
+const isPressed = ref(false)
 
 const buttonClasses = computed(() => {
-  const base = 'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
+  const base = 'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none'
 
   const variants: Record<string, string> = {
-    default: 'bg-[#0e7490] text-white hover:opacity-90',
-    destructive: 'bg-[#dc2626] text-white hover:opacity-90',
-    outline: 'border border-[var(--border)] bg-transparent hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]',
-    secondary: 'bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-80',
-    ghost: 'hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)]',
+    default: 'bg-[#0e7490] text-white shadow-sm hover:opacity-90 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0',
+    destructive: 'bg-[#dc2626] text-white shadow-sm hover:opacity-90 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0',
+    outline: 'border border-[var(--border)] bg-transparent hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] hover:-translate-y-0.5 active:translate-y-0',
+    secondary: 'bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-80 hover:-translate-y-0.5 active:translate-y-0',
+    ghost: 'hover:bg-[var(--accent)] hover:text-[var(--accent-foreground)] hover:-translate-y-0.5 active:translate-y-0',
     link: 'text-[var(--primary)] underline-offset-4 hover:underline',
-    cyber: 'bg-black/70 border border-white/20 text-white/70 hover:bg-white/10 hover:text-white',
-    'cyber-primary': 'bg-[var(--text-primary)] text-[var(--bg-primary)] hover:opacity-80',
+    cyber: 'bg-black/70 border border-white/20 text-white/70 hover:bg-white/10 hover:text-white hover:-translate-y-0.5 active:translate-y-0',
+    'cyber-primary': 'bg-[var(--text-primary)] text-[var(--bg-primary)] hover:opacity-80 hover:-translate-y-0.5 active:translate-y-0',
   }
 
   const sizes: Record<string, string> = {
@@ -71,4 +77,38 @@ function handleClick(event: MouseEvent) {
   emit('click', event)
 }
 
+function handleMouseDown() {
+  if (!props.disabled) isPressed.value = true
+}
+
+function handleMouseUp() {
+  isPressed.value = false
+}
+
+function handleMouseLeave() {
+  isPressed.value = false
+}
+
 </script>
+
+<style scoped>
+.button-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.button-content.is-pressed {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  .button-content {
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>

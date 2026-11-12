@@ -55,6 +55,9 @@ export const PRERENDER_ROUTES: string[] = [
   '/campaigns',
   '/crew-projects',
   '/masterclasses',
+  '/tools',
+  '/tools/agroecological-garden',
+  '/tools/satellite-downloader',
 ]
 
 /** Crawlable content pages only — no redirects, embeds, or auth callbacks. */
@@ -76,6 +79,9 @@ export const SITEMAP_ENTRIES: SitemapEntry[] = [
   { path: '/campaigns', changefreq: 'weekly', priority: 0.6 },
   { path: '/crew-projects', changefreq: 'weekly', priority: 0.6 },
   { path: '/masterclasses', changefreq: 'weekly', priority: 0.6 },
+  { path: '/tools', changefreq: 'monthly', priority: 0.6 },
+  { path: '/tools/agroecological-garden', changefreq: 'monthly', priority: 0.5 },
+  { path: '/tools/satellite-downloader', changefreq: 'monthly', priority: 0.5 },
 ]
 
 function toAbsolute(path: string): string {

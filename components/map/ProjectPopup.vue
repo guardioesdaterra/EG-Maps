@@ -51,7 +51,7 @@ const directPct = computed(() => {
           <span>{{ project.project_title }}</span>
         </h2>
         <p v-if="project.country_province" class="pp__location">
-          <Icon name="lucide:map-pin" size="0.85rem" />
+          <Icon name="gis:pin" size="0.85rem" />
           <span>{{ project.country_province }}</span>
         </p>
       </div>
@@ -62,7 +62,7 @@ const directPct = computed(() => {
       <div class="pp__stats">
         <div class="pp__stat" :style="{ borderColor: `color-mix(in srgb, ${accentColor} 25%, transparent)` }">
           <div class="pp__stat-icon" :style="{ background: `color-mix(in srgb, ${accentColor} 15%, transparent)`, color: accentColor }">
-            <Icon name="lucide:users" size="1rem" />
+            <Icon name="tabler:user" size="1rem" />
           </div>
           <div class="pp__stat-body">
             <span class="pp__stat-label">{{ t('stats.directBeneficiaries') }}</span>
@@ -75,7 +75,7 @@ const directPct = computed(() => {
         </div>
         <div class="pp__stat" :style="{ borderColor: 'var(--stat-card-border)' }">
           <div class="pp__stat-icon" :style="{ background: 'var(--stat-card-bg)', color: 'var(--text-muted)' }">
-            <Icon name="lucide:users-round" size="1rem" />
+            <Icon name="tabler:user" size="1rem" />
           </div>
           <div class="pp__stat-body">
             <span class="pp__stat-label">{{ t('stats.indirectBeneficiaries') }}</span>
@@ -113,7 +113,7 @@ const directPct = computed(() => {
           class="pp__action-btn"
           :style="{ '--action-clr': accentColor }"
         >
-          <Icon name="lucide:navigation" size="0.85rem" />
+          <Icon name="tabler:navigation" size="0.85rem" />
           <span>Open in Google Maps</span>
         </a>
       </div>

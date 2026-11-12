@@ -16,10 +16,10 @@
           <div class="obs-datatable__header">
             <div class="flex items-center gap-3">
               <h2 id="claims-table-title" class="obs-datatable__title">
-                <Icon name="lucide:table" class="w-3 h-3 inline mr-1" />
+                <Icon name="tabler:file" class="w-3 h-3 inline mr-1" />
                 Claims Data
               </h2>
-              <span class="obs-datatable__count" aria-live="polite">{{ sortedData.length.toLocaleString() }} claims</span>
+              <span class="obs-datatable__count" aria-live="polite">{{ sortedData.length.toLocaleString() }}<template v-if="total !== undefined && total !== sortedData.length"> / {{ total.toLocaleString() }}</template> claims</span>
             </div>
             <div class="flex items-center gap-2">
               <input
@@ -80,6 +80,7 @@ import { useFocusTrap } from '@/composables/useFocusTrap'
 const props = defineProps<{
   visible: boolean
   data: RareEarthFeatureSummary[]
+  total?: number
 }>()
 
 defineEmits<{

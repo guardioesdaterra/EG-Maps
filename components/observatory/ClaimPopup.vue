@@ -7,7 +7,7 @@
  * @deps vue (computed); @/lib/map-utils (RARE_EARTH_CATEGORIES, isSuspicious); @/lib/observatory-analysis (isMilitaryInterest, isHighEnvRisk, buildAnmVerifyUrl, buildClaimReportMailtoUrl)
  */
 <template>
-  <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;min-width:250px;position:relative">
+  <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;min-width:0;max-width:100%;position:relative">
     <div
 class="absolute top-2 left-2 w-2.5 h-2.5 border-t-2 border-l-2 pointer-events-none z-[1]"
       :style="{ borderColor: `color-mix(in srgb, ${cat.color} 60%, transparent)` }" />
@@ -37,7 +37,7 @@ class="inline-flex items-center gap-0.5 text-[clamp(8px,1.3vw,11px)] font-bold p
     <div class="h-px mx-3" :style="{ background: `linear-gradient(90deg, transparent, color-mix(in srgb, ${cat.color} 30%, transparent), transparent)` }" />
 
     <div class="px-3.5 py-2.5">
-      <div class="grid grid-cols-2 gap-x-3.5 gap-y-1.25">
+      <div class="grid grid-cols-2 gap-x-3.5 gap-y-1">
         <div>
           <div class="text-[clamp(7.5px,1.25vw,10.5px)] text-zinc-400 uppercase tracking-widest font-semibold">Process</div>
           <div class="text-[clamp(10.5px,1.6vw,13.5px)] text-zinc-300 font-medium break-words">{{ props.p || '—' }}</div>
@@ -79,7 +79,7 @@ class="inline-flex items-center gap-0.5 text-[clamp(8px,1.3vw,11px)] font-bold p
         <div class="flex items-center flex-wrap gap-0">
           <span
 v-for="(o, i) in displayedOverlaps" :key="i"
-            class="inline-flex items-center gap-0.5 text-[clamp(8px,1.3vw,11px)] px-1 py-0.5 rounded bg-red-900/18 text-red-400 font-semibold mr-0.5 mb-0.5">
+            class="inline-flex items-center gap-0.5 text-[clamp(8px,1.3vw,11px)] px-1 py-0.5 rounded bg-red-900/20 text-red-400 font-semibold mr-0.5 mb-0.5">
             ⚠ {{ o.name }}<span v-if="o.distance_km" class="opacity-70 font-normal"> · {{ o.distance_km }}km</span>
           </span>
           <span v-if="overlaps.length > 3" class="text-[clamp(8px,1.3vw,11px)] text-zinc-400 ml-1">+{{ overlaps.length - 3 }} more</span>
@@ -95,7 +95,7 @@ v-if="anmUrl" :href="anmUrl" target="_blank" rel="noopener"
       </a>
       <a
 :href="mailtoUrl"
-        class="flex-1 inline-flex items-center justify-center gap-1 text-[clamp(9px,1.4vw,12px)] font-bold py-1.5 px-2 rounded no-underline border border-red-500/25 bg-red-500/8 text-red-400 hover:bg-red-500/15 transition-colors">
+        class="flex-1 inline-flex items-center justify-center gap-1 text-[clamp(9px,1.4vw,12px)] font-bold py-1.5 px-2 rounded no-underline border border-red-500/25 bg-red-500/10 text-red-400 hover:bg-red-500/15 transition-colors">
         ⚑ Report issue
       </a>
     </div>

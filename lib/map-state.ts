@@ -11,6 +11,7 @@ export interface MapCameraState {
 
 export interface MapShareState extends MapCameraState {
   showHexGrid?: boolean
+  hexGridMode?: 'decorative' | 'density' | 'off'
   showConnections?: boolean
   selectedSpeciesGroups?: string[]
 }
@@ -25,6 +26,7 @@ export const MAP_CAMERA_QUERY_KEYS = {
 
 export const MAP_VIEW_QUERY_KEYS = {
   hexGrid: 'mapHex',
+  hexGridMode: 'mapHexMode',
   connections: 'mapConnections',
   speciesGroups: 'mapGroups',
 } as const
@@ -32,6 +34,7 @@ export const MAP_VIEW_QUERY_KEYS = {
 const MAX_MERCATOR_LATITUDE = 85.051129
 const MAX_MAP_ZOOM = 24
 const MAX_MAP_PITCH = 60
+const HEX_GRID_MODES = new Set(['decorative', 'density', 'off'])
 const VALID_SPECIES_GROUPS = new Set(['Mammal', 'Bird', 'Amphibian', 'Reptile', 'Fish', 'Plant', 'Invertebrate'])
 
 function firstValue(value: unknown): string | null {
@@ -76,7 +79,9 @@ export function parseMapShareState(query: Record<string, unknown>): Partial<MapS
   const result: Partial<MapShareState> = { ...parseMapCameraState(query) }
   const hexGrid = parseBoolean(query[MAP_VIEW_QUERY_KEYS.hexGrid])
   const connections = parseBoolean(query[MAP_VIEW_QUERY_KEYS.connections])
+  const hexModeRaw = firstValue(query[MAP_VIEW_QUERY_KEYS.hexGridMode])
   if (hexGrid !== undefined) result.showHexGrid = hexGrid
+  if (hexModeRaw && HEX_GRID_MODES.has(hexModeRaw)) result.hexGridMode = hexModeRaw as MapShareState['hexGridMode']
   if (connections !== undefined) result.showConnections = connections
   const groupText = firstValue(query[MAP_VIEW_QUERY_KEYS.speciesGroups])
   if (groupText !== null) {
@@ -99,6 +104,7 @@ export function serializeMapCameraState(state: MapCameraState): Record<string, s
 export function serializeMapShareState(state: MapShareState): Record<string, string> {
   const serialized: Record<string, string> = serializeMapCameraState(state)
   if (state.showHexGrid !== undefined) serialized[MAP_VIEW_QUERY_KEYS.hexGrid] = state.showHexGrid ? '1' : '0'
+  if (state.hexGridMode !== undefined) serialized[MAP_VIEW_QUERY_KEYS.hexGridMode] = state.hexGridMode
   if (state.showConnections !== undefined) serialized[MAP_VIEW_QUERY_KEYS.connections] = state.showConnections ? '1' : '0'
   if (state.selectedSpeciesGroups !== undefined) {
     serialized[MAP_VIEW_QUERY_KEYS.speciesGroups] = [...new Set(state.selectedSpeciesGroups.filter(group => VALID_SPECIES_GROUPS.has(group)))].join(',')

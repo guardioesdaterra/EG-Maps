@@ -11,7 +11,8 @@
     "joinEarthGuardians": "Earth Guardians'a Katıl",
     "switchToLight": "Açık Moda Geç",
     "switchToDark": "Koyu Moda Geç",
-    "language": "Dil"
+    "language": "Dil",
+    "tools": "Tools"
   },
   "home": {
     "title": "Earth Guardians",
@@ -123,7 +124,14 @@
     "of": "/",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "veya tümünü görmek için listeyi açın",
-    "searchResults": "Arama sonuçları"
+    "searchResults": "Arama sonuçları",
+    "basemapStyle": "Ana harita biçimi",
+    "gridDensity": {
+      "title": "Izgara yoğunluğu",
+      "cells": "{cells} hücre · {points} haritaya işlenen nokta",
+      "cellSize": "hücre başına ≈ {km} km",
+      "on": "Coğrafi ızgara: açık"
+    }
   },
   "mapTiles": {
     "maptiler": "Uydu",
@@ -259,7 +267,8 @@
     "close": "Kapat",
     "save": "Kaydet",
     "cancel": "İptal",
-    "imageNotAvailable": "Görsel mevcut değil"
+    "imageNotAvailable": "Görsel mevcut değil",
+    "back": "Back"
   },
   "observatory": {
     "tabs": {
@@ -391,7 +400,9 @@
       "heatmap": "Yoğunluk Isı Haritası",
       "cultural": "Kültür ve Topluluk",
       "waterBodies": "Su Kütleleri",
-      "protectedAreas": "Korunan Alanlar"
+      "protectedAreas": "Korunan Alanlar",
+      "waterBasins": "Havzalar (Resmi ANA)",
+      "mogianaTerritory": "Önerilen Mogiana Toprağı (Earth Guardians Brezilya)"
     },
     "myTerritory": {
       "title": "Benim bölgem",
@@ -764,10 +775,43 @@
       "grants": "Hibeler",
       "species": "Türler",
       "mains": "Ana",
-      "feedback": "Geri Bildirim"
+      "feedback": "Geri Bildirim",
+      "sources": "Kaynaklar",
+      "performance": "Performans"
     },
     "shareCorrections": "Haritaları geliştirmemize yardımcı olmak için düzeltmeleri, eksik verileri veya etkileşim fikirlerini paylaşın.",
-    "homeLink": "Ana Sayfa"
+    "homeLink": "Ana Sayfa",
+    "sources": {
+      "title": "Veri Kaynakları ve Lisanslar",
+      "intro": "EG-Maps'teki her katman adlandırılmış bir yayıncıdan gelir. Bu sekme bunların tümünü listeler — kim her veri kümesini yayınlar, hangi lisans altında ve araştırma ve topluluk çalışmaları için nasıl yeniden kullanabilirsiniz.",
+      "observatory": "Vulcan Gözlemevi — madencilik ve toprak",
+      "species": "Nesli Tükenmekte Olan Türler",
+      "grants": "Proje Hibeleri",
+      "basemap": "Temel Harita, Görüntüler ve Harita Motoru",
+      "reuseTitle": "Araştırma ve Topluluk Araçları için Lisanslar ve Yeniden Kullanım",
+      "openSource": "Açık Kaynak"
+    },
+    "performance": {
+      "title": "Performans ve Kalite",
+      "desc": "İşleme kalitesini ve parçacık efektlerini kontrol edin. Uygulama cihazınızın performansına göre otomatik olarak ayarlanır, ancak bunu burada geçersiz kılabilirsiniz.",
+      "qualitySection": "Kalite Ön Ayarı",
+      "qualityDesc": "Otomatik ayar görsel kalite ve kare hızı arasında denge kurar. Bir ön ayarı manuel olarak seçmek için kapatın.",
+      "autoAdjust": "Kaliteyi otomatik ayarla (önerilen)",
+      "qualityPreset": "Kalite Ön Ayarı",
+      "low": "Düşük (performans)",
+      "medium": "Orta (dengeli)",
+      "high": "Yüksek (kalite)",
+      "ultra": "Ultra (maksimum)",
+      "particleSettings": "Parçacık Ayarları",
+      "particleDesc": "Parçacık animasyonunu ince ayarlayın. Otomatik ayar kapalı olmalıdır.",
+      "particleMaxCount": "Maks. Parçacık",
+      "particleFps": "Hedef FPS",
+      "particleTrailLength": "İz Uzunluğu",
+      "particleSpawnRate": "Oluşum Hızı",
+      "particleShadow": "Gölge Bulanıklığı",
+      "apply": "Ayarları Uygula",
+      "currentSettings": "Mevcut Etkin Ayarlar"
+    }
   },
   "campaigns": {
     "title": "Kampanyalar",
@@ -1418,5 +1462,349 @@
   },
   "resources": {
     "title": "Kaynaklar"
+  },
+  "tools": {
+    "title": "Tools",
+    "subtitle": "Practical tools for Earth Guardians Crews and communities",
+    "comingSoon": "More tools coming soon...",
+    "agroecologicalGarden": {
+      "title": "Agroecological Garden",
+      "description": "Design, plan, and manage regenerative agroecological gardens with satellite imagery, plant databases, water systems, and companion planting guilds.",
+      "createNew": "Create New Garden",
+      "openExisting": "Open Existing",
+      "myGardens": "My Gardens",
+      "templates": "Templates",
+      "toolbar": {
+        "select": "Select",
+        "pan": "Pan",
+        "point": "Add Point",
+        "line": "Draw Line",
+        "polygon": "Draw Polygon",
+        "measure": "Measure",
+        "undo": "Undo",
+        "redo": "Redo",
+        "clear": "Clear Selection",
+        "selectShort": "Select",
+        "panShort": "Pan",
+        "pointShort": "Point",
+        "lineShort": "Line",
+        "polygonShort": "Polygon",
+        "measureShort": "Measure"
+      },
+      "layers": {
+        "title": "Layers",
+        "addLayer": "Add Layer",
+        "layerTypes": {
+          "seeds": "Seeds",
+          "seedlings": "Seedlings",
+          "transplants": "Transplants",
+          "fertileEarth": "Fertile Earth",
+          "compost": "Compost",
+          "mulch": "Mulch",
+          "biochar": "Biochar",
+          "waterWay": "Water Way",
+          "spring": "Spring",
+          "waterSourceNatural": "Natural Water Source",
+          "waterSourceTap": "Tap / Torneira",
+          "irrigation": "Irrigation",
+          "greenhouse": "Greenhouse",
+          "shed": "Shed",
+          "fence": "Fence",
+          "trellis": "Trellis",
+          "bed": "Garden Bed",
+          "path": "Path",
+          "vegetable": "Vegetable",
+          "nativeTree": "Native Tree",
+          "rhizome": "Rhizome",
+          "coverCrop": "Cover Crop",
+          "herb": "Herb"
+        },
+        "visibility": "Visibility",
+        "lock": "Lock",
+        "opacity": "Opacity",
+        "rename": "Rename",
+        "duplicate": "Duplicate",
+        "delete": "Delete"
+      },
+      "plantLibrary": {
+        "title": "Plant Library",
+        "search": "Search plants...",
+        "categories": {
+          "all": "All",
+          "vegetable": "Vegetables (Hortaliças)",
+          "nativeTree": "Native Trees (Árvores Nativas)",
+          "rhizome": "Rhizomes (Rizomas)",
+          "coverCrop": "Cover Crops",
+          "herb": "Herbs",
+          "fruit": "Fruit",
+          "flower": "Flowers"
+        },
+        "filters": {
+          "sun": "Sun Requirement",
+          "water": "Water Need",
+          "perennial": "Perennial Only",
+          "native": "Native Only",
+          "companion": "Show Companions"
+        },
+        "details": {
+          "scientificName": "Scientific Name",
+          "family": "Family",
+          "spacing": "Spacing",
+          "depth": "Planting Depth",
+          "germination": "Days to Germination",
+          "harvest": "Days to Harvest",
+          "sun": "Sun",
+          "water": "Water",
+          "ph": "Soil pH",
+          "zone": "Hardiness Zone",
+          "companions": "Good Companions",
+          "antagonists": "Avoid Planting With",
+          "guildRole": "Guild Role",
+          "harvestable": "Harvestable Parts",
+          "description": "Description"
+        }
+      },
+      "waterDesign": {
+        "title": "Water Design",
+        "addSpring": "Add Spring / Nascente",
+        "addTap": "Add Tap / Torneira",
+        "drawSwale": "Draw Swale",
+        "drawIrrigation": "Draw Irrigation",
+        "addPond": "Add Pond / Tank",
+        "flowRate": "Flow Rate (L/min)",
+        "capacity": "Capacity (L)",
+        "elevationProfile": "Elevation Profile",
+        "keylineDesign": "Keyline Design"
+      },
+      "guildBuilder": {
+        "title": "Guild Builder",
+        "addPlant": "Add Plant to Guild",
+        "compatibility": "Compatibility",
+        "goodCompanions": "Good Companions",
+        "badCompanions": "Avoid",
+        "saveGuild": "Save as Template",
+        "loadGuild": "Load Template",
+        "guildTemplates": {
+          "threeSisters": "Three Sisters (Corn, Beans, Squash)",
+          "mediterranean": "Mediterranean Guild",
+          "tropical": "Tropical Fruit Guild",
+          "nitrogenFixers": "Nitrogen Fixer Guild",
+          "pollinator": "Pollinator Guild",
+          "pestRepellent": "Pest Repellent Guild"
+        }
+      },
+      "measurement": {
+        "title": "Measurements",
+        "distance": "Distance",
+        "area": "Area",
+        "perimeter": "Perimeter",
+        "units": "Units",
+        "metric": "Metric (m, ha)",
+        "imperial": "Imperial (ft, ac)",
+        "type": "Tür",
+        "value": "Sonuç",
+        "cells": "Cells"
+      },
+      "project": {
+        "title": "Garden Project",
+        "name": "Project Name",
+        "description": "Description",
+        "location": "Location",
+        "save": "Save Project",
+        "saveAs": "Save As...",
+        "export": "Export",
+        "import": "Import",
+        "share": "Share",
+        "delete": "Delete",
+        "exportFormats": {
+          "geojson": "GeoJSON",
+          "pdf": "PDF Plan",
+          "png": "Map Image (PNG)",
+          "csv": "Plant List (CSV)",
+          "ics": "Calendar (ICS)",
+          "shapefile": "Shapefile (ZIP)"
+        }
+      },
+      "seasonalCalendar": {
+        "title": "Seasonal Calendar",
+        "hemisphere": "Hemisphere",
+        "north": "Northern",
+        "south": "Southern",
+        "month": "Month",
+        "planting": "Planting Window",
+        "harvest": "Harvest Window",
+        "currentMonth": "Current Month",
+        "addToCalendar": "Add to Calendar"
+      },
+      "modals": {
+        "plantDetail": "Plant Details",
+        "exportOptions": "Export Options",
+        "importOptions": "Import Options",
+        "shareProject": "Share Project",
+        "deleteConfirm": "Delete this garden project? This cannot be undone."
+      },
+      "toasts": {
+        "saved": "Garden project saved",
+        "exported": "Export completed",
+        "imported": "Project imported",
+        "shared": "Share link copied",
+        "error": "An error occurred",
+        "layerAdded": "Layer added",
+        "featureAdded": "Feature added",
+        "measurementComplete": "Measurement complete",
+        "areaReady": "Garden area ready — start designing"
+      },
+      "emptyStates": {
+        "noGardens": "No gardens yet. Create your first agroecological garden!",
+        "noPlants": "No plants match your filters",
+        "noLayers": "Add a layer to start designing",
+        "noFeatures": "Draw on the map to add features"
+      },
+      "help": {
+        "title": "Help & Shortcuts",
+        "shortcuts": {
+          "pan": "Space + Drag — Pan map",
+          "zoom": "Scroll — Zoom",
+          "select": "Click — Select feature",
+          "multiSelect": "Shift + Click — Multi-select",
+          "drawPoint": "P — Point tool",
+          "drawLine": "L — Line tool",
+          "drawPolygon": "G — Polygon tool",
+          "measure": "M — Measure tool",
+          "undo": "Ctrl+Z — Undo",
+          "redo": "Ctrl+Shift+Z — Redo",
+          "delete": "Delete — Remove selected",
+          "escape": "Esc — Cancel tool / Close panel"
+        }
+      },
+      "draw": "Çiz",
+      "placePlant": "Plant",
+      "grid": {
+        "title": "Grid"
+      },
+      "drawActions": {
+        "finish": "Finish",
+        "cancel": "Cancel drawing",
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "İlk noktayı eklemek için haritaya tıklayın",
+        "pressEnterHint": "Bitirmek için Enter'a basın · İptal için Esc"
+      },
+      "map": {
+        "loading": "Loading satellite imagery…",
+        "loadError": "The map imagery could not load.",
+        "retry": "Retry",
+        "fit": "Fit",
+        "zoomToGrid": "Zoom to the plot"
+      },
+      "onboarding": {
+        "title": "Set up the garden area",
+        "step": "Step {current} of {total}",
+        "locationTitle": "Area address",
+        "locationHint": "Start with the address of the area, its coordinates, or a tap on the map.",
+        "address": "Address",
+        "addressPlaceholder": "Street, neighbourhood, city…",
+        "addressNotSet": "No address selected yet",
+        "searchError": "Address search is unavailable right now. Tap the map or type the coordinates instead.",
+        "noResults": "No address found. Try a more specific search.",
+        "useLocation": "Use my location",
+        "locating": "Locating…",
+        "locationError": "We could not get your location. Tap the map instead.",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "mapHint": "Tip: tap the map to move the centre of the area.",
+        "selected": "Selected area",
+        "gridTitle": "X/Y grid",
+        "gridHint": "Set the plot size in metres, then choose the cell size for the planting grid.",
+        "name": "Garden name",
+        "namePlaceholder": "e.g. Community garden — north bed",
+        "widthX": "Width X",
+        "lengthY": "Length Y",
+        "cellSize": "Cell size",
+        "rotation": "Rotation",
+        "presets": "Presets",
+        "presetSmall": "5 × 5 m",
+        "presetBed": "10 × 10 m",
+        "presetPlot": "20 × 10 m",
+        "tooManyCells": "That is more than {limit} cells. Increase the cell size or shrink the plot.",
+        "editGrid": "Edit grid",
+        "gridChip": "{width} × {length} m · {cols}×{rows}",
+        "back": "Back",
+        "next": "Next",
+        "start": "Start designing"
+      },
+      "panels": {
+        "layers": "Layers",
+        "plants": "Plants",
+        "panel": "Show or hide the panel",
+        "addLayer": "Add layer",
+        "showEmpty": "Show empty layers",
+        "hideEmpty": "Hide empty layers",
+        "noLayers": "No layers yet — add one to start drawing.",
+        "planting": "Tap the map to place {name}",
+        "cancelPlant": "Cancel"
+      },
+      "layerGroups": {
+        "soil": "Soil and beds",
+        "water": "Water",
+        "structures": "Structures",
+        "planting": "Planting"
+      }
+    },
+    "readyBadge": "Hazır",
+    "comingSoonBadge": "Yakında",
+    "tipsTitle": "Araçlar nasıl çalışır",
+    "tipGarden": "Bahçe tasarımları bu cihaza kaydedilir — Crew ile paylaşmak için GeoJSON dışa aktarın.",
+    "tipSatellite": "İndirilen uydu döşemeleri bu cihazda kalır, böylece harita bağlantı olmadan da çalışır.",
+    "tipStorage": "Yüksek zoomda depolama hızla dolar. Alanları ve zoom aralıklarını küçük tutun.",
+    "satelliteDownloader": {
+      "title": "Çevrimdışı uydu",
+      "description": "Haritanın bağlantı olmadan çalışması için bir bölgenin uydu görüntülerini indirin.",
+      "area": "Alan",
+      "useView": "Geçerli görünümü kullan",
+      "manual": "Sınırları gir",
+      "north": "Kuzey",
+      "south": "Güney",
+      "east": "Doğu",
+      "west": "Batı",
+      "invalidBounds": "Sınırlar hatalı görünüyor — kuzey güneyin üstünde, doğu batının sağında olmalı ve alan 60° altında kalmalı.",
+      "zoomLevels": "Zoom düzeyleri",
+      "minZoom": "Zoom başlangıcı",
+      "maxZoom": "Zoom sonu",
+      "estimate": "İndirilecek yaklaşık {tiles} döşeme",
+      "largeAreaWarning": "Bu büyük bir indirme ve çevrimdışı önbelleği doldurabilir.",
+      "download": "Bölgeyi indir",
+      "cancel": "İptal",
+      "progress": "{total} döşemeden {done} tamamlandı",
+      "failed": "{count} başarısız",
+      "needsConnection": "Döşeme indirmek için bağlantı gerekir.",
+      "cache": "Çevrimdışı önbellek",
+      "cachedTiles": "Önbellekteki döşemeler",
+      "cacheSize": "Önbellek boyutu",
+      "connection": "Bağlantı",
+      "online": "Çevrimiçi",
+      "offline": "Çevrimdışı",
+      "clearCache": "Önbelleği temizle",
+      "cacheNote": "Kaydedilen döşemeler yalnızca bu tarayıcıya özeldir ve site verileri silindiğinde kaldırılır.",
+      "done": "Çevrimdışı kullanım için {count} döşeme indirildi",
+      "doneWithErrors": "{failed} döşeme indirilemedi",
+      "cancelled": "İndirme iptal edildi",
+      "cacheCleared": "Çevrimdışı önbellek temizlendi"
+    },
+    "speciesWatchlist": {
+      "title": "Tür izleme listesi",
+      "description": "Crew yakınındaki tehlikeli türleri izleyin ve saha çalışması için bir kontrol listesi alın."
+    },
+    "crewOutreach": {
+      "title": "Crew erişim planlayıcı",
+      "description": "Crew arasındaki ziyaret ve kampanyaları rotalar ve iletişim listeleriyle planlayın."
+    },
+    "openTool": "Open {name}",
+    "open": "Open tool"
+  },
+  "mapStyles": {
+    "hybrid": "Uydu + etiketler",
+    "satellite": "Yalnızca uydu",
+    "streets": "Cadde",
+    "outdoors": "Doğa"
   }
 }

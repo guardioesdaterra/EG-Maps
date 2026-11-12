@@ -7,11 +7,11 @@
       </NuxtLink>
       <div class="pt-actions">
         <NuxtLink v-if="showBack" to="/" class="pt-link">
-          <Icon name="lucide:arrow-left" class="h-3.5 w-3.5" />
+          <Icon name="tabler:arrow-move-left" class="h-3.5 w-3.5" />
           {{ t('nav.home') }}
         </NuxtLink>
         <NuxtLink to="/info" class="pt-link">
-          <Icon name="lucide:info" class="h-3.5 w-3.5" />
+          <Icon name="tabler:info-circle" class="h-3.5 w-3.5" />
           {{ t('nav.info') }}
         </NuxtLink>
         <button
@@ -20,7 +20,7 @@
           :aria-label="isDark ? t('nav.switchToLight') : t('nav.switchToDark')"
           @click="toggleDarkMode"
         >
-          <Icon :name="isDark ? 'lucide:sun' : 'lucide:moon'" class="h-4 w-4" />
+          <Icon :name="isDark ? 'tabler:brightness-half' : 'tabler:moon-2'" class="h-4 w-4" />
         </button>
       </div>
     </div>

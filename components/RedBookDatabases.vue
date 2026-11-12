@@ -40,11 +40,11 @@
               :href="`mailto:crews@earthguardians.org?subject=${encodeURIComponent(t('home.suggestDatasetSubject'))}%20-%20${encodeURIComponent(db.title)}`"
               class="redbook-button redbook-button-primary"
             >
-              <Icon name="lucide:mail" class="h-3.5 w-3.5" />
+              <Icon name="tabler:mail-opened" class="h-3.5 w-3.5" />
               {{ t('home.suggestDataset') }}
             </a>
             <a :href="db.link" target="_blank" rel="noopener noreferrer" class="redbook-button redbook-button-secondary">
-              <Icon name="lucide:external-link" class="h-3.5 w-3.5" />
+              <Icon name="tabler:share" class="h-3.5 w-3.5" />
               {{ t('home.viewSource') }}
             </a>
           </div>
@@ -81,8 +81,8 @@ const { t } = useI18n()
 const loading = ref(true)
 const databases = ref<Database[]>([])
 const DATASET_ICONS: Record<string, string> = {
-  iucn: 'lucide:globe',
-  'icmbio-brazil': 'lucide:tree-pine',
+  iucn: 'gis:globe',
+  'icmbio-brazil': 'tabler:tree',
 }
 const abortController = new AbortController()
 
@@ -96,7 +96,7 @@ onMounted(async () => {
       const keyId = datasetKeyId(dataset.id)
       return {
         id: dataset.id,
-        icon: DATASET_ICONS[dataset.id] || 'lucide:database',
+        icon: DATASET_ICONS[dataset.id] || 'tabler:database',
         scope: t(`home.${keyId}Scope`),
         title: t(`home.${keyId}Title`),
         description: t(`home.${keyId}Desc`),

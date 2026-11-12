@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la public/data/rare-earth/pococaldas/ 2>/dev/null; echo ---; ls -la public/data/rare-earth/*.geojson public/data/rare-earth/*.json 2>/dev/null | head -20; echo ---; du -sh public/data/rare-earth public/data/cultural-agents 2>/dev/null)"
+    ]
+  }
+}

@@ -45,7 +45,7 @@
         <div class="section-head">
           <div class="section-label">
             <div class="section-icon section-icon--dark">
-              <Icon name="lucide:mountain" class="h-5 w-5" />
+              <Icon name="tabler:mountain" class="h-5 w-5" />
             </div>
             <div>
               <span class="eyebrow">Major initiatives</span>
@@ -151,7 +151,7 @@
         <div class="section-head">
           <div class="section-label">
             <div class="section-icon section-icon--light">
-              <Icon name="lucide:sprout" class="h-5 w-5" />
+              <Icon name="tabler:plant" class="h-5 w-5" />
             </div>
             <div>
               <span class="eyebrow">Grassroots work</span>
@@ -163,17 +163,17 @@
 
         <div class="small-grid">
           <div class="small-card">
-            <Icon name="lucide:book-open" class="h-5 w-5" />
+            <Icon name="tabler:bookmark" class="h-5 w-5" />
             <h3>{{ t('crewProjects.educationTitle') }}</h3>
             <p>{{ t('crewProjects.educationDesc') }}</p>
           </div>
           <div class="small-card">
-            <Icon name="lucide:palette" class="h-5 w-5" />
+            <Icon name="tabler:palette" class="h-5 w-5" />
             <h3>{{ t('crewProjects.artivismTitle') }}</h3>
             <p>{{ t('crewProjects.artivismDesc') }}</p>
           </div>
           <div class="small-card">
-            <Icon name="lucide:heart-handshake" class="h-5 w-5" />
+            <Icon name="tabler:heart-handshake" class="h-5 w-5" />
             <h3>{{ t('crewProjects.communityTitle') }}</h3>
             <p>{{ t('crewProjects.communityDesc') }}</p>
           </div>
@@ -191,7 +191,7 @@
             rel="noopener noreferrer"
             class="cta-btn"
           >
-            <Icon name="lucide:rocket" class="h-4 w-4" />
+            <Icon name="tabler:rocket" class="h-4 w-4" />
             {{ t('crewProjects.startCrew') }}
           </a>
         </div>

@@ -512,21 +512,48 @@ export function getGroupMapColor(taxonomicGroup: string): string {
 }
 
 export function generateCurvedPath(from: [number, number], to: [number, number]): [number, number] {
-  const midX = (from[0] + to[0]) / 2
-  const midY = (from[1] + to[1]) / 2
-  const dx = to[0] - from[0]
-  const dy = to[1] - from[1]
+  // Handle antimeridian crossing: find the shortest longitudinal path
+  let fromLng = from[0]
+  let toLng = to[0]
+  const fromLat = from[1]
+  const toLat = to[1]
+
+  const dLon = toLng - fromLng
+  const absDLon = Math.abs(dLon)
+
+  // If crossing antimeridian (longitudinal distance > 180°), adjust coordinates
+  // to take the shorter path across 180°/-180°
+  let crossedAntimeridian = false
+  if (absDLon > 180) {
+    crossedAntimeridian = true
+    if (fromLng < 0) fromLng += 360
+    if (toLng < 0) toLng += 360
+  }
+
+  const midX = (fromLng + toLng) / 2
+  const midY = (fromLat + toLat) / 2
+  const dx = toLng - fromLng
+  const dy = toLat - fromLat
   const perpX = -dy
   const perpY = dx
   const length = Math.sqrt(perpX * perpX + perpY * perpY) || 1
   const normalizedPerpX = perpX / length
   const normalizedPerpY = perpY / length
   const distance = Math.sqrt(dx * dx + dy * dy)
-  const seed = (from[0] * 1000 + from[1] + to[0] * 100 + to[1]) % 1000 / 1000
+  const seed = (fromLng * 1000 + fromLat + toLng * 100 + toLat) % 1000 / 1000
   const randomFactor = 0.1 + seed * 0.1
   const distanceFactor = Math.min(1, distance / 50)
   const curveFactor = Math.min(distance * randomFactor * distanceFactor, 25)
-  return [midX + normalizedPerpX * curveFactor, midY + normalizedPerpY * curveFactor]
+
+  const controlX = midX + normalizedPerpX * curveFactor
+  const controlY = midY + normalizedPerpY * curveFactor
+
+  // Convert back to [-180, 180] range if we adjusted for antimeridian
+  if (crossedAntimeridian && controlX > 180) {
+    return [controlX - 360, controlY]
+  }
+
+  return [controlX, controlY]
 }
 
 export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -681,7 +708,7 @@ export function buildRareEarthPopupHTML(props: REEPopupProps): string {
     : ''
 
   return `
-    <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;min-width:400px;position:relative">
+    <div class="ree-popup-wrapper" style="word-wrap:break-word;white-space:normal;overflow:hidden;max-width:100%;position:relative">
       <!-- Corner accents -->
       <div style="position:absolute;top:12px;left:12px;width:14px;height:14px;border-top:2px solid ${cat.color}60;border-left:2px solid ${cat.color}60;pointer-events:none;z-index:1" />
       <div style="position:absolute;top:12px;right:12px;width:14px;height:14px;border-top:2px solid ${cat.color}60;border-right:2px solid ${cat.color}60;pointer-events:none;z-index:1" />

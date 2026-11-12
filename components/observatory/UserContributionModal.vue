@@ -345,7 +345,6 @@ const DEFAULT_FEATURE_NAMES: LocationSuggestion[] = [
   { name: 'Vargem Grande do Sul', municipality: 'Vargem Grande do Sul', lat: -21.830, lng: -46.895 },
   { name: 'Aldeia Xucuru Kariri — Fazenda Boa Vista', municipality: 'Caldas', lat: -21.865, lng: -46.355 },
   { name: 'Aldeia Ibiramã Kiriri — Rio Verde', municipality: 'Caldas', lat: -21.915, lng: -46.375 },
-  { name: 'Quilombo da Favela', municipality: 'Poços de Caldas', lat: -21.650, lng: -46.550 },
 ]
 
 function getAllFeatureNames(): LocationSuggestion[] {

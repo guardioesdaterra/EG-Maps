@@ -13,6 +13,8 @@ import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 import { useMapHexGrid } from '@/composables/useMapHexGrid'
+import { useGeoHexGrid, type HexGridMode } from '@/composables/useGeoHexGrid'
+import { useMapTileStyle } from '@/composables/useMapTileStyle'
 import { useSpeciesPopup, useProjectPopup, useCrewPopup, usePreviewCard } from '@/composables/useMapPopup'
 import { useMapConnections } from '@/composables/useMapConnections'
 import { useMapMarker } from '@/composables/useMapMarker'
@@ -21,12 +23,15 @@ import { getPopupContent } from '@/composables/useCulturalLayers'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { useAdaptiveQuality } from '@/composables/useAdaptiveQuality'
 import { useMapTileProvider } from '@/composables/useMapTileProvider'
-import { useOfflineTiles, isSafeTileUrl, MAX_TILE_BYTES } from '@/composables/useOfflineTiles'
+import { isSafeTileUrl, MAX_TILE_BYTES, type OfflineTileCache } from '@/composables/useOfflineTiles'
+import { useOfflineTileCache } from '@/composables/useOfflineTileCache'
 import { usePerformance } from '@/composables/usePerformance'
 import { allProjectsData } from '@/lib/project-data'
 import { openRareEarthOverlayPopup, MAP_GROUP_COLORS, type Species } from '@/lib/map-utils'
 import { mountMapPopup, withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
 import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
+import { tileStyleDef } from '@/lib/tile-styles'
+import type { GeoPoint } from '@/lib/hexbin'
 import { HEX_GRID } from '@/lib/constants'
 import { VULCAN_CENTER } from '@/composables/useVulcanCircles'
 import type { ProjectData } from '@/lib/types'
@@ -78,8 +83,8 @@ function tEnd(label: string) {
 }
 
 let offlineTileProtocolRegistered = false
-let offlineTileProtocolCache: ReturnType<typeof useOfflineTiles> | null = null
-function registerOfflineTileProtocol(cache: ReturnType<typeof useOfflineTiles>) {
+let offlineTileProtocolCache: OfflineTileCache | null = null
+function registerOfflineTileProtocol(cache: OfflineTileCache) {
   offlineTileProtocolCache = cache
   if (offlineTileProtocolRegistered) return
   maplibregl.addProtocol('egoffline', async (request, abortController) => {
@@ -89,6 +94,8 @@ function registerOfflineTileProtocol(cache: ReturnType<typeof useOfflineTiles>) 
     const sourceUrl = protocolUrl.searchParams.get('url')
     if (!sourceUrl || !isSafeTileUrl(sourceUrl)) throw new Error('Invalid offline tile request')
     const parsed = new URL(sourceUrl)
+    // Only satellite raster tiles are IndexedDB-cached; every other tileset
+    // (streets/outdoors vectors, hybrid labels) bypasses the offline protocol.
     const match = parsed.pathname.match(/\/tiles\/satellite(?:-[^/]+)?\/(\d+)\/(\d+)\/(\d+)\.(?:jpg|jpeg|png|webp)$/i)
     if (!match) throw new Error('Unsupported offline tile path')
     const [, zText, xText, yText] = match
@@ -129,12 +136,25 @@ export interface MapBaseProps {
   rareEarthPoints?: GeoJSON.FeatureCollection
   rareEarthFiltered?: GeoJSON.FeatureCollection
   rareEarthPolygons?: GeoJSON.FeatureCollection
+  rareEarthPolygonsFull?: GeoJSON.FeatureCollection | null
   rareEarthProtected?: GeoJSON.FeatureCollection
   rareEarthWater?: GeoJSON.FeatureCollection | null
   rareEarthCultural?: GeoJSON.FeatureCollection | null
   rareEarthAnalysis?: Record<string, unknown>
   layerVisibility?: Record<string, boolean>
+  /** MapLibre expression mirror of the claim filter (setFilter render path). */
+  rareEarthFilterExpr?: unknown[] | null
+  /** Stacked-popup "+N more" action (opens the data table). */
+  onPopupShowAll?: () => void
   flyToTarget?: { lng: number; lat: number; zoom?: number } | null
+  // Water basins (nivel 2-6) for zoom-based rendering
+  rareEarthBasinsL2?: GeoJSON.FeatureCollection | null
+  rareEarthBasinsL3?: GeoJSON.FeatureCollection | null
+  rareEarthBasinsL4?: GeoJSON.FeatureCollection | null
+  rareEarthBasinsL5?: GeoJSON.FeatureCollection | null
+  rareEarthBasinsL6?: GeoJSON.FeatureCollection | null
+  // Proposed Mogiana territory (proposed by Earth Guardians Brazil)
+  rareEarthMogiana?: GeoJSON.FeatureCollection | null
 }
 
 export interface MapBaseConfig {
@@ -170,13 +190,14 @@ export function useMapBase(config: MapBaseConfig) {
   const baseURL = useRuntimeConfig().app.baseURL
   const isMobile = useMediaQuery('(max-width: 768px)')
   const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
-  const offlineTiles = useOfflineTiles(MAPTILER_API_KEY)
+  const offlineTiles = useOfflineTileCache()
   const initialShareState = parseMapShareState({ ...initialUrlQuery, ...route.query })
   const initialCameraState = initialShareState
 
   const quality = useAdaptiveQuality()
   const runtime = useAppRuntime()
   if (initialShareState.showHexGrid !== undefined) runtime.hexGridPreference.value = initialShareState.showHexGrid
+  if (initialShareState.hexGridMode !== undefined) runtime.hexGridModePreference.value = initialShareState.hexGridMode
   if (initialShareState.showConnections !== undefined) runtime.connectionsPreference.value = initialShareState.showConnections
   const tileProvider = useMapTileProvider()
   const perf = usePerformance()
@@ -219,6 +240,18 @@ export function useMapBase(config: MapBaseConfig) {
   const noWebglSupport = ref(false)
   const isLoading = ref(true)
   const showHexGrid = runtime.hexGridPreference
+  // Three-state grid: decorative (screen-fixed canvas), density (geo-anchored
+  // hexbin over the basemap), off. Persisted; showHexGrid mirrors "on".
+  const hexGridMode = ref<HexGridMode>(
+    runtime.hexGridModePreference.value === 'density' || runtime.hexGridModePreference.value === 'off'
+      ? runtime.hexGridModePreference.value
+      : (showHexGrid.value ? 'decorative' : 'off'),
+  )
+  watch(hexGridMode, (mode) => {
+    runtime.hexGridModePreference.value = mode
+    showHexGrid.value = mode !== 'off'
+  })
+  const showHexCanvas = computed(() => hexGridMode.value === 'decorative' && quality.settings.value.showHexGrid)
   const showFilterPanel = ref(false)
   const speciesFilterPanelRef = ref<{ toggleTaxonomicGroup: (_group: string) => void } | null>(null)
 
@@ -261,6 +294,29 @@ export function useMapBase(config: MapBaseConfig) {
   const hideControls = computed(() => {
     if (controlsForced.value) return false
     return isEmbed.value || noControl.value || isSmallViewport.value
+  })
+
+  const hexGridPoints = computed<GeoPoint[]>(() => {
+    if (activeDataset.value === 'vulcan-observatory') {
+      const features = props.rareEarthFiltered?.features?.length
+        ? props.rareEarthFiltered.features
+        : props.rareEarthPoints?.features ?? []
+      const out: GeoPoint[] = []
+      for (const f of features) {
+        // Observatory features are always point geometries; the union's
+        // GeometryCollection member has no `coordinates`, so narrow first.
+        const coords = (f as GeoJSON.Feature<GeoJSON.Point>).geometry?.coordinates
+        if (coords && coords.length >= 2) out.push({ lng: Number(coords[0]), lat: Number(coords[1]) })
+      }
+      return out
+    }
+    if (activeDataset.value === 'active-crews') {
+      return visibleCrewLocations.value.map(c => ({ lng: c.lng, lat: c.lat }))
+    }
+    if (activeDataset.value === 'endangered-species') {
+      return visibleSpecies.value.map(s => ({ lng: s.lng, lat: s.lat }))
+    }
+    return visibleProjects.value.map(p => ({ lng: p.longitude, lat: p.latitude }))
   })
 
   const hexGrid = useMapHexGrid(hexCanvasRef, {
@@ -339,9 +395,14 @@ export function useMapBase(config: MapBaseConfig) {
   // layer hooks depend on a reactive ref, so keep them in sync on every
   // assignment/removal (see initMap / onUnmounted).
   const mapRef = shallowRef<maplibregl.Map | null>(null)
+  // Declared after `mapRef` on purpose: the grid binds through the reactive
+  // mirror, and its initial (immediate) pass runs while this line executes.
+  const geoHex = useGeoHexGrid(() => mapRef.value, hexGridPoints, hexGridMode)
+
   function setMapInstance(next: maplibregl.Map | null) {
     map = next
     mapRef.value = next
+    publishMapBounds()
     // Dev-only handle for headless probes / debugging (never in prod).
     if (import.meta.dev) {
       try { (window as unknown as { __egMap?: unknown }).__egMap = next } catch { /* ignore */ }
@@ -353,7 +414,7 @@ export function useMapBase(config: MapBaseConfig) {
       next.flyTo({
         center: [target.lng, target.lat],
         zoom: target.zoom ?? 5,
-        duration: 1500,
+        duration: runtime.reducedMotion.value ? 0 : 1500,
         essential: true,
       })
     }
@@ -377,11 +438,28 @@ export function useMapBase(config: MapBaseConfig) {
     }
   }
 
+  /** Share the live viewport with panels outside the map (satellite downloader). */
+  function publishMapBounds() {
+    if (!map) {
+      runtime.mapBounds.value = null
+      return
+    }
+    const bounds = map.getBounds()
+    runtime.mapBounds.value = {
+      west: bounds.getWest(),
+      south: bounds.getSouth(),
+      east: bounds.getEast(),
+      north: bounds.getNorth(),
+      zoom: map.getZoom(),
+    }
+  }
+
   function syncMapCameraToUrl() {
     if (!map || !isMounted || !map.loaded()) return
     const queryState = serializeMapShareState({
       ...getCurrentMapCamera(),
       showHexGrid: showHexGrid.value,
+      hexGridMode: hexGridMode.value,
       showConnections: showConnections.value,
       selectedSpeciesGroups: selectedSpeciesGroups.value,
     })
@@ -402,6 +480,7 @@ export function useMapBase(config: MapBaseConfig) {
     const state = {
       ...getCurrentMapCamera(),
       showHexGrid: showHexGrid.value,
+      hexGridMode: hexGridMode.value,
       showConnections: showConnections.value,
       selectedSpeciesGroups: selectedSpeciesGroups.value,
     }
@@ -664,13 +743,23 @@ export function useMapBase(config: MapBaseConfig) {
       rareEarthPoints: props.rareEarthPoints,
       rareEarthFiltered: props.rareEarthFiltered,
       rareEarthPolygons: props.rareEarthPolygons,
+      rareEarthPolygonsFull: props.rareEarthPolygonsFull,
       rareEarthProtected: props.rareEarthProtected,
       rareEarthWater: props.rareEarthWater ?? undefined,
       rareEarthCultural: props.rareEarthCultural ?? undefined,
+      // Water basins (nivel 2-6) for zoom-based rendering
+      rareEarthBasinsL2: props.rareEarthBasinsL2 ?? undefined,
+      rareEarthBasinsL3: props.rareEarthBasinsL3 ?? undefined,
+      rareEarthBasinsL4: props.rareEarthBasinsL4 ?? undefined,
+      rareEarthBasinsL5: props.rareEarthBasinsL5 ?? undefined,
+      rareEarthBasinsL6: props.rareEarthBasinsL6 ?? undefined,
+      // Proposed Mogiana territory (proposed by Earth Guardians Brazil)
+      rareEarthMogiana: props.rareEarthMogiana ?? undefined,
       layerVisibility: props.layerVisibility,
+      rareEarthFilterExpr: props.rareEarthFilterExpr,
       flyToTarget: props.flyToTarget,
     }),
-    popup: { t, locale },
+    popup: { t, locale, onShowAll: props.onPopupShowAll },
   })
 
   function setupRareEarthLayers() {
@@ -800,13 +889,15 @@ export function useMapBase(config: MapBaseConfig) {
 
   /* ── tile provider (MapTiler #1, local fallback on poor health) ────── */
 
+  const tileStyle = useMapTileStyle()
+
   /** Resolve the MapLibre style for the current effective tile provider. */
   function currentStyle(): string | Record<string, unknown> {
     const qs = quality.settings.value
     if (tileProvider.effectiveProvider.value === 'fallback' || !MAPTILER_API_KEY) {
       return getMapStyle('', undefined, baseURL)
     }
-    return getMapStyle(MAPTILER_API_KEY, qs.tileResolution, baseURL)
+    return getMapStyle(MAPTILER_API_KEY, qs.tileResolution, baseURL, tileStyleDef(tileStyle.styleId.value).maptilerStyle)
   }
 
   function applyProviderStyle(expected?: string) {
@@ -855,6 +946,16 @@ export function useMapBase(config: MapBaseConfig) {
     }
   }
 
+  // Basemap style switch (hybrid/satellite/streets/outdoors) — re-run the
+  // provider-style application when the user picks another tileset.
+  watch(() => tileStyle.styleId.value, () => {
+    if (!map || tileProvider.effectiveProvider.value !== 'maptiler' || !MAPTILER_API_KEY) return
+    // Force past applyProviderStyle's already-applied guard: the provider
+    // is unchanged but the style URL is not.
+    lastAppliedProvider = undefined as unknown as typeof lastAppliedProvider
+    applyProviderStyle('maptiler')
+  })
+
   let fpsReportTimer: ReturnType<typeof setInterval> | null = null
   function startFpsReporting() {
     stopFpsReporting()
@@ -870,10 +971,13 @@ export function useMapBase(config: MapBaseConfig) {
   /** Re-attach data layers wiped by a style switch (provider toggle). */
   function resyncLayersAfterStyle() {
     if (!map) return
+    // Style switches wipe non-style layers — re-add the hexbin grid.
+    if (hexGridMode.value === 'density') geoHex.refresh()
     if (activeDataset.value === 'vulcan-observatory') {
       setupRareEarthLayers()
       return
     }
+    rebuildMarkers()
     const qNow = quality.settings.value
     if (qNow.showConnections && connections.showConnections.value) {
       if (activeDataset.value === 'active-crews') {
@@ -989,7 +1093,10 @@ export function useMapBase(config: MapBaseConfig) {
         maxPitch: qs.antialiasing ? 60 : 45,
       } as maplibregl.MapOptions & { antialias?: boolean; preferCanvas?: boolean; crossSourceCollisions?: boolean; maxPitch?: number })
       setMapInstance(created)
-      created.on('moveend', syncMapCameraToUrl)
+      created.on('moveend', () => {
+        publishMapBounds()
+        syncMapCameraToUrl()
+      })
       mapCanvas = map!.getCanvas()
       mapCanvas.addEventListener('webglcontextlost', onWebglContextLost, { passive: false })
 
@@ -1099,6 +1206,7 @@ export function useMapBase(config: MapBaseConfig) {
         if (qNow.showHexGrid) {
           hexGrid.setupHexGrid()
         }
+        geoHex.refresh()
         tEnd('[perf] initMap → connections+hexGrid')
         tEnd('[perf] initMap total')
         onMapReady?.(map!)
@@ -1258,10 +1366,17 @@ export function useMapBase(config: MapBaseConfig) {
 
   watch(showHexGrid, async (visible) => {
     runtime.hexGridPreference.value = visible
-    if (!visible) return
+    if (!visible || hexGridMode.value !== 'decorative') return
     await nextTick()
     hexGrid.setupHexGrid()
   })
+
+  function toggleHexGridMode() {
+    hexGridMode.value = hexGridMode.value === 'decorative' ? 'density'
+      : hexGridMode.value === 'density' ? 'off'
+        : 'decorative'
+    if (hexGridMode.value === 'decorative') nextTick(() => hexGrid.setupHexGrid())
+  }
 
   watch(connections.showConnections, () => {
     runtime.connectionsPreference.value = connections.showConnections.value
@@ -1285,7 +1400,9 @@ export function useMapBase(config: MapBaseConfig) {
     map.flyTo({
       center: [target.lng, target.lat],
       zoom: target.zoom ?? 5,
-      duration: 1500,
+      // Same reduced-motion respect as navigateToLocation — the observatory
+      // sidebar/search jumps previously always animated 1.5s.
+      duration: runtime.reducedMotion.value ? 0 : 1500,
       essential: true,
     })
   })
@@ -1308,7 +1425,8 @@ export function useMapBase(config: MapBaseConfig) {
     activeDataset, selectedSpeciesGroups, selectedCrewStatuses, toggleCrewStatus,
     hasError, errorMessage, noWebglSupport, isLoading,
     clusterPanelItems, clusterPanelDataset, clusterPanelOpen, closeClusterPanel,
-    showHexGrid, showFilterPanel, speciesFilterPanelRef,
+    showHexGrid, showHexCanvas, hexGridMode, toggleHexGridMode, geoHexStats: geoHex.geoHexStats, showGeoHexGrid: geoHex.showGeoHexGrid, geoHex,
+    showFilterPanel, speciesFilterPanelRef,
     connections, showConnections, toggleConnections,
     hexGrid, onResize,
     rebuildMarkers, updateMarkerData, navigateToLocation,

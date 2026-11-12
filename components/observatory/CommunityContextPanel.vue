@@ -33,7 +33,7 @@
     </details>
 
     <button type="button" class="community-context__cta" @click="$emit('monitor')">
-      <Icon name="lucide:notebook-pen" />
+      <Icon name="tabler:notes" />
       {{ t('observatory.v2.community.monitor') }}
     </button>
   </aside>

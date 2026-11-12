@@ -96,8 +96,51 @@ function claimPointsFromFC(points: GeoJSON.FeatureCollection | undefined | null)
 }
 
 /**
+ * Uniform km grid over claim points (cell side = watch radius). Ring scans
+ * around each water centroid replace the old O(named × all-claims) haversine
+ * double loop — the 20.7k-claim national dataset was re-measured against
+ * every water body on every secondary load. Exact haversine still decides
+ * every candidate, and the ring stop rules keep results bit-identical to the
+ * full scan (projection scale drift is absorbed by a one-cell margin).
+ */
+const KM_PER_DEG_LAT = 110.574
+const KM_PER_DEG_LNG = 111.32
+
+interface ClaimGrid {
+  cells: Map<string, ClaimPoint[]>
+  cosRef: number
+  minCx: number
+  maxCx: number
+  minCy: number
+  maxCy: number
+}
+
+function buildClaimGrid(claims: ClaimPoint[], cellKm: number): ClaimGrid {
+  let latSum = 0
+  for (const c of claims) latSum += c.lat
+  const latRef = latSum / claims.length
+  const cosRef = Math.max(0.2, Math.cos((latRef * Math.PI) / 180))
+  const cells = new Map<string, ClaimPoint[]>()
+  let minCx = Infinity; let maxCx = -Infinity
+  let minCy = Infinity; let maxCy = -Infinity
+  for (const c of claims) {
+    const cx = Math.floor((c.lng * cosRef * KM_PER_DEG_LNG) / cellKm)
+    const cy = Math.floor((c.lat * KM_PER_DEG_LAT) / cellKm)
+    if (cx < minCx) minCx = cx
+    if (cx > maxCx) maxCx = cx
+    if (cy < minCy) minCy = cy
+    if (cy > maxCy) maxCy = cy
+    const key = `${cx}|${cy}`
+    const arr = cells.get(key)
+    if (arr) arr.push(c)
+    else cells.set(key, [c])
+  }
+  return { cells, cosRef, minCx, maxCx, minCy, maxCy }
+}
+
+/**
  * Claim pressure for every NAMED water body (unnamed ponds carry no
- * community reference point and are skipped to keep this O(named × claims)).
+ * community reference point and are skipped).
  */
 export function computeWaterThreats(
   water: GeoJSON.FeatureCollection | undefined | null,
@@ -107,6 +150,8 @@ export function computeWaterThreats(
 ): WaterThreat[] {
   const claims = claimPointsFromFC(points)
   if (!claims.length) return []
+  const cellKm = Math.max(0.5, watchKm)
+  const grid = buildClaimGrid(claims, cellKm)
   const out: WaterThreat[] = []
   for (const f of water?.features ?? []) {
     const p = (f.properties ?? {}) as Record<string, unknown>
@@ -118,11 +163,40 @@ export function computeWaterThreats(
     let claimsWatch = 0
     let nearest: ClaimPoint | null = null
     let nearestKm = Infinity
-    for (const c of claims) {
-      const d = haversineKm(center.lng, center.lat, c.lng, c.lat)
-      if (d <= pressureKm) claimsPressure++
-      if (d <= watchKm) claimsWatch++
-      if (d < nearestKm) { nearestKm = d; nearest = c }
+
+    const cx = Math.floor((center.lng * grid.cosRef * KM_PER_DEG_LNG) / cellKm)
+    const cy = Math.floor((center.lat * KM_PER_DEG_LAT) / cellKm)
+    const scanRing = (rr: number) => {
+      for (let dx = -rr; dx <= rr; dx++) {
+        for (let dy = -rr; dy <= rr; dy++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== rr) continue
+          const arr = grid.cells.get(`${cx + dx}|${cy + dy}`)
+          if (!arr) continue
+          for (const c of arr) {
+            const d = haversineKm(center.lng, center.lat, c.lng, c.lat)
+            if (d <= pressureKm) claimsPressure++
+            if (d <= watchKm) claimsWatch++
+            if (d < nearestKm) { nearestKm = d; nearest = c }
+          }
+        }
+      }
+    }
+    // Ring 2 fully covers the watch radius even under worst-case km-projection
+    // drift, so pressure/watch counts never need to look further.
+    scanRing(1)
+    scanRing(2)
+    // `nearest` may sit outside the watch circle: expand rings until no
+    // unsearched ring can hold a closer claim (one-cell margin). Isolated
+    // waters (nothing in ring 2) fall back to one exact full pass.
+    if (nearest) {
+      const rBbox = Math.max(cx - grid.maxCx, grid.minCx - cx, cy - grid.maxCy, grid.minCy - cy, 2)
+      let r = 2
+      while (nearestKm > (r - 1) * cellKm && r < rBbox) { r++; scanRing(r) }
+    } else {
+      for (const c of claims) {
+        const d = haversineKm(center.lng, center.lat, c.lng, c.lat)
+        if (d < nearestKm) { nearestKm = d; nearest = c }
+      }
     }
     out.push({
       name,

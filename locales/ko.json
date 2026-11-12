@@ -11,7 +11,8 @@
     "joinEarthGuardians": "Earth Guardians 가입",
     "switchToLight": "라이트 모드로 전환",
     "switchToDark": "다크 모드로 전환",
-    "language": "언어"
+    "language": "언어",
+    "tools": "Tools"
   },
   "home": {
     "title": "Earth Guardians",
@@ -123,7 +124,14 @@
     "of": "/",
     "keyboardShortcut": "(Ctrl+K)",
     "browseAll": "또는 목록을 열어 모두 탐색",
-    "searchResults": "검색 결과"
+    "searchResults": "검색 결과",
+    "basemapStyle": "기본 지도 스타일",
+    "gridDensity": {
+      "title": "그리드 밀도",
+      "cells": "{cells} 셀 · 지도 포인트 {points}개",
+      "cellSize": "셀당 약 {km}km",
+      "on": "지리 그리드: 켜짐"
+    }
   },
   "mapTiles": {
     "maptiler": "위성",
@@ -259,7 +267,8 @@
     "close": "닫기",
     "save": "저장",
     "cancel": "취소",
-    "imageNotAvailable": "이미지를 사용할 수 없습니다"
+    "imageNotAvailable": "이미지를 사용할 수 없습니다",
+    "back": "Back"
   },
   "observatory": {
     "tabs": {
@@ -391,7 +400,9 @@
       "heatmap": "밀도 히트맵",
       "cultural": "문화·지역사회",
       "waterBodies": "수역",
-      "protectedAreas": "보호 지역"
+      "protectedAreas": "보호 지역",
+      "waterBasins": "수계 (ANA 공식)",
+      "mogianaTerritory": "제안된 모지아나 지역 (Earth Guardians 브라질)"
     },
     "myTerritory": {
       "title": "내 영토",
@@ -764,10 +775,43 @@
       "grants": "보조금",
       "species": "종",
       "mains": "주요 멤버",
-      "feedback": "피드백"
+      "feedback": "피드백",
+      "sources": "출처",
+      "performance": "성능"
     },
     "shareCorrections": "지도 개선을 위해 수정 사항, 누락 데이터, 상호작용 아이디어를 공유해 주세요.",
-    "homeLink": "홈"
+    "homeLink": "홈",
+    "sources": {
+      "title": "데이터 소스 및 라이선스",
+      "intro": "EG-Maps의 모든 레이어는 명명된 출처에서 가져옵니다. 이 탭은 모든 출처를 나열합니다 — 누가 각 데이터셋을 발행하는지, 어떤 라이선스 하에 있는지, 그리고 연구와 커뮤니티 작업을 위해 어떻게 재사용할 수 있는지.",
+      "observatory": "Vulcan Observatory — 채굴 및 영토",
+      "species": "멸종 위기 종",
+      "grants": "프로젝트 보조금",
+      "basemap": "베이스맵, 이미지 및 맵 엔진",
+      "reuseTitle": "연구 및 커뮤니티 도구를 위한 라이선스 및 재사용",
+      "openSource": "오픈 소스"
+    },
+    "performance": {
+      "title": "성능 및 품질",
+      "desc": "렌더링 품질과 파티클 효과를 제어합니다. 앱은 기기 성능에 따라 자동으로 조정되지만, 여기에서 재정의할 수 있습니다.",
+      "qualitySection": "품질 프리셋",
+      "qualityDesc": "자동 조정은 시각적 품질과 프레임 속도의 균형을 맞춥니다. 수동으로 프리셋을 선택하려면 끄세요.",
+      "autoAdjust": "품질 자동 조정 (권장)",
+      "qualityPreset": "품질 프리셋",
+      "low": "낮음 (성능)",
+      "medium": "중간 (균형)",
+      "high": "높음 (품질)",
+      "ultra": "울트라 (최대)",
+      "particleSettings": "파티클 설정",
+      "particleDesc": "파티클 애니메이션을 미세 조정합니다. 자동 조정이 꺼져 있어야 합니다.",
+      "particleMaxCount": "최대 파티클",
+      "particleFps": "목표 FPS",
+      "particleTrailLength": "트레일 길이",
+      "particleSpawnRate": "스폰 비율",
+      "particleShadow": "그림자 블러",
+      "apply": "설정 적용",
+      "currentSettings": "현재 활성 설정"
+    }
   },
   "campaigns": {
     "title": "캠페인",
@@ -1418,5 +1462,349 @@
   },
   "resources": {
     "title": "자료"
+  },
+  "tools": {
+    "title": "Tools",
+    "subtitle": "Practical tools for Earth Guardians Crews and communities",
+    "comingSoon": "More tools coming soon...",
+    "agroecologicalGarden": {
+      "title": "Agroecological Garden",
+      "description": "Design, plan, and manage regenerative agroecological gardens with satellite imagery, plant databases, water systems, and companion planting guilds.",
+      "createNew": "Create New Garden",
+      "openExisting": "Open Existing",
+      "myGardens": "My Gardens",
+      "templates": "Templates",
+      "toolbar": {
+        "select": "Select",
+        "pan": "Pan",
+        "point": "Add Point",
+        "line": "Draw Line",
+        "polygon": "Draw Polygon",
+        "measure": "Measure",
+        "undo": "Undo",
+        "redo": "Redo",
+        "clear": "Clear Selection",
+        "selectShort": "Select",
+        "panShort": "Pan",
+        "pointShort": "Point",
+        "lineShort": "Line",
+        "polygonShort": "Polygon",
+        "measureShort": "Measure"
+      },
+      "layers": {
+        "title": "Layers",
+        "addLayer": "Add Layer",
+        "layerTypes": {
+          "seeds": "Seeds",
+          "seedlings": "Seedlings",
+          "transplants": "Transplants",
+          "fertileEarth": "Fertile Earth",
+          "compost": "Compost",
+          "mulch": "Mulch",
+          "biochar": "Biochar",
+          "waterWay": "Water Way",
+          "spring": "Spring",
+          "waterSourceNatural": "Natural Water Source",
+          "waterSourceTap": "Tap / Torneira",
+          "irrigation": "Irrigation",
+          "greenhouse": "Greenhouse",
+          "shed": "Shed",
+          "fence": "Fence",
+          "trellis": "Trellis",
+          "bed": "Garden Bed",
+          "path": "Path",
+          "vegetable": "Vegetable",
+          "nativeTree": "Native Tree",
+          "rhizome": "Rhizome",
+          "coverCrop": "Cover Crop",
+          "herb": "Herb"
+        },
+        "visibility": "Visibility",
+        "lock": "Lock",
+        "opacity": "Opacity",
+        "rename": "Rename",
+        "duplicate": "Duplicate",
+        "delete": "Delete"
+      },
+      "plantLibrary": {
+        "title": "Plant Library",
+        "search": "Search plants...",
+        "categories": {
+          "all": "All",
+          "vegetable": "Vegetables (Hortaliças)",
+          "nativeTree": "Native Trees (Árvores Nativas)",
+          "rhizome": "Rhizomes (Rizomas)",
+          "coverCrop": "Cover Crops",
+          "herb": "Herbs",
+          "fruit": "Fruit",
+          "flower": "Flowers"
+        },
+        "filters": {
+          "sun": "Sun Requirement",
+          "water": "Water Need",
+          "perennial": "Perennial Only",
+          "native": "Native Only",
+          "companion": "Show Companions"
+        },
+        "details": {
+          "scientificName": "Scientific Name",
+          "family": "Family",
+          "spacing": "Spacing",
+          "depth": "Planting Depth",
+          "germination": "Days to Germination",
+          "harvest": "Days to Harvest",
+          "sun": "Sun",
+          "water": "Water",
+          "ph": "Soil pH",
+          "zone": "Hardiness Zone",
+          "companions": "Good Companions",
+          "antagonists": "Avoid Planting With",
+          "guildRole": "Guild Role",
+          "harvestable": "Harvestable Parts",
+          "description": "Description"
+        }
+      },
+      "waterDesign": {
+        "title": "Water Design",
+        "addSpring": "Add Spring / Nascente",
+        "addTap": "Add Tap / Torneira",
+        "drawSwale": "Draw Swale",
+        "drawIrrigation": "Draw Irrigation",
+        "addPond": "Add Pond / Tank",
+        "flowRate": "Flow Rate (L/min)",
+        "capacity": "Capacity (L)",
+        "elevationProfile": "Elevation Profile",
+        "keylineDesign": "Keyline Design"
+      },
+      "guildBuilder": {
+        "title": "Guild Builder",
+        "addPlant": "Add Plant to Guild",
+        "compatibility": "Compatibility",
+        "goodCompanions": "Good Companions",
+        "badCompanions": "Avoid",
+        "saveGuild": "Save as Template",
+        "loadGuild": "Load Template",
+        "guildTemplates": {
+          "threeSisters": "Three Sisters (Corn, Beans, Squash)",
+          "mediterranean": "Mediterranean Guild",
+          "tropical": "Tropical Fruit Guild",
+          "nitrogenFixers": "Nitrogen Fixer Guild",
+          "pollinator": "Pollinator Guild",
+          "pestRepellent": "Pest Repellent Guild"
+        }
+      },
+      "measurement": {
+        "title": "Measurements",
+        "distance": "Distance",
+        "area": "Area",
+        "perimeter": "Perimeter",
+        "units": "Units",
+        "metric": "Metric (m, ha)",
+        "imperial": "Imperial (ft, ac)",
+        "type": "유형",
+        "value": "결과",
+        "cells": "Cells"
+      },
+      "project": {
+        "title": "Garden Project",
+        "name": "Project Name",
+        "description": "Description",
+        "location": "Location",
+        "save": "Save Project",
+        "saveAs": "Save As...",
+        "export": "Export",
+        "import": "Import",
+        "share": "Share",
+        "delete": "Delete",
+        "exportFormats": {
+          "geojson": "GeoJSON",
+          "pdf": "PDF Plan",
+          "png": "Map Image (PNG)",
+          "csv": "Plant List (CSV)",
+          "ics": "Calendar (ICS)",
+          "shapefile": "Shapefile (ZIP)"
+        }
+      },
+      "seasonalCalendar": {
+        "title": "Seasonal Calendar",
+        "hemisphere": "Hemisphere",
+        "north": "Northern",
+        "south": "Southern",
+        "month": "Month",
+        "planting": "Planting Window",
+        "harvest": "Harvest Window",
+        "currentMonth": "Current Month",
+        "addToCalendar": "Add to Calendar"
+      },
+      "modals": {
+        "plantDetail": "Plant Details",
+        "exportOptions": "Export Options",
+        "importOptions": "Import Options",
+        "shareProject": "Share Project",
+        "deleteConfirm": "Delete this garden project? This cannot be undone."
+      },
+      "toasts": {
+        "saved": "Garden project saved",
+        "exported": "Export completed",
+        "imported": "Project imported",
+        "shared": "Share link copied",
+        "error": "An error occurred",
+        "layerAdded": "Layer added",
+        "featureAdded": "Feature added",
+        "measurementComplete": "Measurement complete",
+        "areaReady": "Garden area ready — start designing"
+      },
+      "emptyStates": {
+        "noGardens": "No gardens yet. Create your first agroecological garden!",
+        "noPlants": "No plants match your filters",
+        "noLayers": "Add a layer to start designing",
+        "noFeatures": "Draw on the map to add features"
+      },
+      "help": {
+        "title": "Help & Shortcuts",
+        "shortcuts": {
+          "pan": "Space + Drag — Pan map",
+          "zoom": "Scroll — Zoom",
+          "select": "Click — Select feature",
+          "multiSelect": "Shift + Click — Multi-select",
+          "drawPoint": "P — Point tool",
+          "drawLine": "L — Line tool",
+          "drawPolygon": "G — Polygon tool",
+          "measure": "M — Measure tool",
+          "undo": "Ctrl+Z — Undo",
+          "redo": "Ctrl+Shift+Z — Redo",
+          "delete": "Delete — Remove selected",
+          "escape": "Esc — Cancel tool / Close panel"
+        }
+      },
+      "draw": "묘사",
+      "placePlant": "Plant",
+      "grid": {
+        "title": "Grid"
+      },
+      "drawActions": {
+        "finish": "Finish",
+        "cancel": "Cancel drawing",
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "지도를 클릭하여 첫 번째 지점 추가",
+        "pressEnterHint": "Enter 키를 눌러 완료 · Esc 키로 취소"
+      },
+      "map": {
+        "loading": "Loading satellite imagery…",
+        "loadError": "The map imagery could not load.",
+        "retry": "Retry",
+        "fit": "Fit",
+        "zoomToGrid": "Zoom to the plot"
+      },
+      "onboarding": {
+        "title": "Set up the garden area",
+        "step": "Step {current} of {total}",
+        "locationTitle": "Area address",
+        "locationHint": "Start with the address of the area, its coordinates, or a tap on the map.",
+        "address": "Address",
+        "addressPlaceholder": "Street, neighbourhood, city…",
+        "addressNotSet": "No address selected yet",
+        "searchError": "Address search is unavailable right now. Tap the map or type the coordinates instead.",
+        "noResults": "No address found. Try a more specific search.",
+        "useLocation": "Use my location",
+        "locating": "Locating…",
+        "locationError": "We could not get your location. Tap the map instead.",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "mapHint": "Tip: tap the map to move the centre of the area.",
+        "selected": "Selected area",
+        "gridTitle": "X/Y grid",
+        "gridHint": "Set the plot size in metres, then choose the cell size for the planting grid.",
+        "name": "Garden name",
+        "namePlaceholder": "e.g. Community garden — north bed",
+        "widthX": "Width X",
+        "lengthY": "Length Y",
+        "cellSize": "Cell size",
+        "rotation": "Rotation",
+        "presets": "Presets",
+        "presetSmall": "5 × 5 m",
+        "presetBed": "10 × 10 m",
+        "presetPlot": "20 × 10 m",
+        "tooManyCells": "That is more than {limit} cells. Increase the cell size or shrink the plot.",
+        "editGrid": "Edit grid",
+        "gridChip": "{width} × {length} m · {cols}×{rows}",
+        "back": "Back",
+        "next": "Next",
+        "start": "Start designing"
+      },
+      "panels": {
+        "layers": "Layers",
+        "plants": "Plants",
+        "panel": "Show or hide the panel",
+        "addLayer": "Add layer",
+        "showEmpty": "Show empty layers",
+        "hideEmpty": "Hide empty layers",
+        "noLayers": "No layers yet — add one to start drawing.",
+        "planting": "Tap the map to place {name}",
+        "cancelPlant": "Cancel"
+      },
+      "layerGroups": {
+        "soil": "Soil and beds",
+        "water": "Water",
+        "structures": "Structures",
+        "planting": "Planting"
+      }
+    },
+    "readyBadge": "사용 가능",
+    "comingSoonBadge": "곧 추가 예정",
+    "tipsTitle": "도구 동작 방식",
+    "tipGarden": "정원 설계는 이 기기에 저장됩니다. Crew와 공유하려면 GeoJSON으로 내보내세요.",
+    "tipSatellite": "다운로드한 위성 타일은 이 기기에 남아 연결 없이도 지도를 볼 수 있습니다.",
+    "tipStorage": "줌을 크게 하면 저장 공간이 금방 찹니다. 범위와 줌 구간을 좁게 유지하세요.",
+    "satelliteDownloader": {
+      "title": "위성 오프라인",
+      "description": "해당 지역의 위성 이미지를 다운로드해 연결 없이 지도를 사용합니다.",
+      "area": "지역",
+      "useView": "현재 보기 사용",
+      "manual": "범위 입력",
+      "north": "북",
+      "south": "남",
+      "east": "동",
+      "west": "서",
+      "invalidBounds": "범위가 올바르지 않습니다. 북이 남보다 위, 동이 서보다 오른쪽이어야 하며 범위는 60° 이내여야 합니다.",
+      "zoomLevels": "줌 레벨",
+      "minZoom": "시작 줌",
+      "maxZoom": "끝 줌",
+      "estimate": "다운로드할 타일 약 {tiles}개",
+      "largeAreaWarning": "용량이 커서 오프라인 캐시를 가득 채울 수 있습니다.",
+      "download": "지역 다운로드",
+      "cancel": "취소",
+      "progress": "{total}개 중 {done}개 타일",
+      "failed": "{count}개 실패",
+      "needsConnection": "타일 다운로드에는 연결이 필요합니다.",
+      "cache": "오프라인 캐시",
+      "cachedTiles": "캐시된 타일",
+      "cacheSize": "캐시 크기",
+      "connection": "연결 상태",
+      "online": "온라인",
+      "offline": "오프라인",
+      "clearCache": "캐시 비우기",
+      "cacheNote": "저장된 타일은 이 브라우저 전용이며 사이트 데이터를 삭제하면 사라집니다.",
+      "done": "오프라인용으로 {count}개 타일을 다운로드했습니다",
+      "doneWithErrors": "{failed}개 타일을 다운로드하지 못했습니다",
+      "cancelled": "다운로드가 취소되었습니다",
+      "cacheCleared": "오프라인 캐시를 비웠습니다"
+    },
+    "speciesWatchlist": {
+      "title": "종 모니터링 목록",
+      "description": "Crew 주변의 멸종 위기 종을 추적하고 현장 조사용 체크리스트를 받으세요."
+    },
+    "crewOutreach": {
+      "title": "Crew 아웃리치 계획",
+      "description": "Crew 간 방문과 캠페인을 경유지와 연락처 목록과 함께 계획합니다."
+    },
+    "openTool": "Open {name}",
+    "open": "Open tool"
+  },
+  "mapStyles": {
+    "hybrid": "위성 + 라벨",
+    "satellite": "위성만",
+    "streets": "도로",
+    "outdoors": "야외"
   }
 }

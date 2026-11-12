@@ -9,7 +9,7 @@
 <template>
   <div class="obs-phase-filter">
     <h3 class="obs-phase-filter__title">
-      <Icon name="lucide:layers" class="obs-phase-filter__title-icon" />
+      <Icon name="gis:layers" class="obs-phase-filter__title-icon" />
       {{ t('observatory.phaseFilter.title') }}
     </h3>
     <div class="obs-phase-filter__chips" role="group" :aria-label="t('observatory.phaseFilter.title')">
@@ -27,7 +27,7 @@
         @click="togglePhase(phase.key)"
       >
         <Icon
-          name="lucide:check"
+          name="tabler:square-check"
           class="obs-phase-filter__chip-check"
           :style="{ opacity: selectedPhases.has(phase.key) ? 1 : 0 }"
         />
@@ -40,7 +40,7 @@
         class="obs-phase-filter__action"
         @click="selectAll"
       >
-        <Icon name="lucide:check-square" class="obs-phase-filter__action-icon" />
+        <Icon name="tabler:square-check" class="obs-phase-filter__action-icon" />
         {{ t('observatory.phaseFilter.all') }}
       </button>
       <span class="obs-phase-filter__sep">·</span>
@@ -49,7 +49,7 @@
         class="obs-phase-filter__action"
         @click="selectNone"
       >
-        <Icon name="lucide:square" class="obs-phase-filter__action-icon" />
+        <Icon name="gis:square" class="obs-phase-filter__action-icon" />
         {{ t('observatory.phaseFilter.none') }}
       </button>
     </div>

@@ -12,7 +12,7 @@
             <p class="home-submore"><span class="glass-line">{{ t('home.subtitleMore') }}</span></p>
             <div class="home-orgline">
               <a href="https://www.earthguardians.org" target="_blank" rel="noopener noreferrer" class="home-orglink">
-                <Icon name="lucide:arrow-up-right" aria-hidden="true" />
+                <Icon name="tabler:share" aria-hidden="true" />
                 earthguardians.org
               </a>
               <NuxtLink to="/info" class="home-orglink home-orglink--muted">
@@ -35,7 +35,7 @@
               <div class="bento-glow" aria-hidden="true" />
               <div class="bento-accent" aria-hidden="true" />
               <div class="bento-body">
-                <div class="bento-icon" aria-hidden="true"><Icon name="lucide:hand-heart" /></div>
+                <div class="bento-icon" aria-hidden="true"><Icon name="tabler:heart" /></div>
                 <h2 class="bento-title">{{ t('home.projectGrantsTitle') }}</h2>
                 <p class="bento-desc">{{ t('home.projectGrantsDesc') }}</p>
                 <div class="bento-stats">
@@ -50,11 +50,11 @@
                 </div>
                 <div class="bento-links">
                   <NuxtLink to="/project-grants" class="bento-link bento-link--primary" :aria-label="`${t('home.projectGrantsTitle')} — ${t('globe.view2D')}`">
-                    <Icon name="lucide:map" aria-hidden="true" />
+                    <Icon name="gis:map" aria-hidden="true" />
                     {{ t('globe.view2D') }}
                   </NuxtLink>
                   <NuxtLink to="/project-grants/3d" class="bento-link" :aria-label="`${t('home.projectGrantsTitle')} — ${t('globe.view3D')}`">
-                    <Icon name="lucide:globe" aria-hidden="true" />
+                    <Icon name="gis:globe" aria-hidden="true" />
                     {{ t('globe.view3D') }}
                   </NuxtLink>
                 </div>
@@ -65,7 +65,7 @@
               <div class="bento-glow" aria-hidden="true" />
               <div class="bento-accent" aria-hidden="true" />
               <div class="bento-body">
-                <div class="bento-icon" aria-hidden="true"><Icon name="lucide:bird" /></div>
+                <div class="bento-icon" aria-hidden="true"><Icon name="tabler:feather" /></div>
                 <h2 class="bento-title">{{ t('home.campaignsTitle') }}</h2>
                 <p class="bento-desc">{{ t('home.campaignsDesc') }}</p>
                 <p class="bento-kicker">{{ t('home.campaignsKicker') }}</p>
@@ -81,11 +81,11 @@
                 </div>
                 <div class="bento-links">
                   <NuxtLink to="/campaigns" class="bento-link bento-link--primary">
-                    <Icon name="lucide:megaphone" aria-hidden="true" />
+                    <Icon name="tabler:share" aria-hidden="true" />
                     {{ t('home.campaignsTitle') }}
                   </NuxtLink>
                   <NuxtLink to="/endangered-species" class="bento-link">
-                    <Icon name="lucide:map" aria-hidden="true" />
+                    <Icon name="gis:map" aria-hidden="true" />
                     {{ t('home.speciesTitle') }}
                   </NuxtLink>
                 </div>
@@ -96,7 +96,7 @@
               <div class="bento-glow" aria-hidden="true" />
               <div class="bento-accent" aria-hidden="true" />
               <div class="bento-body">
-                <div class="bento-icon" aria-hidden="true"><Icon name="lucide:graduation-cap" /></div>
+                <div class="bento-icon" aria-hidden="true"><Icon name="tabler:book" /></div>
                 <h2 class="bento-title">{{ t('home.masterclassesTitle') }}</h2>
                 <p class="bento-desc">{{ t('home.masterclassesDesc') }}</p>
                 <div class="bento-stats">
@@ -111,7 +111,7 @@
                 </div>
                 <div class="bento-links">
                   <NuxtLink to="/masterclasses" class="bento-link bento-link--primary">
-                    <Icon name="lucide:book-open" aria-hidden="true" />
+                    <Icon name="tabler:bookmark" aria-hidden="true" />
                     {{ t('home.masterclassesTitle') }}
                   </NuxtLink>
                 </div>
@@ -122,7 +122,7 @@
               <div class="bento-glow" aria-hidden="true" />
               <div class="bento-accent" aria-hidden="true" />
               <div class="bento-body">
-                <div class="bento-icon" aria-hidden="true"><Icon name="lucide:heart-handshake" /></div>
+                <div class="bento-icon" aria-hidden="true"><Icon name="tabler:heart-handshake" /></div>
                 <h2 class="bento-title">{{ t('home.startACrewTitle') }}</h2>
                 <p class="bento-desc">{{ t('home.startACrewDesc') }}</p>
                 <div class="bento-stats">
@@ -137,11 +137,11 @@
                 </div>
                 <div class="bento-links">
                   <NuxtLink to="/active-crews" class="bento-link bento-link--primary">
-                    <Icon name="lucide:users-round" aria-hidden="true" />
+                    <Icon name="tabler:user" aria-hidden="true" />
                     {{ t('home.activeCrewsTitle') }}
                   </NuxtLink>
                   <a href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer" class="bento-link">
-                    <Icon name="lucide:arrow-up-right" aria-hidden="true" />
+                    <Icon name="tabler:share" aria-hidden="true" />
                     {{ t('home.startACrewTitle') }}
                   </a>
                 </div>
@@ -152,7 +152,7 @@
               <div class="bento-glow" aria-hidden="true" />
               <div class="bento-accent" aria-hidden="true" />
               <div class="bento-body">
-                <div class="bento-icon" aria-hidden="true"><Icon name="lucide:mountain" /></div>
+                <div class="bento-icon" aria-hidden="true"><Icon name="tabler:mountain" /></div>
                 <h2 class="bento-title">{{ t('home.crewProjectsTitle') }}</h2>
                 <p class="bento-desc">{{ t('home.crewProjectsDesc') }}</p>
                 <div class="bento-stats">
@@ -171,15 +171,15 @@
                 </div>
                 <div class="bento-links">
                   <NuxtLink data-testid="home-hero-crew-projects-link" to="/crew-projects" class="bento-link bento-link--primary">
-                    <Icon name="lucide:mountain" aria-hidden="true" />
+                    <Icon name="tabler:mountain" aria-hidden="true" />
                     {{ t('home.crewProjectsTitle') }}
                   </NuxtLink>
                   <NuxtLink to="/vulcan-observatory" class="bento-link" :aria-label="`${t('home.vulcanTitle')} — ${t('globe.view2D')}`">
-                    <Icon name="lucide:map" aria-hidden="true" />
+                    <Icon name="gis:map" aria-hidden="true" />
                     {{ t('home.vulcanTitle') }}
                   </NuxtLink>
                   <NuxtLink to="/vulcan-observatory/3d" class="bento-link" :aria-label="`${t('home.vulcanTitle')} — ${t('globe.view3D')}`">
-                    <Icon name="lucide:globe" aria-hidden="true" />
+                    <Icon name="gis:globe" aria-hidden="true" />
                     {{ t('home.vulcanTitle') }}
                   </NuxtLink>
                 </div>
@@ -198,19 +198,19 @@
           <p>{{ t('home.subtitleMore') }}</p>
           <NuxtLink to="/info" class="text-link">
             {{ t('nav.info') }}
-            <Icon name="lucide:arrow-up-right" aria-hidden="true" />
+            <Icon name="tabler:share" aria-hidden="true" />
           </NuxtLink>
         </div>
       </div>
       <ul class="story-principles">
-        <li><Icon name="lucide:users-round" aria-hidden="true" />{{ t('home.youthLed') }}</li>
-        <li><Icon name="lucide:heart-handshake" aria-hidden="true" />{{ t('home.globalAction') }}</li>
-        <li><Icon name="lucide:map-pin" aria-hidden="true" />{{ t('home.largeScale') }}</li>
+        <li><Icon name="tabler:user" aria-hidden="true" />{{ t('home.youthLed') }}</li>
+        <li><Icon name="tabler:heart-handshake" aria-hidden="true" />{{ t('home.globalAction') }}</li>
+        <li><Icon name="gis:pin" aria-hidden="true" />{{ t('home.largeScale') }}</li>
       </ul>
     </section>
 
     <section class="join-section" aria-labelledby="join-title" data-reveal>
-      <div class="join-mark" aria-hidden="true"><Icon name="lucide:heart-handshake" /></div>
+      <div class="join-mark" aria-hidden="true"><Icon name="tabler:heart-handshake" /></div>
       <div class="join-copy">
         <p class="eyebrow">{{ t('home.youthLed') }}</p>
         <h2 id="join-title">{{ t('home.startACrewTitle') }}</h2>
@@ -218,7 +218,7 @@
       </div>
       <a href="https://www.earthguardians.org/crews" target="_blank" rel="noopener noreferrer" class="join-link">
         {{ t('home.startACrewTitle') }}
-        <Icon name="lucide:arrow-up-right" aria-hidden="true" />
+        <Icon name="tabler:share" aria-hidden="true" />
       </a>
     </section>
 

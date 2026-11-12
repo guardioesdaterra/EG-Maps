@@ -45,6 +45,8 @@ export const REE_SOURCE_SITES = 'ree-sites'
 export const REE_SOURCE_NETWORK = 'ree-network'
 export const REE_SOURCE_PROTECTED = 'ree-protected'
 export const REE_SOURCE_CITIES = 'ree-cities'
+export const REE_SOURCE_BASINS = 'ree-basins'
+export const REE_SOURCE_MOGIANA = 'ree-mogiana'
 
 export const REE_LAYER_IDS = [
   'ree-point-glow', 'ree-point-circle', 'ree-point-hover',
@@ -60,12 +62,22 @@ export const REE_LAYER_IDS = [
   'ree-protected-buffer-fill', 'ree-protected-buffer-line', 'ree-protected-buffer-label',
   'ree-cities-label',
   'ree-overlap-glow',
+  // Water basins (nivel 2-6) - zoom-based visibility
+  'ree-basins-l2-fill', 'ree-basins-l2-line', 'ree-basins-l2-label',
+  'ree-basins-l3-fill', 'ree-basins-l3-line', 'ree-basins-l3-label',
+  'ree-basins-l4-fill', 'ree-basins-l4-line', 'ree-basins-l4-label',
+  'ree-basins-l5-fill', 'ree-basins-l5-line', 'ree-basins-l5-label',
+  'ree-basins-l6-fill', 'ree-basins-l6-line', 'ree-basins-l6-label',
+  // Proposed Mogiana territory (Earth Guardians Brazil)
+  'ree-mogiana-fill', 'ree-mogiana-line', 'ree-mogiana-label',
 ] as const
 
 export const REE_SOURCE_IDS = [
   REE_SOURCE_POINTS, REE_SOURCE_POLYS, REE_SOURCE_GEO,
   REE_SOURCE_SITES, REE_SOURCE_NETWORK, REE_SOURCE_PROTECTED,
   REE_SOURCE_CITIES,
+  REE_SOURCE_BASINS,
+  REE_SOURCE_MOGIANA,
   WATER_SOURCE,
 ] as const
 
@@ -89,11 +101,21 @@ export interface RareEarthLayerOptions {
   protected?: GeoJSON.FeatureCollection | null
   cultural?: GeoJSON.FeatureCollection | null
   networkFeatures?: GeoJSON.FeatureCollection | null
+  // Water basins (nivel 2-6) for zoom-based rendering
+  basinsL2?: GeoJSON.FeatureCollection | null
+  basinsL3?: GeoJSON.FeatureCollection | null
+  basinsL4?: GeoJSON.FeatureCollection | null
+  basinsL5?: GeoJSON.FeatureCollection | null
+  basinsL6?: GeoJSON.FeatureCollection | null
+  // Proposed Mogiana territory (proposed by Earth Guardians Brazil)
+  mogiana?: GeoJSON.FeatureCollection | null
   onClaimClick?: (_props: Record<string, unknown>, _lngLat: [number, number]) => void
   popup?: {
     t: (_key: string, _params?: Record<string, unknown>) => string
     locale: { value: string }
     onSidebarOpen?: (_payload: { processo: string; nome: string; tab: string; coords: [number, number] }) => void
+    /** "+N more" overflow action in the stacked popup (opens the data table). */
+    onShowAll?: () => void
   }
 }
 
@@ -196,6 +218,20 @@ function addPointLayers(map: MapLibreMap, source: string) {
       'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 2],
       'circle-stroke-opacity': 0.65,
     },
+  })
+
+  // Territory-overlap halo. Reads the precomputed numeric `overlaps_count`
+  // scalar — MapLibre expressions cannot evaluate object values, so the raw
+  // `ov` overlap array is never embedded in layer properties (the old
+  // `['length', ['get', 'ov']]` branch errored and blanked this layer).
+  // Lives on the POINTS bootstrap (not the protected-area builder) so a
+  // failed protected-areas fetch can no longer kill the overlaps toggle.
+  map.addLayer({
+    id: 'ree-overlap-glow',
+    type: 'circle',
+    source,
+    filter: ['all', ['!has', 'point_count'], ['>', 'overlaps_count', 0]] as unknown as maplibregl.FilterSpecification,
+    paint: { 'circle-color': '#f59e0b', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 10, 10, 14, 14, 18], 'circle-opacity': 0.25, 'circle-blur': 0.9, 'circle-stroke-color': '#f59e0b', 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 2], 'circle-stroke-opacity': 0.5 },
   })
 }
 
@@ -328,20 +364,22 @@ function addUnifiedObservatoryClick(map: MapLibreMap, options: RareEarthLayerOpt
 
       let claimCount = 0
       let boundaryCount = 0
-      for (const f of rendered) {
+      let overflow = 0
+      for (let ri = 0; ri < rendered.length; ri++) {
+        const f = rendered[ri]!
         const layerId = (f.layer as { id?: string } | undefined)?.id ?? String(f.layer ?? '')
         const group = QUERY_GROUPS.find(g => g.layers.includes(layerId))
         if (!group) continue
         const props = (f.properties ?? {}) as Record<string, unknown>
         if (group.kind === 'claim') {
-          if (claimCount >= 8) continue
+          if (claimCount >= 8) { overflow++; continue }
           const proc = String(props.processo ?? props.p ?? props.id ?? '')
           const nome = shortName(props.nome ?? props.n ?? props.NOME)
           const label = nome ? `⛏ ${nome}` : `⛏ ${proc.slice(-6) || 'claim'}`
           push('claim', label, props, layerId, `claim::${proc || JSON.stringify(props).slice(0, 80)}`)
           claimCount++
         } else if (group.kind === 'boundary') {
-          if (boundaryCount >= 4) continue
+          if (boundaryCount >= 4) { overflow++; continue }
           const proc = String(props.PROCESSO ?? props.processo ?? props.p ?? '')
           const nome = shortName(props.NOME ?? props.nome ?? props.n ?? props.enterprise)
           const label = nome ? `◈ ${nome}` : `◈ ${proc.slice(-6) || 'boundary'}`
@@ -360,7 +398,7 @@ function addUnifiedObservatoryClick(map: MapLibreMap, options: RareEarthLayerOpt
           const name = String(props.name ?? 'Geological area')
           push('geo', `🌍 ${shortName(name)}`, props, layerId, `geo::${String(props.type ?? '')}::${name}`)
         }
-        if (hits.length >= 12) break
+        if (hits.length >= 12) { overflow += rendered.length - ri - 1; break }
       }
 
       if (!hits.length) {
@@ -401,6 +439,8 @@ function addUnifiedObservatoryClick(map: MapLibreMap, options: RareEarthLayerOpt
           t: options.popup.t,
           locale: options.popup.locale,
           onSidebarOpen: options.popup.onSidebarOpen,
+          overflowCount: overflow,
+          onShowAll: options.popup.onShowAll,
         })
         if (popup) activePopups.set(map, popup)
         return
@@ -430,19 +470,65 @@ export interface ObservatorySyncInput {
   /** Cultural agents overlay (Mapa Cultura + Floresta Ativista + curated spaces). */
   cultural?: GeoJSON.FeatureCollection | null
   networkFeatures?: GeoJSON.FeatureCollection | null
+  // Water basins (nivel 2-6) for zoom-based rendering
+  basinsL2?: GeoJSON.FeatureCollection | null
+  basinsL3?: GeoJSON.FeatureCollection | null
+  basinsL4?: GeoJSON.FeatureCollection | null
+  basinsL5?: GeoJSON.FeatureCollection | null
+  basinsL6?: GeoJSON.FeatureCollection | null
+  // Proposed Mogiana territory (proposed by Earth Guardians Brazil)
+  mogiana?: GeoJSON.FeatureCollection | null
   visibility?: Record<string, boolean>
+  /**
+   * Modern-form MapLibre filter mirroring the JS claim filter. When present,
+   * claim/boundary layers receive it via setFilter and the sources keep the
+   * FULL dataset (stable identity → no per-keystroke setData). null = keep
+   * creation-time filters (legacy path), undefined = don't touch.
+   */
+  filterExpr?: unknown[] | null
   popup?: RareEarthLayerOptions['popup']
   onClaimClick?: RareEarthLayerOptions['onClaimClick']
+}
+
+/**
+ * Apply (or clear) the expression claim filter on every layer that reads
+ * claim data. Modern-form only: the legacy `['!has','point_count']` guards
+ * are dropped because `ree-points` is cluster:false, and `is_foreign` /
+ * `overlaps_count` get `['get', ...]` equivalents.
+ */
+export function applyObservatoryFilterExpr(map: MapLibreMap, expr: unknown[] | null): void {
+  const user = expr as maplibregl.FilterSpecification | null
+  const setF = (id: string, f: maplibregl.FilterSpecification | undefined) => {
+    try { if (map.getLayer(id)) map.setFilter(id, f) } catch { /* invalid expr → leave layer filter untouched */ }
+  }
+  if (!user) {
+    // Back to creation-time semantics (all features visible).
+    for (const id of ['ree-point-glow', 'ree-point-circle', 'ree-heat-layer', 'ree-point-hover',
+      'ree-poly-fill', 'ree-poly-glow', 'ree-poly-line', 'ree-poly-label']) setF(id, undefined)
+    setF('ree-foreign-glow', ['all', ['==', ['get', 'is_foreign'], 1]] as unknown as maplibregl.FilterSpecification)
+    setF('ree-overlap-glow', ['all', ['>', ['get', 'overlaps_count'], 0]] as unknown as maplibregl.FilterSpecification)
+    return
+  }
+  for (const id of ['ree-point-glow', 'ree-point-circle', 'ree-heat-layer', 'ree-point-hover',
+    'ree-poly-fill', 'ree-poly-glow', 'ree-poly-line', 'ree-poly-label']) setF(id, user)
+  setF('ree-foreign-glow', ['all', ['==', ['get', 'is_foreign'], 1], user] as unknown as maplibregl.FilterSpecification)
+  setF('ree-overlap-glow', ['all', ['>', ['get', 'overlaps_count'], 0], user] as unknown as maplibregl.FilterSpecification)
 }
 
 function setSourceData(map: MapLibreMap, sourceId: string, data: GeoJSON.FeatureCollection): boolean {
   try {
     const src = map.getSource(sourceId) as maplibregl.GeoJSONSource | undefined
     if (!src || typeof (src as { setData?: unknown }).setData !== 'function') return false
+    // Identity guard: with the setFilter rendering path the raw collections
+    // are stable objects, and every 32ms reconcile would otherwise re-upload
+    // + re-tessellate the full dataset. Same reference → already on the map.
+    if (lastSourceData.get(src) === data) return true
     ;(src as maplibregl.GeoJSONSource).setData(data)
+    lastSourceData.set(src, data)
     return true
   } catch { return false }
 }
+const lastSourceData = new WeakMap<maplibregl.GeoJSONSource, unknown>()
 
 /**
  * Reconcile every observatory source with the latest data WITHOUT tearing
@@ -455,7 +541,7 @@ function setSourceData(map: MapLibreMap, sourceId: string, data: GeoJSON.Feature
  */
 export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncInput): boolean {
   if (!map || !map.isStyleLoaded()) return false
-  const { points, polys, protected: protectedAreas, water, cultural, networkFeatures, visibility, popup, onClaimClick } = input
+  const { points, polys, protected: protectedAreas, water, cultural, networkFeatures, basinsL2, basinsL3, basinsL4, basinsL5, basinsL6, mogiana, visibility, filterExpr, popup, onClaimClick } = input
   // Proceed when ANY layer has data. Gating everything on filtered points
   // alone left the map permanently blank whenever the point set was momentarily
   // empty (initial empty FC, strict filters) while polygons/protected/water
@@ -476,6 +562,12 @@ export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncIn
       protected: protectedAreas ?? null,
       cultural: cultural ?? null,
       networkFeatures: networkFeatures ?? null,
+      basinsL2: basinsL2 ?? null,
+      basinsL3: basinsL3 ?? null,
+      basinsL4: basinsL4 ?? null,
+      basinsL5: basinsL5 ?? null,
+      basinsL6: basinsL6 ?? null,
+      mogiana: mogiana ?? null,
       popup,
       onClaimClick,
     })
@@ -531,6 +623,10 @@ export function syncObservatoryLayers(map: MapLibreMap, input: ObservatorySyncIn
     setupCulturalLayers(map, cultural)
   }
 
+  // Expression claim filter (setFilter rendering path): applied AFTER data
+  // reconcile so freshly created layers immediately honour live filters.
+  if (filterExpr !== undefined) applyObservatoryFilterExpr(map, filterExpr)
+
   syncRareEarthLayerVisibility(map, visibility || {})
   return true
 }
@@ -549,25 +645,13 @@ export function setupRareEarthLayers(
   const { points, polys, protected: protectedAreas } = options
   const cleanups: Array<() => void> = []
   if (!points) return () => {}
-  // NOTE: no `isStyleLoaded()` gate here on purpose — see the same note in
-  // `setupCulturalLayers`. `isStyleLoaded()` is false whenever sources were
-  // just mutated in the same tick, and this bootstrap also runs mid-`sync`
-  // (late protected-area arrival) right after `setData` calls. Load-gating
-  // with retry lives at the entry points (`useRareEarthController`
-  // `setupLayers`, `syncObservatoryLayers`, style.load handlers).
 
   cleanupRareEarthLayers(map)
 
   map.addSource(REE_SOURCE_POINTS, {
     type: 'geojson',
     data: points,
-    // Stable feature ids from the ANM processo property (stamped at
-    // normalization time). Ids survive setData across filter changes, so
-    // hover feature-state stays consistent instead of reshuffling.
     promoteId: 'processo',
-    // Unclustered by design: every claim renders its own GPU circle marker.
-    // (Clustering was removed — regional footprint is small enough that all
-    // 284 claims + full-Brazil sets render at 60fps without it.)
     cluster: false,
   })
 
@@ -584,6 +668,12 @@ export function setupRareEarthLayers(
   addRareEarthConflictSites(map)
   addSiteHandlers(map, cleanups)
   addBrazilianCitiesLayer(map)
+
+  // Water basins (nivel 2-6) with zoom-based visibility
+  addWaterBasinsLayers(map, options.basinsL2 ?? null, options.basinsL3 ?? null, options.basinsL4 ?? null, options.basinsL5 ?? null, options.basinsL6 ?? null)
+
+  // Proposed Mogiana territory (Earth Guardians Brazil)
+  addMogianaTerritoryLayer(map, options.mogiana ?? null)
 
   if (options.networkFeatures) {
     addRareEarthNetworkLines(map, options.networkFeatures)
@@ -718,6 +808,150 @@ export function addRareEarthConflictSites(map: MapLibreMap) {
   })
 }
 
+/** Water basins (nivel 2-6) with zoom-based visibility switching.
+ * Level 2: outermost zoom (0-5), Level 6: max zoom (12+)
+ * Each level auto-switches based on zoom to show appropriate detail.
+ */
+export function addWaterBasinsLayers(map: MapLibreMap, basinsL2: GeoJSON.FeatureCollection | null, basinsL3: GeoJSON.FeatureCollection | null, basinsL4: GeoJSON.FeatureCollection | null, basinsL5: GeoJSON.FeatureCollection | null, basinsL6: GeoJSON.FeatureCollection | null) {
+  if (!basinsL2?.features?.length && !basinsL3?.features?.length && !basinsL4?.features?.length && !basinsL5?.features?.length && !basinsL6?.features?.length) return
+  if (map.getSource(REE_SOURCE_BASINS)) return
+
+  // Combine all basin levels into one source with a 'nivel' property for filtering
+  const allFeatures: GeoJSON.Feature[] = []
+  const addWithLevel = (fc: GeoJSON.FeatureCollection | null, nivel: number) => {
+    if (fc?.features) {
+      for (const f of fc.features) {
+        allFeatures.push({ ...f, properties: { ...f.properties, nivel } })
+      }
+    }
+  }
+  addWithLevel(basinsL2, 2)
+  addWithLevel(basinsL3, 3)
+  addWithLevel(basinsL4, 4)
+  addWithLevel(basinsL5, 5)
+  addWithLevel(basinsL6, 6)
+
+  map.addSource(REE_SOURCE_BASINS, { type: 'geojson', data: { type: 'FeatureCollection', features: allFeatures } })
+
+  // Level 2: outermost (zoom 0-5)
+  map.addLayer({
+    id: 'ree-basins-l2-fill', type: 'fill', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 2]],
+    paint: { 'fill-color': '#1e3a5f', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.15, 5, 0.08] },
+  })
+  map.addLayer({
+    id: 'ree-basins-l2-line', type: 'line', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 2]],
+    paint: { 'line-color': '#3b82f6', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 5, 1.5], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 5, 0.8] },
+  })
+  map.addLayer({
+    id: 'ree-basins-l2-label', type: 'symbol', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 2]],
+    layout: { 'text-field': ['get', 'nome_bacia'], 'text-font': ['Open Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 0, 0, 4, 9, 5, 11], 'text-allow-overlap': true },
+    paint: { 'text-color': '#3b82f6', 'text-halo-color': 'rgba(0,0,0,0.85)', 'text-halo-width': 1.5, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 0, 0, 3, 0.6, 5, 0.9] },
+  })
+
+  // Level 3: zoom 4-8
+  map.addLayer({
+    id: 'ree-basins-l3-fill', type: 'fill', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 3]],
+    paint: { 'fill-color': '#1e4a6f', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 4, 0.12, 8, 0.06] },
+  })
+  map.addLayer({
+    id: 'ree-basins-l3-line', type: 'line', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 3]],
+    paint: { 'line-color': '#3b82f6', 'line-width': ['interpolate', ['linear'], ['zoom'], 4, 0.8, 8, 1.8], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 4, 0.6, 8, 0.9] },
+  })
+  map.addLayer({
+    id: 'ree-basins-l3-label', type: 'symbol', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 3]],
+    layout: { 'text-field': ['get', 'nome_bacia'], 'text-font': ['Open Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 4, 0, 6, 9, 8, 11], 'text-allow-overlap': true },
+    paint: { 'text-color': '#3b82f6', 'text-halo-color': 'rgba(0,0,0,0.85)', 'text-halo-width': 1.5, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 4, 0, 5, 0.6, 8, 0.9] },
+  })
+
+  // Level 4: zoom 7-11
+  map.addLayer({
+    id: 'ree-basins-l4-fill', type: 'fill', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 4]],
+    paint: { 'fill-color': '#1e5a7f', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 7, 0.1, 11, 0.05] },
+  })
+  map.addLayer({
+    id: 'ree-basins-l4-line', type: 'line', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 4]],
+    paint: { 'line-color': '#3b82f6', 'line-width': ['interpolate', ['linear'], ['zoom'], 7, 1, 11, 2], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 7, 0.7, 11, 0.9] },
+  })
+  map.addLayer({
+    id: 'ree-basins-l4-label', type: 'symbol', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 4]],
+    layout: { 'text-field': ['get', 'nome_bacia'], 'text-font': ['Open Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 7, 0, 9, 9, 11, 11], 'text-allow-overlap': true },
+    paint: { 'text-color': '#3b82f6', 'text-halo-color': 'rgba(0,0,0,0.85)', 'text-halo-width': 1.5, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 7, 0, 8, 0.6, 11, 0.9] },
+  })
+
+  // Level 5: zoom 10-14
+  map.addLayer({
+    id: 'ree-basins-l5-fill', type: 'fill', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 5]],
+    paint: { 'fill-color': '#1e6a8f', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 10, 0.08, 14, 0.04] },
+  })
+  map.addLayer({
+    id: 'ree-basins-l5-line', type: 'line', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 5]],
+    paint: { 'line-color': '#3b82f6', 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1.2, 14, 2.2], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 10, 0.7, 14, 0.9] },
+  })
+  map.addLayer({
+    id: 'ree-basins-l5-label', type: 'symbol', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 5]],
+    layout: { 'text-field': ['get', 'nome_bacia'], 'text-font': ['Open Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 10, 0, 12, 9, 14, 11], 'text-allow-overlap': true },
+    paint: { 'text-color': '#3b82f6', 'text-halo-color': 'rgba(0,0,0,0.85)', 'text-halo-width': 1.5, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 10, 0, 11, 0.6, 14, 0.9] },
+  })
+
+  // Level 6: zoom 13+ (maximum detail)
+  map.addLayer({
+    id: 'ree-basins-l6-fill', type: 'fill', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 6]],
+    paint: { 'fill-color': '#1e7a9f', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0.06, 16, 0.03] },
+  })
+  map.addLayer({
+    id: 'ree-basins-l6-line', type: 'line', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 6]],
+    paint: { 'line-color': '#3b82f6', 'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.5, 16, 2.5], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0.8, 16, 0.95] },
+  })
+  map.addLayer({
+    id: 'ree-basins-l6-label', type: 'symbol', source: REE_SOURCE_BASINS,
+    filter: ['all', ['==', ['get', 'nivel'], 6]],
+    layout: { 'text-field': ['get', 'nome_bacia'], 'text-font': ['Open Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 13, 0, 15, 9, 16, 11], 'text-allow-overlap': true },
+    paint: { 'text-color': '#3b82f6', 'text-halo-color': 'rgba(0,0,0,0.85)', 'text-halo-width': 1.5, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0, 14, 0.6, 16, 0.9] },
+  })
+}
+
+/** Proposed Mogiana territory (proposed by Earth Guardians Brazil) */
+export function addMogianaTerritoryLayer(map: MapLibreMap, mogianaData: GeoJSON.FeatureCollection | null) {
+  if (!mogianaData?.features?.length) return
+  if (map.getSource(REE_SOURCE_MOGIANA)) return
+
+  map.addSource(REE_SOURCE_MOGIANA, { type: 'geojson', data: mogianaData })
+
+  map.addLayer({
+    id: 'ree-mogiana-fill', type: 'fill', source: REE_SOURCE_MOGIANA,
+    paint: { 'fill-color': '#f39c12', 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.15, 12, 0.08] },
+  })
+  map.addLayer({
+    id: 'ree-mogiana-line', type: 'line', source: REE_SOURCE_MOGIANA,
+    paint: { 'line-color': '#e67e22', 'line-width': ['interpolate', ['linear'], ['zoom'], 5, 2, 12, 3.5], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0.8, 12, 0.95], 'line-dasharray': [4, 2] },
+  })
+  map.addLayer({
+    id: 'ree-mogiana-label', type: 'symbol', source: REE_SOURCE_MOGIANA,
+    layout: {
+      'text-field': ['get', 'name'],
+      'text-font': ['Open Sans Regular'],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 5, 0, 8, 10, 12, 12],
+      'text-allow-overlap': false, 'text-ignore-placement': false,
+      'text-anchor': 'center',
+    },
+    paint: { 'text-color': '#f39c12', 'text-halo-color': 'rgba(0,0,0,0.9)', 'text-halo-width': 2, 'text-opacity': ['interpolate', ['linear'], ['zoom'], 5, 0, 7, 0.9, 12, 1] },
+  })
+}
+
 export function addRareEarthNetworkLines(map: MapLibreMap, networkFeatures: GeoJSON.FeatureCollection) {
   if (!networkFeatures?.features?.length || map.getSource(REE_SOURCE_NETWORK)) return
   map.addSource(REE_SOURCE_NETWORK, { type: 'geojson', data: networkFeatures })
@@ -831,16 +1065,8 @@ export function addProtectedAreasLayer(map: MapLibreMap, protectedAreas: GeoJSON
     layout: { 'text-field': ['get', 'name'], 'text-font': ['Open Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 5, 0, 7, 9, 10, 11], 'text-allow-overlap': false },
     paint: { 'text-color': '#2dd4bf', 'text-halo-color': 'rgba(0,0,0,0.9)', 'text-halo-width': 1.5 },
   })
-
-  // Territory-overlap halo. Reads the precomputed numeric `overlaps_count`
-  // scalar — MapLibre expressions cannot evaluate object values, so the raw
-  // `ov` overlap array is never embedded in layer properties (the old
-  // `['length', ['get', 'ov']]` branch errored and blanked this layer).
-  map.addLayer({
-    id: 'ree-overlap-glow', type: 'circle', source: REE_SOURCE_POINTS,
-    filter: ['all', ['!has', 'point_count'], ['>', 'overlaps_count', 0]] as unknown as maplibregl.FilterSpecification,
-    paint: { 'circle-color': '#f59e0b', 'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 10, 10, 14, 14, 18], 'circle-opacity': 0.25, 'circle-blur': 0.9, 'circle-stroke-color': '#f59e0b', 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 14, 2], 'circle-stroke-opacity': 0.5 },
-  })
+  // NOTE: ree-overlap-glow lives on the points bootstrap (addPointLayers) so
+  // the overlaps toggle never depends on the protected-areas fetch.
 }
 
 const polyHandlerMap = new WeakMap<MapLibreMap, boolean>()
@@ -903,6 +1129,20 @@ export function syncRareEarthLayerVisibility(map: MapLibreMap, vis: Record<strin
   ;['ree-protected-buffer-fill', 'ree-protected-buffer-line', 'ree-protected-buffer-label'].forEach(id => setVis(id, vis['protected_buffer'] !== false))
 
   setVis('ree-cities-label', vis['cities'] !== false)
+
+  // Water basins (nivel 2-6) — visible by default, toggle via `basins` key.
+  const showBasins = vis['basins'] !== false
+  ;[
+    'ree-basins-l2-fill', 'ree-basins-l2-line', 'ree-basins-l2-label',
+    'ree-basins-l3-fill', 'ree-basins-l3-line', 'ree-basins-l3-label',
+    'ree-basins-l4-fill', 'ree-basins-l4-line', 'ree-basins-l4-label',
+    'ree-basins-l5-fill', 'ree-basins-l5-line', 'ree-basins-l5-label',
+    'ree-basins-l6-fill', 'ree-basins-l6-line', 'ree-basins-l6-label',
+  ].forEach(id => setVis(id, showBasins))
+
+  // Proposed Mogiana territory (Earth Guardians Brazil) — visible by default, toggle via `mogiana` key.
+  const showMogiana = vis['mogiana'] !== false
+  ;['ree-mogiana-fill', 'ree-mogiana-line', 'ree-mogiana-label'].forEach(id => setVis(id, showMogiana))
 
   // Cultural agents overlay — visible by default, toggle via `cultural` key.
   setCulturalLayersVisibility(map, vis['cultural'] !== false)

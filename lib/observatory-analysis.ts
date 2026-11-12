@@ -230,10 +230,10 @@ export interface DeepAnalysis {
 
 export function buildAnmVerifyUrl(processo: string | null | undefined, ano: number | null | undefined): string | null {
   if (!processo) return null
-  const cleaned = String(processo).replace(/[^0-9]/g, '')
+  const cleaned = String(processo).replace(/[^0-9/]/g, '')
   if (!cleaned) return null
-  const year = ano ?? new Date().getFullYear()
-  return `https://app.anm.gov.br/SIGMINE/pesquisa_processo_apresentado.aspx?numero=${cleaned}&ano=${year}`
+  const encoded = encodeURIComponent(`PROCESSO = '${cleaned}'`)
+  return `https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/dados_anm/FeatureServer/0/query?where=${encoded}&outFields=*&returnGeometry=true&f=geojson`
 }
 
 export function buildClaimReportMailtoUrl(input: {

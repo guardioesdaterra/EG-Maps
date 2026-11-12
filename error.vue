@@ -14,7 +14,7 @@
       
         <div class="mb-[clamp(1.5rem,4vw,3rem)] animate-float">
           <div class="w-[clamp(4rem,12vw,6rem)] h-[clamp(4rem,12vw,6rem)] rounded-full bg-[var(--bg-tertiary)] border-2 border-[var(--text-primary)]/20 flex items-center justify-center">
-            <Icon name="lucide:alert-triangle" class="h-[clamp(2rem,6vw,3rem)] w-[clamp(2rem,6vw,3rem)] text-[var(--text-secondary)]" />
+            <Icon name="tabler:alert-triangle" class="h-[clamp(2rem,6vw,3rem)] w-[clamp(2rem,6vw,3rem)] text-[var(--text-secondary)]" />
         </div>
       </div>
 

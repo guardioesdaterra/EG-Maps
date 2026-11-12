@@ -1,6 +1,8 @@
 /**
  * composables/useSpeciesIcons.ts
- * @why Species icon construction — builds Wikimedia Commons image URLs with fallback to game-icons
+ * @why Species icon construction — loads the offline species-icon mapping;
+ *   icons are not rendered as <iconify-icon> anywhere in the UI, so no CDN
+ *   call is made. Markers use the local tabler/gis registry via Icon.vue.
  * @functions useSpeciesIcons
  * @deps vue (ref, readonly)
  */
@@ -50,10 +52,10 @@ export function useSpeciesIcons(baseURL?: string) {
     return mapping.value[speciesId]?.iconifyName
   }
 
-  function getIconSvgUrl(speciesId: string): string | undefined {
-    const match = mapping.value[speciesId]
-    if (!match) return undefined
-    return `https://api.iconify.design/${match.iconifyName.replace(':', '/')}.svg`
+  function getIconSvgUrl(_speciesId: string): string | undefined {
+    // Species icons are not rendered as <iconify-icon> anywhere in the UI;
+    // return undefined so no network/CDN call is made.
+    return undefined
   }
 
   return {

@@ -9,7 +9,7 @@
 <template>
   <div class="obs-tab">
     <p class="obs-tab__hint">
-      <Icon name="lucide:mouse-pointer-2" class="obs-tab__hint-icon" />
+      <Icon name="tabler:pointer" class="obs-tab__hint-icon" />
       {{ t('observatory.network.clickHint') }}
     </p>
 
@@ -21,7 +21,7 @@
         :aria-expanded="infoOpen"
         @click="infoOpen = !infoOpen"
       >
-        <Icon :name="infoOpen ? 'lucide:chevron-down' : 'lucide:network'" class="obs-expand__icon" />
+        <Icon :name="infoOpen ? 'tabler:arrows-move' : 'gis:network-o'" class="obs-expand__icon" />
         {{ infoOpen ? t('observatory.network.hideInfo') : t('observatory.network.whatIsThis') }}
       </button>
       <Transition name="obs-fade">
@@ -57,14 +57,14 @@
             :aria-label="t('observatory.network.showConnections')"
             @click="onHighlight(n.titleKey)"
           >
-            <Icon name="lucide:search" class="obs-card__action-icon" />
+            <Icon name="tabler:search" class="obs-card__action-icon" />
           </button>
         </div>
       </li>
     </ul>
 
     <div class="obs-tab__footnote">
-      <Icon name="lucide:info" class="obs-tab__footnote-icon" />
+      <Icon name="tabler:info-circle" class="obs-tab__footnote-icon" />
       {{ t('observatory.network.learnMore') }}
     </div>
   </div>
@@ -100,12 +100,12 @@ function onClearHighlight() {
 
 function networkIcon(titleKey: string): string {
   const map: Record<string, string> = {
-    'observatory.network.foxfireTitle': 'lucide:flame',
-    'observatory.network.australianTitle': 'lucide:ship',
-    'observatory.network.usMilitaryTitle': 'lucide:shield-half',
-    'observatory.network.cbmmTitle': 'lucide:factory',
+    'observatory.network.foxfireTitle': 'tabler:flame',
+    'observatory.network.australianTitle': 'tabler:ship',
+    'observatory.network.usMilitaryTitle': 'tabler:shield-half',
+    'observatory.network.cbmmTitle': 'tabler:building-factory',
   }
-  return map[titleKey] || 'lucide:git-branch'
+  return map[titleKey] || 'tabler:git-branch'
 }
 
 </script>

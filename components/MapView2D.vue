@@ -51,7 +51,7 @@
     <div aria-hidden="true" class="absolute inset-0 pointer-events-none opacity-[0.015]" :style="{ zIndex: 'calc(var(--z-map-effects) + 3)', backgroundImage: `image-set(url(${baseURL}scanline.gif) 1x, url(${baseURL}scanline.gif) 2x)`, backgroundRepeat: 'repeat' }" />
     <div aria-hidden="true" class="absolute inset-0 pointer-events-none" :style="{ zIndex: 'var(--z-map-overlays)', boxShadow: 'inset 0 0 clamp(30px, 8vw, 100px) clamp(5px, 2vw, 15px) rgba(0,0,0,0.5)' }" />
 
-    <canvas v-if="showHexGrid" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-20" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
+    <canvas v-if="showHexCanvas" ref="hexCanvasRef" aria-hidden="true" class="absolute inset-0 w-full h-full pointer-events-none opacity-20" :style="{ zIndex: 'var(--z-map-hex-grid)' }" />
 
     <div aria-hidden="true" class="absolute inset-0 overflow-hidden pointer-events-none" :style="{ zIndex: 'var(--z-map-effects)' }">
       <div :class="`absolute top-0 left-0 w-full h-full ${isMobile ? 'opacity-5' : 'opacity-10'}`">
@@ -89,17 +89,17 @@
 
     <DataBubble v-if="!hideAll && activeDataset !== 'vulcan-observatory'" :mode="activeDataset === 'endangered-species' ? 'species' : activeDataset === 'active-crews' ? 'crews' : 'projects'" :selected-groups="selectedSpeciesGroups" :selected-crew-statuses="selectedCrewStatuses" :projects="visibleProjects" :crews="crewsData" :crew-locations="crewLocationsData" position-top="auto" :position-bottom="isMobile ? 'clamp(5.5rem,12vh,7rem)' : 'clamp(1rem, 4vh, 2rem)'" @toggle-group="toggleLegendGroup" @toggle-crew-status="toggleCrewStatus" />
 
-    <MapControls v-if="activeDataset !== 'vulcan-observatory' && !hideAll" :is-globe-view="false" :show-hex-grid="showHexGrid" :show-connections="showConnections" :share-copied="shareCopied" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :crews="activeDataset === 'active-crews' ? crewsData : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" @toggle-hex-grid="showHexGrid = !showHexGrid" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" @share="shareMap" @export="exportMapImage" @export-data="exportVisibleData" :style="{ zIndex: 'var(--z-map-ui-controls)' }" />
+    <MapControls v-if="activeDataset !== 'vulcan-observatory' && !hideAll" :is-globe-view="false" :show-hex-grid="showHexGrid" :hex-grid-mode="hexGridMode" :geo-hex-stats="geoHexStats" :show-connections="showConnections" :share-copied="shareCopied" :dataset="activeDataset" :projects="activeDataset === 'project-grants' ? visibleProjects : undefined" :crews="activeDataset === 'active-crews' ? crewsData : undefined" :species="activeDataset === 'endangered-species' ? speciesIndexData : undefined" :filter-open="showFilterPanel" :is-embed="hideControls" @toggle-hex-grid="toggleHexGridMode" @toggle-connections="toggleConnections" @toggle-filter="!hideControls && (showFilterPanel = !showFilterPanel)" @search-open-change="handleSearchOpenChange" @navigate="navigateToLocation" @share="shareMap" @export="exportMapImage" @export-data="exportVisibleData" :style="{ zIndex: 'var(--z-map-ui-controls)' }" />
 
     <Transition name="fade">
       <div v-if="hasError" class="absolute inset-0 bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center text-white z-[var(--z-map-error-overlay)]" role="alert" aria-live="assertive">
         <div class="relative mb-6">
           <div class="w-16 h-16 rounded-full bg-[var(--text-primary)]/10 animate-pulse" />
-          <iconify-icon icon="lucide:alert-triangle" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-[var(--text-primary)]" />
+          <Icon name="tabler:alert-triangle" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-[var(--text-primary)]" />
         </div>
         <p class="text-gray-400 mb-4 text-center px-4 max-w-md">{{ errorMessage || t('globe.connectionError') }}</p>
         <button v-if="!noWebglSupport" type="button" @click="() => { hasError = false; initMap(true) }" class="px-6 py-2.5 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-lg font-medium hover:opacity-80 transition-all duration-300 flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black">
-          <iconify-icon icon="lucide:refresh-cw" class="h-4 w-4" />
+          <Icon name="tabler:refresh" class="h-4 w-4" />
           {{ t('globe.tryAgain') }}
         </button>
       </div>
@@ -109,7 +109,7 @@
     <Teleport to="body">
     <Transition name="scale-fade">
       <div v-if="showSpeciesOverlay" ref="speciesOverlayRef" class="species-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="speciesData?.commonName || t('nav.endangeredSpecies')" @click.self="closeSpeciesOverlay" @keydown.esc="closeSpeciesOverlay">
-        <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
+        <button ref="speciesCloseBtnRef" class="species-popup-close-btn-fixed" @click="closeSpeciesOverlay" :aria-label="t('general.close')"><Icon name="tabler:trash-x" class="h-6 w-6" /></button>
         <div v-if="availablePopupLocales.length > 0" class="species-popup-lang-bar">
           <button v-for="loc in availablePopupLocales" :key="loc" :lang="loc" class="species-popup-lang-btn" :class="{ active: popupLocale === loc }" @click="popupLocale = loc">{{ (localeNames as Record<string, string>)[loc] || loc }}</button>
         </div>
@@ -122,7 +122,7 @@
     
     <Transition name="scale-fade">
       <div v-if="showProjectOverlay" ref="projectOverlayRef" class="project-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="projectData?.project_title || t('home.projectGrants')" @click.self="closeProjectOverlay" @keydown.esc="closeProjectOverlay">
-        <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
+        <button ref="projectCloseBtnRef" class="project-popup-close-btn-fixed" @click="closeProjectOverlay" :aria-label="t('general.close')"><Icon name="tabler:trash-x" class="h-6 w-6" /></button>
         <div class="project-popup-content-fixed">
           <MapProjectPopup :project="projectData" />
         </div>
@@ -132,7 +132,7 @@
     
     <Transition name="scale-fade">
       <div v-if="showCrewOverlay" ref="crewOverlayRef" class="crew-popup-overlay-fixed" role="dialog" aria-modal="true" :aria-label="crewOverlayLabel" @click.self="closeCrewOverlay" @keydown.esc="closeCrewOverlay">
-        <button ref="crewCloseBtnRef" class="crew-popup-close-btn-fixed" @click="closeCrewOverlay" :aria-label="t('general.close')"><Icon name="lucide:x" class="h-6 w-6" /></button>
+        <button ref="crewCloseBtnRef" class="crew-popup-close-btn-fixed" @click="closeCrewOverlay" :aria-label="t('general.close')"><Icon name="tabler:trash-x" class="h-6 w-6" /></button>
         <div class="crew-popup-content-fixed">
           <MapCrewPopup :crew="crewData" :is-location="isCrewLocationData" :projects="visibleProjects" :crew-locations="visibleCrewLocations" @select-crew="openCrewLocationOverlay" @fly-to-project="(lat, lng) => navigateToLocation(lat, lng)" />
         </div>
@@ -148,7 +148,7 @@
 
 <script setup lang="ts">
 
-import { ref, watch, computed, defineAsyncComponent, onErrorCaptured } from 'vue'
+import Icon from '~/components/Icon.vue'
 import type maplibregl from 'maplibre-gl'
 import type { MapBaseProps } from '@/composables/useMapBase'
 import { useMapBase } from '@/composables/useMapBase'
@@ -255,7 +255,7 @@ const {
   projectsData, speciesIndexData, visibleProjects, crewsData, crewLocationsData, visibleCrewLocations,
   activeDataset, selectedSpeciesGroups, selectedCrewStatuses, toggleCrewStatus,
   hasError, errorMessage, noWebglSupport, shareCopied, shareMap, exportMapImage, exportVisibleData,
-  showHexGrid, showFilterPanel, speciesFilterPanelRef,
+  showHexGrid, showHexCanvas, hexGridMode, geoHexStats, toggleHexGridMode, showFilterPanel, speciesFilterPanelRef,
   showConnections, toggleConnections,
   showSpeciesOverlay, showProjectOverlay, showCrewOverlay,
   speciesData, projectData, crewData, isCrewLocationData,

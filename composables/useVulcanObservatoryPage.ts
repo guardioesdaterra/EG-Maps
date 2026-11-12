@@ -14,6 +14,7 @@ import { useCulturalAgentsData } from '@/composables/useCulturalAgentsData'
 import { normalizeName } from '@/lib/observatory-analysis'
 import { foreignHolderRanking, type ForeignHolderRank } from '@/lib/enterprise-data'
 import { haversineKm } from '@/lib/water-defense'
+import { VULCAN_MAX_BOUNDS } from '@/composables/useMapBase'
 
 export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas') {
   const { t } = useI18n()
@@ -34,7 +35,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     debouncedFilter, updateFilter,
   } = controls
 
-  const { pointsData: _rawPointsData, polygonsData: _rawPolygonsData, protectedData: _rawProtectedData, waterData: _rawWaterData, culturalData: _rawCulturalData, features: allFeatures, speculatorIndex, deepAnalysis, layerCounts, overlapSummary, protectedSummary, waterThreats, waterSummary, resourceErrors, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL, initialRegion)
+  const { pointsData: _rawPointsData, polygonsData: _rawPolygonsData, protectedData: _rawProtectedData, waterData: _rawWaterData, culturalData: _rawCulturalData, basinsDataL2, basinsDataL3, basinsDataL4, basinsDataL5, basinsDataL6, mogianaData, features: allFeatures, speculatorIndex, deepAnalysis, layerCounts, overlapSummary, protectedSummary, waterThreats, waterSummary, resourceErrors, isLoading, loadPhase, loadProgress, error, load: loadRareEarthData, loadFullBrazil, isRegional } = useRareEarthData(baseURL, initialRegion)
 
   const { combinedData: culturalAgentsCombined, sourceCounts, load: loadCulturalAgents, isLoading: culturalLoading, error: culturalError, sourceErrors: culturalSourceErrors } = useCulturalAgentsData(baseURL)
 
@@ -101,12 +102,27 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
   const mergedCulturalRef = shallowRef<GeoJSON.FeatureCollection | undefined>(undefined)
   watch(culturalData, (v) => { mergedCulturalRef.value = v }, { immediate: true })
 
+  // One-time nudge when the regional maxBounds wall stops a drag, pointing
+  // the user at the Full Brazil action instead of a silent clamp.
+  let boundsHintShown = false
+
   function handleMapInit(map: maplibregl.Map) {
     controls.onMapInit(map)
     try {
       const container = map.getContainer() as HTMLElement | null
       if (container) controls.mapContainerRef.value = container
     } catch { /* ignore */ }
+    map.on('dragend', () => {
+      if (boundsHintShown || !isRegional.value) return
+      const b = map.getBounds()
+      const [[minLng, minLat], [maxLng, maxLat]] = VULCAN_MAX_BOUNDS
+      const EPS = 0.02
+      const atEdge = b.getWest() <= minLng + EPS || b.getEast() >= maxLng - EPS ||
+        b.getSouth() <= minLat + EPS || b.getNorth() >= maxLat - EPS
+      if (!atEdge) return
+      boundsHintShown = true
+      useToast().info(t('observatory.v2.boundsHintTitle'), t('observatory.v2.boundsHintBody'))
+    })
   }
 
   controls.setupObservatory({
@@ -167,7 +183,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
   watch(() => obsSel.selection.value.processo, (processo) => {
     if (processo) {
       const sel = obsSel.selection.value
-      const features = allFeatures.value as Array<Record<string, unknown>>
+      const features = allFeatures.value as unknown as Array<Record<string, unknown>>
       const feature = features.find(f => f.p === processo) ?? { p: processo, n: sel.nome }
       claimDetailProps.value = {
         ...feature,
@@ -396,6 +412,7 @@ export function useVulcanObservatoryPage(initialRegion: DataRegion = 'pococaldas
     stats,
     data,
     pointsData, filteredPoints, filteredPolygons, polygonsData, protectedData, waterData, culturalData,
+    basinsDataL2, basinsDataL3, basinsDataL4, basinsDataL5, basinsDataL6, mogianaData,
     layerVis, flyToTarget, onMapInit: handleMapInit,
     allFeatures, speculatorIndex, deepAnalysis, layerCounts, overlapSummary,
     protectedSummary, waterThreats, waterSummary, foreignHolders, pinThreats,

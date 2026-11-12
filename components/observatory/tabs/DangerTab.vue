@@ -15,7 +15,7 @@
     
     <div class="obs-tab__head">
       <h3 class="obs-tab__title">
-        <Icon name="lucide:radar" class="obs-tab__title-icon" />
+        <Icon name="gis:globe" class="obs-tab__title-icon" />
         {{ t('observatory.dangerPanel.title') }}
       </h3>
       <button
@@ -39,7 +39,7 @@
         :aria-expanded="infoOpen"
         @click="infoOpen = !infoOpen"
       >
-        <Icon :name="infoOpen ? 'lucide:chevron-down' : 'lucide:help-circle'" class="obs-expand__icon" />
+        <Icon :name="infoOpen ? 'tabler:arrows-move' : 'tabler:help-circle'" class="obs-expand__icon" />
         {{ infoOpen ? t('observatory.dangerPanel.hideInfo') : t('observatory.dangerPanel.whatIsThis') }}
       </button>
       <Transition name="obs-fade">
@@ -57,7 +57,7 @@
 
     
     <div v-if="items.length === 0" class="obs-tab__empty">
-      <Icon name="lucide:search-x" class="obs-tab__empty-icon" />
+      <Icon name="tabler:search-off" class="obs-tab__empty-icon" />
       {{ t('observatory.dangerPanel.empty') }}
     </div>
 
@@ -74,7 +74,7 @@
             :aria-label="tierCollapsed[tIdx] ? 'Expand' : 'Collapse'"
             @click="tierCollapsed[tIdx] = !tierCollapsed[tIdx]"
           >
-            <Icon :name="tierCollapsed[tIdx] ? 'lucide:chevron-right' : 'lucide:chevron-down'" class="obs-tier-head__toggle-icon" />
+            <Icon :name="tierCollapsed[tIdx] ? 'tabler:share' : 'tabler:arrows-move'" class="obs-tier-head__toggle-icon" />
           </button>
         </div>
 
@@ -103,7 +103,7 @@
                   >{{ d.suspicionScore.toFixed(1) }}</span>
                   <span class="obs-card__btn-name" :title="d.displayName">{{ d.displayName }}</span>
                   <span class="obs-card__btn-count">#{{ d.count }}</span>
-                  <Icon v-if="d.recentPct >= 90" name="lucide:trending-up" class="obs-card__trend-icon" :title="`${d.recentPct.toFixed(0)}% recent`" />
+                  <Icon v-if="d.recentPct >= 90" name="tabler:chart-line" class="obs-card__trend-icon" :title="`${d.recentPct.toFixed(0)}% recent`" />
                 </div>
                 <div class="obs-card__btn-bar" :aria-hidden="true">
                   <div
@@ -116,20 +116,20 @@
                 </div>
                 <div class="obs-card__btn-meta">
                   <span :title="t('observatory.dangerPanel.processes')">
-                    <Icon name="lucide:file-text" class="obs-card__meta-icon" />
+                    <Icon name="tabler:file-text" class="obs-card__meta-icon" />
                     {{ d.count }}
                   </span>
                   <span :title="t('observatory.dangerPanel.area')">
-                    <Icon name="lucide:maximize-2" class="obs-card__meta-icon" />
+                    <Icon name="tabler:maximize" class="obs-card__meta-icon" />
                     {{ formatArea(d.totalAreaHa) }} ha
                   </span>
                   <span v-if="d.ufs.length" :title="t('observatory.dangerPanel.states')">
-                    <Icon name="lucide:map-pin" class="obs-card__meta-icon" />
+                    <Icon name="gis:pin" class="obs-card__meta-icon" />
                     {{ d.ufs.slice(0, 4).join(' · ') }}
                   </span>
                 </div>
                 <div v-if="d.subs?.length" class="obs-card__btn-subs" :title="t('observatory.dangerPanel.substances')">
-                  <Icon name="lucide:package" class="obs-card__subs-icon" />
+                  <Icon name="tabler:shopping-bag" class="obs-card__subs-icon" />
                   {{ d.subs.slice(0, 4).join(' · ') }}
                 </div>
                 <div v-if="d.suspicionFlags?.length" class="obs-card__btn-flags">
@@ -155,7 +155,7 @@
                 :aria-label="t('observatory.dangerPanel.showOnMap')"
                 @click="onFlyTo(d.displayName)"
               >
-                <Icon name="lucide:map-pin" class="obs-card__action-icon" />
+                <Icon name="gis:pin" class="obs-card__action-icon" />
               </button>
               <button
                 type="button"
@@ -164,7 +164,7 @@
                 :aria-label="t('observatory.dangerPanel.report')"
                 @click="openReport(d)"
               >
-                <Icon name="lucide:flag" class="obs-card__action-icon" />
+                <Icon name="gis:flag" class="obs-card__action-icon" />
               </button>
             </div>
           </li>
@@ -172,11 +172,11 @@
 
         <nav v-if="!tierCollapsed[tIdx] && needPagination(tier.items)" class="obs-pager">
           <button type="button" class="obs-pager__btn" :disabled="tierPages[tIdx] === 1" @click="tierPages[tIdx]--">
-            <Icon name="lucide:chevron-left" class="obs-pager__icon" />
+            <Icon name="tabler:arrow-move-left" class="obs-pager__icon" />
           </button>
           <span class="obs-pager__info">{{ tierPages[tIdx] }} / {{ Math.ceil(tier.items.length / pageSize) }}</span>
           <button type="button" class="obs-pager__btn" :disabled="tierPages[tIdx] >= Math.ceil(tier.items.length / pageSize)" @click="tierPages[tIdx]++">
-            <Icon name="lucide:chevron-right" class="obs-pager__icon" />
+            <Icon name="tabler:share" class="obs-pager__icon" />
           </button>
         </nav>
       </template>

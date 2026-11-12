@@ -13,7 +13,8 @@
     "switchToDark": "डार्क मोड पर स्विच करें",
     "language": "भाषा",
     "privacy": "गोपनीयता",
-    "terms": "शर्तें"
+    "terms": "शर्तें",
+    "tools": "Tools"
   },
   "home": {
     "title": "अर्थ गार्जियंस",
@@ -179,7 +180,14 @@
     "exportData": "दिखाई देने वाला डेटा GeoJSON के रूप में निर्यात करें",
     "legend": "मानचित्र संकेत",
     "moreTools": "और मानचित्र उपकरण",
-    "hideTools": "मानचित्र उपकरण छिपाएँ"
+    "hideTools": "मानचित्र उपकरण छिपाएँ",
+    "basemapStyle": "बेसमैप शैली",
+    "gridDensity": {
+      "title": "ग्रिड घनत्व",
+      "cells": "{cells} सेल · {points} मानचित्रित बिंदु",
+      "cellSize": "प्रति सेल ≈ {km} किमी",
+      "on": "भौगोलिक ग्रिड: चालू"
+    }
   },
   "mapTiles": {
     "maptiler": "सैटेलाइट",
@@ -319,7 +327,8 @@
     "close": "बंद करें",
     "save": "सहेजें",
     "cancel": "रद्द करें",
-    "imageNotAvailable": "छवि उपलब्ध नहीं है"
+    "imageNotAvailable": "छवि उपलब्ध नहीं है",
+    "back": "Back"
   },
   "observatory": {
     "tabs": {
@@ -474,7 +483,9 @@
       "noProtectedSearch": "कोई मेल खाता संरक्षित क्षेत्र नहीं।",
       "statusTitle": "परत की स्थिति",
       "statusFailed": "विफल",
-      "foreignHeld": "विदेशी-धारित दावे"
+      "foreignHeld": "विदेशी-धारित दावे",
+      "waterBasins": "जल बेसिन (आधिकारिक ANA)",
+      "mogianaTerritory": "प्रस्तावित मोगियाना क्षेत्र (अर्थ गार्जियंस ब्राजील)"
     },
     "search": "उद्यम, पदार्थ, राज्य खोजें...",
     "legend": {
@@ -514,6 +525,8 @@
       "lastEventActive": "सक्रिय",
       "overlaps": "ओवरलैप",
       "stackedLayers": "ओवरलैपिंग परतें",
+      "stackedMore": "+{count} और परतें यहाँ",
+      "stackedShowAll": "डेटा तालिका खोलें",
       "tabClaim": "दावा",
       "tabBoundary": "सीमा",
       "tabWater": "जल",
@@ -724,6 +737,15 @@
       "monitor": "क्षेत्र मॉनिटर",
       "viewGlobe": "3D ग्लोब देखें",
       "viewFlat": "सपाट मानचित्र देखें",
+      "actionsExpand": "क्रियाएँ विस्तार करें",
+      "actionsCollapse": "क्रियाएँ समेटें",
+      "layersShow": "फ़िल्टर दिखाएँ",
+      "layersHide": "फ़िल्टर छिपाएँ",
+      "filtersTitle": "खनन दावा फ़िल्टर",
+      "claimSuggestions": "मेल खाते दावे",
+      "myLocation": "मेरा स्थान",
+      "boundsHintTitle": "वल्कन दृश्य लॉक है",
+      "boundsHintBody": "आप पोसोस डी काल्डास क्षेत्र के किनारे पर पहुँच गए हैं। पूरे देश को देखने के लिए “फुल ब्राज़ील” लोड करें।",
       "hero": {
         "title": "जहाँ खनन प्रतिरोध से मिलता है",
         "lead": "क्षेत्र के सांस्कृतिक ताने-बाने पर परतदार ब्राज़ीलियाई दुर्लभ-मृदा खनन दावे — Mapa Cultura BR (सांस्कृतिक केंद्र, कलाकार समूह) और Floresta Ativista (ग्रामीण समुदाय) अग्रिम पंक्ति उजागर करने हेतु एक साथ चित्रित।",
@@ -920,7 +942,8 @@
       "species": "प्रजातियाँ",
       "mains": "मुख्य",
       "feedback": "प्रतिक्रिया",
-      "sources": "स्रोत"
+      "sources": "स्रोत",
+      "performance": "प्रदर्शन"
     },
     "shareCorrections": "मानचित्र सुधारने हेतु सुधार, छूटा डेटा या इंटरैक्शन विचार साझा करें।",
     "homeLink": "मुख्य पृष्ठ",
@@ -933,6 +956,27 @@
       "basemap": "बेसमैप, इमेजरी और मैप इंजन",
       "reuseTitle": "Licenses & reuse for research और community tools",
       "openSource": "ओपन सोर्स"
+    },
+    "performance": {
+      "title": "प्रदर्शन और गुणवत्ता",
+      "desc": "रेंडरिंग गुणवत्ता और कण प्रभाव नियंत्रित करें। ऐप आपके डिवाइस के प्रदर्शन के आधार पर स्वतः समायोजित होता है, लेकिन आप इसे यहाँ ओवरराइड कर सकते हैं।",
+      "qualitySection": "गुणवत्ता प्रीसेट",
+      "qualityDesc": "ऑटो-एडजस्ट दृश्य गुणवत्ता और फ्रेम दर को संतुलित करता है। मैन्युअल प्रीसेट चुनने के लिए बंद करें।",
+      "autoAdjust": "गुणवत्ता स्वतः समायोजित करें (अनुशंसित)",
+      "qualityPreset": "गुणवत्ता प्रीसेट",
+      "low": "निम्न (प्रदर्शन)",
+      "medium": "मध्यम (संतुलित)",
+      "high": "उच्च (गुणवत्ता)",
+      "ultra": "अल्ट्रा (अधिकतम)",
+      "particleSettings": "कण सेटिंग्स",
+      "particleDesc": "कण एनीमेशन को बारीकी से ट्यून करें। ऑटो-एडजस्ट बंद होना आवश्यक।",
+      "particleMaxCount": "अधिकतम कण",
+      "particleFps": "लक्ष्य FPS",
+      "particleTrailLength": "ट्रेल लंबाई",
+      "particleSpawnRate": "स्पॉन दर",
+      "particleShadow": "छाया ब्लर",
+      "apply": "सेटिंग्स लागू करें",
+      "currentSettings": "वर्तमान सक्रिय सेटिंग्स"
     }
   },
   "campaigns": {
@@ -1622,5 +1666,349 @@
   },
   "resources": {
     "title": "संसाधन"
+  },
+  "tools": {
+    "title": "Tools",
+    "subtitle": "Practical tools for Earth Guardians Crews and communities",
+    "comingSoon": "More tools coming soon...",
+    "agroecologicalGarden": {
+      "title": "Agroecological Garden",
+      "description": "Design, plan, and manage regenerative agroecological gardens with satellite imagery, plant databases, water systems, and companion planting guilds.",
+      "createNew": "Create New Garden",
+      "openExisting": "Open Existing",
+      "myGardens": "My Gardens",
+      "templates": "Templates",
+      "toolbar": {
+        "select": "Select",
+        "pan": "Pan",
+        "point": "Add Point",
+        "line": "Draw Line",
+        "polygon": "Draw Polygon",
+        "measure": "Measure",
+        "undo": "Undo",
+        "redo": "Redo",
+        "clear": "Clear Selection",
+        "selectShort": "Select",
+        "panShort": "Pan",
+        "pointShort": "Point",
+        "lineShort": "Line",
+        "polygonShort": "Polygon",
+        "measureShort": "Measure"
+      },
+      "layers": {
+        "title": "Layers",
+        "addLayer": "Add Layer",
+        "layerTypes": {
+          "seeds": "Seeds",
+          "seedlings": "Seedlings",
+          "transplants": "Transplants",
+          "fertileEarth": "Fertile Earth",
+          "compost": "Compost",
+          "mulch": "Mulch",
+          "biochar": "Biochar",
+          "waterWay": "Water Way",
+          "spring": "Spring",
+          "waterSourceNatural": "Natural Water Source",
+          "waterSourceTap": "Tap / Torneira",
+          "irrigation": "Irrigation",
+          "greenhouse": "Greenhouse",
+          "shed": "Shed",
+          "fence": "Fence",
+          "trellis": "Trellis",
+          "bed": "Garden Bed",
+          "path": "Path",
+          "vegetable": "Vegetable",
+          "nativeTree": "Native Tree",
+          "rhizome": "Rhizome",
+          "coverCrop": "Cover Crop",
+          "herb": "Herb"
+        },
+        "visibility": "Visibility",
+        "lock": "Lock",
+        "opacity": "Opacity",
+        "rename": "Rename",
+        "duplicate": "Duplicate",
+        "delete": "Delete"
+      },
+      "plantLibrary": {
+        "title": "Plant Library",
+        "search": "Search plants...",
+        "categories": {
+          "all": "All",
+          "vegetable": "Vegetables (Hortaliças)",
+          "nativeTree": "Native Trees (Árvores Nativas)",
+          "rhizome": "Rhizomes (Rizomas)",
+          "coverCrop": "Cover Crops",
+          "herb": "Herbs",
+          "fruit": "Fruit",
+          "flower": "Flowers"
+        },
+        "filters": {
+          "sun": "Sun Requirement",
+          "water": "Water Need",
+          "perennial": "Perennial Only",
+          "native": "Native Only",
+          "companion": "Show Companions"
+        },
+        "details": {
+          "scientificName": "Scientific Name",
+          "family": "Family",
+          "spacing": "Spacing",
+          "depth": "Planting Depth",
+          "germination": "Days to Germination",
+          "harvest": "Days to Harvest",
+          "sun": "Sun",
+          "water": "Water",
+          "ph": "Soil pH",
+          "zone": "Hardiness Zone",
+          "companions": "Good Companions",
+          "antagonists": "Avoid Planting With",
+          "guildRole": "Guild Role",
+          "harvestable": "Harvestable Parts",
+          "description": "Description"
+        }
+      },
+      "waterDesign": {
+        "title": "Water Design",
+        "addSpring": "Add Spring / Nascente",
+        "addTap": "Add Tap / Torneira",
+        "drawSwale": "Draw Swale",
+        "drawIrrigation": "Draw Irrigation",
+        "addPond": "Add Pond / Tank",
+        "flowRate": "Flow Rate (L/min)",
+        "capacity": "Capacity (L)",
+        "elevationProfile": "Elevation Profile",
+        "keylineDesign": "Keyline Design"
+      },
+      "guildBuilder": {
+        "title": "Guild Builder",
+        "addPlant": "Add Plant to Guild",
+        "compatibility": "Compatibility",
+        "goodCompanions": "Good Companions",
+        "badCompanions": "Avoid",
+        "saveGuild": "Save as Template",
+        "loadGuild": "Load Template",
+        "guildTemplates": {
+          "threeSisters": "Three Sisters (Corn, Beans, Squash)",
+          "mediterranean": "Mediterranean Guild",
+          "tropical": "Tropical Fruit Guild",
+          "nitrogenFixers": "Nitrogen Fixer Guild",
+          "pollinator": "Pollinator Guild",
+          "pestRepellent": "Pest Repellent Guild"
+        }
+      },
+      "measurement": {
+        "title": "Measurements",
+        "distance": "Distance",
+        "area": "Area",
+        "perimeter": "Perimeter",
+        "units": "Units",
+        "metric": "Metric (m, ha)",
+        "imperial": "Imperial (ft, ac)",
+        "type": "प्रकार",
+        "value": "परिणाम",
+        "cells": "Cells"
+      },
+      "project": {
+        "title": "Garden Project",
+        "name": "Project Name",
+        "description": "Description",
+        "location": "Location",
+        "save": "Save Project",
+        "saveAs": "Save As...",
+        "export": "Export",
+        "import": "Import",
+        "share": "Share",
+        "delete": "Delete",
+        "exportFormats": {
+          "geojson": "GeoJSON",
+          "pdf": "PDF Plan",
+          "png": "Map Image (PNG)",
+          "csv": "Plant List (CSV)",
+          "ics": "Calendar (ICS)",
+          "shapefile": "Shapefile (ZIP)"
+        }
+      },
+      "seasonalCalendar": {
+        "title": "Seasonal Calendar",
+        "hemisphere": "Hemisphere",
+        "north": "Northern",
+        "south": "Southern",
+        "month": "Month",
+        "planting": "Planting Window",
+        "harvest": "Harvest Window",
+        "currentMonth": "Current Month",
+        "addToCalendar": "Add to Calendar"
+      },
+      "modals": {
+        "plantDetail": "Plant Details",
+        "exportOptions": "Export Options",
+        "importOptions": "Import Options",
+        "shareProject": "Share Project",
+        "deleteConfirm": "Delete this garden project? This cannot be undone."
+      },
+      "toasts": {
+        "saved": "Garden project saved",
+        "exported": "Export completed",
+        "imported": "Project imported",
+        "shared": "Share link copied",
+        "error": "An error occurred",
+        "layerAdded": "Layer added",
+        "featureAdded": "Feature added",
+        "measurementComplete": "Measurement complete",
+        "areaReady": "Garden area ready — start designing"
+      },
+      "emptyStates": {
+        "noGardens": "No gardens yet. Create your first agroecological garden!",
+        "noPlants": "No plants match your filters",
+        "noLayers": "Add a layer to start designing",
+        "noFeatures": "Draw on the map to add features"
+      },
+      "help": {
+        "title": "Help & Shortcuts",
+        "shortcuts": {
+          "pan": "Space + Drag — Pan map",
+          "zoom": "Scroll — Zoom",
+          "select": "Click — Select feature",
+          "multiSelect": "Shift + Click — Multi-select",
+          "drawPoint": "P — Point tool",
+          "drawLine": "L — Line tool",
+          "drawPolygon": "G — Polygon tool",
+          "measure": "M — Measure tool",
+          "undo": "Ctrl+Z — Undo",
+          "redo": "Ctrl+Shift+Z — Redo",
+          "delete": "Delete — Remove selected",
+          "escape": "Esc — Cancel tool / Close panel"
+        }
+      },
+      "draw": "बनाएँ",
+      "placePlant": "Plant",
+      "grid": {
+        "title": "Grid"
+      },
+      "drawActions": {
+        "finish": "Finish",
+        "cancel": "Cancel drawing",
+        "deleteSelected": "Delete selected feature",
+        "clickToAdd": "पहला पॉइंट जोड़ने के लिए मानचित्र पर क्लिक करें",
+        "pressEnterHint": "समाप्त करने के लिए Enter दबाएँ · रद्द करने के लिए Esc"
+      },
+      "map": {
+        "loading": "Loading satellite imagery…",
+        "loadError": "The map imagery could not load.",
+        "retry": "Retry",
+        "fit": "Fit",
+        "zoomToGrid": "Zoom to the plot"
+      },
+      "onboarding": {
+        "title": "Set up the garden area",
+        "step": "Step {current} of {total}",
+        "locationTitle": "Area address",
+        "locationHint": "Start with the address of the area, its coordinates, or a tap on the map.",
+        "address": "Address",
+        "addressPlaceholder": "Street, neighbourhood, city…",
+        "addressNotSet": "No address selected yet",
+        "searchError": "Address search is unavailable right now. Tap the map or type the coordinates instead.",
+        "noResults": "No address found. Try a more specific search.",
+        "useLocation": "Use my location",
+        "locating": "Locating…",
+        "locationError": "We could not get your location. Tap the map instead.",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "mapHint": "Tip: tap the map to move the centre of the area.",
+        "selected": "Selected area",
+        "gridTitle": "X/Y grid",
+        "gridHint": "Set the plot size in metres, then choose the cell size for the planting grid.",
+        "name": "Garden name",
+        "namePlaceholder": "e.g. Community garden — north bed",
+        "widthX": "Width X",
+        "lengthY": "Length Y",
+        "cellSize": "Cell size",
+        "rotation": "Rotation",
+        "presets": "Presets",
+        "presetSmall": "5 × 5 m",
+        "presetBed": "10 × 10 m",
+        "presetPlot": "20 × 10 m",
+        "tooManyCells": "That is more than {limit} cells. Increase the cell size or shrink the plot.",
+        "editGrid": "Edit grid",
+        "gridChip": "{width} × {length} m · {cols}×{rows}",
+        "back": "Back",
+        "next": "Next",
+        "start": "Start designing"
+      },
+      "panels": {
+        "layers": "Layers",
+        "plants": "Plants",
+        "panel": "Show or hide the panel",
+        "addLayer": "Add layer",
+        "showEmpty": "Show empty layers",
+        "hideEmpty": "Hide empty layers",
+        "noLayers": "No layers yet — add one to start drawing.",
+        "planting": "Tap the map to place {name}",
+        "cancelPlant": "Cancel"
+      },
+      "layerGroups": {
+        "soil": "Soil and beds",
+        "water": "Water",
+        "structures": "Structures",
+        "planting": "Planting"
+      }
+    },
+    "readyBadge": "तैयार",
+    "comingSoonBadge": "जल्द आ रहा है",
+    "tipsTitle": "उपकरण कैसे काम करते हैं",
+    "tipGarden": "बगीचे के नक्शे इसी डिवाइस पर सहेजे जाते हैं — Crew के साथ साझा करने के लिए GeoJSON निर्यात करें।",
+    "tipSatellite": "डाउनलोड किए गए उपग्रह टाइल इसी डिवाइस पर रहते हैं, इसलिए बिना कनेक्शन भी नक्शा चलता है।",
+    "tipStorage": "ज़्यादा ज़ूम में स्टोरेज जल्दी भरती है। क्षेत्र छोटा और ज़ूम सीमा कम रखें।",
+    "satelliteDownloader": {
+      "title": "ऑफ़लाइन उपग्रह",
+      "description": "किसी क्षेत्र की उपग्रह छवि डाउनलोड करें ताकि बिना कनेक्शन नक्शा चले।",
+      "area": "क्षेत्र",
+      "useView": "वर्तमान दृश्य उपयोग करें",
+      "manual": "सीमाएँ दर्ज करें",
+      "north": "उत्तर",
+      "south": "दक्षिण",
+      "east": "पूर्व",
+      "west": "पश्चिम",
+      "invalidBounds": "सीमाएँ गलत लग रही हैं — उत्तर दक्षिण के ऊपर, पूर्व पश्चिम के दाएँ, और क्षेत्र 60° से कम हो।",
+      "zoomLevels": "ज़ूम स्तर",
+      "minZoom": "ज़ूम से",
+      "maxZoom": "ज़ूम तक",
+      "estimate": "लगभग {tiles} टाइल डाउनलोड होंगी",
+      "largeAreaWarning": "यह बड़ा डाउनलोड है और ऑफ़लाइन कैश भर सकता है।",
+      "download": "क्षेत्र डाउनलोड करें",
+      "cancel": "रद्द करें",
+      "progress": "{total} में से {done} टाइल",
+      "failed": "{count} विफल",
+      "needsConnection": "टाइल डाउनलोड हेतु कनेक्शन ज़रूरी है।",
+      "cache": "ऑफ़लाइन कैश",
+      "cachedTiles": "कैश टाइल",
+      "cacheSize": "कैश आकार",
+      "connection": "कनेक्शन",
+      "online": "ऑनलाइन",
+      "offline": "ऑफ़लाइन",
+      "clearCache": "कैश साफ़ करें",
+      "cacheNote": "सहेजी गई टाइल केवल इस ब्राउज़र के लिए निजी हैं और साइट डेटा हटाने पर मिट जाएँगी।",
+      "done": "ऑफ़लाइन उपयोग हेतु {count} टाइल डाउनलोड हुईं",
+      "doneWithErrors": "{failed} टाइल डाउनलोड नहीं हो सकीं",
+      "cancelled": "डाउनलोड रद्द किया गया",
+      "cacheCleared": "ऑफ़लाइन कैश साफ़ हुआ"
+    },
+    "speciesWatchlist": {
+      "title": "प्रजाति वॉचलिस्ट",
+      "description": "अपने Crew के निकट लुप्तप्राय प्रजातियाँ ट्रैक करें और फ़ील्ड सर्वे सूची पाएँ।"
+    },
+    "crewOutreach": {
+      "title": "Crew आउटरीच योजना",
+      "description": "Crew के बीच भेंट और अभियानों को मार्ग व संपर्क सूची के साथ योजनाबद्ध करें।"
+    },
+    "openTool": "Open {name}",
+    "open": "Open tool"
+  },
+  "mapStyles": {
+    "hybrid": "उपग्रह + लेबल",
+    "satellite": "केवल उपग्रह",
+    "streets": "सड़कें",
+    "outdoors": "बाहरी"
   }
 }

@@ -352,15 +352,15 @@ export function removeMapConnectionLayers(map: MapLibreMap) {
 
 /* ── Optimized Particle System ──────────────────────────────────────
  * Key optimizations:
- * 1. Object pooling for particles & trail points (zero GC pressure)
- * 2. Offscreen culling before projection (saves map.project calls)
- * 3. Batch rendering with single path operations
- * 4. Reduced allocations in hot path
- * 5. SIMD-friendly data layout (flat Float32Arrays)
+ * 1. Object pooling for particles (zero GC pressure)
+ * 2. Per-particle ring-buffer trails (no shared trail pool / no (0,0) zeros)
+ * 3. Offscreen culling before projection (saves map.project calls)
+ * 4. Instance-local pools — safe across concurrent map instances
  */
 
 const PARTICLE_POOL_SIZE = 256
-const TRAIL_POOL_SIZE = 2048
+/** Max trail samples per particle — covers quality configs (up to 7). */
+const MAX_TRAIL_LEN = 8
 
 interface PooledParticle {
   fromX: number; fromY: number
@@ -370,64 +370,29 @@ interface PooledParticle {
   speed: number
   size: number
   color: string
-  trailStart: number
+  /** Requested trail length for this particle (0..MAX_TRAIL_LEN). */
   trailLen: number
+  /** How many trail samples have been written so far. */
+  trailFilled: number
+  /** Ring-buffer write cursor — next slot to write. */
+  trailHead: number
+  /** Screen-space trail history (ring buffer of length MAX_TRAIL_LEN). */
+  trailX: Float64Array
+  trailY: Float64Array
   active: boolean
 }
 
-interface PooledTrailPoint {
-  x: number; y: number
-}
-
-let particlePool: PooledParticle[] = []
-let trailPool: PooledTrailPoint[] = []
-let particleCount = 0
-let trailCount = 0
-
-function initPools() {
-  particlePool = new Array(PARTICLE_POOL_SIZE)
-  for (let i = 0; i < PARTICLE_POOL_SIZE; i++) {
-    particlePool[i] = {
-      fromX: 0, fromY: 0,
-      controlX: 0, controlY: 0,
-      toX: 0, toY: 0,
-      progress: 0, speed: 0, size: 0, color: '#fff',
-      trailStart: 0, trailLen: 0, active: false
-    }
+function createParticle(): PooledParticle {
+  return {
+    fromX: 0, fromY: 0,
+    controlX: 0, controlY: 0,
+    toX: 0, toY: 0,
+    progress: 0, speed: 0, size: 0, color: '#fff',
+    trailLen: 0, trailFilled: 0, trailHead: 0,
+    trailX: new Float64Array(MAX_TRAIL_LEN),
+    trailY: new Float64Array(MAX_TRAIL_LEN),
+    active: false,
   }
-  trailPool = new Array(TRAIL_POOL_SIZE)
-  for (let i = 0; i < TRAIL_POOL_SIZE; i++) {
-    trailPool[i] = { x: 0, y: 0 }
-  }
-  particleCount = 0
-  trailCount = 0
-}
-
-function acquireParticle(): PooledParticle | null {
-  if (particleCount >= PARTICLE_POOL_SIZE) return null
-  const p = particlePool[particleCount++]
-  p.active = true
-  return p
-}
-
-function releaseParticle(index: number) {
-  if (index < 0 || index >= particleCount) return
-  const last = particlePool[--particleCount]
-  if (index !== particleCount) {
-    particlePool[index] = last
-  }
-}
-
-function acquireTrail(len: number): number {
-  if (trailCount + len > TRAIL_POOL_SIZE) return -1
-  const start = trailCount
-  trailCount += len
-  return start
-}
-
-function releaseTrail(start: number, len: number) {
-  // Simple compaction - not critical for performance
-  trailCount = Math.max(0, trailCount - len)
 }
 
 interface ParticleSystemOptions {
@@ -466,17 +431,58 @@ export function createMapParticleSystem({
 
   let quality = { ...initialQuality }
 
+  /* Instance-local pool — never shared across map instances. */
+  const particlePool: PooledParticle[] = []
+  for (let i = 0; i < PARTICLE_POOL_SIZE; i++) particlePool.push(createParticle())
+  let particleCount = 0
+
+  function acquireParticle(): PooledParticle | null {
+    if (particleCount >= PARTICLE_POOL_SIZE) return null
+    const p = particlePool[particleCount++] as PooledParticle
+    p.active = true
+    p.trailFilled = 0
+    p.trailHead = 0
+    p.trailLen = 0
+    return p
+  }
+
+  function releaseParticle(index: number) {
+    if (index < 0 || index >= particleCount) return
+    const last = particlePool[--particleCount] as PooledParticle
+    if (index !== particleCount) {
+      particlePool[index] = last
+    }
+  }
+
   function stop() {
     cancelled = true
     if (particleAnimationFrame) { cancelAnimationFrame(particleAnimationFrame); particleAnimationFrame = null }
     particleCount = 0
-    trailCount = 0
     if (particleCanvas?.parentNode) particleCanvas.parentNode.removeChild(particleCanvas)
     particleCanvas = null
   }
 
   function updateQuality(config: ParticleQualityConfig) {
     quality = { ...quality, ...config }
+  }
+
+  function initParticleFromFeature(p: PooledParticle, feature: MapConnectionFeature, mobile: boolean, trailLen: number) {
+    const coords = feature.geometry.coordinates as [number, number][]
+    if (!coords || coords.length < 3) return false
+    const [from, control, to] = coords
+    if (!from || !control || !to) return false
+
+    p.fromX = from[0]; p.fromY = from[1]
+    p.controlX = control[0]; p.controlY = control[1]
+    p.toX = to[0]; p.toY = to[1]
+    p.progress = 0
+    p.speed = mobile ? 0.006 + Math.random() * 0.008 : 0.004 + Math.random() * 0.007
+    p.size = mobile ? 1.2 : 1.5 + Math.random() * 1.2
+    p.color = feature.properties?.color || '#ffffff'
+    p.trailLen = Math.max(0, Math.min(MAX_TRAIL_LEN, trailLen))
+    p.trailFilled = 0
+    p.trailHead = 0
+    return true
   }
 
   function spawnParticle() {
@@ -490,22 +496,12 @@ export function createMapParticleSystem({
     const speciesFeatures = features.filter(f => f.properties?.dataset === 'endangered-species')
     if (!speciesFeatures.length) {
       const feature = features[Math.floor(Math.random() * features.length)]
-      const coords = feature.geometry.coordinates as [number, number][]
-      if (!coords || coords.length < 3) return
-      const [from, control, to] = coords
-      if (!from || !control || !to) return
-
+      if (!feature) return
       const p = acquireParticle()
       if (!p) return
-      p.fromX = from[0]; p.fromY = from[1]
-      p.controlX = control[0]; p.controlY = control[1]
-      p.toX = to[0]; p.toY = to[1]
-      p.progress = 0
-      p.speed = mobile ? 0.006 + Math.random() * 0.008 : 0.004 + Math.random() * 0.007
-      p.size = mobile ? 1.2 : 1.5 + Math.random() * 1.2
-      p.color = feature.properties?.color || '#ffffff'
-      p.trailStart = acquireTrail(trailLen)
-      p.trailLen = trailLen
+      if (!initParticleFromFeature(p, feature, mobile, trailLen)) {
+        releaseParticle(particleCount - 1)
+      }
       return
     }
 
@@ -517,22 +513,12 @@ export function createMapParticleSystem({
         const groupFeatures = speciesFeatures.filter(f => f.properties?.group === group)
         if (groupFeatures.length) {
           const feature = groupFeatures[Math.floor(Math.random() * groupFeatures.length)]
-          const coords = feature.geometry.coordinates as [number, number][]
-          if (!coords || coords.length < 3) return
-          const [from, control, to] = coords
-          if (!from || !control || !to) return
-
+          if (!feature) return
           const p = acquireParticle()
           if (!p) return
-          p.fromX = from[0]; p.fromY = from[1]
-          p.controlX = control[0]; p.controlY = control[1]
-          p.toX = to[0]; p.toY = to[1]
-          p.progress = 0
-          p.speed = mobile ? 0.006 + Math.random() * 0.008 : 0.004 + Math.random() * 0.007
-          p.size = mobile ? 1.2 : 1.5 + Math.random() * 1.2
-          p.color = feature.properties?.color || '#ffffff'
-          p.trailStart = acquireTrail(trailLen)
-          p.trailLen = trailLen
+          if (!initParticleFromFeature(p, feature, mobile, trailLen)) {
+            releaseParticle(particleCount - 1)
+          }
         }
       }
     }
@@ -543,7 +529,7 @@ export function createMapParticleSystem({
 
     stop()
     cancelled = false
-    initPools()
+    particleCount = 0
 
     const computedPosition = window.getComputedStyle(container).position
     if (computedPosition === 'static') container.style.position = 'relative'
@@ -582,9 +568,6 @@ export function createMapParticleSystem({
 
     resizeCanvas()
 
-    // Pre-allocated arrays for batch operations
-    const tempPath: number[] = []
-
     const animate = (timestamp: number) => {
       if (cancelled || !particleCanvas) return
       particleAnimationFrame = requestAnimationFrame(animate)
@@ -602,16 +585,14 @@ export function createMapParticleSystem({
         if (spawnRate > 0 && Math.random() < spawnRate) spawnParticle()
       }
 
-      const maxTrail = quality.particleTrailLength ?? (mobile ? 4 : 7)
       const shadowBlur = quality.particleShadowBlur ?? (mobile ? 3 : 6)
 
       // Process particles in reverse for efficient removal
       for (let i = particleCount - 1; i >= 0; i--) {
-        const particle = particlePool[i]
+        const particle = particlePool[i] as PooledParticle
         particle.progress += particle.speed
         if (particle.progress >= 1) {
           releaseParticle(i)
-          if (particle.trailStart >= 0) releaseTrail(particle.trailStart, particle.trailLen)
           continue
         }
 
@@ -643,17 +624,19 @@ export function createMapParticleSystem({
         const visible = point.x > -40 && point.x < lastRectW + 40 && point.y > -40 && point.y < lastRectH + 40
         if (!visible) continue
 
-        // Add to trail
-        if (particle.trailStart >= 0 && particle.trailLen > 0) {
-          const trailIdx = (particle.trailStart + (particle.trailLen - 1)) % TRAIL_POOL_SIZE
-          trailPool[trailIdx].x = point.x
-          trailPool[trailIdx].y = point.y
+        // Push head into the per-particle ring buffer (only filled slots are drawn)
+        if (particle.trailLen > 0) {
+          particle.trailX[particle.trailHead] = point.x
+          particle.trailY[particle.trailHead] = point.y
+          particle.trailHead = (particle.trailHead + 1) % particle.trailLen
+          if (particle.trailFilled < particle.trailLen) particle.trailFilled++
         }
 
         const fade = particle.progress > 0.8 ? 1 - (particle.progress - 0.8) / 0.2 : 1
 
-        // Draw trail
-        if (particle.trailStart >= 0 && particle.trailLen > 1) {
+        // Draw trail — chronological order, only samples actually written
+        const filled = particle.trailFilled
+        if (filled > 1) {
           ctx.save()
           ctx.globalAlpha = 0.75 * fade
           ctx.strokeStyle = particle.color
@@ -665,12 +648,13 @@ export function createMapParticleSystem({
           }
 
           ctx.beginPath()
-          let first = true
-          for (let j = 0; j < particle.trailLen; j++) {
-            const idx = (particle.trailStart + j) % TRAIL_POOL_SIZE
-            const tp = trailPool[idx]
-            if (first) { ctx.moveTo(tp.x, tp.y); first = false }
-            else ctx.lineTo(tp.x, tp.y)
+          // Oldest sample sits at (trailHead - filled) mod trailLen
+          const len = particle.trailLen
+          const startIdx = ((particle.trailHead - filled) % len + len) % len
+          ctx.moveTo(particle.trailX[startIdx] as number, particle.trailY[startIdx] as number)
+          for (let j = 1; j < filled; j++) {
+            const idx = (startIdx + j) % len
+            ctx.lineTo(particle.trailX[idx] as number, particle.trailY[idx] as number)
           }
           ctx.stroke()
           ctx.restore()

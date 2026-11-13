@@ -454,8 +454,10 @@ import { useI18n } from '@/composables/useI18n'
 import { useToast } from '@/composables/useToast'
 import { useGardenProject } from '@/composables/useGardenProject'
 import { useMapTileStyle } from '@/composables/useMapTileStyle'
-import { tileStyleDef } from '@/lib/tile-styles'
-import { buildGardenStyle, satelliteStyle, streetsStyle } from '@/lib/garden-basemap'
+import { useMapTileProvider } from '@/composables/useMapTileProvider'
+import { useOfflineTileCache } from '@/composables/useOfflineTileCache'
+import { registerOfflineTileProtocol, transformMapTileRequest } from '@/composables/useOfflineTileProtocol'
+import { initialGardenStyle, resolveGardenStyle, type GardenStyleContext } from '@/lib/garden-basemap'
 import { GRID_MAX_CELLS, buildGridGeometry, gridBounds, gridToGeoJSON, normalizeGrid } from '@/lib/garden-grid'
 import type { GardenFeature, GardenGrid, GardenLayer, GardenLayerType, GardenLocation, LayerStyle, DrawingMode, PlantCategory } from '@/lib/garden-types'
 import { PLANTS, getPlant, searchPlants } from '@/lib/garden-plants'
@@ -481,6 +483,8 @@ const { t } = useI18n()
 const toast = useToast()
 const garden = useGardenProject()
 const mapStyle = useMapTileStyle()
+const tileProvider = useMapTileProvider()
+const offlineTiles = useOfflineTileCache()
 
 const exportFormats = ['GeoJSON', 'JSON']
 const DEFAULT_GRID: GardenGrid = normalizeGrid({ widthM: 10, heightM: 10, cellM: 1 })
@@ -647,10 +651,32 @@ const canFinishDraw = computed(() => {
 
 // ── Map lifecycle ───────────────────────────────────────────────────────────
 
+function styleContext(): GardenStyleContext {
+  const rawKey = String(useRuntimeConfig().public.maptilerApiKey || '')
+  const hasOffline = offlineTiles.stats.value.cachedTiles > 0
+  return {
+    apiKey: (!rawKey || tileProvider.effectiveProvider.value === 'fallback') ? '' : rawKey,
+    offlineApiKey: rawKey,
+    hasOfflineTiles: hasOffline,
+    cachedMinZoom: offlineTiles.stats.value.minZoom,
+    cachedMaxZoom: offlineTiles.stats.value.maxZoom,
+    styleId: mapStyle.styleId.value,
+    isOnline: offlineTiles.isOnline.value,
+  }
+}
+
+function hasOfflineBackup(): boolean {
+  return offlineTiles.stats.value.cachedTiles > 0
+}
+
+function maptilerApiKey(): string {
+  return styleContext().apiKey
+}
+
 function initialStyle() {
-  const apiKey = String(useRuntimeConfig().public.maptilerApiKey || '')
-  fallbackLevel = apiKey ? 0 : 1
-  return buildGardenStyle(apiKey, tileStyleDef(mapStyle.styleId.value).maptilerStyle)
+  const { style, level } = initialGardenStyle(styleContext())
+  fallbackLevel = level
+  return style
 }
 
 function initMap() {
@@ -665,6 +691,8 @@ function initMap() {
 
   const project = garden.activeProject
   const center = project?.location ?? setupLocation.value
+  tileProvider.evaluateNetworkHints(String(useRuntimeConfig().public.maptilerApiKey || ''), offlineTiles.stats.value.cachedTiles > 0)
+  registerOfflineTileProtocol(offlineTiles)
   const map = new maplibregl.Map({
     container: mapContainerRef.value,
     style: initialStyle() as maplibregl.StyleSpecification | string,
@@ -674,6 +702,7 @@ function initMap() {
     interactive: true,
     dragRotate: false,
     attributionControl: false,
+    transformRequest: transformMapTileRequest,
   })
   map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right')
@@ -690,6 +719,7 @@ function initMap() {
     isMapReady.value = true
     mapError.value = false
     tileErrors = 0
+    tileProvider.noteStyleReady()
     setupMapLayers(map)
     renderAll()
     if (!didInitialView && activeProject.value?.grid && !showSetup.value) {
@@ -711,6 +741,7 @@ function initMap() {
     }
     if (/tile|network|fetch|failed/i.test(message)) {
       tileErrors += 1
+      tileProvider.noteTileError()
       if (tileErrors === 4) mapError.value = true
     }
   })
@@ -786,13 +817,14 @@ function initMap() {
 function applyFallback() {
   const map = mapRef.value
   if (!map) return
-  if (fallbackLevel >= 2) {
+  if (fallbackLevel >= 3) {
     mapError.value = true
     return
   }
   fallbackLevel += 1
   const nextStyle = getStyleForLevel(fallbackLevel)
   console.log('[Garden] Applying fallback level:', fallbackLevel)
+  tileProvider.noteStyleStart()
   map.setStyle(nextStyle)
 }
 
@@ -802,6 +834,7 @@ function retryMap() {
   mapError.value = false
   isMapReady.value = false
   fallbackLevel = Math.max(fallbackLevel, 1)
+  tileProvider.noteStyleStart()
   map.setStyle(getStyleForLevel(fallbackLevel))
   styleTimer = setTimeout(() => {
     if (!map.isStyleLoaded()) mapError.value = true
@@ -809,13 +842,41 @@ function retryMap() {
 }
 
 function getStyleForLevel(level: number) {
-  if (level === 0) {
-    const apiKey = String(useRuntimeConfig().public.maptilerApiKey || '')
-    return buildGardenStyle(apiKey, tileStyleDef(mapStyle.styleId.value).maptilerStyle)
-  }
-  if (level === 1) return streetsStyle()
-  return satelliteStyle()
+  return resolveGardenStyle(level, styleContext())
 }
+
+// Re-apply when the shared header style switcher or MapTiler↔fallback
+// provider toggle changes — same contract as useMapBase.
+watch(() => mapStyle.styleId.value, () => {
+  const map = mapRef.value
+  if (!map || fallbackLevel !== 0) return
+  if (tileProvider.effectiveProvider.value !== 'maptiler' || !maptilerApiKey()) return
+  tileProvider.noteStyleStart()
+  map.setStyle(getStyleForLevel(0))
+})
+
+watch(() => tileProvider.effectiveProvider.value, () => {
+  const map = mapRef.value
+  if (!map) return
+  fallbackLevel = maptilerApiKey() ? 0 : (hasOfflineBackup() ? 1 : 2)
+  tileProvider.noteStyleStart()
+  map.setStyle(getStyleForLevel(fallbackLevel))
+})
+
+// Offline ↔ online: swap offlineSatelliteStyle ↔ MapTiler without a manual toggle.
+watch(() => offlineTiles.isOnline.value, (online, was) => {
+  const map = mapRef.value
+  if (!map || online === was) return
+  tileProvider.noteStyleStart()
+  const { style, level } = initialGardenStyle(styleContext())
+  if (online && maptilerApiKey()) {
+    fallbackLevel = 0
+    map.setStyle(getStyleForLevel(0))
+  } else {
+    fallbackLevel = level
+    map.setStyle(style)
+  }
+})
 
 function flyTo(target: { lng: number; lat: number; zoom?: number }) {
   mapRef.value?.flyTo({
@@ -1770,7 +1831,7 @@ function trimNumber(value: number): string {
 
 // ── Lifecycle ───────────────────────────────────────────────────────────────
 
-onMounted(() => {
+onMounted(async () => {
   // SSR payload hydration: pinia re-applies the server's (empty) state AFTER the
   // store's setup() ran, clobbering the setup-time localStorage load — restore it.
   if (!garden.activeProject) {
@@ -1785,6 +1846,7 @@ onMounted(() => {
   showSetup.value = !project?.grid
   if (typeof window !== 'undefined') sheetOpen.value = false
 
+  await offlineTiles.init()
   nextTick(() => {
     initMap()
     if (showSetup.value) {

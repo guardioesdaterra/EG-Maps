@@ -1992,7 +1992,22 @@
       "done": "{count} dalles téléchargées pour un usage hors ligne",
       "doneWithErrors": "{failed} dalles n’ont pas pu être téléchargées",
       "cancelled": "Téléchargement annulé",
-      "cacheCleared": "Cache hors ligne vidé"
+      "cacheCleared": "Cache hors ligne vidé",
+      "invalidZoom": "Le zoom de départ doit être inférieur ou égal au zoom de fin.",
+      "tooLarge": "Trop de tuiles (max {max}). Réduisez la zone ou le zoom max.",
+      "needsApiKey": "Une clé API MapTiler est requise pour télécharger les tuiles.",
+      "noMapView": "Aucune vue de carte sur cette page — une petite fenêtre autour de l'URL est utilisée (ou saisissez les bornes).",
+      "previewLabel": "Aperçu de la zone de téléchargement",
+      "alreadyCached": "{count} tuiles déjà en cache",
+      "skipped": "{count} ignorées",
+      "storageFull": "Stockage plein — certaines tuiles n'ont pas été sauvegardées. Videz le cache ou libérez de l'espace.",
+      "authFailed": "MapTiler a rejeté la clé API (401/403). Vérifiez NUXT_PUBLIC_MAPTILER_API_KEY.",
+      "cachedZoom": "Zoom en cache",
+      "storageUsage": "Stockage du navigateur",
+      "persistStorage": "Demander un stockage persistant",
+      "persistGranted": "Stockage persistant accordé",
+      "persistDenied": "Stockage persistant refusé",
+      "confirmClear": "Effacer tout le cache de tuiles hors ligne ? Irréversible."
     },
     "speciesWatchlist": {
       "title": "Liste d’espèces",

@@ -1,0 +1,30 @@
+{
+ "at": "2026-11-13T10:52:53.619Z",
+ "center": {
+  "lng": -46.5418917,
+  "lat": -21.9132389
+ },
+ "radiusKm": 50,
+ "perUf": {
+  "ARCGIS": {
+   "pages": 5
+  }
+ },
+ "inRadius": 237,
+ "categories": {
+  "heavy_mineral_associated": 34,
+  "strategic_associated": 1,
+  "direct_ree": 183,
+  "pegmatite_associated": 9,
+  "carbonatite_associated": 9,
+  "phosphate_associated": 1
+ },
+ "added": 0,
+ "removed": 0,
+ "addedSample": [],
+ "removedSample": [],
+ "overlaps": {
+  "withOverlap": 59,
+  "total": 237
+ }
+}

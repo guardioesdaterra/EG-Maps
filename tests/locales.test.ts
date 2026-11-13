@@ -7,8 +7,8 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 // Keep this list aligned with i18n.locales in nuxt.config.ts.
-const loadedLocales = ['en', 'es', 'fr', 'pt', 'ar', 'hi', 'ja', 'zh', 'nl', 'de'] as const
-const allLocales = [...loadedLocales, 'it', 'ko', 'pl', 'ru', 'sv', 'tr'] as const
+const loadedLocales = ['en', 'es', 'fr', 'pt', 'ar', 'hi', 'ja', 'zh', 'nl', 'de', 'it', 'ko', 'pl', 'ru', 'sv', 'tr'] as const
+const allLocales = loadedLocales
 
 type JsonRecord = Record<string, unknown>
 

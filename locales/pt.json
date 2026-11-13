@@ -1992,7 +1992,22 @@
       "done": "{count} tiles baixados para uso offline",
       "doneWithErrors": "{failed} tiles não puderam ser baixados",
       "cancelled": "Download cancelado",
-      "cacheCleared": "Cache offline limpo"
+      "cacheCleared": "Cache offline limpo",
+      "invalidZoom": "O zoom inicial deve ser menor ou igual ao final.",
+      "tooLarge": "Muitos tiles (máx. {max}). Reduza a área ou o zoom máximo.",
+      "needsApiKey": "Uma chave API do MapTiler é necessária para baixar tiles.",
+      "noMapView": "Sem vista de mapa nesta página — usando uma janela pequena em torno da URL (ou insira limites manualmente).",
+      "previewLabel": "Pré-visualização da área de download",
+      "alreadyCached": "{count} tiles já em cache",
+      "skipped": "{count} ignorados",
+      "storageFull": "Armazenamento cheio — alguns tiles não foram salvos. Limpe o cache ou libere espaço.",
+      "authFailed": "O MapTiler rejeitou a chave API (401/403). Verifique NUXT_PUBLIC_MAPTILER_API_KEY.",
+      "cachedZoom": "Zoom em cache",
+      "storageUsage": "Armazenamento do navegador",
+      "persistStorage": "Solicitar armazenamento persistente",
+      "persistGranted": "Armazenamento persistente concedido",
+      "persistDenied": "Armazenamento persistente negado",
+      "confirmClear": "Limpar todo o cache de tiles offline? Isto não pode ser desfeito."
     },
     "speciesWatchlist": {
       "title": "Lista de espécies",

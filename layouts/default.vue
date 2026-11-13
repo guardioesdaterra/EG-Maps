@@ -125,7 +125,7 @@
               </div>
 
               <div :class="utilityIconClass">
-                <Icon name="gis:globe" class="h-4 w-4" />
+                <Icon name="tabler:language-hiragana" class="h-4 w-4" />
               </div>
             </button>
 
@@ -284,7 +284,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { path: '/project-grants', labelKey: 'nav.projectGrants', icon: 'tabler:heart', variant: 'purple' },
-  { path: '/endangered-species', labelKey: 'nav.endangeredSpecies', icon: 'tabler:feather', variant: 'green' },
+  { path: '/endangered-species', labelKey: 'nav.endangeredSpecies', icon: 'tabler:canary', variant: 'green' },
   { path: '/vulcan-observatory', labelKey: 'nav.observatoryOfVulcan', icon: 'tabler:volcano', variant: 'orange' },
   { path: '/active-crews', labelKey: 'nav.activeCrews', icon: 'tabler:user', variant: 'cyan' },
   { path: 'https://www.earthguardians.org/crews', labelKey: 'nav.joinEarthGuardians', icon: 'tabler:user-plus', variant: 'cyan', external: true },

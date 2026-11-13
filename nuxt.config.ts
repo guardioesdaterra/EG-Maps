@@ -42,6 +42,12 @@ export default defineNuxtConfig({
       { code: 'zh', language: 'zh-CN', name: '中文', file: 'zh.json' },
       { code: 'nl', language: 'nl-NL', name: 'Nederlands', file: 'nl.json' },
       { code: 'de', language: 'de-DE', name: 'Deutsch', file: 'de.json' },
+      { code: 'it', language: 'it-IT', name: 'Italiano', file: 'it.json' },
+      { code: 'ko', language: 'ko-KR', name: '한국어', file: 'ko.json' },
+      { code: 'pl', language: 'pl-PL', name: 'Polski', file: 'pl.json' },
+      { code: 'ru', language: 'ru-RU', name: 'Русский', file: 'ru.json' },
+      { code: 'sv', language: 'sv-SE', name: 'Svenska', file: 'sv.json' },
+      { code: 'tr', language: 'tr-TR', name: 'Türkçe', file: 'tr.json' },
     ],
     // Keep SSR and the first client render on the same locale. The UI store
     // restores localStorage/navigator.language after app:mounted; letting

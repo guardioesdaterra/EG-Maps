@@ -13,7 +13,7 @@ import { useUiStore, type SupportedLocale } from '@/stores/ui'
 
 export type Locale = SupportedLocale
 
-const localeIds: Locale[] = ['en', 'es', 'pt', 'fr', 'ja', 'zh', 'ar', 'hi', 'nl', 'de']
+const localeIds: Locale[] = ['en', 'es', 'pt', 'fr', 'ja', 'zh', 'ar', 'hi', 'nl', 'de', 'it', 'ko', 'pl', 'ru', 'sv', 'tr']
 
 export function useI18n() {
   const nuxtApp = useNuxtApp()
@@ -65,6 +65,12 @@ export function useI18n() {
       hi: 'हिन्दी',
       nl: 'Nederlands',
       de: 'Deutsch',
+      it: 'Italiano',
+      ko: '한국어',
+      pl: 'Polski',
+      ru: 'Русский',
+      sv: 'Svenska',
+      tr: 'Türkçe',
     } satisfies Record<Locale, string>,
     setLocale,
   }

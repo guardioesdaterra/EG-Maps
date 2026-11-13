@@ -1992,7 +1992,22 @@
       "done": "已下载 {count} 张瓦片供离线使用",
       "doneWithErrors": "有 {failed} 张瓦片下载失败",
       "cancelled": "下载已取消",
-      "cacheCleared": "离线缓存已清除"
+      "cacheCleared": "离线缓存已清除",
+      "invalidZoom": "From zoom must be less than or equal to to zoom.",
+      "tooLarge": "Too many tiles ({max} max). Shrink the area or lower the max zoom.",
+      "needsApiKey": "A MapTiler API key is required to download tiles.",
+      "noMapView": "No live map view on this page — using a small window around the map URL (or enter bounds manually).",
+      "previewLabel": "Download area preview",
+      "alreadyCached": "{count} tiles already cached",
+      "skipped": "{count} skipped",
+      "storageFull": "Storage is full — some tiles could not be saved. Clear cache or free browser storage.",
+      "authFailed": "MapTiler rejected the API key (401/403). Check NUXT_PUBLIC_MAPTILER_API_KEY.",
+      "cachedZoom": "Cached zoom",
+      "storageUsage": "Browser storage",
+      "persistStorage": "Request persistent storage",
+      "persistGranted": "Persistent storage granted",
+      "persistDenied": "Persistent storage was not granted",
+      "confirmClear": "Clear the entire offline tile cache? This cannot be undone."
     },
     "speciesWatchlist": {
       "title": "物种关注清单",

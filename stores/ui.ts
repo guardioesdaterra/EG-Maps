@@ -8,7 +8,7 @@
  */
 import { ref, watch } from 'vue'
 
-const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'pt', 'ar', 'hi', 'ja', 'zh', 'nl', 'de'] as const
+const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'pt', 'ar', 'hi', 'ja', 'zh', 'nl', 'de', 'it', 'ko', 'pl', 'ru', 'sv', 'tr'] as const
 export type SupportedLocale = typeof SUPPORTED_LOCALES[number]
 
 let _isDark: ReturnType<typeof ref<boolean>> | null = null

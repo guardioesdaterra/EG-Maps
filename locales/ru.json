@@ -12,7 +12,9 @@
     "switchToLight": "Переключить на светлый режим",
     "switchToDark": "Переключить на тёмный режим",
     "language": "Язык",
-    "tools": "Tools"
+    "tools": "Tools",
+    "privacy": "Privacy",
+    "terms": "Terms"
   },
   "home": {
     "title": "Earth Guardians",
@@ -95,7 +97,10 @@
     "skillBuilding": "Развитие навыков",
     "joinGlobal": "Присоединяйтесь к глобальной сети",
     "youthLed": "Молодёжные действия",
-    "observatoryOfVulcan": "Обсерватория Вулкана"
+    "observatoryOfVulcan": "Обсерватория Вулкана",
+    "sections": "Sections",
+    "crewProjectsVulcanValue": "300K+",
+    "crewProjectsVulcanLabel": "Monitored by Vulcan"
   },
   "mapControls": {
     "search": "Поиск",
@@ -131,7 +136,58 @@
       "cells": "{cells} ячеек · {points} отмеченных точек",
       "cellSize": "≈ {km} км на ячейку",
       "on": "Географическая сетка: включена"
-    }
+    },
+    "searchCities": "Search cities",
+    "shareMap": "Share map",
+    "linkCopied": "Link copied",
+    "exportMap": "Export map image",
+    "exportData": "Export visible data as GeoJSON",
+    "legend": "Legend",
+    "nearby": "Nearby",
+    "nearbyLabel": "Find nearby Crews, projects and campaigns",
+    "offlineCachedData": "Offline mode — cached data remains available",
+    "nearbyPanel": {
+      "eyebrow": "Explore nearby",
+      "title": "Find action near you",
+      "consentTitle": "Use your location?",
+      "consentDescription": "We use your location only in this browser to sort nearby Crews and projects. It is not sent to Earth Guardians or stored by this app.",
+      "consentLabel": "I agree to share my approximate location with this map for this session.",
+      "locating": "Locating…",
+      "findAction": "Find nearby action",
+      "locationError": "Location permission was not granted. You can enable it in your browser settings and try again.",
+      "locationActive": "Location active · approximate only",
+      "clearLocation": "Clear current location",
+      "categories": "Nearby categories",
+      "crews": "Crews",
+      "projects": "Projects",
+      "campaigns": "Campaigns",
+      "noCrews": "No Crew locations with coordinates are available yet.",
+      "noProjects": "No project locations are available yet.",
+      "biodiversity": "Endangered species",
+      "biodiversityDesc": "Global biodiversity and habitat action.",
+      "chooseAction": "Choose Action Now",
+      "chooseActionDesc": "Youth-led climate justice and direct action.",
+      "solutions": "Sustainable solutions",
+      "solutionsDesc": "Community-scale waste and resilience solutions."
+    },
+    "imported": "Imported",
+    "populationUnit": "inhabitants",
+    "clusterPanel": {
+      "title": "Cluster results",
+      "count": "Cluster results: {count}",
+      "copyLink": "Copy cluster link",
+      "linkCopied": "Cluster link copied",
+      "close": "Close cluster results",
+      "searchLabel": "Search cluster results",
+      "searchPlaceholder": "Search this cluster…",
+      "visibleResults": "{count} visible cluster results",
+      "empty": "No results match this search.",
+      "activeCrewsSubtitle": "{crews} active Crews · {countries} countries",
+      "expand": "Expand results",
+      "collapse": "Close results"
+    },
+    "moreTools": "More map tools",
+    "hideTools": "Hide map tools"
   },
   "mapTiles": {
     "maptiler": "Спутник",
@@ -212,7 +268,9 @@
     "switchTo2D": "Переключить на 2D-карту",
     "switchTo3D": "Переключить на 3D-глобус",
     "view2D": "2D-карта",
-    "view3D": "3D-глобус"
+    "view3D": "3D-глобус",
+    "reloadPage": "Reload page",
+    "allSpeciesLoaded": "All species data loaded"
   },
   "project": {
     "directBeneficiaries": "Прямые бенефициары",
@@ -249,7 +307,9 @@
     "ownProjectsRegionTitle": "Проекты команд на месте",
     "crewProjectBadge": "Проект команды",
     "moreProjects": "Другие связанные проекты",
-    "pageOf": "Страница {page} из {pages}"
+    "pageOf": "Страница {page} из {pages}",
+    "crewsInRegion": "Crews in {region}",
+    "crewsInRegionHint": "All Crews of this region — select one for details"
   },
   "taxonomy": {
     "Mammal": "Млекопитающие",
@@ -277,7 +337,10 @@
       "illegal": "Нелегальное",
       "env": "Эко-риск",
       "network": "Сеть",
-      "timeline": "Хронология"
+      "timeline": "Хронология",
+      "power": "Power",
+      "territory": "Territory",
+      "culture": "Culture"
     },
     "dangerPanel": {
       "title": "Самые опасные предприятия",
@@ -319,7 +382,11 @@
       "chinaBanTitle": "Запрет экспорта Китаем (окт. 2025)",
       "chinaBanBody": "Китай запретил экспорт 12/17 элементов РЗЭ в США. 78% американского оружия зависит от китайских РЗЭ. Мандат DFARS 2027: оборонные подрядчики США должны закупать РЗЭ не из Китая.",
       "title": "title",
-      "empty": "empty"
+      "empty": "empty",
+      "liveTitle": "Live: this region",
+      "liveClaims": "critical claims",
+      "liveArea": "critical area",
+      "liveUs": "US-connected"
     },
     "illegal": {
       "landSpec": "Земельная спекуляция",
@@ -380,7 +447,16 @@
       "title": "Хронология заявок (2000–2026)",
       "claims": "{count} заявок",
       "cumulative": "сов. {count}",
-      "empty": "empty"
+      "empty": "empty",
+      "total": "total",
+      "readStory": "Read the story",
+      "hideStory": "Hide story",
+      "footer": "Yearly new claims from ANM public records; the running total compounds each year.",
+      "narrativeStart": "baseline: a few dozen claims a year — rare earths not yet strategic.",
+      "narrative2010": "China bans rare-earth exports to Japan, the first warning shot — claims jump past 500.",
+      "narrative2017": "the US declares rare earths critical (EO 13817); China threatens a US ban and the Pentagon starts investing.",
+      "narrative2021": "supercycle and Brazil rush — lithium and ASX juniors invade; 2023 peaks at 4,213 claims as the US DFC funds Serra Verde.",
+      "narrative2024": "backlash: prosecutors challenge licensing and Operação Rejeito arrests an ANM director, while China bans 7 rare-earth elements."
     },
     "actions": {
       "verify": "Проверить на ANM",
@@ -402,7 +478,14 @@
       "waterBodies": "Водные объекты",
       "protectedAreas": "Охраняемые территории",
       "waterBasins": "Водосборные бассейны (официальные ANA)",
-      "mogianaTerritory": "Предлагаемая территория Моджиана (Earth Guardians Бразилия)"
+      "mogianaTerritory": "Предлагаемая территория Моджиана (Earth Guardians Бразилия)",
+      "conservationUnits": "Conservation Units",
+      "bufferZones": "Buffer Zones",
+      "protectedSearch": "Protected areas & buffer zones",
+      "noProtectedSearch": "No protected area matches.",
+      "statusTitle": "Layer status",
+      "statusFailed": "failed",
+      "foreignHeld": "Foreign-held claims"
     },
     "myTerritory": {
       "title": "Моя территория",
@@ -470,7 +553,15 @@
       "year": "Год",
       "unknown": "Неизвестно",
       "lastEventActive": "Активный",
-      "overlaps": "Перекрытия"
+      "overlaps": "Перекрытия",
+      "stackedLayers": "Overlapping layers",
+      "stackedMore": "+{count} more layer(s) here",
+      "stackedShowAll": "Open data table",
+      "tabClaim": "Claim",
+      "tabBoundary": "Boundary",
+      "tabWater": "Water",
+      "tabConflict": "Conflict",
+      "tabTerrain": "Terrain"
     },
     "sync": {
       "lastSync": "Последняя синхронизация ANM",
@@ -685,7 +776,15 @@
         "unnamed": "Запись без названия",
         "unknownSource": "Неизвестный",
         "pagePrev": "Предыдущая страница",
-        "pageNext": "Следующая страница"
+        "pageNext": "Следующая страница",
+        "agentsLoading": "Loading cultural agents…",
+        "agentsRetry": "Retry",
+        "families": "Marker families",
+        "familyAgents": "Cultural Agents",
+        "familySpaces": "Cultural Spaces",
+        "familyIndigenous": "Indigenous & Original Peoples",
+        "sortFamily": "Family",
+        "clearFilters": "Clear"
       },
       "community": {
         "eyebrow": "Живая обсерватория",
@@ -701,13 +800,80 @@
         "methodologyText": "Данные собраны из открытых реестров и общественных источников. Воспринимайте их как приглашение к расследованию, а не как замену согласия сообщества или юридических определений.",
         "monitor": "Открыть полевой мониторинг",
         "sources": "Смотреть источники данных"
+      },
+      "actionsExpand": "Expand actions",
+      "actionsCollapse": "Collapse actions",
+      "layersShow": "Show filters",
+      "layersHide": "Hide filters",
+      "filtersTitle": "Mining claim filters",
+      "claimSuggestions": "Matching claims",
+      "myLocation": "My location",
+      "boundsHintTitle": "Vulcan view is locked",
+      "boundsHintBody": "You reached the edge of the Poços de Caldas zone. Load Full Brazil to pan the whole country.",
+      "tabs": {
+        "label": "Observatory intel",
+        "territory": "Territory",
+        "culture": "Culture",
+        "power": "Powers",
+        "timeline": "Timeline"
       }
     },
     "error": {
       "loadFailed": "Не удалось загрузить данные обсерватории",
       "retry": "Повторить"
     },
-    "clearSearch": "Очистить поиск"
+    "clearSearch": "Очистить поиск",
+    "territory": {
+      "headline": "Claims on the ground",
+      "claims": "claims",
+      "boundaries": "boundaries",
+      "area": "claim area",
+      "withOverlaps": "w/ overlaps",
+      "synced": "ANM sync",
+      "noBoundaries": "No claim boundaries loaded — points only. Check the layer status below.",
+      "bySubstance": "Claims by substance",
+      "overlapsTitle": "Mining × territory overlaps",
+      "noOverlaps": "No territory overlaps recorded for the loaded claims.",
+      "overlappedBy": "{count} overlapping claims",
+      "overlappingClaims": "overlapping claims",
+      "protectedTitle": "Protected territories",
+      "source": "Source",
+      "noProtected": "No protected territories in the loaded dataset.",
+      "watersTitle": "Waters under pressure",
+      "noWaters": "No named waters assessed yet — water layer still loading.",
+      "watersLegend": "Claims within 2km press directly (drawdown, runoff); within 5km share aquifer or sub-basin.",
+      "pressure": "PRESSURE",
+      "watch": "WATCH",
+      "claims2km": "claims ≤2km",
+      "claims5km": "claims ≤5km",
+      "flyToWater": "Fly to {name}",
+      "dossierDownload": "Export evidence dossier",
+      "dossierCopy": "Copy dossier",
+      "dossierCopied": "Copied!",
+      "searchPlaceholder": "Search claims, holders, processos…",
+      "sobDemanda": "Sob Demanda only",
+      "filtersActive": "{count} filters active",
+      "pinTitle": "Watch: your location",
+      "pinBody": "{count} claims within 10km of {label}.",
+      "pinNearest": "Nearest: {processo} · {holder} · {km}km"
+    },
+    "claimIntel": {
+      "holderTitle": "Holder track record",
+      "claims": "claims",
+      "territoryTitle": "Territory overlaps"
+    },
+    "power": {
+      "noData": "Deep analysis not loaded yet.",
+      "militaryTitle": "Military-critical footprint",
+      "criticalClaims": "critical claims",
+      "criticalArea": "critical area",
+      "usConnected": "US-connected",
+      "foreignTitle": "Foreign capital share",
+      "sigiloTitle": "Secrecy (sigilo) claims",
+      "sigiloBody": "{total} claims under secrecy ({pct}%) covering {area} ha — hidden holders, hidden substances.",
+      "topTitle": "Top suspicious holders",
+      "claims": "claims"
+    }
   },
   "loading": {
     "projectGrantsMap": "Загрузка карты проектных грантов",
@@ -901,7 +1067,18 @@
     "communityDesc": "Локальные инициативы, развивающие способность сообществ противостоять климатическим вызовам и создавать устойчивые решения.",
     "ctaTitle": "Начните собственный проект команды",
     "ctaDesc": "Каждая команда вправе продвигать собственные проекты и инициативы в ответ на климатические проблемы своих сообществ.",
-    "startCrew": "Создайте команду"
+    "startCrew": "Создайте команду",
+    "brazil7kTitle": "7K Project",
+    "brazil7kLocation": "Águas da Prata, São Paulo — Brazil",
+    "brazil7kItem1": "Started as the commemoration of 7 years of EG Brazil — planting 7,000 trees in degraded areas using different traditional approaches",
+    "brazil7kItem2": "Socio-environmental and cultural rewards and stipends for young people across several contest categories",
+    "brazil7kItem3": "Now an ongoing reference project — as the Crew marks its 12th year, it plants at least 1,000 trees every year",
+    "brazil7kItem4": "Direct impact: 8,000 people · Indirect impact: 21,000 people",
+    "vulcanInstituteTitle": "Vulcan Observatory Institute",
+    "vulcanInstituteLocation": "Poços de Caldas, Minas Gerais — Brazil",
+    "vulcanInstituteItem1": "Community monitoring framework for artists, community members and interested persons around Brazil's rare-earth fields — the world's second-largest deposit of strategic minerals",
+    "vulcanInstituteItem2": "Sheds light on the violent, colonial and illegal rare-earth extraction by the U.S. government and its partners",
+    "vulcanInstituteItem3": "Population inside the monitored area: more than 300,000 people"
   },
   "masterclasses": {
     "title": "Мастер-классы",
@@ -970,7 +1147,34 @@
     "joinCrew": "Создайте команду или присоединитесь к ней",
     "moreTitle": "Сессии с 2023 года",
     "moreDesc": "Написание заявок, подготовка к COP, визуализация данных, климатическая справедливость и многое другое. Следите за яркими моментами, клипами и предстоящими датами.",
-    "viewOnInstagram": "Смотреть в Instagram"
+    "viewOnInstagram": "Смотреть в Instagram",
+    "ep5Title": "Transformational Leadership",
+    "ep5Speaker": "with Rejoice — Africa RCC",
+    "ep5Desc": "What it takes to inspire change, foster resilient community leadership, and transform local action into lasting movement power.",
+    "ep5Time": "Sunday, September 20, 2026 · 12:00 PM EST | 4:00 PM UTC (GMT)",
+    "flyer": "Flyer",
+    "series2025Title": "Global Masterclass Series · 2025 season",
+    "series2025Desc": "Five sessions from the 2025 season — empathy, volunteer leadership, volunteerism in action, biodiversity governance, and digital tools. Recordings, slide decks and flyers below.",
+    "gm5Date": "2025",
+    "gm5Title": "Google Workspace Essentials: Mastering Gmail, Docs, Sheets, Drive, and Calendar",
+    "gm5Speaker": "with Emmy Scott · hosted by Moudjiba",
+    "gm5Desc": "A practical walkthrough of the Google Workspace essentials for Crew work — Gmail, Docs, Sheets, Drive, and Calendar — with live Q&A.",
+    "gm4Date": "September 28, 2025",
+    "gm4Title": "Rio, the CBD & Beyond: A Masterclass on Global Biodiversity Governance",
+    "gm4Speaker": "with GYBN USA · hosted by Moudjiba",
+    "gm4Desc": "How global biodiversity governance works — from the Rio Earth Summit to the Convention on Biological Diversity and beyond — with live Q&A.",
+    "gm3Date": "July 13, 2025",
+    "gm3Title": "Volunteerism and Social Change: How to Use Your Time and Talents to Make a Difference in the World",
+    "gm3Speaker": "with Meg Ferrigno — EG Board Director, founder of Pureland Project and Moonpads · hosted by Moudjiba",
+    "gm3Desc": "How to use your time and talents to make a difference — volunteerism as a driver of social change — with live Q&A.",
+    "gm2Date": "2025",
+    "gm2Title": "Leading and Managing a Team of Volunteers",
+    "gm2Speaker": "with Ms Rejoice A. Sosu-Ketek",
+    "gm2Desc": "No two volunteers are the same — how to build a strong volunteer team, meet the challenges of managing volunteers, and lead with the right approaches and values.",
+    "gm1Date": "2025",
+    "gm1Title": "Unlock Deeper Connections — Master the Art of Empathy",
+    "gm1Speaker": "with Louka",
+    "gm1Desc": "Master the art of empathy to unlock deeper connections in your community and Crew work."
   },
   "a11y": {
     "skipToContent": "Перейти к основному содержанию"
@@ -1788,7 +1992,22 @@
       "done": "Загружено {count} тайлов для офлайн-использования",
       "doneWithErrors": "Не удалось загрузить {failed} тайлов",
       "cancelled": "Загрузка отменена",
-      "cacheCleared": "Офлайн-кэш очищен"
+      "cacheCleared": "Офлайн-кэш очищен",
+      "invalidZoom": "Начальный зум должен быть не больше конечного.",
+      "tooLarge": "Слишком много тайлов (макс. {max}). Уменьшите область или макс. зум.",
+      "needsApiKey": "Для загрузки тайлов нужен API-ключ MapTiler.",
+      "noMapView": "На этой странице нет карты — используется маленькое окно вокруг URL (или введите границы вручную).",
+      "previewLabel": "Предпросмотр области загрузки",
+      "alreadyCached": "Уже в кеше: {count}",
+      "skipped": "пропущено: {count}",
+      "storageFull": "Хранилище заполнено — часть тайлов не сохранена. Очистите кеш или освободите место.",
+      "authFailed": "MapTiler отклонил API-ключ (401/403). Проверьте NUXT_PUBLIC_MAPTILER_API_KEY.",
+      "cachedZoom": "Зум в кеше",
+      "storageUsage": "Хранилище браузера",
+      "persistStorage": "Запросить постоянное хранилище",
+      "persistGranted": "Постоянное хранилище предоставлено",
+      "persistDenied": "Постоянное хранилище не предоставлено",
+      "confirmClear": "Очистить весь офлайн-кеш тайлов? Действие необратимо."
     },
     "speciesWatchlist": {
       "title": "Список видов",

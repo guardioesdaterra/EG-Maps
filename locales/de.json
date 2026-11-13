@@ -1992,7 +1992,22 @@
       "done": "{count} Kacheln für die Offline-Nutzung geladen",
       "doneWithErrors": "{failed} Kacheln konnten nicht geladen werden",
       "cancelled": "Download abgebrochen",
-      "cacheCleared": "Offline-Speicher geleert"
+      "cacheCleared": "Offline-Speicher geleert",
+      "invalidZoom": "Start-Zoom muss kleiner oder gleich End-Zoom sein.",
+      "tooLarge": "Zu viele Kacheln (max. {max}). Bereich oder Max-Zoom verkleinern.",
+      "needsApiKey": "Für Kachel-Downloads wird ein MapTiler-API-Schlüssel benötigt.",
+      "noMapView": "Keine Kartenansicht auf dieser Seite — kleines Fenster um die URL (oder Bounds manuell eingeben).",
+      "previewLabel": "Vorschau des Download-Bereichs",
+      "alreadyCached": "{count} Kacheln bereits im Cache",
+      "skipped": "{count} übersprungen",
+      "storageFull": "Speicher voll — einige Kacheln konnten nicht gespeichert werden. Cache leeren oder Speicher freigeben.",
+      "authFailed": "MapTiler hat den API-Schlüssel abgelehnt (401/403). NUXT_PUBLIC_MAPTILER_API_KEY prüfen.",
+      "cachedZoom": "Cache-Zoom",
+      "storageUsage": "Browserspeicher",
+      "persistStorage": "Dauerhaften Speicher anfragen",
+      "persistGranted": "Dauerhafter Speicher gewährt",
+      "persistDenied": "Dauerhafter Speicher nicht gewährt",
+      "confirmClear": "Gesamten Offline-Kachel-Cache löschen? Nicht widerrufbar."
     },
     "speciesWatchlist": {
       "title": "Artenliste",

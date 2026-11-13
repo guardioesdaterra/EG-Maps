@@ -23,13 +23,13 @@ import { getPopupContent } from '@/composables/useCulturalLayers'
 import { useSpeciesPanel } from '@/composables/useSpeciesPanel'
 import { useAdaptiveQuality } from '@/composables/useAdaptiveQuality'
 import { useMapTileProvider } from '@/composables/useMapTileProvider'
-import { isSafeTileUrl, MAX_TILE_BYTES, type OfflineTileCache } from '@/composables/useOfflineTiles'
 import { useOfflineTileCache } from '@/composables/useOfflineTileCache'
+import { registerOfflineTileProtocol, transformMapTileRequest } from '@/composables/useOfflineTileProtocol'
 import { usePerformance } from '@/composables/usePerformance'
 import { allProjectsData } from '@/lib/project-data'
 import { openRareEarthOverlayPopup, MAP_GROUP_COLORS, type Species } from '@/lib/map-utils'
 import { mountMapPopup, withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
-import { detectWebGLSupport, getMapStyle } from '@/composables/useMapLibre'
+import { detectWebGLSupport, getMapStyle, offlineSatelliteStyle } from '@/composables/useMapLibre'
 import { tileStyleDef } from '@/lib/tile-styles'
 import type { GeoPoint } from '@/lib/hexbin'
 import { HEX_GRID } from '@/lib/constants'
@@ -80,48 +80,6 @@ function tEnd(label: string) {
   if (!activeTimers.has(label)) return
   activeTimers.delete(label)
   try { console.timeEnd(label) } catch { /* already cleared */ }
-}
-
-let offlineTileProtocolRegistered = false
-let offlineTileProtocolCache: OfflineTileCache | null = null
-function registerOfflineTileProtocol(cache: OfflineTileCache) {
-  offlineTileProtocolCache = cache
-  if (offlineTileProtocolRegistered) return
-  maplibregl.addProtocol('egoffline', async (request, abortController) => {
-    const activeCache = offlineTileProtocolCache
-    if (!activeCache) throw new Error('Offline tile cache is unavailable')
-    const protocolUrl = new URL(request.url)
-    const sourceUrl = protocolUrl.searchParams.get('url')
-    if (!sourceUrl || !isSafeTileUrl(sourceUrl)) throw new Error('Invalid offline tile request')
-    const parsed = new URL(sourceUrl)
-    // Only satellite raster tiles are IndexedDB-cached; every other tileset
-    // (streets/outdoors vectors, hybrid labels) bypasses the offline protocol.
-    const match = parsed.pathname.match(/\/tiles\/satellite(?:-[^/]+)?\/(\d+)\/(\d+)\/(\d+)\.(?:jpg|jpeg|png|webp)$/i)
-    if (!match) throw new Error('Unsupported offline tile path')
-    const [, zText, xText, yText] = match
-    const z = Number(zText); const x = Number(xText); const y = Number(yText)
-    const cached = await activeCache.getTile(z, x, y)
-    if (cached) return { data: cached }
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-      throw new Error(`Tile ${z}/${x}/${y} is not available offline`)
-    }
-
-    const response = await fetch(sourceUrl, { signal: abortController.signal })
-    if (!response.ok) throw new Error(`Tile request failed (${response.status})`)
-    const contentType = response.headers.get('content-type') || 'image/jpeg'
-    const contentLength = Number(response.headers.get('content-length') || 0)
-    if (contentLength > MAX_TILE_BYTES) throw new Error('Tile exceeds the local cache size limit')
-    const data = await response.arrayBuffer()
-    if (data.byteLength > MAX_TILE_BYTES) throw new Error('Tile exceeds the local cache size limit')
-    void activeCache.setTile(z, x, y, data, contentType)
-    return { data }
-  })
-  offlineTileProtocolRegistered = true
-}
-
-function transformMapTileRequest(url: string, resourceType?: string) {
-  if (resourceType !== 'Tile' || !isSafeTileUrl(url)) return { url }
-  return { url: `egoffline://tile?url=${encodeURIComponent(url)}` }
 }
 
 export interface MapBaseProps {
@@ -894,7 +852,21 @@ export function useMapBase(config: MapBaseConfig) {
   /** Resolve the MapLibre style for the current effective tile provider. */
   function currentStyle(): string | Record<string, unknown> {
     const qs = quality.settings.value
+    // Offline (or no network for style.json) with a downloaded pyramid: serve
+    // raster from IndexedDB via egoffline — remote MapTiler style.json cannot
+    // load offline even when satellite tiles are already cached.
+    const offlineOpts = () => ({
+      maxzoom: offlineTiles.stats.value.maxZoom || 20,
+      minzoom: offlineTiles.stats.value.minZoom || 0,
+    })
+    if (!offlineTiles.isOnline.value && offlineTiles.stats.value.cachedTiles > 0) {
+      return offlineSatelliteStyle(MAPTILER_API_KEY, offlineOpts())
+    }
     if (tileProvider.effectiveProvider.value === 'fallback' || !MAPTILER_API_KEY) {
+      // Prefer real satellite backup over empty land polygons when tiles exist.
+      if (offlineTiles.stats.value.cachedTiles > 0) {
+        return offlineSatelliteStyle(MAPTILER_API_KEY, offlineOpts())
+      }
       return getMapStyle('', undefined, baseURL)
     }
     return getMapStyle(MAPTILER_API_KEY, qs.tileResolution, baseURL, tileStyleDef(tileStyle.styleId.value).maptilerStyle)
@@ -1033,6 +1005,7 @@ export function useMapBase(config: MapBaseConfig) {
       marker.cleanup()
       stopFpsReporting()
       try { (map as unknown as { __stopProviderWatch?: () => void }).__stopProviderWatch?.() } catch { /* ignore */ }
+      try { (map as unknown as { __stopOnlineWatch?: () => void }).__stopOnlineWatch?.() } catch { /* ignore */ }
       try { map.remove() } catch { /* ignore */ }
       setMapInstance(null)
     }
@@ -1148,6 +1121,19 @@ export function useMapBase(config: MapBaseConfig) {
       })
       // Owned here (not onUnmounted) so re-init doesn't leak watchers.
       ;(created as unknown as { __stopProviderWatch?: () => void }).__stopProviderWatch = stopProviderWatch
+      // Offline ↔ online: re-resolve the style (offlineSatelliteStyle ↔ MapTiler)
+      // without waiting for a manual provider toggle.
+      const stopOnlineWatch = watch(() => offlineTiles.isOnline.value, (online, wasOnline) => {
+        if (!created || !isMounted || online === wasOnline) return
+        if (isInitializing && !created.loaded()) return
+        if (created.loaded() && tileProvider.preference.value === 'auto' && online) {
+          // Coming back online in auto mode: clear offline-forced fallback and restyle.
+          if (tileProvider.autoReason.value === 'offline') tileProvider.clearAutoFallback()
+        }
+        lastAppliedProvider = undefined as unknown as typeof lastAppliedProvider
+        applyProviderStyle(tileProvider.effectiveProvider.value)
+      })
+      ;(created as unknown as { __stopOnlineWatch?: () => void }).__stopOnlineWatch = stopOnlineWatch
       startFpsReporting()
       created.on('style.load', () => {
         if (!styleLoadFired) {
@@ -1319,6 +1305,7 @@ export function useMapBase(config: MapBaseConfig) {
       mapCanvas?.removeEventListener('webglcontextlost', onWebglContextLost)
       mapCanvas = null
       try { (map as unknown as { __stopProviderWatch?: () => void }).__stopProviderWatch?.() } catch { /* ignore */ }
+      try { (map as unknown as { __stopOnlineWatch?: () => void }).__stopOnlineWatch?.() } catch { /* ignore */ }
       try { map.remove() } catch { /* ignore */ }
       setMapInstance(null)
     }

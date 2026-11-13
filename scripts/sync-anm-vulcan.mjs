@@ -33,10 +33,24 @@ import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import https from 'node:https'
+import tls from 'node:tls'
 import { inflateRawSync } from 'node:zlib'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(HERE, '..')
+
+// ANM's TLS terminator (dadosabertos/geo.anm.gov.br) serves only the leaf
+// certificate — the Sectigo intermediate is missing from the chain, so stock
+// verification fails with UNABLE_TO_VERIFY_LEAF_SIGNATURE /
+// "unable to verify the first certificate" (observed since 2026-11-07).
+// Pin the intermediate next to Node's built-in roots: full chain validation
+// still runs to a trusted root, and a stale pin is harmless if ANM rotates
+// CAs (their own sent chain would then be used against the same roots).
+// Refresh: openssl s_client -connect dadosabertos.anm.gov.br:443 -showcerts
+const ANM_INTERMEDIATE = join(HERE, 'certs', 'sectigo-ov-r36-intermediate.pem')
+const TLS_CA = existsSync(ANM_INTERMEDIATE)
+  ? [...tls.rootCertificates, readFileSync(ANM_INTERMEDIATE, 'utf8')]
+  : undefined
 
 const VULCAN = { lng: -46.5418917, lat: -21.9132389 } // 21°54'47.66"S 46°32'30.81"W
 const UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36'
@@ -186,7 +200,7 @@ function ringDistKmOv(p, ring, kx) {
 function download(url, dest) {
   return new Promise((resolveP, reject) => {
     const attempt = (u, redirects = 0) => {
-      https.get(u, { headers: { 'User-Agent': UA } }, (res) => {
+      https.get(u, { headers: { 'User-Agent': UA }, ca: TLS_CA }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redirects < 5) {
           res.resume()
           attempt(new URL(res.headers.location, u).toString(), redirects + 1)
@@ -354,7 +368,7 @@ async function loadZipSource() {
 function arcgisGet(params) {
   const qs = new URLSearchParams(params).toString()
   return new Promise((resolveP, reject) => {
-    https.get(`${ARCGIS}?${qs}`, { headers: { 'User-Agent': UA } }, (res) => {
+    https.get(`${ARCGIS}?${qs}`, { headers: { 'User-Agent': UA }, ca: TLS_CA }, (res) => {
       let body = ''
       res.on('data', c => { body += c })
       res.on('end', () => {

@@ -1992,7 +1992,22 @@
       "done": "Se descargaron {count} teselas para uso sin conexión",
       "doneWithErrors": "No se pudieron descargar {failed} teselas",
       "cancelled": "Descarga cancelada",
-      "cacheCleared": "Caché sin conexión vaciada"
+      "cacheCleared": "Caché sin conexión vaciada",
+      "invalidZoom": "El zoom inicial debe ser menor o igual que el final.",
+      "tooLarge": "Demasiadas teselas (máx. {max}). Reduce el área o el zoom máximo.",
+      "needsApiKey": "Se necesita una clave API de MapTiler para descargar teselas.",
+      "noMapView": "Sin vista de mapa en esta página — se usa una ventana pequeña alrededor de la URL del mapa (o introduce límites manualmente).",
+      "previewLabel": "Vista previa del área de descarga",
+      "alreadyCached": "{count} teselas ya en caché",
+      "skipped": "{count} omitidas",
+      "storageFull": "Almacenamiento lleno — no se guardaron algunas teselas. Limpia la caché o libera espacio.",
+      "authFailed": "MapTiler rechazó la clave API (401/403). Revisa NUXT_PUBLIC_MAPTILER_API_KEY.",
+      "cachedZoom": "Zoom en caché",
+      "storageUsage": "Almacenamiento del navegador",
+      "persistStorage": "Solicitar almacenamiento persistente",
+      "persistGranted": "Almacenamiento persistente concedido",
+      "persistDenied": "Almacenamiento persistente no concedido",
+      "confirmClear": "¿Borrar toda la caché de teselas sin conexión? No se puede deshacer."
     },
     "speciesWatchlist": {
       "title": "Lista de especies",

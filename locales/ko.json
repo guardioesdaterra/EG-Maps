@@ -12,7 +12,9 @@
     "switchToLight": "라이트 모드로 전환",
     "switchToDark": "다크 모드로 전환",
     "language": "언어",
-    "tools": "Tools"
+    "tools": "Tools",
+    "privacy": "Privacy",
+    "terms": "Terms"
   },
   "home": {
     "title": "Earth Guardians",
@@ -95,7 +97,10 @@
     "skillBuilding": "역량 강화",
     "joinGlobal": "글로벌 네트워크 가입",
     "youthLed": "청년 주도 행동",
-    "observatoryOfVulcan": "불칸 천문대"
+    "observatoryOfVulcan": "불칸 천문대",
+    "sections": "Sections",
+    "crewProjectsVulcanValue": "300K+",
+    "crewProjectsVulcanLabel": "Monitored by Vulcan"
   },
   "mapControls": {
     "search": "검색",
@@ -131,7 +136,58 @@
       "cells": "{cells} 셀 · 지도 포인트 {points}개",
       "cellSize": "셀당 약 {km}km",
       "on": "지리 그리드: 켜짐"
-    }
+    },
+    "searchCities": "Search cities",
+    "shareMap": "Share map",
+    "linkCopied": "Link copied",
+    "exportMap": "Export map image",
+    "exportData": "Export visible data as GeoJSON",
+    "legend": "Legend",
+    "nearby": "Nearby",
+    "nearbyLabel": "Find nearby Crews, projects and campaigns",
+    "offlineCachedData": "Offline mode — cached data remains available",
+    "nearbyPanel": {
+      "eyebrow": "Explore nearby",
+      "title": "Find action near you",
+      "consentTitle": "Use your location?",
+      "consentDescription": "We use your location only in this browser to sort nearby Crews and projects. It is not sent to Earth Guardians or stored by this app.",
+      "consentLabel": "I agree to share my approximate location with this map for this session.",
+      "locating": "Locating…",
+      "findAction": "Find nearby action",
+      "locationError": "Location permission was not granted. You can enable it in your browser settings and try again.",
+      "locationActive": "Location active · approximate only",
+      "clearLocation": "Clear current location",
+      "categories": "Nearby categories",
+      "crews": "Crews",
+      "projects": "Projects",
+      "campaigns": "Campaigns",
+      "noCrews": "No Crew locations with coordinates are available yet.",
+      "noProjects": "No project locations are available yet.",
+      "biodiversity": "Endangered species",
+      "biodiversityDesc": "Global biodiversity and habitat action.",
+      "chooseAction": "Choose Action Now",
+      "chooseActionDesc": "Youth-led climate justice and direct action.",
+      "solutions": "Sustainable solutions",
+      "solutionsDesc": "Community-scale waste and resilience solutions."
+    },
+    "imported": "Imported",
+    "populationUnit": "inhabitants",
+    "clusterPanel": {
+      "title": "Cluster results",
+      "count": "Cluster results: {count}",
+      "copyLink": "Copy cluster link",
+      "linkCopied": "Cluster link copied",
+      "close": "Close cluster results",
+      "searchLabel": "Search cluster results",
+      "searchPlaceholder": "Search this cluster…",
+      "visibleResults": "{count} visible cluster results",
+      "empty": "No results match this search.",
+      "activeCrewsSubtitle": "{crews} active Crews · {countries} countries",
+      "expand": "Expand results",
+      "collapse": "Close results"
+    },
+    "moreTools": "More map tools",
+    "hideTools": "Hide map tools"
   },
   "mapTiles": {
     "maptiler": "위성",
@@ -212,7 +268,9 @@
     "switchTo2D": "2D 지도 보기로 전환",
     "switchTo3D": "3D 지구본 보기로 전환",
     "view2D": "2D 지도",
-    "view3D": "3D 지구본"
+    "view3D": "3D 지구본",
+    "reloadPage": "Reload page",
+    "allSpeciesLoaded": "All species data loaded"
   },
   "project": {
     "directBeneficiaries": "직접 수혜자",
@@ -249,7 +307,9 @@
     "ownProjectsRegionTitle": "현장 크루 프로젝트",
     "crewProjectBadge": "크루 프로젝트",
     "moreProjects": "연결된 프로젝트 더보기",
-    "pageOf": "{pages}페이지 중 {page}페이지"
+    "pageOf": "{pages}페이지 중 {page}페이지",
+    "crewsInRegion": "Crews in {region}",
+    "crewsInRegionHint": "All Crews of this region — select one for details"
   },
   "taxonomy": {
     "Mammal": "포유류",
@@ -277,7 +337,10 @@
       "illegal": "불법",
       "env": "환경 위험",
       "network": "네트워크",
-      "timeline": "타임라인"
+      "timeline": "타임라인",
+      "power": "Power",
+      "territory": "Territory",
+      "culture": "Culture"
     },
     "dangerPanel": {
       "title": "최고 위험 기업",
@@ -319,7 +382,11 @@
       "chinaBanTitle": "중국 수출 금지 (2025년 10월)",
       "chinaBanBody": "중국은 미국에 대한 12/17개 REE 원소 수출을 금지했습니다. 미국 무기의 78%가 중국 REE에 의존합니다. DFARS 2027 의무: 미국 방산업체는 비중국산 REE를 조달해야 합니다.",
       "title": "title",
-      "empty": "empty"
+      "empty": "empty",
+      "liveTitle": "Live: this region",
+      "liveClaims": "critical claims",
+      "liveArea": "critical area",
+      "liveUs": "US-connected"
     },
     "illegal": {
       "landSpec": "토지 투기",
@@ -380,7 +447,16 @@
       "title": "청구 타임라인 (2000–2026)",
       "claims": "{count}건 청구",
       "cumulative": "누적 {count}",
-      "empty": "empty"
+      "empty": "empty",
+      "total": "total",
+      "readStory": "Read the story",
+      "hideStory": "Hide story",
+      "footer": "Yearly new claims from ANM public records; the running total compounds each year.",
+      "narrativeStart": "baseline: a few dozen claims a year — rare earths not yet strategic.",
+      "narrative2010": "China bans rare-earth exports to Japan, the first warning shot — claims jump past 500.",
+      "narrative2017": "the US declares rare earths critical (EO 13817); China threatens a US ban and the Pentagon starts investing.",
+      "narrative2021": "supercycle and Brazil rush — lithium and ASX juniors invade; 2023 peaks at 4,213 claims as the US DFC funds Serra Verde.",
+      "narrative2024": "backlash: prosecutors challenge licensing and Operação Rejeito arrests an ANM director, while China bans 7 rare-earth elements."
     },
     "actions": {
       "verify": "ANM에서 확인",
@@ -402,7 +478,14 @@
       "waterBodies": "수역",
       "protectedAreas": "보호 지역",
       "waterBasins": "수계 (ANA 공식)",
-      "mogianaTerritory": "제안된 모지아나 지역 (Earth Guardians 브라질)"
+      "mogianaTerritory": "제안된 모지아나 지역 (Earth Guardians 브라질)",
+      "conservationUnits": "Conservation Units",
+      "bufferZones": "Buffer Zones",
+      "protectedSearch": "Protected areas & buffer zones",
+      "noProtectedSearch": "No protected area matches.",
+      "statusTitle": "Layer status",
+      "statusFailed": "failed",
+      "foreignHeld": "Foreign-held claims"
     },
     "myTerritory": {
       "title": "내 영토",
@@ -470,7 +553,15 @@
       "year": "년",
       "unknown": "알 수 없음",
       "lastEventActive": "활성",
-      "overlaps": "중복"
+      "overlaps": "중복",
+      "stackedLayers": "Overlapping layers",
+      "stackedMore": "+{count} more layer(s) here",
+      "stackedShowAll": "Open data table",
+      "tabClaim": "Claim",
+      "tabBoundary": "Boundary",
+      "tabWater": "Water",
+      "tabConflict": "Conflict",
+      "tabTerrain": "Terrain"
     },
     "sync": {
       "lastSync": "마지막 ANM 동기화",
@@ -685,7 +776,15 @@
         "unnamed": "이름 없는 항목",
         "unknownSource": "알 수 없음",
         "pagePrev": "이전 페이지",
-        "pageNext": "다음 페이지"
+        "pageNext": "다음 페이지",
+        "agentsLoading": "Loading cultural agents…",
+        "agentsRetry": "Retry",
+        "families": "Marker families",
+        "familyAgents": "Cultural Agents",
+        "familySpaces": "Cultural Spaces",
+        "familyIndigenous": "Indigenous & Original Peoples",
+        "sortFamily": "Family",
+        "clearFilters": "Clear"
       },
       "community": {
         "eyebrow": "살아 있는 관측소",
@@ -701,13 +800,80 @@
         "methodologyText": "데이터는 공개 기록과 지역사회 공개 자료를 모아 구성했습니다. 지역사회 동의나 법적 판단을 대신하는 것이 아니라 조사를 위한 초대장으로 받아들이세요.",
         "monitor": "현장 모니터 열기",
         "sources": "데이터 출처 보기"
+      },
+      "actionsExpand": "Expand actions",
+      "actionsCollapse": "Collapse actions",
+      "layersShow": "Show filters",
+      "layersHide": "Hide filters",
+      "filtersTitle": "Mining claim filters",
+      "claimSuggestions": "Matching claims",
+      "myLocation": "My location",
+      "boundsHintTitle": "Vulcan view is locked",
+      "boundsHintBody": "You reached the edge of the Poços de Caldas zone. Load Full Brazil to pan the whole country.",
+      "tabs": {
+        "label": "Observatory intel",
+        "territory": "Territory",
+        "culture": "Culture",
+        "power": "Powers",
+        "timeline": "Timeline"
       }
     },
     "error": {
       "loadFailed": "관측소 데이터를 불러오지 못했습니다",
       "retry": "다시 시도"
     },
-    "clearSearch": "검색 지우기"
+    "clearSearch": "검색 지우기",
+    "territory": {
+      "headline": "Claims on the ground",
+      "claims": "claims",
+      "boundaries": "boundaries",
+      "area": "claim area",
+      "withOverlaps": "w/ overlaps",
+      "synced": "ANM sync",
+      "noBoundaries": "No claim boundaries loaded — points only. Check the layer status below.",
+      "bySubstance": "Claims by substance",
+      "overlapsTitle": "Mining × territory overlaps",
+      "noOverlaps": "No territory overlaps recorded for the loaded claims.",
+      "overlappedBy": "{count} overlapping claims",
+      "overlappingClaims": "overlapping claims",
+      "protectedTitle": "Protected territories",
+      "source": "Source",
+      "noProtected": "No protected territories in the loaded dataset.",
+      "watersTitle": "Waters under pressure",
+      "noWaters": "No named waters assessed yet — water layer still loading.",
+      "watersLegend": "Claims within 2km press directly (drawdown, runoff); within 5km share aquifer or sub-basin.",
+      "pressure": "PRESSURE",
+      "watch": "WATCH",
+      "claims2km": "claims ≤2km",
+      "claims5km": "claims ≤5km",
+      "flyToWater": "Fly to {name}",
+      "dossierDownload": "Export evidence dossier",
+      "dossierCopy": "Copy dossier",
+      "dossierCopied": "Copied!",
+      "searchPlaceholder": "Search claims, holders, processos…",
+      "sobDemanda": "Sob Demanda only",
+      "filtersActive": "{count} filters active",
+      "pinTitle": "Watch: your location",
+      "pinBody": "{count} claims within 10km of {label}.",
+      "pinNearest": "Nearest: {processo} · {holder} · {km}km"
+    },
+    "claimIntel": {
+      "holderTitle": "Holder track record",
+      "claims": "claims",
+      "territoryTitle": "Territory overlaps"
+    },
+    "power": {
+      "noData": "Deep analysis not loaded yet.",
+      "militaryTitle": "Military-critical footprint",
+      "criticalClaims": "critical claims",
+      "criticalArea": "critical area",
+      "usConnected": "US-connected",
+      "foreignTitle": "Foreign capital share",
+      "sigiloTitle": "Secrecy (sigilo) claims",
+      "sigiloBody": "{total} claims under secrecy ({pct}%) covering {area} ha — hidden holders, hidden substances.",
+      "topTitle": "Top suspicious holders",
+      "claims": "claims"
+    }
   },
   "loading": {
     "projectGrantsMap": "프로젝트 보조금 지도 로딩 중",
@@ -901,7 +1067,18 @@
     "communityDesc": "기후 문제에 대응하고 지속가능한 해결책을 만드는 지역사회 역량을 키우는 지역 활동.",
     "ctaTitle": "자신의 크루 프로젝트 시작하기",
     "ctaDesc": "모든 크루는 지역사회에 영향을 미치는 기후 문제에 대응해 자신의 프로젝트와 이니셔티브를 추진할 힘을 가지고 있습니다.",
-    "startCrew": "크루 시작하기"
+    "startCrew": "크루 시작하기",
+    "brazil7kTitle": "7K Project",
+    "brazil7kLocation": "Águas da Prata, São Paulo — Brazil",
+    "brazil7kItem1": "Started as the commemoration of 7 years of EG Brazil — planting 7,000 trees in degraded areas using different traditional approaches",
+    "brazil7kItem2": "Socio-environmental and cultural rewards and stipends for young people across several contest categories",
+    "brazil7kItem3": "Now an ongoing reference project — as the Crew marks its 12th year, it plants at least 1,000 trees every year",
+    "brazil7kItem4": "Direct impact: 8,000 people · Indirect impact: 21,000 people",
+    "vulcanInstituteTitle": "Vulcan Observatory Institute",
+    "vulcanInstituteLocation": "Poços de Caldas, Minas Gerais — Brazil",
+    "vulcanInstituteItem1": "Community monitoring framework for artists, community members and interested persons around Brazil's rare-earth fields — the world's second-largest deposit of strategic minerals",
+    "vulcanInstituteItem2": "Sheds light on the violent, colonial and illegal rare-earth extraction by the U.S. government and its partners",
+    "vulcanInstituteItem3": "Population inside the monitored area: more than 300,000 people"
   },
   "masterclasses": {
     "title": "마스터클래스",
@@ -970,7 +1147,34 @@
     "joinCrew": "크루 시작·가입하기",
     "moreTitle": "2023년 이후 세션",
     "moreDesc": "보조금 신청서 작성, COP 준비, 데이터 시각화, 기후정의 등. 하이라이트, 클립, 예정 일정을 팔로우하세요.",
-    "viewOnInstagram": "Instagram에서 보기"
+    "viewOnInstagram": "Instagram에서 보기",
+    "ep5Title": "Transformational Leadership",
+    "ep5Speaker": "with Rejoice — Africa RCC",
+    "ep5Desc": "What it takes to inspire change, foster resilient community leadership, and transform local action into lasting movement power.",
+    "ep5Time": "Sunday, September 20, 2026 · 12:00 PM EST | 4:00 PM UTC (GMT)",
+    "flyer": "Flyer",
+    "series2025Title": "Global Masterclass Series · 2025 season",
+    "series2025Desc": "Five sessions from the 2025 season — empathy, volunteer leadership, volunteerism in action, biodiversity governance, and digital tools. Recordings, slide decks and flyers below.",
+    "gm5Date": "2025",
+    "gm5Title": "Google Workspace Essentials: Mastering Gmail, Docs, Sheets, Drive, and Calendar",
+    "gm5Speaker": "with Emmy Scott · hosted by Moudjiba",
+    "gm5Desc": "A practical walkthrough of the Google Workspace essentials for Crew work — Gmail, Docs, Sheets, Drive, and Calendar — with live Q&A.",
+    "gm4Date": "September 28, 2025",
+    "gm4Title": "Rio, the CBD & Beyond: A Masterclass on Global Biodiversity Governance",
+    "gm4Speaker": "with GYBN USA · hosted by Moudjiba",
+    "gm4Desc": "How global biodiversity governance works — from the Rio Earth Summit to the Convention on Biological Diversity and beyond — with live Q&A.",
+    "gm3Date": "July 13, 2025",
+    "gm3Title": "Volunteerism and Social Change: How to Use Your Time and Talents to Make a Difference in the World",
+    "gm3Speaker": "with Meg Ferrigno — EG Board Director, founder of Pureland Project and Moonpads · hosted by Moudjiba",
+    "gm3Desc": "How to use your time and talents to make a difference — volunteerism as a driver of social change — with live Q&A.",
+    "gm2Date": "2025",
+    "gm2Title": "Leading and Managing a Team of Volunteers",
+    "gm2Speaker": "with Ms Rejoice A. Sosu-Ketek",
+    "gm2Desc": "No two volunteers are the same — how to build a strong volunteer team, meet the challenges of managing volunteers, and lead with the right approaches and values.",
+    "gm1Date": "2025",
+    "gm1Title": "Unlock Deeper Connections — Master the Art of Empathy",
+    "gm1Speaker": "with Louka",
+    "gm1Desc": "Master the art of empathy to unlock deeper connections in your community and Crew work."
   },
   "a11y": {
     "skipToContent": "본문으로 건너뛰기"
@@ -1788,7 +1992,22 @@
       "done": "오프라인용으로 {count}개 타일을 다운로드했습니다",
       "doneWithErrors": "{failed}개 타일을 다운로드하지 못했습니다",
       "cancelled": "다운로드가 취소되었습니다",
-      "cacheCleared": "오프라인 캐시를 비웠습니다"
+      "cacheCleared": "오프라인 캐시를 비웠습니다",
+      "invalidZoom": "시작 줌은 끝 줌 이하여야 합니다.",
+      "tooLarge": "타일이 너무 많습니다(최대 {max}). 영역 또는 최대 줌을 줄이세요.",
+      "needsApiKey": "타일 다운로드에는 MapTiler API 키가 필요합니다.",
+      "noMapView": "이 페이지에 지도 뷰가 없습니다 — URL 주변 작은 창을 사용합니다(또는 경계를 직접 입력).",
+      "previewLabel": "다운로드 영역 미리보기",
+      "alreadyCached": "이미 캐시된 타일 {count}개",
+      "skipped": "건너뜀 {count}개",
+      "storageFull": "저장 공간이 부족합니다 — 일부 타일을 저장하지 못했습니다. 캐시를 비우거나 공간을 확보하세요.",
+      "authFailed": "MapTiler가 API 키를 거부했습니다(401/403). NUXT_PUBLIC_MAPTILER_API_KEY를 확인하세요.",
+      "cachedZoom": "캐시 줌",
+      "storageUsage": "브라우저 저장 공간",
+      "persistStorage": "영구 저장 요청",
+      "persistGranted": "영구 저장이 허용되었습니다",
+      "persistDenied": "영구 저장이 허용되지 않았습니다",
+      "confirmClear": "오프라인 타일 캐시를 모두 지울까요? 되돌릴 수 없습니다."
     },
     "speciesWatchlist": {
       "title": "종 모니터링 목록",

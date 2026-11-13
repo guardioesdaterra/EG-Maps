@@ -1,9 +1,11 @@
 /**
  * composables/useMapLibre.ts
  * @why MapLibre GL instance lifecycle — create, destroy, resize, load handlers
- * @functions getMapStyle, detectWebGLSupport
- * @connections composables/useMapBase.ts, lib/tile-styles.ts
+ * @functions getMapStyle, offlineSatelliteStyle, detectWebGLSupport
+ * @connections composables/useMapBase.ts, lib/tile-styles.ts, lib/garden-basemap.ts
  */
+import type { StyleSpecification } from 'maplibre-gl'
+
 export function getMapStyle(apiKey: string, tileResolution?: 'low' | 'medium' | 'high', baseURL = '/', tilesetId = 'hybrid-v4'): string | Record<string, unknown> {
   const resParam = tileResolution && tileResolution !== 'high' ? `&res=${tileResolution}` : ''
   if (apiKey) {
@@ -23,6 +25,44 @@ export function getMapStyle(apiKey: string, tileResolution?: 'low' | 'medium' | 
       { id: 'local-background', type: 'background', paint: { 'background-color': '#07110d' } },
       { id: 'local-land', type: 'fill', source: 'earthGuardiansLand', paint: { 'fill-color': '#193b2a', 'fill-opacity': 0.92 } },
       { id: 'local-land-outline', type: 'line', source: 'earthGuardiansLand', paint: { 'line-color': '#5b8f63', 'line-opacity': 0.45, 'line-width': 0.7 } },
+    ],
+  }
+}
+
+export interface OfflineStyleOptions {
+  /**
+   * Source maxzoom — set to the cached pyramid's max zoom so MapLibre
+   * overzooms by requesting the parent canonical tile (correct UVs) instead
+   * of asking for missing child tiles above the downloaded range.
+   */
+  maxzoom?: number
+  minzoom?: number
+}
+
+/**
+ * Local raster style that points at MapTiler satellite tile URLs. Tile
+ * requests go through `transformMapTileRequest` → `egoffline://`, so a
+ * downloaded IndexedDB pyramid paints without fetching style.json from the
+ * network — the offline path when the remote MapTiler style cannot load.
+ */
+export function offlineSatelliteStyle(apiKey = '', options: OfflineStyleOptions = {}): StyleSpecification {
+  const key = encodeURIComponent(apiKey)
+  const maxzoom = options.maxzoom !== undefined ? Math.max(0, Math.min(24, Math.floor(options.maxzoom))) : 20
+  const minzoom = options.minzoom !== undefined ? Math.max(0, Math.min(maxzoom, Math.floor(options.minzoom))) : 0
+  return {
+    version: 8,
+    sources: {
+      'eg-offline-satellite': {
+        type: 'raster',
+        tiles: [`https://api.maptiler.com/tiles/satellite-v2/{z}/{x}/{y}.jpg?key=${key}`],
+        tileSize: 256,
+        minzoom,
+        maxzoom,
+        attribution: 'MapTiler satellite · offline cache',
+      },
+    },
+    layers: [
+      { id: 'eg-offline-satellite', type: 'raster', source: 'eg-offline-satellite' },
     ],
   }
 }

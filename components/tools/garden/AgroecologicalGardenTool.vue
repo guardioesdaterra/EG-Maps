@@ -6,8 +6,9 @@
   @component AgroecologicalGardenTool
   @emits close: []
   @deps vue; maplibre-gl; @/composables/useGardenProject; @/composables/useToast;
-        @/composables/useI18n; @/composables/useMapTileStyle; @/lib/garden-*;
-        @/lib/tile-styles; @/components/tools/garden/AreaSetupWizard.vue
+        @/composables/useI18n; @/composables/useMapTileStyle; @/composables/useMapTileProvider;
+        @/composables/useOfflineTileCache; @/composables/useOfflineTileProtocol;
+        @/lib/garden-*; @/lib/tile-styles; @/components/tools/garden/AreaSetupWizard.vue
   @connections pages/tools/[tool].vue
 -->
 <template>
@@ -336,8 +337,10 @@ import { useI18n } from '@/composables/useI18n'
 import { useToast } from '@/composables/useToast'
 import { useGardenProject } from '@/composables/useGardenProject'
 import { useMapTileStyle } from '@/composables/useMapTileStyle'
-import { tileStyleDef } from '@/lib/tile-styles'
-import { buildGardenStyle, satelliteStyle, streetsStyle } from '@/lib/garden-basemap'
+import { useMapTileProvider } from '@/composables/useMapTileProvider'
+import { useOfflineTileCache } from '@/composables/useOfflineTileCache'
+import { registerOfflineTileProtocol, transformMapTileRequest } from '@/composables/useOfflineTileProtocol'
+import { initialGardenStyle, resolveGardenStyle, type GardenStyleContext } from '@/lib/garden-basemap'
 import { GRID_MAX_CELLS, buildGridGeometry, gridBounds, gridToGeoJSON, normalizeGrid } from '@/lib/garden-grid'
 import type { GardenFeature, GardenGrid, GardenLayerType, GardenLocation, LayerStyle, DrawingMode, PlantCategory } from '@/lib/garden-types'
 import { PLANTS, getPlant, searchPlants } from '@/lib/garden-plants'
@@ -352,6 +355,8 @@ const { t } = useI18n()
 const toast = useToast()
 const garden = useGardenProject()
 const mapStyle = useMapTileStyle()
+const tileProvider = useMapTileProvider()
+const offlineTiles = useOfflineTileCache()
 
 const exportFormats = ['GeoJSON', 'JSON']
 const DEFAULT_GRID: GardenGrid = normalizeGrid({ widthM: 10, heightM: 10, cellM: 1 })
@@ -478,20 +483,36 @@ const activeDraw = ref<DrawState | null>(null)
 
 // ── Map lifecycle ───────────────────────────────────────────────────────────
 
+function styleContext(): GardenStyleContext {
+  const rawKey = String(useRuntimeConfig().public.maptilerApiKey || '')
+  const hasOffline = offlineTiles.stats.value.cachedTiles > 0
+  return {
+    apiKey: (!rawKey || tileProvider.effectiveProvider.value === 'fallback') ? '' : rawKey,
+    offlineApiKey: rawKey,
+    hasOfflineTiles: hasOffline,
+    cachedMinZoom: offlineTiles.stats.value.minZoom,
+    cachedMaxZoom: offlineTiles.stats.value.maxZoom,
+    styleId: mapStyle.styleId.value,
+    isOnline: offlineTiles.isOnline.value,
+  }
+}
+
+function hasOfflineBackup(): boolean {
+  return offlineTiles.stats.value.cachedTiles > 0
+}
+
+function maptilerApiKey(): string {
+  return styleContext().apiKey
+}
+
 function initialStyle() {
-  const apiKey = String(useRuntimeConfig().public.maptilerApiKey || '')
-  // Level 0: MapTiler (with key), Level 1: CARTO Voyager (no key), Level 2: ESRI Satellite
-  fallbackLevel = apiKey ? 0 : 1
-  return buildGardenStyle(apiKey, tileStyleDef(mapStyle.styleId.value).maptilerStyle)
+  const { style, level } = initialGardenStyle(styleContext())
+  fallbackLevel = level
+  return style
 }
 
 function getStyleForLevel(level: number) {
-  if (level === 0) {
-    const apiKey = String(useRuntimeConfig().public.maptilerApiKey || '')
-    return buildGardenStyle(apiKey, tileStyleDef(mapStyle.styleId.value).maptilerStyle)
-  }
-  if (level === 1) return streetsStyle()
-  return satelliteStyle()
+  return resolveGardenStyle(level, styleContext())
 }
 
 function initMap() {
@@ -507,6 +528,8 @@ function initMap() {
 
   const project = garden.activeProject
   const center = project?.location ?? setupLocation.value
+  tileProvider.evaluateNetworkHints(String(useRuntimeConfig().public.maptilerApiKey || ''), offlineTiles.stats.value.cachedTiles > 0)
+  registerOfflineTileProtocol(offlineTiles)
   const map = new maplibregl.Map({
     container: mapContainerRef.value,
     style: initialStyle() as maplibregl.StyleSpecification | string,
@@ -516,6 +539,7 @@ function initMap() {
     interactive: true,
     dragRotate: false,
     attributionControl: false,
+    transformRequest: transformMapTileRequest,
   })
   map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right')
@@ -535,6 +559,7 @@ function initMap() {
     isMapReady.value = true
     mapError.value = false
     tileErrors = 0
+    tileProvider.noteStyleReady()
     setupMapLayers(map)
     renderAll()
     if (!didInitialView && activeProject.value?.grid && !setupOpen.value) {
@@ -558,6 +583,7 @@ function initMap() {
     }
     if (/tile|network|fetch|failed/i.test(message)) {
       tileErrors += 1
+      tileProvider.noteTileError()
       if (tileErrors === 4) mapError.value = true
     }
   })
@@ -567,7 +593,33 @@ function initMap() {
       wizardRef.value?.setLocationFromMap(event.lngLat.lng, event.lngLat.lat)
       return
     }
+    if (isClusterClick(map, event.point)) return
     handleMapClick(event.lngLat.lng, event.lngLat.lat)
+  })
+
+  // Cluster bubbles zoom into their group instead of being selected/drawn on.
+  map.on('click', 'garden-point-clusters', (event) => {
+    const feature = event.features?.[0]
+    const clusterId = feature?.properties?.cluster_id
+    const source = map.getSource('garden-draw-points') as GeoJSONSource | undefined
+    if (!feature || clusterId == null || !source) return
+    const center = (feature.geometry as GeoJSON.Point).coordinates as [number, number]
+    source.getClusterExpansionZoom(Number(clusterId))
+      .then(zoom => map.easeTo({ center, zoom, duration: 400 }))
+      .catch(() => undefined)
+  })
+
+  // Marker icons and cluster counts are canvas images registered on demand —
+  // MapLibre asks for them by id, so no glyph fontstack is required.
+  map.on('styleimagemissing', (event) => {
+    const id = event.id
+    const count = /^garden-count-(\d+)$/.exec(id)
+    if (count) {
+      if (!map.hasImage(id)) putImage(map, id, buildClusterCountImage(Number(count[1])))
+      return
+    }
+    const icon = /^garden-icon-(.+)$/.exec(id)
+    if (icon && !map.hasImage(id)) putImage(map, id, buildMarkerIconImage(decodeURIComponent(icon[1])))
   })
 
   map.on('dblclick', () => {
@@ -598,7 +650,7 @@ function initMap() {
 function applyFallback() {
   const map = mapRef.value
   if (!map) return
-  if (fallbackLevel >= 2) {
+  if (fallbackLevel >= 3) {
     console.error('[Garden] All fallbacks failed')
     mapError.value = true
     return
@@ -606,6 +658,7 @@ function applyFallback() {
   fallbackLevel += 1
   const nextStyle = getStyleForLevel(fallbackLevel)
   console.log('[Garden] Applying fallback level:', fallbackLevel)
+  tileProvider.noteStyleStart()
   map.setStyle(nextStyle)
 }
 
@@ -616,12 +669,47 @@ function retryMap() {
   isMapReady.value = false
   fallbackLevel = Math.max(fallbackLevel, 1)
   console.log('[Garden] Retrying with fallbackLevel:', fallbackLevel)
+  tileProvider.noteStyleStart()
   map.setStyle(getStyleForLevel(fallbackLevel))
   styleTimer = setTimeout(() => {
     console.warn('[Garden] Retry style load timeout')
     if (!map.isStyleLoaded()) mapError.value = true
   }, 5_000)
 }
+
+// Re-apply when the shared header style switcher (hybrid/satellite/streets/
+// outdoors) or the MapTiler↔fallback provider toggle changes — same contract
+// as useMapBase.
+watch(() => mapStyle.styleId.value, () => {
+  const map = mapRef.value
+  if (!map || fallbackLevel !== 0) return
+  if (tileProvider.effectiveProvider.value !== 'maptiler' || !maptilerApiKey()) return
+  tileProvider.noteStyleStart()
+  map.setStyle(getStyleForLevel(0))
+})
+
+watch(() => tileProvider.effectiveProvider.value, () => {
+  const map = mapRef.value
+  if (!map) return
+  fallbackLevel = maptilerApiKey() ? 0 : (hasOfflineBackup() ? 1 : 2)
+  tileProvider.noteStyleStart()
+  map.setStyle(getStyleForLevel(fallbackLevel))
+})
+
+// Offline ↔ online: swap offlineSatelliteStyle ↔ MapTiler without a manual toggle.
+watch(() => offlineTiles.isOnline.value, (online, was) => {
+  const map = mapRef.value
+  if (!map || online === was) return
+  tileProvider.noteStyleStart()
+  const { style, level } = initialGardenStyle(styleContext())
+  if (online && maptilerApiKey()) {
+    fallbackLevel = 0
+    map.setStyle(getStyleForLevel(0))
+  } else {
+    fallbackLevel = level
+    map.setStyle(style)
+  }
+})
 
 function flyTo(target: { lng: number; lat: number; zoom?: number }) {
   mapRef.value?.flyTo({
@@ -638,7 +726,7 @@ let didInitialView = false
 function setupMapLayers(map: MapLibreMap) {
   ensureSource(map, 'garden-grid-area')
   ensureSource(map, 'garden-grid-lines')
-  ensureSource(map, 'garden-draw-points')
+  ensureSource(map, 'garden-draw-points', true)
   ensureSource(map, 'garden-draw-lines')
   ensureSource(map, 'garden-draw-polygons')
   ensureSource(map, 'garden-active-draw')
@@ -698,11 +786,46 @@ function setupMapLayers(map: MapLibreMap) {
       },
     })
   }
+
+  // ── Marker aggregation: translucent bubbles that expand on click ─────────
+  if (!map.getLayer('garden-point-clusters')) {
+    map.addLayer({
+      id: 'garden-point-clusters',
+      type: 'circle',
+      source: 'garden-draw-points',
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': ['case', ['==', ['get', 'selected'], true], 'rgba(2, 132, 199, 0.4)', 'rgba(14, 165, 233, 0.22)'],
+        'circle-radius': ['interpolate', ['linear'], ['zoom'],
+          10, ['step', ['get', 'point_count'], 15, 10, 19, 40, 24],
+          16, ['step', ['get', 'point_count'], 22, 10, 27, 40, 33],
+          21, ['step', ['get', 'point_count'], 30, 10, 36, 40, 44]],
+        'circle-stroke-color': 'rgba(3, 105, 161, 0.6)',
+        'circle-stroke-width': 1.5,
+      },
+    })
+  }
+  if (!map.getLayer('garden-point-cluster-count')) {
+    map.addLayer({
+      id: 'garden-point-cluster-count',
+      type: 'symbol',
+      source: 'garden-draw-points',
+      filter: ['has', 'point_count'],
+      layout: {
+        'icon-image': ['concat', 'garden-count-', ['to-string', ['get', 'point_count']]],
+        'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.7, 16, 0.95, 21, 1.15],
+        'icon-anchor': 'center',
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
+    })
+  }
   if (!map.getLayer('garden-layer-points')) {
     map.addLayer({
       id: 'garden-layer-points',
       type: 'circle',
       source: 'garden-draw-points',
+      filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-radius': ['get', 'radius'],
         'circle-color': ['get', 'color'],
@@ -710,6 +833,23 @@ function setupMapLayers(map: MapLibreMap) {
         'circle-stroke-color': ['case', ['==', ['get', 'selected'], true], '#22d3ee', '#ffffff'],
         'circle-stroke-width': ['case', ['==', ['get', 'selected'], true], 3, 1],
       },
+    })
+  }
+  // Each marker renders its own icon (seed 🌱, seedling 🌿, tree 🌳 …).
+  if (!map.getLayer('garden-layer-point-icons')) {
+    map.addLayer({
+      id: 'garden-layer-point-icons',
+      type: 'symbol',
+      source: 'garden-draw-points',
+      filter: ['!', ['has', 'point_count']],
+      layout: {
+        'icon-image': ['get', 'iconKey'],
+        'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.5, 15, 0.66, 18, 0.85, 21, 1.05],
+        'icon-anchor': 'center',
+        'icon-allow-overlap': true,
+        'icon-ignore-placement': true,
+      },
+      paint: { 'icon-opacity': ['*', ['get', 'opacity'], ['get', 'layerOpacity']] },
     })
   }
   if (!map.getLayer('garden-active-line')) {
@@ -740,10 +880,142 @@ function setupMapLayers(map: MapLibreMap) {
   }
 }
 
-function ensureSource(map: MapLibreMap, id: string) {
+function ensureSource(map: MapLibreMap, id: string, cluster = false) {
   if (!map.getSource(id)) {
-    map.addSource(id, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+    const data: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] }
+    if (cluster) {
+      map.addSource(id, { type: 'geojson', data, cluster: true, clusterRadius: 52, clusterMaxZoom: 15 })
+    } else {
+      map.addSource(id, { type: 'geojson', data })
+    }
   }
+}
+
+type RgbaImage = { width: number; height: number; data: Uint8Array }
+
+/** Register a canvas image on the map (SSR-safe, idempotent). */
+function putImage(map: MapLibreMap, id: string, image: RgbaImage | undefined) {
+  if (!image || map.hasImage(id)) return
+  try { map.addImage(id, image, { pixelRatio: 2 }) } catch { /* image already present */ }
+}
+
+function canvasContext(size: number): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } | null {
+  if (typeof document === 'undefined') return null
+  try {
+    const canvas = document.createElement('canvas')
+    canvas.width = size
+    canvas.height = size
+    const ctx = canvas.getContext('2d')
+    return ctx ? { canvas, ctx } : null
+  } catch {
+    return null
+  }
+}
+
+/** Emoji badge for one marker — white disc + emoji, legible over satellite imagery. */
+function buildMarkerIconImage(emoji: string): RgbaImage | undefined {
+  const S = 96
+  const setup = canvasContext(S)
+  if (!setup) return undefined
+  try {
+    const { ctx } = setup
+    const c = S / 2
+    const r = 30
+    ctx.clearRect(0, 0, S, S)
+    ctx.save()
+    ctx.shadowColor = 'rgba(2, 6, 23, 0.35)'
+    ctx.shadowBlur = 8
+    ctx.shadowOffsetY = 3
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'
+    ctx.beginPath()
+    ctx.arc(c, c, r, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.18)'
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.arc(c, c, r - 1.5, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.font = '50px system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(emoji, c, c + 2)
+    const img = ctx.getImageData(0, 0, S, S)
+    return { width: S, height: S, data: new Uint8Array(img.data) }
+  } catch {
+    return undefined
+  }
+}
+
+/** Cluster count text — white with a dark halo so it reads on any basemap. */
+function buildClusterCountImage(count: number): RgbaImage | undefined {
+  const S = 64
+  const setup = canvasContext(S)
+  if (!setup) return undefined
+  try {
+    const { ctx } = setup
+    const label = count > 9999 ? `${Math.round(count / 1000)}k+` : String(count)
+    const size = label.length > 3 ? 24 : label.length > 2 ? 30 : 36
+    ctx.clearRect(0, 0, S, S)
+    ctx.font = `700 ${size}px ui-sans-serif, system-ui, sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.lineJoin = 'round'
+    ctx.lineWidth = 6
+    ctx.strokeStyle = 'rgba(2, 6, 23, 0.8)'
+    ctx.strokeText(label, S / 2, S / 2)
+    ctx.fillStyle = '#ffffff'
+    ctx.fillText(label, S / 2, S / 2)
+    const img = ctx.getImageData(0, 0, S, S)
+    return { width: S, height: S, data: new Uint8Array(img.data) }
+  } catch {
+    return undefined
+  }
+}
+
+/** Emoji per layer type — seeds and seedlings each render their own icon. */
+const LAYER_TYPE_ICONS: Record<string, string> = {
+  seeds: '🌱',
+  seedlings: '🌿',
+  transplants: '🪴',
+  vegetable: '🥬',
+  'native-tree': '🌳',
+  rhizome: '🥔',
+  'cover-crop': '🌾',
+  herb: '🌿',
+  bed: '🟫',
+  path: '👣',
+  compost: '♻️',
+  mulch: '🍂',
+  biochar: '⚫',
+  'fertile-earth': '🪱',
+  'water-way': '🌊',
+  spring: '💧',
+  'water-source-natural': '💧',
+  'water-source-tap': '🚰',
+  irrigation: '💦',
+  greenhouse: '🏠',
+  shed: '🏚️',
+  fence: '🚧',
+  trellis: '🎋',
+}
+
+/** True when the click landed on a cluster bubble (those zoom instead). */
+function isClusterClick(map: MapLibreMap, point: maplibregl.PointLike): boolean {
+  if (!map.getLayer('garden-point-clusters')) return false
+  try {
+    return map.queryRenderedFeatures(point, { layers: ['garden-point-clusters'] }).length > 0
+  } catch {
+    return false
+  }
+}
+
+/** MapLibre image id for a point feature (plant category wins over layer type). */
+function pointIconKey(feature: GardenFeature, layerType: GardenLayerType): string {
+  const plantId = feature.properties.plantId
+  const plant = plantId ? getPlant(plantId) : null
+  const emoji = plant ? plantIcon(plant.category) : (LAYER_TYPE_ICONS[layerType] ?? '📍')
+  return `garden-icon-${encodeURIComponent(emoji)}`
 }
 
 function renderAll() {
@@ -803,7 +1075,7 @@ function renderFeatures() {
       pointFeatures.push({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: feature.geometry.coordinates as [number, number] },
-        properties: { color, radius: style.radius ?? 6, opacity: 0.95, layerOpacity, selected, id: feature.id, label: feature.properties.label },
+        properties: { color, radius: style.radius ?? 6, opacity: 0.95, layerOpacity, selected, id: feature.id, label: feature.properties.label, iconKey: pointIconKey(feature, layer.type) },
       })
     } else if (feature.type === 'line') {
       lineFeatures.push({
@@ -1281,7 +1553,7 @@ function trimNumber(value: number): string {
 
 // ── Lifecycle ───────────────────────────────────────────────────────────────
 
-onMounted(() => {
+onMounted(async () => {
   const project = garden.activeProject
   setupLocation.value = { ...(project?.location ?? DEFAULT_LOCATION) }
   setupGrid.value = project?.grid ? { ...project.grid } : gridFromProject(project)
@@ -1290,6 +1562,7 @@ onMounted(() => {
   setupOpen.value = !project?.grid
   if (typeof window !== 'undefined') panelOpen.value = window.innerWidth >= 768
 
+  await offlineTiles.init()
   nextTick(() => {
     initMap()
     if (setupOpen.value) {

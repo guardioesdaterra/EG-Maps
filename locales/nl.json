@@ -1992,7 +1992,22 @@
       "done": "{count} tegels gedownload voor offline gebruik",
       "doneWithErrors": "{failed} tegels konden niet worden gedownload",
       "cancelled": "Download geannuleerd",
-      "cacheCleared": "Offline cache gewist"
+      "cacheCleared": "Offline cache gewist",
+      "invalidZoom": "De start-zoom moet kleiner of gelijk zijn aan de eind-zoom.",
+      "tooLarge": "Te veel tegels (max {max}). Verklein het gebied of de max-zoom.",
+      "needsApiKey": "Een MapTiler API-sleutel is nodig om tegels te downloaden.",
+      "noMapView": "Geen kaartweergave op deze pagina — klein venster rond de URL (of voer grenzen handmatig in).",
+      "previewLabel": "Voorbeeld van het downloadgebied",
+      "alreadyCached": "{count} tegels al in cache",
+      "skipped": "{count} overgeslagen",
+      "storageFull": "Opslag vol — sommige tegels konden niet worden opgeslagen. Cache wissen of opslag vrijmaken.",
+      "authFailed": "MapTiler wees de API-sleutel af (401/403). Controleer NUXT_PUBLIC_MAPTILER_API_KEY.",
+      "cachedZoom": "Cache-zoom",
+      "storageUsage": "Browseropslag",
+      "persistStorage": "Permanente opslag aanvragen",
+      "persistGranted": "Permanente opslag toegekend",
+      "persistDenied": "Permanente opslag niet toegekend",
+      "confirmClear": "De hele offline tegelcache wissen? Dit kan niet ongedaan worden gemaakt."
     },
     "speciesWatchlist": {
       "title": "Soortenlijst",

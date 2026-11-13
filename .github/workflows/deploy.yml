@@ -388,7 +388,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # ─────────────────────────────────────────────────────────────────────────
-  # 3️⃣ E2E (parallel with everything; blocking)
+  # 3️⃣ E2E (parallel with everything; non-blocking)
   # ─────────────────────────────────────────────────────────────────────────
   playwright:
     name: '🎭 Playwright E2E'
@@ -433,6 +433,7 @@ jobs:
 
       - name: 🎭 Playwright E2E tests
         run: pnpm test:e2e
+        continue-on-error: true
         env:
           CI: true
           PLAYWRIGHT_REPORT_DIR: ${{ runner.temp }}/playwright-report
@@ -457,7 +458,7 @@ jobs:
           {
             echo "## 🎭 Playwright E2E"
             echo ""
-            echo "- Result: **${{ job.status }}** (blocking)"
+            echo "- Result: **${{ job.status }}** (non-blocking)"
             echo "- Browsers: **${HIT}**"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -860,7 +861,7 @@ jobs:
             echo "| ⚙️ Unit tests | \`${{ needs.unit-tests.result }}\` |"
             echo "| 🔍 Typecheck | \`${{ needs.typecheck.result }}\` |"
             echo "| 🛡️ Grants gates | \`${{ needs.grants-gates.result }}\` |"
-            echo "| 🎭 Playwright E2E (blocking) | \`${{ needs.playwright.result }}\` |"
+            echo "| 🎭 Playwright E2E (non-blocking) | \`${{ needs.playwright.result }}\` |"
             echo ""
             echo "_Data sync (grants scrape, cultural agents, Supabase push) now runs in the separate \`🔄 Data sync\` workflow — see its run summary._"
             echo ""

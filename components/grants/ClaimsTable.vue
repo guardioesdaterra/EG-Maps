@@ -125,7 +125,7 @@ function formatDate(iso: string): string {
 
 .claims-heading {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   color: #fff;
   margin: 0;
 }
@@ -172,7 +172,7 @@ function formatDate(iso: string): string {
 
 .claims-filter-count {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 500;
   padding: 1px 5px;
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0.06);
@@ -270,7 +270,7 @@ function formatDate(iso: string): string {
 
 .claims-row-project {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
   white-space: nowrap;
   overflow: hidden;
@@ -296,7 +296,7 @@ function formatDate(iso: string): string {
 
 .claims-row-status {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
   padding: 2px 8px;
   border-radius: 9999px;

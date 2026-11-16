@@ -106,7 +106,7 @@ const showDropdown = ref(false)
   align-items: center;
   justify-content: center;
   font-size: 0.65rem;
-  font-weight: 700;
+  font-weight: 500;
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -163,7 +163,7 @@ const showDropdown = ref(false)
 .auth-dropdown-role {
   display: block;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
@@ -183,7 +183,7 @@ const showDropdown = ref(false)
   text-align: left;
   padding: 8px 10px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-secondary);
   background: none;
   border: none;

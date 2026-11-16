@@ -1,18 +1,18 @@
 /**
  * pages/eg-grants/index.vue
- * @why EG grants portal — 3D globe backdrop with the worldwide grants dashboard
+ * @why EG grants portal — 3D globe backdrop with the worldwide grants dashboard (forced dark/glassmorph)
  * @component index
- * @deps vue (ref, computed, watch, onMounted); ~/lib/project-data (allProjectsData); ~/composables/useToast (useToast); ~/composables/useSupabase (useSupabase); ~/composables/useSupabaseAuth (useSupabaseAuth); ~/composables/useI18n (useI18n); ~/composables/useDeviceCapabilities (useDeviceCapabilities); ~/composables/useAdaptiveQuality (useAdaptiveQuality)
+ * @deps vue (ref, computed, watch, onMounted); ~/lib/project-data (allProjectsData); ~/composables/useGrantsPortal (shared portal logic); ~/composables/useDeviceCapabilities (useDeviceCapabilities); ~/composables/useAdaptiveQuality (useAdaptiveQuality)
  */
 <template>
-  <div id="main-content" tabindex="-1" role="main" class="grants-portal relative min-h-screen overflow-hidden bg-[#08080a]" :class="{ 'is-embedded': isEmbedded }">
+  <div id="main-content" tabindex="-1" role="main" class="grants-portal relative min-h-screen overflow-hidden bg-[#08080a] text-white" :class="{ 'is-embedded': isEmbedded }">
     <div v-if="isPostbackTab" class="eg-gate fixed inset-0 flex items-center justify-center bg-[#08080a]" style="z-index: 99999">
       <div class="text-center max-w-sm mx-4">
         <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-green-500/10 flex items-center justify-center">
           <svg v-if="postbackDone" class="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 6L9 17l-5-5"/></svg>
           <svg v-else class="w-8 h-8 text-green-400 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12a9 9 0 11-6.2-8.56"/></svg>
         </div>
-        <h2 class="text-white text-xl font-bold mb-2">{{ postbackDone ? t('grantsPortal.postbackDoneTitle') : t('grantsPortal.postbackWorkingTitle') }}</h2>
+        <h2 class="text-white text-xl mb-2">{{ postbackDone ? t('grantsPortal.postbackDoneTitle') : t('grantsPortal.postbackWorkingTitle') }}</h2>
         <p class="text-white/50 text-sm mb-6">{{ postbackDone ? t('grantsPortal.postbackDoneDesc') : t('grantsPortal.postbackWorkingDesc') }}</p>
       </div>
     </div>
@@ -31,9 +31,9 @@
         <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-green-500/10 flex items-center justify-center">
           <svg class="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
         </div>
-        <h2 class="text-white text-xl font-bold mb-2">{{ t('grantsPortal.signInRequiredTitle') }}</h2>
+        <h2 class="text-white text-xl mb-2">{{ t('grantsPortal.signInRequiredTitle') }}</h2>
         <p class="text-white/50 text-sm mb-6">{{ t('grantsPortal.grantsSignInSection') }}</p>
-        <button class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => signIn()">
+        <button class="px-6 py-3 text-sm bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => signIn()">
           {{ t('grantsPortal.signInBtn') }}
         </button>
         <p class="mt-4 text-[11px] leading-relaxed text-white/35">
@@ -43,7 +43,7 @@
           <NuxtLink to="/terms" class="underline underline-offset-2 hover:text-white/60">{{ t('nav.terms') }}</NuxtLink>.
         </p>
         <div>
-          <button class="mt-3 text-xs font-semibold text-white/40 hover:text-white/70 underline underline-offset-4 transition-colors" @click="() => signInWithNewAccount()">
+          <button class="mt-3 text-xs text-white/40 hover:text-white/70 underline underline-offset-4 transition-colors" @click="() => signInWithNewAccount()">
             {{ t('grantsPortal.useAnotherAccount') }}
           </button>
         </div>
@@ -64,16 +64,16 @@
         <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center">
           <svg class="w-8 h-8 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18.36 6.64a9 9 0 11-12.73 0M12 9v.01M12 13v.01"/></svg>
         </div>
-        <h2 class="text-white text-xl font-bold mb-2">{{ managerCheckError ? t('grantsPortal.checkFailedTitle') : t('grantsPortal.accessRestrictedTitle') }}</h2>
+        <h2 class="text-white text-xl mb-2">{{ managerCheckError ? t('grantsPortal.checkFailedTitle') : t('grantsPortal.accessRestrictedTitle') }}</h2>
         <p class="text-white/50 text-sm mb-6">{{ managerCheckError ? t('grantsPortal.checkFailedDesc') : t('grantsPortal.accessRestrictedDesc') }}</p>
         <div class="flex flex-col items-center gap-2">
-          <button v-if="managerCheckError" class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => retryManagerCheck()">
+          <button v-if="managerCheckError" class="px-6 py-3 text-sm bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => retryManagerCheck()">
             {{ t('grantsPortal.retryBtn') }}
           </button>
-          <button v-else class="px-6 py-3 text-sm font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => switchAccount()">
+          <button v-else class="px-6 py-3 text-sm bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/20" @click="() => switchAccount()">
             {{ t('grantsPortal.switchAccountBtn') }}
           </button>
-          <button class="px-6 py-3 text-sm font-bold bg-white/10 text-white/70 hover:bg-white/15 rounded-lg transition-colors" @click="signOut">
+          <button class="px-6 py-3 text-sm bg-white/10 text-white/70 hover:bg-white/15 rounded-lg transition-colors" @click="signOut">
             {{ t('grantsPortal.signOut') }}
           </button>
         </div>
@@ -86,11 +86,11 @@
       <Transition name="modal-fade">
         <div v-if="confirmSignOut" class="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm" :style="{ zIndex: 'var(--z-confirm)' }" @click.self="confirmSignOut = false">
           <div class="bg-[#111] border border-white/10 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-            <h3 class="text-white font-bold text-sm mb-2">{{ t('grantsPortal.signOutConfirmTitle') }}</h3>
+            <h3 class="text-white mb-2">{{ t('grantsPortal.signOutConfirmTitle') }}</h3>
             <p class="text-white/50 text-xs mb-5">{{ t('grantsPortal.signOutConfirmDesc') }}</p>
             <div class="flex gap-2 justify-end">
-              <button class="px-3 py-1.5 text-xs font-semibold text-white/60 hover:text-white rounded-lg transition-colors" @click="confirmSignOut = false">{{ t('grantsPortal.cancel') }}</button>
-              <button class="px-3 py-1.5 text-xs font-bold bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition-colors" @click="signOut(); confirmSignOut = false">{{ t('grantsPortal.signOut') }}</button>
+              <button class="px-3 py-1.5 text-xs text-white/60 hover:text-white rounded-lg transition-colors" @click="confirmSignOut = false">{{ t('grantsPortal.cancel') }}</button>
+              <button class="px-3 py-1.5 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition-colors" @click="signOut(); confirmSignOut = false">{{ t('grantsPortal.signOut') }}</button>
             </div>
           </div>
         </div>
@@ -151,7 +151,7 @@
 
 <script setup lang="ts">
 
-import { ref, computed, watch, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import type { GrantRecord, ScrapedGrant } from '~/composables/useGrants'
 import type { DetailGrantData } from '~/lib/types'
 import { allProjectsData } from '~/lib/project-data'
@@ -159,17 +159,12 @@ import GrantsDashboard from '~/components/grants/GrantsDashboard.vue'
 import GrantDetailModal from '~/components/grants/GrantDetailModal.vue'
 import CreateGrantModal from '~/components/grants/CreateGrantModal.vue'
 import GlobeView from '~/components/GlobeView.vue'
-import { useToast } from '~/composables/useToast'
-import { useI18n } from '~/composables/useI18n'
+import { useGrantsPortal } from '~/composables/useGrantsPortal'
 import { useDeviceCapabilities } from '~/composables/useDeviceCapabilities'
 import { useAdaptiveQuality } from '~/composables/useAdaptiveQuality'
-import { useHostEmbed } from '~/composables/useHostEmbed'
-
-const { isEmbedded } = useHostEmbed()
 
 const deviceCaps = useDeviceCapabilities()
 const quality = useAdaptiveQuality()
-const toast = useToast()
 
 const isLowQuality = computed(() => quality.level.value === 'low' || quality.level.value === 'medium')
 
@@ -193,149 +188,44 @@ useHead({
   ],
 })
 
-const { t, locale, localeNames } = useI18n()
-
-const { user, isManager, isManagerReady, managerCheckError, retryManagerCheck, signIn, signInWithNewAccount, switchAccount, signOut, sessionReady, autoSignInIfRequested, isPostbackTab, postbackDone } = useSupabaseAuth()
-const confirmSignOut = ref(false)
-
-const accessGranted = computed(() => sessionReady.value && !!user.value && isManager.value)
-
-const { listScrapedGrants, updateScrapedGrant: apiUpdateScrapedGrant, voteGrant, voteScrapedGrant, deleteVote, getCommentCounts } = useGrants()
-
-const scrapedGrants = ref<ScrapedGrant[]>([])
-const scrapedLoading = ref(false)
-const commentCounts = ref<Record<string, number>>({})
-
-const showCreateGrantModal = ref(false)
-
-const detailGrant = ref<DetailGrantData | null>(null)
-const detailUserVote = ref(0)
-const editSavingDetail = ref(false)
-const editErrDetail = ref('')
-
-const showBackground = ref(true)
-
-const dashboardSearch = ref('')
-
-function openScrapedDetail(g: ScrapedGrant | GrantRecord) {
-  detailGrant.value = {
-    ...g,
-    source_type: 'scraped',
-    source_id: g.id,
-    created_at: ('fetched_at' in g ? g.fetched_at : null) || g.created_at,
-  }
-}
-
-function closeGrantDetail() {
-  detailGrant.value = null
-  detailUserVote.value = 0
-  // Comments may have been added/removed in the modal — refresh counts (cheap single query)
-  getCommentCounts().then((r) => { commentCounts.value = r.counts ?? {} }).catch(() => {})
-}
-
-async function loadScrapedGrants() {
-  scrapedLoading.value = true
-  try {
-    const [result, counts] = await Promise.all([listScrapedGrants(), getCommentCounts()])
-    scrapedGrants.value = result.grants ?? []
-    commentCounts.value = counts.counts ?? {}
-  } catch (e) {
-    console.error('Failed to load scraped grants:', e)
-  } finally {
-    scrapedLoading.value = false
-  }
-}
-
-function openCreateGrantModal() {
-  showCreateGrantModal.value = true
-}
-
-function closeCreateGrantModal() {
-  showCreateGrantModal.value = false
-}
-
-function onGrantCreated() {
-  loadScrapedGrants()
-}
-
-async function handleSaveEditFromDetail(grantId: string, form: Record<string, string>) {
-  editSavingDetail.value = true
-  editErrDetail.value = ''
-  try {
-    const updates: Record<string, unknown> = {
-      title: form.title,
-      funder: form.funder,
-      description: form.description,
-      deadline: form.deadline,
-      amount_max: form.amount_max,
-      amount_min: form.amount_min,
-      currency: form.currency,
-      country: form.country,
-      grant_link: form.url,
-      categories: form.categories.split(',').map(c => c.trim()).filter(Boolean),
-    }
-    const result = await apiUpdateScrapedGrant(grantId, updates)
-    if ('error' in result && result.error) {
-      editErrDetail.value = result.error as string
-      return
-    }
-    closeGrantDetail()
-    await loadScrapedGrants()
-  } catch (e) {
-    editErrDetail.value = 'An unexpected error occurred. Please try again.'
-    console.error('Failed to save edit from detail:', e)
-  } finally {
-    editSavingDetail.value = false
-  }
-}
-
-async function handleVoteDetail(stars: number) {
-  if (!user.value || !detailGrant.value) return
-  try {
-    const id = detailGrant.value.id
-    const isScraped = detailGrant.value.source_type === 'scraped' || 'source_id' in detailGrant.value
-    if (detailUserVote.value === stars) {
-      if (isScraped) {
-        await deleteVote('', id)
-      } else {
-        await deleteVote(id)
-      }
-      detailUserVote.value = 0
-    } else {
-      if (isScraped) {
-        await voteScrapedGrant(id, stars)
-      } else {
-        await voteGrant(id, stars)
-      }
-      detailUserVote.value = stars
-    }
-  } catch (e) {
-    console.error('Failed to vote on detail:', e)
-  }
-}
-
-function handleSignOut() {
-  confirmSignOut.value = true
-}
-
-watch(accessGranted, (granted) => {
-  if (!granted) return
-  loadScrapedGrants()
-}, { immediate: true })
+const {
+  isEmbedded,
+  t,
+  user,
+  isManager,
+  isManagerReady,
+  managerCheckError,
+  retryManagerCheck,
+  signIn,
+  signInWithNewAccount,
+  switchAccount,
+  signOut,
+  sessionReady,
+  isPostbackTab,
+  postbackDone,
+  confirmSignOut,
+  scrapedGrants,
+  scrapedLoading,
+  commentCounts,
+  showCreateGrantModal,
+  detailGrant,
+  detailUserVote,
+  editSavingDetail,
+  editErrDetail,
+  dashboardSearch,
+  showBackground,
+  openScrapedDetail,
+  closeGrantDetail,
+  loadScrapedGrants,
+  openCreateGrantModal,
+  closeCreateGrantModal,
+  onGrantCreated,
+  handleSaveEditFromDetail,
+  handleVoteDetail,
+  handleSignOut,
+} = useGrantsPortal({ langToast: true })
 
 onMounted(() => {
-  // Framed sign-in breakout (?eg-signin=): restart OAuth top-level where the
-  // PKCE verifier shares a storage partition with the callback exchange.
-  autoSignInIfRequested()
-  setTimeout(() => {
-    if (!import.meta.client) return
-    try {
-      if (localStorage.getItem('langToastSeen')) return
-      const name = localeNames[locale.value] || locale.value
-      toast.info(`Viewing in ${name}`, 'Need a different language? Click the translation icon in the dock to change.')
-      localStorage.setItem('langToastSeen', '1')
-    } catch { /* localStorage unavailable */ }
-  }, 3000)
 })
 
 </script>
@@ -440,7 +330,6 @@ canvas {
     border-radius: 999px;
   }
 
-  /* auth / gate states: full-width 48px targets, safe-area aware */
   .eg-gate .text-center {
     width: min(26rem, 100%);
     padding: 0 4px calc(env(safe-area-inset-bottom, 0px));
@@ -467,6 +356,14 @@ canvas {
     min-width: 44px;
     justify-content: center;
   }
+}
+
+@media (max-width: 768px) {
+  .grants-dashboard-section {
+    padding: 0.65rem 12px calc(2rem + env(safe-area-inset-bottom, 0px));
+  }
+  .dashboard-topbar { margin-bottom: 0.6rem; }
+  .fs-toggle-btn { font-size: 0.72rem; padding: 0.5rem 1rem; }
 }
 </style>
 

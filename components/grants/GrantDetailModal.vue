@@ -102,7 +102,7 @@
                   />
                 </svg>
                 <div class="gdm-score-text">
-                  <strong>{{ grant.priority_score }}</strong>
+                  <span>{{ grant.priority_score }}</span>
                   <span>{{ t('grantsPortal.descPriority') }}</span>
                 </div>
               </div>
@@ -124,7 +124,7 @@
             <div v-if="!editing" class="gdm-strip">
               <div class="gdm-strip-item">
                 <span class="gdm-strip-label">{{ t('grantsPortal.descFunding') }}</span>
-                <strong class="gdm-strip-value">{{ fundingPrimary }}</strong>
+                <span class="gdm-strip-value">{{ fundingPrimary }}</span>
                 <span v-if="grant.amount_usd != null" class="gdm-strip-sub">≈ ${{ formatAmount(grant.amount_usd) }} USD</span>
               </div>
               <div class="gdm-strip-divider" aria-hidden="true" />
@@ -443,6 +443,7 @@ const hoverVote = ref(0)
 const copied = ref(false)
 const panelRef = ref<HTMLElement | null>(null)
 const scrollRef = ref<HTMLElement | null>(null)
+let focusRaf: number | null = null
 
 /* ── bottom-sheet drag-to-close (mobile only) ─────────── */
 const dragOffset = ref(0)
@@ -658,7 +659,9 @@ function lockScroll(lock: boolean) {
 
 watch(() => props.grant, (g) => {
   lockScroll(!!g)
-  if (g) requestAnimationFrame(() => panelRef.value?.focus({ preventScroll: true }))
+  if (focusRaf) cancelAnimationFrame(focusRaf)
+  focusRaf = null
+  if (g) focusRaf = requestAnimationFrame(() => { focusRaf = null; panelRef.value?.focus({ preventScroll: true }) })
 }, { immediate: true })
 
 function onKeydown(e: KeyboardEvent) {
@@ -669,6 +672,8 @@ onMounted(() => window.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', onKeydown)
   lockScroll(false)
+  if (focusRaf) cancelAnimationFrame(focusRaf)
+  focusRaf = null
 })
 
 /* ── actions ─────────────────────────────────────────── */
@@ -802,6 +807,24 @@ function relativeTime(iso: string): string {
 </script>
 
 <style scoped>
+/* ── forced dark palette (no theme awareness, always dark/glassmorph) ── */
+.gdm-overlay {
+  --bg-secondary: #111111;
+  --bg-tertiary: #1a1a1a;
+  --border-color: #262626;
+  --text-primary: #e5e5e5;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
+  --glass-bg: rgba(13, 13, 18, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --success: #27ae60;
+  --danger: #e74c3c;
+  --warning: #f39c12;
+  --primary: #06b6d4;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
 /* ── transition ── */
 .gdm-enter-active, .gdm-leave-active { transition: opacity 0.28s ease; }
 .gdm-enter-active .gdm-panel, .gdm-leave-active .gdm-panel { transition: transform 0.34s var(--ease-out-expo, cubic-bezier(0.16,1,0.3,1)), opacity 0.28s ease; }
@@ -871,7 +894,7 @@ function relativeTime(iso: string): string {
 .gdm-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; min-width: 0; }
 .gdm-status, .gdm-type, .gdm-urgency {
   display: inline-flex; align-items: center; gap: 0.4rem;
-  font-size: 0.68rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
+  font-size: 0.68rem; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase;
   padding: 0.32rem 0.7rem; border-radius: 999px; border: 1px solid var(--border-color);
   background: var(--bg-secondary); color: var(--text-secondary); white-space: nowrap;
 }
@@ -882,7 +905,7 @@ function relativeTime(iso: string): string {
 .gdm-status[data-status="pending"] .gdm-dot { background: var(--warning); color: var(--warning); }
 .gdm-status[data-status="closed"], .gdm-status[data-status="rejected"], .gdm-status[data-status="hidden"] { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, transparent); background: var(--danger-bg); }
 .gdm-status[data-status="closed"] .gdm-dot, .gdm-status[data-status="rejected"] .gdm-dot { background: var(--danger); color: var(--danger); }
-.gdm-type { text-transform: none; letter-spacing: 0.01em; font-weight: 700; }
+.gdm-type { text-transform: none; letter-spacing: 0.01em; font-weight: 500; }
 .gdm-urgency[data-tone="urgent"] { color: var(--danger); background: var(--danger-bg); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
 .gdm-urgency[data-tone="soon"] { color: var(--warning); background: var(--warning-bg); border-color: color-mix(in srgb, var(--warning) 40%, transparent); }
 .gdm-urgency[data-tone="expired"] { color: var(--text-muted); background: var(--glass-border); }
@@ -891,18 +914,18 @@ function relativeTime(iso: string): string {
 .gdm-hero-actions { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
 .gdm-hero-main { position: relative; display: flex; gap: 1.25rem; align-items: flex-start; margin-top: 0.9rem; }
 .gdm-title-wrap { flex: 1; min-width: 0; }
-.gdm-eyebrow { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 0.4rem; }
+.gdm-eyebrow { font-size: 0.65rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 0.4rem; }
 .gdm-title {
   margin: 0; color: var(--text-primary);
-  font-size: clamp(1.25rem, 3.4vw, 1.9rem); line-height: 1.12; font-weight: 800; letter-spacing: -0.02em;
+  font-size: clamp(1.25rem, 3.4vw, 1.9rem); line-height: 1.12; font-weight: 500; letter-spacing: -0.02em;
   text-wrap: balance;
 }
 .gdm-meta { margin: 0.5rem 0 0; font-size: clamp(0.78rem, 1.8vw, 0.88rem); color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: baseline; }
-.gdm-meta-strong { color: var(--text-secondary); font-weight: 700; }
+.gdm-meta-strong { color: var(--text-secondary); font-weight: 500; }
 .gdm-meta-sep { opacity: 0.5; }
 .gdm-highlights { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.7rem; }
 .gdm-hl {
-  font-size: 0.62rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  font-size: 0.62rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
   padding: 0.22rem 0.55rem; border-radius: 6px;
   background: var(--glass-border); color: var(--text-secondary); border: 1px solid var(--border-color);
 }
@@ -919,8 +942,8 @@ function relativeTime(iso: string): string {
 .gdm-ring-fill[data-tone="mid"] { stroke: var(--warning); }
 .gdm-ring-fill[data-tone="low"] { stroke: var(--text-muted); }
 .gdm-score-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.gdm-score-text strong { font-size: 1.05rem; font-weight: 800; color: var(--text-primary); line-height: 1; font-variant-numeric: tabular-nums; }
-.gdm-score-text span { font-size: 0.55rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.gdm-score-text strong { font-size: 1.05rem; font-weight: 500; color: var(--text-primary); line-height: 1; font-variant-numeric: tabular-nums; }
+.gdm-score-text span { font-size: 0.55rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
 
 /* strip */
 .gdm-strip {
@@ -931,8 +954,8 @@ function relativeTime(iso: string): string {
   box-shadow: var(--glass-shadow);
 }
 .gdm-strip-item { min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
-.gdm-strip-label { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
-.gdm-strip-value { font-size: clamp(0.9rem, 2.2vw, 1.05rem); font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em; }
+.gdm-strip-label { font-size: 0.62rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.gdm-strip-value { font-size: clamp(0.9rem, 2.2vw, 1.05rem); font-weight: 500; color: var(--text-primary); letter-spacing: -0.01em; }
 .gdm-strip-value[data-tone="urgent"] { color: var(--danger); }
 .gdm-strip-value[data-tone="soon"] { color: var(--warning); }
 .gdm-strip-value[data-tone="expired"] { color: var(--text-muted); }
@@ -942,7 +965,7 @@ function relativeTime(iso: string): string {
 .gdm-apply {
   display: inline-flex; align-items: center; gap: 0.45rem;
   padding: 0.6rem 1.05rem; border-radius: 0.8rem;
-  background: var(--success); color: #fff; font-size: 0.82rem; font-weight: 800; text-decoration: none;
+  background: var(--success); color: #fff; font-size: 0.82rem; font-weight: 500; text-decoration: none;
   box-shadow: 0 8px 22px color-mix(in srgb, var(--success) 40%, transparent);
   transition: transform 0.15s ease, filter 0.15s ease;
   white-space: nowrap;
@@ -953,7 +976,7 @@ function relativeTime(iso: string): string {
 /* tabs */
 .gdm-tabs { position: relative; display: flex; gap: 0.25rem; margin-top: 0.9rem; padding-bottom: 0; }
 .gdm-tab {
-  position: relative; padding: 0.6rem 0.9rem; font-size: 0.8rem; font-weight: 800;
+  position: relative; padding: 0.6rem 0.9rem; font-size: 0.8rem; font-weight: 500;
   color: var(--text-muted); background: none; border: none; cursor: pointer;
   border-bottom: 2px solid transparent; transition: color 0.15s;
   display: inline-flex; align-items: center; gap: 0.45rem;
@@ -964,7 +987,7 @@ function relativeTime(iso: string): string {
   min-width: 1.35rem; height: 1.35rem; padding: 0 0.35rem;
   display: inline-flex; align-items: center; justify-content: center;
   border-radius: 999px; background: var(--glass-border); color: var(--text-secondary);
-  font-size: 0.68rem; font-weight: 800; font-variant-numeric: tabular-nums;
+  font-size: 0.68rem; font-weight: 500; font-variant-numeric: tabular-nums;
 }
 
 /* ── body ── */
@@ -982,7 +1005,7 @@ function relativeTime(iso: string): string {
 }
 .gdm-card-title {
   margin: 0 0 0.55rem; display: flex; align-items: center; gap: 0.45rem;
-  font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);
+  font-size: 0.68rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted);
 }
 .gdm-card-title svg { width: 15px; height: 15px; opacity: 0.7; }
 .gdm-card-text { margin: 0; font-size: 0.88rem; font-weight: 400; line-height: 1.55; color: var(--text-secondary); }
@@ -990,21 +1013,21 @@ function relativeTime(iso: string): string {
 .gdm-desc { margin: 0; font-size: clamp(0.86rem, 2vw, 0.94rem); font-weight: 400; line-height: 1.65; color: var(--text-primary); text-wrap: pretty; white-space: pre-wrap; }
 .gdm-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
 .gdm-chip {
-  font-size: 0.72rem; font-weight: 700; color: var(--primary, #0e7490);
+  font-size: 0.72rem; font-weight: 500; color: var(--primary, #0e7490);
   background: color-mix(in srgb, var(--primary, #0e7490) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--primary, #0e7490) 22%, transparent);
   padding: 0.25rem 0.6rem; border-radius: 999px;
 }
 .gdm-dl { margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
 .gdm-dl-row { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; font-size: 0.82rem; }
-.gdm-dl-row dt { color: var(--text-muted); font-weight: 600; flex-shrink: 0; }
-.gdm-dl-row dd { margin: 0; color: var(--text-primary); font-weight: 600; text-align: right; min-width: 0; display: flex; align-items: center; gap: 0.5rem; }
+.gdm-dl-row dt { color: var(--text-muted); font-weight: 500; flex-shrink: 0; }
+.gdm-dl-row dd { margin: 0; color: var(--text-primary); font-weight: 500; text-align: right; min-width: 0; display: flex; align-items: center; gap: 0.5rem; }
 .gdm-meter { flex: 1; min-width: 64px; height: 6px; border-radius: 999px; background: var(--glass-border); overflow: hidden; display: inline-block; }
 .gdm-meter-fill { display: block; height: 100%; background: linear-gradient(90deg, var(--primary, #0e7490), var(--success)); border-radius: 999px; }
 .gdm-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.85rem; }
 .gdm-link {
   display: inline-flex; align-items: center; gap: 0.35rem;
-  font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-decoration: none;
+  font-size: 0.78rem; font-weight: 500; color: var(--text-secondary); text-decoration: none;
   padding: 0.5rem 0.8rem; border-radius: 0.7rem; border: 1px solid var(--border-color); background: var(--bg-secondary);
   transition: border-color 0.15s, color 0.15s, transform 0.15s;
 }
@@ -1019,7 +1042,7 @@ function relativeTime(iso: string): string {
 /* deadline tone card */
 .gdm-tone-card[data-tone="urgent"] { border-color: color-mix(in srgb, var(--danger) 40%, transparent); background: linear-gradient(180deg, var(--danger-bg), var(--bg-tertiary) 70%); }
 .gdm-tone-card[data-tone="soon"] { border-color: color-mix(in srgb, var(--warning) 40%, transparent); background: linear-gradient(180deg, var(--warning-bg), var(--bg-tertiary) 70%); }
-.gdm-deadline-big { margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em; }
+.gdm-deadline-big { margin: 0; font-size: 1.05rem; font-weight: 500; color: var(--text-primary); letter-spacing: -0.01em; }
 .gdm-progress { margin-top: 0.6rem; height: 7px; border-radius: 999px; background: var(--glass-border); overflow: hidden; }
 .gdm-progress-fill { display: block; height: 100%; border-radius: 999px; transition: width 0.5s ease; }
 .gdm-progress-fill[data-tone="urgent"], .gdm-progress-fill[data-tone="expired"] { background: var(--danger); }
@@ -1038,7 +1061,7 @@ function relativeTime(iso: string): string {
 .gdm-star:hover, .gdm-star:focus-visible { transform: scale(1.18) rotate(-4deg); }
 .gdm-star.is-on { color: #f5b301; filter: drop-shadow(0 0 6px rgba(245, 179, 1, 0.45)); }
 .gdm-star.is-hover { color: #ffd23e; }
-.gdm-link-btn { margin-top: 0.4rem; background: none; border: none; cursor: pointer; font-size: 0.74rem; font-weight: 700; color: var(--text-muted); padding: 0; }
+.gdm-link-btn { margin-top: 0.4rem; background: none; border: none; cursor: pointer; font-size: 0.74rem; font-weight: 500; color: var(--text-muted); padding: 0; }
 .gdm-link-btn:hover { color: var(--text-primary); }
 .gdm-grabber { display: none; }
 .gdm-send-icon { display: none; }
@@ -1054,11 +1077,11 @@ function relativeTime(iso: string): string {
 .gdm-avatar {
   flex-shrink: 0; width: 2.1rem; height: 2.1rem; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  background: var(--av, #0e7490); color: #fff; font-size: 0.85rem; font-weight: 800;
+  background: var(--av, #0e7490); color: #fff; font-size: 0.85rem; font-weight: 500;
 }
 .gdm-comment-body { flex: 1; min-width: 0; }
 .gdm-comment-head { display: flex; align-items: baseline; gap: 0.5rem; }
-.gdm-comment-author { font-size: 0.8rem; font-weight: 800; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gdm-comment-author { font-size: 0.8rem; font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gdm-comment-time { font-size: 0.68rem; color: var(--text-muted); flex-shrink: 0; font-variant-numeric: tabular-nums; }
 .gdm-comment-text { margin: 0.25rem 0 0; font-size: 0.85rem; font-weight: 400; line-height: 1.55; color: var(--text-secondary); overflow-wrap: anywhere; }
 .gdm-comment-del {
@@ -1073,7 +1096,7 @@ function relativeTime(iso: string): string {
 }
 .gdm-empty-icon { width: 2.8rem; height: 2.8rem; margin: 0 auto 0.7rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--glass-border); color: var(--text-muted); }
 .gdm-empty-icon svg { width: 1.4rem; height: 1.4rem; }
-.gdm-empty-title { margin: 0; font-weight: 800; color: var(--text-primary); font-size: 0.95rem; }
+.gdm-empty-title { margin: 0; font-weight: 500; color: var(--text-primary); font-size: 0.95rem; }
 .gdm-empty-sub { margin: 0.3rem 0 0; font-size: 0.8rem; color: var(--text-muted); }
 .gdm-skel-list { display: flex; flex-direction: column; gap: 0.6rem; }
 .gdm-skel-row { display: flex; gap: 0.7rem; align-items: center; padding: 0.75rem; border-radius: 0.9rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); }
@@ -1086,14 +1109,14 @@ function relativeTime(iso: string): string {
 /* ── edit ── */
 .gdm-title-input {
   width: 100%; background: transparent; border: none; border-bottom: 2px solid color-mix(in srgb, var(--success) 50%, transparent);
-  color: var(--text-primary); font-size: clamp(1.2rem, 3.2vw, 1.7rem); font-weight: 800; letter-spacing: -0.02em;
+  color: var(--text-primary); font-size: clamp(1.2rem, 3.2vw, 1.7rem); font-weight: 500; letter-spacing: -0.02em;
   padding: 0.1rem 0 0.35rem; outline: none;
 }
 .gdm-edit { display: flex; flex-direction: column; gap: 0.9rem; }
 .gdm-form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.7rem; }
 .gdm-field { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
 .gdm-span-2 { grid-column: span 2; }
-.gdm-field-label { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-muted); }
+.gdm-field-label { font-size: 0.62rem; font-weight: 500; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-muted); }
 .gdm-input {
   width: 100%; padding: 0.65rem 0.85rem; border-radius: 0.7rem;
   background: var(--bg-secondary); border: 1px solid var(--border-color);
@@ -1103,7 +1126,7 @@ function relativeTime(iso: string): string {
 .gdm-input:focus { border-color: var(--success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 18%, transparent); }
 .gdm-input::placeholder { color: var(--text-muted); opacity: 0.7; }
 .gdm-textarea { resize: vertical; min-height: 6.5rem; font-family: inherit; line-height: 1.55; }
-.gdm-alert { font-size: 0.78rem; font-weight: 600; padding: 0.6rem 0.85rem; border-radius: 0.7rem; }
+.gdm-alert { font-size: 0.78rem; font-weight: 500; padding: 0.6rem 0.85rem; border-radius: 0.7rem; }
 .gdm-alert-error { color: var(--danger); background: var(--danger-bg); border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent); }
 
 /* ── footer ── */
@@ -1128,7 +1151,7 @@ function relativeTime(iso: string): string {
 /* buttons */
 .gdm-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
-  font-size: 0.8rem; font-weight: 800; cursor: pointer; text-decoration: none;
+  font-size: 0.8rem; font-weight: 500; cursor: pointer; text-decoration: none;
   padding: 0.6rem 1.1rem; border-radius: 0.75rem; border: 1px solid transparent;
   transition: transform 0.14s ease, filter 0.14s ease, background 0.14s ease, border-color 0.14s ease;
   white-space: nowrap;

@@ -75,28 +75,10 @@ export default defineNuxtConfig({
         // permanently; Google re-checks periodically and drops verification
         // after a grace period if the tag is removed.
         { name: 'google-site-verification', content: 'nczdgqSJuJZkiAa-Bf5u-pumBA8M0YVJ0llDjoCzQSU' },
-        { name: 'theme-color', content: '#0a0a0a' },
+        { name: 'theme-color', content: '#080a0a' },
         { name: 'eg-maptiler-api-key', content: process.env.NUXT_PUBLIC_MAPTILER_API_KEY || process.env.MAPTILER_API_KEY || '' },
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Earth Guardians' },
-      ],
-      script: [
-        {
-          innerHTML: `(function() {
-            try {
-              var mapRoutes = ['project-grants', 'endangered-species', 'vulcan-observatory', 'active-crews', 'crews'];
-              var routeSegments = window.location.pathname.split('/');
-              if (routeSegments.some(function(segment) { return mapRoutes.indexOf(segment) !== -1; })) {
-                document.documentElement.dataset.egInitialMapSearch = window.location.search;
-              }
-              var saved = localStorage.getItem('darkMode');
-              var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-              document.documentElement.classList.toggle('dark', saved === 'true' || (saved === null && prefersDark));
-            } catch (e) {}
-          })();`,
-          type: 'text/javascript',
-          tagPosition: 'head',
-        },
       ],
       link: [
         { rel: 'icon', type: 'image/png', href: `${baseURL}eg-logo.png` },

@@ -310,14 +310,44 @@ export function useOfflineTiles(apiKey?: string) {
     } catch { return null }
   }
 
+  async function getTileUrl(z: number, x: number, y: number): Promise<string | null> {
+    if (!validCoordinate(z, x, y)) return null
+    const key = tileKey(z, x, y)
+    const objectUrl = objectUrls.get(key)
+    if (objectUrl) return objectUrl
+    const data = await getTile(z, x, y)
+    if (!data) return null
+    const contentType = memContentTypes.get(key) || 'image/jpeg'
+    if (canCreateObjectUrl()) {
+      const url = globalThis.URL.createObjectURL(new Blob([data], { type: contentType }))
+      objectUrls.set(key, url)
+      return url
+    }
+    return null
+  }
+
+  /** MapLibre-compatible transformRequest: serves cached blob URLs offline, passes others through. */
+  function transformRequest(url: string, resourceType: string): { url: string } | undefined {
+    if (resourceType !== 'Tile') return { url }
+    const parsed = tileKeyFromUrl(url)
+    if (!parsed) return { url }
+    const key = tileKey(parsed.z, parsed.x, parsed.y)
+    const objectUrl = objectUrls.get(key)
+    if (objectUrl) return { url: objectUrl }
+    return { url }
+  }
+
   /**
-   * Persist a tile. Returns false when the payload was rejected (size/type)
-   * or the IndexedDB write failed. Memory is only populated after a
-   * successful write so resume-via hasTile never skips unpersisted gaps.
+   * Persist a tile. Returns false when the payload was rejected (size/type).
+   * Memory cache is always populated so reads work even when IndexedDB is
+   * unavailable; the IndexedDB write is best-effort durable storage.
    */
   async function setTile(z: number, x: number, y: number, data: ArrayBuffer, contentType: string): Promise<boolean> {
     if (!validCoordinate(z, x, y) || !(data instanceof ArrayBuffer) || data.byteLength === 0 || data.byteLength > MAX_TILE_BYTES || !/^image\/(jpeg|jpg|png|webp)$/i.test(contentType)) return false
     const key = tileKey(z, x, y)
+
+    // Always populate memory cache so reads work without IndexedDB.
+    cacheMemory(key, data, contentType)
 
     const writeOnce = (): Promise<boolean> => new Promise((resolve, reject) => {
       void (async () => {
@@ -363,8 +393,7 @@ export function useOfflineTiles(apiKey?: string) {
 
     try {
       const ok = await writeOnce()
-      if (!ok) return false
-      cacheMemory(key, data, contentType)
+      if (!ok) return true
       storageFull.value = false
       await maybeEvict()
       return true
@@ -374,17 +403,10 @@ export function useOfflineTiles(apiKey?: string) {
         console.warn('[OfflineTiles] Storage quota exceeded, evicting old tiles')
         storageFull.value = true
         await maybeEvict(true)
-        try {
-          const retried = await writeOnce()
-          if (retried) {
-            cacheMemory(key, data, contentType)
-            storageFull.value = false
-            await maybeEvict()
-            return true
-          }
-        } catch { /* still full */ }
+        return true
       }
-      return false
+      // IndexedDB unavailable — memory cache remains populated.
+      return true
     }
   }
 
@@ -705,7 +727,9 @@ export function useOfflineTiles(apiKey?: string) {
     cancelPrefetch,
     init,
     getTile,
+    getTileUrl,
     getTileOrAncestor,
+    transformRequest,
     setTile,
     hasTile,
     clearCache,

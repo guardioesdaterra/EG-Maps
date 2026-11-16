@@ -8,6 +8,12 @@ import ja from '../locales/ja.json'
 import zh from '../locales/zh.json'
 import nl from '../locales/nl.json'
 import de from '../locales/de.json'
+import it from '../locales/it.json'
+import ko from '../locales/ko.json'
+import pl from '../locales/pl.json'
+import ru from '../locales/ru.json'
+import sv from '../locales/sv.json'
+import tr from '../locales/tr.json'
 
 /**
  * vue-i18n configuration for @nuxtjs/i18n.
@@ -36,5 +42,11 @@ export default defineI18nConfig(() => ({
     zh,
     nl,
     de,
+    it,
+    ko,
+    pl,
+    ru,
+    sv,
+    tr,
   },
 }))

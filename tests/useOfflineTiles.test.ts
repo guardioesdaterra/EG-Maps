@@ -1,7 +1,9 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { effectScope } from 'vue'
 import { MAX_PARENT_ZOOM_WALK, MAX_TILE_BYTES, isSafeTileUrl, useOfflineTiles } from '../composables/useOfflineTiles'
 import { offlineSatelliteStyle } from '../composables/useMapLibre'
+import { transformMapTileRequest } from '../composables/useOfflineTileProtocol'
+import { installFakeIndexedDB, resetFakeIndexedDB } from './fake-indexeddb'
 
 const originalOnLine = navigator.onLine
 const urlApi = globalThis.URL
@@ -17,6 +19,14 @@ function createTiles() {
   const tiles = scope.run(() => useOfflineTiles())!
   return { scope, tiles }
 }
+
+beforeAll(() => {
+  installFakeIndexedDB()
+})
+
+beforeEach(() => {
+  resetFakeIndexedDB()
+})
 
 afterEach(() => {
   setOnline(originalOnLine)
@@ -39,29 +49,40 @@ describe('useOfflineTiles', () => {
     expect(isSafeTileUrl('https://api.maptiler.com/tiles/satellite-v2/4/99/3.jpg')).toBe(false)
   })
 
-  it('keeps the original URL when offline data has not been loaded into memory', () => {
+  it('transforms Tile to egoffline:// and passes Source through', () => {
     setOnline(false)
     const { scope, tiles } = createTiles()
     const url = 'https://api.maptiler.com/tiles/satellite-v2/4/2/3.jpg?key=test'
-    expect(tiles.transformRequest(url, 'Tile')).toEqual({ url })
+    // No cached data yet → Tile is rewritten to the egoffline protocol, Source is untouched.
+    expect(transformMapTileRequest(url, 'Tile')).toEqual({ url: `egoffline://tile?url=${encodeURIComponent(url)}` })
+    expect(transformMapTileRequest(url, 'Source')).toEqual({ url })
     scope.stop()
   })
 
-  it('returns a Blob URL for cached offline data and preserves getTile API', async () => {
+  it('caches tile data in memory and serves it via getTile', async () => {
     setOnline(false)
-    let nextUrl = 0
-    URL.createObjectURL = vi.fn(() => `blob:test-${++nextUrl}`)
-    URL.revokeObjectURL = vi.fn()
     const { scope, tiles } = createTiles()
     const data = new Uint8Array([1, 2, 3]).buffer
-    await tiles.setTile(4, 2, 3, data, 'image/jpeg')
-
+    const ok = await tiles.setTile(4, 2, 3, data, 'image/jpeg')
+    expect(ok).toBe(true)
     expect(await tiles.getTile(4, 2, 3)).toBe(data)
-    expect(await tiles.getTileUrl(4, 2, 3)).toBe('blob:test-1')
-    expect(tiles.transformRequest('https://api.maptiler.com/tiles/satellite-v2/4/2/3.jpg?key=test', 'Tile')).toEqual({ url: 'blob:test-1' })
-    expect(tiles.transformRequest('https://api.maptiler.com/tiles/satellite-v2/4/2/3.jpg?key=test', 'Source')).toEqual({ url: 'https://api.maptiler.com/tiles/satellite-v2/4/2/3.jpg?key=test' })
+
+    const url = 'https://api.maptiler.com/tiles/satellite-v2/4/2/3.jpg?key=test'
+    expect(transformMapTileRequest(url, 'Tile')).toEqual({ url: `egoffline://tile?url=${encodeURIComponent(url)}` })
+    expect(transformMapTileRequest(url, 'Source')).toEqual({ url })
     scope.stop()
-    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:test-1')
+  })
+
+  it('setTile/getTile work without URL.createObjectURL', async () => {
+    setOnline(false)
+    Object.defineProperty(urlApi, 'createObjectURL', { configurable: true, value: undefined })
+    const { scope, tiles } = createTiles()
+    const data = new Uint8Array([1]).buffer
+    await tiles.setTile(1, 0, 0, data, 'image/png')
+    expect(await tiles.getTile(1, 0, 0)).toBe(data)
+    const url = 'https://api.maptiler.com/tiles/satellite-v2/1/0/0.png'
+    expect(transformMapTileRequest(url, 'Tile')).toEqual({ url: `egoffline://tile?url=${encodeURIComponent(url)}` })
+    scope.stop()
   })
 
   it('rejects oversized or non-image tiles without exposing them as cached', async () => {
@@ -69,17 +90,6 @@ describe('useOfflineTiles', () => {
     await tiles.setTile(1, 0, 0, new ArrayBuffer(MAX_TILE_BYTES + 1), 'image/jpeg')
     await tiles.setTile(1, 0, 0, new ArrayBuffer(3), 'application/octet-stream')
     expect(await tiles.hasTile(1, 0, 0)).toBe(false)
-    expect(await tiles.getTileUrl(1, 0, 0)).toBe(null)
-    scope.stop()
-  })
-
-  it('does not create a fictitious /tiles URL when no object URL API exists', async () => {
-    setOnline(false)
-    Object.defineProperty(urlApi, 'createObjectURL', { configurable: true, value: undefined })
-    const { scope, tiles } = createTiles()
-    await tiles.setTile(1, 0, 0, new Uint8Array([1]).buffer, 'image/png')
-    expect(await tiles.getTileUrl(1, 0, 0)).toBe(null)
-    expect(tiles.transformRequest('https://api.maptiler.com/tiles/satellite-v2/1/0/0.png', 'Tile')).toEqual({ url: 'https://api.maptiler.com/tiles/satellite-v2/1/0/0.png' })
     scope.stop()
   })
 

@@ -140,23 +140,33 @@ const ALLOWED_ORIGINS = new Set([
 ])
 
 /* ── map layer IDs (must match useMapMarker.ts addCrewMosaicLayers /
- *    addCrewLocationLayers: SOURCE='markers' + suffixes _mg/_mm/_ml and
- *    _pg/_p/_pc/_pl. active-crews is unclustered, so no _cg/_c/_cc/_cn. ── */
+ *    addCrewLocationLayers: SOURCE='markers' + suffix _ml (region label) and
+ *    _pg/_p/_pc/_pl. active-crews is unclustered, so no _cg/_c/_cc/_cn.
+ *    Region areas are a separate source: crew-regions-fill / -line. ── */
 
-const MOSAIC_LAYERS = ['markers_mg', 'markers_mm', 'markers_ml']
+const MOSAIC_LAYERS = ['markers_ml']
 const LOCATION_LAYERS = ['markers_pg', 'markers_p', 'markers_pc', 'markers_pl']
-const ALL_CREW_LAYERS = [...MOSAIC_LAYERS, ...LOCATION_LAYERS]
+const REGION_AREA_LAYERS = ['crew-regions-fill', 'crew-regions-line']
+const ALL_CREW_LAYERS = [...MOSAIC_LAYERS, ...LOCATION_LAYERS, ...REGION_AREA_LAYERS]
 
 /* ── original paint values (must match useMapMarker.ts) ─────────────── */
-/** Reset paint per layer — mirrors addCrewMosaicLayers/addCrewLocationLayers. */
-const CREW_PAINT_RESET: Record<string, { prop: 'circle-opacity' | 'text-opacity'; value: unknown }> = {
-  markers_mg: { prop: 'circle-opacity', value: ['interpolate', ['linear'], ['zoom'], 2, 0.28, 7, 0.42] },
-  markers_mm: { prop: 'circle-opacity', value: ['interpolate', ['linear'], ['zoom'], 2, 0.98, 7, 1] },
+/** Reset paint per layer — mirrors addCrewMosaicLayers/addCrewLocationLayers/addRegionLayers. */
+const CREW_PAINT_RESET: Record<string, { prop: 'circle-opacity' | 'text-opacity' | 'fill-opacity' | 'line-opacity'; value: unknown }> = {
   markers_ml: { prop: 'text-opacity', value: 1 },
   markers_pg: { prop: 'circle-opacity', value: ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.30] },
   markers_p: { prop: 'circle-opacity', value: ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 0.98] },
   markers_pc: { prop: 'circle-opacity', value: ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 1] },
   markers_pl: { prop: 'text-opacity', value: ['interpolate', ['linear'], ['zoom'], 2, 0, 7, 1] },
+  // Region areas keep the feature-state hover case so embed highlight/dim
+  // composes with the map's own hover highlight (see useMapMarker addRegionLayers).
+  'crew-regions-fill': {
+    prop: 'fill-opacity',
+    value: ['case', ['boolean', ['feature-state', 'hover'], false], 0.38, 0.12],
+  },
+  'crew-regions-line': {
+    prop: 'line-opacity',
+    value: ['case', ['boolean', ['feature-state', 'hover'], false], 0.95, 0.4],
+  },
 }
 
 /* ── default world view (fixed center+zoom — viewport-only flyTo) ───── */
@@ -237,6 +247,10 @@ export function useCrewPostMessage(
         m.setPaintProperty(layerId, 'circle-opacity-transition', { duration: 350, delay: 0 })
       } else if (layer.type === 'symbol') {
         m.setPaintProperty(layerId, 'text-opacity-transition', { duration: 350, delay: 0 })
+      } else if (layer.type === 'fill') {
+        m.setPaintProperty(layerId, 'fill-opacity-transition', { duration: 350, delay: 0 })
+      } else if (layer.type === 'line') {
+        m.setPaintProperty(layerId, 'line-opacity-transition', { duration: 350, delay: 0 })
       }
     }
 

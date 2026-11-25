@@ -20,6 +20,8 @@ import { CULTURAL_FAMILY_STYLES, getCulturalFamily } from '@/lib/cultural-marker
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation, CrewStatus } from '@/lib/crew-data'
 import { resolveCrewRegion } from '@/lib/crew-grants'
+import { allCrewRegionsData } from '@/lib/crew-data'
+import { buildGenericRegionTooltipHTML } from '@/lib/map-utils'
 import type { Species } from '@/lib/map-utils'
 import { STANDARD_MAP_MARKER_SIZE } from '@/composables/useGeoJSONMarkers'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
@@ -168,7 +170,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     if (currentDataset !== ds || !m.getSource(SOURCE)) return false
     updateData(SOURCE, geojson)
     buildLookupMaps(ds, a)
-    if (ds === 'active-crews' && !m.getSource(REGION_SOURCE)) void syncRegionAreas()
+    if (ds !== 'vulcan-observatory' && !m.getSource(REGION_SOURCE)) void syncRegionAreas()
     return true
   }
 
@@ -179,7 +181,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     setupEvents(SOURCE, ds, a)
     buildLookupMaps(ds, a)
     currentDataset = ds
-    if (ds === 'active-crews') void syncRegionAreas()
+    if (ds !== 'vulcan-observatory') void syncRegionAreas()
     else removeRegionLayers()
   }
 
@@ -501,7 +503,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
       paint: {
         'fill-color': colorExpr,
         'fill-opacity': ['case', hover, 0.38, 0.12] as unknown as ExpressionSpecification,
-        'fill-opacity-transition': { duration: 180, delay: 0 },
+        'fill-opacity-transition': { duration: 80, delay: 0 },
       },
     })
     map.addLayer({
@@ -510,8 +512,8 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
         'line-color': colorExpr,
         'line-opacity': ['case', hover, 0.95, 0.4] as unknown as ExpressionSpecification,
         'line-width': ['case', hover, 2.25, 1] as unknown as ExpressionSpecification,
-        'line-opacity-transition': { duration: 180, delay: 0 },
-        'line-width-transition': { duration: 180, delay: 0 },
+        'line-opacity-transition': { duration: 80, delay: 0 },
+        'line-width-transition': { duration: 80, delay: 0 },
       },
     })
 
@@ -551,11 +553,68 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     regionHoverId = id
   }
 
-  function visibleRegionCounts(r: CrewRegionData) {
-    const statuses = latestArgs?.crewStatuses
-    const active = !statuses || statuses.includes('active') ? r.activeCrews : 0
-    const inactive = !statuses || statuses.includes('inactive') ? r.inactiveCrews : 0
-    return { active, inactive, totalMembers: r.totalMembers, countries: r.countries }
+  /** Resolve region data for crew mode, or compute counts for other datasets */
+  interface RegionCountResult {
+    id: string
+    name: string
+    count: number
+    otherCount?: number
+    label: string
+    otherLabel?: string
+  }
+
+  function computeRegionCounts(regionId: string): RegionCountResult | null {
+    // For active-crews, use the crew region data
+    const crewRegion = crewRegionMap?.get(regionId) ?? (latestArgs?.crews ?? []).find(r => r.id === regionId)
+    if (crewRegion) {
+      const statuses = latestArgs?.crewStatuses
+      const active = !statuses || statuses.includes('active') ? crewRegion.activeCrews : 0
+      const inactive = !statuses || statuses.includes('inactive') ? crewRegion.inactiveCrews : 0
+      return {
+        id: regionId,
+        name: crewRegion.region,
+        count: active,
+        otherCount: inactive,
+        label: t('crews.activeCrews') || 'Active Crews',
+        otherLabel: t('crews.inactiveCrews') || 'Inactive Crews',
+      }
+    }
+
+    // For project-grants, count projects per region
+    if (latestArgs?.projects && latestArgs.projects.length > 0) {
+      const regionProjectCount = latestArgs.projects.filter(p => {
+        const r = resolveCrewRegion({ latitude: p.latitude, longitude: p.longitude }, allCrewRegionsData)
+        return r?.id === regionId
+      }).length
+      const region = allCrewRegionsData.find(r => r.id === regionId)
+      if (region) {
+        return {
+          id: regionId,
+          name: region.region,
+          count: regionProjectCount,
+          label: t('grantsPortal.title') || 'Projects',
+        }
+      }
+    }
+
+    // For endangered-species, count species per region
+    if (latestArgs?.speciesIndex && latestArgs.speciesIndex.length > 0) {
+      const regionSpeciesCount = latestArgs.speciesIndex.filter(s => {
+        const r = resolveCrewRegion({ lat: s.lat, lng: s.lng }, allCrewRegionsData)
+        return r?.id === regionId
+      }).length
+      const region = allCrewRegionsData.find(r => r.id === regionId)
+      if (region) {
+        return {
+          id: regionId,
+          name: region.region,
+          count: regionSpeciesCount,
+          label: t('home.endangeredSpeciesTitle') || 'Species',
+        }
+      }
+    }
+
+    return null
   }
 
   function resolveRegionById(id: string): CrewRegionData | null {
@@ -571,16 +630,17 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     }
   }
 
-  function showRegionTip(region: CrewRegionData, lngLat: [number, number]) {
+  function showRegionTipById(regionId: string, lngLat: [number, number]) {
     if (!map) return
-    const counts = visibleRegionCounts(region)
-    const html = buildCrewRegionTooltipHTML(region, counts, {
-      activeCrews: t('crews.activeCrews') || 'Active Crews',
-      inactiveCrews: t('crews.inactiveCrews') || 'Inactive Crews',
-      totalMembers: t('crews.totalMembers') || 'Total Members',
-      countries: t('crews.countries') || 'Countries',
+    const regionData = computeRegionCounts(regionId)
+    if (!regionData) return
+
+    const html = buildGenericRegionTooltipHTML(regionData, {
+      items: regionData.label,
+      otherItems: regionData.otherLabel,
       expand: t('preview.expand') || 'View details',
     })
+
     if (!regionTip) {
       regionTip = new maplibregl.Popup(withMapPopupSafeArea({
         closeButton: false,
@@ -593,7 +653,6 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
         .setLngLat(lngLat)
         .setHTML(html)
         .addTo(map)
-      // Keep hover stable when the pointer brushes the tooltip itself.
       regionTip.getElement().style.pointerEvents = 'none'
     } else {
       regionTip.setLngLat(lngLat).setHTML(html)
@@ -601,26 +660,42 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   }
 
   function onRegionAreaEnter(e: MapLayerMouseEvent) {
-    if (!map || !e.features?.[0]) return
+    if (!map) return
     map.getCanvas().style.cursor = 'pointer'
-    const f = e.features[0]
-    // Feature id comes from promoteId in source, or fall back to properties.id
-    const id = f.properties?.id ?? f.id
-    if (id == null) return
-    setRegionHover(id)
-    const region = resolveRegionById(String(id))
-    if (region) showRegionTip(region, [e.lngLat.lng, e.lngLat.lat])
+    updateRegionHover(e)
   }
 
   function onRegionAreaMove(e: MapLayerMouseEvent) {
-    if (!regionTip) return
-    regionTip.setLngLat([e.lngLat.lng, e.lngLat.lat])
+    updateRegionHover(e)
+  }
+
+  /** Track current feature and update hover state instantly */
+  function updateRegionHover(e: MapLayerMouseEvent) {
+    const f = e.features?.[0]
+    if (!f) {
+      // No feature under cursor - we're leaving all regions
+      if (regionHoverId !== null) {
+        if (map) map.getCanvas().style.cursor = ''
+        setRegionHover(null)
+        hideRegionTip()
+      }
+      return
+    }
+    // Feature id comes from promoteId in source, or fall back to properties.id
+    const id = f.properties?.id ?? f.id
+    if (id == null || id === regionHoverId) {
+      // Same region, just update tooltip position
+      if (regionTip) regionTip.setLngLat([e.lngLat.lng, e.lngLat.lat])
+      return
+    }
+    // Different region - instant switch
+    setRegionHover(id)
+    showRegionTipById(String(id), [e.lngLat.lng, e.lngLat.lat])
   }
 
   function onRegionAreaLeave() {
-    if (map) map.getCanvas().style.cursor = ''
-    setRegionHover(null)
-    hideRegionTip()
+    // Handled in updateRegionHover via features check
+    if (regionHoverId === null && map) map.getCanvas().style.cursor = ''
   }
 
   /** True when a crew/project marker feature sits under the point — the

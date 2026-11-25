@@ -133,26 +133,18 @@ function hasBeneficiaries(p: ProjectData): boolean {
 
 const unknownBeneficiaries = computed(() => tx('stats.unknownBeneficiaries', 'Unknown'))
 
-/** Grants <10 km from the crew are that crew's own (on-site) projects */
-const SPECIFIC_MAX_KM = 10
-/** Paginated to keep region popups (up to 52 grants) usable */
-const GRANTS_PAGE_SIZE = 5
+/** Paginated to keep region popups usable */
+const GRANTS_PAGE_SIZE = 10
 
 const grantsPage = ref(1)
 watch(() => [props.crew, props.isLocation], () => {
   grantsPage.value = 1
 })
 
-function isSpecificGrant(m: CrewPopupGrant): boolean {
-  return m.distanceKm !== null && m.distanceKm < SPECIFIC_MAX_KM
-}
-
-const specificGrants = computed<CrewPopupGrant[]>(() => matchedGrants.value.filter(isSpecificGrant))
-const relatedGrants = computed<CrewPopupGrant[]>(() => matchedGrants.value.filter(m => !isSpecificGrant(m)))
-const totalGrantPages = computed(() => Math.max(1, Math.ceil(relatedGrants.value.length / GRANTS_PAGE_SIZE)))
+const totalGrantPages = computed(() => Math.max(1, Math.ceil(matchedGrants.value.length / GRANTS_PAGE_SIZE)))
 const safeGrantPage = computed(() => Math.min(Math.max(1, grantsPage.value), totalGrantPages.value))
-const pagedRelatedGrants = computed<CrewPopupGrant[]>(() =>
-  relatedGrants.value.slice((safeGrantPage.value - 1) * GRANTS_PAGE_SIZE, safeGrantPage.value * GRANTS_PAGE_SIZE),
+const pagedGrants = computed<CrewPopupGrant[]>(() =>
+  matchedGrants.value.slice((safeGrantPage.value - 1) * GRANTS_PAGE_SIZE, safeGrantPage.value * GRANTS_PAGE_SIZE),
 )
 
 function prevGrantsPage() {
@@ -215,20 +207,6 @@ function tx(key: string, fallback: string, params?: Record<string, string>): str
   return translated === key ? fallback : translated
 }
 
-const ownProjectsTitle = computed(() => !props.isLocation
-  ? tx('crews.ownProjectsRegionTitle', 'On-site Crew projects')
-  : tx('crews.ownProjectsTitle', 'Near Crew Project'))
-
-const crewProjectBadge = computed(() => tx('crews.crewProjectBadge', 'Crew project'))
-const flyToLabel = computed(() => tx('crews.flyToProject', 'Fly to'))
-const moreProjectsTitle = computed(() => tx('crews.moreProjects', 'More linked projects'))
-const grantsPageLabel = computed(() => tx('crews.pageOf', `Page ${safeGrantPage.value} of ${totalGrantPages.value}`, { page: String(safeGrantPage.value), pages: String(totalGrantPages.value) }))
-const crewsInRegionTitle = computed(() => tx('crews.crewsInRegion', `Crews in ${regionName.value}`, { region: regionName.value }))
-const crewsInRegionHint = computed(() => tx('crews.crewsInRegionHint', 'All Crews of this region — select one for details'))
-const crewsPageLabel = computed(() => tx('crews.pageOf', `Page ${safeCrewPage.value} of ${totalCrewPages.value}`, { page: String(safeCrewPage.value), pages: String(totalCrewPages.value) }))
-
-// Explicit scope labeling: a region popup aggregates the grants of ALL crews
-// in the region, while a location popup shows only that crew's grants.
 const grantsTitle = computed(() => {
   if (!props.isLocation) {
     const fallback = `Project grants of ${regionName.value}`
@@ -250,6 +228,13 @@ const grantsHint = computed(() => {
   const translated = t('crews.projectsOfCrewHint')
   return translated === 'crews.projectsOfCrewHint' ? fallback : translated
 })
+
+const crewProjectBadge = computed(() => tx('crews.crewProjectBadge', 'Crew project'))
+const flyToLabel = computed(() => tx('crews.flyToProject', 'Fly to'))
+const grantsPageLabel = computed(() => tx('crews.pageOf', `Page ${safeGrantPage.value} of ${totalGrantPages.value}`, { page: String(safeGrantPage.value), pages: String(totalGrantPages.value) }))
+const crewsInRegionTitle = computed(() => tx('crews.crewsInRegion', `Crews in ${regionName.value}`, { region: regionName.value }))
+const crewsInRegionHint = computed(() => tx('crews.crewsInRegionHint', 'All Crews of this region — select one for details'))
+const crewsPageLabel = computed(() => tx('crews.pageOf', `Page ${safeCrewPage.value} of ${totalCrewPages.value}`, { page: String(safeCrewPage.value), pages: String(totalCrewPages.value) }))
 
 </script>
 
@@ -447,16 +432,12 @@ const grantsHint = computed(() => {
         <span class="cp__grants-count">{{ matchedGrants.length }}</span>
       </h3>
       <p class="cp__grants-hint">{{ grantsHint }}</p>
-      <!-- This crew's own (on-site, <10 km) projects — highlighted, always fully shown -->
-      <div v-if="specificGrants.length > 0" class="cp__own">
-        <h4 v-if="relatedGrants.length > 0" class="cp__sub-title">
-          <Icon name="tabler:star" size="0.75rem" />
-          <span>{{ ownProjectsTitle }}</span>
-        </h4>
+      <!-- All linked projects — paginated -->
+      <div class="cp__all">
         <ul class="cp__grants-list">
           <li
-            v-for="m in specificGrants"
-            :key="`own-${m.project.project_title}__${m.project.latitude}__${m.project.longitude}`"
+            v-for="m in pagedGrants"
+            :key="`${m.project.project_title}__${m.project.latitude}__${m.project.longitude}`"
             class="cp__grant cp__grant--own"
           >
             <div class="cp__grant-body">
@@ -464,43 +445,6 @@ const grantsHint = computed(() => {
                 <Icon name="tabler:star" size="0.65rem" />
                 <span>{{ crewProjectBadge }}</span>
               </span>
-              <span class="cp__grant-title">{{ m.project.project_title }}</span>
-              <span v-if="m.project.country_province" class="cp__grant-place">
-                <Icon name="gis:pin" size="0.7rem" />
-                <span>{{ m.project.country_province }}</span>
-              </span>
-            </div>
-            <div class="cp__grant-side">
-              <span class="cp__grant-benef" :class="{ 'cp__grant-benef--unknown': !hasBeneficiaries(m.project) }">
-                {{ hasBeneficiaries(m.project) ? grantBeneficiaries(m.project) : unknownBeneficiaries }}
-              </span>
-              <button
-                type="button"
-                class="cp__fly-btn"
-                :aria-label="`${flyToLabel}: ${m.project.project_title}`"
-                :title="flyToLabel"
-                @click="flyToProject(m)"
-              >
-                <Icon name="tabler:navigation" size="0.75rem" />
-                <span>{{ flyToLabel }}</span>
-              </button>
-            </div>
-          </li>
-        </ul>
-      </div>
-      <!-- Remaining linked projects — paginated for large regions -->
-      <div v-if="relatedGrants.length > 0" class="cp__related">
-        <h4 v-if="specificGrants.length > 0" class="cp__sub-title cp__sub-title--related">
-          <Icon name="tabler:link" size="0.75rem" />
-          <span>{{ moreProjectsTitle }}</span>
-        </h4>
-        <ul class="cp__grants-list">
-          <li
-            v-for="m in pagedRelatedGrants"
-            :key="`${m.project.project_title}__${m.project.latitude}__${m.project.longitude}`"
-            class="cp__grant"
-          >
-            <div class="cp__grant-body">
               <span class="cp__grant-title">{{ m.project.project_title }}</span>
               <span v-if="m.project.country_province" class="cp__grant-place">
                 <Icon name="gis:pin" size="0.7rem" />

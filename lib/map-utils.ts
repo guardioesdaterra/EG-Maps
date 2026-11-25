@@ -535,6 +535,44 @@ export function buildCrewRegionTooltipHTML(
   `
 }
 
+/** Generic region tooltip that works for any dataset count */
+export interface GenericRegionTooltipData {
+  id: string
+  name: string
+  count: number
+  otherCount?: number
+  label: string
+  otherLabel?: string
+}
+
+export interface GenericRegionTooltipTranslations {
+  items: string
+  otherItems?: string
+  expand: string
+}
+
+export function buildGenericRegionTooltipHTML(
+  data: GenericRegionTooltipData,
+  t: GenericRegionTooltipTranslations,
+): string {
+  const color = data.count > 20 ? 'var(--success)' : data.count > 5 ? 'var(--info)' : 'var(--purple)'
+  return `
+    <div class="region-tip" style="--region-tip-accent:${color}">
+      <div class="region-tip__title">${escapeHtml(data.name)}</div>
+      <div class="region-tip__row">
+        <span class="region-tip__dot" style="background:${color}"></span>
+        <span><strong>${data.count.toLocaleString()}</strong> ${escapeHtml(t.items)}</span>
+      </div>
+      ${data.otherCount !== undefined && data.otherCount > 0 ? `
+      <div class="region-tip__row region-tip__row--muted">
+        <span><strong>${data.otherCount.toLocaleString()}</strong> ${escapeHtml(t.otherItems || t.items)}</span>
+      </div>
+      ` : ''}
+      <div class="region-tip__hint">${escapeHtml(t.expand)} →</div>
+    </div>
+  `
+}
+
 export function isValidCoordinate(lat: number | undefined | null, lng: number | undefined | null): boolean {
   if (lat == null || lng == null) return false
   return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 && isFinite(lat) && isFinite(lng)

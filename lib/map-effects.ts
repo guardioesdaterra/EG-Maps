@@ -480,7 +480,8 @@ export function createMapParticleSystem({
     p.controlX = control[0]; p.controlY = control[1]
     p.toX = to[0]; p.toY = to[1]
     p.progress = 0
-    p.speed = mobile ? 0.006 + Math.random() * 0.008 : 0.004 + Math.random() * 0.007
+    // Speed is in geographic coordinates - keep it slow for lng/lat values
+    p.speed = mobile ? 0.0008 + Math.random() * 0.0004 : 0.0004 + Math.random() * 0.0003
     p.size = mobile ? 1.2 : 1.5 + Math.random() * 1.2
     p.color = feature.properties?.color || '#ffffff'
     p.trailLen = Math.max(0, Math.min(MAX_TRAIL_LEN, trailLen))

@@ -145,6 +145,9 @@
         @close="closeCreateGrantModal"
         @created="onGrantCreated"
       />
+
+      <!-- Exit-intent grants CTA popup (shown to visitors about to leave) -->
+      <ExitIntentPopup />
     </template>
   </div>
 </template>
@@ -158,6 +161,7 @@ import { allProjectsData } from '~/lib/project-data'
 import GrantsDashboard from '~/components/grants/GrantsDashboard.vue'
 import GrantDetailModal from '~/components/grants/GrantDetailModal.vue'
 import CreateGrantModal from '~/components/grants/CreateGrantModal.vue'
+import ExitIntentPopup from '~/components/grants/ExitIntentPopup.vue'
 import GlobeView from '~/components/GlobeView.vue'
 import { useGrantsPortal } from '~/composables/useGrantsPortal'
 import { useDeviceCapabilities } from '~/composables/useDeviceCapabilities'

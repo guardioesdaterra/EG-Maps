@@ -11,7 +11,7 @@ import type { Map as MapLibreMap, GeoJSONSource, ExpressionSpecification, Filter
 import maplibregl from 'maplibre-gl'
 import { GROUP_COLORS, MAP_GROUP_COLORS, isValidCoordinate, getGroupMapColor, buildCrewRegionTooltipHTML, buildGenericRegionTooltipHTML, lngLatToRegionId } from '@/lib/map-utils'
 import type { Species } from '@/lib/map-utils'
-import { getProjectColorByBeneficiaries, getProjectMapColorFromProject } from '@/lib/colors'
+import { getProjectColorByBeneficiaries, getProjectMapColor, getProjectMapColorFromProject } from '@/lib/colors'
 import { formatCompact } from '@/lib/utils'
 import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
 import { useI18n } from '@/composables/useI18n'
@@ -719,19 +719,59 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     if (!map || !e.features?.[0]) return
     if (markerHitAt(e.point)) return
     if (Date.now() - _lastPointClick < 80) return
-    // Only active-crews has a region-level overlay to open on click.
-    // For project-grants / endangered-species the hover tooltip is the
-    // only interaction; clicking the polygon background does nothing.
-    if (currentDataset !== 'active-crews') return
     const f = e.features[0]
     const regionId = String(f.properties?.id ?? f.id ?? '')
-    const region = resolveRegionById(regionId)
-    if (!region) return
-    _lastPointClick = Date.now()
-    hideRegionTip()
-    setRegionHover(null)
-    const cb = callbacks.openCrewPreview ?? callbacks.openCrewOverlay
-    cb(region)
+    
+    // For active-crews: open the crew overlay
+    if (currentDataset === 'active-crews') {
+      const region = resolveRegionById(regionId)
+      if (!region) return
+      _lastPointClick = Date.now()
+      hideRegionTip()
+      setRegionHover(null)
+      const cb = callbacks.openCrewPreview ?? callbacks.openCrewOverlay
+      cb(region)
+      return
+    }
+    
+    // For project-grants and endangered-species: show the cluster panel
+    // with all items in that region
+    const items: ClusterResultItem[] = []
+    if (currentDataset === 'project-grants' && latestArgs?.projects) {
+      const regionProjects = latestArgs.projects.filter(p => lngLatToRegionId(p.latitude, p.longitude) === regionId)
+      for (const proj of regionProjects) {
+        items.push({
+          id: proj.project_title,
+          title: proj.project_title,
+          subtitle: proj.country_province,
+          color: getProjectMapColor(proj.direct_beneficiaries, proj.indirect_beneficiaries),
+          coordinates: [proj.longitude, proj.latitude]
+        })
+      }
+    } else if (currentDataset === 'endangered-species' && latestArgs?.speciesIndex) {
+      const regionSpecies = latestArgs.speciesIndex.filter(s => lngLatToRegionId(s.lat, s.lng) === regionId)
+      for (const sp of regionSpecies) {
+        const color = getGroupMapColor(sp.taxonomicGroup)
+        items.push({
+          id: sp.id,
+          title: sp.commonName || sp.scientificName,
+          subtitle: sp.scientificName,
+          color: color,
+          coordinates: [sp.lng, sp.lat]
+        })
+      }
+    }
+    
+    if (items.length > 0) {
+      _lastPointClick = Date.now()
+      hideRegionTip()
+      setRegionHover(null)
+      callbacks.openCluster?.({
+        dataset: currentDataset,
+        coordinates: items[0].coordinates,
+        featureIds: items.map(item => item.id),
+      })
+    }
   }
 
   function removeRegionLayers() {

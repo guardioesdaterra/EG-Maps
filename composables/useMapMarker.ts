@@ -9,7 +9,8 @@
  */
 import type { Map as MapLibreMap, GeoJSONSource, ExpressionSpecification, FilterSpecification, MapLayerMouseEvent, MapLayerEventType } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
-import { GROUP_COLORS, MAP_GROUP_COLORS, isValidCoordinate, getGroupMapColor, buildCrewRegionTooltipHTML } from '@/lib/map-utils'
+import { GROUP_COLORS, MAP_GROUP_COLORS, isValidCoordinate, getGroupMapColor, buildCrewRegionTooltipHTML, buildGenericRegionTooltipHTML } from '@/lib/map-utils'
+import type { Species } from '@/lib/map-utils'
 import { getProjectColorByBeneficiaries, getProjectMapColorFromProject } from '@/lib/colors'
 import { formatCompact } from '@/lib/utils'
 import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
@@ -21,8 +22,6 @@ import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation, CrewStatus } from '@/lib/crew-data'
 import { resolveCrewRegion } from '@/lib/crew-grants'
 import { allCrewRegionsData } from '@/lib/crew-data'
-import { buildGenericRegionTooltipHTML } from '@/lib/map-utils'
-import type { Species } from '@/lib/map-utils'
 import { STANDARD_MAP_MARKER_SIZE } from '@/composables/useGeoJSONMarkers'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 

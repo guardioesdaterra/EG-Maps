@@ -498,6 +498,43 @@ export function buildCrewPreviewHTML(crew: CrewRegionData | CrewLocation, transl
   `
 }
 
+export interface RegionTooltipTranslations {
+  activeCrews: string
+  inactiveCrews: string
+  totalMembers: string
+  countries: string
+  expand: string
+}
+
+export interface RegionTooltipCounts {
+  active: number
+  inactive: number
+  totalMembers: number
+  countries: number
+}
+
+/** Hover tooltip shown when the pointer is over a crew region polygon. */
+export function buildCrewRegionTooltipHTML(
+  region: CrewRegionData,
+  counts: RegionTooltipCounts,
+  t: RegionTooltipTranslations,
+): string {
+  const color = counts.active > 20 ? 'var(--success)' : counts.active > 5 ? 'var(--info)' : 'var(--purple)'
+  return `
+    <div class="region-tip" style="--region-tip-accent:${color}">
+      <div class="region-tip__title">${escapeHtml(region.region)}</div>
+      <div class="region-tip__row">
+        <span class="region-tip__dot" style="background:${color}"></span>
+        <span><strong>${counts.active}</strong> ${escapeHtml(t.activeCrews)} · <strong>${counts.inactive}</strong> ${escapeHtml(t.inactiveCrews)}</span>
+      </div>
+      <div class="region-tip__row region-tip__row--muted">
+        <span><strong>${counts.totalMembers.toLocaleString()}</strong> ${escapeHtml(t.totalMembers)} · <strong>${counts.countries}</strong> ${escapeHtml(t.countries)}</span>
+      </div>
+      <div class="region-tip__hint">${escapeHtml(t.expand)} →</div>
+    </div>
+  `
+}
+
 export function isValidCoordinate(lat: number | undefined | null, lng: number | undefined | null): boolean {
   if (lat == null || lng == null) return false
   return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 && isFinite(lat) && isFinite(lng)

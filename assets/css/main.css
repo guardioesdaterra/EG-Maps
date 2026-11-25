@@ -1917,6 +1917,75 @@ select option {
   color: var(--obs-text-primary);
 }
 
+/* ── Region hover tip (crew region polygons) ── */
+.region-hover-tip .maplibregl-popup-content {
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+}
+.region-hover-tip .maplibregl-popup-tip {
+  border-top-color: var(--obs-panel-bg);
+}
+.region-tip {
+  --region-tip-accent: var(--info);
+  min-width: 11rem;
+  padding: 10px 12px 8px;
+  background: var(--obs-panel-bg);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid var(--obs-panel-border);
+  border-left: 3px solid var(--region-tip-accent);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--obs-text-primary);
+  pointer-events: none;
+}
+.region-tip__title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 5px;
+}
+.region-tip__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--obs-text-primary);
+}
+.region-tip__row--muted {
+  color: var(--obs-text-dim);
+  margin-top: 1px;
+}
+.region-tip__row strong {
+  color: var(--region-tip-accent);
+  font-weight: 700;
+}
+.region-tip__row--muted strong {
+  color: var(--obs-text-primary);
+}
+.region-tip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+.region-tip__hint {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--obs-panel-border);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--region-tip-accent);
+}
+
 /* ── Full-screen overlay modals (species / project / crew) ── */
 .species-popup-overlay-fixed,
 .project-popup-overlay-fixed {

@@ -470,7 +470,11 @@ export function createMapParticleSystem({
     const coords = feature.geometry.coordinates as [number, number][]
     if (!coords || coords.length < 3) return false
     const [from, control, to] = coords
+    // Validate all coordinates are finite numbers
     if (!from || !control || !to) return false
+    if (!Number.isFinite(from[0]) || !Number.isFinite(from[1]) ||
+        !Number.isFinite(control[0]) || !Number.isFinite(control[1]) ||
+        !Number.isFinite(to[0]) || !Number.isFinite(to[1])) return false
 
     p.fromX = from[0]; p.fromY = from[1]
     p.controlX = control[0]; p.controlY = control[1]

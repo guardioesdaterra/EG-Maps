@@ -733,32 +733,18 @@ export function useMapBase(config: MapBaseConfig) {
     }
     if (activeDataset.value === 'vulcan-observatory') return
     console.time(`[perf] rebuildMarkers ${activeDataset.value}`)
-    const isRee = false
     try {
-      console.log('[EG Maps] marker placement start', {
-        dataset: activeDataset.value,
-        projects: visibleProjects.value.length,
-        species: visibleSpecies.value.length,
-        crews: crewsData.value.length,
-        crewLocations: crewLocationsData.value.length,
-      })
       marker.rebuild({
         dataset: activeDataset.value!,
-        projects: isRee ? [] : visibleProjects.value,
-        speciesIndex: isRee ? [] : visibleSpecies.value,
-        species: isRee ? [] : speciesData.value,
-        crews: isRee ? [] : crewsData.value,
-        crewLocations: isRee ? [] : visibleCrewLocations.value,
+        projects: visibleProjects.value,
+        speciesIndex: visibleSpecies.value,
+        species: speciesData.value,
+        crews: crewsData.value,
+        crewLocations: visibleCrewLocations.value,
         crewStatuses: selectedCrewStatuses.value,
-        selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
-        rareEarthFeatures: isRee
-          ? (props.rareEarthFiltered?.features?.length
-            ? props.rareEarthFiltered.features
-            : props.rareEarthPoints?.features)
-          : undefined,
-        culturalFeatures: isRee
-          ? props.rareEarthCultural?.features
-          : undefined,
+        selectedSpeciesGroups: selectedSpeciesGroups.value,
+        rareEarthFeatures: undefined,
+        culturalFeatures: undefined,
       })
       console.log('[EG Maps] marker placement complete', { dataset: activeDataset.value })
     } catch (error) {
@@ -774,24 +760,17 @@ export function useMapBase(config: MapBaseConfig) {
     if (!map) return
     if (activeDataset.value === 'vulcan-observatory') return
     console.time(`[perf] updateMarkerData ${activeDataset.value}`)
-    const isRee = false
     marker.update({
       dataset: activeDataset.value!,
-      projects: isRee ? [] : visibleProjects.value,
-      speciesIndex: isRee ? [] : visibleSpecies.value,
-      species: isRee ? [] : speciesData.value,
-      crews: isRee ? [] : crewsData.value,
-      crewLocations: isRee ? [] : visibleCrewLocations.value,
+      projects: visibleProjects.value,
+      speciesIndex: visibleSpecies.value,
+      species: speciesData.value,
+      crews: crewsData.value,
+      crewLocations: visibleCrewLocations.value,
       crewStatuses: selectedCrewStatuses.value,
-      selectedSpeciesGroups: isRee ? [] : selectedSpeciesGroups.value,
-      rareEarthFeatures: isRee
-        ? (props.rareEarthFiltered?.features?.length
-          ? props.rareEarthFiltered.features
-          : props.rareEarthPoints?.features)
-        : undefined,
-      culturalFeatures: isRee
-        ? props.rareEarthCultural?.features
-        : undefined,
+      selectedSpeciesGroups: selectedSpeciesGroups.value,
+      rareEarthFeatures: undefined,
+      culturalFeatures: undefined,
     })
     console.timeEnd(`[perf] updateMarkerData ${activeDataset.value}`)
   }

@@ -532,11 +532,21 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
 
   function setRegionHover(id: string | number | null) {
     if (!map || regionHoverId === id) return
+    // Clear previous hover state
     if (regionHoverId != null) {
-      map.setFeatureState({ source: REGION_SOURCE, id: regionHoverId }, { hover: false })
+      try {
+        map.setFeatureState({ source: REGION_SOURCE, id: regionHoverId }, { hover: false })
+      } catch (e) {
+        // Ignore invalid feature state errors
+      }
     }
+    // Set new hover state
     if (id != null) {
-      map.setFeatureState({ source: REGION_SOURCE, id }, { hover: true })
+      try {
+        map.setFeatureState({ source: REGION_SOURCE, id }, { hover: true })
+      } catch (e) {
+        // Ignore invalid feature state errors
+      }
     }
     regionHoverId = id
   }
@@ -594,10 +604,11 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     if (!map || !e.features?.[0]) return
     map.getCanvas().style.cursor = 'pointer'
     const f = e.features[0]
-    const id = f.id ?? f.properties?.id
+    // Feature id comes from promoteId in source, or fall back to properties.id
+    const id = f.properties?.id ?? f.id
     if (id == null) return
     setRegionHover(id)
-    const region = resolveRegionById(String(f.properties?.id ?? id))
+    const region = resolveRegionById(String(id))
     if (region) showRegionTip(region, [e.lngLat.lng, e.lngLat.lat])
   }
 

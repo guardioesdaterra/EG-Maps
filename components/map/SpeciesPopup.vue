@@ -1,10 +1,10 @@
 <script setup lang="ts">
 
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import type { Species } from '@/lib/types'
 import { useI18n } from '@/composables/useI18n'
 import { GROUP_COLORS } from '@/lib/map-utils'
-import { getMarkerPlaceholder, getPopupImageUrl } from '@/lib/image-utils'
+import { getMarkerPlaceholder, getPopupImageUrl, preloadImage } from '@/lib/image-utils'
 
 const props = defineProps<{
   species: Species | null
@@ -12,8 +12,10 @@ const props = defineProps<{
 
 const { t, locale } = useI18n()
 
+const imageSrc = ref('')
 const imageError = ref(false)
 const imageLoading = ref(true)
+const preloadedUrl = ref<string | null>(null)
 
 const color = computed(() => {
   if (!props.species) return 'var(--info)'
@@ -37,16 +39,41 @@ const actions = computed(() => content.value?.actions ?? props.species?.actions 
 const region = computed(() => content.value?.region ?? props.species?.region ?? '')
 
 const baseURL = (useRuntimeConfig().app.baseURL || '/').replace(/\/$/, '')
-const imageSrc = computed(() => {
-  if (!props.species?.imageUrl) return ''
-  return getPopupImageUrl(props.species.imageUrl, baseURL)
-})
 
 const fallbackPlaceholder = computed(() => getMarkerPlaceholder(props.species?.taxonomicGroup))
+
+// Build the image URL and preload it
+function setupImage() {
+  if (!props.species?.imageUrl) {
+    imageError.value = true
+    imageLoading.value = false
+    return
+  }
+  
+  // For Wikimedia URLs, use them directly
+  if (props.species.imageUrl.startsWith('http://') || props.species.imageUrl.startsWith('https://')) {
+    imageSrc.value = props.species.imageUrl
+    return
+  }
+  
+  // For local images, use the thumb URL (fallback to regular thumb if _full doesn't exist)
+  const thumbUrl = getPopupImageUrl(props.species.imageUrl, baseURL)
+  preloadedUrl.value = thumbUrl
+  imageSrc.value = thumbUrl
+}
+
+// Preload images in the background for better UX
+onMounted(async () => {
+  if (props.species?.imageUrl) {
+    const url = getPopupImageUrl(props.species.imageUrl, baseURL)
+    await preloadImage(url)
+  }
+})
 
 function handleImageError() {
   imageError.value = true
   imageLoading.value = false
+  console.warn('[EG Maps] Image failed to load:', imageSrc.value)
 }
 
 function handleImageLoad() {
@@ -57,10 +84,14 @@ function handleImageLoad() {
 function resetImageState() {
   imageError.value = false
   imageLoading.value = true
+  preloadedUrl.value = null
+  setupImage()
 }
 
 watch(() => props.species, () => {
-  if (props.species) resetImageState()
+  if (props.species) {
+    resetImageState()
+  }
 })
 
 const endangermentLevel = computed(() => {

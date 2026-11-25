@@ -9,7 +9,7 @@
  */
 import type { Map as MapLibreMap, GeoJSONSource, ExpressionSpecification, FilterSpecification, MapLayerMouseEvent, MapLayerEventType } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
-import { GROUP_COLORS, MAP_GROUP_COLORS, isValidCoordinate, getGroupMapColor, buildCrewRegionTooltipHTML, buildGenericRegionTooltipHTML } from '@/lib/map-utils'
+import { GROUP_COLORS, MAP_GROUP_COLORS, isValidCoordinate, getGroupMapColor, buildCrewRegionTooltipHTML, buildGenericRegionTooltipHTML, lngLatToRegionId } from '@/lib/map-utils'
 import type { Species } from '@/lib/map-utils'
 import { getProjectColorByBeneficiaries, getProjectMapColorFromProject } from '@/lib/colors'
 import { formatCompact } from '@/lib/utils'
@@ -468,7 +468,10 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   async function syncRegionAreas(): Promise<void> {
     if (!map) return
     const data = await loadCrewRegionGeoJSON()
-    if (!map || currentDataset !== 'active-crews' || !data.features.length) return
+    // Show region overlay for active-crews, project-grants, and endangered-species
+    // (not vulcan-observatory which has its own geographic layers)
+    const regionDatasets = new Set(['active-crews', 'project-grants', 'endangered-species'])
+    if (!map || !regionDatasets.has(currentDataset ?? '') || !data.features.length) return
 
     const existing = map.getSource(REGION_SOURCE) as GeoJSONSource | undefined
     if (existing && typeof existing.setData === 'function') {
@@ -582,8 +585,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     // For project-grants, count projects per region
     if (latestArgs?.projects && latestArgs.projects.length > 0) {
       const regionProjectCount = latestArgs.projects.filter(p => {
-        const r = resolveCrewRegion({ latitude: p.latitude, longitude: p.longitude }, allCrewRegionsData)
-        return r?.id === regionId
+        return lngLatToRegionId(p.latitude, p.longitude) === regionId
       }).length
       const region = allCrewRegionsData.find(r => r.id === regionId)
       if (region) {
@@ -591,7 +593,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
           id: regionId,
           name: region.region,
           count: regionProjectCount,
-          label: t('grantsPortal.title') || 'Projects',
+          label: t('home.projectGrants') || 'Projects',
         }
       }
     }
@@ -599,8 +601,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     // For endangered-species, count species per region
     if (latestArgs?.speciesIndex && latestArgs.speciesIndex.length > 0) {
       const regionSpeciesCount = latestArgs.speciesIndex.filter(s => {
-        const r = resolveCrewRegion({ lat: s.lat, lng: s.lng }, allCrewRegionsData)
-        return r?.id === regionId
+        return lngLatToRegionId(s.lat, s.lng) === regionId
       }).length
       const region = allCrewRegionsData.find(r => r.id === regionId)
       if (region) {
@@ -608,7 +609,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
           id: regionId,
           name: region.region,
           count: regionSpeciesCount,
-          label: t('home.endangeredSpeciesTitle') || 'Species',
+          label: t('nav.endangeredSpecies') || 'Species',
         }
       }
     }
@@ -634,10 +635,12 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     const regionData = computeRegionCounts(regionId)
     if (!regionData) return
 
+    // Only show the "expand" click-through hint for active-crews — the other
+    // datasets show counts on hover but have no region-level overlay to open.
     const html = buildGenericRegionTooltipHTML(regionData, {
       items: regionData.label,
       otherItems: regionData.otherLabel,
-      expand: t('preview.expand') || 'View details',
+      expand: currentDataset === 'active-crews' ? (t('preview.expand') || 'View details') : '',
     })
 
     if (!regionTip) {
@@ -716,6 +719,10 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     if (!map || !e.features?.[0]) return
     if (markerHitAt(e.point)) return
     if (Date.now() - _lastPointClick < 80) return
+    // Only active-crews has a region-level overlay to open on click.
+    // For project-grants / endangered-species the hover tooltip is the
+    // only interaction; clicking the polygon background does nothing.
+    if (currentDataset !== 'active-crews') return
     const f = e.features[0]
     const regionId = String(f.properties?.id ?? f.id ?? '')
     const region = resolveRegionById(regionId)

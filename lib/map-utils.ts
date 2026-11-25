@@ -568,7 +568,7 @@ export function buildGenericRegionTooltipHTML(
         <span><strong>${data.otherCount.toLocaleString()}</strong> ${escapeHtml(t.otherItems || t.items)}</span>
       </div>
       ` : ''}
-      <div class="region-tip__hint">${escapeHtml(t.expand)} →</div>
+      ${t.expand ? `<div class="region-tip__hint">${escapeHtml(t.expand)} →</div>` : ''}
     </div>
   `
 }
@@ -576,6 +576,52 @@ export function buildGenericRegionTooltipHTML(
 export function isValidCoordinate(lat: number | undefined | null, lng: number | undefined | null): boolean {
   if (lat == null || lng == null) return false
   return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 && isFinite(lat) && isFinite(lng)
+}
+
+/**
+ * Map a lat/lng coordinate to one of the seven crew region IDs
+ * ('north-america' | 'south-america' | 'europe' | 'africa' |
+ *  'east-asia' | 'south-asia' | 'oceania').
+ *
+ * Uses coarse bounding-box heuristics that match the GeoJSON polygons in
+ * public/data/crew-regions.geojson closely enough for tooltip counts.
+ * Order matters: more-specific boxes are tested before larger fallbacks.
+ */
+export function lngLatToRegionId(lat: number, lng: number): string | null {
+  // Oceania / Pacific islands (test before east-asia to handle Pacific islands)
+  if (lat >= -50 && lat <= 25 && lng >= 110 && lng <= 180) {
+    // Australia / New Zealand / Pacific
+    if (lat <= 0 || (lat <= 25 && lng >= 140)) return 'oceania'
+  }
+  if (lat >= -50 && lat <= -10 && lng >= 110 && lng <= 180) return 'oceania'
+  if (lat >= -25 && lat <= 25 && lng >= 165 && lng <= 180) return 'oceania'
+  if (lat >= -25 && lat <= 25 && lng >= -180 && lng <= -140) return 'oceania'
+
+  // North America (inc. Central America, Caribbean)
+  if (lat >= 5 && lat <= 72 && lng >= -170 && lng <= -50) return 'north-america'
+  if (lat >= 5 && lat <= 25 && lng >= -90 && lng <= -60) return 'north-america'  // Caribbean
+
+  // South America
+  if (lat >= -60 && lat <= 15 && lng >= -82 && lng <= -34) return 'south-america'
+
+  // Europe (inc. western Russia, Turkey)
+  if (lat >= 35 && lat <= 72 && lng >= -25 && lng <= 45) return 'europe'
+  if (lat >= 35 && lat <= 60 && lng >= 25 && lng <= 60) return 'europe'  // eastern Europe / Turkey
+
+  // Africa
+  if (lat >= -40 && lat <= 38 && lng >= -20 && lng <= 55) return 'africa'
+
+  // South Asia (India, Pakistan, Bangladesh, Sri Lanka, Nepal, Maldives)
+  if (lat >= 5 && lat <= 38 && lng >= 60 && lng <= 95) return 'south-asia'
+
+  // East Asia (China, Japan, Korea, SE Asia, Mongolia, far-east Russia)
+  if (lat >= -10 && lat <= 55 && lng >= 95 && lng <= 160) return 'east-asia'
+  if (lat >= 40 && lat <= 72 && lng >= 60 && lng <= 180) return 'east-asia'  // Siberia / far east
+
+  // Middle East — assign to south-asia (closest EG region)
+  if (lat >= 10 && lat <= 42 && lng >= 35 && lng <= 65) return 'south-asia'
+
+  return null
 }
 
 export function getGroupColor(taxonomicGroup: string): string {

@@ -9,6 +9,7 @@
 import { ref, shallowRef, computed, nextTick, onMounted, onUnmounted, watch, type Ref } from 'vue'
 import maplibregl from 'maplibre-gl'
 import { useRoute, useRouter } from 'vue-router'
+import { useSpeciesDetails } from '@/composables/useSpeciesData'
 import { useMediaQuery } from '@/composables/useMediaQuery'
 import { useI18n } from '@/composables/useI18n'
 import { useFocusTrap } from '@/composables/useFocusTrap'
@@ -145,6 +146,9 @@ export function useMapBase(config: MapBaseConfig) {
     new URLSearchParams(window.location.search).forEach((value, key) => { initialUrlQuery[key] = value })
   }
   const speciesPanel = useSpeciesPanel()
+  // Fetch full species details on demand (index items only carry coordinate+taxonomy).
+  // Covers both IUCN and icmbio-brazil datasets.
+  const speciesDetails = useSpeciesDetails(['iucn', 'icmbio-brazil'])
   const baseURL = useRuntimeConfig().app.baseURL
   const isMobile = useMediaQuery('(max-width: 768px)')
   const MAPTILER_API_KEY = useRuntimeConfig().public.maptilerApiKey || ''
@@ -617,10 +621,23 @@ export function useMapBase(config: MapBaseConfig) {
     clusterPanelOpen.value = false
     clusterPanelItems.value = []
   }
-  function handleSpeciesSelected(species: SpeciesIndexItem) {
+  async function handleSpeciesSelected(species: SpeciesIndexItem) {
     speciesPanel.closePanel()
-    const full = speciesData.value.find(s => s.id === species.id) ?? species
-    openSpeciesOverlay(full)
+    // Prefer cached full data; if unavailable fetch on-demand so the popup
+    // has content, description, images, and translated text.
+    const cached = speciesData.value.find(s => s.id === species.id)
+    if (cached) {
+      openSpeciesOverlay(cached)
+      return
+    }
+    // Open immediately with index data (shows name/coords/group) so the user
+    // gets instant feedback, then upgrade with full details once fetched.
+    openSpeciesOverlay(species)
+    const full = await speciesDetails.getSpecies(species.id)
+    if (full) {
+      // Re-open with full data (replaces whatever was just shown).
+      openSpeciesOverlay(full)
+    }
   }
   function openRareEarthOverlay(feature: GeoJSON.Feature) {
     if (map) openRareEarthOverlayPopup(map, feature)
@@ -638,14 +655,19 @@ export function useMapBase(config: MapBaseConfig) {
       expandCrew: () => {},
     })
   }
-  function openSpeciesPreview(species: Species | SpeciesIndexItem) {
+  async function openSpeciesPreview(species: Species | SpeciesIndexItem) {
     if (!map) return
-    const full = 'content' in species ? species : speciesData.value.find(s => s.id === species.id) ?? species
+    // Resolve full details before opening preview so description/images are present.
+    let resolved: Species | SpeciesIndexItem = 'content' in species ? species : speciesData.value.find(s => s.id === species.id) ?? species
+    if (!('content' in resolved)) {
+      const full = await speciesDetails.getSpecies(resolved.id)
+      if (full) resolved = full
+    }
     if (isMobile.value) {
-      openSpeciesOverlay(full)
+      openSpeciesOverlay(resolved)
       return
     }
-    previewCard.openSpecies(full, map, {
+    previewCard.openSpecies(resolved, map, {
       expandProject: () => {},
       expandSpecies: (s) => openSpeciesOverlay(s),
       expandCrew: () => {},

@@ -69,6 +69,7 @@
 
     <ClientOnly>
       <MapView3D
+        :key="useRoute().path"
         :default-dataset="'vulcan-observatory'"
         :rare-earth-points="pointsData"
         :rare-earth-filtered="filteredPoints"

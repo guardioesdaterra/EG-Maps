@@ -6,7 +6,7 @@
  */
 <template>
   <ClientOnly>
-    <MapView2D :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" :hide-all="crewPostMsg.hideAll.value" @map-init="handleMapInit">
+    <MapView2D :key="useRoute().path" :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" :hide-all="crewPostMsg.hideAll.value" @map-init="handleMapInit">
       <template #overlays>
         <Transition name="fade">
           <div

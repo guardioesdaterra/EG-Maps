@@ -6,7 +6,7 @@
  */
 <template>
   <ClientOnly>
-    <MapView3D :default-dataset="'endangered-species'" />
+    <MapView3D :key="useRoute().path" :default-dataset="'endangered-species'" />
     <template #fallback>
       <div class="flex h-[100svh] w-full items-center justify-center bg-black text-white">
         <LoadingSpinner

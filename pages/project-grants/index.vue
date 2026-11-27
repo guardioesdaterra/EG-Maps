@@ -7,7 +7,7 @@
 <template>
   <div class="project-grants-page">
     <ClientOnly>
-      <MapView2D :default-dataset="'project-grants'" />
+      <MapView2D :key="useRoute().path" :default-dataset="'project-grants'" />
       <template #fallback>
         <div class="flex flex-col h-[100svh] w-full items-center justify-center bg-black text-white">
           <div class="relative mb-[clamp(1.5rem,4vw,3rem)] flex items-center justify-center">

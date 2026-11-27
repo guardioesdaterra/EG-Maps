@@ -79,6 +79,7 @@
     <!-- ── Map (fills the viewport; panels overlay on top) ─────────────── -->
     <ClientOnly>
       <MapView2D
+        :key="useRoute().path"
         :default-dataset="'vulcan-observatory'"
         :rare-earth-points="pointsData"
         :rare-earth-filtered="filteredPoints"

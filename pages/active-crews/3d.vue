@@ -6,7 +6,7 @@
  */
 <template>
   <ClientOnly>
-    <MapView3D :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" :hide-all="crewPostMsg.hideAll.value" @map-init="handleMapInit">
+    <MapView3D :key="useRoute().path" :default-dataset="'active-crews'" :crews="crewRegions" :crew-locations="crewLocations" :hide-all="crewPostMsg.hideAll.value" @map-init="handleMapInit">
       <template #overlays>
         <Transition name="fade">
           <div

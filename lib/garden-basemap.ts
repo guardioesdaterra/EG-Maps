@@ -1,11 +1,12 @@
 /**
  * lib/garden-basemap.ts
- * @why Basemap styles for the Agroecological Garden Tool. A garden planner is
- *      unusable without imagery, so when no MapTiler key is configured (or the
- *      MapTiler style fails) we still render real satellite tiles instead of an
- *      empty vector world. Downloaded offline tiles are preferred over remote
- *      free raster sources when a backup pyramid exists.
- * @functions buildGardenStyle, satelliteStyle, streetsStyle, resolveGardenStyle
+ * @why Basemap styles for the Agroecological Garden Tool. Resolves styles
+ *      identically to the main maps (useMapBase.currentStyle): MapTiler
+ *      style.json when a key is available, offline IndexedDB satellite when a
+ *      pyramid is cached, and the local land-background fallback as a last
+ *      resort. The garden never renders ESRI tiles — it uses the same MapTiler
+ *      basemap as every other map.
+ * @functions buildGardenStyle, streetsStyle, resolveGardenStyle, initialGardenStyle
  * @connections components/tools/garden/AgroecologicalGardenTool.vue,
  *              components/tools/garden/GardenToolMobile.vue
  */
@@ -13,12 +14,6 @@
 import type { StyleSpecification } from 'maplibre-gl'
 import { getMapStyle, offlineSatelliteStyle } from '@/composables/useMapLibre'
 import { tileStyleDef, type TileStyleId } from '@/lib/tile-styles'
-
-const ESRI_IMAGERY_TILES = [
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-]
-
-const ESRI_ATTRIBUTION = 'Imagery © Esri, Maxar, Earthstar Geographics'
 
 /** Free raster fallback — CARTO Voyager with attribution. */
 export function streetsStyle(): StyleSpecification {
@@ -43,39 +38,19 @@ export function streetsStyle(): StyleSpecification {
   }
 }
 
-/** Satellite imagery without an API key. */
-export function satelliteStyle(): StyleSpecification {
-  return {
-    version: 8,
-    sources: {
-      satellite: {
-        type: 'raster',
-        tiles: ESRI_IMAGERY_TILES,
-        tileSize: 256,
-        maxzoom: 19,
-        attribution: ESRI_ATTRIBUTION,
-        scheme: 'tms',
-      },
-    },
-    layers: [
-      { id: 'satellite', type: 'raster', source: 'satellite' },
-    ],
-  }
-}
-
 /**
- * Resolve the garden basemap: MapTiler when a key is available, otherwise
- * keyless satellite imagery. Callers should watch for style load errors and
- * switch to `streetsStyle()` as a last resort.
+ * Resolve the garden basemap identically to the main maps:
+ *   - MapTiler style.json when a key is available (same tileset as every map)
+ *   - offline IndexedDB satellite when a pyramid is cached
+ *   - local land-background fallback (getMapStyle with no key) as last resort
+ * Never renders ESRI tiles.
  */
 export function buildGardenStyle(apiKey: string, maptilerStyle = 'satellite-v4'): string | StyleSpecification {
   if (apiKey) {
     // Same MapTiler style.json resolution as every other map (useMapLibre.getMapStyle).
     return getMapStyle(apiKey, undefined, '/', maptilerStyle) as string | StyleSpecification
   }
-  // Use streets style (CARTO Voyager) as default when no MapTiler key
-  // ESRI satellite tiles with TMS scheme don't work reliably in MapLibre
-  return streetsStyle()
+  return getMapStyle('', undefined, '/') as string | StyleSpecification
 }
 
 export interface GardenStyleContext {
@@ -99,23 +74,25 @@ function offlineStyle(ctx: GardenStyleContext): StyleSpecification {
 
 /**
  * Shared garden fallback ladder (both desktop and mobile tools):
- *   0 MapTiler (styleId) → 1 offline IndexedDB satellite / CARTO →
- *   2 CARTO → 3 ESRI satellite.
+ *   0 MapTiler (styleId) → 1 offline IndexedDB satellite →
+ *   2+ local land-background fallback (same as useMapBase).
  *
  * Offline + cache starts at level 1 with the local raster style (remote
- * style.json cannot load offline).
+ * style.json cannot load offline). ESRI tiles are not used at any level.
  */
 export function resolveGardenStyle(level: number, ctx: GardenStyleContext): string | StyleSpecification {
   if (level <= 0) {
-    if (!ctx.apiKey) return ctx.hasOfflineTiles ? offlineStyle(ctx) : streetsStyle()
+    if (!ctx.apiKey) {
+      if (ctx.hasOfflineTiles) return offlineStyle(ctx)
+      return buildGardenStyle('')
+    }
     return buildGardenStyle(ctx.apiKey, tileStyleDef(ctx.styleId).maptilerStyle)
   }
   if (level === 1) {
     if (ctx.hasOfflineTiles) return offlineStyle(ctx)
-    return streetsStyle()
+    return buildGardenStyle('')
   }
-  if (level === 2) return streetsStyle()
-  return satelliteStyle()
+  return buildGardenStyle('')
 }
 
 /** Initial style + starting fallback level for a garden map. */
@@ -126,7 +103,7 @@ export function initialGardenStyle(ctx: GardenStyleContext): { style: string | S
   if (!ctx.apiKey) {
     return ctx.hasOfflineTiles
       ? { style: offlineStyle(ctx), level: 1 }
-      : { style: streetsStyle(), level: 2 }
+      : { style: buildGardenStyle(''), level: 2 }
   }
   return { style: resolveGardenStyle(0, ctx), level: 0 }
 }

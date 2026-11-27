@@ -39,7 +39,7 @@ function openTool(id: ToolId) {
 useHead({
   title: 'Tools — Earth Guardians',
   meta: [
-    { name: 'description', content: 'Field tools for Earth Guardians: design agroecological gardens and keep satellite maps available offline.' },
+    { name: 'description', content: 'Field tools for Earth Guardians: design agroecological gardens.' },
     { property: 'og:title', content: 'Tools — Earth Guardians' },
     { property: 'og:description', content: 'Practical mapping and planning tools for community-led regeneration.' },
   ],

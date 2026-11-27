@@ -290,10 +290,8 @@ persisted (`eg-hex-grid-mode`) and shareable (`mapHexMode` query key, `lib/map-s
 
 `lib/tools.ts` is the registry (`id`, `#tools/<hash>` deep link, i18n keys, `ready`/`planned`
 status, accent). `layouts/default.vue` renders `components/tools/ToolsHub.vue` (catalog) and,
-behind it, the selected tool (`AgroecologicalGardenTool`, `OfflineSatelliteTool`) inside
+behind it, the selected tool (`AgroecologicalGardenTool`) inside
 `components/ui/ToolsSheet.vue`. Planned tools show a "coming soon" badge and are not selectable.
-The satellite downloader drives `useOfflineTileCache()` — the same IndexedDB cache the map reads —
-so downloads are counted, cancelled (`AbortController`) and cleared from one place.
 
 ---
 

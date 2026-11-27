@@ -8,10 +8,10 @@
  * @types ToolId, ToolDefinition, ToolAccent
  * @connections pages/tools/index.vue, pages/tools/[tool].vue, components/tools/ToolsHub.vue, layouts/default.vue
  */
-export type ToolId = 'agroecological-garden' | 'satellite-downloader' | 'species-watchlist' | 'crew-outreach'
+export type ToolId = 'agroecological-garden' | 'species-watchlist' | 'crew-outreach'
 
 /** Visual family for the tool card; maps to a CSS accent, not a Tailwind class. */
-export type ToolAccent = 'emerald' | 'cyan' | 'violet' | 'amber'
+export type ToolAccent = 'emerald' | 'violet' | 'amber'
 
 export interface ToolDefinition {
   id: ToolId
@@ -37,16 +37,6 @@ export const TOOLS: readonly ToolDefinition[] = [
     icon: 'tabler:seedling',
     status: 'ready',
     accent: 'emerald',
-  },
-  {
-    id: 'satellite-downloader',
-    route: '/tools/satellite-downloader',
-    hash: 'satellite',
-    nameKey: 'tools.satelliteDownloader.title',
-    descriptionKey: 'tools.satelliteDownloader.description',
-    icon: 'tabler:cloud-download',
-    status: 'ready',
-    accent: 'cyan',
   },
   {
     id: 'species-watchlist',

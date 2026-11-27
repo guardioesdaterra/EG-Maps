@@ -62,14 +62,12 @@ const { t } = useI18n()
 
 const ACCENTS: Record<ToolAccent, string> = {
   emerald: '#10b981',
-  cyan: '#06b6d4',
   violet: '#8b5cf6',
   amber: '#f59e0b',
 }
 
 const tips = [
   { key: 'tools.tipGarden', icon: 'tabler:seedling' },
-  { key: 'tools.tipSatellite', icon: 'tabler:cloud-download' },
   { key: 'tools.tipStorage', icon: 'tabler:database' },
 ]
 </script>

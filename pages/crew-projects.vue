@@ -487,8 +487,9 @@ useHead({
   font-size: 0.78rem;
   font-weight: 700;
   text-decoration: none;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid var(--primary);
   transition: opacity 0.15s;
 }
 .cta-btn:hover { opacity: 0.85; }

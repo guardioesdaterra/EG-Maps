@@ -91,7 +91,14 @@ export default defineNuxtConfig({
               }
               var saved = localStorage.getItem('darkMode');
               var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-              document.documentElement.classList.toggle('dark', saved === 'true' || (saved === null && prefersDark));
+              var isDark = saved === 'true' || (saved === null && prefersDark);
+              document.documentElement.classList.toggle('dark', isDark);
+              // Set inline background immediately so dark mode never flashes white
+              // before the main stylesheet loads and applies --bg-primary via .dark.
+              if (isDark) {
+                document.documentElement.style.backgroundColor = '#0a0a0a';
+                if (document.body) document.body.style.backgroundColor = '#0a0a0a';
+              }
             } catch (e) {}
           })();`,
           type: 'text/javascript',

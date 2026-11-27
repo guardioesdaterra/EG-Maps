@@ -178,10 +178,6 @@
                     <Icon name="gis:map" aria-hidden="true" />
                     {{ t('home.vulcanTitle') }}
                   </NuxtLink>
-                  <NuxtLink to="/vulcan-observatory/3d" class="bento-link" :aria-label="`${t('home.vulcanTitle')} — ${t('globe.view3D')}`">
-                    <Icon name="gis:globe" aria-hidden="true" />
-                    {{ t('home.vulcanTitle') }}
-                  </NuxtLink>
                 </div>
               </div>
             </article>

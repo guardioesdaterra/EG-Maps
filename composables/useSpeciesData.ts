@@ -210,7 +210,7 @@ async function fetchRegionChunk(baseURL: string, region: string): Promise<Specie
 async function fetchSpeciesById(baseURL: string, ds: string, speciesId: string): Promise<Species | null> {
   const label = `[perf] fetchSpeciesById ${ds}/${speciesId}`
   console.time(label)
-  let result: Species | null = null
+  let result: Species | null
 
   if (ds === 'icmbio-brazil') {
     const lookup = await fetchRegionLookup(baseURL)

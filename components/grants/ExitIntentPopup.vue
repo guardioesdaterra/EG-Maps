@@ -155,7 +155,7 @@ const localOpen = ref(false)
 
 watch(
   () => open.value,
-  (val) => {
+  (val: boolean) => {
     localOpen.value = disabled ? false : val
   },
   { immediate: true }

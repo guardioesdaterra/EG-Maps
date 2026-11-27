@@ -123,7 +123,7 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    preset: 'static',
+    ...( { preset: 'static', compressPublicAssets: true } as Record<string, unknown> ),
     prerender: {
       crawlLinks: true,
       // Canonical route list lives in lib/site-routes (shared with the
@@ -138,7 +138,6 @@ export default defineNuxtConfig({
         `${baseURL}manifest.json`.replace(/\/+$/, '') || '/manifest.json',
       ],
     },
-    compressPublicAssets: true,
   },
 
   experimental: { appManifest: false },

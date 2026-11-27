@@ -18,7 +18,7 @@ await page.waitForTimeout(8000) // let cultural fetch land
 
 const snap = () => page.evaluate(() => {
   const m = (window).__egMap
-  let cultural = null
+  let cultural
   let layers = []
   try {
     cultural = m.getSource('ree-cultural') ? 'present' : 'MISSING-SOURCE'

@@ -6,8 +6,9 @@
  * @deps ~/lib/site-routes (buildSitemapXml)
  */
 import { buildSitemapXml } from '~/lib/site-routes'
+import type { EventHandlerRequest } from 'h3'
 
-export default defineEventHandler((event) => {
+export default defineEventHandler((event: EventHandlerRequest) => {
   setHeader(event, 'content-type', 'application/xml; charset=utf-8')
   return buildSitemapXml()
 })

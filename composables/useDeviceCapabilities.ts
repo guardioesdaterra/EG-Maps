@@ -78,7 +78,7 @@ function getWebGLInfo(): { version: number; vendor: string; renderer: string; ma
     return { version: 1, vendor: '', renderer: '', maxTextureSize: 4096 }
   }
 
-  let canvas: HTMLCanvasElement | null = null
+  let canvas: HTMLCanvasElement | null
   try {
     canvas = document.createElement('canvas')
     const gl2 = canvas.getContext('webgl2') as WebGL2RenderingContext | null
@@ -99,10 +99,7 @@ function getWebGLInfo(): { version: number; vendor: string; renderer: string; ma
       gl1.getExtension('WEBGL_lose_context')?.loseContext()
       return { version: 1, vendor, renderer, maxTextureSize }
     }
-  } catch { /* noop */
-  } finally {
-    canvas = null
-  }
+  } catch { /* noop */ }
   return { version: 0, vendor: '', renderer: '', maxTextureSize: 4096 }
 }
 

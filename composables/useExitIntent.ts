@@ -6,7 +6,7 @@
  * @functions useExitIntent
  * @deps vue (ref, computed, onMounted, onBeforeUnmount)
  */
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, type Ref } from 'vue'
 
 export interface UseExitIntentOptions {
   /** Distance from top edge (px) that triggers exit intent. Default 40. */
@@ -21,9 +21,9 @@ export interface UseExitIntentOptions {
 
 export interface UseExitIntentReturn {
   /** Whether the popup is currently open. */
-  open: ReturnType<typeof ref>
+  open: Ref<boolean>
   /** Whether exit intent has ever been triggered this session. */
-  triggered: ReturnType<typeof ref>
+  triggered: Ref<boolean>
   /** Programmatically dismiss/hide the popup. */
   dismiss: () => void
   /** Programmatically re-enable (reset dismissal). */
@@ -93,7 +93,8 @@ export function useExitIntent(
     }
   }
 
-  function handleMouseLeave(e: MouseEvent) {
+  function handleMouseLeave(event: Event) {
+    const e = event as MouseEvent
     // Ignore touch devices — no reliable "exit intent" there
     if (isTouchDevice.value) return
     // Don't re-trigger if recently dismissed or cooling down
@@ -116,14 +117,14 @@ export function useExitIntent(
   onMounted(() => {
     if (typeof window === 'undefined') return
     window.addEventListener('mouseleave', handleMouseLeave)
-    document.documentElement.addEventListener('mouseout', handleMouseLeave as any)
+    document.documentElement.addEventListener('mouseout', handleMouseLeave)
   })
 
   onBeforeUnmount(() => {
     clearTimer()
     if (typeof window === 'undefined') return
     window.removeEventListener('mouseleave', handleMouseLeave)
-    document.documentElement.removeEventListener('mouseout', handleMouseLeave as any)
+    document.documentElement.removeEventListener('mouseout', handleMouseLeave)
   })
 
   return {

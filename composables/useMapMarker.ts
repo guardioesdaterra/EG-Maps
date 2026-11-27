@@ -8,16 +8,20 @@
  * @connections composables/useMapBase.ts
  */
 import type { Map as MapLibreMap, GeoJSONSource, ExpressionSpecification, FilterSpecification, MapLayerMouseEvent, MapLayerEventType } from 'maplibre-gl'
-import { GROUP_COLORS, MAP_GROUP_COLORS, isValidCoordinate, getGroupMapColor } from '@/lib/map-utils'
-import { getProjectColorByBeneficiaries, getProjectMapColorFromProject } from '@/lib/colors'
+import maplibregl from 'maplibre-gl'
+import { GROUP_COLORS, MAP_GROUP_COLORS, isValidCoordinate, getGroupMapColor, buildCrewRegionTooltipHTML, buildGenericRegionTooltipHTML, lngLatToRegionId } from '@/lib/map-utils'
+import type { Species } from '@/lib/map-utils'
+import { getProjectColorByBeneficiaries, getProjectMapColor, getProjectMapColorFromProject } from '@/lib/colors'
 import { formatCompact } from '@/lib/utils'
+import { withMapPopupSafeArea } from '@/lib/map-popup-safe-area'
+import { useI18n } from '@/composables/useI18n'
 import { findSpeciesAtCoord as _findSpeciesAtCoord } from '@/lib/species-utils'
 import { SPECIES_COORD_TOLERANCE } from '@/lib/constants'
 import { CULTURAL_FAMILY_STYLES, getCulturalFamily } from '@/lib/cultural-marker-taxonomy'
 import type { ProjectData } from '@/lib/types'
 import type { CrewRegionData, CrewLocation, CrewStatus } from '@/lib/crew-data'
 import { resolveCrewRegion } from '@/lib/crew-grants'
-import type { Species } from '@/lib/map-utils'
+import { allCrewRegionsData } from '@/lib/crew-data'
 import { STANDARD_MAP_MARKER_SIZE } from '@/composables/useGeoJSONMarkers'
 import type { SpeciesIndexItem } from '@/composables/useGeoJSONMarkers'
 
@@ -55,7 +59,13 @@ export interface RebuildArgs {
 
 const SOURCE = 'markers'
 
-const LAYER_SUFFIXES = ['_cg', '_c', '_cc', '_cn', '_pg', '_p', '_pc', '_pl', '_mg', '_mm', '_ml'] as const
+// Region areas are a separate source: polygon geometry, independent lifecycle
+// (fetched async), and they must render below the marker layers.
+const REGION_SOURCE = 'crew-regions'
+const REGION_FILL_LAYER = 'crew-regions-fill'
+const REGION_LINE_LAYER = 'crew-regions-line'
+
+const LAYER_SUFFIXES = ['_cg', '_c', '_cc', '_cn', '_pg', '_p', '_pc', '_pl', '_ml'] as const
 
 const CLUSTER_PALETTES: Record<MarkerDataset, readonly [string, string, string, string]> = {
   'project-grants':       ['#06b6d4', '#22c55e', '#eab308', '#ef4444'],
@@ -79,6 +89,8 @@ const MAX_CREW_BUBBLES: number = 5
    ══════════════════════════════════════════════════════════════════════════ */
 
 export function useMapMarker(callbacks: MarkerCallbacks) {
+  const { t } = useI18n()
+  const baseURL = (useRuntimeConfig().app?.baseURL as string) || '/'
 
   let map: MapLibreMap | null = null
   let currentDataset: MarkerDataset | null = null
@@ -94,11 +106,20 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   let latestArgs: RebuildArgs | null = null
 
   const handlers: Array<{ id: string; evt: keyof MapLayerEventType; fn: (e: MapLayerMouseEvent) => void }> = []
+  // Region-area handlers live in their own list: they are bound when the async
+  // polygon source lands and must survive marker detach() across rebuilds of
+  // the same dataset (style reloads re-add layers under the same ids).
+  const regionHandlers: Array<{ id: string; evt: keyof MapLayerEventType; fn: (e: MapLayerMouseEvent) => void }> = []
+  let regionDataPromise: Promise<GeoJSON.FeatureCollection> | null = null
+  let regionTip: maplibregl.Popup | null = null
+  let regionHoverId: string | number | null = null
 
   function init(m: MapLibreMap) { map = m }
 
   function cleanup() {
     detach()
+    detachRegionEvents()
+    removeRegionLayers()
     if (map) removeSource(SOURCE)
     currentDataset = null
     speciesIndexCache = null
@@ -124,6 +145,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     speciesIndexCache = null
     if (currentDataset && currentDataset !== ds) {
       removeSource(SOURCE)
+      removeRegionLayers()
       currentDataset = null
     }
     const geojson = toGeoJSON(ds, a)
@@ -147,6 +169,7 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     if (currentDataset !== ds || !m.getSource(SOURCE)) return false
     updateData(SOURCE, geojson)
     buildLookupMaps(ds, a)
+    if (ds !== 'vulcan-observatory' && !m.getSource(REGION_SOURCE)) void syncRegionAreas()
     return true
   }
 
@@ -157,6 +180,8 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     setupEvents(SOURCE, ds, a)
     buildLookupMaps(ds, a)
     currentDataset = ds
+    if (ds !== 'vulcan-observatory') void syncRegionAreas()
+    else removeRegionLayers()
   }
 
   function buildLookupMaps(ds: MarkerDataset, a: RebuildArgs) {
@@ -272,56 +297,14 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
   function addCrewMosaicLayers(id: string) {
     if (!map) return
 
-    const mosaicSize = (mosaic: string, orig: string, low: number) =>
-      ['interpolate', ['linear'], ['zoom'],
-        CREW_MOSAIC_ZOOM_MIN, low,
-        CREW_MOSAIC_ZOOM_MAX, ['coalesce', ['get', orig], low]] as unknown as ExpressionSpecification
-
-    const mosaicFade = (low: number, high: number) =>
-      ['interpolate', ['linear'], ['zoom'],
-        CREW_MOSAIC_ZOOM_MIN, low,
-        CREW_MOSAIC_ZOOM_MAX, high] as unknown as ExpressionSpecification
-
-    const colorExpr = ['case', ['==', ['get', '_status'], 'inactive'], '#f59e0b',
-      ['match', ['get', '_bubbleIndex'],
-      0, '#22c55e',
-      1, '#22c55e',
-      2, '#3b82f6',
-      3, '#3b82f6',
-      4, '#3b82f6',
-      5, '#a855f7',
-      6, '#a855f7',
-      7, '#a855f7',
-      '#ec4899']] as unknown as ExpressionSpecification
-
-    const allBubblesFilter = ['all', ['!has', 'point_count'], ['==', '_type', 'crewRegion']] as FilterSpecification
     const primaryFilter = ['all',
       ['!has', 'point_count'],
       ['==', '_type', 'crewRegion'],
       ['==', '_isPrimary', true],
     ] as FilterSpecification
 
-    map.addLayer({
-      id: `${id}_mg`, type: 'circle', source: id,
-      filter: allBubblesFilter, paint: {
-        'circle-color': colorExpr,
-        'circle-radius': mosaicSize('_mosaicRadius', '_bubbleRadius', 4.5),
-        'circle-blur': 0.7,
-        'circle-opacity': mosaicFade(0.28, 0.42),
-      },
-    })
-
-    map.addLayer({
-      id: `${id}_mm`, type: 'circle', source: id,
-      filter: allBubblesFilter, paint: {
-        'circle-color': colorExpr,
-        'circle-radius': mosaicSize('_mosaicRadius', '_bubbleRadius', 3.2),
-        'circle-stroke-color': 'rgba(248, 250, 252, 0.9)',
-        'circle-stroke-width': 1.25,
-        'circle-opacity': mosaicFade(0.98, 1),
-      },
-    })
-
+    // Region label only — the old white mosaic dots (_mg/_mm) were replaced by
+    // the hoverable region area polygons (REGION_FILL_LAYER / REGION_LINE_LAYER).
     map.addLayer({
       id: `${id}_ml`, type: 'symbol', source: id,
       filter: primaryFilter, layout: {
@@ -383,14 +366,9 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
     if (!map) return
     detach()
     if (ds === 'active-crews') {
-      reg(`${id}_mm`, 'click', onPoint(ds, a))
       reg(`${id}_ml`, 'click', onPoint(ds, a))
-      reg(`${id}_mg`, 'mouseenter', onMosaicHoverIn)
-      reg(`${id}_mg`, 'mouseleave', onMosaicHoverOut)
-      reg(`${id}_mm`, 'mouseenter', onMosaicHoverIn)
-      reg(`${id}_mm`, 'mouseleave', onMosaicHoverOut)
-      reg(`${id}_ml`, 'mouseenter', onMosaicHoverIn)
-      reg(`${id}_ml`, 'mouseleave', onMosaicHoverOut)
+      reg(`${id}_ml`, 'mouseenter', ptr)
+      reg(`${id}_ml`, 'mouseleave', nop)
       reg(`${id}_p`, 'click', onPoint(ds, a))
       reg(`${id}_p`, 'mouseenter', ptr)
       reg(`${id}_p`, 'mouseleave', nop)
@@ -468,26 +446,364 @@ export function useMapMarker(callbacks: MarkerCallbacks) {
 
   const nop = () => { if (map) map.getCanvas().style.cursor = '' }
 
-  function onMosaicHoverIn(e: MapLayerMouseEvent) {
+  /* ── region areas (hover highlight · tooltip · click) ───────────────── */
+
+  function loadCrewRegionGeoJSON(): Promise<GeoJSON.FeatureCollection> {
+    if (!regionDataPromise) {
+      regionDataPromise = fetch(`${baseURL}data/crew-regions.geojson`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          return res.json() as Promise<GeoJSON.FeatureCollection>
+        })
+        .catch((error) => {
+          console.warn('[EG Maps] crew region areas failed to load', error)
+          regionDataPromise = null
+          return { type: 'FeatureCollection', features: [] } satisfies GeoJSON.FeatureCollection
+        })
+    }
+    return regionDataPromise
+  }
+
+  /** Fetch (once) and mount the region polygon source/layers + their events. */
+  async function syncRegionAreas(): Promise<void> {
     if (!map) return
-    map.getCanvas().style.cursor = 'pointer'
-    const f = e.features?.[0]
-    if (!f) return
-    const idx = f.layer.id
-    if (map.getLayer(idx)) {
-      map.setPaintProperty(idx, 'circle-stroke-width', 3.5)
+    const data = await loadCrewRegionGeoJSON()
+    // Show region overlay for active-crews, project-grants, and endangered-species
+    // (not vulcan-observatory which has its own geographic layers)
+    const regionDatasets = new Set(['active-crews', 'project-grants', 'endangered-species'])
+    if (!map || !regionDatasets.has(currentDataset ?? '') || !data.features.length) return
+
+    const existing = map.getSource(REGION_SOURCE) as GeoJSONSource | undefined
+    if (existing && typeof existing.setData === 'function') {
+      existing.setData(data)
+      // Style reloads wipe layers but keep delegated listeners keyed by layer
+      // id — only re-add the layers (and events on first mount).
+      if (!map.getLayer(REGION_FILL_LAYER)) addRegionLayers()
+      return
+    }
+    map.addSource(REGION_SOURCE, { type: 'geojson', data, promoteId: 'id' })
+    addRegionLayers()
+  }
+
+  function addRegionLayers() {
+    if (!map) return
+
+    const hover = ['boolean', ['feature-state', 'hover'], false] as unknown as ExpressionSpecification
+    // Base colors mirror the old mosaic scale (crews > 20 green, > 5 blue, else purple).
+    const colorExpr = ['match', ['get', 'id'],
+      'north-america', '#22c55e',
+      'south-america', '#3b82f6',
+      'europe', '#3b82f6',
+      'africa', '#22c55e',
+      'east-asia', '#a855f7',
+      'south-asia', '#3b82f6',
+      'oceania', '#a855f7',
+      '#3b82f6'] as unknown as ExpressionSpecification
+
+    map.addLayer({
+      id: REGION_FILL_LAYER, type: 'fill', source: REGION_SOURCE,
+      paint: {
+        'fill-color': colorExpr,
+        'fill-opacity': ['case', hover, 0.38, 0.12] as unknown as ExpressionSpecification,
+        'fill-opacity-transition': { duration: 80, delay: 0 },
+      },
+    })
+    map.addLayer({
+      id: REGION_LINE_LAYER, type: 'line', source: REGION_SOURCE,
+      paint: {
+        'line-color': colorExpr,
+        'line-opacity': ['case', hover, 0.95, 0.4] as unknown as ExpressionSpecification,
+        'line-width': ['case', hover, 2.25, 1] as unknown as ExpressionSpecification,
+        'line-opacity-transition': { duration: 80, delay: 0 },
+        'line-width-transition': { duration: 80, delay: 0 },
+      },
+    })
+
+    // Regions are geography — they must sit under every marker layer.
+    const markerFirst = LAYER_SUFFIXES
+      .map(suffix => SOURCE + suffix)
+      .find(lid => map!.getLayer(lid))
+    if (markerFirst) {
+      map.moveLayer(REGION_FILL_LAYER, markerFirst)
+      map.moveLayer(REGION_LINE_LAYER, markerFirst)
+    }
+
+    regRegion(REGION_FILL_LAYER, 'click', onRegionAreaClick)
+    regRegion(REGION_FILL_LAYER, 'mouseenter', onRegionAreaEnter)
+    regRegion(REGION_FILL_LAYER, 'mousemove', onRegionAreaMove)
+    regRegion(REGION_FILL_LAYER, 'mouseleave', onRegionAreaLeave)
+  }
+
+  function setRegionHover(id: string | number | null) {
+    if (!map || regionHoverId === id) return
+    // Clear previous hover state
+    if (regionHoverId != null) {
+      try {
+        map.setFeatureState({ source: REGION_SOURCE, id: regionHoverId }, { hover: false })
+      } catch (e) {
+        // Ignore invalid feature state errors
+      }
+    }
+    // Set new hover state
+    if (id != null) {
+      try {
+        map.setFeatureState({ source: REGION_SOURCE, id }, { hover: true })
+      } catch (e) {
+        // Ignore invalid feature state errors
+      }
+    }
+    regionHoverId = id
+  }
+
+  /** Resolve region data for crew mode, or compute counts for other datasets */
+  interface RegionCountResult {
+    id: string
+    name: string
+    count: number
+    otherCount?: number
+    label: string
+    otherLabel?: string
+  }
+
+  function computeRegionCounts(regionId: string): RegionCountResult | null {
+    // For active-crews, use the crew region data
+    const crewRegion = crewRegionMap?.get(regionId) ?? (latestArgs?.crews ?? []).find(r => r.id === regionId)
+    if (crewRegion) {
+      const statuses = latestArgs?.crewStatuses
+      const active = !statuses || statuses.includes('active') ? crewRegion.activeCrews : 0
+      const inactive = !statuses || statuses.includes('inactive') ? crewRegion.inactiveCrews : 0
+      return {
+        id: regionId,
+        name: crewRegion.region,
+        count: active,
+        otherCount: inactive,
+        label: t('crews.activeCrews') || 'Active Crews',
+        otherLabel: t('crews.inactiveCrews') || 'Inactive Crews',
+      }
+    }
+
+    // For project-grants, count projects per region
+    if (latestArgs?.projects && latestArgs.projects.length > 0) {
+      const regionProjectCount = latestArgs.projects.filter(p => {
+        return lngLatToRegionId(p.latitude, p.longitude) === regionId
+      }).length
+      const region = allCrewRegionsData.find(r => r.id === regionId)
+      if (region) {
+        return {
+          id: regionId,
+          name: region.region,
+          count: regionProjectCount,
+          label: t('home.projectGrants') || 'Projects',
+        }
+      }
+    }
+
+    // For endangered-species, count species per region
+    if (latestArgs?.speciesIndex && latestArgs.speciesIndex.length > 0) {
+      const regionSpeciesCount = latestArgs.speciesIndex.filter(s => {
+        return lngLatToRegionId(s.lat, s.lng) === regionId
+      }).length
+      const region = allCrewRegionsData.find(r => r.id === regionId)
+      if (region) {
+        return {
+          id: regionId,
+          name: region.region,
+          count: regionSpeciesCount,
+          label: t('nav.endangeredSpecies') || 'Species',
+        }
+      }
+    }
+
+    return null
+  }
+
+  function resolveRegionById(id: string): CrewRegionData | null {
+    return crewRegionMap?.get(id)
+      ?? (latestArgs?.crews ?? []).find(r => r.id === id)
+      ?? null
+  }
+
+  function hideRegionTip() {
+    if (regionTip) {
+      regionTip.remove()
+      regionTip = null
     }
   }
 
-  function onMosaicHoverOut(e: MapLayerMouseEvent) {
+  function showRegionTipById(regionId: string, lngLat: [number, number]) {
     if (!map) return
-    map.getCanvas().style.cursor = ''
-    const f = e.features?.[0]
-    if (!f) return
-    const idx = f.layer.id
-    if (map.getLayer(idx)) {
-      map.setPaintProperty(idx, 'circle-stroke-width', 2)
+    const regionData = computeRegionCounts(regionId)
+    if (!regionData) return
+
+    // Only show the "expand" click-through hint for active-crews — the other
+    // datasets show counts on hover but have no region-level overlay to open.
+    const html = buildGenericRegionTooltipHTML(regionData, {
+      items: regionData.label,
+      otherItems: regionData.otherLabel,
+      expand: currentDataset === 'active-crews' ? (t('preview.expand') || 'View details') : '',
+    })
+
+    if (!regionTip) {
+      regionTip = new maplibregl.Popup(withMapPopupSafeArea({
+        closeButton: false,
+        closeOnClick: false,
+        closeOnMove: true,
+        offset: 14,
+        maxWidth: '260px',
+        className: 'region-hover-tip',
+      }, map.getContainer()))
+        .setLngLat(lngLat)
+        .setHTML(html)
+        .addTo(map)
+      regionTip.getElement().style.pointerEvents = 'none'
+    } else {
+      regionTip.setLngLat(lngLat).setHTML(html)
     }
+  }
+
+  function onRegionAreaEnter(e: MapLayerMouseEvent) {
+    if (!map) return
+    map.getCanvas().style.cursor = 'pointer'
+    updateRegionHover(e)
+  }
+
+  function onRegionAreaMove(e: MapLayerMouseEvent) {
+    updateRegionHover(e)
+  }
+
+  /** Track current feature and update hover state instantly */
+  function updateRegionHover(e: MapLayerMouseEvent) {
+    const f = e.features?.[0]
+    if (!f) {
+      // No feature under cursor - we're leaving all regions
+      if (regionHoverId !== null) {
+        if (map) map.getCanvas().style.cursor = ''
+        setRegionHover(null)
+        hideRegionTip()
+      }
+      return
+    }
+    // Feature id comes from promoteId in source, or fall back to properties.id
+    const id = f.properties?.id ?? f.id
+    if (id == null || id === regionHoverId) {
+      // Same region, just update tooltip position
+      if (regionTip) regionTip.setLngLat([e.lngLat.lng, e.lngLat.lat])
+      return
+    }
+    // Different region - instant switch
+    setRegionHover(id)
+    showRegionTipById(String(id), [e.lngLat.lng, e.lngLat.lat])
+  }
+
+  function onRegionAreaLeave() {
+    // Handled in updateRegionHover via features check
+    if (regionHoverId === null && map) map.getCanvas().style.cursor = ''
+  }
+
+  /** True when a crew/project marker feature sits under the point — the
+   *  marker's own click handler owns that hit, not the region area. */
+  function markerHitAt(point: { x: number; y: number }): boolean {
+    if (!map) return false
+    const layers = ['_p', '_pc', '_pl', '_ml', '_c', '_cc', '_cn', '_cg']
+      .map(suffix => SOURCE + suffix)
+      .filter(lid => map!.getLayer(lid))
+    if (!layers.length) return false
+    try {
+      return map.queryRenderedFeatures([point.x, point.y], { layers }).length > 0
+    } catch {
+      return false
+    }
+  }
+
+  function onRegionAreaClick(e: MapLayerMouseEvent) {
+    if (!map || !e.features?.[0]) return
+    if (markerHitAt(e.point)) return
+    if (Date.now() - _lastPointClick < 80) return
+    const f = e.features[0]
+    const regionId = String(f.properties?.id ?? f.id ?? '')
+    
+    // For active-crews: open the crew overlay
+    if (currentDataset === 'active-crews') {
+      const region = resolveRegionById(regionId)
+      if (!region) return
+      _lastPointClick = Date.now()
+      hideRegionTip()
+      setRegionHover(null)
+      const cb = callbacks.openCrewPreview ?? callbacks.openCrewOverlay
+      cb(region)
+      return
+    }
+    
+    // For project-grants and endangered-species: show the cluster panel
+    // with all items in that region
+    const items: ClusterResultItem[] = []
+    if (currentDataset === 'project-grants' && latestArgs?.projects) {
+      const regionProjects = latestArgs.projects.filter(p => lngLatToRegionId(p.latitude, p.longitude) === regionId)
+      for (const proj of regionProjects) {
+        items.push({
+          id: proj.project_title,
+          title: proj.project_title,
+          subtitle: proj.country_province,
+          color: getProjectMapColor(proj.direct_beneficiaries, proj.indirect_beneficiaries),
+          coordinates: [proj.longitude, proj.latitude]
+        })
+      }
+    } else if (currentDataset === 'endangered-species' && latestArgs?.speciesIndex) {
+      const regionSpecies = latestArgs.speciesIndex.filter(s => lngLatToRegionId(s.lat, s.lng) === regionId)
+      for (const sp of regionSpecies) {
+        const color = getGroupMapColor(sp.taxonomicGroup)
+        items.push({
+          id: sp.id,
+          title: sp.commonName || sp.scientificName,
+          subtitle: sp.scientificName,
+          color: color,
+          coordinates: [sp.lng, sp.lat]
+        })
+      }
+    }
+    
+    if (items.length > 0) {
+      _lastPointClick = Date.now()
+      hideRegionTip()
+      setRegionHover(null)
+      callbacks.openCluster?.({
+        dataset: currentDataset ?? 'project-grants',
+        coordinates: items[0].coordinates,
+        featureIds: items.map(item => item.id),
+      })
+    }
+  }
+
+  function removeRegionLayers() {
+    hideRegionTip()
+    if (map) {
+      setRegionHover(null)
+      for (const lid of [REGION_LINE_LAYER, REGION_FILL_LAYER]) {
+        if (map.getLayer(lid)) map.removeLayer(lid)
+      }
+      if (map.getSource(REGION_SOURCE)) map.removeSource(REGION_SOURCE)
+    }
+    detachRegionEvents()
+    regionHoverId = null
+  }
+
+  function regRegion(lid: string, evt: keyof MapLayerEventType, fn: (e: MapLayerMouseEvent) => void) {
+    if (!map?.getLayer(lid)) return
+    // Idempotent: a style reload re-adds layers without re-binding twice.
+    if (regionHandlers.some(h => h.id === lid && h.evt === evt)) return
+    map.on(evt, lid, fn as (ev: MapLayerEventType[typeof evt] & object) => void)
+    regionHandlers.push({ id: lid, evt, fn })
+  }
+
+  function detachRegionEvents() {
+    if (!map) {
+      regionHandlers.length = 0
+      return
+    }
+    for (const { id, evt, fn } of regionHandlers) {
+      map.off(evt, id, fn as (ev: MapLayerEventType[typeof evt] & object) => void)
+    }
+    regionHandlers.length = 0
   }
 
   function reg(lid: string, evt: keyof MapLayerEventType, fn: (e: MapLayerMouseEvent) => void) {

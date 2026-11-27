@@ -127,7 +127,7 @@ const { t } = useI18n()
 }
 .footer-stat-value {
   font-size: 2rem;
-  font-weight: 900;
+  font-weight: 500;
   color: var(--tectonic-white);
 }
 .footer-stat-label {

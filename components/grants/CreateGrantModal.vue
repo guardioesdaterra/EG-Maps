@@ -226,7 +226,7 @@ async function handleSubmit() {
 
 .create-modal-title {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
   margin: 0 0 4px;
 }
@@ -296,7 +296,7 @@ async function handleSubmit() {
 
 .create-label {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
@@ -386,7 +386,7 @@ async function handleSubmit() {
   border-radius: 8px;
   color: #000;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s;

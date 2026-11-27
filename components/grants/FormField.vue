@@ -7,7 +7,7 @@
  */
 <template>
   <div class="flex flex-col gap-1" role="group" :aria-labelledby="labelId">
-    <span :id="labelId" class="text-[11px] font-semibold text-white/50 flex items-center gap-1">
+    <span :id="labelId" class="text-[11px] text-white/50 flex items-center gap-1">
       {{ label }}
       <span v-if="required" class="text-red-400">*</span>
     </span>

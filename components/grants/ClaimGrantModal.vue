@@ -161,7 +161,7 @@ async function handleSubmit() {
 
 .claim-modal-title {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 500;
   color: #fff;
   margin: 0 0 4px;
 }
@@ -209,7 +209,7 @@ async function handleSubmit() {
 
 .claim-project-badge {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--accent, #00ff85);
@@ -220,7 +220,7 @@ async function handleSubmit() {
 
 .claim-project-status {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
   padding: 2px 8px;
   border-radius: 4px;
@@ -235,7 +235,7 @@ async function handleSubmit() {
 
 .claim-project-title {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: #fff;
   margin: 0 0 6px;
   line-height: 1.4;
@@ -290,7 +290,7 @@ async function handleSubmit() {
 
 .claim-label {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
 }
 
@@ -381,7 +381,7 @@ async function handleSubmit() {
   border-radius: 8px;
   color: #000;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s;

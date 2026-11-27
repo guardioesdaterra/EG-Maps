@@ -14,7 +14,7 @@
         <div class="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-[var(--bg-secondary)] shadow-2xl">
           <div class="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-white/5 bg-[var(--bg-secondary)]/95 backdrop-blur-sm">
             <div class="min-w-0 flex-1 mr-3">
-              <h2 class="text-sm font-bold text-white truncate">{{ form.title || t('grantsPortal.editGrant') }}</h2>
+              <h2 class="text-sm text-white truncate">{{ form.title || t('grantsPortal.editGrant') }}</h2>
               <p class="text-[10px] text-white/40 truncate mt-0.5">{{ grant?.source || grant?.id }}</p>
             </div>
             <button class="rounded-full p-1.5 text-white/50 hover:text-white hover:bg-white/10 transition-colors" aria-label="Close" @click="$emit('close')">
@@ -67,7 +67,7 @@
             <div v-if="error" class="text-[11px] text-red-400">{{ error }}</div>
             <div class="flex justify-end gap-2 pt-2">
               <button class="px-3 py-1.5 rounded-lg bg-white/5 text-xs text-white/70 hover:bg-white/10 transition-colors" @click="$emit('close')">{{ t('grantsPortal.cancel') }}</button>
-              <button class="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-semibold hover:bg-blue-500/30 transition-colors" :disabled="saving" @click="$emit('save', form)">
+              <button class="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 text-xs hover:bg-blue-500/30 transition-colors" :disabled="saving" @click="$emit('save', form)">
                 {{ saving ? t('grantsPortal.saving') : t('grantsPortal.saveChanges') }}
               </button>
             </div>
@@ -126,6 +126,15 @@ watch(() => props.grant, (g) => {
 </script>
 
 <style scoped>
+/* ── forced dark palette (no theme awareness) ── */
+.grant-edit-overlay {
+  --glass-border-light: rgba(255, 255, 255, 0.04);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --text-primary: #e5e5e5;
+  --text-muted: #737373;
+  --success: #27ae60;
+}
+
 .modal-fade-enter-active,
 .modal-fade-leave-active {
   transition: opacity 0.25s ease;
@@ -149,7 +158,7 @@ watch(() => props.grant, (g) => {
 }
 .edit-field > span {
   font-size: 0.6rem;
-  font-weight: 700;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);

@@ -310,8 +310,46 @@ export function useOfflineTiles(apiKey?: string) {
     } catch { return null }
   }
 
-  async function writeOnce(key: string, data: ArrayBuffer, contentType: string, z: number): Promise<boolean> {
-    return new Promise((resolve, reject) => {
+  async function getTileUrl(z: number, x: number, y: number): Promise<string | null> {
+    if (!validCoordinate(z, x, y)) return null
+    const key = tileKey(z, x, y)
+    const objectUrl = objectUrls.get(key)
+    if (objectUrl) return objectUrl
+    const data = await getTile(z, x, y)
+    if (!data) return null
+    const contentType = memContentTypes.get(key) || 'image/jpeg'
+    if (canCreateObjectUrl()) {
+      const url = globalThis.URL.createObjectURL(new Blob([data], { type: contentType }))
+      objectUrls.set(key, url)
+      return url
+    }
+    return null
+  }
+
+  /** MapLibre-compatible transformRequest: serves cached blob URLs offline, passes others through. */
+  function transformRequest(url: string, resourceType: string): { url: string } | undefined {
+    if (resourceType !== 'Tile') return { url }
+    const parsed = tileKeyFromUrl(url)
+    if (!parsed) return { url }
+    const key = tileKey(parsed.z, parsed.x, parsed.y)
+    const objectUrl = objectUrls.get(key)
+    if (objectUrl) return { url: objectUrl }
+    return { url }
+  }
+
+  /**
+   * Persist a tile. Returns false when the payload was rejected (size/type).
+   * Memory cache is always populated so reads work even when IndexedDB is
+   * unavailable; the IndexedDB write is best-effort durable storage.
+   */
+  async function setTile(z: number, x: number, y: number, data: ArrayBuffer, contentType: string): Promise<boolean> {
+    if (!validCoordinate(z, x, y) || !(data instanceof ArrayBuffer) || data.byteLength === 0 || data.byteLength > MAX_TILE_BYTES || !/^image\/(jpeg|jpg|png|webp)$/i.test(contentType)) return false
+    const key = tileKey(z, x, y)
+
+    // Always populate memory cache so reads work without IndexedDB.
+    cacheMemory(key, data, contentType)
+
+    const writeOnce = (): Promise<boolean> => new Promise((resolve, reject) => {
       void (async () => {
         try {
           const db = await openDB()
@@ -352,53 +390,24 @@ export function useOfflineTiles(apiKey?: string) {
         }
       })()
     })
-  }
-
-  /**
-   * Persist a tile. Returns false when the payload was rejected (size/type)
-   * or the IndexedDB write failed. Memory is only populated after a
-   * successful write so resume-via hasTile never skips unpersisted gaps.
-   */
-  async function setTile(z: number, x: number, y: number, data: ArrayBuffer, contentType: string): Promise<boolean> {
-    if (!validCoordinate(z, x, y) || !(data instanceof ArrayBuffer) || data.byteLength === 0 || data.byteLength > MAX_TILE_BYTES || !/^image\/(jpeg|jpg|png|webp)$/i.test(contentType)) return false
-    const key = tileKey(z, x, y)
-
-    // Always populate memory cache so tiles work even without IndexedDB.
-    cacheMemory(key, data, contentType)
 
     try {
-      await writeOnce(key, data, contentType, z)
+      const ok = await writeOnce()
+      if (!ok) return true
       storageFull.value = false
       await maybeEvict()
       return true
-    } catch {
-      // IndexedDB unavailable — memory cache is populated, which is sufficient.
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (/QuotaExceededError|FILE_ERROR_NO_SPACE|disk/i.test(msg)) {
+        console.warn('[OfflineTiles] Storage quota exceeded, evicting old tiles')
+        storageFull.value = true
+        await maybeEvict(true)
+        return true
+      }
+      // IndexedDB unavailable — memory cache remains populated.
       return true
     }
-  }
-
-  /**
-   * Returns the blob URL for a cached tile, or null when not cached / no
-   * object URL API. Used by MapLibre's transformRequest and by tests.
-   */
-  function getTileUrl(z: number, x: number, y: number): string | null {
-    const key = tileKey(z, x, y)
-    return objectUrls.get(key) ?? null
-  }
-
-  /**
-   * MapLibre transformRequest callback: serves cached blob URLs for tiles,
-   * otherwise passes the original URL through unchanged.
-   */
-  function transformRequest(url: string, type: string): { url: string } {
-    if (type === 'Tile') {
-      const key = tileKeyFromUrl(url)
-      if (key) {
-        const blobUrl = objectUrls.get(tileKey(key.z, key.x, key.y))
-        if (blobUrl) return { url: blobUrl }
-      }
-    }
-    return { url }
   }
 
   async function hasTile(z: number, x: number, y: number): Promise<boolean> {

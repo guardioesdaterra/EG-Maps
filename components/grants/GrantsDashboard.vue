@@ -419,15 +419,30 @@ const items = computed<MixedGrant[]>(() => {
 </script>
 
 <style scoped>
+/* ── forced dark palette (no theme awareness, always dark/glassmorph) ── */
 .gstore {
+  --bg-secondary: #111111;
+  --bg-tertiary: #1a1a1a;
+  --border-color: #262626;
+  --text-primary: #e5e5e5;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
+  --glass-bg: rgba(13, 13, 18, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --success: #27ae60;
+  --danger: #e74c3c;
+  --warning: #f39c12;
+  --primary: #06b6d4;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --glass: var(--glass-bg);
+  --surface: var(--bg-secondary);
   --accent: var(--success);
   --accent-dim: var(--success-bg);
   --accent-glow: rgba(39, 174, 96, 0.06);
-  --glass: var(--glass-bg);
   --glass-hover: rgba(255, 255, 255, 0.07);
   --text: var(--text-primary);
   --text-tertiary: var(--text-muted);
-  --surface: var(--bg-secondary);
   background: transparent;
   min-height: 100vh;
   display: flex;
@@ -444,13 +459,9 @@ const items = computed<MixedGrant[]>(() => {
   backdrop-filter: blur(20px) saturate(1.5);
   -webkit-backdrop-filter: blur(20px) saturate(1.5);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-:global(.dark) .gstore-header {
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom-color: rgba(255, 255, 255, 0.06);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .gstore-header-inner {
@@ -487,7 +498,7 @@ const items = computed<MixedGrant[]>(() => {
 
 .gstore-logo-text {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.01em;
 }
 
@@ -596,7 +607,7 @@ const items = computed<MixedGrant[]>(() => {
   align-items: center;
   justify-content: center;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 500;
   background: rgba(255, 255, 255, 0.06);
   color: var(--text-secondary);
   flex-shrink: 0;
@@ -648,7 +659,7 @@ const items = computed<MixedGrant[]>(() => {
   border-radius: 9999px;
   color: var(--bg-primary);
   font-size: clamp(11px, 1.2vw, 13px);
-  font-weight: 600;
+  font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s;
@@ -852,7 +863,7 @@ const items = computed<MixedGrant[]>(() => {
 
 .gstore-section-title {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--text);
   margin: 0;
@@ -956,7 +967,7 @@ const items = computed<MixedGrant[]>(() => {
   height: 20px;
   border-radius: 9999px;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 500;
   padding: 0 5px;
 }
 
@@ -972,7 +983,7 @@ const items = computed<MixedGrant[]>(() => {
 
 .gstore-card-title {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.4;
   color: var(--text);
   margin: 0 0 6px;
@@ -998,7 +1009,7 @@ const items = computed<MixedGrant[]>(() => {
 }
 
 .gstore-card-meta-item.deadline {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .gstore-card-meta-item.deadline.urgent {
@@ -1026,7 +1037,7 @@ const items = computed<MixedGrant[]>(() => {
 
 .gstore-card-amount {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--accent);
   white-space: nowrap;
   overflow: hidden;
@@ -1046,7 +1057,7 @@ const items = computed<MixedGrant[]>(() => {
 
 .gstore-card-tag {
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 1px 5px;

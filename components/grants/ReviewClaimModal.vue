@@ -190,7 +190,7 @@ async function handleSubmit() {
 
 .review-modal-title {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 500;
   color: #fff;
   margin: 0 0 4px;
 }
@@ -297,7 +297,7 @@ async function handleSubmit() {
 .review-label {
   display: block;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 10px;
 }
@@ -319,7 +319,7 @@ async function handleSubmit() {
   background: rgba(255, 255, 255, 0.03);
   color: rgba(255, 255, 255, 0.7);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s;
@@ -355,7 +355,7 @@ async function handleSubmit() {
   padding: 10px 14px;
   border-radius: 8px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .review-decision-badge svg {
@@ -450,7 +450,7 @@ async function handleSubmit() {
   border: none;
   border-radius: 8px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s;

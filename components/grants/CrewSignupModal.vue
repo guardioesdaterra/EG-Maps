@@ -16,7 +16,7 @@
           
           <div class="flex items-center justify-between mb-6">
             <div>
-              <h2 class="text-lg font-bold text-[var(--text-primary)]">{{ t('grantsPortal.crewSignupTitle') }}</h2>
+              <h2 class="text-lg text-[var(--text-primary)]">{{ t('grantsPortal.crewSignupTitle') }}</h2>
               <p class="text-xs text-[var(--text-muted)] mt-1 max-w-md">{{ t('grantsPortal.crewSignupSubtitle') }}</p>
             </div>
             <button class="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors p-1" aria-label="Close" @click="$emit('close')">
@@ -32,16 +32,16 @@
             <div class="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full bg-green-500/15 flex items-center justify-center">
               <svg class="w-6 h-6 sm:w-8 sm:h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <h3 class="text-[var(--text-primary)] font-bold text-base mb-2">{{ t('grantsPortal.crewSignupSuccess') }}</h3>
+            <h3 class="text-[var(--text-primary)] text-base mb-2">{{ t('grantsPortal.crewSignupSuccess') }}</h3>
             <p class="text-[var(--text-muted)] text-xs mb-6">{{ t('grantsPortal.crewSignupSuccessDesc') }}</p>
-            <button class="px-5 py-2 text-xs font-bold bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-all" @click="$emit('close')">{{ t('grantsPortal.crewSignupBackToPortal') }}</button>
+            <button class="px-5 py-2 text-xs bg-green-500/20 text-green-400 hover:bg-green-500/30 rounded-lg transition-all" @click="$emit('close')">{{ t('grantsPortal.crewSignupBackToPortal') }}</button>
           </div>
 
           
           <form v-else @submit.prevent="handleSubmit" class="space-y-5">
             
             <fieldset>
-              <legend class="text-xs font-semibold text-[var(--text-secondary)] mb-3">{{ t('grantsPortal.crewSignupRole') }} <span class="text-red-400">*</span></legend>
+              <legend class="text-xs text-[var(--text-secondary)] mb-3">{{ t('grantsPortal.crewSignupRole') }} <span class="text-red-400">*</span></legend>
               <div class="space-y-2">
                 <label v-for="opt in roleOptions" :key="opt.value" class="flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors" :class="form.crew_type === opt.value ? 'bg-green-500/10 border border-green-500/25' : 'bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:bg-[var(--bg-tertiary)]'">
                   <input type="radio" name="crew_type" :value="opt.value" v-model="form.crew_type" class="mt-0.5 accent-green-400" required />
@@ -92,7 +92,7 @@
 
             
             <fieldset>
-              <legend class="text-xs font-semibold text-[var(--text-muted)] mb-2">{{ t('grantsPortal.crewSignupAddress') }}</legend>
+              <legend class="text-xs text-[var(--text-muted)] mb-2">{{ t('grantsPortal.crewSignupAddress') }}</legend>
               <div class="space-y-2">
                 <FormField :label="t('grantsPortal.crewSignupCountry')">
                   <input v-model="form.address_country" type="text" placeholder="United States" class="w-full bg-[var(--bg-tertiary)] border border-[var(--border-color)] rounded-lg px-3 py-2.5 text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none focus:border-green-500/40 transition-colors" />
@@ -124,7 +124,7 @@
 
             
             <fieldset>
-              <legend class="text-xs font-semibold text-[var(--text-secondary)] mb-3">{{ t('grantsPortal.crewSignupTraining') }} <span class="text-red-400">*</span></legend>
+              <legend class="text-xs text-[var(--text-secondary)] mb-3">{{ t('grantsPortal.crewSignupTraining') }} <span class="text-red-400">*</span></legend>
               <div class="space-y-1.5">
               <label v-for="opt in trainingOptions" :key="opt.value" class="flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-colors" :class="form.training_interest === opt.value ? 'bg-green-500/10 border border-green-500/25' : 'bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:bg-[var(--bg-tertiary)]'">
                   <input type="radio" name="training_interest" :value="opt.value" v-model="form.training_interest" class="accent-green-400" required />
@@ -144,7 +144,7 @@
             </FormField>
 
             
-            <button type="submit" :disabled="submitting" class="w-full py-3 rounded-lg font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2" :class="submitting ? 'bg-green-500/10 text-green-400/50 cursor-wait' : 'bg-green-500/15 text-green-400 hover:bg-green-500/25 hover:shadow-[0_0_30px_rgba(0,255,133,0.15)]'">
+            <button type="submit" :disabled="submitting" class="w-full py-3 rounded-lg text-sm transition-all duration-300 flex items-center justify-center gap-2" :class="submitting ? 'bg-green-500/10 text-green-400/50 cursor-wait' : 'bg-green-500/15 text-green-400 hover:bg-green-500/25 hover:shadow-[0_0_30px_rgba(0,255,133,0.15)]'">
               <svg v-if="submitting" class="w-4 h-4 text-green-400" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M0 0h24v24H0z" fill="none" />
                 <path fill="currentColor" d="M20.27,4.74a4.93,4.93,0,0,1,1.52,4.61,5.32,5.32,0,0,1-4.1,4.51,5.12,5.12,0,0,1-5.2-1.5,5.53,5.53,0,0,0,6.13-1.48A5.66,5.66,0,0,0,20.27,4.74ZM12.32,11.53a5.49,5.49,0,0,0-1.47-6.2A5.57,5.57,0,0,0,4.71,3.72,5.17,5.17,0,0,1,9.53,2.2,5.52,5.52,0,0,1,13.9,6.45,5.28,5.28,0,0,1,12.32,11.53ZM19.2,20.29a4.92,4.92,0,0,1-4.72,1.49,5.32,5.32,0,0,1-4.34-4.05A5.2,5.2,0,0,1,11.6,12.5a5.6,5.6,0,0,0,1.51,6.13A5.63,5.63,0,0,0,19.2,20.29ZM3.79,19.38A5.18,5.18,0,0,1,2.32,14a5.3,5.3,0,0,1,4.59-4,5,5,0,0,1,4.58,1.61,5.55,5.55,0,0,0-6.32,1.69A5.46,5.46,0,0,0,3.79,19.38ZM12.23,12a5.11,5.11,0,0,0,3.66-5,5.75,5.75,0,0,0-3.18-6,5,5,0,0,1,4.42,2.3,5.21,5.21,0,0,1,.24,5.92A5.4,5.4,0,0,1,12.23,12ZM11.76,12a5.18,5.18,0,0,0-3.68,5.09,5.58,5.58,0,0,0,3.19,5.79c-1,.35-2.9-.46-4-1.68A5.51,5.51,0,0,1,11.76,12ZM23,12.63a5.07,5.07,0,0,1-2.35,4.52,5.23,5.23,0,0,1-5.91.2,5.24,5.24,0,0,1-2.67-4.77,5.51,5.51,0,0,0,5.45,3.33A5.52,5.52,0,0,0,23,12.63ZM1,11.23a5,5,0,0,1,2.49-4.5,5.23,5.23,0,0,1,5.81-.06,5.3,5.3,0,0,1,2.61,4.74A5.56,5.56,0,0,0,6.56,8.06,5.71,5.71,0,0,0,1,11.23Z">

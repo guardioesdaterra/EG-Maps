@@ -470,13 +470,18 @@ export function createMapParticleSystem({
     const coords = feature.geometry.coordinates as [number, number][]
     if (!coords || coords.length < 3) return false
     const [from, control, to] = coords
+    // Validate all coordinates are finite numbers
     if (!from || !control || !to) return false
+    if (!Number.isFinite(from[0]) || !Number.isFinite(from[1]) ||
+        !Number.isFinite(control[0]) || !Number.isFinite(control[1]) ||
+        !Number.isFinite(to[0]) || !Number.isFinite(to[1])) return false
 
     p.fromX = from[0]; p.fromY = from[1]
     p.controlX = control[0]; p.controlY = control[1]
     p.toX = to[0]; p.toY = to[1]
     p.progress = 0
-    p.speed = mobile ? 0.012 + Math.random() * 0.018 : 0.015 + Math.random() * 0.025
+    // Speed is in geographic coordinates - keep it slow for lng/lat values
+    p.speed = mobile ? 0.0008 + Math.random() * 0.0004 : 0.0004 + Math.random() * 0.0003
     p.size = mobile ? 1.2 : 1.5 + Math.random() * 1.2
     p.color = feature.properties?.color || '#ffffff'
     p.trailLen = Math.max(0, Math.min(MAX_TRAIL_LEN, trailLen))
@@ -548,7 +553,7 @@ export function createMapParticleSystem({
 
     let lastFrame = 0
     const mobile = isMobile()
-    const targetFps = quality.particleFps ?? (mobile ? 30 : 42)
+    const targetFps = quality.particleFps ?? (mobile ? 24 : 36)
     const frameInterval = 1000 / targetFps
 
     let lastRectW = 0; let lastRectH = 0; let lastDpr = 1

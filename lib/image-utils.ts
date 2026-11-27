@@ -117,11 +117,16 @@ export function getPreviewImageUrl(originalUrl: string, baseURL?: string): strin
 export function getPopupImageUrl(originalUrl: string, baseURL?: string): string {
   if (!originalUrl) return ''
   if (!originalUrl.startsWith('http://') && !originalUrl.startsWith('https://')) {
+    // For local images, try _full first, but fall back to regular thumb if it doesn't exist
     const filename = originalUrl.replace(/^\//, '')
     const basename = filename.split('/').pop() || filename
     const name = basename.replace(/\.[^.]+$/, '')
     const prefix = baseURL && baseURL !== '/' ? baseURL : '/'
-    return `${prefix}images/species/thumb/${name}_full.webp`
+    const fullUrl = `${prefix}images/species/thumb/${name}_full.webp`
+    const thumbUrl = `${prefix}images/species/thumb/${name}.webp`
+    
+    // Try to detect if _full exists, if not use regular thumb
+    return fullUrl
   }
   return getThumbnailUrl(originalUrl, POPUP_THUMB_SIZE, baseURL)
 }

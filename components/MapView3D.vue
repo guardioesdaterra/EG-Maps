@@ -17,7 +17,7 @@
             </path>
           </svg>
           <div class="absolute inset-0 flex items-center justify-center">
-            <Icon name="gis:globe" class="w-7 h-7 xs:w-8 xs:h-8 text-white/70 animate-pulse" />
+            <Icon name="tabler:cube-2" class="w-7 h-7 xs:w-8 xs:h-8 text-white/70 animate-pulse" />
           </div>
         </div>
         <p class="text-white font-medium mb-1.5 xs:mb-2 text-sm xs:text-base">{{ t('globe.loading') }}</p>

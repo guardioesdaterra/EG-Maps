@@ -87,7 +87,7 @@
             @update:sob-demanda-only="(v) => emit('update:sobDemandaOnly', v)"
           />
           <h4 class="vulc-subhead">
-            <Icon name="gis:globe" class="vulc-subhead__icon" />
+            <Icon name="tabler:cube-2" class="vulc-subhead__icon" />
             {{ t('observatory.tabs.env') }}
           </h4>
           <EnvironmentTab @fly-to-coord="(c) => emit('flyToCoord', c)" @add-observation="(r) => emit('addObservation', r)" />
@@ -287,7 +287,7 @@
         <!-- ══ POWERS ═══════════════════════════════════════════ -->
         <section v-else-if="activeTab === 'power'" role="tabpanel" aria-label="Powers">
           <h4 class="vulc-subhead">
-            <Icon name="gis:globe" class="vulc-subhead__icon" />
+            <Icon name="tabler:cube-2" class="vulc-subhead__icon" />
             {{ t('observatory.tabs.danger') }}
           </h4>
           <DangerTab

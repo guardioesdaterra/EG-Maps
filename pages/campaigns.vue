@@ -15,7 +15,7 @@
             </a>
             <NuxtLink class="btn btn--secondary" to="/active-crews">
               {{ t('campaigns.seeCrewNetwork') }}
-              <Icon name="gis:map" class="h-3.5 w-3.5" />
+              <Icon name="tabler:map-pin" class="h-3.5 w-3.5" />
             </NuxtLink>
           </div>
         </div>
@@ -282,7 +282,7 @@ const campaigns = computed<Campaign[]>(() => [
     image: 'campaigns/2026-earth-day.webp',
   },
   {
-    icon: 'gis:map',
+    icon: 'tabler:map-pin',
     kicker: t('campaigns.biodiversityKicker'),
     title: t('campaigns.biodiversityTitle'),
     desc: t('campaigns.biodiversityDesc'),

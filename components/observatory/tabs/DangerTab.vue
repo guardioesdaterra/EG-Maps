@@ -15,7 +15,7 @@
     
     <div class="obs-tab__head">
       <h3 class="obs-tab__title">
-        <Icon name="gis:globe" class="obs-tab__title-icon" />
+        <Icon name="tabler:cube-2" class="obs-tab__title-icon" />
         {{ t('observatory.dangerPanel.title') }}
       </h3>
       <button

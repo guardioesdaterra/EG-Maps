@@ -60,7 +60,7 @@
           :class="['obs-view-tab', !is3D && 'is-active']"
           :title="t('globe.view2D')"
         >
-          <Icon name="gis:map" class="obs-view-tab__icon" />
+          <Icon name="tabler:map-pin" class="obs-view-tab__icon" />
           <span class="obs-view-tab__text">{{ t('globe.view2D') }}</span>
         </NuxtLink>
         <NuxtLink
@@ -70,7 +70,7 @@
           :class="['obs-view-tab', is3D && 'is-active']"
           :title="t('globe.view3D')"
         >
-          <Icon name="gis:globe" class="obs-view-tab__icon" />
+          <Icon name="tabler:cube-2" class="obs-view-tab__icon" />
           <span class="obs-view-tab__text">{{ t('globe.view3D') }}</span>
         </NuxtLink>
       </div>

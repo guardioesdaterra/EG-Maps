@@ -58,7 +58,7 @@
         :class="!dataset.single && 'flex-1'"
         :aria-label="dataset.ariaLabel"
       >
-        <Icon :name="dataset.single ? 'tabler:share' : 'gis:map'" class="h-3.5 w-3.5" />
+        <Icon :name="dataset.single ? 'tabler:share' : 'tabler:map-pin'" class="h-3.5 w-3.5" />
         <span>{{ dataset.single ? (dataset.external ? 'Visit' : 'Open') : t('home.2d') }}</span>
       </NuxtLink>
       <NuxtLink
@@ -67,7 +67,7 @@
         class="dataset-btn dataset-btn--secondary flex-1"
         :aria-label="`${t('home.3d')} — ${dataset.title}`"
       >
-        <Icon name="gis:globe" class="h-3.5 w-3.5" />
+        <Icon name="tabler:cube-2" class="h-3.5 w-3.5" />
         <span>{{ t('home.3d') }}</span>
       </NuxtLink>
       <NuxtLink

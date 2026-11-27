@@ -14,7 +14,7 @@
         <div class="obs-geo-modal" ref="geoModalRef">
           
           <template v-if="step === 'prompt'">
-            <Icon name="gis:globe" class="obs-geo-modal__icon w-9 h-9" />
+            <Icon name="tabler:cube-2" class="obs-geo-modal__icon w-9 h-9" />
             <h2 id="geo-locate-modal-title" class="obs-geo-modal__title">{{ t('observatory.geoLocate.title') }}</h2>
             <p class="obs-geo-modal__desc">{{ t('observatory.geoLocate.description') }}</p>
 

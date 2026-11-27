@@ -171,7 +171,7 @@
                   :aria-label="t('observatory.v2.viewFlat')"
                   @click="navigateTo('/vulcan-observatory')"
                 >
-                  <Icon name="gis:map" />
+                  <Icon name="tabler:map-pin" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.viewFlat') }}</span>
                 </button>
               </nav>
@@ -257,7 +257,7 @@
               :aria-label="t('observatory.v2.viewFlat')"
               @click="navigateTo('/vulcan-observatory')"
             >
-              <Icon name="gis:map" />
+              <Icon name="tabler:map-pin" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.viewFlat') }}</span>
             </button>
           </nav>

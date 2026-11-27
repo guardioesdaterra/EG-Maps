@@ -50,11 +50,11 @@
                 </div>
                 <div class="bento-links">
                   <NuxtLink to="/project-grants" class="bento-link bento-link--primary" :aria-label="`${t('home.projectGrantsTitle')} — ${t('globe.view2D')}`">
-                    <Icon name="gis:map" aria-hidden="true" />
+                    <Icon name="tabler:map-pin" aria-hidden="true" />
                     {{ t('globe.view2D') }}
                   </NuxtLink>
                   <NuxtLink to="/project-grants/3d" class="bento-link" :aria-label="`${t('home.projectGrantsTitle')} — ${t('globe.view3D')}`">
-                    <Icon name="gis:globe" aria-hidden="true" />
+                    <Icon name="tabler:cube-2" aria-hidden="true" />
                     {{ t('globe.view3D') }}
                   </NuxtLink>
                 </div>
@@ -85,7 +85,7 @@
                     {{ t('home.campaignsTitle') }}
                   </NuxtLink>
                   <NuxtLink to="/endangered-species" class="bento-link">
-                    <Icon name="gis:map" aria-hidden="true" />
+                    <Icon name="tabler:map-pin" aria-hidden="true" />
                     {{ t('home.speciesTitle') }}
                   </NuxtLink>
                 </div>
@@ -175,7 +175,7 @@
                     {{ t('home.crewProjectsTitle') }}
                   </NuxtLink>
                   <NuxtLink to="/vulcan-observatory" class="bento-link" :aria-label="`${t('home.vulcanTitle')} — ${t('globe.view2D')}`">
-                    <Icon name="gis:map" aria-hidden="true" />
+                    <Icon name="tabler:map-pin" aria-hidden="true" />
                     {{ t('home.vulcanTitle') }}
                   </NuxtLink>
                 </div>

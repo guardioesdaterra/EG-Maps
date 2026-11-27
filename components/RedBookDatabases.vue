@@ -81,7 +81,7 @@ const { t } = useI18n()
 const loading = ref(true)
 const databases = ref<Database[]>([])
 const DATASET_ICONS: Record<string, string> = {
-  iucn: 'gis:globe',
+  iucn: 'tabler:cube-2',
   'icmbio-brazil': 'tabler:tree',
 }
 const abortController = new AbortController()

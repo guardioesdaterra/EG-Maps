@@ -270,7 +270,7 @@ onUnmounted(() => {
               }"
               @click.stop="navigateTo(item.path2d!)"
             >
-              <Icon name="gis:map" class="w-3 h-3" />
+              <Icon name="tabler:map-pin" class="w-3 h-3" />
               2D
             </button>
             <button
@@ -284,7 +284,7 @@ onUnmounted(() => {
               }"
               @click.stop="navigateTo(item.path3d!)"
             >
-              <Icon name="gis:globe" class="w-3 h-3" />
+              <Icon name="tabler:cube-2" class="w-3 h-3" />
               3D
             </button>
           </div>

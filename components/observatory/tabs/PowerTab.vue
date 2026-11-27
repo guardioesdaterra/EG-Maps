@@ -38,7 +38,7 @@
 
       <!-- ── Foreign capital ───────────────────────────────── -->
       <h4 v-if="foreignEntries.length || liveForeign.length" class="obs-section-title">
-        <Icon name="gis:globe" class="obs-section-title__icon" />
+        <Icon name="tabler:cube-2" class="obs-section-title__icon" />
         {{ t('observatory.power.foreignTitle') }}
       </h4>
       <ul v-if="foreignEntries.length" class="obs-bars" role="list">
@@ -95,7 +95,7 @@
 
       <!-- ── Top suspicious ────────────────────────────────── -->
       <h4 v-if="topSuspicious.length" class="obs-section-title">
-        <Icon name="gis:globe" class="obs-section-title__icon" />
+        <Icon name="tabler:cube-2" class="obs-section-title__icon" />
         {{ t('observatory.power.topTitle') }}
       </h4>
       <ul v-if="topSuspicious.length" class="obs-card-list" role="list">

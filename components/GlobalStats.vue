@@ -58,7 +58,7 @@
         :is-mobile="isMobile"
       />
       <UiStatCard
-        icon="gis:globe"
+        icon="tabler:cube-2"
         :value="stats.countriesCount"
         :display-value="formatNumber(stats.countriesCount)"
         :label="t('stats.countries')"

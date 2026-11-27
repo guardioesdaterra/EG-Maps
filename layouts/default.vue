@@ -23,7 +23,7 @@
               !is3DRoute ? 'map-view-tab-active' : 'map-view-tab-idle'
             ]"
           >
-            <Icon name="gis:map" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            <Icon name="tabler:map-pin" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span class="hidden sm:inline text-xs">{{ t('globe.view2D') }}</span>
           </NuxtLink>
           <NuxtLink
@@ -35,7 +35,7 @@
               is3DRoute ? 'map-view-tab-active' : 'map-view-tab-idle'
             ]"
           >
-            <Icon name="gis:globe" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            <Icon name="tabler:cube-2" class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span class="hidden sm:inline text-xs">{{ t('globe.view3D') }}</span>
           </NuxtLink>
         </div>

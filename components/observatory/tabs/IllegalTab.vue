@@ -119,7 +119,7 @@ function patternIcon(titleKey: string): string {
     'observatory.illegal.landSpec': 'tabler:map-pin',
     'observatory.illegal.rejeito': 'tabler:trash',
     'observatory.illegal.secrecy': 'tabler:eye-off',
-    'observatory.illegal.foreign': 'gis:globe',
+    'observatory.illegal.foreign': 'tabler:cube-2',
     'observatory.illegal.exclusion': 'tabler:trash-x',
     'observatory.illegal.water': 'tabler:fountain',
   }

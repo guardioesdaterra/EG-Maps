@@ -253,7 +253,7 @@ const crewsPageLabel = computed(() => tx('crews.pageOf', `Page ${safeCrewPage.va
             {{ isActive ? 'Active' : 'Inactive' }}
           </span>
           <span v-else class="cp__status cp__status--region">
-            <Icon name="gis:globe" size="0.7rem" />
+            <Icon name="tabler:cube-2" size="0.7rem" />
             <span>{{ t('crews.region') || 'Region' }}</span>
           </span>
         </div>
@@ -305,7 +305,7 @@ const crewsPageLabel = computed(() => tx('crews.pageOf', `Page ${safeCrewPage.va
           </div>
           <div class="cp__stat">
             <div class="cp__stat-icon">
-              <Icon name="gis:globe" size="1rem" />
+              <Icon name="tabler:cube-2" size="1rem" />
             </div>
             <div class="cp__stat-body">
               <span class="cp__stat-label">{{ t('crews.countries') }}</span>

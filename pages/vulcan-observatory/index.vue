@@ -225,7 +225,7 @@
                   :aria-label="t('observatory.v2.viewGlobe')"
                   @click="navigateTo('/vulcan-observatory/3d')"
                 >
-                  <Icon name="gis:globe" />
+                  <Icon name="tabler:cube-2" />
                   <span class="vulc-icon-btn__tip">{{ t('observatory.v2.viewGlobe') }}</span>
                 </button>
               </nav>
@@ -348,7 +348,7 @@
               :aria-label="t('observatory.v2.viewGlobe')"
               @click="navigateTo('/vulcan-observatory/3d')"
             >
-              <Icon name="gis:globe" />
+              <Icon name="tabler:cube-2" />
               <span class="vulc-icon-btn__tip">{{ t('observatory.v2.viewGlobe') }}</span>
             </button>
           </nav>

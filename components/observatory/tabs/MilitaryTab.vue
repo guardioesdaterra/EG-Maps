@@ -14,7 +14,7 @@
     <!-- ── Live regional numbers (deep_analysis) ──────────── -->
     <div v-if="live" class="obs-callout obs-callout--danger">
       <div class="obs-callout__head">
-        <Icon name="gis:globe" class="obs-callout__icon" />
+        <Icon name="tabler:cube-2" class="obs-callout__icon" />
         <h3 class="obs-callout__title">{{ t('observatory.military.liveTitle') }}</h3>
       </div>
       <div class="obs-live-grid" role="list">

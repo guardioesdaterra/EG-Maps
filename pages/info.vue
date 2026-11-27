@@ -86,11 +86,11 @@
           </div>
           <div class="flex w-full flex-col gap-2 xs:gap-3 sm:min-w-44 lg:w-auto">
             <NuxtLink to="/project-grants" class="inline-flex items-center justify-center gap-1.5 xs:gap-2 rounded-fluid bg-[var(--text-primary)] px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black text-[var(--bg-primary)]">
-              <Icon name="gis:map" class="h-4 w-4" />
+              <Icon name="tabler:map-pin" class="h-4 w-4" />
               {{ t('info.view2dMap') }}
             </NuxtLink>
             <NuxtLink to="/project-grants/3d" class="inline-flex items-center justify-center gap-1.5 xs:gap-2 rounded-fluid border-2 border-[var(--border-color)] px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black text-[var(--text-primary)] hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)]">
-              <Icon name="gis:globe" class="h-4 w-4" />
+              <Icon name="tabler:cube-2" class="h-4 w-4" />
               {{ t('info.view3dGlobe') }}
             </NuxtLink>
           </div>
@@ -114,11 +114,11 @@
           </div>
           <div class="flex w-full flex-col gap-2 xs:gap-3 sm:min-w-44 lg:w-auto">
             <NuxtLink to="/endangered-species" class="inline-flex items-center justify-center gap-1.5 xs:gap-2 rounded-fluid bg-[var(--text-primary)] px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black text-[var(--bg-primary)]">
-              <Icon name="gis:map" class="h-4 w-4" />
+              <Icon name="tabler:map-pin" class="h-4 w-4" />
               {{ t('info.view2dMap') }}
             </NuxtLink>
             <NuxtLink to="/endangered-species/3d" class="inline-flex items-center justify-center gap-1.5 xs:gap-2 rounded-fluid border-2 border-[var(--border-color)] px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm font-black text-[var(--text-primary)] hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)]">
-              <Icon name="gis:globe" class="h-4 w-4" />
+              <Icon name="tabler:cube-2" class="h-4 w-4" />
               {{ t('info.view3dGlobe') }}
             </NuxtLink>
           </div>
